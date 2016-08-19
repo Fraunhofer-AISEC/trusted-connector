@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="ids">
+    <feature name="ids" description="IDS Karaf Feature" version="1.0.0">
+        <feature version="2.16.3">camel</feature>
+        <feature version="4.2.6">pax-http-jetty</feature>
+    </feature>
+</features>

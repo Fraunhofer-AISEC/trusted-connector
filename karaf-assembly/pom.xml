@@ -2,11 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jirawat.karaf</groupId>
-    <artifactId>offline-karaf4</artifactId>
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>offline-karaf</artifactId>
     <version>1.0.0</version>
-    <name>jirawat.com :: Parent POM for Offline Karaf</name>
-    <description>Maven POM for Offline Karaf server</description>
+    <name>IDS Karaf Platform</name>
+    <description>Offline Karaf server</description>
     <packaging>karaf-assembly</packaging>
     <scm>
         <connection>
@@ -23,8 +23,8 @@
     <properties>
         <karaf.version>4.0.5</karaf.version>
         <camel.version>2.16.3</camel.version>
-        <activemq.version>5.13.0</activemq.version>
-        <cxf.version>3.1.1</cxf.version>
+        <activemq.version>5.13.3</activemq.version>
+        <cxf.version>3.1.5</cxf.version>
         <!-- maven-compiler-plugin setting.
              Karaf 4 runs on Java 7 or later -->
         <!-- Specific Maven Plugin Versions -->
@@ -57,8 +57,7 @@
             <artifactId>framework</artifactId>
             <type>kar</type>
             <version>${karaf.version}</version>
-
-            <scope>compile</scope>
+            <!-- <scope>compile</scope> -->
         </dependency>
 
         <dependency>
@@ -74,7 +73,7 @@
             <classifier>features</classifier>
             <type>xml</type>
             <version>${karaf.version}</version>
- 			<scope>runtime</scope>
+ 			<!-- <scope>runtime</scope>  http://stackoverflow.com/questions/35433552/karaf-4-0-4-custom-distribution-karaf-maven-plugin -->
          </dependency>
         <!--
             https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/4.0.1/enterprise-4.0.1-features.xml
@@ -85,16 +84,6 @@
             <classifier>features</classifier>
             <type>xml</type>
             <version>${karaf.version}</version>
-
-            <scope>runtime</scope>
-        </dependency>
-        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.15.2/apache-camel-2.15.2-features.xml -->
-        <dependency>
-            <groupId>org.apache.camel.karaf</groupId>
-            <artifactId>apache-camel</artifactId>
-            <version>${camel.version}</version>
-            <classifier>features</classifier>
-            <type>xml</type>
             <scope>runtime</scope>
         </dependency>
         <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.1/spring-4.0.1-features.xml
@@ -110,6 +99,7 @@
         </dependency>
         <!-- https://repo1.maven.org/maven2/org/apache/activemq/activemq-karaf/5.13.4/activemq-karaf-5.13.4-features.xml
         -->
+
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-karaf</artifactId>
@@ -119,6 +109,25 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.15.2/apache-camel-2.15.2-features.xml -->
+        <dependency>
+            <groupId>org.apache.camel.karaf</groupId>
+            <artifactId>apache-camel</artifactId>
+            <version>${camel.version}</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+            <scope>runtime</scope>
+        </dependency> 
+        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.15.2/camel-extra-2.15.2-features.xml -->
+        <!--<dependency>
+            <groupId>org.apache-extras.camel-extra.karaf</groupId>
+            <artifactId>camel-extra</artifactId>
+            <version>2.15.0</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+            <scope>runtime</scope>
+        </dependency> -->
+
         <dependency>
             <groupId>org.apache.cxf.karaf</groupId>
             <artifactId>apache-cxf</artifactId>
@@ -126,7 +135,34 @@
             <version>${cxf.version}</version>
             <classifier>features</classifier>
             <scope>runtime</scope>
-		</dependency>
+        </dependency>
+
+        <!-- Apache ServiceMix -->
+        <dependency>
+            <groupId>org.apache.servicemix.features</groupId>
+            <artifactId>servicemix-features</artifactId>
+            <version>7.0.0.M2</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.features</groupId>
+            <artifactId>servicemix-examples</artifactId>
+            <version>7.0.0.M2</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.features</groupId>
+            <artifactId>servicemix-kie</artifactId>
+            <version>7.0.0.M2</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+            <scope>runtime</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>de.fhg.ids</groupId>
@@ -156,7 +192,7 @@
                     
 					<installedFeatures>
                         <feature>wrapper</feature>
-        				<feature>obr</feature>
+        				<!--<feature>obr</feature>
                         <feature>war</feature>
                         <feature>webconsole</feature>
                         <feature>jndi</feature>
@@ -172,35 +208,31 @@
                         <feature>camel-websocket</feature>
                         <feature>camel-weather</feature>
                         <feature>camel-quartz2</feature>
-                        <feature>camel-cxf</feature>
-						<feature>spring</feature>
+                        <feature>cxf</feature>
+                        <feature>spring</feature> -->
                     </installedFeatures>
                     <startupFeatures>
+                        <feature>eventadmin</feature>
                     </startupFeatures>
                     <bootFeatures>
-						<feature>aries-proxy</feature>
-                        <feature>aries-blueprint</feature>
-                        <feature>feature</feature>
-                        <feature>shell</feature>
-                        <feature>shell-compat</feature>
-                        <feature>deployer</feature>
-                        <feature>bundle</feature>
-                        <feature>config</feature>
-                        <feature>diagnostic</feature>
-                        <feature>instance</feature>
-                        <feature>jaas</feature>
-                        <feature>log</feature>
-                        <feature>package</feature>
-                        <feature>service</feature>
-                        <feature>system</feature>
-                        <feature>kar</feature>
-                        <feature>ssh</feature>
-                        <feature>management</feature>
-                        <feature>wrap</feature>
-                        <feature>camel-core</feature>
-						<feature>camel</feature>
-						<feature>ids</feature>
-					</bootFeatures>
+                        <feature>standard</feature>
+                        <!-- ActiveMQ with web console -->
+                        <feature>ids</feature>
+                        <feature>activemq-broker</feature>
+                        <!-- Use this in production -->
+                        <!-- <feature>activemq-broker-noweb</feature> -->
+                        <feature>activemq-camel</feature>
+                        <feature>camel</feature>
+                        <feature>cxf</feature>
+                        <feature>camel-cxf</feature>
+                        <feature>camel-blueprint</feature>
+                        <feature>activemq-service</feature>
+                        <feature>camel-xstream</feature>
+
+                        <!-- <feature>pax-http-jetty</feature> -->
+                        
+                        <feature>war</feature>
+                    </bootFeatures>
                 </configuration>
             </plugin>
             <plugin>

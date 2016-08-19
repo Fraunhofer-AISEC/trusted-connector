@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="ids">
     <feature version="0.0.0">
+        <feature prerequisite="false" dependency="false">camel</feature>
+        <feature prerequisite="false" dependency="false">pax-http-jetty</feature>
         <bundle>mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
         <bundle>mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
         <bundle>mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
-        <bundle>mvn:org.apache.camel/camel-core/2.17.0</bundle>
+        <bundle>mvn:javax.servlet/javax.servlet-api/3.1.0</bundle>
+        <bundle>mvn:org.apache.camel/camel-core/2.16.3</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-api/2.6.2</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-core/2.6.2</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-slf4j-impl/2.6.2</bundle>
-        <bundle>mvn:org.eclipse.jetty.orbit/javax.servlet/3.0.0.v201112011016</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-continuation/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-http/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-io/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-security/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-server/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-servlet/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-util/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.eclipse.jetty/jetty-websocket/8.1.19.v20160209</bundle>
-        <bundle>mvn:org.slf4j/slf4j-api/1.7.13</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-api/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-client/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-common/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-server/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-servlet/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-http/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-io/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-security/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-server/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-servlet/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-util/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.slf4j/slf4j-api/1.6.6</bundle>
     </feature>
 </features>
