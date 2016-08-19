@@ -185,41 +185,22 @@
                 <extensions>true</extensions>
                 <configuration>
                     <ignoreDependencyFlag>true</ignoreDependencyFlag>
-                    <!-- bootFeatures starts up these features when Karaf first boots up.
-                         The feature names are obtained from the features.xml in the
-                         dependencies section
-                     -->
-                    
-					<installedFeatures>
+                    <installedFeatures>
                         <feature>wrapper</feature>
-        				<!--<feature>obr</feature>
-                        <feature>war</feature>
-                        <feature>webconsole</feature>
-                        <feature>jndi</feature>
-                        <feature>jpa</feature>
-                        <feature>openjpa</feature>
-                        <feature>jdbc</feature>
-                        <feature>jms</feature>
-                        <feature>transaction</feature>
-                        <feature>camel-jms</feature>
-                        <feature>camel-mqtt</feature>
-                        <feature>camel-twitter</feature>
-                        <feature>camel-amqp</feature>
-                        <feature>camel-websocket</feature>
-                        <feature>camel-weather</feature>
-                        <feature>camel-quartz2</feature>
-                        <feature>cxf</feature>
-                        <feature>spring</feature> -->
                     </installedFeatures>
                     <startupFeatures>
                         <feature>eventadmin</feature>
                     </startupFeatures>
+                    <!-- bootFeatures starts up these features when Karaf first boots up.
+                         The feature names are obtained from the features.xml in the
+                         dependencies section
+                     -->
                     <bootFeatures>
                         <feature>standard</feature>
                         <!-- ActiveMQ with web console -->
                         <feature>ids</feature>
                         <feature>activemq-broker</feature>
-                        <!-- Use this in production -->
+                        <!-- Use this in production instead (no web console)-->
                         <!-- <feature>activemq-broker-noweb</feature> -->
                         <feature>activemq-camel</feature>
                         <feature>camel</feature>
@@ -227,10 +208,7 @@
                         <feature>camel-cxf</feature>
                         <feature>camel-blueprint</feature>
                         <feature>activemq-service</feature>
-                        <feature>camel-xstream</feature>
-
-                        <!-- <feature>pax-http-jetty</feature> -->
-                        
+                        <feature>camel-xstream</feature>                        
                         <feature>war</feature>
                     </bootFeatures>
                 </configuration>
@@ -262,15 +240,6 @@
                                     <version>${karaf.version}</version>
                                     <outputDirectory>target/assembly/system/org/apache/karaf/jaas/org.apache.karaf.jaas.boot/${karaf.version}</outputDirectory>
                                 </artifactItem>
-
-								<!-- Our custom IDS bundles are also not available as Karaf features, so we add them here -->
-                                <!-- <artifactItem>
-                                    <groupId>de.fhg.ids</groupId>
-                                    <artifactId>camel-ids</artifactId>
-                                    <version>1.0.0</version>
-                                    <outputDirectory>target/assembly/deploy</outputDirectory>
-                                    <destFileName>camel-ids.jar</destFileName>
-                                </artifactItem> -->
                             </artifactItems>
                         </configuration>
                     </execution>

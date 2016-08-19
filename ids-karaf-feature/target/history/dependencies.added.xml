@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0">
-    <feature version="0.0.0">
-        <feature prerequisite="false" dependency="false">camel</feature>
-        <feature prerequisite="false" dependency="false">pax-http-jetty</feature>
-    </feature>
-</features>

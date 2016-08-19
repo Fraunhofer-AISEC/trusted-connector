@@ -9,7 +9,6 @@
  
   <modules>
     <module>camel-ids</module>
-    <module>ids-karaf-feature</module>
     <module>karaf-assembly</module>
   </modules>
 </project>
