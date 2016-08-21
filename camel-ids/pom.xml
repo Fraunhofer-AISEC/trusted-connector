@@ -24,6 +24,7 @@
 
 	<properties>
 		<camel-version>2.16.3</camel-version>
+		<jetty-version>8.1.19.v20160209</jetty-version>
 		<mockito-version>1.10.19</mockito-version>
 	</properties>
 
@@ -33,8 +34,17 @@
 			<artifactId>camel-core</artifactId>
 			<version>${camel-version}</version>
 		</dependency>
-
-		<!-- Jetty 9 Websocket API -->
+		<!--  <dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-websocket</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>${jetty-version}</version>
+		</dependency> -->
+		
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-server</artifactId>
