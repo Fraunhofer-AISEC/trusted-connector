@@ -1,0 +1,30 @@
+src: src/main/java/,generated-sources/main/java
+Export-Package: \
+	de.fhg.aisec.ids.api.broker,\
+	de.fhg.aisec.ids.api.cm,\
+	de.fhg.aisec.ids.api.configuration,\
+	de.fhg.aisec.ids.api.external,\
+	de.fhg.aisec.ids.api.internal,\
+	de.fhg.aisec.ids.api.policy,\
+	de.fhg.aisec.ids.api.router,\
+	de.fhg.aisec.ids.messages, \
+	com.google.protobuf
+Bundle-Version: 0.0.2
+Bundle-Vendor: Fraunhofer
+Bundle-Name: ids-api
+Bundle-Description: Common APIs for IDS connector components. This bundle can be shared, implementations \
+	are found in other bundles
+Bundle-Copyright: Fraunhofer 2016
+# set the base directory
+dir = libs
+# get the contents of the directory (lsa = absolute, lsr=relative)
+files = ${lsa;${dir}}}
+# restrict to only JAR files with the filter operator
+jars = ${filter;${files};.*\.jar$}
+-includeresource: libs/protobuf.jar
+Bundle-ClassPath: .,protobuf.jar
+Import-Package: \
+	!com.google.protobuf,\
+	!de.fhg.aisec.ids.messages,\
+	*
+-noee=true

@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option java_package = "de.fhg.aisec.ids.messages";
+option java_outer_classname = "BrokerProtos";
+
+message BrokerMessage {
+  enum Type {	ANNOUNCE_SERVICE_REQUEST = 0; 
+  				ANNOUNCE_SERVICE_RESPONSE = 1;
+  				LIST_SERVICES_REQUEST = 2;		
+  				LIST_SERVICES_RESPONSE = 3;
+  			}
+
+  // Identifies which field is filled in.
+  Type type = 1;
+
+  oneof message {
+  	// Service announcements
+  	AnnounceServiceRequest announceRequest = 2;
+  	AnnounceServiceResponse announceResponse = 3;
+  
+    // List services
+  	ListServicesRequest listServicesRequest = 4;
+  	ListServicesResponse listServicesResponse = 5;
+  }
+}
+
+message AnnounceServiceRequest {
+	ServiceDescription description = 1;
+}
+
+message AnnounceServiceResponse {
+	bool success = 1;
+	string error_code = 2;
+	string error_message = 3;
+}
+
+message ListServicesRequest {
+	
+}
+
+message ListServicesResponse {
+	repeated ServiceDescription descriptions = 1;
+}
+
+message ServiceDescription {
+	string URI = 1;
+	string description = 2;
+}

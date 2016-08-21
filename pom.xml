@@ -10,6 +10,8 @@
   <modules>
     <module>camel-ids</module>
     <module>karaf-assembly</module>
+    <module>ids-api</module>
+    <module>ids-core-platform-container-manager</module>
   </modules>
 </project>
 </project>
