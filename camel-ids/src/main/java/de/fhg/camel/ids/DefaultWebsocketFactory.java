@@ -16,19 +16,19 @@
  */
 package de.fhg.camel.ids;
 
-import java.util.Collection;
+import javax.servlet.http.HttpServletRequest;
 
-import org.apache.camel.Service;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 
-public interface WebsocketStore extends Service {
+/**
+ * Default websocket factory.
+ * Used when no custom websocket is needed.
+ */
+public class DefaultWebsocketFactory implements WebSocketFactory {
 
-    void add(DefaultWebsocket ws);
-
-    void remove(DefaultWebsocket ws);
-
-    void remove(String key);
-
-    DefaultWebsocket get(String key);
-
-    Collection<DefaultWebsocket> getAll();
+    @Override
+    public DefaultWebsocket newInstance(ServletUpgradeRequest request, String protocol, NodeSynchronization sync, WebsocketConsumer consumer) {
+        return new DefaultWebsocket(sync, consumer);
+    }
 }

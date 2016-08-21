@@ -1,3 +1,9 @@
+src=src/main/java
+bin=target/classes
+testsrc=src/test/java
+testbin=target/test-classes
+target-dir=target
+-includeresource: src/main/resources
 Bundle-Version: 1.0.0
 Bundle-Name: camel-ids
 Bundle-Description: Camel support for the IDS protocol

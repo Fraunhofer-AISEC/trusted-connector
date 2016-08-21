@@ -16,45 +16,27 @@
  */
 package de.fhg.camel.ids;
 
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
+public class DefaultNodeSynchronization implements NodeSynchronization {
 
-public class MemoryWebsocketStore extends ConcurrentHashMap<String, DefaultWebsocket> implements WebsocketStore {
+    private final WebsocketStore memoryStore;
 
-    private static final long serialVersionUID = -2826843758230613922L;
-
-    @Override
-    public void add(DefaultWebsocket ws) {
-        super.put(ws.getConnectionKey(), ws);
+    public DefaultNodeSynchronization(WebsocketStore memoryStore) {
+        this.memoryStore = memoryStore;
     }
 
     @Override
-    public void remove(DefaultWebsocket ws) {
-        super.remove(ws.getConnectionKey());
+    public void addSocket(DefaultWebsocket socket) {
+        memoryStore.add(socket);
     }
 
     @Override
-    public void remove(String key) {
-        super.remove(key);
+    public void removeSocket(String id) {
+        memoryStore.remove(id);
     }
 
     @Override
-    public DefaultWebsocket get(String key) {
-        return super.get(key);
+    public void removeSocket(DefaultWebsocket socket) {
+        memoryStore.remove(socket);
     }
 
-    @Override
-    public Collection<DefaultWebsocket> getAll() {
-        return super.values();
-    }
-
-    @Override
-    public void start() throws Exception {
-        // noop
-    }
-
-    @Override
-    public void stop() throws Exception {
-        clear();
-    }
 }

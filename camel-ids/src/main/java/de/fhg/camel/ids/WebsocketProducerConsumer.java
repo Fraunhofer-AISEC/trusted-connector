@@ -16,19 +16,10 @@
  */
 package de.fhg.camel.ids;
 
-import java.util.Collection;
+public interface WebsocketProducerConsumer {
 
-import org.apache.camel.Service;
-
-public interface WebsocketStore extends Service {
-
-    void add(DefaultWebsocket ws);
-
-    void remove(DefaultWebsocket ws);
-
-    void remove(String key);
-
-    DefaultWebsocket get(String key);
-
-    Collection<DefaultWebsocket> getAll();
+    /**
+     * Gets the endpoint
+     */
+    WebsocketEndpoint getEndpoint();
 }

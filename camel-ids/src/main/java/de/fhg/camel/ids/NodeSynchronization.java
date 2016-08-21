@@ -16,19 +16,28 @@
  */
 package de.fhg.camel.ids;
 
-import java.util.Collection;
 
-import org.apache.camel.Service;
+public interface NodeSynchronization {
 
-public interface WebsocketStore extends Service {
+    /**
+     * Adds the web socket to both (always if present) stores.
+     *
+     * @param socket the web socket
+     */
+    void addSocket(DefaultWebsocket socket);
 
-    void add(DefaultWebsocket ws);
+    /**
+     * Removes the Websocket from both stores
+     *
+     * @param id id of the web socket
+     */
+    void removeSocket(String id);
 
-    void remove(DefaultWebsocket ws);
+    /**
+     * Removes the Websocket from both stores
+     *
+     * @param socket web socket to remove
+     */
+    void removeSocket(DefaultWebsocket socket);
 
-    void remove(String key);
-
-    DefaultWebsocket get(String key);
-
-    Collection<DefaultWebsocket> getAll();
 }

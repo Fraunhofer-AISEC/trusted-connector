@@ -1,54 +1,92 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package de.fhg.camel.ids;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.UUID;
 
+import org.eclipse.jetty.websocket.api.BatchMode;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@WebSocket
+public class DefaultWebsocket implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);
 
-public class DefaultWebsocket extends WebSocketAdapter implements Serializable {
-
-    private static final long serialVersionUID = -575701599776801400L;
-    private Session connection;
+    private final WebsocketConsumer consumer;
+    private final NodeSynchronization sync;
+    private Session session;
     private String connectionKey;
 
-    private transient WebsocketStore store;
-    private transient WebsocketConsumer consumer;
-
-    public DefaultWebsocket(WebsocketStore store, WebsocketConsumer consumer) {
-        this.store = store;
+    public DefaultWebsocket(NodeSynchronization sync, WebsocketConsumer consumer) {
+        this.sync = sync;
         this.consumer = consumer;
     }
 
-    @Override
-    public void onWebSocketClose(int closeCode, String message) {
-        store.remove(this);
+    @OnWebSocketClose
+    public void onClose(int closeCode, String message) {
+        LOG.trace("onClose {} {}", closeCode, message);
+        sync.removeSocket(this);
     }
 
-    @Override
-    public void onWebSocketConnect(Session connection) {
-        this.connection = connection;
+    @OnWebSocketConnect
+    public void onConnect(Session session) {
+        LOG.trace("onConnect {}", session);
+        this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
-        store.add(this.connectionKey, this);
+        sync.addSocket(this);
     }
 
-    @Override
-    public void onWebSocketText(String message) {
+    @OnWebSocketMessage
+    public void onMessage(String message) {
+        LOG.debug("onMessage: {}", message);
         if (this.consumer != null) {
-            this.consumer.sendExchange(this.connectionKey, message);
+            this.consumer.sendMessage(this.connectionKey, message);
+        } else {
+            LOG.debug("No consumer to handle message received: {}", message);
         }
-        // consumer is not set, this is produce only websocket
-        // TODO - 06.06.2011, LK - deliver exchange to dead letter channel
     }
 
-    // getters and setters
-    public Session getConnection() {
-        return connection;
+
+    @OnWebSocketMessage
+    public void onMessage(byte[] data, int offset, int length) {
+        LOG.debug("onMessage: byte[]");
+        if (this.consumer != null) {
+            byte[] message = new byte[length];
+            System.arraycopy(data, offset, message, 0, length);
+            this.consumer.sendMessage(this.connectionKey, message);
+        } else {
+            LOG.debug("No consumer to handle message received: byte[]");
+        }
     }
 
-    public void setConnection(Session connection) {
-        this.connection = connection;
+    public Session getSession() {
+        return session;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
     }
 
     public String getConnectionKey() {
@@ -57,13 +95,5 @@ public class DefaultWebsocket extends WebSocketAdapter implements Serializable {
 
     public void setConnectionKey(String connectionKey) {
         this.connectionKey = connectionKey;
-    }
-
-    public void setStore(WebsocketStore store) {
-        this.store = store;
-    }
-
-    public void setConsumer(WebsocketConsumer consumer) {
-        this.consumer = consumer;
     }
 }
