@@ -2,16 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>de.fh.ids</groupId>
+  <groupId>de.fhg.ids</groupId>
   <artifactId>core-platform</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
  
   <modules>
     <module>camel-ids</module>
-    <module>karaf-assembly</module>
     <module>ids-api</module>
     <module>ids-core-platform-container-manager</module>
+    <module>karaf-feature-ids</module>
+    <module>karaf-assembly</module>
   </modules>
 </project>
 </project>

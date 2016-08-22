@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- 
+	There is a maven plugin for automatically generating Karaf features. This works however not properly 
+	and generates an overly complex feature.xml which makes Karaf hang forever.
+
+	We thus define a simple feature.xml for the IDS Core Platform here. 
+-->
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="ids">
+    <feature name="ids" description="IDS Karaf Feature" version="1.0.0">
+        <details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
+        
+        <!-- Our bundles which make up the IDS feature -->
+        <bundle start-level="80">mvn:de.fhg.ids/api/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/container-manager/1.0.0</bundle>
+        
+        <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
+        <feature version="2.16.3" prerequisite="false" dependency="false">camel</feature>
+        <feature version="4.2.6" prerequisite="false" dependency="false">pax-http-jetty</feature>
+        <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
+    </feature>
+</features>
+
