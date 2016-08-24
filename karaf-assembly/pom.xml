@@ -207,6 +207,7 @@
                         <feature>cxf</feature>
                         <feature>camel-cxf</feature>
                         <feature>camel-blueprint</feature>
+			<feature>camel-spring</feature>
                         <feature>activemq-service</feature>
                         <feature>camel-xstream</feature>                        
                         <feature>war</feature>
