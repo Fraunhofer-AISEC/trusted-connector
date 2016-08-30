@@ -4,33 +4,33 @@ RANDFILE        = $ENV::HOME/.rnd
 ####################################################################
 [ req ]
 default_bits        = 2048
-default_keyfile     = user.key
-distinguished_name  = user_distinguished_name
-req_extensions      = user_req_extensions
+default_keyfile     = connector.key
+distinguished_name  = connector_distinguished_name
+req_extensions      = connector_req_extensions
 string_mask         = utf8only
 
 ####################################################################
-[ user_distinguished_name ]
+[ connector_distinguished_name ]
 countryName         = Country Name (2 letter code)
 countryName_default     = DE
 
 stateOrProvinceName     = State or Province Name (full name)
-stateOrProvinceName_default = Berlin
+stateOrProvinceName_default = Bayern
 
 localityName            = Locality Name (eg, city)
-localityName_default        = Berlin
+localityName_default        = Munich
 
 organizationName         = Organization Name (eg, company)
-organizationName_default    = Bundesdruckerei GmbH
+organizationName_default    = Fraunhofer
 
 commonName          = Common Name (e.g. server FQDN or YOUR name)
-commonName_default      = trustme User Certificate
+commonName_default      = IDS Connector Certificate
 
 emailAddress = Email Address
-emailAddress_default        = trustme@aisec.fraunhofer.de
+emailAddress_default        = ids@aisec.fraunhofer.de
 
 ####################################################################
-[ user_req_extensions ]
+[ connector_req_extensions ]
 
 subjectKeyIdentifier        = hash
 basicConstraints        = CA:FALSE
