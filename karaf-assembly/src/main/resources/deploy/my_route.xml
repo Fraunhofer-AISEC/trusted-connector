@@ -15,7 +15,7 @@
      that gets used in all camel contests we define with spring -->
 
 <!-- Class name refers to our Interceptor -->
-<!--  <bean id="myInterceptor" class="org.apache.camel.spring.interceptor.ContainerWideInterceptor"/> -->
+  <bean id="myInterceptor" class="de.fhg.camel.ids.interceptor.DataFlowControlInterceptor"/>
        
   <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
       <property name="brokerURL" value="tcp://localhost:61616"/>
