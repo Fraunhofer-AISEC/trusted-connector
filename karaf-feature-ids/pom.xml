@@ -83,11 +83,8 @@
                 						</goals>
                 					</pluginExecutionFilter>
                 					<action>
-						               <execute>
-										<!-- Alternatively: <ignore /> -->
-						                 <runOnIncremental>false</runOnIncremental>
-						               </execute >
-						             </action>
+                						<ignore></ignore>
+                					</action>
                 				</pluginExecution>
                 			</pluginExecutions>
                 		</lifecycleMappingMetadata>
