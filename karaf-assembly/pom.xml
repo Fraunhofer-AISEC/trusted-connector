@@ -209,7 +209,9 @@
                         <feature>camel-blueprint</feature>
                         <feature>activemq-service</feature>
                         <feature>camel-xstream</feature>                        
-                        <feature>war</feature>
+                        <feature>spring</feature>
+			<feature>spring-tx</feature>
+			<feature>war</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>

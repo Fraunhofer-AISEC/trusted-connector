@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="ids">
     <feature version="0.0.0">
+        <feature prerequisite="false" dependency="false">wrap</feature>
         <bundle>mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
         <bundle>mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
         <bundle>mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
@@ -9,6 +10,7 @@
         <bundle>mvn:de.fhg.ids/container-manager/1.0.0</bundle>
         <bundle>mvn:javax.servlet/javax.servlet-api/3.1.0</bundle>
         <bundle>mvn:org.apache.camel/camel-core/2.16.3</bundle>
+        <bundle>mvn:org.apache.camel/camel-spring/2.17.3</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-api/2.6.2</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-core/2.6.2</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-slf4j-impl/2.6.2</bundle>
@@ -27,6 +29,18 @@
         <bundle>mvn:org.eclipse.jetty/jetty-servlets/9.2.15.v20160210</bundle>
         <bundle>mvn:org.eclipse.jetty/jetty-util/9.2.15.v20160210</bundle>
         <bundle>mvn:org.osgi/org.osgi.compendium/5.0.0</bundle>
-        <bundle>mvn:org.slf4j/slf4j-api/1.7.21</bundle>
+        <bundle>mvn:org.slf4j/slf4j-api/1.6.6</bundle>
+        <bundle>mvn:org.springframework.security/spring-security-config/3.0.1.RELEASE</bundle>
+        <bundle>mvn:org.springframework.security/spring-security-core/3.0.1.RELEASE</bundle>
+        <bundle>wrap:mvn:aopalliance/aopalliance/1.0</bundle>
+        <bundle>wrap:mvn:commons-logging/commons-logging/1.1.1</bundle>
+        <bundle>wrap:mvn:org.aspectj/aspectjrt/1.6.5</bundle>
+        <bundle>wrap:mvn:org.aspectj/aspectjweaver/1.6.5</bundle>
+        <bundle>wrap:mvn:org.springframework/spring-aop/4.2.5.RELEASE</bundle>
+        <bundle>wrap:mvn:org.springframework/spring-beans/4.2.5.RELEASE</bundle>
+        <bundle>wrap:mvn:org.springframework/spring-context/4.2.5.RELEASE</bundle>
+        <bundle>wrap:mvn:org.springframework/spring-core/4.2.5.RELEASE</bundle>
+        <bundle>wrap:mvn:org.springframework/spring-expression/4.2.5.RELEASE</bundle>
+        <bundle>wrap:mvn:org.springframework/spring-tx/4.2.5.RELEASE</bundle>
     </feature>
 </features>
