@@ -1,19 +1,12 @@
 #!/bin/bash
 #
-# Copyright (C) 2013-2015 with regard to distribution / exploitation:
-# Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
-# and Bundesdruckerei GmbH, Germany
-#
-# Authors: Wolfgang Grandegger, Constanze Hausner, Manuel Huber,
-#          Oliver Melnyk, Michael Velten, Michael Weiß, Sascha Wessel
-#
 
 cleanup(){
 echo "Cleanup unnecessary files"
 [[ -f ${SUBCA_CSR} ]] && rm ${SUBCA_CSR}
 [[ -f ${CONNECTOR_CSR} ]] && rm ${CONNECTOR_CSR}
-[[ -f ${CONNECTOR_KEY} ]] && rm ${CONNECTOR_KEY}
-[[ -f ${CONNECTOR_CERT} ]] && rm ${CONNECTOR_CERT}
+#[[ -f ${CONNECTOR_KEY} ]] && rm ${CONNECTOR_KEY}
+#[[ -f ${CONNECTOR_CERT} ]] && rm ${CONNECTOR_CERT}
 [[ -f ${INDEX_FILE} ]] && rm ${INDEX_FILE}
 [[ -f ${SERIAL_FILE} ]] && rm ${SERIAL_FILE}
 [[ -f ${INDEX_FILE}.attr ]] && rm ${INDEX_FILE}.attr
@@ -150,9 +143,9 @@ error_check $? "Failed to verify newly signed connector certificate"
 echo "Concatenate CA chain to connector cert"
 cat ${SUBCA_CERT} >> ${CONNECTOR_CERT}
 
-echo "Create connector token with certifcate and key"
-openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
-error_check $? "Failed to create connector p12 token"
+#echo "Create connector token with certifcate and key"
+#openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
+#error_check $? "Failed to create connector p12 token"
 
 echo "Cleanup temp files"
 cleanup
