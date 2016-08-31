@@ -4,7 +4,7 @@ RANDFILE        = $ENV::HOME/.rnd
 ####################################################################
 [ req ]
 default_bits        = 2048
-default_keyfile     = connector.key
+default_keyfile     = device.key
 distinguished_name  = connector_distinguished_name
 req_extensions      = connector_req_extensions
 string_mask         = utf8only
@@ -18,20 +18,30 @@ stateOrProvinceName     = State or Province Name (full name)
 stateOrProvinceName_default = Bayern
 
 localityName            = Locality Name (eg, city)
-localityName_default        = Munich
+localityName_default        = Muenchen
 
 organizationName         = Organization Name (eg, company)
 organizationName_default    = Fraunhofer
 
-commonName          = Common Name (e.g. server FQDN or YOUR name)
-commonName_default      = IDS Connector Certificate
+organizationalUnitName	= Organizational Unit Name (department, division)
+organizationalUnitName_default 	= AISEC
 
-emailAddress = Email Address
+commonName          = Common Name (e.g. server FQDN or YOUR name)
+commonName_default      = idsconnector.aisec.fraunhofer.de
+
+emailAddress            = Email Address
 emailAddress_default        = ids@aisec.fraunhofer.de
+
 
 ####################################################################
 [ connector_req_extensions ]
 
 subjectKeyIdentifier        = hash
 basicConstraints        = CA:FALSE
-keyUsage            = nonRepudiation, digitalSignature, keyEncipherment
+keyUsage            = digitalSignature, keyEncipherment, nonRepudiation
+extendedKeyUsage	= clientAuth
+#securityProfile = ASN1:UTF8:IDS Security Profile Specification
+subjectAltName 		= URI:UUID:%%DEVICE_UUID%%
+
+
+

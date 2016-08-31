@@ -107,7 +107,12 @@ openssl verify -CAfile ${ROOTCA_CERT} ${SUBCA_CERT}
 error_check $? "Failed to verify newly signed sub CA certificate"
 
 echo "Concatenate root CA to sub CA"
-cat ${ROOTCA_CERT} >> ${SUBCA_CERT} >> ${CACHAIN_CERT}
+echo "************************** ROOT CA CERTIFICATE *****************************************"
+cat ${ROOTCA_CERT}
+echo "************************** SUB CA CERTIFICATE *****************************************"
+cat ${SUBCA_CERT}
+
+cat ${ROOTCA_CERT} ${SUBCA_CERT} >> ${CACHAIN_CERT}
 
 echo "Cleanup temp files"
 cleanup
