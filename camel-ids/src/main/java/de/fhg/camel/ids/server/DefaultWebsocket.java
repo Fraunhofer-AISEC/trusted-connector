@@ -17,10 +17,8 @@
 package de.fhg.camel.ids.server;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.util.UUID;
 
-import org.eclipse.jetty.websocket.api.BatchMode;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -28,6 +26,10 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
+import de.fhg.ids.comm.ws.protocol.fsm.Event;
+import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 @WebSocket
 public class DefaultWebsocket implements Serializable {
@@ -38,6 +40,7 @@ public class DefaultWebsocket implements Serializable {
     private final NodeSynchronization sync;
     private Session session;
     private String connectionKey;
+	private FSM idsFsm;
 
     public DefaultWebsocket(NodeSynchronization sync, WebsocketConsumer consumer) {
         this.sync = sync;
@@ -55,16 +58,28 @@ public class DefaultWebsocket implements Serializable {
         LOG.trace("onConnect {}", session);
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
+
+        // Integrate server-side of IDS protocol
+        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session);
+        
         sync.addSocket(this);
     }
 
     @OnWebSocketMessage
     public void onMessage(String message) {
         LOG.debug("onMessage: {}", message);
-        if (this.consumer != null) {
-            this.consumer.sendMessage(this.connectionKey, message);
+        
+        if (idsFsm.getState().equals("SUCCESS")) {//TODO Check if fsm is in its final state and successful
+        	System.out.println("Successfully finished IDSP");
+	        // TODO this should only be done when the IDS protocol has been finished successfully
+	        if (this.consumer != null) {
+	            this.consumer.sendMessage(this.connectionKey, message);
+	        } else {
+	            LOG.debug("No consumer to handle message received: {}", message);
+	        }
         } else {
-            LOG.debug("No consumer to handle message received: {}", message);
+        	System.out.println("Feeding message into provider fsm: " + message);
+        	idsFsm.feedEvent(new Event(message, ""));	//TODO we need to de-protobuf here and split messages into cmd and payload
         }
     }
 

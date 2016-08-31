@@ -1,5 +1,10 @@
 package de.fhg.ids.comm.ws.protocol;
 
+
+import java.io.IOException;
+
+import org.eclipse.jetty.websocket.api.Session;
+
 import com.ning.http.client.ws.WebSocket;
 
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -14,19 +19,11 @@ import de.fhg.ids.comm.ws.protocol.fsm.Transition;
 public class ProtocolMachine {
 	/** The session to send and receive messages */
 	private WebSocket ws;
+	private Session sess;
 
-	/** Do not call this one */
-	@SuppressWarnings("unused")
-	private ProtocolMachine() { }
+	/** C'tor */
+	public ProtocolMachine() { }
 	
-	/** Call this one */
-	public ProtocolMachine(WebSocket websocket) {
-		if (websocket == null) {
-			throw new NullPointerException("Null session not allowed");
-		}
-		this.ws = websocket;
-	}
-
 	/**
 	 * Returns a finite state machine (FSM) implementing the IDSP protocol.
 	 * 
@@ -35,30 +32,44 @@ public class ProtocolMachine {
 	 * 
 	 * @return a FSM implementing the IDSP protocol.
 	 */
-	public FSM initIDSProtocol() {
+	public FSM initIDSConsumerProtocol(WebSocket websocket) {
+		this.ws = websocket;
 		FSM fsm = new FSM();
-		fsm.addState("SELECT_CONV");
-		fsm.addState("RAT:AWAIT_NONCE");
-		fsm.addState("RAT:AWAIT_ATT_REQUEST");
-		fsm.addState("MEX");		
+		fsm.addState("START");
+		fsm.addState("AWAIT_CONFIRM");
+		fsm.addState("SUCCESS");
 		
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("enter rat", "SELECT_CONV", "RAT:AWAIT_NONCE", (e) -> {return reply("entering rat");} ));
-		fsm.addTransition(new Transition("nonce", "RAT:AWAIT_NONCE", "RAT:AWAIT_ATT_REQUEST", (e) -> {return reply("server hello");} ));
-		fsm.addTransition(new Transition("request attestation", "RAT:AWAIT_ATT_REQUEST", "SELECT_CONV", (e) -> {return reply("attestation");} ));
+		fsm.addTransition(new Transition("start rat", "START", "AWAIT_CONFIRM", (e) -> {return reply("enter rat protocol");} ));
+		fsm.addTransition(new Transition("entering rat", "AWAIT_CONFIRM", "SUCCESS", (e) -> {return true;} ));
 		
-		/* Meta Data Exchange Protocol */
-		fsm.addTransition(new Transition("enter mex", "SELECT_CONV", "MEX", (e) -> {return reply("entering mex");} ));
-
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
-		fsm.setInitialState("SELECT_CONV");
+		fsm.setInitialState("START");
 		
 		return fsm;
 	}
 	
+	public FSM initIDSProviderProtocol(Session sess) {
+		this.sess = sess;
+		FSM fsm = new FSM();
+		fsm.addState("AWAIT_SELECT_CONV");
+		fsm.addState("SUCCESS");
+		
+		/* Remote Attestation Protocol */
+		fsm.addTransition(new Transition("enter rat protocol", "AWAIT_SELECT_CONV", "SUCCESS", (e) -> {return reply("entering rat");} ));
+		
+		/* Add listener to log state transitions*/
+		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
+		
+		/* Run the FSM */
+		fsm.setInitialState("AWAIT_SELECT_CONV");
+		
+		return fsm;
+	}
+
 	/** 
 	 * Sends a response over the websocket session.
 	 * 
@@ -66,7 +77,15 @@ public class ProtocolMachine {
 	 * @return true if successful, false if not.
 	 */
 	private boolean reply(String text) {
-		ws.sendMessage(text);
+		if (ws!=null) {
+			ws.sendMessage(text);
+		} else if (sess!=null) {
+			try {
+				sess.getRemote().sendString(text);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		return true;
 	}
 }

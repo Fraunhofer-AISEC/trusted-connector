@@ -27,10 +27,10 @@ public class IDSPListener extends DefaultWebSocketListener {
         LOG.debug("Websocket opened");
         
         // create Finite State Machine for IDS protocol
-        fsm = new ProtocolMachine(websocket).initIDSProtocol();
+        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket);
         
         // start the protocol with the first message
-        //fsm.feedEvent(new Event("enter rat", null));
+        fsm.feedEvent(new Event("start rat", null));
     }
 
     @Override
