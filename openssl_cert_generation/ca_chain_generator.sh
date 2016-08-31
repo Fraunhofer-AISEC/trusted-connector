@@ -4,9 +4,6 @@
 cleanup(){
 echo "Cleanup unnecessary files"
 [[ -f ${SUBCA_CSR} ]] && rm ${SUBCA_CSR}
-[[ -f ${CONNECTOR_CSR} ]] && rm ${CONNECTOR_CSR}
-#[[ -f ${CONNECTOR_KEY} ]] && rm ${CONNECTOR_KEY}
-#[[ -f ${CONNECTOR_CERT} ]] && rm ${CONNECTOR_CERT}
 [[ -f ${INDEX_FILE} ]] && rm ${INDEX_FILE}
 [[ -f ${SERIAL_FILE} ]] && rm ${SERIAL_FILE}
 [[ -f ${INDEX_FILE}.attr ]] && rm ${INDEX_FILE}.attr
@@ -58,13 +55,8 @@ SUBCA_CERT="subca.cert"
 #sub CA key file
 SUBCA_KEY="subca.key"
 
-#Connector certificate files
-CONNECTOR_P12="connector.p12"
-CONNECTOR_CSR="connector.csr"
-CONNECTOR_CERT="connector.cert"
-CONNECTOR_CONFIG="test_configs/openssl-connector.cnf"
-CONNECTOR_KEY="connector.key"
-
+#ca chain file
+CACHAIN_CERT="cachain.cert"
 
 if [ $# -eq 0 ] ; then
   echo "No arguments supplied, which is good"
@@ -83,15 +75,11 @@ assert_file_not_exists ${ROOTCA_KEY}
 assert_file_not_exists ${SUBCA_CERT}
 assert_file_not_exists ${SUBCA_CSR}
 assert_file_not_exists ${SUBCA_KEY}
-assert_file_not_exists ${CONNECTOR_P12}
-assert_file_not_exists ${CONNECTOR_CSR}
-assert_file_not_exists ${CONNECTOR_CERT}
-assert_file_not_exists ${CONNECTOR_KEY}
+assert_file_not_exists ${CACHAIN_CERT}
 
 echo "Trying to find required files"
 assert_file_exists ${ROOTCA_CONFIG}
 assert_file_exists ${SUBCA_CONFIG}
-assert_file_exists ${CONNECTOR_CONFIG}
 echo "Successfully found requrired files"
 
 
@@ -119,38 +107,9 @@ openssl verify -CAfile ${ROOTCA_CERT} ${SUBCA_CERT}
 error_check $? "Failed to verify newly signed sub CA certificate"
 
 echo "Concatenate root CA to sub CA"
-cat ${ROOTCA_CERT} >> ${SUBCA_CERT}
+cat ${ROOTCA_CERT} >> ${SUBCA_CERT} >> ${CACHAIN_CERT}
 
 echo "Cleanup temp files"
-cleanup
-
-########## CONNECTOR CERT ########## 
-echo "Create dummy connector CSR"
-openssl req -batch -config ${CONNECTOR_CONFIG} -newkey rsa:2048 -sha256 -out ${CONNECTOR_CSR} -outform PEM
-error_check $? "Failed to create dummy connector CSR"
-
-echo "Sign dummy connector CSR with sub CA certificate"
-touch ${INDEX_FILE}
-touch ${SERIAL_FILE}
-echo '01' > ${SERIAL_FILE}
-openssl ca -batch -config ${SUBCA_CONFIG} -policy signing_policy -extensions signing_req -out ${CONNECTOR_CERT} -infiles ${CONNECTOR_CSR}
-error_check $? "Failed to sign connector CSR with CA certificate"
-
-echo "Verify newly created dummy connector certificate"
-openssl verify -CAfile ${ROOTCA_CERT} -untrusted ${SUBCA_CERT} ${CONNECTOR_CERT}
-error_check $? "Failed to verify newly signed connector certificate"
-
-echo "Concatenate CA chain to connector cert"
-cat ${SUBCA_CERT} >> ${CONNECTOR_CERT}
-
-#echo "Create connector token with certifcate and key"
-#openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
-#error_check $? "Failed to create connector p12 token"
-
-echo "Cleanup temp files"
-cleanup
-
-
 cleanup
 
 exit 0
