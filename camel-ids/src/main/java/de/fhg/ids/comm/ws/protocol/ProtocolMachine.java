@@ -1,8 +1,6 @@
 package de.fhg.ids.comm.ws.protocol;
 
-import java.io.IOException;
-
-import org.eclipse.jetty.websocket.api.Session;
+import com.ning.http.client.ws.WebSocket;
 
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
@@ -15,18 +13,18 @@ import de.fhg.ids.comm.ws.protocol.fsm.Transition;
  */
 public class ProtocolMachine {
 	/** The session to send and receive messages */
-	private Session s;
+	private WebSocket ws;
 
 	/** Do not call this one */
 	@SuppressWarnings("unused")
 	private ProtocolMachine() { }
 	
 	/** Call this one */
-	public ProtocolMachine(Session session) {
-		if (session == null) {
+	public ProtocolMachine(WebSocket websocket) {
+		if (websocket == null) {
 			throw new NullPointerException("Null session not allowed");
 		}
-		this.s = session;
+		this.ws = websocket;
 	}
 
 	/**
@@ -68,12 +66,7 @@ public class ProtocolMachine {
 	 * @return true if successful, false if not.
 	 */
 	private boolean reply(String text) {
-		try {
-			s.getRemote().sendString(text);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
+		ws.sendMessage(text);
 		return true;
 	}
 }

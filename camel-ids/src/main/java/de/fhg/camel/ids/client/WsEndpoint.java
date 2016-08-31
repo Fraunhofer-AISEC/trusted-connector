@@ -29,12 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.AsyncHttpClientConfig.Builder;
 import com.ning.http.client.ws.DefaultWebSocketListener;
 import com.ning.http.client.ws.WebSocket;
 import com.ning.http.client.ws.WebSocketUpgradeHandler;
-
 
 
 /**
@@ -110,10 +109,8 @@ public class WsEndpoint extends AhcEndpoint {
     @Override
     protected AsyncHttpClient createClient(AsyncHttpClientConfig config) {
     	AsyncHttpClient client;
-        if (config == null) {
-        	// TODO This is where the client connection is configured
-            Builder builder = new AsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"idsp"});            		
-        	config = builder.build();
+        if (config == null) {            		
+        	config = new AsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"idsp"}).build();
             client = new AsyncHttpClient(config);
         } else {
             client = new AsyncHttpClient();
@@ -125,9 +122,15 @@ public class WsEndpoint extends AhcEndpoint {
         String uri = getHttpUri().toASCIIString();
 
         LOG.debug("Connecting to {}", uri);
-        websocket = getClient().prepareGet(uri).execute(
-            new WebSocketUpgradeHandler.Builder()
-                .addWebSocketListener(listener).build()).get();
+        BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "idsp");
+        
+        // Execute IDS protocol immediately after connect
+        DefaultWebSocketListener idspListener = new IDSPListener();
+        websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
+        
+        // When IDS protocol has finished, hand over to normal web socket listener
+        websocket.removeWebSocketListener(idspListener);
+        websocket.addWebSocketListener(listener);
     }
 
     @Override
