@@ -1,9 +1,15 @@
-package de.fhg.aisec.ids.api.policy;
+package de.fhg.aisec.dfpolicy;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.InterceptStrategy;
+
+/**
+ * TODO Implement me!
+ * 
+ * @author Mathias Morbitzer (mathias.morbitzer@aisec.fraunhofer.de)
+ */
 
 public class PEP implements InterceptStrategy {
  

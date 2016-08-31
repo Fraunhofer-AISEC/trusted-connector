@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.api.policy;
+package de.fhg.aisec.dfpolicy;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -22,7 +22,7 @@ public class MyProcessor implements AsyncProcessor {
     
     public MyProcessor(Processor target) {
     	this.target = target;
-    	loadRules("/home/moe/car-bits/rules");
+    	loadRules("rules");
     	
     	
     }
