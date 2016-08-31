@@ -36,12 +36,18 @@ public class ProtocolMachine {
 		this.ws = websocket;
 		FSM fsm = new FSM();
 		fsm.addState("START");
-		fsm.addState("AWAIT_CONFIRM");
+		fsm.addState("RAT:AWAIT_CONFIRM");
+		fsm.addState("RAT:AWAIT_P_NONCE");
+		fsm.addState("RAT:AWAIT_C_NONCE");
+		fsm.addState("RAT:AWAIT_LEAVE");
 		fsm.addState("SUCCESS");
 		
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("start rat", "START", "AWAIT_CONFIRM", (e) -> {return reply("enter rat protocol");} ));
-		fsm.addTransition(new Transition("entering rat", "AWAIT_CONFIRM", "SUCCESS", (e) -> {return true;} ));
+		fsm.addTransition(new Transition("start rat", "START", "RAT:AWAIT_CONFIRM", (e) -> {return reply("enter rat");} ));
+		fsm.addTransition(new Transition("entering rat", "RAT:AWAIT_CONFIRM", "RAT:AWAIT_P_NONCE", (e) -> {return reply("c_my_nonce");} ));
+		fsm.addTransition(new Transition("p_my_nonce", "RAT:AWAIT_P_NONCE", "RAT:AWAIT_C_NONCE", (e) -> {return reply("c_pcr");} ));
+		fsm.addTransition(new Transition("p_your_nonce", "RAT:AWAIT_C_NONCE", "RAT:AWAIT_LEAVE", (e) -> {return reply("c_your_nonce");} ));
+		fsm.addTransition(new Transition("leaving rat", "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
@@ -56,10 +62,16 @@ public class ProtocolMachine {
 		this.sess = sess;
 		FSM fsm = new FSM();
 		fsm.addState("AWAIT_SELECT_CONV");
+		fsm.addState("RAT:AWAIT_C_NONCE");
+		fsm.addState("RAT:AWAIT_PCR");
+		fsm.addState("RAT:AWAIT_P_NONCE");
 		fsm.addState("SUCCESS");
 		
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("enter rat protocol", "AWAIT_SELECT_CONV", "SUCCESS", (e) -> {return reply("entering rat");} ));
+		fsm.addTransition(new Transition("enter rat", "AWAIT_SELECT_CONV", "RAT:AWAIT_C_NONCE", (e) -> {return reply("entering rat");} ));
+		fsm.addTransition(new Transition("c_my_nonce", "RAT:AWAIT_C_NONCE", "RAT:AWAIT_PCR", (e) -> {return reply("p_my_nonce");} ));
+		fsm.addTransition(new Transition("c_pcr", "RAT:AWAIT_PCR", "RAT:AWAIT_P_NONCE", (e) -> {return reply("p_your_nonce");} ));
+		fsm.addTransition(new Transition("c_your_nonce", "RAT:AWAIT_P_NONCE", "SUCCESS", (e) -> {return reply("leaving rat");} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});

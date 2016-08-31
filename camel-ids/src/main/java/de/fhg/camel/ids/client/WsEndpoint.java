@@ -125,8 +125,14 @@ public class WsEndpoint extends AhcEndpoint {
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "idsp");
         
         // Execute IDS protocol immediately after connect
-        DefaultWebSocketListener idspListener = new IDSPListener();
+        IDSPListener idspListener = new IDSPListener();
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
+        idspListener.semaphore().lockInterruptibly();
+        try {
+	        idspListener.isFinished().await();
+        } finally {
+        	idspListener.semaphore().unlock();
+        }
         
         // When IDS protocol has finished, hand over to normal web socket listener
         websocket.removeWebSocketListener(idspListener);

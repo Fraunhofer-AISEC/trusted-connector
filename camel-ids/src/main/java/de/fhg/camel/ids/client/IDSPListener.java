@@ -1,5 +1,8 @@
 package de.fhg.camel.ids.client;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +24,8 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 public class IDSPListener extends DefaultWebSocketListener {
     private Logger LOG = LoggerFactory.getLogger(IDSPListener.class);
     private FSM fsm;
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition isFinishedCond = lock.newCondition();
 
 	@Override
     public void onOpen(WebSocket websocket) {
@@ -47,11 +52,39 @@ public class IDSPListener extends DefaultWebSocketListener {
 
     @Override
     public void onMessage(byte[] message) {
-    	fsm.feedEvent(new Event("TODO:EXTRACT KEY", new String(message)));
+    	try {
+    		lock.lockInterruptibly();
+	    	fsm.feedEvent(new Event(new String(message),""));	// TODO de-protobuf here
+	    	if (fsm.getState().equals("SUCCESS")) {
+	    		isFinishedCond.signalAll();
+	    	}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
     }
 
     @Override
     public void onMessage(String message) {
-    	fsm.feedEvent(new Event("TODO:EXTRACT KEY", message));
-    }	
+    	try {
+    		lock.lockInterruptibly();
+	    	fsm.feedEvent(new Event(new String(message), ""));	//TODO de-protobuf here
+	    	if (fsm.getState().equals("SUCCESS")) {
+	    		isFinishedCond.signalAll();
+	    	}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+    }
+    
+    public ReentrantLock semaphore() {
+    	return lock;
+    }
+
+    public Condition isFinished() {
+    	return isFinishedCond;
+    }
 }
