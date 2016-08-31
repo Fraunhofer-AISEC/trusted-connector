@@ -10,4 +10,6 @@ Bundle-Description: Camel support for the IDS protocol
 Bundle-Copyright: Fraunhofer 2016
 Bundle-Vendor: Fraunhofer Gesellschaft
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
-Export-Package: de.fhg.camel.ids
+Export-Package: \
+	de.fhg.camel.ids,\
+	de.fhg.camel.ids.interceptor
