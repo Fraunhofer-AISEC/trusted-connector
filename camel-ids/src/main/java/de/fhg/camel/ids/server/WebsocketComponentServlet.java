@@ -66,7 +66,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
 
         if (protocol == null || !socketFactory.containsKey(protocol)) {
             log.debug("No factory found for the socket protocol: {}, returning default implementation", protocol);
-            protocolKey = "default";
+            protocolKey = "ids";
         }
 
         WebSocketFactory factory = socketFactory.get(protocolKey);
@@ -86,9 +86,16 @@ public class WebsocketComponentServlet extends WebSocketServlet {
         factory.setCreator(new WebSocketCreator() {
             @Override
             public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
-                String protocolKey = "default";
-                WebSocketFactory factory = socketFactory.get(protocolKey);
-                return factory.newInstance(req, protocolKey, sync, consumer);
+                String protocolKey = "ids";
+            	if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
+                    WebSocketFactory factory = socketFactory.get(protocolKey);
+                    resp.setAcceptedSubProtocol(protocolKey);
+                    return factory.newInstance(req, protocolKey, sync, consumer);
+                } else {
+                	log.error("WS subprotocols not supported: " + String.join(",", req.getSubProtocols()));
+                	return null;
+                }
+            	
             }
         });
     }

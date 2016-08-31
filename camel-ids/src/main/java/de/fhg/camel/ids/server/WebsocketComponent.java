@@ -117,8 +117,7 @@ public class WebsocketComponent extends UriEndpointComponent {
 
         if (this.socketFactory == null) {
             this.socketFactory = new HashMap<String, WebSocketFactory>();
-            this.socketFactory.put("default", new DefaultWebsocketFactory());
-            this.socketFactory.put("rat", new DefaultWebsocketFactory());
+            this.socketFactory.put("ids", new DefaultWebsocketFactory());
         }
     }
 
@@ -747,8 +746,8 @@ public class WebsocketComponent extends UriEndpointComponent {
     public void setSocketFactory(Map<String, WebSocketFactory> socketFactory) {
         this.socketFactory = socketFactory;
 
-        if (!this.socketFactory.containsKey("default")) {
-            this.socketFactory.put("default", new DefaultWebsocketFactory());
+        if (!this.socketFactory.containsKey("ids")) {
+            this.socketFactory.put("ids", new DefaultWebsocketFactory());
         }
     }
 

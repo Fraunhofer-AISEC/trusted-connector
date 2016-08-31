@@ -110,7 +110,7 @@ public class WsEndpoint extends AhcEndpoint {
     protected AsyncHttpClient createClient(AsyncHttpClientConfig config) {
     	AsyncHttpClient client;
         if (config == null) {            		
-        	config = new AsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"idsp"}).build();
+        	config = new AsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"ids"}).build();
             client = new AsyncHttpClient(config);
         } else {
             client = new AsyncHttpClient();
@@ -122,7 +122,7 @@ public class WsEndpoint extends AhcEndpoint {
         String uri = getHttpUri().toASCIIString();
 
         LOG.debug("Connecting to {}", uri);
-        BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "idsp");
+        BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
         
         // Execute IDS protocol immediately after connect
         IDSPListener idspListener = new IDSPListener();
@@ -211,7 +211,5 @@ public class WsEndpoint extends AhcEndpoint {
                 consumer.sendMessage(message);
             }
         }
-
     }
-
 }
