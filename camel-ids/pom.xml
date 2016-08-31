@@ -27,7 +27,7 @@
 		<jetty-version>8.1.19.v20160209</jetty-version>
 		<jetty-version>9.2.15.v20160210</jetty-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.12</ahc-version>
+		<ahc-version>1.9.31</ahc-version>
 	</properties>
 
 	<dependencies>
@@ -67,7 +67,18 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jmx</artifactId>
             <version>${jetty-version}</version>
-</dependency>
+		</dependency>
+	    <dependency>
+	      <groupId>org.apache.camel</groupId>
+	      <artifactId>camel-ahc</artifactId>
+		  <version>${camel-version}</version>
+	    </dependency>
+       <dependency>
+            <groupId>com.ning</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>${ahc-version}</version>
+		</dependency> 		
+		
 
 		<!-- logging -->
 		<dependency>
@@ -102,12 +113,6 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
-       <dependency>
-            <groupId>org.asynchttpclient</groupId>
-            <artifactId>async-http-client</artifactId>
-            <version>${ahc-version}</version>
-            <scope>test</scope>
-		</dependency> 		
 	</dependencies>
 
 	<build>
