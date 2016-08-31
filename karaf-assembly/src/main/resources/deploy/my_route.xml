@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint
+    xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.osgi.org/xmlns/blueprint/v1.0.0
+      http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+<!-- here we define a spring bean that is our container wide interceptor
+     its important to notice that the class ContainerWideInterceptor implements
+     org.apache.camel.spi.InterceptStrategy that allows us to plugin our interceptors
+     Camel will at startup automatic look for any beans in spring registry that is an
+     instance of org.apache.camel.spi.InterceptStrategy and add it as interceptor
+     to all its routes. Using this we are capable of defining container wide interceptors
+     that gets used in all camel contests we define with spring -->
+
+<!-- Class name refers to our Interceptor -->
+  <bean id="myInterceptor" class="de.fhg.camel.ids.interceptor.DataFlowControlInterceptor"/>
+       
+  <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+      <property name="brokerURL" value="tcp://localhost:61616"/>
+      <property name="userName" value="karaf"/>
+      <property name="password" value="karaf"/>
+   </bean>
+
+  <camelContext id="camel" xmlns="http://camel.apache.org/schema/blueprint">
+      <route id="activemq-hdfs-route">
+              <from uri="activemq:test"/>
+              <log message="Copying from test-queue to foo-queue"/>
+	      <to uri="activemq:foo"/> 
+              <!-- <to uri="hdfs2://192.168.56.101/tmp/Outbox/test1.txt" /> -->
+      </route>
+  </camelContext>
+
+</blueprint>
+

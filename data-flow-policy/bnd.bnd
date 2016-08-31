@@ -1,0 +1,21 @@
+src: src/main/java/
+testsrc: src/test/java/
+Export-Package: \
+	de.fhg.aisec.dfpolicy
+Bundle-Version: 1.0.0
+Bundle-Vendor: Fraunhofer
+Bundle-Name: data-flow-policy
+Bundle-Description: Data Flow Policy Framework
+Bundle-Copyright: Fraunhofer 2016
+# set the base directory
+dir = libs
+# get the contents of the directory (lsa = absolute, lsr=relative)
+files = ${lsa;${dir}}}
+# restrict to only JAR files with the filter operator
+jars = ${filter;${files};.*\.jar$}
+Bundle-ClassPath: .
+Import-Package: \
+	!com.google.protobuf,\
+	!de.fhg.aisec.ids.messages,\
+	*
+-noee=true

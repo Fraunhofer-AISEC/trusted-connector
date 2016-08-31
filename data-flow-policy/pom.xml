@@ -14,12 +14,12 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.fhg.ids</groupId>
-	<artifactId>api</artifactId>
+	<groupId>de.fhg.aisec</groupId>
+	<artifactId>data-flow-policy</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
 
-	<name>IDS Core Platform API</name>
+	<name>Data Flow Policy</name>
 
 	<properties>
 		<camel-version>2.16.3</camel-version>
@@ -31,13 +31,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- Protobuf -->
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>${protobuf-version}</version>
-		</dependency>
-
 		<!-- Camel -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -90,25 +83,6 @@
 
 
 		<plugins>
-			<!-- Download protoc binary (Protobuf compiler) -->
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.5.0</version>
-				<extensions>true</extensions>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>test-compile</goal>
-						</goals>
-						<configuration>
-							<protocArtifact>com.google.protobuf:protoc:3.0.0:exe:${os.detected.classifier}</protocArtifact>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -117,51 +91,6 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
-			</plugin>
-
-			<!-- Copy downloaded protobuf.jar into directory "lib" so it can be wrapped 
-				in our bundle -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>com.google.protobuf</groupId>
-									<artifactId>protobuf-java</artifactId>
-									<version>${protobuf-version}</version>
-									<type>jar</type>
-									<destFileName>protobuf.jar</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${basedir}/libs</outputDirectory>
-							<overWrite>false</overWrite>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Protobuf compiler -->
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.5.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>test-compile</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
@@ -193,37 +122,5 @@
 			</plugin>
 
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-dependency-plugin</artifactId>
-										<versionRange>[2.10,)</versionRange>
-										<goals>
-											<goal>copy</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>true</runOnIncremental>
-										</execute>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>
