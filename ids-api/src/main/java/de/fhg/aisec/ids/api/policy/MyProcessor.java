@@ -1,7 +1,11 @@
 package de.fhg.aisec.ids.api.policy;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -14,45 +18,40 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    private Properties properties = null;
-    private String dropword;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
-    	
-    	//for testing: if this string is in the filename, we won't forward the file
-    	dropword = "aaa";
-//    	if (properties == null) {
-//    		properties = new Properties();
-//    		InputStream input; 
-//    	
-//    		try {
-//				input = getClass().getClassLoader().getResourceAsStream("rules.properties");
-//				properties.load(input);
-//				dropword = properties.getProperty("drop");
-//				LOG.info("Loaded properties from rules.properties");
-//    		} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//    	}
+    	loadRules("/home/moe/car-bits/rules");
     	
     	
+    }
+    
+    private void loadRules(String rulefile) {
+    	FileInputStream fileinputstream;
+    	// Get the object of DataInputStream
+    	DataInputStream datainputstream;
+    	BufferedReader bufferedreader;
+    	String line;
+    	
+    	try {
+    		fileinputstream =  new FileInputStream(rulefile);
+    		datainputstream = new DataInputStream(fileinputstream);
+    		bufferedreader = new BufferedReader(new InputStreamReader(datainputstream));
+    		
+    		while ((line = bufferedreader.readLine()) != null)   {
+    			System.out.println(line);
+    		}
+    		datainputstream.close();
+    	}catch (Exception e){//Catch exception if any
+    		  LOG.error("Error while loading rulefile: " + e.getMessage());
+    	}
     }
 
 	public void process(Exchange exchange) throws Exception {
 		
-		String filename = exchange.getIn().getHeader("CamelFileName").toString();
-
-//		System.out.println("Exchange properties: "+exchange.getProperties());
-		
-        if (filename.contains(dropword)) {
-        	LOG.warn("Dropping message " + filename + " - dropword " + dropword + " detected...");
-        } else {
-        	LOG.debug("Forwarding message " + filename + " - no dropword '" + dropword + "' detected...");
-        	target.process(exchange);
-        }
-        
+		String from = exchange.getFromEndpoint().getEndpointUri();
+		System.out.println("Received a message from " +from+ "...");
     }
 
     @Override
