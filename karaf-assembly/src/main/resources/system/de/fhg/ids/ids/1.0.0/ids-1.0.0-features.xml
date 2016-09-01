@@ -19,6 +19,8 @@
         <feature version="2.16.3" prerequisite="false" dependency="false">camel</feature>
         <feature version="4.2.6" prerequisite="false" dependency="false">pax-http-jetty</feature>
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
+       	<feature version="2.16.3" prerequisite="false" dependency="true">camel-ahc</feature>
+
     </feature>
 </features>
 
