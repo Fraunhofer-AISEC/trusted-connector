@@ -22,8 +22,10 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.util.jsse.ClientAuthentication;
 import org.apache.camel.util.jsse.KeyManagersParameters;
 import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.util.jsse.SSLContextClientParameters;
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.apache.camel.util.jsse.SSLContextServerParameters;
 import org.apache.camel.util.jsse.TrustManagersParameters;
@@ -34,6 +36,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
 
 import de.fhg.camel.ids.client.TestServletFactory;
+import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
 
 /**
@@ -45,7 +48,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected Server server;
    
     protected List<Object> messages;
-	private String PWD = "changeit";
+	private static String PWD = "changeit";
     
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
@@ -112,15 +115,15 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 
         mock.assertIsSatisfied();
     }
+    
+    private static SSLContextParameters defineClientSSLContextClientParameters() {
 
-    protected SSLContextParameters defineSSLContextParameters() {
         KeyStoreParameters ksp = new KeyStoreParameters();
-        // ksp.setResource(this.getClass().getClassLoader().getResource("jsse/localhost.ks").toString());
         ksp.setResource("jsse/localhost.ks");
         ksp.setPassword(PWD);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
-        kmp.setKeyPassword(PWD );
+        kmp.setKeyPassword(PWD);
         kmp.setKeyStore(ksp);
 
         TrustManagersParameters tmp = new TrustManagersParameters();
@@ -129,6 +132,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         // NOTE: Needed since the client uses a loose trust configuration when no ssl context
         // is provided.  We turn on WANT client-auth to prefer using authentication
         SSLContextServerParameters scsp = new SSLContextServerParameters();
+        scsp.setClientAuthentication(ClientAuthentication.NONE.name());	//TODO CHANGE TO REQUIRE
 
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);
@@ -138,6 +142,32 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         return sslContextParameters;
     }
     
+    private static SSLContextParameters defineServerSSLContextParameters() {
+    	   KeyStoreParameters ksp = new KeyStoreParameters();
+           // ksp.setResource(this.getClass().getClassLoader().getResource("jsse/localhost.ks").toString());
+           ksp.setResource("jsse/localhost.ks");
+           ksp.setPassword(PWD);
+
+           KeyManagersParameters kmp = new KeyManagersParameters();
+           kmp.setKeyPassword(PWD);
+           kmp.setKeyStore(ksp);
+
+           TrustManagersParameters tmp = new TrustManagersParameters();
+           tmp.setKeyStore(ksp);
+
+           // NOTE: Needed since the client uses a loose trust configuration when no ssl context
+           // is provided.  We turn on WANT client-auth to prefer using authentication
+           SSLContextServerParameters scsp = new SSLContextServerParameters();
+           scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+
+           SSLContextParameters sslContextParameters = new SSLContextParameters();
+           sslContextParameters.setKeyManagers(kmp);
+           sslContextParameters.setTrustManagers(tmp);
+           sslContextParameters.setServerParameters(scsp);
+
+           return sslContextParameters;
+    }
+    
     @Override
     protected RouteBuilder[] createRouteBuilders() throws Exception {
         RouteBuilder[] rbs = new RouteBuilder[2];
@@ -145,9 +175,14 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         // An IDS consumer
         rbs[0] = new RouteBuilder() {
             public void configure() {
-                from("direct:input").routeId("foo")
+        		
+            	// Needed to configure TLS on the client side
+		        WsComponent wsComponent = (WsComponent) context.getComponent("ids-client");
+		        wsComponent.setSslContextParameters(defineClientSSLContextClientParameters());
+
+		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("ids-client-ws://localhost:9292/echo")
+                	.to("ids-client://localhost:9292/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
@@ -156,12 +191,12 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         rbs[1] = new RouteBuilder() {
             public void configure() {
             	
-            		// Needed to configure TLS
-//            		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
-//					websocketComponent.setSslContextParameters(defineSSLContextParameters());
-                 
+            		// Needed to configure TLS on the server side
+            		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
+					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
+
 					// This route is set to use TLS, referring to the parameters set above
-                    from("ids-server:0.0.0.0:9292/echo")
+                    from("ids-server:localhost:9292/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }

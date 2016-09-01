@@ -39,7 +39,7 @@ import com.ning.http.client.ws.WebSocketUpgradeHandler;
 /**
  * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.
  */
-@UriEndpoint(scheme = "ids-client-ws,ids-client", extendsScheme = "ahc,ahc", title = "IDS Protocol",
+@UriEndpoint(scheme = "ids-client-plain,ids-client", extendsScheme = "ahc,ahc", title = "IDS Protocol",
         syntax = "ids-client:httpUri", consumerClass = WsConsumer.class, label = "websocket")
 public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);

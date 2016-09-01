@@ -20,10 +20,12 @@ import java.io.UnsupportedEncodingException;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.ServerConnector;
+import org.junit.Ignore;
 
 /**
  * @version 
  */
+@Ignore
 public class WsProducerUsingStreamingTest extends WsProducerTestBase {
     
     @Override
@@ -47,6 +49,6 @@ public class WsProducerUsingStreamingTest extends WsProducerTestBase {
 
     @Override
     protected String getTargetURL() {
-        return "ids-client-ws://localhost:" + PORT + "?useStreaming=true";
+        return "ids-client-plain://localhost:" + PORT + "?useStreaming=true";
     }
 }

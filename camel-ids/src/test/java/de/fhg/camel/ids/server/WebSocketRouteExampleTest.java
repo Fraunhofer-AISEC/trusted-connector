@@ -26,6 +26,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.ning.http.client.AsyncHttpClient;
@@ -33,6 +34,7 @@ import com.ning.http.client.ws.WebSocket;
 import com.ning.http.client.ws.WebSocketTextListener;
 import com.ning.http.client.ws.WebSocketUpgradeHandler;
 
+@Ignore
 public class WebSocketRouteExampleTest extends CamelTestSupport {
 
     private static List<String> received = new ArrayList<String>();

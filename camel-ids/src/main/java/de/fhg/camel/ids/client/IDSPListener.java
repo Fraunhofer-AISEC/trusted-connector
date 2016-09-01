@@ -47,7 +47,9 @@ public class IDSPListener extends DefaultWebSocketListener {
     @Override
     public void onError(Throwable t) {
         LOG.debug("websocket on error", t);
-        fsm.reset();
+        if (fsm!=null) {
+        	fsm.reset();
+        }
     }
 
     @Override

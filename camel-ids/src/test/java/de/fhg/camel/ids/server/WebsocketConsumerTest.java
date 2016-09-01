@@ -16,21 +16,6 @@
  */
 package de.fhg.camel.ids.server;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.ExceptionHandler;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import de.fhg.camel.ids.server.WebsocketConstants;
-import de.fhg.camel.ids.server.WebsocketConsumer;
-import de.fhg.camel.ids.server.WebsocketEndpoint;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -38,10 +23,23 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.ExceptionHandler;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 /**
  *
  */
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class WebsocketConsumerTest {
 
     private static final String CONNECTION_KEY = "random-connection-key";

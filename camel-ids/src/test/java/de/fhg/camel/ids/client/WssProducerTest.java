@@ -28,9 +28,11 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.junit.Ignore;
 
 /**
  */
+@Ignore
 public class WssProducerTest extends WsProducerTestBase {
     protected static final String PW = "changeit";
     
@@ -49,7 +51,7 @@ public class WssProducerTest extends WsProducerTestBase {
 
     @Override
     protected String getTargetURL() {
-        return "ids-client-ws://localhost:" + PORT;
+        return "ids-client://localhost:" + PORT;
     }
 
     @Override

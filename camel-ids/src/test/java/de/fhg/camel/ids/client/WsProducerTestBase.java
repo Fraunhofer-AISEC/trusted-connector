@@ -40,6 +40,7 @@ import org.junit.Test;
 /**
  *
  */
+@Ignore
 public abstract class WsProducerTestBase extends Assert {
     
     protected static final String TEST_MESSAGE = "Hello World!";

@@ -16,27 +16,6 @@
  */
 package de.fhg.camel.ids.server;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.eclipse.jetty.websocket.api.RemoteEndpoint;
-import org.eclipse.jetty.websocket.api.Session;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import de.fhg.camel.ids.server.DefaultWebsocket;
-import de.fhg.camel.ids.server.WebsocketConstants;
-import de.fhg.camel.ids.server.WebsocketEndpoint;
-import de.fhg.camel.ids.server.WebsocketProducer;
-import de.fhg.camel.ids.server.WebsocketStore;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,10 +27,27 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
+import org.eclipse.jetty.websocket.api.Session;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 /**
  *
  */
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class WebsocketProducerTest {
 
     private static final String MESSAGE = "MESSAGE";

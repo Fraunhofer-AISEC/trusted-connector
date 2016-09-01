@@ -18,10 +18,12 @@ package de.fhg.camel.ids.client;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.ServerConnector;
+import org.junit.Ignore;
 
 /**
  * @version 
  */
+@Ignore
 public class WsProducerTest extends WsProducerTestBase {
     
     @Override
@@ -35,6 +37,6 @@ public class WsProducerTest extends WsProducerTestBase {
     
     @Override
     protected String getTargetURL() {
-        return "ids-client-ws://localhost:" + PORT;
+        return "ids-client-plain://localhost:" + PORT;
     }
 }
