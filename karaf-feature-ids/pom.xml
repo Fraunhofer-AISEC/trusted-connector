@@ -42,6 +42,11 @@
          	<version>1.0.0</version>
          </dependency>
          <dependency>
+                <groupId>de.fhg.aisec</groupId>
+                <artifactId>data-flow-policy</artifactId>
+                <version>1.0.0</version>
+         </dependency>         
+	 <dependency>
          	<groupId>de.fhg.ids</groupId>
          	<artifactId>container-manager</artifactId>
          	<version>1.0.0</version>
