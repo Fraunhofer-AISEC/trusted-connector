@@ -12,6 +12,7 @@
     <module>ids-api</module>
     <module>ids-core-platform-container-manager</module>
     <module>karaf-feature-ids</module>
+    <module>data-flow-policy</module>
     <module>karaf-assembly</module>
   </modules>
 </project>
