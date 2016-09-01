@@ -1,0 +1,2 @@
+LABEL file:/tmp/Input/ AS Input
+ALLOW Input TO file:/tmp/Output
