@@ -2,10 +2,13 @@ package de.fhg.aisec.dfpolicy;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Properties;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -18,13 +21,15 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
+    private ArrayList<LabelRule> label_rules;
+    private ArrayList<AllowRule> allow_rules;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
-    	loadRules("rules");
-    	
-    	
+    	label_rules = new ArrayList<LabelRule>();
+    	allow_rules = new ArrayList<AllowRule>();
+    	loadRules("deploy/rules");
     }
     
     private void loadRules(String rulefile) {
@@ -32,27 +37,114 @@ public class MyProcessor implements AsyncProcessor {
     	// Get the object of DataInputStream
     	DataInputStream datainputstream;
     	BufferedReader bufferedreader;
+    	final String LABEL_KEYWORD1 = "LABEL";
+    	final String LABEL_KEYWORD2 = "AS";
+    	final String ALLOW_KEYWORD1 = "ALLOW";
+    	final String ALLOW_KEYWORD2 = "TO";
     	String line;
+    	String uri;
+    	String label;
+  	
+		try {
+			fileinputstream =  new FileInputStream(rulefile);
+			datainputstream = new DataInputStream(fileinputstream);
+	    	bufferedreader = new BufferedReader(new InputStreamReader(datainputstream));
+			
     	
-    	try {
-    		fileinputstream =  new FileInputStream(rulefile);
-    		datainputstream = new DataInputStream(fileinputstream);
-    		bufferedreader = new BufferedReader(new InputStreamReader(datainputstream));
+			while ((line = bufferedreader.readLine()) != null)   {
+				
+				//Remove unneeded spaces
+				line = line.replaceAll(" ", "");
+				
+				//Check if it is a LABEL-rule that contains LABEL and AS, and both only once
+				if (check_rule_syntax(line, LABEL_KEYWORD1, LABEL_KEYWORD2)) {
+								
+					// source = the string between the first and the second keyword 
+					uri = line.substring(line.indexOf(LABEL_KEYWORD1) + LABEL_KEYWORD1.length(), line.indexOf(LABEL_KEYWORD2));
+					
+					// label = the string after the second keyword
+					label = line.substring(line.indexOf(LABEL_KEYWORD2) + LABEL_KEYWORD2.length());
+					
+					label_rules.add(new LabelRule(uri,label));
+						
+				// Check for an ALLOW-rule
+				} else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
+
+					// source = the string between the first and the second keyword 
+					label = line.substring(line.indexOf(ALLOW_KEYWORD1) + ALLOW_KEYWORD1.length(), line.indexOf(ALLOW_KEYWORD2));
+					
+					// label = the string after the second keyword
+					uri = line.substring(line.indexOf(ALLOW_KEYWORD2) + ALLOW_KEYWORD2.length());
+					
+					allow_rules.add(new AllowRule(uri, label));
+					
+				// If it's also no comment, throw an error	
+				} else if (!line.startsWith("#")) {
+					LOG.error("Error: Could not parse line " +line + " from rules file");
+				} 
+			}
+			datainputstream.close();
+			} catch (IOException e) {
+				LOG.error("Caught IOException: " + e.getMessage());
+				e.printStackTrace();
+			}
     		
-    		while ((line = bufferedreader.readLine()) != null)   {
-    			System.out.println(line);
-    		}
-    		datainputstream.close();
-    	}catch (Exception e){//Catch exception if any
-    		  LOG.error("Error while loading rulefile: " + e.getMessage());
-    	}
+    		
+    		LOG.info("Loaded LABEL rules: " + label_rules.toString());
+    		LOG.info("Loaded ALLOW rules: " + allow_rules.toString());
+    		
+    }
+    
+    // Checks for a line in the rulefile that each keyword exists only once, keyword1 before keyword 2, etc... 
+    public boolean check_rule_syntax(String line, String keyword1, String keyword2){
+    	//keyword1 in the beginning?
+    	if (line.startsWith(keyword1)
+    			//keyword 2 exists?
+				&& line.contains(keyword2)
+				//no second keyword1?
+				&& line.lastIndexOf(keyword1) == 0
+				//no second keyword2?
+				&& line.indexOf(keyword2) == line.lastIndexOf(keyword2)) {
+    				return true;
+				} else {
+					return false;
+				}
     }
 
 	public void process(Exchange exchange) throws Exception {
 		
-		String from = exchange.getFromEndpoint().getEndpointUri();
-		System.out.println("Received a message from " +from+ "...");
+		//label the new message if needed
+		exchange = LabelingProcess(exchange);
+
     }
+	
+	public Exchange LabelingProcess(Exchange exchange) {
+		String from = exchange.getFromEndpoint().getEndpointUri();
+		String labels_value; 
+		String label;
+		
+		if (exchange.getProperty("labels") != null ) {
+			labels_value = exchange.getProperty("labels").toString();
+		} else {
+			labels_value = "";
+		}
+		
+		//Check if there is a label rule for our source. label_rules.indexOf() will not return multiple occurrences, so we use a loop
+		for (LabelRule rule : label_rules) {
+			
+			//If we find a matching rule, we check if the labels-property already exists. If it does, we append our label, if not, we create the labels-property
+			if (rule.getSource().equals(from)) {
+				label = rule.getLabel();
+				labels_value = labels_value + label;
+				System.out.println("Got a message from " + from + ", will label it with " + label);
+				exchange.setProperty("labels", labels_value);
+			}else {
+				System.out.println("Rule for "+rule.getSource()+" does not matching uri " +from+", ignoring...");
+			}
+		}
+		
+		return exchange;
+	}
 
     @Override
     public String toString() {
