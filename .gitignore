@@ -1,2 +1,4 @@
 .gradle/
 .metadata
+.project
+.settings
