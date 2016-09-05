@@ -134,8 +134,7 @@ public class MyProcessor implements AsyncProcessor {
 		SendProcessor sendprocessor;
 		String destination;
 		String exchange_labels; 
-		String rule_labels;
-		String[] rules;
+		String[] rule_labels;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
 
@@ -165,76 +164,75 @@ public class MyProcessor implements AsyncProcessor {
 			return;
 		}
 			
-		rule_labels = allow_rules.get(destination);
+		rule_labels = allow_rules.get(destination).split(",");
 		
 		if (rule_labels == null) {
 			System.out.println("No rules found for destination: " + destination + ", message will be dropped...");
 			return;
 		}
-		rules = rule_labels.split(",");
 		
-		for (String rule : rules) {
-			if (check_if_labels_exists (rule, exchange_labels)) {
-				System.out.println("Found matching rule for destination " + destination +" with labels '" + exchange_labels + "', forwarding...");
-				target.process(exchange);
+		//Check if the message has _ALL_ the required labels. If we miss one, stop 
+		for (String rule : rule_labels) {
+			if (!check_if_label_exists (rule, exchange_labels)) {
+				System.out.println("Required label " + rule + " not found, message will be dropped...");
 				return;
 			}
 		}
-		System.out.println("No matching rules found for labels: " + exchange_labels + ", message will be dropped...");
+		System.out.println("Message with labels  '" + exchange_labels +"' has all required labels ('" + allow_rules.get(destination) + "') for destination '" + destination + "', forwarding...");
+		target.process(exchange);
     }
 	
-	//check if all labels from labels1 exist in labels2, both might be a list of comma-separeted labels
-	public boolean check_if_labels_exists(String labels1, String labels2){
-		String[] labels = labels1.split(",");
-		
-		if (labels == null) {
-			return false;
-		}
+	//check if a label exists in a list of labels
+	public boolean check_if_label_exists(String label, String labels){
 		
 		//if there are no requirements we have to fulfill, we return true
-		if (labels2 == null) {
+		if (labels == null) {
 			return true;
 		}
 		
+		//if label is null, but labels isn't, we return false
+		if (label == null) {
+			return false;
+		}
+		
+
+		
 		//check for each label if it's contained in the requirements. If not, return false;
-		for (String label : labels) {
-			if (!labels2.equals(label)   
-					&& !labels2.contains(label + ",") 
-					&& !labels2.contains("," + label)) {
-				return false;
-			}
+		if (!labels.equals(label)   
+				&& !labels.contains(label + ",") 
+				&& !labels.contains("," + label)) {
+			return false;
 		}
 		return true;
 	}
 	
 	public Exchange LabelingProcess(Exchange exchange) {
 		String from = exchange.getFromEndpoint().getEndpointUri();
-		String labels_value; 
-		String label;
+		String exchange_labels; 
+		String[] rule_labels;
 		
 		if (exchange.getProperty("labels") != null ) {
-			labels_value = exchange.getProperty("labels").toString();
+			exchange_labels = exchange.getProperty("labels").toString();
 		} else {
-			labels_value = "";
+			exchange_labels = "";
 		}
 		
-		System.out.println("Received a message from " + from);
-		
-		//Check if we have a labeling rule for this uri
-		label = label_rules.get(from);
-		if (label != null) {
+		//Check if we have a labeling rule for this source
+		rule_labels = label_rules.get(from).split(",");
+		if (rule_labels != null) {
 			
-			//If all labels already exists, we don't have to do anything, else, we append it
-			if (!check_if_labels_exists(label, labels_value)) {
-				if (labels_value == "") {
-					labels_value = label;
-				} else {
-					//TODO: what if some labels already exists, but some don't?
-					labels_value = labels_value + "," + label;
+			for (String label : rule_labels) {
+				//If the label already exists, we don't have to do anything, else, we append it
+				if (!check_if_label_exists(label, exchange_labels)) {
+					System.out.println("Got a message from " + from + ", will label it with '" + label + "'");
+					if (exchange_labels == "") {
+						exchange_labels = label;
+					} else {
+						exchange_labels = exchange_labels + "," + label;
+					}
 				}
-				System.out.println("Got a message from " + from + ", will label it with '" + label + "'");
-				exchange.setProperty("labels", labels_value);
 			}
+			exchange.setProperty("labels", exchange_labels);
 		}
 		
 		return exchange;
