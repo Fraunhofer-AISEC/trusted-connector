@@ -14,6 +14,11 @@
         <log message="Copying ${file:name} to the output directory"/>
         <to uri="file:/tmp/Output/"/>
       </route>
+      <route id="testroute2">
+        <from uri="file:/tmp/Input2/"/>
+        <log message="Copying ${file:name} to the output directory"/>
+        <to uri="file:/tmp/Output/"/>
+      </route>
     </camelContext>
 
 </blueprint>

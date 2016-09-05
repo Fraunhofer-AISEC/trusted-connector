@@ -13,11 +13,13 @@ import java.util.Properties;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.management.InstrumentationProcessor;
+import org.apache.camel.processor.LogProcessor;
 import org.apache.camel.processor.SendProcessor;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 public class MyProcessor implements AsyncProcessor {
 	
@@ -117,7 +119,7 @@ public class MyProcessor implements AsyncProcessor {
 		
 		InstrumentationProcessor instrumentationprocessor;
 		SendProcessor sendprocessor;
-		String destination = null;
+		String destination;
 		String labels_value; 
 		String label;
 		//label the new message if needed
@@ -135,8 +137,13 @@ public class MyProcessor implements AsyncProcessor {
 			if (instrumentationprocessor.getProcessor() instanceof SendProcessor) {
 				sendprocessor = (SendProcessor) instrumentationprocessor.getProcessor();
 				destination = sendprocessor.getEndpoint().getEndpointUri();
+				
+			//if it's also no LogProcessor, throw an Error
+			} else if (instrumentationprocessor.getProcessor() instanceof LogProcessor) {
+				//nothing to do yet, maybe some logging later 
+				return;
 			} else {
-				LOG.error("target is not an instance of SendProcessor");
+				LOG.error("target is neither an instance of Send- nor Log-Processor: " + target.toString());
 				return;
 			}
 		} else {
@@ -144,19 +151,31 @@ public class MyProcessor implements AsyncProcessor {
 			return;
 		}
 		
-		for (AllowRule allow_rule : allow_rules) {
-					
-			if (allow_rule.getDestination().equals(destination)){
-				
-				label = allow_rule.getLabel();
-				
-				//is the label contained in the labels-property, either as 'label', 'label,' or ',label'?
-				if (check_if_label_exists(label, labels_value)) {
-					
-					System.out.println("Found matching rule for destination " + destination +" with labels '" + labels_value + "': " + allow_rule.toString());
-					target.process(exchange);
-				}
-			}  
+//		for (AllowRule allow_rule : allow_rules) {
+//					
+//			if (allow_rule.getDestination().equals(destination)){
+//				
+//				label = allow_rule.getLabel();
+//				
+//				//is the label contained in the labels-property, either as 'label', 'label,' or ',label'?
+//				if (check_if_label_exists(label, labels_value)) {
+//					
+//					System.out.println("Found matching rule for destination " + destination +" with labels '" + labels_value + "': " + allow_rule.toString());
+//					target.process(exchange);
+//					return;
+//				}
+//			}  
+//		}
+//		System.out.println("No matching rules found for labels: " + labels_value + ", message will be dropped...");
+		
+		if (allow_rules.stream()
+		.filter(rule -> rule.getDestination().equals(destination) && check_if_label_exists(rule.getLabel(), labels_value))
+		.findAny()
+		.isPresent()) {
+			System.out.println("Found matching rule for destination " + destination +" with labels '" + labels_value + "', forwarding...");
+			target.process(exchange);
+		} else {
+			System.out.println("No matching rules found for labels: " + labels_value + ", message will be dropped...");
 		}
 		
     }
@@ -183,6 +202,8 @@ public class MyProcessor implements AsyncProcessor {
 			labels_value = "";
 		}
 		
+		System.out.println("Received a message from "+from);
+		
 		//Check if there is a label rule for our source. label_rules.indexOf() will not return multiple occurrences, so we use a loop
 		for (LabelRule rule : label_rules) {
 			
@@ -200,6 +221,10 @@ public class MyProcessor implements AsyncProcessor {
 				exchange.setProperty("labels", labels_value);
 			}
 		}
+		
+		//label_rules.stream()
+		//	.filter(r -> r.getSource().equals(from) && r.getL)
+		//	.filter()
 		
 		return exchange;
 	}
