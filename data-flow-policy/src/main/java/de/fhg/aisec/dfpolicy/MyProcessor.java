@@ -2,14 +2,10 @@ package de.fhg.aisec.dfpolicy;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Properties;
+import java.util.HashMap;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.management.InstrumentationProcessor;
@@ -19,20 +15,23 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Optional;
 
 public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    private ArrayList<LabelRule> label_rules;
-    private ArrayList<AllowRule> allow_rules;
+    //private ArrayList<LabelRule> label_rules;
+    //private ArrayList<AllowRule> allow_rules;
+    private HashMap<String, String> label_rules;
+    private HashMap<String, String> allow_rules;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
-    	label_rules = new ArrayList<LabelRule>();
-    	allow_rules = new ArrayList<AllowRule>();
+    	//label_rules = new ArrayList<LabelRule>();
+    	//allow_rules = new ArrayList<AllowRule>();
+    	label_rules = new HashMap<String, String>();
+    	allow_rules = new HashMap<String, String>();
     	loadRules("deploy/rules");
     }
     
@@ -48,6 +47,7 @@ public class MyProcessor implements AsyncProcessor {
     	String line;
     	String uri;
     	String label;
+    	String existing_label;
   	
 		try {
 			fileinputstream =  new FileInputStream(rulefile);
@@ -69,7 +69,14 @@ public class MyProcessor implements AsyncProcessor {
 					// label = the string after the second keyword
 					label = line.substring(line.indexOf(LABEL_KEYWORD2) + LABEL_KEYWORD2.length());
 					
-					label_rules.add(new LabelRule(uri,label));
+					existing_label = label_rules.get(uri);
+					if (existing_label == null) {
+						label_rules.put(uri, label);
+					} else {
+						label_rules.put(uri, existing_label + "," + label);
+					}
+					
+					//label_rules.add(new LabelRule(uri,label));
 						
 				// Check for an ALLOW-rule
 				} else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
@@ -80,7 +87,13 @@ public class MyProcessor implements AsyncProcessor {
 					// label = the string after the second keyword
 					uri = line.substring(line.indexOf(ALLOW_KEYWORD2) + ALLOW_KEYWORD2.length());
 					
-					allow_rules.add(new AllowRule(uri, label));
+					//allow_rules.add(new AllowRule(uri, label));
+					existing_label = allow_rules.get(uri);
+					if (existing_label == null) {
+						allow_rules.put(uri, label);
+					} else {
+						allow_rules.put(uri, existing_label + "," + label);
+					}
 					
 				// If it's also no comment, throw an error	
 				} else if (!line.startsWith("#")) {
@@ -120,15 +133,16 @@ public class MyProcessor implements AsyncProcessor {
 		InstrumentationProcessor instrumentationprocessor;
 		SendProcessor sendprocessor;
 		String destination;
-		String labels_value; 
-		String label;
+		String exchange_labels; 
+		String rule_labels;
+		String[] rules;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
 
 		if (exchange.getProperty("labels") != null ) {
-			labels_value = exchange.getProperty("labels").toString();
+			exchange_labels = exchange.getProperty("labels").toString();
 		} else {
-			labels_value = "";
+			exchange_labels = "";
 		}
 		
 		//figuring out where the message should go to
@@ -150,45 +164,47 @@ public class MyProcessor implements AsyncProcessor {
 			LOG.error("target is not an instance of InstrumentactionProcessor");
 			return;
 		}
+			
+		rule_labels = allow_rules.get(destination);
 		
-//		for (AllowRule allow_rule : allow_rules) {
-//					
-//			if (allow_rule.getDestination().equals(destination)){
-//				
-//				label = allow_rule.getLabel();
-//				
-//				//is the label contained in the labels-property, either as 'label', 'label,' or ',label'?
-//				if (check_if_label_exists(label, labels_value)) {
-//					
-//					System.out.println("Found matching rule for destination " + destination +" with labels '" + labels_value + "': " + allow_rule.toString());
-//					target.process(exchange);
-//					return;
-//				}
-//			}  
-//		}
-//		System.out.println("No matching rules found for labels: " + labels_value + ", message will be dropped...");
-		
-		if (allow_rules.stream()
-		.filter(rule -> rule.getDestination().equals(destination) && check_if_label_exists(rule.getLabel(), labels_value))
-		.findAny()
-		.isPresent()) {
-			System.out.println("Found matching rule for destination " + destination +" with labels '" + labels_value + "', forwarding...");
-			target.process(exchange);
-		} else {
-			System.out.println("No matching rules found for labels: " + labels_value + ", message will be dropped...");
+		if (rule_labels == null) {
+			System.out.println("No rules found for destination: " + destination + ", message will be dropped...");
+			return;
 		}
+		rules = rule_labels.split(",");
 		
+		for (String rule : rules) {
+			if (check_if_labels_exists (rule, exchange_labels)) {
+				System.out.println("Found matching rule for destination " + destination +" with labels '" + exchange_labels + "', forwarding...");
+				target.process(exchange);
+				return;
+			}
+		}
+		System.out.println("No matching rules found for labels: " + exchange_labels + ", message will be dropped...");
     }
 	
-	public boolean check_if_label_exists(String label, String labels_value){
-		if (labels_value != "" 
-				&& labels_value.equals(label) 
-				|| labels_value.contains(label + ",") 
-				|| labels_value.contains("," + label)) {
-			return true;
-		} else {
+	//check if all labels from labels1 exist in labels2, both might be a list of comma-separeted labels
+	public boolean check_if_labels_exists(String labels1, String labels2){
+		String[] labels = labels1.split(",");
+		
+		if (labels == null) {
 			return false;
 		}
+		
+		//if there are no requirements we have to fulfill, we return true
+		if (labels2 == null) {
+			return true;
+		}
+		
+		//check for each label if it's contained in the requirements. If not, return false;
+		for (String label : labels) {
+			if (!labels2.equals(label)   
+					&& !labels2.contains(label + ",") 
+					&& !labels2.contains("," + label)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public Exchange LabelingProcess(Exchange exchange) {
@@ -202,29 +218,24 @@ public class MyProcessor implements AsyncProcessor {
 			labels_value = "";
 		}
 		
-		System.out.println("Received a message from "+from);
+		System.out.println("Received a message from " + from);
 		
-		//Check if there is a label rule for our source. label_rules.indexOf() will not return multiple occurrences, so we use a loop
-		for (LabelRule rule : label_rules) {
+		//Check if we have a labeling rule for this uri
+		label = label_rules.get(from);
+		if (label != null) {
 			
-			//If we find a matching rule, we check if the labels-property already exists. If it does, we append our label, if not, we create the labels-property
-			label = rule.getLabel();
-			
-			if (rule.getSource().equals(from) && !(check_if_label_exists(label, labels_value))) {
-
+			//If all labels already exists, we don't have to do anything, else, we append it
+			if (!check_if_labels_exists(label, labels_value)) {
 				if (labels_value == "") {
 					labels_value = label;
 				} else {
+					//TODO: what if some labels already exists, but some don't?
 					labels_value = labels_value + "," + label;
 				}
 				System.out.println("Got a message from " + from + ", will label it with '" + label + "'");
 				exchange.setProperty("labels", labels_value);
 			}
 		}
-		
-		//label_rules.stream()
-		//	.filter(r -> r.getSource().equals(from) && r.getL)
-		//	.filter()
 		
 		return exchange;
 	}
