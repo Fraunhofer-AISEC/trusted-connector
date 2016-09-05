@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_package = "de.fhg.aisec.ids.messages";
+option java_outer_classname = "IdsProtocolMessages";
+
+message IDSPMessage {
+  enum Type {	ENTER_RAT_REQUEST = 0; 
+  				ENTER_RAT_RESPONSE = 1;
+  				RAT_P_MY_NONCE = 2;		
+  				RAT_C_MY_NONCE = 3;
+  				RAT_P_YOUR_NONCE = 4;
+  				RAT_C_YOUR_NONCE = 5;
+  				RAT_LEAVE_REQUEST = 6;
+  				RAT_LEAVE_RESPONSE = 7;
+  			}
+
+  // Identifies which field is filled in.
+  Type type = 1;
+
+  // Generic payload
+  oneof rat_message {
+  	RAT_MESSAGE message = 2;
+  }
+}
+
+message RAT_MESSAGE {
+	string content = 1;
+}
