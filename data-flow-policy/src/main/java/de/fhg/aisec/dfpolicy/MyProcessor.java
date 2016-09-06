@@ -20,24 +20,22 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    //private ArrayList<LabelRule> label_rules;
-    //private ArrayList<AllowRule> allow_rules;
-    private HashMap<String, String> label_rules;
-    private HashMap<String, String> allow_rules;
+    private static HashMap<String, String> label_rules = null;
+    private static HashMap<String, String> allow_rules = null;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
-    	//label_rules = new ArrayList<LabelRule>();
-    	//allow_rules = new ArrayList<AllowRule>();
-    	label_rules = new HashMap<String, String>();
-    	allow_rules = new HashMap<String, String>();
-    	loadRules("deploy/rules");
+    	//If we didn't load the rules yet, do it now
+    	if (label_rules == null && allow_rules == null) {
+    		label_rules = new HashMap<String, String>();
+    		allow_rules = new HashMap<String, String>();
+    		loadRules("deploy/rules");
+    	}
     }
     
     private void loadRules(String rulefile) {
     	FileInputStream fileinputstream;
-    	// Get the object of DataInputStream
     	DataInputStream datainputstream;
     	BufferedReader bufferedreader;
     	final String LABEL_KEYWORD1 = "LABEL";
@@ -49,6 +47,8 @@ public class MyProcessor implements AsyncProcessor {
     	String label;
     	String existing_label;
   	
+    	System.out.println("Loading rules.... ");
+    	
 		try {
 			fileinputstream =  new FileInputStream(rulefile);
 			datainputstream = new DataInputStream(fileinputstream);
@@ -75,8 +75,6 @@ public class MyProcessor implements AsyncProcessor {
 					} else {
 						label_rules.put(uri, existing_label + "," + label);
 					}
-					
-					//label_rules.add(new LabelRule(uri,label));
 						
 				// Check for an ALLOW-rule
 				} else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
@@ -87,7 +85,6 @@ public class MyProcessor implements AsyncProcessor {
 					// label = the string after the second keyword
 					uri = line.substring(line.indexOf(ALLOW_KEYWORD2) + ALLOW_KEYWORD2.length());
 					
-					//allow_rules.add(new AllowRule(uri, label));
 					existing_label = allow_rules.get(uri);
 					if (existing_label == null) {
 						allow_rules.put(uri, label);
@@ -105,7 +102,6 @@ public class MyProcessor implements AsyncProcessor {
 				LOG.error("Caught IOException: " + e.getMessage());
 				e.printStackTrace();
 			}
-    		
     		
     		LOG.info("Loaded LABEL rules: " + label_rules.toString());
     		LOG.info("Loaded ALLOW rules: " + allow_rules.toString());
@@ -194,8 +190,6 @@ public class MyProcessor implements AsyncProcessor {
 		if (label == null) {
 			return false;
 		}
-		
-
 		
 		//check for each label if it's contained in the requirements. If not, return false;
 		if (!labels.equals(label)   
