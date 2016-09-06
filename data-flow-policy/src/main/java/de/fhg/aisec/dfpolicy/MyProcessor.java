@@ -27,7 +27,7 @@ public class MyProcessor implements AsyncProcessor {
     public MyProcessor(Processor target) {
     	this.target = target;
     	//If we didn't load the rules yet, do it now
-    	if (label_rules == null && allow_rules == null) {
+    	if (label_rules == null || allow_rules == null) {
     		label_rules = new HashMap<String, String>();
     		allow_rules = new HashMap<String, String>();
     		loadRules("deploy/rules");
@@ -46,8 +46,6 @@ public class MyProcessor implements AsyncProcessor {
     	String uri;
     	String label;
     	String existing_label;
-  	
-    	System.out.println("Loading rules.... ");
     	
 		try {
 			fileinputstream =  new FileInputStream(rulefile);
@@ -108,7 +106,7 @@ public class MyProcessor implements AsyncProcessor {
     		
     }
     
-    // Checks for a line in the rulefile that each keyword exists only once, keyword1 before keyword 2, etc... 
+    // Checks for a line in the rule-file that each keyword exists only once, keyword1 before keyword 2, etc... 
     public boolean check_rule_syntax(String line, String keyword1, String keyword2){
     	//keyword1 in the beginning?
     	if (line.startsWith(keyword1)
@@ -201,9 +199,7 @@ public class MyProcessor implements AsyncProcessor {
 	}
 	
 	public Exchange LabelingProcess(Exchange exchange) {
-		String from = exchange.getFromEndpoint().getEndpointUri();
 		String exchange_labels; 
-		String[] rule_labels;
 		
 		if (exchange.getProperty("labels") != null ) {
 			exchange_labels = exchange.getProperty("labels").toString();
@@ -212,13 +208,34 @@ public class MyProcessor implements AsyncProcessor {
 		}
 		
 		//Check if we have a labeling rule for this source
-		rule_labels = label_rules.get(from).split(",");
+		exchange_labels = get_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
+		
+		//Check if we have a labeling rule for this filename
+		System.out.println("Calling get_label_based_on_attribute with attribute: "+exchange.getIn().toString());
+		exchange_labels = get_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
+		
+		exchange.setProperty("labels", exchange_labels);
+		
+		return exchange;
+	}
+	
+	public String get_label_based_on_attribute(String exchange_labels, String attribute){
+		
+		String[] rule_labels;
+		
+		//if there are no rules for the attribute, we can stop here
+		if (label_rules.get(attribute) == null) {
+			return exchange_labels;
+		}
+		
+		rule_labels = label_rules.get(attribute).split(",");
+		
 		if (rule_labels != null) {
 			
 			for (String label : rule_labels) {
 				//If the label already exists, we don't have to do anything, else, we append it
 				if (!check_if_label_exists(label, exchange_labels)) {
-					System.out.println("Got a message from " + from + ", will label it with '" + label + "'");
+					System.out.println("Got a message with attribute '" + attribute + "', will label it with '" + label + "'");
 					if (exchange_labels == "") {
 						exchange_labels = label;
 					} else {
@@ -226,10 +243,9 @@ public class MyProcessor implements AsyncProcessor {
 					}
 				}
 			}
-			exchange.setProperty("labels", exchange_labels);
 		}
 		
-		return exchange;
+		return exchange_labels;
 	}
 
     @Override
