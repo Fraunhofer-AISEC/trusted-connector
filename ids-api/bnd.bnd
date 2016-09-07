@@ -1,4 +1,4 @@
-src: src/main/java/,generated-sources/main/java
+src: src/main/java/,generated-sources/main/java,src/test/java
 Export-Package: \
 	de.fhg.aisec.ids.api.broker,\
 	de.fhg.aisec.ids.api.cm,\

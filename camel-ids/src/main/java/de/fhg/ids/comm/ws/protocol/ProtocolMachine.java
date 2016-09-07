@@ -1,14 +1,21 @@
 package de.fhg.ids.comm.ws.protocol;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.eclipse.jetty.websocket.api.Session;
 
+import com.google.protobuf.MessageLite;
 import com.ning.http.client.ws.WebSocket;
 
+import de.fhg.aisec.ids.messages.IdsProtocolMessages;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 
 /**
  * Generator of protocols over a websocket session.
@@ -42,12 +49,14 @@ public class ProtocolMachine {
 		fsm.addState("RAT:AWAIT_LEAVE");
 		fsm.addState("SUCCESS");
 		
+		RemoteAttestationClientHandler h = new RemoteAttestationClientHandler(fsm);
+		
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("start rat", "START", "RAT:AWAIT_CONFIRM", (e) -> {return reply("enter rat");} ));
-		fsm.addTransition(new Transition("entering rat", "RAT:AWAIT_CONFIRM", "RAT:AWAIT_P_NONCE", (e) -> {return reply("c_my_nonce");} ));
-		fsm.addTransition(new Transition("p_my_nonce", "RAT:AWAIT_P_NONCE", "RAT:AWAIT_C_NONCE", (e) -> {return reply("c_pcr");} ));
-		fsm.addTransition(new Transition("p_your_nonce", "RAT:AWAIT_C_NONCE", "RAT:AWAIT_LEAVE", (e) -> {return reply("c_your_nonce");} ));
-		fsm.addTransition(new Transition("leaving rat", "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
+		fsm.addTransition(new Transition("start rat", "START", "RAT:AWAIT_CONFIRM", (e) -> {return replyProto(IdsProtocolMessages.EnterRatReq.newBuilder().setType(RatType.ENTER_RAT_REQUEST).build());} ));
+		fsm.addTransition(new Transition(RatType.ENTER_RAT_RESPONSE, "RAT:AWAIT_CONFIRM", "RAT:AWAIT_P_NONCE", (e) -> {return replyProto(h.sendClientIdAndNonce(e));} ));
+		fsm.addTransition(new Transition(RatType.RAT_P_MY_NONCE, "RAT:AWAIT_P_NONCE", "RAT:AWAIT_C_NONCE", (e) -> {return replyProto(h.sendPcr(e));} ));
+		fsm.addTransition(new Transition(RatType.RAT_P_YOUR_NONCE, "RAT:AWAIT_C_NONCE", "RAT:AWAIT_LEAVE", (e) -> {return replyProto(h.sendSignedServerNonce(e));} ));
+		fsm.addTransition(new Transition(RatType.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
@@ -67,11 +76,13 @@ public class ProtocolMachine {
 		fsm.addState("RAT:AWAIT_P_NONCE");
 		fsm.addState("SUCCESS");
 		
+		RemoteAttestationServerHandler h = new RemoteAttestationServerHandler(fsm);
+
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("enter rat", "AWAIT_SELECT_CONV", "RAT:AWAIT_C_NONCE", (e) -> {return reply("entering rat");} ));
-		fsm.addTransition(new Transition("c_my_nonce", "RAT:AWAIT_C_NONCE", "RAT:AWAIT_PCR", (e) -> {return reply("p_my_nonce");} ));
-		fsm.addTransition(new Transition("c_pcr", "RAT:AWAIT_PCR", "RAT:AWAIT_P_NONCE", (e) -> {return reply("p_your_nonce");} ));
-		fsm.addTransition(new Transition("c_your_nonce", "RAT:AWAIT_P_NONCE", "SUCCESS", (e) -> {return reply("leaving rat");} ));
+		fsm.addTransition(new Transition(RatType.ENTER_RAT_REQUEST, "AWAIT_SELECT_CONV", "RAT:AWAIT_C_NONCE", (e) -> {return replyProto(h.replyToRatRequest(e));} ));
+		fsm.addTransition(new Transition(RatType.RAT_C_MY_NONCE, "RAT:AWAIT_C_NONCE", "RAT:AWAIT_PCR", (e) -> {return replyProto(h.sendServerNonceAndCert(e));} ));
+		fsm.addTransition(new Transition(RatType.RAT_C_REQ_PCR, "RAT:AWAIT_PCR", "RAT:AWAIT_P_NONCE", (e) -> {return replyProto(h.sendSignedClientNonce(e));} ));
+		fsm.addTransition(new Transition(RatType.RAT_C_YOUR_NONCE, "RAT:AWAIT_P_NONCE", "SUCCESS", (e) -> {return replyProto(h.leaveRat(e));} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
@@ -82,18 +93,32 @@ public class ProtocolMachine {
 		return fsm;
 	}
 
+
+	boolean replyProto(MessageLite message) {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try {
+			message.writeTo(bos);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return reply(bos.toByteArray());
+	}
+
 	/** 
 	 * Sends a response over the websocket session.
 	 * 
 	 * @param text
 	 * @return true if successful, false if not.
 	 */
-	private boolean reply(String text) {
+	boolean reply(byte[] text) {
 		if (ws!=null) {
+			System.out.println("Sending out " + text.length + " bytes");
 			ws.sendMessage(text);
 		} else if (sess!=null) {
 			try {
-				sess.getRemote().sendString(text);
+				ByteBuffer bb = ByteBuffer.wrap(text);
+				System.out.println("Sending out " + bb.array().length + " bytes");
+				sess.getRemote().sendBytes(bb);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

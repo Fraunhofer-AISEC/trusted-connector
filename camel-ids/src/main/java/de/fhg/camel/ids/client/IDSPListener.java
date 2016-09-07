@@ -6,9 +6,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.ning.http.client.ws.DefaultWebSocketListener;
 import com.ning.http.client.ws.WebSocket;
 
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.IdsMessage;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -56,10 +59,18 @@ public class IDSPListener extends DefaultWebSocketListener {
     public void onMessage(byte[] message) {
     	try {
     		lock.lockInterruptibly();
-	    	fsm.feedEvent(new Event(new String(message),""));	// TODO de-protobuf here
-	    	if (fsm.getState().equals("SUCCESS")) {
+    		try {
+    			RatType type = IdsMessage.parseFrom(message).getType();
+    			fsm.feedEvent(new Event(type, new String(message)));
+    		} catch (InvalidProtocolBufferException ip) {
+    			// If data is not a valid protocol buffer, try to use it as a plain text
+    			fsm.feedEvent(new Event(new String(message), new String(message)));
+    		}
+
+    		if (fsm.getState().equals("SUCCESS")) {
 	    		isFinishedCond.signalAll();
 	    	}
+
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
@@ -69,17 +80,7 @@ public class IDSPListener extends DefaultWebSocketListener {
 
     @Override
     public void onMessage(String message) {
-    	try {
-    		lock.lockInterruptibly();
-	    	fsm.feedEvent(new Event(new String(message), ""));	//TODO de-protobuf here
-	    	if (fsm.getState().equals("SUCCESS")) {
-	    		isFinishedCond.signalAll();
-	    	}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} finally {
-			lock.unlock();
-		}
+    	onMessage(message.getBytes());
     }
     
     public ReentrantLock semaphore() {

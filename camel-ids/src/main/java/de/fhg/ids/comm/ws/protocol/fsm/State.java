@@ -7,13 +7,14 @@ import java.util.Map;
  * Represents a state with some number of associated transitions.
  */
 class State {
-	Map<String, Transition> transitions;
+	// map from event key to transition
+	Map<Object, Transition> transitions;
 	Runnable entryCode;
 	Runnable exitCode;
 	Runnable alwaysRunCode;
 
 	State(Runnable entryCode, Runnable exitCode, Runnable alwaysRunCode) {
-		transitions = new HashMap<String, Transition>();
+		transitions = new HashMap<Object, Transition>();
 		this.entryCode = entryCode;
 		this.exitCode = exitCode;
 		this.alwaysRunCode = alwaysRunCode;

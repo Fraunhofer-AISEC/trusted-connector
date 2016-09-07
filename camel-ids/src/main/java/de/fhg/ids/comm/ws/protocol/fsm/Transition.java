@@ -2,6 +2,8 @@ package de.fhg.ids.comm.ws.protocol.fsm;
 
 import java.util.concurrent.Callable;
 
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+
 /**
  * A Transition transfers the FSM from a start state to an end state and is
  * triggered by an event.
@@ -11,7 +13,7 @@ import java.util.concurrent.Callable;
  * 
  */
 public class Transition {
-	String evtName;
+	Object evtName;
 	String startState;
 	String endState;
 	TransitionListener before;
@@ -33,6 +35,13 @@ public class Transition {
 	 */
 	public Transition(String evtName, String startState, String endState, TransitionListener runBeforeTransition) {
 		this.evtName = evtName;
+		this.startState = startState;
+		this.endState = endState;
+		this.before = runBeforeTransition;
+	}
+
+	public Transition(Object evtKey, String startState, String endState, TransitionListener runBeforeTransition) {
+		this.evtName = evtKey;
 		this.startState = startState;
 		this.endState = endState;
 		this.before = runBeforeTransition;

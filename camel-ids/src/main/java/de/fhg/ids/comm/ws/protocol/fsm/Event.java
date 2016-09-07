@@ -1,15 +1,15 @@
 package de.fhg.ids.comm.ws.protocol.fsm;
 
 public class Event {
-	private String key;
+	private Object key;
 	private String payload;
 	
-	public Event(String key, String payload) {
+	public Event(Object key, String payload) {
 		super();
 		this.key = key;
 		this.payload = payload;
 	}
-	public String getKey() {
+	public Object getKey() {
 		return key;
 	}
 	public void setKey(String key) {

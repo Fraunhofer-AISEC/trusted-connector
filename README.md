@@ -71,3 +71,7 @@ Create a file `karaf-assembly/target/assembly/deploy/my_route.xml` and paste the
 If you observe the logs in the Karaf console with `log:tail` you will see how that route is picked up. Type `camel:route-list` to confirm the route has been picked up and activated. 
 
 This route opens an endpoint speaking the IDS protocol (by default at port `9292`) and puts all data received at that endpoint into a file `karaf-assembly/target/assembly/output/<filename>`. 
+
+# Setting up Eclipse
+
+ <a href="http://repo1.maven.org/maven2/kr/motd/maven/os-maven-plugin/1.5.0.Final/os-maven-plugin-1.5.0.Final.jar">Download <code>os-maven-plugin-1.5.0.Final.jar</code></a> and put it into the <code>&lt;ECLIPSE_HOME&gt;/plugins</code> directory

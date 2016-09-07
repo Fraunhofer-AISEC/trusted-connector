@@ -19,6 +19,7 @@ package de.fhg.camel.ids.server;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -27,6 +28,10 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.fhg.aisec.ids.messages.IdsProtocolMessages;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -67,32 +72,55 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketMessage
     public void onMessage(String message) {
-        LOG.debug("onMessage: {}", message);
+        LOG.debug("server received onMessage " + message);
         
-        if (idsFsm.getState().equals("SUCCESS")) {//TODO Check if fsm is in its final state and successful
-        	System.out.println("Successfully finished IDSP");
-	        // TODO this should only be done when the IDS protocol has been finished successfully
+        // Check if fsm is in its final state and successful. Only then, the message is forwarded to Camel consumer
+        if (idsFsm.getState().equals("SUCCESS")) {
 	        if (this.consumer != null) {
 	            this.consumer.sendMessage(this.connectionKey, message);
 	        } else {
 	            LOG.debug("No consumer to handle message received: {}", message);
 	        }
-        } else {
-        	System.out.println("Feeding message into provider fsm: " + message);
-        	idsFsm.feedEvent(new Event(message, ""));	//TODO we need to de-protobuf here and split messages into cmd and payload
+	        return;
         }
+
+        // Otherwise, we are still in the process of running IDS protocol and hold back the original message. In this case, feed the message into the protocol FSM
+        try {
+			RatType type = IdsProtocolMessages.IdsMessage.parseFrom(message.getBytes()).getType();
+        	LOG.debug("Feeding message into provider fsm: " + message);
+
+        	//we de-protobuf and split messages into cmd and payload
+        	idsFsm.feedEvent(new Event(type, message));
+		} catch (InvalidProtocolBufferException e) {
+			// An invalid message has been received during IDS protocol. close connection
+			e.printStackTrace();
+			this.session.close(new CloseStatus(403, "invalid protobuf"));
+		}
+        
     }
 
 
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
-        LOG.debug("onMessage: byte[]");
-        if (this.consumer != null) {
-            byte[] message = new byte[length];
-            System.arraycopy(data, offset, message, 0, length);
-            this.consumer.sendMessage(this.connectionKey, message);
+        LOG.debug("server received onMessage " + new String(data));
+        
+        if (idsFsm.getState().equals("SUCCESS")) {//TODO Check if fsm is in its final state and successful
+        	System.out.println("Successfully finished IDSP");
+	        // TODO this should only be done when the IDS protocol has been finished successfully
+	        if (this.consumer != null) {
+	            this.consumer.sendMessage(this.connectionKey, data);
+	        } else {
+	            LOG.debug("No consumer to handle message received: {}", data);
+	        }
         } else {
-            LOG.debug("No consumer to handle message received: byte[]");
+			try {
+				RatType type = IdsProtocolMessages.IdsMessage.parseFrom(data).getType();
+	        	System.out.println("Feeding message into provider fsm: " + data);
+	        	idsFsm.feedEvent(new Event(type, new String(data)));	//we need to de-protobuf here and split messages into cmd and payload
+			} catch (InvalidProtocolBufferException ip) {
+				// If data is not a valid protobuf, try to treat it as text
+				idsFsm.feedEvent(new Event(new String(data), new String(data)));
+			}
         }
     }
 

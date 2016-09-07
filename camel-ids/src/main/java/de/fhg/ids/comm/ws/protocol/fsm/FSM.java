@@ -123,10 +123,11 @@ public class FSM {
 	}
 
 	public void feedEvent(Event event) {
-		String evtName = event.getKey();
+		System.out.println("Feeding into FSM " + event.getKey());
+		Object evtKey = event.getKey();
 		State state = states.get(currentState);
-		if (state.transitions.containsKey(evtName)) {
-			Transition trans = state.transitions.get(evtName);
+		if (state.transitions.containsKey(evtKey)) {
+			Transition trans = state.transitions.get(evtKey);
 
 			if (trans.doBeforeTransition(event)) {
 				setState(trans.endState);
@@ -143,10 +144,10 @@ public class FSM {
 		sb.append("	rankdir=LR;\n");
 		sb.append("	node [shape = ellipse];\n");
 		for (String from : states.keySet()) {
-			for (String t : states.get(from).transitions.keySet()) {
+			for (Object t : states.get(from).transitions.keySet()) {
 				String to = states.get(from).transitions.get(t).endState;
-				String event = states.get(from).transitions.get(t).evtName;
-				sb.append("    " + from.replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+event+"\" ];\n");
+				Object eventKey = states.get(from).transitions.get(t).evtName;
+				sb.append("    " + from.replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
 			}
 		}
 		sb.append("			}");
