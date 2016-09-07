@@ -11,13 +11,11 @@
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
       <route id="testroute">
         <from uri="file:/tmp/Input/"/>
-        <log message="Copying ${file:name} to the output directory"/>
         <to uri="file:/tmp/Output/"/>
       </route>
       <route id="testroute2">
-        <from uri="file:/tmp/Input2/"/>
-        <log message="Copying ${file:name} to the output directory"/>
-        <to uri="file:/tmp/Output/"/>
+        <from uri="file:/tmp/Output/"/>
+        <to uri="file:/tmp/FinalOutput/"/>
       </route>
     </camelContext>
 

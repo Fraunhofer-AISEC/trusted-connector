@@ -1,4 +1,5 @@
 LABEL file:///tmp/Input/ AS Input
-LABEL file:///tmp/Input2/ AS Evil
+LABEL file:///tmp/Output/ AS Output
 LABEL aaa.txt AS aaa
 ALLOW Input TO file:///tmp/Output/
+ALLOW Output TO file:///tmp/FinalOutput/

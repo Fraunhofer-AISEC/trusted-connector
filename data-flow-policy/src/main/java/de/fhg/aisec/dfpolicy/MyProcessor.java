@@ -211,7 +211,6 @@ public class MyProcessor implements AsyncProcessor {
 		exchange_labels = get_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
 		
 		//Check if we have a labeling rule for this filename
-		System.out.println("Calling get_label_based_on_attribute with attribute: "+exchange.getIn().toString());
 		exchange_labels = get_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
 		
 		exchange.setProperty("labels", exchange_labels);
