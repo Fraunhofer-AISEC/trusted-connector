@@ -1,0 +1,23 @@
+src: src/main/java,src/main/resources
+bin: target/classes
+testsrc: src/test/java
+testbin: target/test-classes
+-sources: false 
+Bundle-Version: 1.0.0
+Web-ContextPath: ids
+Export-Package: \
+	de.fhg.aisec.ids.webconsole,\
+	de.fhg.aisec.ids.webconsole.servlets
+Bundle-Name: ids-webconsole
+Bundle-Description: A web console for the IDS Core Platform. The web console allows to configure \
+	routes, containers, brokers, etc.
+Bundle-Copyright: Fraunhofer 2016
+Bundle-Vendor: Fraunhofer AISEC
+Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
+-wab: src/main/resources/www/
+Import-Package: \
+	org.osgi.framework.*,\
+	!com.eclipsesource.json.*,\
+	*
+-noee=true
+-dsannotations: *

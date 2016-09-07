@@ -1,10 +1,10 @@
+src: src/main/java
+bin: target/classes
+testsrc: src/test/java
+testbin: target/test-classes
 Bundle-Name: ids-core-platform-container-manager
-Bundle-Version: 0.2.0
+Bundle-Version: 1.0.0
 Export-Package: de.fhg.aisec.ids.cm
-Private-Package: \
-	de.fhg.aisec.ids.cm.impl,\
-	de.fhg.aisec.ids.cm.impl.docker,\
-	de.fhg.aisec.ids.cm.impl.trustx
 -dsannotations: *
 Bundle-Vendor: Fraunhofer
 -noee=true

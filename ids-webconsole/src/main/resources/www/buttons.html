@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumino Pro - Buttons</title>
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/datepicker3.css" rel="stylesheet">
+<link href="css/styles.css" rel="stylesheet">
+<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900,100italic,300italic,400italic,700italic,900italic' rel='stylesheet' type='text/css'>
+
+<!--[if lt IE 9]>
+<link href="css/rgba-fallback.css" rel="stylesheet">
+<script src="js/html5shiv.js"></script>
+<script src="js/respond.min.js"></script>
+<![endif]-->
+
+</head>
+
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#sidebar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#"><span>Lumino</span>Pro</a>
+				<ul class="nav navbar-top-links navbar-right">
+					<li class="dropdown">
+						<a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
+							<i class="glyphicon glyphicon-envelope"></i><span class="label label-danger">2</span>
+						</a>
+						<ul class="dropdown-menu dropdown-messages">
+							<li>
+								<div class="dropdown-messages-box">
+									<a href="profile.html" class="pull-left">
+										<img alt="image" class="img-circle" src="http://placehold.it/40/ccc/fff">
+									</a>
+									<div class="message-body">
+										<small class="pull-right">3 mins ago</small>
+										<a href="#"><strong>John Doe</strong> commented on <strong>your photo</strong>.</a>
+										<br />
+										<small class="text-muted">1:24 pm - 25/03/2015</small>
+									</div>
+								</div>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<div class="dropdown-messages-box">
+									<a href="profile.html" class="pull-left">
+										<img alt="image" class="img-circle" src="http://placehold.it/40/ccc/fff">
+									</a>
+									<div class="message-body">
+										<small class="pull-right">1 hour ago</small>
+										<a href="#">New message from <strong>Jane Doe</strong>.</a>
+										<br />
+										<small class="text-muted">12:27 pm - 25/03/2015</small>
+									</div>
+								</div>
+							</li>
+							<li class="divider"></li>
+						
+							<li>
+								<div class="all-button">
+									<a href="#">
+										<em class="glyphicon glyphicon-inbox"></em> <strong>All Messages</strong>
+									</a>
+								</div>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
+							<i class="glyphicon glyphicon-bell"></i><span class="label label-primary">18</span>
+						</a>
+						<ul class="dropdown-menu dropdown-alerts">
+							<li>
+								<a href="#">
+									<div>
+										<em class="glyphicon glyphicon-envelope"></em> 1 New Message
+										<span class="pull-right text-muted small">3 mins ago</span>
+									</div>
+								</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="#">
+									<div>
+										<em class="glyphicon glyphicon-heart"></em> 12 New Likes
+										<span class="pull-right text-muted small">4 mins ago</span>
+									</div>
+								</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="#">
+									<div>
+										<em class="glyphicon glyphicon-user"></em> 5 New Followers
+										<span class="pull-right text-muted small">4 mins ago</span>
+									</div>
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div><!-- /.container-fluid -->
+	</nav>
+		
+	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+		<form role="search">
+			<div class="form-group">
+				<input type="text" class="form-control" placeholder="Search">
+			</div>
+		</form>
+		<ul class="nav menu">
+			<li><a href="index.html"><span class="glyphicon glyphicon-dashboard"></span> Dashboard</a></li>
+			<li><a href="widgets.html"><span class="glyphicon glyphicon-th"></span> Widgets</a></li>
+			<li><a href="charts.html"><span class="glyphicon glyphicon-stats"></span> Charts</a></li>
+			<li><a href="tables.html"><span class="glyphicon glyphicon-list-alt"></span> Tables</a></li>
+			<li><a href="forms.html"><span class="glyphicon glyphicon-pencil"></span> Forms</a></li>
+			<li class="active"><a href="buttons.html"><span class="glyphicon glyphicon-hand-up"></span> Buttons</a></li>
+			<li><a href="panels.html"><span class="glyphicon glyphicon-info-sign"></span> Alerts &amp; Panels</a></li>
+			<li class="parent ">
+				<a href="#">
+					<span class="glyphicon glyphicon-list"></span> Multilevel <span data-toggle="collapse" href="#sub-item-1" class="icon pull-right"><em class="glyphicon glyphicon-s glyphicon-plus"></em></span> 
+				</a>
+				<ul class="children collapse" id="sub-item-1">
+					<li>
+						<a class="" href="#">
+							<span class="glyphicon glyphicon-share-alt"></span> Sub Item 1
+						</a>
+					</li>
+					<li>
+						<a class="" href="#">
+							<span class="glyphicon glyphicon-share-alt"></span> Sub Item 2
+						</a>
+					</li>
+					<li>
+						<a class="" href="#">
+							<span class="glyphicon glyphicon-share-alt"></span> Sub Item 3
+						</a>
+					</li>
+				</ul>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li><a href="login.html"><span class="glyphicon glyphicon-user"></span> Logout</a></li>
+		</ul>
+	</div><!--/.sidebar-->
+		
+	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main buttons-page">			
+		<div class="row">
+			<ol class="breadcrumb">
+				<li><a href="#"><span class="glyphicon glyphicon-home"></span></a></li>
+				<li class="active">Elements</li>
+			</ol>
+		</div><!--/.row-->
+		
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">Buttons</h1>
+			</div>
+		</div><!--/.row-->
+		
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">Buttons</div>
+					<div class="panel-body">
+						<h4>Default Buttons</h4>
+						<p>Using the base <code>.btn</code> class</p>
+						<p>
+							<button type="button" class="btn btn-default margin">Default</button>
+							<button type="button" class="btn btn-primary margin">Primary</button>
+							<button type="button" class="btn btn-success">Success </button>
+							<button type="button" class="btn btn-info margin">Info</button>
+							<button type="button" class="btn btn-warning margin margin">Warning </button>
+							<button type="button" class="btn btn-danger margin">Danger </button>
+							<button type="button" class="btn btn-link">Link</button>
+						</p>
+						<h4>Outlined Buttons</h4>
+						<p>Add the <code>.btn-outline</code> class for outlined buttons</p>
+						<p>
+							<button type="button" class="btn btn-default btn-outline margin margin">Default</button>
+							<button type="button" class="btn btn-primary btn-outline margin">Primary</button>
+							<button type="button" class="btn btn-success btn-outline margin">Success</button>
+							<button type="button" class="btn btn-info btn-outline">Info</button>
+							<button type="button" class="btn btn-warning btn-outline margin">Warning</button>
+							<button type="button" class="btn btn-danger btn-outline margin">Danger</button>
+							<button type="button" class="btn btn-link btn-outline margin">Link</button>
+						</p>
+					</div>
+				</div>
+				
+				<div class="panel panel-default">
+					<div class="panel-heading">Button Sizes</div>
+					<div class="panel-body">
+						<p>Change button size with <code>.btn-lg</code>, <code>.btn-sm</code> and <code>.btn-xs</code></p>
+						<p>
+							<button type="button" class="btn btn-default btn-lg  margin">Large button</button>
+							<button type="button" class="btn btn-default margin margin">Default button</button>
+							<button type="button" class="btn btn-default btn-sm">Small button</button>
+							<button type="button" class="btn btn-default btn-xs margin">Mini button</button>
+						</p>
+						<p>Block level button using <code>.btn-block</code></p>
+						<p>
+							<button type="button" class="btn btn-default btn-lg btn-block">Block level button</button>
+						</p>
+					</div>
+				</div>
+				
+				<div class="panel panel-default">
+					<div class="panel-heading">Button Groups</div>
+					<div class="panel-body">
+						<p>Group buttons with <code>.btn-group</code> class</p>
+						<p>
+							<div class="btn-group margin">
+								<button type="button" class="btn btn-default">Left</button>
+								<button type="button" class="btn btn-default">Middle</button>
+								<button type="button" class="btn btn-default">Right</button>
+							</div>
+						</p>
+						<p>Useful for pagination and tabbed buttons</p>
+						<p>
+							<div class="btn-group margin">
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span></button>
+								<button type="button" class="btn btn-default">Previous</button>
+								<button type="button" class="btn btn-default">1</button>
+								<button type="button" class="btn btn-default">2</button>
+								<button type="button" class="btn btn-default">3</button>
+								<button type="button" class="btn btn-default">4</button>
+								<button type="button" class="btn btn-default">5</button>
+								<button type="button" class="btn btn-default">6</button>
+								<button type="button" class="btn btn-default">Next</button>
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-arrow-right"></span></button>
+							</div>
+						</p>
+						<p>
+							<div class="btn-group margin">
+								<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-align-left"></span></button>
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-align-center"></span></button>
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-align-right"></span></button>
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-align-justify"></span></button>
+							</div>
+							<div class="btn-group margin">
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-font"></span></button>
+								<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-bold"></span></button>
+								<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-italic"></span></button>
+							</div>
+						</p>
+					</div>
+				</div>
+				
+				
+				
+				
+				
+			</div><!--/.col-->
+			
+			<div class="col-lg-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">Dropdown Buttons</div>
+					<div class="panel-body">
+						<p>
+							<div class="btn-group">
+							<button data-toggle="dropdown" class="btn btn-default dropdown-toggle margin">Action <span class="caret"></span></button>
+								<ul class="dropdown-menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#" class="font-bold">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
+							</div>
+							<div class="btn-group">
+							<button data-toggle="dropdown" class="btn btn-primary dropdown-toggle margin">Action <span class="caret"></span></button>
+								<ul class="dropdown-menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#" class="font-bold">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
+							</div>
+							<div class="btn-group">
+							<button data-toggle="dropdown" class="btn btn-success dropdown-toggle margin">Action <span class="caret"></span></button>
+								<ul class="dropdown-menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#" class="font-bold">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
+							</div>
+							<div class="btn-group">
+							<button data-toggle="dropdown" class="btn btn-warning dropdown-toggle margin">Action <span class="caret"></span></button>
+								<ul class="dropdown-menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#" class="font-bold">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
+							</div>
+							<div class="btn-group">
+							<button data-toggle="dropdown" class="btn btn-danger dropdown-toggle margin">Action <span class="caret"></span></button>
+								<ul class="dropdown-menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#" class="font-bold">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
+							</div>
+						</p>
+					</div>
+				</div>
+				
+				<div class="panel panel-default">
+					<div class="panel-heading">Button Addons</div>
+					<div class="panel-body">
+						<p>With dropdown</p>
+						<div class="input-group">
+							<div class="input-group-btn">
+								<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Action <span class="caret"></span></button>
+								<ul class="dropdown-menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
+							</div>
+							<input type="text" class="form-control">
+						</div>
+						<br />
+						<p>Without dropdown</p>
+						<div class="input-group">
+							<div class="input-group-btn">
+								<button type="button" class="btn btn-default">Action</button>
+							</div>
+							<input type="text" class="form-control">
+						</div>
+					</div>
+				</div>
+				
+								
+				<div class="panel panel-default">
+					<div class="panel-heading">Icon Buttons</div>
+					<div class="panel-body">
+						<p>Over 250 possibilities available using <a href="http://getbootstrap.com/components/">Glyphicons</a></p>
+						<p>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-check"></span> &nbsp;Submit</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-plus"></span> &nbsp;Add New</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-search"></span> &nbsp;Search</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-heart"></span> &nbsp;Favorite</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-user"></span> &nbsp;User</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-file"></span> &nbsp;Document</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-trash"></span> &nbsp;Delete</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-print"></span> &nbsp;Print</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-tag"></span> &nbsp;Tag</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-edit"></span> &nbsp;Edit</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-shopping-cart"></span> &nbsp;Shopping Cart</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-circle-arrow-down"></span> &nbsp;Downloads</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-comment"></span> &nbsp;Comment</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-paperclip"></span> &nbsp;Attachment</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-new-window"></span> &nbsp;New Window</button>
+							<button class="btn btn-default margin" type="button"><span class="glyphicon glyphicon-wrench"></span> &nbsp;Settings</button>
+						</p>
+					</div>
+				</div>
+				
+				<div class="panel panel-default">
+					<div class="panel-heading">Circle Icon Buttons</div>
+					<div class="panel-body">
+						<p>Create round buttons with <code>.btn-circle</code> class
+						<p>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-check"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-plus"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-search"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-heart"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-user"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-file"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-trash"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-tag"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-edit"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-shopping-cart"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-circle-arrow-down"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-comment"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-paperclip"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-new-window"></span></button>
+							<button class="btn btn-default btn-circle margin" type="button"><span class="glyphicon glyphicon-wrench"></span></button>
+							
+						</p>
+					</div>
+				</div>
+			</div><!--/.col-->
+			
+		</div><!--/.row-->	
+					
+	</div><!--/.main-->
+
+	<script src="js/jquery-1.11.1.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/chart.min.js"></script>
+	<script src="js/chart-data.js"></script>
+	<script src="js/easypiechart.js"></script>
+	<script src="js/easypiechart-data.js"></script>
+	<script src="js/bootstrap-datepicker.js"></script>
+	<script src="js/custom.js"></script>	
+</body>
+
+</html>

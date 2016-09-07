@@ -6,13 +6,9 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="target/generated-sources/protobuf/java"/>
-	<classpathentry exported="true" kind="lib" path="bin/"/>
-	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
-	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/proto">
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
+			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
@@ -26,11 +22,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

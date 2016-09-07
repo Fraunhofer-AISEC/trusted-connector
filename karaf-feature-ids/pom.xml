@@ -30,11 +30,16 @@
     <description>Karaf feature for Industrial Data Space Core Platform</description>
 
     <dependencies>
-        <!-- add the artifact that should be in the feature in the dependencies set -->
+        <!-- add the artifact that should be in the feature's dependencies set -->
          <dependency>
          	<groupId>de.fhg.ids</groupId>
          	<artifactId>api</artifactId>
          	<version>1.0.0</version>
+         </dependency>
+         <dependency>
+            <groupId>de.fhg.ids</groupId>
+            <artifactId>ids-webconsole</artifactId>
+            <version>1.0.0</version>
          </dependency>
          <dependency>
          	<groupId>de.fhg.ids</groupId>
