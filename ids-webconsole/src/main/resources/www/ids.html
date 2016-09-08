@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IDS Connector - Configurations</title>
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/datepicker3.css" rel="stylesheet">
+<link href="css/styles.css" rel="stylesheet">
+<link href="css/ids.css" rel="stylesheet">
+<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900,100italic,300italic,400italic,700italic,900italic' rel='stylesheet' type='text/css'>
+<!--[if lt IE 9]>
+<link href="css/rgba-fallback.css" rel="stylesheet">
+<script src="js/html5shiv.js"></script>
+<script src="js/respond.min.js"></script>
+<![endif]-->
+
+<script>
+
+/* Helper functions for REST requests */
+function getAsync(url, success, error) {
+	 $.ajax({
+         type: 'GET',
+         url: url,
+         dataType: 'json',
+         success: function (data) {
+		        	 if (success) 
+		        		 success(data)
+	       		 },
+         error: function (data) {
+             console.log(data);
+             if (error) error(data);
+         }
+     });
+	 
+	 // Refresh container table: for the next 30 seconds every 3 seconds (possibly move to different method)
+	 $('#container-table').bootstrapTable('refresh');
+	 var timer = setInterval(function() { $('#container-table').bootstrapTable('refresh'); }, 3000);
+	 setTimeout(function() { clearInterval(timer); }, 30000);
+	 
+}
+
+/* Functions for data tables */
+function shorten_container(value,row,index) {
+	return value.substring(0,15);
+}
+
+function shorten_image(value,row,index) {
+	return value.replace('sha256:', '').substring(0,10);
+}
+
+function actionButton(value,row,index) {
+	var actionDropDown = '<div class="dropdown"><button class="btn btn-default dropdown-toggle" type="button" id="actionMenu_'+index+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Action<span class="caret"></span></button>'+
+  '<ul class="dropdown-menu" aria-labelledby="actionMenu_'+index+'">' +
+    '<li><a href="#" onclick="getAsync(\'./containers/'+value+'/start\')"><i class="glyphicon glyphicon-play"></i> Start</a></li>'+
+    '<li><a href="#" onclick="getAsync(\'./containers/'+value+'/stop\')"><i class="glyphicon glyphicon-stop"></i> Stop</a></li>'+
+    '<li><a href="#" onclick="getAsync(\'./containers/'+value+'/pause\')"><i class="glyphicon glyphicon-pause"></i> Pause</a></li>'+
+    '<li><a href="#" onclick="getAsync(\'./containers/'+value+'/unpause\')"><i class="glyphicon glyphicon-repeat"></i> Resume</a></li>'+
+    '<li><a href="#" onclick="getAsync(\'./containers/'+value+'/wipe\')"><i class="glyphicon glyphicon-trash"></i> Wipe</a></li>'+
+    '</ul></div>';
+	return actionDropDown;
+}
+</script>
+
+</head>
+
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#sidebar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#"><span class="navbar-brand-highlight">Core Platform Console</span></a>
+				<ul class="nav navbar-top-links navbar-right">
+					<li class="dropdown">
+						<a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
+							<i class="glyphicon glyphicon-off"></i>
+						</a>
+						<ul class="dropdown-menu dropdown-alerts">
+							<li>
+								<a href="#">
+									<div>
+										<em class="glyphicon glyphicon-user"></em> Log out
+										<!-- <span class="pull-right text-muted small">Terminate this session</span> -->
+									</div>
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div><!-- /.container-fluid -->
+	</nav>
+		
+	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+		<form role="search">
+			<div class="form-group">
+				<input type="text" class="form-control" placeholder="Search">
+			</div>
+		</form>
+		<ul class="nav menu">
+			<li class="nav-choose" data-target="#block-settings"><a href="#"><span class="glyphicon glyphicon-wrench"></span> Settings</a></li>
+			<li class="nav-choose" data-target="#block-routes"><a href="#"><span class="glyphicon glyphicon-random"></span> Pipes</a></li>
+			<li class="nav-choose" data-target="#block-bundles"><a href="#"><span class="glyphicon glyphicon-th"></span> Core Platform Bundles</a></li>
+			<li class="nav-choose" data-target="#block-endpoints"><a href="#"><span class="glyphicon glyphicon-globe"></span> Available Endpoints</a></li>
+			<li class="nav-choose" data-target="#block-containers"><a href="#"><span class="glyphicon glyphicon-th-large"></span> Application Containers</a></li>
+			<!--  <li role="presentation" class="divider"></li> -->
+		</ul>
+	</div><!--/.sidebar-->
+		
+	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">			
+		<!-- BREADCRUMB NAVIGATION 
+		<div class="row">
+			<ol class="breadcrumb">
+				<li><a href="#"><span class="glyphicon glyphicon-home"></span></a></li>
+				<li class="active">Configuration</li>
+			</ol>
+		</div>-->
+		
+ 		<div class="row">
+			<div class="col-lg-12">
+			&nbsp;
+				<!--	TITLE TEXT
+					<h1 class="page-header">IDS Core Platform</h1>
+ 				-->				
+			</div>
+		</div>
+				
+		<div class="row" id="block-settings">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">Settings</div>
+						<form id="form_config" lpformnum="47" role="form">
+						<div class="panel-body">
+							<div id="form_config_text" class="alert bg-error hidden" role="alert"></div>
+							<div class="col-lg-12">
+								<div class="form-group">
+									<label>Broker URL</label>
+									<input id="broker.url" name="broker.url" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4EaVTO26DQBD1ohQWaS2lg9JybZ+AK7hNwx2oIoVf4UPQ0Lj1FdKktevIpel8AKNUkDcWMxpgSaIEaTVv3sx7uztiTdu2s/98DywOw3Dued4Who/M2aIx5lZV1aEsy0+qiwHELyi+Ytl0PQ69SxAxkWIA4RMRTdNsKE59juMcuZd6xIAFeZ6fGCdJ8kY4y7KAuTRNGd7jyEBXsdOPE3a0QGPsniOnnYMO67LgSQN9T41F2QGrQRRFCwyzoIF2qyBuKKbcOgPXdVeY9rMWgNsjf9ccYesJhk3f5dYT1HX9gR0LLQR30TnjkUEcx2uIuS4RnI+aj6sJR0AM8AaumPaM/rRehyWhXqbFAA9kh3/8/NvHxAYGAsZ/il8IalkCLBfNVAAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-position: right center; cursor: auto;" class="form-control" placeholder="Placeholder">
+								</div>
+							</div>
+							<div class="col-lg-12">
+								<button type="submit" class="btn btn-primary">Save</button>
+								<!--  <button type="reset" class="btn btn-default">Reset Button</button> -->
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>		
+		</div>
+		
+		<div class="row collapse" id="block-routes">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">Pipes</div>
+						<form id="form_pipes" lpformnum="47" role="form">
+						<div class="panel-body">
+							<div id="form_config_text" class="alert bg-error hidden" role="alert">
+								Pipes connect applications within the IDS connector. Use pipes to route data from system connectors through transformers to publishing endpoints.
+							</div>
+							<div class="col-lg-12">
+								<div class="form-group">
+									<label>Pipes definition</label>
+									<textarea id="form_routes_text" class="form-control" rows="30"></textarea>
+								</div>
+							</div>
+							<div class="col-lg-12">
+								<button type="submit" class="btn btn-primary">Save</button>
+								<!--  <button type="reset" class="btn btn-default">Reset Button</button> -->
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>		
+		</div>
+		
+		<div class="row collapse" id="block-bundles">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">Bundles</div>
+					<div class="panel-body">
+						<table data-toggle="table" data-url="bundles/list"  data-show-refresh="true" data-show-toggle="false" data-show-columns="false" data-search="true" data-select-item-name="toolbar1" data-pagination="false" data-sort-name="name" data-sort-order="desc">
+						    <thead>
+						    <tr>
+						        <th data-field="state" data-checkbox="true" >Bundle ID</th>
+						        <th data-field="id" data-sortable="true">Bundle ID</th>
+						        <th data-field="name"  data-sortable="true">Bundle Name</th>
+						        <th data-field="version"  data-sortable="true">Version</th>
+						        <th data-field="status" data-sortable="true">Status</th>
+						    </tr>
+						    </thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div><!--/.row-->			
+		
+		<div class="row collapse" id="block-endpoints">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">Endpoints registered at broker</div>
+					<div class="panel-body">
+						<table data-toggle="table" data-url="endpoints/list"  data-show-refresh="true" data-show-toggle="false" data-show-columns="false" data-search="true" data-select-item-name="toolbar1" data-pagination="true" data-sort-name="name" data-sort-order="desc">
+						    <thead>
+						    <tr>
+						        <th data-field="epAddress" data-sortable="true">Address</th>
+						        <th data-field="description"  data-sortable="true">Description</th>
+						    </tr>
+						    </thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div><!--/.row-->			
+
+		<div class="row collapse" id="block-containers">
+			<div class="col-lg-12">
+
+				<div class="panel panel-default">
+					<div class="panel-heading">Install container image</div>
+						<form id="form_container" lpformnum="47" role="form">
+						<div class="panel-body">
+							<div id="form_container_text" class="alert bg-error hidden" role="alert"></div>
+							<div class="col-lg-12">
+								<div class="form-group">
+									<label>Image ID</label>
+									<input id="image.id" name="image.id" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4EaVTO26DQBD1ohQWaS2lg9JybZ+AK7hNwx2oIoVf4UPQ0Lj1FdKktevIpel8AKNUkDcWMxpgSaIEaTVv3sx7uztiTdu2s/98DywOw3Dued4Who/M2aIx5lZV1aEsy0+qiwHELyi+Ytl0PQ69SxAxkWIA4RMRTdNsKE59juMcuZd6xIAFeZ6fGCdJ8kY4y7KAuTRNGd7jyEBXsdOPE3a0QGPsniOnnYMO67LgSQN9T41F2QGrQRRFCwyzoIF2qyBuKKbcOgPXdVeY9rMWgNsjf9ccYesJhk3f5dYT1HX9gR0LLQR30TnjkUEcx2uIuS4RnI+aj6sJR0AM8AaumPaM/rRehyWhXqbFAA9kh3/8/NvHxAYGAsZ/il8IalkCLBfNVAAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-position: right center; cursor: auto;" class="form-control" placeholder="ImageID (e.g. fhg/opc-ua-ingress:latest)">
+								</div>
+							</div>
+							<div class="col-lg-12">
+								<button type="submit" class="btn btn-primary">Install</button>
+								<!--  <button type="reset" class="btn btn-default">Reset Button</button> -->
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<div class="panel panel-default">
+					<div class="panel-heading">Local application containers</div>
+					<div class="panel-body">
+						<table id="container-table" data-toggle="table" data-url="containers/list?all=true"  data-show-refresh="true" data-show-toggle="false" data-show-columns="false" data-search="true" data-select-item-name="toolbar1" data-pagination="true" data-sort-name="name" data-sort-order="desc">
+						    <thead>
+						    <tr>
+						        <th data-field="id" data-formatter="shorten_container" data-sortable="true">ID</th>
+						        <th data-field="image"  data-formatter="shorten_image" data-sortable="true">Image</th>
+						        <th data-field="name"  data-sortable="true">name</th>
+						        <th data-field="uptime"  data-sortable="true">Uptime</th>
+						        <th data-field="status"  data-sortable="true">Status</th>
+						        <th data-field="ports"  data-sortable="true">Ports</th>
+						        <th data-field="size"  data-sortable="true">Size</th>
+						        <th data-field="id" data-formatter="actionButton">Action</th>
+						    </tr>
+						    </thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div><!--/.row-->			
+
+	</div><!--/.main-->
+
+	<script src="js/jquery-1.11.1.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/chart.min.js"></script>
+	<script src="js/chart-data.js"></script>
+	<!-- <script src="js/easypiechart.js"></script>
+	<script src="js/easypiechart-data.js"></script> -->
+	<script src="js/bootstrap-datepicker.js"></script>
+	<script src="js/custom.js"></script>
+	<script src="js/bootstrap-table.js"></script>
+	
+	<script>
+		// BEGIN CONSOLE TYPE
+		(function( $ ){
+		$.fn.consoletype = function(opts){
+			
+		    var $this = this,
+		        defaults = {
+		            typeInterval: 50,
+		            showCursor:true,
+					defaultCursor: '_', //|█
+					cursorAnimationAtEnd: true,
+					callback:''
+		        }, settings = $.extend(defaults, opts);
+			var content = $this.text();
+		    $this.text('');
+			var temp = $this.text();
+			var lastIndex = content.length-1;
+		    $.each(content.split(''), function(i, letter){
+					typeTimerIntervalID = setTimeout(function(){
+					temp += letter;
+						if(settings.showCursor==true && (i<lastIndex || settings.cursorAnimationAtEnd==true))
+						{
+							$this.html(temp+'<span class="consoletype-cursor">'+ settings.defaultCursor +'</span>');
+						}
+						else
+						{
+							$this.html(temp);
+						}
+						//if type animation is done, call callback function if it exists
+						if(i==lastIndex)
+						{
+							if (typeof settings.callback == "function") 
+							{
+								settings.callback();
+							}
+						}
+					}, settings.typeInterval * i);			
+			});
+			
+			if(settings.showCursor && settings.cursorAnimationAtEnd)
+		    {
+		          typeCursorIntervalID = setInterval (function(){
+		              $('.consoletype-cursor').animate({opacity: 0}, 'fast', 'swing').animate({opacity: 1}, 'fast', 'swing');
+		          }, 600)
+		    }
+		};
+		})( jQuery );		
+		// END CONSOLE TYPE
+	
+	
+		// --- BEGIN SHUFFLE LETTERS
+		(function($){
+			
+			$.fn.shuffleLetters = function(prop){
+				var options = $.extend({
+					"step"		: 1,			// How many times should the letters be changed
+					"fps"		: 25,			// Frames Per Second
+					"text"		: "", 			// Use this text instead of the contents
+					"callback"	: function(){}	// Run once the animation is complete
+				},prop)
+				return this.each(function(){
+					var el = $(this),
+						str = "";
+					// Preventing parallel animations using a flag;
+					if(el.data('animated')){
+						return true;
+					}
+					el.data('animated',true);
+					
+					if(options.text) {
+						str = options.text.split('');
+					}
+					else {
+						str = el.text().split('');
+					}
+					
+					// The types array holds the type for each character;
+					// Letters holds the positions of non-space characters;
+					var types = [],
+						letters = [];
+	
+					// Looping through all the chars of the string
+					for(var i=0;i<str.length;i++){
+						var ch = str[i];
+						if(ch == " "){
+							types[i] = "space";
+							continue;
+						} else if(/[a-z]/.test(ch)){
+							types[i] = "lowerLetter";
+						} else if(/[A-Z]/.test(ch)){
+							types[i] = "upperLetter";
+						} else {
+							types[i] = "symbol";
+						}					
+						letters.push(i);
+					}				
+					el.html("");			
+	
+					// Self executing named function expression:				
+					(function shuffle(start){
+					
+						// This code is run options.fps times per second
+						// and updates the contents of the page element
+						var i, len = letters.length, strCopy = str.slice(0);	// Fresh copy of the string
+							
+						if(start>len){
+							// The animation is complete. Updating the
+							// flag and triggering the callback;
+							el.data('animated',false);
+							options.callback(el);
+							return;
+						}
+						
+						// All the work gets done here
+						for(i=Math.max(start,0); i < len; i++){
+							// The start argument and options.step limit
+							// the characters we will be working on at once
+							if( i < start+options.step){
+								// Generate a random character at thsi position
+								strCopy[letters[i]] = randomChar(types[letters[i]]);
+							} else {
+								strCopy[letters[i]] = "";
+							}
+						}
+						el.text(strCopy.join(""));
+						setTimeout(function(){
+							shuffle(start+1);
+						},1000/options.fps);
+					})(-options.step);
+				});
+			};
+			
+			function randomChar(type){
+				var pool = "";
+				if (type == "lowerLetter"){
+					pool = "abcdefghijklmnopqrstuvwxyz0123456789";
+				} else if (type == "upperLetter"){
+					pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+				} else if (type == "symbol"){
+					pool = ",.?/\\(^)![]{}*&^%$#'\"";
+				}
+				var arr = pool.split('');
+				return arr[Math.floor(Math.random()*arr.length)];
+			}
+		})(jQuery);
+		// ------ END SHUFFLE LETTERS
+	  
+		$(document).ready(function()
+			    {
+					// Fancy but useless typing effect in title
+					$('.navbar-brand-highlight').consoletype();
+					$('.type-text').each( function() {
+						var items = $( this ).attr( 'title' ) + ';' + $( this ).text();
+						$( this ).empty().attr( 'title', '' ).teletype( {
+							text: $.map( items.split( ';' ), $.trim ),
+							typeDelay: 10,
+							backDelay: 20,
+							cursor: '▋', 
+							delay: 1000,
+							preserve: false,
+							prefix: '# ',
+							humanise: true,
+							loop: 1
+						} );
+					});
+		  
+ 					// If settings have been changed, save them in the Core Platform.
+			        $('#form_config').submit(function(event) {
+			            event.preventDefault();
+			            $.ajax({
+			                type: 'POST',
+			                url: 'config/setprop',
+			                data: $(this).serialize(),
+			                dataType: 'json',
+			                success: fillSettingsForm,
+ 			                success: function (data) {
+								fillSettingsForm();
+			                	console.log(data);
+			                    $('#form_config_text').html(data.msg);
+			                },
+			                error: function (data) {
+			                    console.log(data);
+			                    $('#form_config_text').html(data.msg);
+			                }
+			            });
+			        });
+			        
+ 					// If containers shall be installed, instruct CML to do so.
+			        $('#form_container').submit(function(event) {
+			            event.preventDefault();
+			            $.ajax({
+			                type: 'POST',
+			                url: 'containers/pull',
+			                data: $(this).serializeArray(),
+			                dataType: 'json',
+ 			                success: function (data) {
+								fillSettingsForm();
+			                	console.log(data);
+			                    $('#form_container_text').html(data.msg);
+			                },
+			                error: function (data) {
+			                    console.log(data);
+			                    $('#form_container_text').html(data.msg);
+			                }
+			            });
+			        });
+
+ 					// If route config has been saved, load the new route config and activate it immediately.
+			        $('#form_pipes').submit(function(event) {
+			            event.preventDefault();
+			            $.ajax({
+			                type: 'POST',
+			                url: 'pipes/load',
+			                data: $('#form_routes_text').val(),
+			                processData: false,
+			                dataType: 'json',
+			                contentType: 'text/xml',
+			                success: fillPipesForm,
+			                error: function (data) {
+			                    console.log(data);
+			                    $('#form_routes_text').html(data.msg);
+			                }
+			            });
+			        });
+
+			        // Load Core Platform settings and display in "configuration" form.
+			        $.ajax({
+		                type: 'GET',
+		                url: 'config/list',
+		                dataType: 'json',
+		                success: fillSettingsForm,
+		                error: function (data) {
+		                    console.log(data);
+		                    $('#form_config_text').html(data.msg);
+		                }
+		            });
+			    	
+			        // Load routes configuration and display in "pipes" form.
+		            $.ajax({
+		                type: 'GET',
+		                url: 'pipes/list',
+		                dataType: 'json',
+		                success: fillPipesForm,
+		                error: function (data) {
+		                    console.log(data);
+		                    $('#form_routes_text').html(data.msg);
+		                }
+		            });
+			    	
+		          // Menu navigation: all IDs starting with "block-" become navigatable
+				  $('.nav-choose').click(function() {
+					  $('[id^=block-]').hide();
+					  $($(this).data("target")).show();
+					});
+			    });
+	  
+	
+	  	// Populates fields in config form with values.
+		function fillSettingsForm(response) {
+	  		 var frm = $("#form_config");
+	  		 var i;
+	  		 for (i in response) {
+	            frm.find('[name="' + i + '"]').val(response[i]);
+	        }
+	  	}
+	  	
+	  	// Populates fiels in pipes form with values.
+	  	function fillPipesForm(response) {
+	  		 $("#form_routes_text").text(response['pipes']); 
+	  	}
+	  </script>
+</body>
+</html>

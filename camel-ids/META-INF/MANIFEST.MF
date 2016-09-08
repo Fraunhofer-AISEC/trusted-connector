@@ -3,5 +3,5 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Camel-websocket
 Bundle-SymbolicName: camel-ids
 Bundle-Version: 1.0.0.qualifier
-Export-Package: de.fhg.camel.ids
+Export-Package: de.fhg.camel.ids.server
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

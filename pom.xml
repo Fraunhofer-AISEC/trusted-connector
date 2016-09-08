@@ -11,6 +11,7 @@
     <module>camel-ids</module>
     <module>ids-api</module>
     <module>ids-core-platform-container-manager</module>
+    <module>ids-webconsole</module>
     <module>karaf-feature-ids</module>
     <module>karaf-assembly</module>
   </modules>

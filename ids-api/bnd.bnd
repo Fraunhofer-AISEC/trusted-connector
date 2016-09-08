@@ -1,4 +1,7 @@
-src: src/main/java/,generated-sources/main/java
+src: src/main/java/,src/main/proto,target/generated-sources/protobuf/java
+bin: target/classes
+testsrc: src/test/java
+testbin: target/test-classes
 Export-Package: \
 	de.fhg.aisec.ids.api.broker,\
 	de.fhg.aisec.ids.api.cm,\
