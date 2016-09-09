@@ -13,10 +13,6 @@
         <from uri="file:/tmp/Input/"/>
         <to uri="file:/tmp/Output/"/>
       </route>
-      <route id="testroute2">
-        <from uri="file:/tmp/Output/"/>
-        <to uri="file:/tmp/FinalOutput/"/>
-      </route>
     </camelContext>
 
 </blueprint>

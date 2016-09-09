@@ -6,6 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.management.InstrumentationProcessor;
@@ -158,26 +162,49 @@ public class MyProcessor implements AsyncProcessor {
 			return;
 		}
 			
-		rule_labels = allow_rules.get(destination).split(",");
+//		
+//		
+//		if (rule_labels == null) {
+//			System.out.println("No rules found for destination: " + destination + ", message will be dropped...");
+//			return;
+//		}
+//		
+
 		
-		if (rule_labels == null) {
-			System.out.println("No rules found for destination: " + destination + ", message will be dropped...");
-			return;
-		}
-		
-		//Check if the message has _ALL_ the required labels. If we miss one, stop 
-		for (String rule : rule_labels) {
-			if (!check_if_label_exists (rule, exchange_labels)) {
-				System.out.println("Required label " + rule + " not found, message will be dropped...");
-				return;
+		for (Entry<String, String> entry : allow_rules.entrySet()) {
+			
+			//match for destination
+			Pattern pattern = Pattern.compile(entry.getKey());
+			Matcher matcher = pattern.matcher(destination);
+			
+			//the destination matches, now let's see if the label matches
+			if (matcher.find()) {
+			
+				System.out.println("Destination '" + destination + "' matches pattern '" + pattern.toString() + "'");
+				rule_labels = entry.getValue().split(",");
+				
+				//Check if the message has _ALL_ the required labels. If we miss one, stop 
+				for (String label : rule_labels) {
+					if (!check_if_label_exists (label, exchange_labels)) {
+						System.out.println("Required label " + label + " not found, message will be dropped...");
+						return;
+					} else {
+						System.out.println("Successfully matched label '" + label + "' with exchange labels '" + exchange_labels + "'");
+					}
+				}
 			}
 		}
-		System.out.println("Message with labels  '" + exchange_labels +"' has all required labels ('" + allow_rules.get(destination) + "') for destination '" + destination + "', forwarding...");
+		
+		System.out.println("Message with labels  '" + exchange_labels +"' has all required labels for destination '" + destination + "', forwarding...");
 		target.process(exchange);
     }
 	
 	//check if a label exists in a list of labels
 	public boolean check_if_label_exists(String label, String labels){
+		
+		//There might be a , after and/or the label, so we add this to the regex
+		Pattern pattern = Pattern.compile(",?" + label + ",?");
+		Matcher matcher = pattern.matcher(labels);
 		
 		//if there are no requirements we have to fulfill, we return true
 		if (labels == null) {
@@ -189,14 +216,14 @@ public class MyProcessor implements AsyncProcessor {
 			return false;
 		}
 		
-		//check for each label if it's contained in the requirements. If not, return false;
-		if (!labels.equals(label)   
-				&& !labels.contains(label + ",") 
-				&& !labels.contains("," + label)) {
+		//check if the label is contained in the requirements. If not, return false;		
+		if (matcher.find()) {
+			return true;
+		} else {
 			return false;
 		}
-		return true;
 	}
+	
 	
 	public Exchange LabelingProcess(Exchange exchange) {
 		String exchange_labels; 
@@ -218,28 +245,21 @@ public class MyProcessor implements AsyncProcessor {
 		return exchange;
 	}
 	
+	
 	public String get_label_based_on_attribute(String exchange_labels, String attribute){
 		
-		String[] rule_labels;
-		
-		//if there are no rules for the attribute, we can stop here
-		if (label_rules.get(attribute) == null) {
-			return exchange_labels;
-		}
-		
-		rule_labels = label_rules.get(attribute).split(",");
-		
-		if (rule_labels != null) {
+		for (Entry<String, String> entry : label_rules.entrySet()) {
+			String source = entry.getKey();
+			String label = entry.getValue();
+			Pattern pattern = Pattern.compile(source);
+			Matcher matcher = pattern.matcher(attribute);
 			
-			for (String label : rule_labels) {
-				//If the label already exists, we don't have to do anything, else, we append it
-				if (!check_if_label_exists(label, exchange_labels)) {
-					System.out.println("Got a message with attribute '" + attribute + "', will label it with '" + label + "'");
-					if (exchange_labels == "") {
-						exchange_labels = label;
-					} else {
-						exchange_labels = exchange_labels + "," + label;
-					}
+			if (matcher.find()) {
+				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + source + "', assigning label '" + label + "'");
+				if (exchange_labels == "") {
+					exchange_labels = label;
+				} else {
+					exchange_labels = exchange_labels + "," + label;
 				}
 			}
 		}
