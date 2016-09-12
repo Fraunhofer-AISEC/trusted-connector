@@ -8,10 +8,20 @@
 
    <bean id="myInterceptor" class="de.fhg.aisec.dfpolicy.PEP"/>
 
+   <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+   <property name="connectionFactory">
+    <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+      <property name="brokerURL" value="tcp://localhost:61616"/>
+      <property name="userName" value="karaf"/>
+      <property name="password" value="karaf"/>
+     </bean>
+    </property>
+   </bean>
+
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
       <route id="testroute">
-        <from uri="file:/tmp/Input/"/>
-        <to uri="file:/tmp/Output/"/>
+        <from uri="activemq:Input"/>
+        <to uri="activemq:Output"/>
       </route>
     </camelContext>
 

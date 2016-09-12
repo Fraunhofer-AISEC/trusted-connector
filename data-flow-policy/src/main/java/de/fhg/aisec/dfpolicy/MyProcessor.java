@@ -38,6 +38,7 @@ public class MyProcessor implements AsyncProcessor {
     	}
     }
     
+    
     private void loadRules(String rulefile) {
     	FileInputStream fileinputstream;
     	DataInputStream datainputstream;
@@ -110,6 +111,7 @@ public class MyProcessor implements AsyncProcessor {
     		
     }
     
+    
     // Checks for a line in the rule-file that each keyword exists only once, keyword1 before keyword 2, etc... 
     public boolean check_rule_syntax(String line, String keyword1, String keyword2){
     	//keyword1 in the beginning?
@@ -161,15 +163,6 @@ public class MyProcessor implements AsyncProcessor {
 			LOG.error("target is not an instance of InstrumentactionProcessor");
 			return;
 		}
-			
-//		
-//		
-//		if (rule_labels == null) {
-//			System.out.println("No rules found for destination: " + destination + ", message will be dropped...");
-//			return;
-//		}
-//		
-
 		
 		for (Entry<String, String> entry : allow_rules.entrySet()) {
 			
@@ -180,7 +173,6 @@ public class MyProcessor implements AsyncProcessor {
 			//the destination matches, now let's see if the label matches
 			if (matcher.find()) {
 			
-				System.out.println("Destination '" + destination + "' matches pattern '" + pattern.toString() + "'");
 				rule_labels = entry.getValue().split(",");
 				
 				//Check if the message has _ALL_ the required labels. If we miss one, stop 
@@ -188,14 +180,16 @@ public class MyProcessor implements AsyncProcessor {
 					if (!check_if_label_exists (label, exchange_labels)) {
 						System.out.println("Required label " + label + " not found, message will be dropped...");
 						return;
-					} else {
-						System.out.println("Successfully matched label '" + label + "' with exchange labels '" + exchange_labels + "'");
 					}
 				}
 			}
 		}
 		
 		System.out.println("Message with labels  '" + exchange_labels +"' has all required labels for destination '" + destination + "', forwarding...");
+		
+		//store labels in message body
+		exchange.getIn().setBody("Labels: " + exchange_labels + "\n\n" + exchange.getIn().getBody());
+		
 		target.process(exchange);
     }
 	
@@ -255,11 +249,21 @@ public class MyProcessor implements AsyncProcessor {
 			Matcher matcher = pattern.matcher(attribute);
 			
 			if (matcher.find()) {
-				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + source + "', assigning label '" + label + "'");
+			
 				if (exchange_labels == "") {
+	
 					exchange_labels = label;
+					System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + source + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");		
 				} else {
-					exchange_labels = exchange_labels + "," + label;
+				
+					// Check if the label already exists
+					pattern = Pattern.compile(",?" + label + ",?");
+					matcher = pattern.matcher(exchange_labels);
+				
+					if (!matcher.find()) {		
+						exchange_labels = exchange_labels + "," + label;
+						System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + source + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");
+					}
 				}
 			}
 		}
