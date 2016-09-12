@@ -23,6 +23,10 @@
         <from uri="activemq:Input"/>
         <to uri="activemq:Output"/>
       </route>
+      <route id="testroute2">
+        <from uri="activemq:Output"/>
+        <to uri="activemq:Output2"/>
+      </route>
     </camelContext>
 
 </blueprint>

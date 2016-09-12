@@ -135,6 +135,7 @@ public class MyProcessor implements AsyncProcessor {
 		String destination;
 		String exchange_labels; 
 		String[] rule_labels;
+		String body;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
 
@@ -186,10 +187,15 @@ public class MyProcessor implements AsyncProcessor {
 		}
 		
 		System.out.println("Message with labels  '" + exchange_labels +"' has all required labels for destination '" + destination + "', forwarding...");
+
 		
 		//store labels in message body
-		exchange.getIn().setBody("Labels: " + exchange_labels + "\n\n" + exchange.getIn().getBody());
-		
+		body = exchange.getIn().getBody().toString();
+		if (body.startsWith("Labels: ") && body.contains("\n\n")) {
+			body = body.substring(body.indexOf("\n\n") + "\n\n".length(), body.length() - 1 );
+		}
+		exchange.getIn().setBody("Labels: " + exchange_labels + "\n\n" + body);
+				
 		target.process(exchange);
     }
 	
@@ -221,11 +227,25 @@ public class MyProcessor implements AsyncProcessor {
 	
 	public Exchange LabelingProcess(Exchange exchange) {
 		String exchange_labels; 
+		String body = exchange.getIn().getBody().toString();
+		String labels;
 		
 		if (exchange.getProperty("labels") != null ) {
 			exchange_labels = exchange.getProperty("labels").toString();
 		} else {
 			exchange_labels = "";
+		}
+		
+		//Check if there are some labels in the body we have to use
+		if (body.startsWith("Labels: ")) {
+			labels = body.substring("Labels: ".length(), body.indexOf("\n"));
+			System.out.println("Found labels in exchange body: " +labels);
+			if (exchange_labels == "") {
+				exchange_labels = labels;
+			} else {
+				exchange_labels = exchange_labels + "," + labels;
+			}
+				
 		}
 		
 		//Check if we have a labeling rule for this source
