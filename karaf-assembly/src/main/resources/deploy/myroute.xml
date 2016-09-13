@@ -21,11 +21,11 @@
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
       <route id="testroute">
         <from uri="activemq:Input"/>
-        <to uri="activemq:Output"/>
+        <to uri="activemq:Processing"/>
       </route>
       <route id="testroute2">
-        <from uri="activemq:Output"/>
-        <to uri="activemq:Output2"/>
+        <from uri="activemq:Processing"/>
+        <to uri="activemq:Output"/>
       </route>
     </camelContext>
 

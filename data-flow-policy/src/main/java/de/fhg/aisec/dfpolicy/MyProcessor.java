@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -24,16 +25,16 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    private static HashMap<String, String> label_rules = null;
-    private static HashMap<String, String> allow_rules = null;
+    private static ArrayList<LabelingRule> label_rules = null;
+    private static ArrayList<AllowRule> allow_rules = null;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
     	//If we didn't load the rules yet, do it now
     	if (label_rules == null || allow_rules == null) {
-    		label_rules = new HashMap<String, String>();
-    		allow_rules = new HashMap<String, String>();
+    		label_rules = new ArrayList<LabelingRule>();
+    		allow_rules = new ArrayList<AllowRule>();
     		loadRules("deploy/rules");
     	}
     }
@@ -48,9 +49,8 @@ public class MyProcessor implements AsyncProcessor {
     	final String ALLOW_KEYWORD1 = "ALLOW";
     	final String ALLOW_KEYWORD2 = "TO";
     	String line;
-    	String uri;
+    	String attribute;
     	String label;
-    	String existing_label;
     	
 		try {
 			fileinputstream =  new FileInputStream(rulefile);
@@ -67,17 +67,12 @@ public class MyProcessor implements AsyncProcessor {
 				if (check_rule_syntax(line, LABEL_KEYWORD1, LABEL_KEYWORD2)) {
 								
 					// source = the string between the first and the second keyword 
-					uri = line.substring(line.indexOf(LABEL_KEYWORD1) + LABEL_KEYWORD1.length(), line.indexOf(LABEL_KEYWORD2));
+					attribute = line.substring(line.indexOf(LABEL_KEYWORD1) + LABEL_KEYWORD1.length(), line.indexOf(LABEL_KEYWORD2));
 					
 					// label = the string after the second keyword
 					label = line.substring(line.indexOf(LABEL_KEYWORD2) + LABEL_KEYWORD2.length());
 					
-					existing_label = label_rules.get(uri);
-					if (existing_label == null) {
-						label_rules.put(uri, label);
-					} else {
-						label_rules.put(uri, existing_label + "," + label);
-					}
+					label_rules.add(new LabelingRule(attribute, label));
 						
 				// Check for an ALLOW-rule
 				} else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
@@ -86,14 +81,9 @@ public class MyProcessor implements AsyncProcessor {
 					label = line.substring(line.indexOf(ALLOW_KEYWORD1) + ALLOW_KEYWORD1.length(), line.indexOf(ALLOW_KEYWORD2));
 					
 					// label = the string after the second keyword
-					uri = line.substring(line.indexOf(ALLOW_KEYWORD2) + ALLOW_KEYWORD2.length());
+					attribute = line.substring(line.indexOf(ALLOW_KEYWORD2) + ALLOW_KEYWORD2.length());
 					
-					existing_label = allow_rules.get(uri);
-					if (existing_label == null) {
-						allow_rules.put(uri, label);
-					} else {
-						allow_rules.put(uri, existing_label + "," + label);
-					}
+					allow_rules.add(new AllowRule(label, attribute));
 					
 				// If it's also no comment, throw an error	
 				} else if (!line.startsWith("#")) {
@@ -134,7 +124,6 @@ public class MyProcessor implements AsyncProcessor {
 		SendProcessor sendprocessor;
 		String destination;
 		String exchange_labels; 
-		String[] rule_labels;
 		String body;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
@@ -165,24 +154,21 @@ public class MyProcessor implements AsyncProcessor {
 			return;
 		}
 		
-		for (Entry<String, String> entry : allow_rules.entrySet()) {
+		for (AllowRule rule : allow_rules) {
 			
 			//match for destination
-			Pattern pattern = Pattern.compile(entry.getKey());
+			Pattern pattern = Pattern.compile(rule.getDestination());
 			Matcher matcher = pattern.matcher(destination);
 			
 			//the destination matches, now let's see if the label matches
 			if (matcher.find()) {
-			
-				rule_labels = entry.getValue().split(",");
 				
-				//Check if the message has _ALL_ the required labels. If we miss one, stop 
-				for (String label : rule_labels) {
-					if (!check_if_label_exists (label, exchange_labels)) {
-						System.out.println("Required label " + label + " not found, message will be dropped...");
-						return;
-					}
+				//Check if the message has the required label. If not, we stop 
+				if (!check_if_label_exists (rule.getLabel(), exchange_labels)) {
+					System.out.println("Required label " + rule.getLabel() + " not found, message will be dropped...");
+					return;
 				}
+
 			}
 		}
 		
@@ -262,10 +248,10 @@ public class MyProcessor implements AsyncProcessor {
 	
 	public String get_label_based_on_attribute(String exchange_labels, String attribute){
 		
-		for (Entry<String, String> entry : label_rules.entrySet()) {
-			String source = entry.getKey();
-			String label = entry.getValue();
-			Pattern pattern = Pattern.compile(source);
+		for (LabelingRule rule : label_rules) {
+			String rule_attribute = rule.getAttribute();
+			String label = rule.getLabel();
+			Pattern pattern = Pattern.compile(rule_attribute);
 			Matcher matcher = pattern.matcher(attribute);
 			
 			if (matcher.find()) {
@@ -273,16 +259,15 @@ public class MyProcessor implements AsyncProcessor {
 				if (exchange_labels == "") {
 	
 					exchange_labels = label;
-					System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + source + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");		
+					System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");		
 				} else {
 				
 					// Check if the label already exists
 					pattern = Pattern.compile(",?" + label + ",?");
 					matcher = pattern.matcher(exchange_labels);
-				
 					if (!matcher.find()) {		
 						exchange_labels = exchange_labels + "," + label;
-						System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + source + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");
+						System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");
 					}
 				}
 			}
