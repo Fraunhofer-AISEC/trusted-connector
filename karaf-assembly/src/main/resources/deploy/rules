@@ -1,4 +1,5 @@
 LABEL .*Input.* AS raw
 LABEL .*Process.* AS processed
+REMOVELABEL raw FROM .*Process.* 
 ALLOW raw.* TO .*Process.*
 ALLOW processed.* TO .*Output.*

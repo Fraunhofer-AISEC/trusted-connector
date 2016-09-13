@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.management.InstrumentationProcessor;
@@ -26,6 +25,7 @@ public class MyProcessor implements AsyncProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
     private static ArrayList<LabelingRule> label_rules = null;
+    private static ArrayList<LabelingRule> removelabel_rules = null;
     private static ArrayList<AllowRule> allow_rules = null;
     
     
@@ -34,6 +34,7 @@ public class MyProcessor implements AsyncProcessor {
     	//If we didn't load the rules yet, do it now
     	if (label_rules == null || allow_rules == null) {
     		label_rules = new ArrayList<LabelingRule>();
+    		removelabel_rules = new ArrayList<LabelingRule>();
     		allow_rules = new ArrayList<AllowRule>();
     		loadRules("deploy/rules");
     	}
@@ -46,6 +47,8 @@ public class MyProcessor implements AsyncProcessor {
     	BufferedReader bufferedreader;
     	final String LABEL_KEYWORD1 = "LABEL";
     	final String LABEL_KEYWORD2 = "AS";
+    	final String REMOVELABEL_KEYWORD1 = "REMOVELABEL";
+    	final String REMOVELABEL_KEYWORD2 = "FROM";
     	final String ALLOW_KEYWORD1 = "ALLOW";
     	final String ALLOW_KEYWORD2 = "TO";
     	String line;
@@ -75,7 +78,18 @@ public class MyProcessor implements AsyncProcessor {
 					label_rules.add(new LabelingRule(attribute, label));
 						
 				// Check for an ALLOW-rule
-				} else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
+				} else if (check_rule_syntax(line, REMOVELABEL_KEYWORD1, REMOVELABEL_KEYWORD2)) {
+					
+					// source = the string between the first and the second keyword 
+					label = line.substring(line.indexOf(REMOVELABEL_KEYWORD1) + REMOVELABEL_KEYWORD1.length(), line.indexOf(REMOVELABEL_KEYWORD2));
+		
+					// label = the string after the second keyword
+					attribute = line.substring(line.indexOf(REMOVELABEL_KEYWORD2) + REMOVELABEL_KEYWORD2.length());
+		
+					removelabel_rules.add(new LabelingRule(attribute, label));
+			
+				// Check for an ALLOW-rule
+				}else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
 
 					// source = the string between the first and the second keyword 
 					label = line.substring(line.indexOf(ALLOW_KEYWORD1) + ALLOW_KEYWORD1.length(), line.indexOf(ALLOW_KEYWORD2));
@@ -97,6 +111,7 @@ public class MyProcessor implements AsyncProcessor {
 			}
     		
     		LOG.info("Loaded LABEL rules: " + label_rules.toString());
+    		LOG.info("Loaded REMOVELABEL rules: " + removelabel_rules.toString());
     		LOG.info("Loaded ALLOW rules: " + allow_rules.toString());
     		
     }
@@ -234,11 +249,17 @@ public class MyProcessor implements AsyncProcessor {
 				
 		}
 		
-		//Check if we have a labeling rule for this source
-		exchange_labels = get_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
+		//Check if we have to remove some labels based on the source
+		exchange_labels = remove_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
 		
-		//Check if we have a labeling rule for this filename
-		exchange_labels = get_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
+		//Check if we have to remove some labels based on the name
+		exchange_labels = remove_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
+		
+		//Check if we have a labeling rule for this source
+		exchange_labels = add_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
+		
+		//Check if we have a labeling rule for this name
+		exchange_labels = add_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
 		
 		exchange.setProperty("labels", exchange_labels);
 		
@@ -246,7 +267,7 @@ public class MyProcessor implements AsyncProcessor {
 	}
 	
 	
-	public String get_label_based_on_attribute(String exchange_labels, String attribute){
+	public String add_label_based_on_attribute(String exchange_labels, String attribute){
 		
 		for (LabelingRule rule : label_rules) {
 			String rule_attribute = rule.getAttribute();
@@ -259,17 +280,52 @@ public class MyProcessor implements AsyncProcessor {
 				if (exchange_labels == "") {
 	
 					exchange_labels = label;
-					System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");		
+					System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");
+					
 				} else {
 				
 					// Check if the label already exists
+					System.out.println("Checking if the label already exists.... ");
 					pattern = Pattern.compile(",?" + label + ",?");
 					matcher = pattern.matcher(exchange_labels);
-					if (!matcher.find()) {		
+					if (!matcher.find()) {	
 						exchange_labels = exchange_labels + "," + label;
 						System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + exchange_labels + "'");
-					}
+					} 
 				}
+			}
+		}
+		
+		return exchange_labels;
+	}
+	
+	public String remove_label_based_on_attribute(String exchange_labels, String attribute){
+		
+		//No labels to remove here
+		if (exchange_labels == "") {
+			return exchange_labels;
+		}
+		
+		for (LabelingRule rule : removelabel_rules) {
+			String rule_attribute = rule.getAttribute();
+			String label = rule.getLabel();
+			Pattern pattern = Pattern.compile(rule_attribute);
+			Matcher matcher = pattern.matcher(attribute);
+			
+			if (matcher.find()) {
+				
+				// We do have a matching REMOVELABEL rule, let's remove the label
+				if (exchange_labels.equals(label)) {
+					exchange_labels = "";
+				} else if (exchange_labels.contains("," + label + ",")) {
+					exchange_labels = exchange_labels.replaceAll("," + label + ",", "");
+				} else if (exchange_labels.contains("," + label)) {
+					exchange_labels = exchange_labels.replaceAll("," + label, "");
+				} else if (exchange_labels.contains(label + ",")) {
+					exchange_labels = exchange_labels.replaceAll(label + ",", "");
+				}
+				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', removed label '" + label + "'. All labels are now: '" + exchange_labels + "'");
+			
 			}
 		}
 		
