@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.IdsProtocolMessages;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.MessageType;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
@@ -23,7 +23,7 @@ public class RemoteAttestationClientHandler {
 		return IdsProtocolMessages
 				.EnterRatReq
 				.newBuilder()
-				.setType(RatType.ENTER_RAT_REQUEST)
+				.setType(MessageType.ENTER_RAT_REQUEST)
 				.build();
 	}
 
@@ -37,7 +37,7 @@ public class RemoteAttestationClientHandler {
 		return IdsProtocolMessages
 				.RatCMyNonce
 				.newBuilder()
-				.setType(RatType.RAT_C_MY_NONCE)
+				.setType(MessageType.RAT_C_MY_NONCE)
 				.setIdC(client_id)
 				.setNonceC(client_nonce)
 				.build();
@@ -56,7 +56,7 @@ public class RemoteAttestationClientHandler {
 		return IdsProtocolMessages
 				.RatCReqPcr
 				.newBuilder()
-				.setType(RatType.RAT_C_REQ_PCR)
+				.setType(MessageType.RAT_C_REQ_PCR)
 				.setMeasurementList(ml)
 				.setAikCert(aik_cert)
 				.setSignedPcr(pcr)
@@ -70,7 +70,7 @@ public class RemoteAttestationClientHandler {
 		return IdsProtocolMessages
 				.RatCYourNonce
 				.newBuilder()
-				.setType(RatType.RAT_C_YOUR_NONCE)
+				.setType(MessageType.RAT_C_YOUR_NONCE)
 				.setSignedNonceP(nonce_signed )
 				.build();	
 	}

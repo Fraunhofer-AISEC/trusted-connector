@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.fhg.aisec.ids.messages.IdsProtocolMessages;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.MessageType;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -86,7 +86,7 @@ public class DefaultWebsocket implements Serializable {
 
         // Otherwise, we are still in the process of running IDS protocol and hold back the original message. In this case, feed the message into the protocol FSM
         try {
-			RatType type = IdsProtocolMessages.IdsMessage.parseFrom(message.getBytes()).getType();
+			MessageType type = IdsProtocolMessages.IdsMessage.parseFrom(message.getBytes()).getType();
         	LOG.debug("Feeding message into provider fsm: " + message);
 
         	//we de-protobuf and split messages into cmd and payload
@@ -114,7 +114,7 @@ public class DefaultWebsocket implements Serializable {
 	        }
         } else {
 			try {
-				RatType type = IdsProtocolMessages.IdsMessage.parseFrom(data).getType();
+				MessageType type = IdsProtocolMessages.IdsMessage.parseFrom(data).getType();
 	        	System.out.println("Feeding message into provider fsm: " + data);
 	        	idsFsm.feedEvent(new Event(type, new String(data)));	//we need to de-protobuf here and split messages into cmd and payload
 			} catch (InvalidProtocolBufferException ip) {

@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.IdsProtocolMessages;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.MessageType;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
@@ -19,7 +19,7 @@ public class RemoteAttestationServerHandler {
 		return IdsProtocolMessages
 				.EnterRatResp
 				.newBuilder()
-				.setType(RatType.ENTER_RAT_RESPONSE).build();
+				.setType(MessageType.ENTER_RAT_RESPONSE).build();
 	}
 
 	public MessageLite sendServerNonceAndCert(Event e) {
@@ -31,7 +31,7 @@ public class RemoteAttestationServerHandler {
 		return IdsProtocolMessages
 				.RatPMyNonce
 				.newBuilder()
-				.setType(RatType.RAT_P_MY_NONCE)
+				.setType(MessageType.RAT_P_MY_NONCE)
 				.setNonceP(nonce)
 				.setCertP(cert)
 				.build();
@@ -51,7 +51,7 @@ public class RemoteAttestationServerHandler {
 		return IdsProtocolMessages
 				.RatPYourNonce
 				.newBuilder()
-				.setType(RatType.RAT_P_YOUR_NONCE)
+				.setType(MessageType.RAT_P_YOUR_NONCE)
 				.setSignedNonceC(signed_client_nonce)
 				.build();	
 	}
@@ -66,7 +66,7 @@ public class RemoteAttestationServerHandler {
 		return IdsProtocolMessages
 				.RatLeave
 				.newBuilder()
-				.setType(RatType.RAT_LEAVE)
+				.setType(MessageType.RAT_LEAVE)
 				.build();	
 	}
 

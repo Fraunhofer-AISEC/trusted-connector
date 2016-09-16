@@ -11,7 +11,7 @@ import com.ning.http.client.ws.DefaultWebSocketListener;
 import com.ning.http.client.ws.WebSocket;
 
 import de.fhg.aisec.ids.messages.IdsProtocolMessages.IdsMessage;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.IdsProtocolMessages.MessageType;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -60,7 +60,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     	try {
     		lock.lockInterruptibly();
     		try {
-    			RatType type = IdsMessage.parseFrom(message).getType();
+    			MessageType type = IdsMessage.parseFrom(message).getType();
     			fsm.feedEvent(new Event(type, new String(message)));
     		} catch (InvalidProtocolBufferException ip) {
     			// If data is not a valid protocol buffer, try to use it as a plain text
