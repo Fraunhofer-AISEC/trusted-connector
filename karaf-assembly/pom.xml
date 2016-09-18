@@ -196,7 +196,29 @@
                          dependencies section
                      -->
                     <bootFeatures>
-                        <feature>standard</feature>
+                        <!-- <feature>standard</feature> -->
+                        <!-- The following features are the same like "standard" EXCEPT "management"
+                                We do not want "management" on board, as it opens a JMX server -->
+                        <feature>wrap</feature>
+                        <feature>aries-blueprint</feature>
+                        <feature>shell</feature>
+                        <feature>shell-compat</feature>
+                        <feature>feature</feature>
+                        <feature>jaas</feature>
+                        <feature>ssh</feature>
+                        <feature>management</feature>
+                        <feature>bundle</feature>
+                        <feature>config</feature>
+                        <feature>deployer</feature>
+                        <feature>diagnostic</feature>
+                        <feature>feature</feature>
+                        <feature>instance</feature>
+                        <feature>kar</feature>
+                        <feature>log</feature>
+                        <feature>package</feature>
+                        <feature>service</feature>
+                        <feature>system</feature>
+
                         <!-- ActiveMQ with web console -->
                         <feature>ids</feature>
                         <feature>activemq-broker</feature>
