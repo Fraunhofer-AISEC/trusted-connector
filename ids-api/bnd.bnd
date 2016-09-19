@@ -29,5 +29,6 @@ Bundle-ClassPath: .,protobuf.jar
 Import-Package: \
 	!com.google.protobuf,\
 	!de.fhg.aisec.ids.messages,\
+	!sun.misc,\
 	*
 -noee=true
