@@ -9,7 +9,7 @@
 <booleanAttribute key="org.eclipse.jdt.launching.ALLOW_TERMINATE" value="false"/>
 <mapAttribute key="org.eclipse.jdt.launching.CONNECT_MAP">
 <mapEntry key="hostname" value="localhost"/>
-<mapEntry key="port" value="8000"/>
+<mapEntry key="port" value="5005"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="camel-ids"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_CONNECTOR_ID" value="org.drools.eclipse.launching.droolsVMConnector"/>
