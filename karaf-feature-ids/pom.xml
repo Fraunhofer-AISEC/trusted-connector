@@ -48,7 +48,7 @@
          </dependency>
          <dependency>
          	<groupId>de.fhg.ids</groupId>
-         	<artifactId>container-manager</artifactId>
+         	<artifactId>container-manager-docker</artifactId>
          	<version>1.0.0</version>
          </dependency>
 	    <dependency>

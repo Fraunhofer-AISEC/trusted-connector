@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>de.fhg.ids</groupId>
-	<artifactId>container-manager</artifactId>
+	<artifactId>container-manager-docker</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
 

@@ -14,7 +14,7 @@
         <bundle start-level="80">mvn:de.fhg.ids/api/1.0.0</bundle>
         <bundle start-level="80">mvn:de.fhg.ids/ids-webconsole/1.0.0</bundle>
         <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.ids/container-manager/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/container-manager-docker/1.0.0</bundle>
         
         <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
         <feature version="2.16.3" prerequisite="false" dependency="false">camel</feature>

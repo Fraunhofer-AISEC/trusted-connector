@@ -197,8 +197,8 @@
                      -->
                     <bootFeatures>
                         <!-- <feature>standard</feature> -->
-                        <!-- The following features are the same like "standard" EXCEPT "management"
-                                We do not want "management" on board, as it opens a JMX server -->
+                        <!-- The following features are the same like "standard".
+                                In a productive version we might want to exclude "management" and "ssh" -->
                         <feature>wrap</feature>
                         <feature>aries-blueprint</feature>
                         <feature>shell</feature>

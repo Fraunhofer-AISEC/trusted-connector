@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ids-core-platform-container-manager</name>
+	<name>ids-container-manager-docker</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -39,15 +39,8 @@
 	<natures>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.jdt.groovy.core.groovyNature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 		<nature>bndtools.core.bndnature</nature>
 		<nature>org.eclipse.pde.PluginNature</nature>
 	</natures>
-	<variableList>
-		<variable>
-			<name>copy_PARENT</name>
-			<value>$%7BPARENT-1-PROJECT_LOC%7D/industrial-data-space</value>
-		</variable>
-	</variableList>
 </projectDescription>

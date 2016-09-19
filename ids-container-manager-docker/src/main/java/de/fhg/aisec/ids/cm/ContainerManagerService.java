@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,12 +27,14 @@ import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *
  */
-@Component(enabled=true, name="ids-cml")
+@Component(enabled=true, immediate=true, name="ids-cml")
 public class ContainerManagerService implements ContainerManager {
 	private final static Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager containerManager = null;
 
-	protected void activate(ComponentContext cContext, Map<String, Object> properties) {
+	@Activate
+	protected void activate() {
+		System.out.println("Activating Container Manager");
 		// When activated, try to set container management instance
 		Optional<ContainerManager> cm = getDefaultCM();
 		if (cm.isPresent()) {
@@ -47,6 +51,7 @@ public class ContainerManagerService implements ContainerManager {
 		
 	}
 	
+	@Deactivate
 	protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
 		
 	}

@@ -2,9 +2,10 @@ src: src/main/java
 bin: target/classes
 testsrc: src/test/java
 testbin: target/test-classes
-Bundle-Name: ids-core-platform-container-manager
+Bundle-Name: ids-container-manager-docker
 Bundle-Version: 1.0.0
 Export-Package: de.fhg.aisec.ids.cm
 -dsannotations: *
 Bundle-Vendor: Fraunhofer
 -noee=true
+-dsannotations: *
