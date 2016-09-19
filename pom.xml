@@ -11,7 +11,7 @@
     <module>jnr-unixsocket</module>
     <module>camel-ids</module>
     <module>ids-api</module>
-    <module>ids-core-platform-container-manager</module>
+    <module>ids-container-manager-docker</module>
     <module>ids-webconsole</module>
     <module>karaf-feature-ids</module>
     <module>karaf-assembly</module>
