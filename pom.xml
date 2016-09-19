@@ -8,6 +8,7 @@
   <packaging>pom</packaging>
  
   <modules>
+    <module>jnr-unixsocket</module>
     <module>camel-ids</module>
     <module>ids-api</module>
     <module>ids-core-platform-container-manager</module>

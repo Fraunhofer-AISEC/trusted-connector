@@ -1,0 +1,83 @@
+# set the base directory
+dir = libs
+
+# get the contents of the directory (lsa = absolute, lsr=relative)
+files = ${lsa;${dir}}}
+
+# restrict to only JAR files with the filter operator
+jars = ${filter;${files};.*\.jar$} 
+Bundle-Version: 0.9.0
+src: src/main/java,src/test/java
+-includeresource: ${jars}
+-dsannotations: *
+-exportcontents: jnr.enxio.*,jnr.enxio.channels
+Export-Package: \
+	jnr.enxio,\
+	jnr.constants,\
+	jnr.constants.platform,\
+	jnr.constants.platform.darwin,\
+	jnr.constants.platform.fake,\
+	jnr.constants.platform.freebsd,\
+	jnr.constants.platform.linux,\
+	jnr.constants.platform.openbsd,\
+	jnr.constants.platform.sunos,\
+	jnr.constants.platform.windows,\
+	jnr.enxio,\
+	jnr.enxio.channels,\
+	jnr.enxio.example,\
+	jnr.ffi,\
+	jnr.ffi.annotations,\
+	jnr.ffi.byref,\
+	jnr.ffi.mapper,\
+	jnr.ffi.provider,\
+	jnr.ffi.provider.converters,\
+	jnr.ffi.provider.jffi,\
+	jnr.ffi.provider.jffi.platform,\
+	jnr.ffi.provider.jffi.platform.arm,\
+	jnr.ffi.provider.jffi.platform.arm.linux,\
+	jnr.ffi.provider.jffi.platform.i386,\
+	jnr.ffi.provider.jffi.platform.i386.darwin,\
+	jnr.ffi.provider.jffi.platform.i386.freebsd,\
+	jnr.ffi.provider.jffi.platform.i386.linux,\
+	jnr.ffi.provider.jffi.platform.i386.openbsd,\
+	jnr.ffi.provider.jffi.platform.i386.solaris,\
+	jnr.ffi.provider.jffi.platform.i386.windows,\
+	jnr.ffi.provider.jffi.platform.mips,\
+	jnr.ffi.provider.jffi.platform.mips.linux,\
+	jnr.ffi.provider.jffi.platform.mipsel,\
+	jnr.ffi.provider.jffi.platform.mipsel.linux,\
+	jnr.ffi.provider.jffi.platform.ppc,\
+	jnr.ffi.provider.jffi.platform.ppc.aix,\
+	jnr.ffi.provider.jffi.platform.ppc.darwin,\
+	jnr.ffi.provider.jffi.platform.ppc.linux,\
+	jnr.ffi.provider.jffi.platform.ppc64,\
+	jnr.ffi.provider.jffi.platform.ppc64.linux,\
+	jnr.ffi.provider.jffi.platform.ppc64le,\
+	jnr.ffi.provider.jffi.platform.ppc64le.linux,\
+	jnr.ffi.provider.jffi.platform.s390,\
+	jnr.ffi.provider.jffi.platform.s390.linux,\
+	jnr.ffi.provider.jffi.platform.s390x,\
+	jnr.ffi.provider.jffi.platform.s390x.linux,\
+	jnr.ffi.provider.jffi.platform.sparc,\
+	jnr.ffi.provider.jffi.platform.sparc.solaris,\
+	jnr.ffi.provider.jffi.platform.sparcv9,\
+	jnr.ffi.provider.jffi.platform.sparcv9.solaris,\
+	jnr.ffi.provider.jffi.platform.x86_64,\
+	jnr.ffi.provider.jffi.platform.x86_64.darwin,\
+	jnr.ffi.provider.jffi.platform.x86_64.freebsd,\
+	jnr.ffi.provider.jffi.platform.x86_64.linux,\
+	jnr.ffi.provider.jffi.platform.x86_64.openbsd,\
+	jnr.ffi.provider.jffi.platform.x86_64.solaris,\
+	jnr.ffi.provider.jffi.platform.x86_64.windows,\
+	jnr.ffi.types,\
+	jnr.ffi.util,\
+	jnr.ffi.util.ref,\
+	jnr.ffi.util.ref.internal,\
+	jnr.posix,\
+	jnr.posix.util,\
+	jnr.posix.windows,\
+	jnr.unixsocket,\
+	jnr.x86asm,\
+	jnr.enxio.channels,\
+	jnr.unixsocket
+-noee=true
