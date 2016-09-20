@@ -11,6 +11,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.MetaDataInfoPoint;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
@@ -28,7 +29,7 @@ import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
  *
  */
 @Component(enabled=true, immediate=true, name="ids-cml")
-public class ContainerManagerService implements ContainerManager {
+public class ContainerManagerService implements ContainerManager, MetaDataInfoPoint {
 	private final static Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager containerManager = null;
 
@@ -113,5 +114,10 @@ public class ContainerManagerService implements ContainerManager {
 	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange,
 			Protocol protocol, Decision decision) {
 		containerManager.setIpRule(containerID, direction, srcPort, dstPort, srcDstRange, protocol, decision);
+	}
+
+	@Override
+	public Map<String, String> getContainerLabels(String containerID) {
+		return containerManager.getContainerLabels(containerID);
 	}
 }

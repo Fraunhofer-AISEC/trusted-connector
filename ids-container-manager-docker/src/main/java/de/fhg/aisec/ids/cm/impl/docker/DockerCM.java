@@ -1,11 +1,13 @@
 package de.fhg.aisec.ids.cm.impl.docker;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -195,6 +197,31 @@ public class DockerCM implements ContainerManager {
 			Protocol protocol, Decision decision) {
 		// TODO Not implemented yet
 		
+	}
+
+	@Override
+	public Map<String, String> getContainerLabels(String containerID) {
+		// TODO Auto-generated method stub
+		
+		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
+		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
+		try {
+			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "inspect", containerID));
+			Process p = pb.start();
+			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
+			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
+			errorGobbler.start();
+			outputGobbler.start();
+			p.waitFor(30, TimeUnit.SECONDS);
+			errorGobbler.close();
+			outputGobbler.close();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(),e);
+		}
+
+		//TODO Parse JSON output from "docker inspect" and return labels.
+		
+		return null;
 	}
 
 }
