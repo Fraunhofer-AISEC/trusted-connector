@@ -1,13 +1,11 @@
 package de.fhg.aisec.ids.cm.impl.docker;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -181,28 +179,8 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public String inspectContainer(String containerID) {
-		// TODO Not implemented yet
-		return null;
-	}
-
-	@Override
 	public String getMetadata(String containerID) {
-		// TODO Not implemented yet
-		return null;
-	}
-
-	@Override
-	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange,
-			Protocol protocol, Decision decision) {
-		// TODO Not implemented yet
-		
-	}
-
-	@Override
-	public Map<String, String> getContainerLabels(String containerID) {
-		// TODO Auto-generated method stub
-		
+		StringBuilder sb = new StringBuilder();
 		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
 		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
 		try {
@@ -219,8 +197,24 @@ public class DockerCM implements ContainerManager {
 			LOG.error(e.getMessage(),e);
 		}
 
-		//TODO Parse JSON output from "docker inspect" and return labels.
+		// Parse JSON output from "docker inspect" and return labels.
+		String[] lines = bbStd.toString().split("\n");
+		for (String line:lines) {
+			System.out.println(line);
+		}
+		return sb.toString();
+	}
+
+	@Override
+	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange,
+			Protocol protocol, Decision decision) {
+		// TODO Not implemented yet
 		
+	}
+
+	@Override
+	public String inspectContainer(final String containerID) {
+		//TODO Implement me.
 		return null;
 	}
 

@@ -1,7 +1,6 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import java.util.List;
-import java.util.Map;
 
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
@@ -74,12 +73,6 @@ public class TrustXCM implements ContainerManager {
 			Protocol protocol, Decision decision) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public Map<String, String> getContainerLabels(String containerID) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

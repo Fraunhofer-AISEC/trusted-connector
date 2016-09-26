@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.cm;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,7 +107,7 @@ public class ContainerManagerService implements ContainerManager, MetaDataInfoPo
 	}
 
 	@Override
-	public String getMetadata(String containerID) {
+	public Object getMetadata(String containerID) {
 		return containerManager.getMetadata(containerID);
 	}
 
@@ -118,6 +119,22 @@ public class ContainerManagerService implements ContainerManager, MetaDataInfoPo
 
 	@Override
 	public Map<String, String> getContainerLabels(String containerID) {
-		return containerManager.getContainerLabels(containerID);
+		// Parse output of "inspect" command into a key/value map of labels
+		Map<String, String> result = new HashMap<String, String>();
+		String inspect = inspectContainer(containerID);
+		boolean startToken = false;
+		for (String l : inspect.split("\n")) {
+			if (l.trim().startsWith("\"Labels\": {")) {
+				startToken = true;
+			}
+			
+			if (startToken) {
+				String[] kv = l.split("=");
+				if (kv.length==2) {
+					result.put(kv[0].replaceFirst("\"", ""), kv[1].replace("\"$", ""));
+				}
+			}
+		}
+		return result;
 	}
 }

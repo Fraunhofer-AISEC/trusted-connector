@@ -1,7 +1,6 @@
 package de.fhg.aisec.ids.api.cm;
 
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -86,7 +85,7 @@ public interface ContainerManager {
 	 * @param containerID
 	 * @return
 	 */
-	public String getMetadata(final String containerID);
+	public Object getMetadata(final String containerID);
 
 	/**
 	 * Pulls an image from the online registry.
@@ -118,6 +117,4 @@ public interface ContainerManager {
 	 * @param decision ALLOW, DENY, or DROP
 	 */
 	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange, Protocol protocol, Decision decision);
-
-	public Map<String, String> getContainerLabels(String containerID);
 }
