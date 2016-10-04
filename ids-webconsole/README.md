@@ -1,0 +1,3 @@
+The web console is a front end to the Core Platform and consists of two parts, which are both contained in this bundle: a REST API and a frontend.
+
+The REST API uses Apache CXF annotations and is installed via the blueprint descriptor file in OSGI-INF/rest.xml. It sends and receives Json objects and uses the Gson library for serializing Java object to Json (the default serializer would be jettison, which is extremely limited. An alternative is Jackson, but I had difficulties including Jackson in Karaf)
