@@ -7,16 +7,20 @@ Bundle-Version: 1.0.0
 Web-ContextPath: ids
 Export-Package: \
 	de.fhg.aisec.ids.webconsole,\
-	de.fhg.aisec.ids.webconsole.servlets
+	de.fhg.aisec.ids.webconsole.servlets,\
+	de.fhg.aisec.ids.webconsole.api,\
+	de.fhg.aisec.ids.webconsole.api.impl
 Bundle-Name: ids-webconsole
 Bundle-Description: A web console for the IDS Core Platform. The web console allows to configure \
 	routes, containers, brokers, etc.
 Bundle-Copyright: Fraunhofer 2016
 Bundle-Vendor: Fraunhofer AISEC
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
--wab: src/main/resources/www/
+-wab: src/main/resources/www/dist/,src/main/resources/
 Import-Package: \
 	org.osgi.framework.*,\
+	de.fhg.aisec.ids.webconsole.api,\
+	com.google.gson,\
 	!com.eclipsesource.json.*,\
 	*
 -noee=true

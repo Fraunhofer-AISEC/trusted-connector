@@ -1,7 +1,8 @@
 FROM node:latest
 
-RUN git clone https://github.com/akveo/ng2-admin.git /var/www \
-    && cd /var/www \
+RUN mkdir /var/www
+COPY * /var/www
+RUN cd /var/www \
     && npm install --global rimraf \
     && npm run clean \
     && npm install --global webpack webpack-dev-server typescript@beta \

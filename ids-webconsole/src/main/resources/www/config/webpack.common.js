@@ -18,8 +18,8 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
  */
 const HMR = helpers.hasProcessFlag('hot');
 const METADATA = {
-  title: 'ng2-admin - Angular 2 Admin Template',
-  description: 'Free Angular 2 and Bootstrap 4 Admin Template',
+  title: 'IDS Connector Console',
+  description: 'Administration tool for the IDS connector',
   baseUrl: './',
   isDevServer: helpers.isWebpackDevServer()
 };

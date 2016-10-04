@@ -18,36 +18,14 @@ export const PAGES_MENU = [
         path: 'appcontainers',
         data: {
           menu: {
-            title: 'Application Containers',
-            icon: 'ion-android-home',
+            title: 'App Containers',
+            icon: 'ion-cube',
             selected: false,
             expanded: false,
             order: 0
           }
         }
       },
-//      {
-//        path: 'editors',
-//        data: {
-//          menu: {
-//            title: 'Editors',
-//            icon: 'ion-edit',
-//            selected: false,
-//            expanded: false,
-//            order: 100,
-//          }
-//        },
-//        children: [
-//          {
-//            path: 'ckeditor',
-//            data: {
-//              menu: {
-//                title: 'CKEditor',
-//              }
-//            }
-//          }
-//        ]
-//      },
       //{
       //  path: 'components',
       //  data: {
@@ -138,36 +116,18 @@ export const PAGES_MENU = [
 //          },
 //        ]
 //      },
-//      {
-//        path: 'forms',
-//        data: {
-//          menu: {
-//            title: 'Form Elements',
-//            icon: 'ion-compose',
-//            selected: false,
-//            expanded: false,
-//            order: 400,
-//          }
-//        },
-//        children: [
-//          {
-//            path: 'inputs',
-//            data: {
-//              menu: {
-//                title: 'Form Inputs',
-//              }
-//            }
-//          },
-//          {
-//            path: 'layouts',
-//            data: {
-//              menu: {
-//                title: 'Form Layouts',
-//              }
-//            }
-//          }
-//        ]
-//      },
+      {
+        path: 'settings',
+        data: {
+          menu: {
+            title: 'Settings',
+            icon: 'ion-compose',
+            selected: false,
+            expanded: false,
+            order: 400,
+            }
+          }
+        },
 //      {
 //        path: 'tables',
 //        data: {

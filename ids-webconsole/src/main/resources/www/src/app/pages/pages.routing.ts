@@ -10,10 +10,9 @@ const routes: Routes = [
       { path: 'dashboard', loadChildren: () => System.import('./dashboard/dashboard.module') },
       { path: 'appcontainers', loadChildren: () => System.import('./appcontainers/appcontainers.module') },
       { path: 'editors', loadChildren: () => System.import('./editors/editors.module') },
-      //{ path: 'components', loadChildren: () => System.import('./components/components.module') }
       { path: 'charts', loadChildren: () => System.import('./charts/charts.module') },
       { path: 'ui', loadChildren: () => System.import('./ui/ui.module') },
-      { path: 'forms', loadChildren: () => System.import('./forms/forms.module') },
+      { path: 'settings', loadChildren: () => System.import('./settings/settings.module') },
       { path: 'maps', loadChildren: () => System.import('./maps/maps.module') }
     ]
   }

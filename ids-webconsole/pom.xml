@@ -38,6 +38,20 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- for REST API -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+			<version>3.1.5</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
+		    <version>2.7</version>
+		    <scope>compile</scope>
+		</dependency>
+
+
 		<!-- servlets -->
 		<dependency>
 		    <groupId>javax.servlet</groupId>
