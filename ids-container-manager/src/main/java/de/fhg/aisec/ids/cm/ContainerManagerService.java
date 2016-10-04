@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.cm;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +11,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.MetaDataInfoPoint;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
@@ -30,7 +28,7 @@ import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
  *
  */
 @Component(enabled=true, immediate=true, name="ids-cml")
-public class ContainerManagerService implements ContainerManager, MetaDataInfoPoint {
+public class ContainerManagerService implements ContainerManager {
 	private final static Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager containerManager = null;
 
@@ -115,26 +113,5 @@ public class ContainerManagerService implements ContainerManager, MetaDataInfoPo
 	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange,
 			Protocol protocol, Decision decision) {
 		containerManager.setIpRule(containerID, direction, srcPort, dstPort, srcDstRange, protocol, decision);
-	}
-
-	@Override
-	public Map<String, String> getContainerLabels(String containerID) {
-		// Parse output of "inspect" command into a key/value map of labels
-		Map<String, String> result = new HashMap<String, String>();
-		String inspect = inspectContainer(containerID);
-		boolean startToken = false;
-		for (String l : inspect.split("\n")) {
-			if (l.trim().startsWith("\"Labels\": {")) {
-				startToken = true;
-			}
-			
-			if (startToken) {
-				String[] kv = l.split("=");
-				if (kv.length==2) {
-					result.put(kv[0].replaceFirst("\"", ""), kv[1].replace("\"$", ""));
-				}
-			}
-		}
-		return result;
 	}
 }
