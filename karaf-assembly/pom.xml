@@ -220,7 +220,7 @@
                         <feature>system</feature>
 
                         <!-- ActiveMQ with web console -->
-                        <feature>ids</feature>
+			<feature>ids</feature>
                         <feature>activemq-broker</feature>
                         <!-- Use this in production instead (no web console)-->
                         <!-- <feature>activemq-broker-noweb</feature> -->

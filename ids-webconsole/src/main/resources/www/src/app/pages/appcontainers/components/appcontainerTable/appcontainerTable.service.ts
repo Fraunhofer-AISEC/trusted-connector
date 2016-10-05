@@ -1,40 +1,40 @@
 import {Injectable} from '@angular/core';
 import { Component, CORE_DIRECTIVES } from 'angular2/angular2';
 import { Task } from '../datatypes/task';
-import { Http } from '@angular/http';
+import { Http, Response, Headers, RequestOptions, JsonpModule, Jsonp } from '@angular/http';
+import {Observable} from 'rxjs/Rx';
 import { AppContainer } from '../../appcontainers.component';
 
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
 
 @Injectable()
 export class AppContainerService {
 
-  constructor(public http: Http) {
+  constructor(public http: Http, public jsonp: Jsonp) {
     console.log('AppContainer Service created.', http);
   }
    
+  /**
+   * Promise for retrieving list of application containers from REST backend (could be removed)
+   */
   getData(): Promise<any> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        this.getTasks();
-      }, 2000);
+        resolve(this.getAppList());
+      }, 20);
     });
   }
   
-  getTasks() {
-    // return an observable
-    return this.http.get('/api/v1/containers')
-    .map( (responseData) => {
-      return responseData.json();
-    })
-    .map((acs: Array<any>) => {
-      let result:Array<AppContainer> = [];
-      if (acs) {
-        acs.forEach((ac) => {
-          // TOOD Create proper AppContainer objects from JSON results here
-          result.push(new AppContainer("id", "name", "image", 23.5));
-        });
-      }
-      return result;
-    });
+  /**
+   * Retrieve list of application containers from REST backend
+   */
+  getAppList() : Promise<any> {
+    // return an observable    
+    return this.jsonp.get('http://localhost:8181/cxf/api/apps?_jsonp=JSONP_CALLBACK')
+    .toPromise()
+    .then( (responseData:Response) => 
+      responseData.json()
+    );
   }
 }

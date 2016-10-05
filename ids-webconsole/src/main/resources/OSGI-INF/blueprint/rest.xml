@@ -18,6 +18,18 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 		<jaxrs:serviceBeans>
 			<bean id="restServiceImpl" class="de.fhg.aisec.ids.webconsole.api.impl.ApiImpl" />
 		</jaxrs:serviceBeans>
+		<jaxrs:extensionMappings>
+			<entry key="xml" value="application/xml" />
+			<entry key="json" value="application/json" />
+			<entry key="jsonp" value="application/javascript" />
+		</jaxrs:extensionMappings>
+ 		<jaxrs:inInterceptors>
+            <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpInInterceptor"/>
+        </jaxrs:inInterceptors>
+        <jaxrs:outInterceptors>
+            <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPreStreamInterceptor"/>
+            <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPostStreamInterceptor"/>
+		</jaxrs:outInterceptors>		
 	</jaxrs:server>
 
 

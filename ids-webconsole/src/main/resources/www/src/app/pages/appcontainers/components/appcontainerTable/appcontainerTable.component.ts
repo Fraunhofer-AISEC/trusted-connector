@@ -13,6 +13,9 @@ export class AppContainerTable {
 
   query: string = '';
 
+  /**
+   * Configuration of smart table
+   */
   settings = {
     add: {
       addButtonContent: '<i class="ion-ios-plus-outline"></i>',
@@ -49,6 +52,9 @@ export class AppContainerTable {
     }
   };
 
+  /**
+   * Source object holding entries of smart table.
+   */
   source: LocalDataSource = new LocalDataSource();
 
   constructor(protected service: AppContainerService) {

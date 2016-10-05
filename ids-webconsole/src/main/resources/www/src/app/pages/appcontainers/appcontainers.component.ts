@@ -7,7 +7,7 @@ import {Component} from '@angular/core';
 })
 export class AppContainer {
 
-  constructor(id: string, name: string, image: string, size: number) {
+  constructor(id: string, image: string, created: string, status: string, ports: string, name: string, size: string, uptime: string) {
     console.log('AppContainer created.');
   }
    
