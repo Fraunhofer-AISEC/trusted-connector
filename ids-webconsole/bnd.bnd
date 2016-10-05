@@ -20,6 +20,8 @@ Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
 Import-Package: \
 	org.osgi.framework.*,\
 	de.fhg.aisec.ids.webconsole.api,\
+	org.apache.cxf.jaxrs.provider.json,\
+	org.apache.cxf.jaxrs.provider.jsonp,\
 	com.google.gson,\
 	!com.eclipsesource.json.*,\
 	*
