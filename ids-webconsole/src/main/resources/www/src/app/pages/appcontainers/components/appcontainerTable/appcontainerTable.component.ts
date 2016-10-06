@@ -17,6 +17,12 @@ export class AppContainerTable {
    * Configuration of smart table
    */
   settings = {
+    actions: {
+      columnTitle: 'Actions',
+      add: false,
+      edit: false,
+      delete: true
+    },
     add: {
       addButtonContent: '<i class="ion-ios-plus-outline"></i>',
       createButtonContent: '<i class="ion-checkmark"></i>',
@@ -40,13 +46,13 @@ export class AppContainerTable {
         title: 'Image',
         type: 'string'
       },
-      name: {
+      names: {
         title: 'Name',
         type: 'string'
       },
-      size: {
-        title: 'Size',
-        type: 'number'
+      uptime: {
+        title: 'Uptime',
+        type: 'string'
       }
       
     }
@@ -64,7 +70,7 @@ export class AppContainerTable {
   }
 
   onDeleteConfirm(event): void {
-    if (window.confirm('Are you sure you want to delete?')) {
+    if (window.confirm('Are you sure you want to delete this app? You will not be able to restore it!')) {
       event.confirm.resolve();
     } else {
       event.confirm.reject();

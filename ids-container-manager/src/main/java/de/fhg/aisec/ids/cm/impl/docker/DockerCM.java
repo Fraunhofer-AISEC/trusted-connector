@@ -37,7 +37,19 @@ public class DockerCM implements ContainerManager {
 		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
 		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
 		try {
-			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "ps", "--no-trunc", onlyRunning?"":"--all", "--format", "{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}"));
+			ArrayList<String> cmd = new ArrayList<String>();
+			cmd.add(DOCKER_CLI);
+			cmd.add("ps");
+			cmd.add("--no-trunc");
+			if (!onlyRunning) {
+				cmd.add("--all");
+			}
+			cmd.add("--format");
+			cmd.add("{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}");
+			
+			cmd.forEach(x -> System.out.println(x));
+
+			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
 			Process p = pb.start();
 			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
 			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
@@ -53,7 +65,7 @@ public class DockerCM implements ContainerManager {
 		for (String line:lines) {
 			String[] columns = line.split("@@");
 			if (columns.length!=8) {
-				LOG.error("Unexpected number of columns in docker ps: " + columns.length);
+				LOG.error("Unexpected number of columns in docker ps: " + columns.length + ": " + line);
 				break;
 			}
 			String id = columns[0];

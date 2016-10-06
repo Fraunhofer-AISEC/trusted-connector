@@ -15,9 +15,13 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 	</cxf:bus>
 
 	<jaxrs:server address="/api" id="someRestService">
+		<!-- This is where API endpoints are registered for CXF -->
 		<jaxrs:serviceBeans>
-			<bean id="restServiceImpl" class="de.fhg.aisec.ids.webconsole.api.impl.ApiImpl" />
+			<bean id="app" class="de.fhg.aisec.ids.webconsole.api.AppApi" />
+			<bean id="config" class="de.fhg.aisec.ids.webconsole.api.ConfigApi" />
 		</jaxrs:serviceBeans>
+
+		<!-- Extension mappings and interceptors are needed for JSONP support -->
 		<jaxrs:extensionMappings>
 			<entry key="xml" value="application/xml" />
 			<entry key="json" value="application/json" />

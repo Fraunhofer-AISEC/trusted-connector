@@ -1,9 +1,9 @@
 import './app.loader.ts';
 import { Component, ViewEncapsulation } from '@angular/core';
 import { GlobalState } from './global.state';
-import {JSONPConnection} from '@angular/http';
 import { BaImageLoaderService, BaThemePreloader, BaThemeSpinner } from './theme/services';
 import { layoutPaths } from './theme/theme.constants';
+
 /*
  * App Component
  * Top Level Component

@@ -6,12 +6,12 @@ import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-@Path("/api/config")
+@Path("/config")
 public class ConfigApi {
 	
 	@GET()
-	@Path("/all")
+	@Path("list")
 	public Map<String, String> get() {
-		return new HashMap<String, String>();
+		return null;
 	}
 }
