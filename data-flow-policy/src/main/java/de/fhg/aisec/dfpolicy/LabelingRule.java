@@ -1,13 +1,12 @@
 package de.fhg.aisec.dfpolicy;
 
-public class LabelingRule {
+public class LabelingRule extends Rule {
 	
 	private String attribute;
-	private String label;
 	
 	public LabelingRule(String attribute, String label) {
-		this.attribute = attribute;
-		this.label = label;
+		super.setLabel(label);
+		this.setAttribute(attribute);
 	}
 	
 	public String getAttribute() {
@@ -17,13 +16,4 @@ public class LabelingRule {
 	public void setAttribute(String attribute) {
 		this.attribute = attribute;
 	}
-	
-	public String getLabel() {
-		return label;
-	}
-	
-	public void setLabel(String label) {
-		this.label = label;
-	}	
-
 }

@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.camel.Exchange;
@@ -24,101 +22,91 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    private static ArrayList<LabelingRule> label_rules = null;
-    private static ArrayList<LabelingRule> removelabel_rules = null;
-    private static ArrayList<AllowRule> allow_rules = null;
+    private static ArrayList<LabelingRule> labelRules = null;
+    private static ArrayList<LabelingRule> removeLabelRules = null;
+    private static ArrayList<AllowRule> allowRules = null;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
     	//If we didn't load the rules yet, do it now
-    	if (label_rules == null || allow_rules == null) {
-    		label_rules = new ArrayList<LabelingRule>();
-    		removelabel_rules = new ArrayList<LabelingRule>();
-    		allow_rules = new ArrayList<AllowRule>();
+    	if (labelRules == null || allowRules == null) {
+    		labelRules = new ArrayList<LabelingRule>();
+    		removeLabelRules = new ArrayList<LabelingRule>();
+    		allowRules = new ArrayList<AllowRule>();
     		loadRules("deploy/rules");
     	}
     }
     
     
     private void loadRules(String rulefile) {
-    	FileInputStream fileinputstream;
-    	DataInputStream datainputstream;
     	BufferedReader bufferedreader;
-    	final String LABEL_KEYWORD1 = "LABEL";
-    	final String LABEL_KEYWORD2 = "AS";
-    	final String REMOVELABEL_KEYWORD1 = "REMOVELABEL";
-    	final String REMOVELABEL_KEYWORD2 = "FROM";
-    	final String ALLOW_KEYWORD1 = "ALLOW";
-    	final String ALLOW_KEYWORD2 = "TO";
-    	String line;
-    	String attribute;
-    	String label;
-    	
+    	String line, attribute, label;
 		try {
-			fileinputstream =  new FileInputStream(rulefile);
-			datainputstream = new DataInputStream(fileinputstream);
-	    	bufferedreader = new BufferedReader(new InputStreamReader(datainputstream));
-			
-    	
-			while ((line = bufferedreader.readLine()) != null)   {
-				
-				//Remove unneeded spaces
-				line = line.replaceAll(" ", "");
-				
-				//Check if it is a LABEL-rule that contains LABEL and AS, and both only once
-				if (check_rule_syntax(line, LABEL_KEYWORD1, LABEL_KEYWORD2)) {
-								
-					// source = the string between the first and the second keyword 
-					attribute = line.substring(line.indexOf(LABEL_KEYWORD1) + LABEL_KEYWORD1.length(), line.indexOf(LABEL_KEYWORD2));
+	    	bufferedreader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(rulefile))));
+			while ((line = bufferedreader.readLine()
+					// remove empty spaces
+					.replaceAll(" ", "")
+					// remove one-line-comments starting with //
+					.replaceAll("//.*?\n","\n")
+					// remove one-line-comments starting with #
+					.replaceAll("#.*?\n","\n")
+					) != null)   {
 					
-					// label = the string after the second keyword
-					label = line.substring(line.indexOf(LABEL_KEYWORD2) + LABEL_KEYWORD2.length());
-					
-					label_rules.add(new LabelingRule(attribute, label));
+					//Check if it is a LABEL-rule that contains LABEL and AS, and both only once
+					if (checkRuleSyntax(line, Constants.LABEL, Constants.AS)) {
+									
+						// source = the string between the first and the second keyword 
+						attribute = line.substring(line.indexOf(Constants.LABEL) + Constants.LABEL.length(), line.indexOf(Constants.AS));
 						
-				// Check for an ALLOW-rule
-				} else if (check_rule_syntax(line, REMOVELABEL_KEYWORD1, REMOVELABEL_KEYWORD2)) {
-					
-					// source = the string between the first and the second keyword 
-					label = line.substring(line.indexOf(REMOVELABEL_KEYWORD1) + REMOVELABEL_KEYWORD1.length(), line.indexOf(REMOVELABEL_KEYWORD2));
-		
-					// label = the string after the second keyword
-					attribute = line.substring(line.indexOf(REMOVELABEL_KEYWORD2) + REMOVELABEL_KEYWORD2.length());
-		
-					removelabel_rules.add(new LabelingRule(attribute, label));
+						// label = the string after the second keyword
+						label = line.substring(line.indexOf(Constants.AS) + Constants.AS.length());
+						
+						labelRules.add(new LabelingRule(attribute, label));
+					} 
+					// Check for an ALLOW-rule
+					else if (checkRuleSyntax(line, Constants.REMOVELABEL, Constants.FROM)) {
+						
+						// source = the string between the first and the second keyword 
+						label = line.substring(line.indexOf(Constants.REMOVELABEL) + Constants.REMOVELABEL.length(), line.indexOf(Constants.FROM));
 			
-				// Check for an ALLOW-rule
-				}else if (check_rule_syntax(line, ALLOW_KEYWORD1, ALLOW_KEYWORD2)) {
-
-					// source = the string between the first and the second keyword 
-					label = line.substring(line.indexOf(ALLOW_KEYWORD1) + ALLOW_KEYWORD1.length(), line.indexOf(ALLOW_KEYWORD2));
-					
-					// label = the string after the second keyword
-					attribute = line.substring(line.indexOf(ALLOW_KEYWORD2) + ALLOW_KEYWORD2.length());
-					
-					allow_rules.add(new AllowRule(label, attribute));
-					
-				// If it's also no comment, throw an error	
-				} else if (!line.startsWith("#")) {
-					LOG.error("Error: Could not parse line " +line + " from rules file");
-				} 
-			}
-			datainputstream.close();
+						// label = the string after the second keyword
+						attribute = line.substring(line.indexOf(Constants.FROM) + Constants.FROM.length());
+			
+						removeLabelRules.add(new LabelingRule(attribute, label));
+					}
+					// Check for an ALLOW-rule
+					else if (checkRuleSyntax(line, Constants.ALLOW, Constants.TO)) {
+	
+						// source = the string between the first and the second keyword 
+						label = line.substring(line.indexOf(Constants.ALLOW) + Constants.ALLOW.length(), line.indexOf(Constants.TO));
+						
+						// label = the string after the second keyword
+						attribute = line.substring(line.indexOf(Constants.TO) + Constants.TO.length());
+						
+						allowRules.add(new AllowRule(label, attribute));
+					} 
+					// skip if line is empty (or has just comments)
+					else if (line.isEmpty()) {
+						
+					} 
+					// otherwise log error
+					else {
+						LOG.error("Error: Could not parse line " +line + " from rules file");
+					} 
+				}
 			} catch (IOException e) {
 				LOG.error("Caught IOException: " + e.getMessage());
 				e.printStackTrace();
 			}
-    		
-    		LOG.info("Loaded LABEL rules: " + label_rules.toString());
-    		LOG.info("Loaded REMOVELABEL rules: " + removelabel_rules.toString());
-    		LOG.info("Loaded ALLOW rules: " + allow_rules.toString());
-    		
+    		LOG.info("Loaded LABEL rules: " + labelRules.toString());
+    		LOG.info("Loaded REMOVELABEL rules: " + removeLabelRules.toString());
+    		LOG.info("Loaded ALLOW rules: " + allowRules.toString()); 		
     }
     
     
     // Checks for a line in the rule-file that each keyword exists only once, keyword1 before keyword 2, etc... 
-    public boolean check_rule_syntax(String line, String keyword1, String keyword2){
+    public boolean checkRuleSyntax(String line, String keyword1, String keyword2){
     	//keyword1 in the beginning?
     	if (line.startsWith(keyword1)
     			//keyword 2 exists?
@@ -142,12 +130,9 @@ public class MyProcessor implements AsyncProcessor {
 		String body;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
+		// set labels from Property
+		exchange_labels = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
 
-		if (exchange.getProperty("labels") != null ) {
-			exchange_labels = exchange.getProperty("labels").toString();
-		} else {
-			exchange_labels = "";
-		}
 		
 		//figuring out where the message should go to
 		if (target instanceof InstrumentationProcessor) {
@@ -169,7 +154,7 @@ public class MyProcessor implements AsyncProcessor {
 			return;
 		}
 		
-		for (AllowRule rule : allow_rules) {
+		for (AllowRule rule : allowRules) {
 			
 			//match for destination
 			Pattern pattern = Pattern.compile(rule.getDestination());
@@ -179,7 +164,7 @@ public class MyProcessor implements AsyncProcessor {
 			if (matcher.find()) {
 				
 				//Check if the message has the required label. If not, we stop 
-				if (!check_if_label_exists (rule.getLabel(), exchange_labels)) {
+				if (!checkIfLabelExists (rule.getLabel(), exchange_labels)) {
 					System.out.println("Required label " + rule.getLabel() + " not found, message will be dropped...");
 					return;
 				}
@@ -201,7 +186,7 @@ public class MyProcessor implements AsyncProcessor {
     }
 	
 	//check if a label exists in a list of labels
-	public boolean check_if_label_exists(String label, String labels){
+	public boolean checkIfLabelExists(String label, String labels){
 		
 		//There might be a , after and/or the label, so we add this to the regex
 		Pattern pattern = Pattern.compile(",?" + label + ",?");
@@ -250,16 +235,16 @@ public class MyProcessor implements AsyncProcessor {
 		}
 		
 		//Check if we have to remove some labels based on the source
-		exchange_labels = remove_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
+		exchange_labels = removeLabelBasedOnAttribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
 		
 		//Check if we have to remove some labels based on the name
-		exchange_labels = remove_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
+		exchange_labels = removeLabelBasedOnAttribute(exchange_labels, exchange.getIn().toString());
 		
 		//Check if we have a labeling rule for this source
-		exchange_labels = add_label_based_on_attribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
+		exchange_labels = addLabelBasedOnAttribute(exchange_labels, exchange.getFromEndpoint().getEndpointUri());
 		
 		//Check if we have a labeling rule for this name
-		exchange_labels = add_label_based_on_attribute(exchange_labels, exchange.getIn().toString());
+		exchange_labels = addLabelBasedOnAttribute(exchange_labels, exchange.getIn().toString());
 		
 		exchange.setProperty("labels", exchange_labels);
 		
@@ -267,9 +252,9 @@ public class MyProcessor implements AsyncProcessor {
 	}
 	
 	
-	public String add_label_based_on_attribute(String exchange_labels, String attribute){
+	public String addLabelBasedOnAttribute(String exchange_labels, String attribute){
 		
-		for (LabelingRule rule : label_rules) {
+		for (LabelingRule rule : labelRules) {
 			String rule_attribute = rule.getAttribute();
 			String label = rule.getLabel();
 			Pattern pattern = Pattern.compile(rule_attribute);
@@ -299,14 +284,14 @@ public class MyProcessor implements AsyncProcessor {
 		return exchange_labels;
 	}
 	
-	public String remove_label_based_on_attribute(String exchange_labels, String attribute){
+	public String removeLabelBasedOnAttribute(String exchange_labels, String attribute){
 		
 		//No labels to remove here
 		if (exchange_labels == "") {
 			return exchange_labels;
 		}
 		
-		for (LabelingRule rule : removelabel_rules) {
+		for (LabelingRule rule : removeLabelRules) {
 			String rule_attribute = rule.getAttribute();
 			String label = rule.getLabel();
 			Pattern pattern = Pattern.compile(rule_attribute);
@@ -334,7 +319,11 @@ public class MyProcessor implements AsyncProcessor {
 
     @Override
     public String toString() {
-      return "MyProcessor[" + "]";
+      return "MyProcessor[" + 
+    		  "allow:" + MyProcessor.allowRules.toString() +
+    		  "label:" + MyProcessor.labelRules.toString() +
+    		  "remove:" + MyProcessor.removeLabelRules.toString() +
+    		  "]";
     }
 
 	@Override
