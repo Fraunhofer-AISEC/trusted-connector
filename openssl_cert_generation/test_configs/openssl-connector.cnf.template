@@ -4,7 +4,7 @@ RANDFILE        = $ENV::HOME/.rnd
 ####################################################################
 [ req ]
 default_bits        = 2048
-default_keyfile     = device.key
+default_keyfile     = connector.key
 distinguished_name  = connector_distinguished_name
 req_extensions      = connector_req_extensions
 string_mask         = utf8only
