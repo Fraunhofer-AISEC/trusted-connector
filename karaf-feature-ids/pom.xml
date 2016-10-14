@@ -24,7 +24,7 @@
 	<description>Karaf feature for Industrial Data Space Core Platform</description>
 
 	<dependencies>
-		<!-- add the artifact that should be in the feature's dependencies set -->
+        <!-- add the artifact that should be in the feature in the dependencies set -->
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
 			<artifactId>api</artifactId>
@@ -40,6 +40,11 @@
 			<artifactId>camel-ids</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+         <dependency>
+                <groupId>de.fhg.aisec</groupId>
+                <artifactId>data-flow-policy</artifactId>
+                <version>1.0.0</version>
+         </dependency>     		
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
 			<artifactId>container-manager</artifactId>
@@ -66,8 +71,7 @@
 					<version>4.0.5</version>
 					<extensions>true</extensions>
 				</plugin>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -119,4 +123,4 @@
 		</plugins>
 	</build>
 
-</project>
+ </project>
