@@ -1,3 +1,12 @@
+/**
+ * Copyright (C) 2013-2015 with regard to distribution / exploitation:
+ * Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
+ * and Bundesdruckerei GmbH, Germany
+ *
+ * Authors: Wolfgang Grandegger, Constanze Hausner, Manuel Huber,
+ *          Oliver Melnyk, Michael Velten, Michael Weiß, Sascha Wessel
+ */
+
 syntax = "proto2";
 option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "AttestationProtos";
@@ -22,37 +31,47 @@ message Pcr {
   optional string value = 2;
 }
 
-message intAttReq {
-  // type of attestation in the IDS context
-  optional IdsAttestationType atype = 1 [default = BASIC];
+message ControllerToTpm {
+	enum Code {
+		INTERNAL_ATTESTATION_REQ = 1;
+	}
 
-  // qualifingData (i.e. external data provided by the caller, such as a nonce)
-  optional string qualifyingData = 2;
+	required Code code = 1;
 
-  // pcr bitmask for AttestationType ADVANCED only
-  //  - for BASIC, the default PCRs are PCRs 0 to 10
-  //  - for ALL  , the default PCRs are PCRs 0 to 23
-  optional int32 pcrs = 3;
+	// type of attestation in the IDS context
+	optional IdsAttestationType atype = 2 [default = BASIC];
+
+	// qualifingData (i.e. external data provided by the caller, such as a nonce)
+	optional string qualifyingData = 3;
+
+	// pcr bitmask for AttestationType ADVANCED only
+	//  - for BASIC, the default PCRs are PCRs 0 to 10
+	//  - for ALL  , the default PCRs are PCRs 0 to 23
+	optional int32 pcrs = 4;
 }
 
+message TpmToController {
+	enum Code {		INTERNAL_ATTESTATION_RES = 1;
+	}
 
-message intAttResp {
-  // type of attestation in the IDS context
-  optional IdsAttestationType atype = 1 [default = BASIC];
+	required Code code = 1;
 
-  // the hash algorith used to sign the quoted information
-  optional string halg = 2;
+	// type of attestation in the IDS context
+	optional IdsAttestationType atype = 2 [default = BASIC];
 
-  // the quoted information (a TPM2B_ATTEST data structure)
-  optional string quoted = 3;
+	// the hash algorith used to sign the quoted information
+	optional string halg = 3;
 
-  // the signature over 'quoted' (a TPMT_SIGNATURE data structure)
-  optional string signature = 4;
+	// the quoted information (a TPM2B_ATTEST data structure)
+	optional string quoted = 4;
 
-  // the explicit PCR values
-  repeated Pcr pcr_values = 5;
+	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
+	optional string signature = 5;
 
-  // an _optional_ URI to a certificate that includes the public key
-  optional string certificateURI = 6;
+	// the explicit PCR values
+	repeated Pcr pcr_values = 6;
+
+	// an _optional_ URI to a certificate that includes the public key
+	optional string certificate_uri = 7;
 
 }
