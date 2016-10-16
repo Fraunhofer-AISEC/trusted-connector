@@ -24,7 +24,7 @@
   </manifest> -->
 
 <!-- Class name refers to our Interceptor -->
-  <bean id="myInterceptor" class="de.fhg.camel.ids.interceptor.DataFlowControlInterceptor"/>
+  <bean id="myInterceptor" class="de.fhg.aisec.dfpolicy.PEP"/>
        
   <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
       <property name="brokerURL" value="tcp://localhost:61616"/>

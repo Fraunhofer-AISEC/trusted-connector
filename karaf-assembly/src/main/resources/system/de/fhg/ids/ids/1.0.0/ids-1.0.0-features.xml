@@ -22,6 +22,9 @@
         <feature version="4.2.6" prerequisite="false" dependency="false">pax-http-jetty</feature>
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
        	<feature version="2.16.3" prerequisite="false" dependency="true">camel-ahc</feature>
+        
+        <!-- This is how to add a custom config file which will be picked up by Config Admin-->
+        <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
 
     </feature>
 </features>

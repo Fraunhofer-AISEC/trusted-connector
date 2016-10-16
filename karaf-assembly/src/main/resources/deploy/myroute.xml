@@ -6,7 +6,7 @@
       http://www.osgi.org/xmlns/blueprint/v1.0.0
       http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
 
-   <bean id="myInterceptor" class="de.fhg.aisec.dfpolicy.PEP"/>
+  <bean id="myInterceptor" class="de.fhg.aisec.dfpolicy.PEP"/>
 
    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
    <property name="connectionFactory">
