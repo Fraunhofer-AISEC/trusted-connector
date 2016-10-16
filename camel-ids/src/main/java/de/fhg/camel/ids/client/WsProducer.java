@@ -22,8 +22,9 @@ import java.io.InputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
+import org.asynchttpclient.ws.WebSocket;
 
-import com.ning.http.client.ws.WebSocket;
+
 
 /**
  *

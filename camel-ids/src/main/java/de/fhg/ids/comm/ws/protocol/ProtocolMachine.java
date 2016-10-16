@@ -5,10 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.asynchttpclient.ws.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 
 import com.google.protobuf.MessageLite;
-import com.ning.http.client.ws.WebSocket;
+
 
 import de.fhg.aisec.ids.messages.IdsProtocolMessages;
 import de.fhg.aisec.ids.messages.IdsProtocolMessages.MessageType;

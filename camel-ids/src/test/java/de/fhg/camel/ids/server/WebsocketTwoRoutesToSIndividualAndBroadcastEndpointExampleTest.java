@@ -24,13 +24,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketTextListener;
+import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.ws.WebSocket;
-import com.ning.http.client.ws.WebSocketTextListener;
-import com.ning.http.client.ws.WebSocketUpgradeHandler;
 
 @Ignore
 public class WebsocketTwoRoutesToSIndividualAndBroadcastEndpointExampleTest extends CamelTestSupport {
@@ -52,7 +51,7 @@ public class WebsocketTwoRoutesToSIndividualAndBroadcastEndpointExampleTest exte
         received.clear();
         latch = new CountDownLatch(2);
 
-        AsyncHttpClient c = new AsyncHttpClient();
+        DefaultAsyncHttpClient c = new DefaultAsyncHttpClient();
 
         WebSocket websocket = c.prepareGet("ws://localhost:" + port + "/bar").execute(
                 new WebSocketUpgradeHandler.Builder()

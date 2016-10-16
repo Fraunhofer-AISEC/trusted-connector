@@ -35,15 +35,22 @@ import org.apache.camel.util.jsse.KeyStoreParameters;
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.apache.camel.util.jsse.SSLContextServerParameters;
 import org.apache.camel.util.jsse.TrustManagersParameters;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketTextListener;
+import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.ws.WebSocket;
-import com.ning.http.client.ws.WebSocketTextListener;
-import com.ning.http.client.ws.WebSocketUpgradeHandler;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.JdkSslContext;
+
+
+
 
 @Ignore
 public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
@@ -76,18 +83,15 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         AsyncHttpClient c;
         AsyncHttpClientConfig config;
 
-        AsyncHttpClientConfig.Builder builder =
-                new AsyncHttpClientConfig.Builder();
+        DefaultAsyncHttpClientConfig.Builder builder =
+                new DefaultAsyncHttpClientConfig.Builder();
 
-        SSLContextParameters param = new SSLContextParameters();
-        param.setCamelContext(context());
-        
-        SSLContext sslContext = param.createSSLContext();
-        //JdkSslContext ssl = new JdkSslContext(sslContext, true, ClientAuth.REQUIRE);
-        builder.setSSLContext(sslContext);
+        SSLContext sslContext = new SSLContextParameters().createSSLContext(context());
+        JdkSslContext ssl = new JdkSslContext(sslContext, true, ClientAuth.REQUIRE);
+        builder.setSslContext(ssl);
         builder.setAcceptAnyCertificate(true);
         config = builder.build();
-        c = new AsyncHttpClient(config);
+        c = new DefaultAsyncHttpClient(config);
 
         return c;
     }

@@ -22,7 +22,7 @@
 
     <properties>
         <karaf.version>4.0.5</karaf.version>
-        <camel.version>2.16.3</camel.version>
+        <camel.version>2.18.0</camel.version>
         <activemq.version>5.13.3</activemq.version>
         <cxf.version>3.1.5</cxf.version>
         <!-- maven-compiler-plugin setting.

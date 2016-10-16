@@ -25,15 +25,21 @@ import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.ws.DefaultWebSocketListener;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
+import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.ws.DefaultWebSocketListener;
-import com.ning.http.client.ws.WebSocket;
-import com.ning.http.client.ws.WebSocketUpgradeHandler;
+
+
+
 
 
 /**
@@ -45,7 +51,7 @@ public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
     private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
-    private final WsListener listener = new WsListener();
+    private final WebSocketListener listener = new DefaultWebSocketListener();
     private transient WebSocket websocket;
 
     @UriParam(label = "producer")
@@ -110,10 +116,10 @@ public class WsEndpoint extends AhcEndpoint {
     protected AsyncHttpClient createClient(AsyncHttpClientConfig config) {
     	AsyncHttpClient client;
         if (config == null) {            		
-        	config = new AsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"ids"}).build();
-            client = new AsyncHttpClient(config);
+        	config = new DefaultAsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"ids"}).build();
+            client = new DefaultAsyncHttpClient(config);
         } else {
-            client = new AsyncHttpClient();
+            client = new DefaultAsyncHttpClient();
         }
         return client;
     }

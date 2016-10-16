@@ -18,10 +18,10 @@
         <bundle start-level="80">mvn:de.fhg.aisec/data-flow-policy/1.0.0</bundle>
         <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
         <bundle start-level="80">mvn:com.google.code.gson/gson/2.7</bundle>
-        <feature version="2.16.3" prerequisite="false" dependency="false">camel</feature>
+        <feature version="2.18.0" prerequisite="false" dependency="false">camel</feature>
         <feature version="4.2.6" prerequisite="false" dependency="false">pax-http-jetty</feature>
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
-       	<feature version="2.16.3" prerequisite="false" dependency="true">camel-ahc</feature>
+       	<feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>
         
         <!-- This is how to add a custom config file which will be picked up by Config Admin-->
         <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->

@@ -3,12 +3,12 @@ package de.fhg.camel.ids.client;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.asynchttpclient.ws.DefaultWebSocketListener;
+import org.asynchttpclient.ws.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.ning.http.client.ws.DefaultWebSocketListener;
-import com.ning.http.client.ws.WebSocket;
 
 import de.fhg.aisec.ids.messages.IdsProtocolMessages.IdsMessage;
 import de.fhg.aisec.ids.messages.IdsProtocolMessages.MessageType;

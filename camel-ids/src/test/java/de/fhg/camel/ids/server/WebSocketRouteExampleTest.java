@@ -25,14 +25,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketTextListener;
+import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.ws.WebSocket;
-import com.ning.http.client.ws.WebSocketTextListener;
-import com.ning.http.client.ws.WebSocketUpgradeHandler;
 
 @Ignore
 public class WebSocketRouteExampleTest extends CamelTestSupport {
@@ -50,7 +50,7 @@ public class WebSocketRouteExampleTest extends CamelTestSupport {
 
     @Test
     public void testWSHttpCall() throws Exception {
-        AsyncHttpClient c = new AsyncHttpClient();
+        DefaultAsyncHttpClient c = new DefaultAsyncHttpClient();
 
         WebSocket websocket = c.prepareGet("ws://127.0.0.1:" + port + "/echo").execute(
             new WebSocketUpgradeHandler.Builder()
