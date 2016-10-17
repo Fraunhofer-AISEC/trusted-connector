@@ -38,7 +38,7 @@ import org.eclipse.jetty.server.Handler;
  *
  * This component uses Jetty as the websocket implementation.
  */
-@UriEndpoint(scheme = "ids-server", title = "IDS Server Socket", syntax = "ids-server:host:port/resourceUri", consumerClass = WebsocketConsumer.class, label = "ids-server")
+@UriEndpoint(scheme = "idsserver", title = "IDS Server Socket", syntax = "idsserver:host:port/resourceUri", consumerClass = WebsocketConsumer.class, label = "idsserver")
 public class WebsocketEndpoint extends DefaultEndpoint {
 
     private WebsocketComponent component;

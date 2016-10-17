@@ -16,6 +16,7 @@
  */
 package de.fhg.camel.ids.client;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -125,7 +126,12 @@ public class WsEndpoint extends AhcEndpoint {
     }
 
     public void connect() throws Exception {
-        String uri = getHttpUri().toASCIIString();
+    	String uri = getHttpUri().toASCIIString();
+    	if (uri.startsWith("idsclient:")) {
+    		uri = uri.replaceFirst("idsclient:", "wss:");
+    	} else if (uri.startsWith("idsclientplain:")) {
+    		uri = uri.replaceFirst("idsclientplain:", "ws:");
+    	}
 
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");

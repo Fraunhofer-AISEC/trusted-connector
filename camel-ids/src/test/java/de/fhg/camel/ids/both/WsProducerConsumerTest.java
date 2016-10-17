@@ -176,12 +176,12 @@ public class WsProducerConsumerTest extends CamelTestSupport {
             public void configure() {
         		
             	// Needed to configure TLS on the client side
-		        WsComponent wsComponent = (WsComponent) context.getComponent("ids-client-plain");
+		        WsComponent wsComponent = (WsComponent) context.getComponent("idsclientplain");
 //		        wsComponent.setSslContextParameters(defineClientSSLContextClientParameters());
 
 		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("ids-client-plain://localhost:9292/echo")
+                	.to("idsclientplain://localhost:9292/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
@@ -191,11 +191,11 @@ public class WsProducerConsumerTest extends CamelTestSupport {
             public void configure() {
             	
             		// Needed to configure TLS on the server side
-            		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
+            		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
 //					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
 
 					// This route is set to use TLS, referring to the parameters set above
-                    from("ids-server:localhost:9292/echo")
+                    from("idsserver:localhost:9292/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }

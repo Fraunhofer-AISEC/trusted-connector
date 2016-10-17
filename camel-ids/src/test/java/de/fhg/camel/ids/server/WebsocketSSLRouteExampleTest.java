@@ -50,8 +50,6 @@ import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.JdkSslContext;
 
 
-
-
 @Ignore
 public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
@@ -126,7 +124,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     public void testWSHttpCall() throws Exception {
 
         AsyncHttpClient c = createAsyncHttpSSLClient();
-        WebSocket websocket = c.prepareGet("ids-server://127.0.0.1:" + port + "/test").execute(
+        WebSocket websocket = c.prepareGet("wss://127.0.0.1:" + port + "/test").execute(
                 new WebSocketUpgradeHandler.Builder()
                         .addWebSocketListener(new WebSocketTextListener() {
                             @Override
@@ -172,18 +170,19 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         return new RouteBuilder() {
             public void configure() {
 
-                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
+            	context.getComponentNames().forEach(x -> System.out.println(x));
+                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
                 websocketComponent.setSslContextParameters(defineSSLContextParameters());
                 websocketComponent.setPort(port);
                 websocketComponent.setMinThreads(1);
                 websocketComponent.setMaxThreads(20);
 
-                from("ids-server://test")
+                from("idsserver://test")
                         .log(">>> Message received from WebSocket Client : ${body}")
                         .to("mock:client")
                         .loop(10)
                             .setBody().constant(">> Welcome on board!")
-                            .to("ids-server://test");
+                            .to("idsserver://test");
             }
         };
     }

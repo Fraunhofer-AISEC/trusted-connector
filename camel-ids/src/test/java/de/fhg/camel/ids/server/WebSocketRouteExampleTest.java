@@ -90,20 +90,20 @@ public class WebSocketRouteExampleTest extends CamelTestSupport {
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() {
-                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
+                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
                 websocketComponent.setPort(port);
                 websocketComponent.setMinThreads(1);
                 websocketComponent.setMaxThreads(20);
 
                 // START SNIPPET: e1
                 // expose a echo websocket client, that sends back an echo
-                from("ids-server://echo")
+                from("idsserver://echo")
                     .log(">>> Message received from WebSocket Client : ${body}")
                     .transform().simple("${body}${body}")
                     // send back to the client, by sending the message to the same endpoint
                     // this is needed as by default messages is InOnly
                     // and we will by default send back to the current client using the provided connection key
-                    .to("ids-server://echo");
+                    .to("idsserver://echo");
                 // END SNIPPET: e1
             }
         };
