@@ -49,6 +49,6 @@ public class WsProducerUsingStreamingTest extends WsProducerTestBase {
 
     @Override
     protected String getTargetURL() {
-        return "ids-client-plain://localhost:" + PORT + "?useStreaming=true";
+        return "idsclientplain://localhost:" + PORT + "?useStreaming=true";
     }
 }

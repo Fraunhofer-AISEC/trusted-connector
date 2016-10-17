@@ -123,8 +123,8 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     public void testWSHttpCall() throws Exception {
 
         AsyncHttpClient c = createAsyncHttpSSLClient();
-        String test = "ids://127.0.0.1:" + port + "/test"; 
-        WebSocket websocket = c.prepareGet("ids://127.0.0.1:" + port + "/test").execute(
+        String test = "idsserver://127.0.0.1:" + port + "/test"; 
+        WebSocket websocket = c.prepareGet("idsserver://127.0.0.1:" + port + "/test").execute(
                 new WebSocketUpgradeHandler.Builder()
                         .addWebSocketListener(new WebSocketTextListener() {
                             @Override
@@ -170,18 +170,18 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         return new RouteBuilder() {
             public void configure() {
 
-                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
+                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
                 websocketComponent.setSslContextParameters(defineSSLContextParameters());
                 websocketComponent.setPort(port);
                 websocketComponent.setMinThreads(1);
                 websocketComponent.setMaxThreads(20);
 
-                from("ids://test")
+                from("idsserver://test")
                         .log(">>> Message received from WebSocket Client : ${body}")
                         .to("mock:client")
                         .loop(10)
                             .setBody().constant(">> Welcome on board!")
-                            .to("ids://test");
+                            .to("idsserver://test");
             }
         };
     }

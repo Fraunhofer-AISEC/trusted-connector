@@ -95,20 +95,20 @@ public class WebsocketTwoRoutesToSameEndpointExampleTest extends CamelTestSuppor
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() {
-                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("ids-server");
+                WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
                 websocketComponent.setMinThreads(1);
                 websocketComponent.setMaxThreads(20);
                 
-                from("ids-server://localhost:" + port + "/bar")
+                from("idsserver://localhost:" + port + "/bar")
                         .log(">>> Message received from BAR WebSocket Client : ${body}")
                         .transform().simple("The bar has ${body}")
-                        .to("ids-server://localhost:" + port + "/bar");
+                        .to("idsserver://localhost:" + port + "/bar");
 
                 from("timer://foo?fixedRate=true&period=12000")
                         //Use a period which is longer then the latch await time
                         .setBody(constant("Broadcasting to Bar"))
                         .log(">>> Broadcasting message to Bar WebSocket Client")
-                        .to("ids-server://localhost:" + port + "/bar?sendToAll=true");
+                        .to("idsserver://localhost:" + port + "/bar?sendToAll=true");
             }
         };
     }

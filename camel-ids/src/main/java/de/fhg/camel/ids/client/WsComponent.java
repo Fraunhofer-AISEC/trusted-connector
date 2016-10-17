@@ -28,10 +28,10 @@ public class WsComponent extends AhcComponent {
     
     @Override
     protected String createAddressUri(String uri, String remaining) {
-    	if (uri.startsWith("ids-client-plain:")) {
-    		return uri.replaceFirst("ids-client-plain:", "ws:");
-    	} else if (uri.startsWith("ids-client:")) {
-    		return uri.replaceFirst("ids-client:", "wss:");    		
+    	if (uri.startsWith("idsclientplain:")) {
+    		return uri.replaceFirst("idsclientplain:", "ws:");
+    	} else if (uri.startsWith("idsclient:")) {
+    		return uri.replaceFirst("idsclient:", "wss:");    		
     	}
     	
     	//Should not happen
