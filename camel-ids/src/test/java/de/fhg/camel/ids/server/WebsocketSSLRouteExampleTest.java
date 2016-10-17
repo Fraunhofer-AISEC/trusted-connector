@@ -52,7 +52,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     private static List<String> received = new ArrayList<String>();
     private static CountDownLatch latch = new CountDownLatch(10);
     protected Properties originalValues = new Properties();
-    protected String pwd = "changeit";
+    protected String pwd = "password";
     protected int port;
 
     @Override
@@ -62,7 +62,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
         super.setUp();
 
-        URL trustStoreUrl = this.getClass().getClassLoader().getResource("jsse/localhost.ks");
+        URL trustStoreUrl = this.getClass().getClassLoader().getResource("jsse/truststore.jks");
         setSystemProp("javax.net.ssl.trustStore", trustStoreUrl.toURI().getPath());
     }
 
@@ -96,7 +96,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
         KeyStoreParameters ksp = new KeyStoreParameters();
         // ksp.setResource(this.getClass().getClassLoader().getResource("jsse/localhost.ks").toString());
-        ksp.setResource("jsse/localhost.ks");
+        ksp.setResource("jsse/keystore.jks");
         ksp.setPassword(pwd);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
@@ -105,11 +105,12 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
         TrustManagersParameters tmp = new TrustManagersParameters();
         tmp.setKeyStore(ksp);
+        
 
         // NOTE: Needed since the client uses a loose trust configuration when no ssl context
         // is provided.  We turn on WANT client-auth to prefer using authentication
         SSLContextServerParameters scsp = new SSLContextServerParameters();
-
+        
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);
         sslContextParameters.setTrustManagers(tmp);
@@ -122,7 +123,8 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     public void testWSHttpCall() throws Exception {
 
         AsyncHttpClient c = createAsyncHttpSSLClient();
-        WebSocket websocket = c.prepareGet("ids-server://127.0.0.1:" + port + "/test").execute(
+        String test = "ids://127.0.0.1:" + port + "/test"; 
+        WebSocket websocket = c.prepareGet("ids://127.0.0.1:" + port + "/test").execute(
                 new WebSocketUpgradeHandler.Builder()
                         .addWebSocketListener(new WebSocketTextListener() {
                             @Override
@@ -174,12 +176,12 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
                 websocketComponent.setMinThreads(1);
                 websocketComponent.setMaxThreads(20);
 
-                from("ids-server://test")
+                from("ids://test")
                         .log(">>> Message received from WebSocket Client : ${body}")
                         .to("mock:client")
                         .loop(10)
                             .setBody().constant(">> Welcome on board!")
-                            .to("ids-server://test");
+                            .to("ids://test");
             }
         };
     }
