@@ -3,16 +3,23 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
+import de.fhg.aisec.ids.messages.AttestationProtos;
 import de.fhg.aisec.ids.messages.IdsProtocolMessages;
+import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.ids.comm.unixsocket.UNIXReadWriteDispatcher;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
-public class RemoteAttestationServerHandler {
+public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
+	private byte[] myNonce;
+	private byte[] yourNonce;
 
 	public RemoteAttestationServerHandler(FSM fsm) {
 		this.fsm = fsm;
+		this.myNonce = this.setNonce();
 	}
 
 	public MessageLite replyToRatRequest(Event e) {
@@ -23,8 +30,7 @@ public class RemoteAttestationServerHandler {
 	}
 
 	public MessageLite sendServerNonceAndCert(Event e) {
-		// TODO get nonce from TPM
-		ByteString nonce = ByteString.EMPTY;
+		ByteString nonce = ByteString.copyFrom(this.myNonce);
 		
 		// TODO get cert (a certificate for my public key, which is signed by a CA which must be trusted by the client and also contains my ID)
 		ByteString cert = ByteString.EMPTY;

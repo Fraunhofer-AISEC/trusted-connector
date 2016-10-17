@@ -1,5 +1,9 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
@@ -8,11 +12,14 @@ import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
-public class RemoteAttestationClientHandler {
+public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
+	private byte[] myNonce;
+	private byte[] yourNonce;
 	
 	public RemoteAttestationClientHandler(FSM fsm) {
 		this.fsm = fsm;
+		this.myNonce = this.setNonce();
 	}
 
 	public String enterRat(Event e) {
@@ -28,22 +35,18 @@ public class RemoteAttestationClientHandler {
 	}
 
 	public MessageLite sendClientIdAndNonce(Event e) {		
-		// TODO retrieve client id from TPM
-		ByteString client_id = ByteString.EMPTY;
-		
-		// TODO retrieve client nonce from TPM
-		ByteString client_nonce = ByteString.EMPTY;
-		
+		ByteString client_nonce = ByteString.copyFrom(this.myNonce);
 		return IdsProtocolMessages
 				.RatCMyNonce
 				.newBuilder()
 				.setType(RatType.RAT_C_MY_NONCE)
-				.setIdC(client_id)
 				.setNonceC(client_nonce)
 				.build();
 	}
 
-	public MessageLite sendPcr(Event e) {				
+	public MessageLite sendPcr(Event e) {
+		
+		
 		// TODO retrieve measurement list from TPM
 		ByteString ml = ByteString.EMPTY;
 		
