@@ -17,11 +17,11 @@ email_in_dn = no            # Don't concat the email in the DN
 copy_extensions = copy          # Required to copy SANs from CSR to cert
 
 base_dir    = .
-certificate = $base_dir/subca.cert  # The CA certifcate
-private_key = $base_dir/subca.key   # The CA private key
+certificate = $base_dir/test_ca_certs/subca.cert  # The CA certifcate
+private_key = $base_dir/test_ca_certs/subca.key   # The CA private key
 new_certs_dir   = $base_dir     # Location for new certs after signing
-database    = $base_dir/index.txt   # Database index file
-serial      = $base_dir/serial.txt  # The current serial number
+database    = $base_dir/test_ca_certs/index.txt   # Database index file
+serial      = $base_dir/test_ca_certs/serial.txt  # The current serial number
 
 unique_subject  = no            # Set to 'no' to allow creation of
                 # several certificates with same subject.
@@ -29,7 +29,7 @@ unique_subject  = no            # Set to 'no' to allow creation of
 ####################################################################
 [ req ]
 default_bits        = 4096
-default_keyfile     = subca.key
+default_keyfile     = test_ca_certs/subca.key
 distinguished_name  = ca_distinguished_name
 req_extensions     = ca_extensions
 string_mask         = utf8only
