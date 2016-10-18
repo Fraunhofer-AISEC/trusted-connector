@@ -1,25 +1,34 @@
 package de.fhg.ids.comm.ws.protocol.fsm;
 
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+
 public class Event {
 	private Object key;
 	private String payload;
+	private ConnectorMessage msg;
 	
-	public Event(Object key, String payload) {
+	public Event(Object key, String payload, ConnectorMessage msg) {
 		super();
-		this.key = key;
-		this.payload = payload;
+		this.setKey(key);
+		this.setPayload(payload);
+		this.setMessage(msg);
 	}
 	public Object getKey() {
 		return key;
 	}
-	public void setKey(String key) {
+	public void setKey(Object key) {
 		this.key = key;
 	}
+	public ConnectorMessage getMessage() {
+		return this.msg;
+	}
+	public void setMessage(ConnectorMessage evt) {
+		this.msg = evt;
+	}
 	public String getPayload() {
-		return payload;
+		return this.payload;
 	}
 	public void setPayload(String payload) {
 		this.payload = payload;
-	}
-
+	}	
 }

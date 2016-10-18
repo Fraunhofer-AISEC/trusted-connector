@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import de.fhg.aisec.ids.messages.BrokerProtos.AnnounceServiceResponse;
 import de.fhg.aisec.ids.messages.BrokerProtos.ServiceDescription;
-import de.fhg.aisec.ids.messages.ConnectorProtos.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 
 /**
  * Interface of an IDS connector towards the IDS network, i.e. outside of the

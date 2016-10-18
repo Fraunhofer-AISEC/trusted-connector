@@ -3,6 +3,7 @@ package de.fhg.camel.ids.client;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,8 +11,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.ning.http.client.ws.DefaultWebSocketListener;
 import com.ning.http.client.ws.WebSocket;
 
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.IdsMessage;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.Idscp;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage.Type;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -29,6 +31,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     private FSM fsm;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
+    private final ConnectorMessage emptyMsg = Idscp.ConnectorMessage.newBuilder().build();
 
 	@Override
     public void onOpen(WebSocket websocket) {
@@ -38,7 +41,7 @@ public class IDSPListener extends DefaultWebSocketListener {
         fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket);
         
         // start the protocol with the first message
-        fsm.feedEvent(new Event("start rat", null));
+        fsm.feedEvent(new Event("start rat", "", emptyMsg));
     }
 
     @Override
@@ -60,11 +63,10 @@ public class IDSPListener extends DefaultWebSocketListener {
     	try {
     		lock.lockInterruptibly();
     		try {
-    			RatType type = IdsMessage.parseFrom(message).getType();
-    			fsm.feedEvent(new Event(type, new String(message)));
-    		} catch (InvalidProtocolBufferException ip) {
-    			// If data is not a valid protocol buffer, try to use it as a plain text
-    			fsm.feedEvent(new Event(new String(message), new String(message)));
+    			ConnectorMessage msg = ConnectorMessage.parseFrom(message);
+    			fsm.feedEvent(new Event(msg.getType(), new String(message), msg));
+    		} catch (InvalidProtocolBufferException e) {
+    			e.printStackTrace();
     		}
 
     		if (fsm.getState().equals("SUCCESS")) {

@@ -3,78 +3,95 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
+import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
+import de.fhg.aisec.ids.messages.Idscp.Proto3Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
 import de.fhg.ids.comm.unixsocket.UNIXReadWriteDispatcher;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
-public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
+public class RemoteAttestationServerHandler {
 	private final FSM fsm;
-	private byte[] myNonce;
-	private byte[] yourNonce;
-
-	public RemoteAttestationServerHandler(FSM fsm) {
+	private String myNonce;
+	private String yourNonce;
+	private IdsAttestationType aType;
+	private boolean attestationSucccessfull = false;
+	
+	public RemoteAttestationServerHandler(FSM fsm, IdsAttestationType type) {
 		this.fsm = fsm;
-		this.myNonce = this.setNonce();
+		this.aType = type;
+
 	}
 
-	public MessageLite replyToRatRequest(Event e) {
-		return IdsProtocolMessages
-				.EnterRatResp
-				.newBuilder()
-				.setType(RatType.ENTER_RAT_RESPONSE).build();
-	}
-
-	public MessageLite sendServerNonceAndCert(Event e) {
-		ByteString nonce = ByteString.copyFrom(this.myNonce);
+	public MessageLite sendTPM2Ddata(Event e) {
+		this.myNonce = NonceGenerator.generate();
+		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData();
+		System.out.println("myNonce:" + this.myNonce + "\nyourNonce:" + this.yourNonce);
+		// todo:
+		// local TPM2d communication here
+		// in order to get atype, halg etc
 		
-		// TODO get cert (a certificate for my public key, which is signed by a CA which must be trusted by the client and also contains my ID)
-		ByteString cert = ByteString.EMPTY;
-		return IdsProtocolMessages
-				.RatPMyNonce
+		return ConnectorMessage
 				.newBuilder()
-				.setType(RatType.RAT_P_MY_NONCE)
-				.setNonceP(nonce)
-				.setCertP(cert)
+				.setId(0)
+				.setType(ConnectorMessage.Type.RAT_RESPONSE)
+				.setAttestationResponse(
+						AttestationResponse
+						.newBuilder()
+						.setAtype(this.aType)
+						.setQualifyingData(this.myNonce)
+						.setHalg("")
+						.setQuoted("")
+						.setSignature("")
+						//.setPcrValue(0, 
+						//		Proto3Pcr
+						//		.newBuilder()
+						//		.setNumber(0)
+						//		.setValue("")
+						//		.build())
+						.setCertificateUri("")
+						.build()
+						)
 				.build();
 	}
 
-	/**
-	 * Confirms successful run of the rat protocol by sending back the client's nonce and AIK-public key, signed with our private key.
-	 * 
-	 * @param e
-	 * @return
-	 */
-	public MessageLite sendSignedClientNonce(Event e) {
-		
-		// TODO sign nonce retrieved from client and AIK-public key from client with my private key
-		ByteString signed_client_nonce = ByteString.EMPTY;
-		
-		return IdsProtocolMessages
-				.RatPYourNonce
+	public MessageLite sendResult(Event e) {
+		// todo:
+		// TPP check of PCR values & sign & quote etc
+		// and set attestationSucccessfull 
+		this.attestationSucccessfull  = false;
+				
+		return ConnectorMessage
 				.newBuilder()
-				.setType(RatType.RAT_P_YOUR_NONCE)
-				.setSignedNonceC(signed_client_nonce)
-				.build();	
+				.setId(0)
+				.setType(ConnectorMessage.Type.RAT_RESULT)
+				.setAttestationResult(
+						AttestationResult
+						.newBuilder()
+						.setAtype(this.aType)
+						.setResult(this.attestationSucccessfull)
+						.build()
+						)
+				.build();
 	}
 
-	/**
-	 * Send "leaving rat" message to client.
-	 * 
-	 * @param e
-	 * @return
-	 */
-	public MessageLite leaveRat(Event e) {
-		return IdsProtocolMessages
-				.RatLeave
+	public MessageLite leaveRatRequest(Event e) {
+		return ConnectorMessage
 				.newBuilder()
-				.setType(RatType.RAT_LEAVE)
-				.build();	
+				.setId(0)
+				.setType(ConnectorMessage.Type.RAT_LEAVE)
+				.setAttestationLeave(
+						AttestationLeave
+						.newBuilder()
+						.setAtype(this.aType)
+						.build()
+						)
+				.build();
 	}
-
-
 }

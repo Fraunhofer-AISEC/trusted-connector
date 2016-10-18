@@ -14,9 +14,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
+import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
 import jnr.unixsocket.UnixSocketChannel;
 
 /**

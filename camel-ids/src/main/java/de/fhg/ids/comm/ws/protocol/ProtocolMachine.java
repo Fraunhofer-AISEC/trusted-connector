@@ -10,8 +10,9 @@ import org.eclipse.jetty.websocket.api.Session;
 import com.google.protobuf.MessageLite;
 import com.ning.http.client.ws.WebSocket;
 
-import de.fhg.aisec.ids.messages.IdsProtocolMessages;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.Idscp;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
@@ -44,22 +45,20 @@ public class ProtocolMachine {
 		FSM fsm = new FSM();
 		fsm.addState("START");
 		fsm.addState("RAT:AWAIT_CONFIRM");
-		fsm.addState("RAT:AWAIT_P_NONCE");
-		fsm.addState("RAT:AWAIT_C_NONCE");
+		fsm.addState("RAT:AWAIT_RESULT");
 		fsm.addState("RAT:AWAIT_LEAVE");
 		fsm.addState("SUCCESS");
 		
-		RemoteAttestationClientHandler h = new RemoteAttestationClientHandler(fsm);
+		RemoteAttestationClientHandler h = new RemoteAttestationClientHandler(fsm, IdsAttestationType.BASIC);
 		
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("start rat", "START", "RAT:AWAIT_CONFIRM", (e) -> {return replyProto(IdsProtocolMessages.EnterRatReq.newBuilder().setType(RatType.ENTER_RAT_REQUEST).build());} ));
-		fsm.addTransition(new Transition(RatType.ENTER_RAT_RESPONSE, "RAT:AWAIT_CONFIRM", "RAT:AWAIT_P_NONCE", (e) -> {return replyProto(h.sendClientIdAndNonce(e));} ));
-		fsm.addTransition(new Transition(RatType.RAT_P_MY_NONCE, "RAT:AWAIT_P_NONCE", "RAT:AWAIT_C_NONCE", (e) -> {return replyProto(h.sendPcr(e));} ));
-		fsm.addTransition(new Transition(RatType.RAT_P_YOUR_NONCE, "RAT:AWAIT_C_NONCE", "RAT:AWAIT_LEAVE", (e) -> {return replyProto(h.sendSignedServerNonce(e));} ));
-		fsm.addTransition(new Transition(RatType.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
+		fsm.addTransition(new Transition("start rat", "START", "RAT:AWAIT_CONFIRM", (e) -> {return replyProto(h.enterRatRequest(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, "RAT:AWAIT_CONFIRM", "RAT:AWAIT_RESULT", (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, "RAT:AWAIT_RESULT", "RAT:AWAIT_LEAVE", (e) -> {return replyProto(h.sendResult(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return replyProto(h.leaveRatRequest(e));} ));
 		
 		/* Add listener to log state transitions*/
-		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
+		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println("Consumer State change: " + e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
 		fsm.setInitialState("START");
@@ -70,25 +69,25 @@ public class ProtocolMachine {
 	public FSM initIDSProviderProtocol(Session sess) {
 		this.sess = sess;
 		FSM fsm = new FSM();
-		fsm.addState("AWAIT_SELECT_CONV");
-		fsm.addState("RAT:AWAIT_C_NONCE");
-		fsm.addState("RAT:AWAIT_PCR");
-		fsm.addState("RAT:AWAIT_P_NONCE");
+		fsm.addState("AWAIT_RAT");
+		fsm.addState("RAT:AWAIT_CONFIRM");
+		fsm.addState("RAT:AWAIT_RESULT");
+		fsm.addState("RAT:AWAIT_LEAVE");
 		fsm.addState("SUCCESS");
 		
-		RemoteAttestationServerHandler h = new RemoteAttestationServerHandler(fsm);
+		RemoteAttestationServerHandler h = new RemoteAttestationServerHandler(fsm, IdsAttestationType.BASIC);
 
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition(RatType.ENTER_RAT_REQUEST, "AWAIT_SELECT_CONV", "RAT:AWAIT_C_NONCE", (e) -> {return replyProto(h.replyToRatRequest(e));} ));
-		fsm.addTransition(new Transition(RatType.RAT_C_MY_NONCE, "RAT:AWAIT_C_NONCE", "RAT:AWAIT_PCR", (e) -> {return replyProto(h.sendServerNonceAndCert(e));} ));
-		fsm.addTransition(new Transition(RatType.RAT_C_REQ_PCR, "RAT:AWAIT_PCR", "RAT:AWAIT_P_NONCE", (e) -> {return replyProto(h.sendSignedClientNonce(e));} ));
-		fsm.addTransition(new Transition(RatType.RAT_C_YOUR_NONCE, "RAT:AWAIT_P_NONCE", "SUCCESS", (e) -> {return replyProto(h.leaveRat(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, "AWAIT_RAT", "RAT:AWAIT_CONFIRM", (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, "RAT:AWAIT_CONFIRM", "RAT:AWAIT_RESULT", (e) -> {return replyProto(h.sendResult(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, "RAT:AWAIT_RESULT", "RAT:AWAIT_LEAVE", (e) -> {return replyProto(h.leaveRatRequest(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
 		
 		/* Add listener to log state transitions*/
-		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println(e.getKey() + " -> " + f.getState());});
+		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println("Provider State change: " + e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
-		fsm.setInitialState("AWAIT_SELECT_CONV");
+		fsm.setInitialState("START");
 		
 		return fsm;
 	}
@@ -96,6 +95,7 @@ public class ProtocolMachine {
 
 	boolean replyProto(MessageLite message) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		System.out.println("message to send: \n----------\n" + message.toString()+"\n----------\n");
 		try {
 			message.writeTo(bos);
 		} catch (IOException e) {

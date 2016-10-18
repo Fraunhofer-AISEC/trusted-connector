@@ -1,0 +1,152 @@
+syntax = "proto3";
+option java_package = "de.fhg.aisec.ids.messages";
+option java_outer_classname = "Idscp";
+
+message ConnectorMessage {
+	enum Type {
+		REGISTRATION_REQUEST = 0;
+		REGISTRATION_RESPONSE = 1;
+		SERVICE_REQUEST = 2;          
+		SERVICE_RESPONSE = 3;
+		INTERNAL_PROPERTY_REQUEST = 4;
+		INTERNAL_PROPERTY_RESPONSE = 5;
+		RAT_REQUEST = 6;
+		RAT_RESPONSE = 8;
+		RAT_RESULT = 10;
+		RAT_LEAVE = 11;
+	}
+	
+	// Identifies which field is filled in.
+	Type type = 1;
+	
+	// Identifier of the message.
+	int64 id = 2;
+	
+	// One of the following will be filled in.
+	oneof message {
+		//Service registrations
+		RegistrationRequest registrationRequest = 3;
+		RegistrationResponse registrationResponse = 4;
+		
+		//Requests to (external) services
+		ServiceRequest serviceRequest = 5;
+		ServiceResponse serviceResponse = 6;
+		
+		//Retrieval of properties from Core Platform
+		PropertyRequest propertyRequest = 7;
+		PropertyResponse propertyResponse = 8;
+		
+		// a remote attestation
+		AttestationRequest attestationRequest = 9;
+		AttestationResponse attestationResponse = 10;
+		AttestationResult attestationResult = 11;
+		AttestationLeave attestationLeave = 12;
+	}
+}
+
+message RegistrationRequest {
+	string endpointAddress = 1;
+	string description = 2;
+	bool externallyAvailable = 3;
+}
+
+message RegistrationResponse {
+	bool success = 1;
+	string errorCode = 2;
+	string errorMessage = 3;
+}
+
+message ServiceRequest {
+	string URI = 1;
+	bytes payload = 2;
+}
+
+message ServiceResponse {
+	bytes content = 1;
+	string errorCode = 2;
+	string errorMessage = 3;
+}
+
+message PropertyRequest {
+	string key = 1;
+}
+
+message PropertyResponse {
+	bool success = 1;
+	string value = 2;
+}
+
+// -------------------------------
+// REMOTE ATTESTATION BEGIN
+// -------------------------------
+
+// type of attestation in the IDS context
+enum IdsAttestationType {
+  // kernel + core container (PCR 0 to 10)
+  BASIC = 0;
+
+  // everything (PCRs 0 to 23)
+  ALL = 1;
+
+  // PCRs must be specified manually
+  ADVANCED = 2;
+}
+
+//Basically the same as in attestation.proto, but in proto3
+message Proto3Pcr {
+  // the PCR number (usually between 0 and 23)
+  int32 number = 1;
+  // the value of PCR<number>
+  string value = 2;
+  bool success = 3;
+  string errorMessage = 4;
+}
+
+//External Attestation Request, sent to other connector
+message AttestationRequest {
+	IdsAttestationType atype = 1;
+	//nonce for attestation request
+	string qualifyingData = 2;
+
+}
+
+//External Attestation Response, coming from other connector
+//if Response is coming from second connector
+message AttestationResponse {
+
+	// type of attestation in the IDS context
+	IdsAttestationType atype = 1;
+	
+	// nonce for the next attestation
+	string qualifyingData = 2;	
+
+	// the hash algorith used to sign the quoted information
+	string halg = 3;
+
+	// the quoted information (a TPM2B_ATTEST data structure)
+	string quoted = 4;
+
+	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
+	string signature = 5;
+
+	// the explicit PCR values
+	repeated Proto3Pcr pcr_value = 6;
+  
+	// an URI to a certificate that includes the public key
+	string certificate_uri = 7;
+
+}
+
+//External Attestation Request, sent to other connector
+message AttestationResult {
+	IdsAttestationType atype = 1;
+	//boolean for 
+	bool result = 2;
+}
+
+//External Attestation Leave Request, sent to other connector
+message AttestationLeave {
+	IdsAttestationType atype = 1;
+}
+
+// REMOTE ATTESTATION END
