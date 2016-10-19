@@ -229,6 +229,7 @@ public class MyProcessor implements AsyncProcessor {
 			if (exchange_labels == "") {
 				exchange_labels = labels;
 			} else {
+				 //TODO Avoid adding already existing label
 				exchange_labels = exchange_labels + "," + labels;
 			}
 				
