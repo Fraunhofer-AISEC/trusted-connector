@@ -111,7 +111,7 @@ error_check $? "Failed to verify newly signed test certificate"
 echo "Create connector token with certifcate and key"
 openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
 
-echo "Dummy certificates successfully created"
+echo "Test certificates successfully created"
 cleanup
 
 exit 0

@@ -27,7 +27,7 @@ organizationalUnitName	= Organizational Unit Name (department, division)
 organizationalUnitName_default 	= AISEC
 
 commonName          = Common Name (e.g. server FQDN or YOUR name)
-commonName_default      = AISEC IDS Server
+commonName_default      = AISEC IDS Client
 
 emailAddress            = Email Address
 emailAddress_default        = ids@aisec.fraunhofer.de
