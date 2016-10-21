@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
+import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
@@ -48,8 +49,6 @@ public class RemoteAttestationServerHandler {
 	public MessageLite sendTPM2Ddata(Event e) {
 		this.myNonce = NonceGenerator.generate();
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
-		LOG.debug("Server myNonce: " + this.myNonce);
-		LOG.debug("Server yourNonce: " + this.yourNonce);
 		
 		ControllerToTpm msg = ControllerToTpm
 				.newBuilder()
@@ -60,7 +59,12 @@ public class RemoteAttestationServerHandler {
 		
 		try {
 			client.send(msg.toByteArray(), this.handler);
-			this.handler.waitForResponse();
+			TpmToController answer = this.handler.waitForResponse();
+			
+			LOG.debug("got msg from tpm2d:" + answer.toString());
+			
+			// TODO: check answer with tpp here
+			
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)

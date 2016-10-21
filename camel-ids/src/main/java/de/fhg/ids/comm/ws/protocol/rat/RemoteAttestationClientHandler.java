@@ -9,6 +9,7 @@ import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
+import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
@@ -72,7 +73,12 @@ public class RemoteAttestationClientHandler {
 		
 		try {
 			client.send(msg.toByteArray(), this.handler);
-			this.handler.waitForResponse();
+			TpmToController answer = this.handler.waitForResponse();
+			
+			LOG.debug("got msg from tpm2d:" + answer.toString());
+			
+			// TODO : check answer with tpp here			
+			
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)

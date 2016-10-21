@@ -3,6 +3,10 @@ package de.fhg.ids.comm.unixsocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
+
 public class UnixSocketResponsHandler {
 	private Logger LOG = LoggerFactory.getLogger(UnixSocketResponsHandler.class);
 	private byte[] rsp = null;
@@ -13,7 +17,7 @@ public class UnixSocketResponsHandler {
 		return true;
 	}
 	
-	public synchronized void waitForResponse() {
+	public synchronized TpmToController waitForResponse() {
 		while(this.rsp == null) {
 			try {
 				this.wait();
@@ -21,6 +25,13 @@ public class UnixSocketResponsHandler {
 			}
 		}
 		LOG.debug("a unix socket msg arrived:" + new String(this.rsp));
+		try {
+			return TpmToController.parseFrom(this.rsp);
+		} catch (InvalidProtocolBufferException e) {
+			LOG.debug("could not parse protobuf msg TpmToController from tpm2d");
+			e.printStackTrace();
+			return TpmToController.newBuilder().build();
+		}
 	}
 }
 
