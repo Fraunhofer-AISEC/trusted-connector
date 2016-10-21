@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jetty.websocket.api.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 import com.ning.http.client.ws.WebSocket;
@@ -28,6 +30,7 @@ public class ProtocolMachine {
 	/** The session to send and receive messages */
 	private WebSocket ws;
 	private Session sess;
+	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
 	/** C'tor */
 	public ProtocolMachine() { }
@@ -58,7 +61,7 @@ public class ProtocolMachine {
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return replyProto(h.leaveRatRequest(e));} ));
 		
 		/* Add listener to log state transitions*/
-		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println("Consumer State change: " + e.getKey() + " -> " + f.getState());});
+		fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
 		fsm.setInitialState("START");
@@ -84,7 +87,7 @@ public class ProtocolMachine {
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
 		
 		/* Add listener to log state transitions*/
-		fsm.addSuccessfulChangeListener((f,e) -> {System.out.println("Provider State change: " + e.getKey() + " -> " + f.getState());});
+		fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
 		fsm.setInitialState("START");
@@ -95,7 +98,7 @@ public class ProtocolMachine {
 
 	boolean replyProto(MessageLite message) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		System.out.println("message to send: \n----------\n" + message.toString()+"\n----------\n");
+		//System.out.println("message to send: \n" + message.toString() + "\n");
 		try {
 			message.writeTo(bos);
 		} catch (IOException e) {
@@ -112,12 +115,12 @@ public class ProtocolMachine {
 	 */
 	boolean reply(byte[] text) {
 		if (ws!=null) {
-			System.out.println("Sending out " + text.length + " bytes");
+			//System.out.println("Sending out " + text.length + " bytes");
 			ws.sendMessage(text);
 		} else if (sess!=null) {
 			try {
 				ByteBuffer bb = ByteBuffer.wrap(text);
-				System.out.println("Sending out " + bb.array().length + " bytes");
+				//System.out.println("Sending out ByteBuffer with " + bb.array().length + " bytes");
 				sess.getRemote().sendBytes(bb);
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -56,13 +56,13 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketClose
     public void onClose(int closeCode, String message) {
-        LOG.trace("onClose {} {}", closeCode, message);
+        //LOG.trace("onClose {} {}", closeCode, message);
         sync.removeSocket(this);
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        LOG.trace("onConnect {}", session);
+        //LOG.trace("onConnect {}", session);
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
 
@@ -80,7 +80,7 @@ public class DefaultWebsocket implements Serializable {
 	        if (this.consumer != null) {
 	            this.consumer.sendMessage(this.connectionKey, message);
 	        } else {
-	            LOG.debug("No consumer to handle message received: {}", message);
+	            //LOG.debug("No consumer to handle message received: {}", message);
 	        }
 	        return;
         }
@@ -88,7 +88,7 @@ public class DefaultWebsocket implements Serializable {
         // Otherwise, we are still in the process of running IDS protocol and hold back the original message. In this case, feed the message into the protocol FSM
         try {
         	ConnectorMessage msg = ConnectorMessage.parseFrom(message.getBytes());
-        	LOG.debug("Feeding message into provider fsm: " + message);
+        	//LOG.debug("Feeding message into provider fsm: " + message);
 
         	//we de-protobuf and split messages into cmd and payload
         	idsFsm.feedEvent(new Event(msg.getType(), message, msg));
