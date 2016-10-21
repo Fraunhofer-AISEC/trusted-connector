@@ -92,14 +92,13 @@ enum IdsAttestationType {
   ADVANCED = 2;
 }
 
-//Basically the same as in attestation.proto, but in proto3
-message Proto3Pcr {
+//Basically the same as in attestation.proto
+message Pcr {
   // the PCR number (usually between 0 and 23)
   int32 number = 1;
+
   // the value of PCR<number>
   string value = 2;
-  bool success = 3;
-  string errorMessage = 4;
 }
 
 //External Attestation Request, sent to other connector
@@ -130,7 +129,7 @@ message AttestationResponse {
 	string signature = 5;
 
 	// the explicit PCR values
-	repeated Proto3Pcr pcr_value = 6;
+	repeated Pcr pcr_values = 6;
   
 	// an URI to a certificate that includes the public key
 	string certificate_uri = 7;

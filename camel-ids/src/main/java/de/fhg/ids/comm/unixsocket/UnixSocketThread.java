@@ -37,15 +37,18 @@ public class UnixSocketThread implements Runnable {
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
 	private Map<UnixSocketChannel, UnixSocketResponsHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponsHandler>());
 	
+	// default constructor
 	public UnixSocketThread() throws IOException {
 		this.selector = this.initSelector();
 	}
-
+	
+	// constructor setting another socket address
 	public UnixSocketThread(String socket) throws IOException {
 		this.SOCKET = socket;
 		this.selector = this.initSelector();
 	}
 
+	// send some data to the unix socket 
 	public void send(byte[] data, UnixSocketResponsHandler handler) throws IOException {
 		// Start a new connection
 		UnixSocketChannel channel = this.initiateConnection();
@@ -65,7 +68,8 @@ public class UnixSocketThread implements Runnable {
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
 	}
-
+	
+	// thread run method
 	public void run() {
 		while (true) {
 			try {
@@ -75,19 +79,19 @@ public class UnixSocketThread implements Runnable {
 					while (changes.hasNext()) {
 						ChangeRequest change = (ChangeRequest) changes.next();
 						switch (change.type) {
-						case ChangeRequest.CHANGEOPS:
-							SelectionKey key = change.channel.keyFor(this.selector);
-							key.interestOps(change.ops);
-							break;
-						case ChangeRequest.REGISTER:
-							change.channel.register(this.selector, change.ops);
-							break;
+							case ChangeRequest.CHANGEOPS:
+								SelectionKey key = change.channel.keyFor(this.selector);
+								key.interestOps(change.ops);
+								break;
+							case ChangeRequest.REGISTER:
+								change.channel.register(this.selector, change.ops);
+								break;
 						}
 					}
 					this.pendingChanges.clear();
 				}
 
-				// Wait for an event one of the registered channels
+				// Wait for an event on one of the registered channels
 				this.selector.select();
 
 				// Iterate over the set of keys for which events are available
@@ -113,6 +117,7 @@ public class UnixSocketThread implements Runnable {
 		}
 	}
 
+	// read send some data from the unix socket
 	private void read(SelectionKey key) throws IOException {
 		UnixSocketChannel channel = this.getChannel(key);
 
@@ -124,27 +129,25 @@ public class UnixSocketThread implements Runnable {
 		try {
 			numRead = channel.read(this.readBuffer);
 		} catch (IOException e) {
-			// The remote forcibly closed the connection, cancel
-			// the selection key and close the channel.
+			// The remote forcibly closed the connection, cancel the selection key and close the channel.
 			key.cancel();
 			channel.close();
 			return;
 		}
 
 		if (numRead == -1) {
-			// Remote entity shut the socket down cleanly. Do the
-			// same from our end and cancel the channel.
+			// Remote entity shut the socket down cleanly. Do the same from our end and cancel the channel.
 			key.channel().close();
 			key.cancel();
 			return;
 		}
-		// Handle the response
+		// Handle the read data
 		this.handleResponse(channel, this.readBuffer.array(), numRead);
 	}
 
+	// function to handle the data read from unix socket
 	private void handleResponse(UnixSocketChannel channel, byte[] data, int numRead) throws IOException {
-		// Make a correctly sized copy of the data before handing it
-		// to the client
+		// Make a correctly sized copy of the data before handing it to the client
 		byte[] rspData = new byte[numRead];
 		System.arraycopy(data, 0, rspData, 0, numRead);
 		
@@ -165,7 +168,7 @@ public class UnixSocketThread implements Runnable {
 		synchronized (this.pendingData) {
 			List queue = (List) this.pendingData.get(channel);
 
-			// Write until there's not more data ...
+			// Write until there's not more data
 			while (!queue.isEmpty()) {
 				ByteBuffer buf = (ByteBuffer) queue.get(0);
 				channel.write(buf);
@@ -177,9 +180,7 @@ public class UnixSocketThread implements Runnable {
 			}
 
 			if (queue.isEmpty()) {
-				// We wrote away all data, so we're no longer interested
-				// in writing on this socket. Switch back to waiting for
-				// data.
+				// We wrote away all data, so we're no longer interested in writing on this socket. Switch back to waiting for data.
 				key.interestOps(SelectionKey.OP_READ);
 			}
 		}
@@ -188,8 +189,7 @@ public class UnixSocketThread implements Runnable {
 	private void finishConnection(SelectionKey key) throws IOException {
 		UnixSocketChannel channel = this.getChannel(key);
 	
-		// Finish the connection. If the connection operation failed
-		// this will raise an IOException.
+		// Finish the connection. If the connection operation failed this will raise an IOException.
 		try {
 			channel.finishConnect();
 		} catch (IOException e) {
@@ -204,7 +204,7 @@ public class UnixSocketThread implements Runnable {
 	}
 
 	private UnixSocketChannel initiateConnection() throws IOException {
-		// open socket file
+		// open the socket address
 		File socketFile = new File(SOCKET);
 		LOG.debug("opening socket: "+ SOCKET);
 		// Try to open socket file 10 times
@@ -226,18 +226,20 @@ public class UnixSocketThread implements Runnable {
 		this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());	
 		this.channel = UnixSocketChannel.open(this.address);
 		this.channel.configureBlocking(false);
+		// synchronize pending changes
 		synchronized(this.pendingChanges) {
 			this.pendingChanges.add(new ChangeRequest(channel, ChangeRequest.REGISTER, SelectionKey.OP_CONNECT));
 		}
 		
 		return this.channel;
 	}
-
-
+	
+	// initialize the selector
 	private Selector initSelector() throws IOException {
 		return NativeSelectorProvider.getInstance().openSelector();
 	}
 	
+	// get the channel
 	private UnixSocketChannel getChannel(SelectionKey k) {
 		return (UnixSocketChannel) k.channel();
 	}

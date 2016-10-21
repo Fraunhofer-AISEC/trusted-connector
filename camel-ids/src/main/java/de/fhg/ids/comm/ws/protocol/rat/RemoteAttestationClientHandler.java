@@ -1,6 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
+import de.fhg.aisec.ids.messages.Idscp.Pcr;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -74,11 +76,8 @@ public class RemoteAttestationClientHandler {
 		try {
 			client.send(msg.toByteArray(), this.handler);
 			TpmToController answer = this.handler.waitForResponse();
-			
 			LOG.debug("got msg from tpm2d:" + answer.toString());
-			
-			// TODO : check answer with tpp here			
-			
+			Iterable<Pcr> pcr_values = answer.getPcrValuesList();
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)
@@ -87,16 +86,11 @@ public class RemoteAttestationClientHandler {
 							AttestationResponse
 							.newBuilder()
 							.setAtype(this.aType)
-							.setHalg("")
-							.setQuoted("")
-							.setSignature("")
-							//.setPcrValue(0, 
-							//		Proto3Pcr
-							//		.newBuilder()
-							//		.setNumber(0)
-							//		.setValue("")
-							//		.build())
-							.setCertificateUri("")
+							.setHalg(answer.getHalg())
+							.setQuoted(answer.getQuoted())
+							.setSignature(answer.getSignature())
+							.addAllPcrValues(pcr_values)
+							.setCertificateUri(answer.getCertificateUri())
 							.build()
 							)
 					.build();
@@ -112,12 +106,10 @@ public class RemoteAttestationClientHandler {
 	}
 	
 	public MessageLite sendResult(Event e) {
-		
-		// todo:
-		// TPP check of PCR values & sign & quote etc
-		// and set attestationSucccessfull 
 		this.attestationSucccessfull = false;
-				
+
+		// TODO :: TPP check of values		
+		
 		return ConnectorMessage
 				.newBuilder()
 				.setId(0)

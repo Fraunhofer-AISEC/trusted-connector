@@ -1,6 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import com.google.protobuf.MessageLite;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
+import de.fhg.aisec.ids.messages.Idscp.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
@@ -49,22 +51,18 @@ public class RemoteAttestationServerHandler {
 	public MessageLite sendTPM2Ddata(Event e) {
 		this.myNonce = NonceGenerator.generate();
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
-		
-		ControllerToTpm msg = ControllerToTpm
-				.newBuilder()
-				.setAtype(this.aType)
-				.setQualifyingData(this.yourNonce)
-				.setCode(Code.INTERNAL_ATTESTATION_REQ)
-				.build();
-		
 		try {
+			ControllerToTpm msg = ControllerToTpm
+					.newBuilder()
+					.setAtype(this.aType)
+					.setQualifyingData(this.yourNonce)
+					.setCode(Code.INTERNAL_ATTESTATION_REQ)
+					.build();
+			
 			client.send(msg.toByteArray(), this.handler);
 			TpmToController answer = this.handler.waitForResponse();
-			
+			Iterable<Pcr> pcr_values = answer.getPcrValuesList();
 			LOG.debug("got msg from tpm2d:" + answer.toString());
-			
-			// TODO: check answer with tpp here
-			
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)
@@ -74,16 +72,11 @@ public class RemoteAttestationServerHandler {
 							.newBuilder()
 							.setAtype(this.aType)
 							.setQualifyingData(this.myNonce)
-							.setHalg("")
-							.setQuoted("")
-							.setSignature("")
-							//.setPcrValue(0, 
-							//		Proto3Pcr
-							//		.newBuilder()
-							//		.setNumber(0)
-							//		.setValue("")
-							//		.build())
-							.setCertificateUri("")
+							.setHalg(answer.getHalg())
+							.setQuoted(answer.getQuoted())
+							.setSignature(answer.getSignature())
+							.addAllPcrValues(pcr_values)
+							.setCertificateUri(answer.getCertificateUri())
 							.build()
 							)
 					.build();			
@@ -94,20 +87,12 @@ public class RemoteAttestationServerHandler {
 					.newBuilder()
 					.build();
 		}
-		
-		
-		// todo:
-		// local TPM2d communication here
-		// in order to get atype, halg etc
-		
-
 	}
 
 	public MessageLite sendResult(Event e) {
-		// todo:
-		// TPP check of PCR values & sign & quote etc
-		// and set attestationSucccessfull 
 		this.attestationSucccessfull  = false;
+		
+		// TODO :: TPP check of values
 				
 		return ConnectorMessage
 				.newBuilder()

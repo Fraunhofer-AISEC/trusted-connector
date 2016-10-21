@@ -12,14 +12,6 @@ option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "AttestationProtos";
 import "idscp.proto";
 
-message Pcr {
-  // the PCR number (usually between 0 and 23)
-  int32 number = 1;
-
-  // the value of PCR<number>
-  string value = 2;
-}
-
 message ControllerToTpm {
 	enum Code {
 		INTERNAL_ATTESTATION_REQ = 0;
