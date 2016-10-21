@@ -63,7 +63,7 @@ public class DefaultWebsocket implements Serializable {
         LOG.trace("onConnect {}", session);
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
-
+        
         // Integrate server-side of IDS protocol
         idsFsm = new ProtocolMachine().initIDSProviderProtocol(session);
         

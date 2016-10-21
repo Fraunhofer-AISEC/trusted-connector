@@ -5,7 +5,7 @@
 if [ $# -eq 1 ] ; then
   echo "Two arguments supplied, which is good"
 else
-  echo "Invalid number of arguments: $# (expected two)"
+  echo "Invalid number of arguments: $# (expected one)"
   echo "Usage: $0 PKCS12_filename (WITHOUT file ending)"
   exit 1
 fi
