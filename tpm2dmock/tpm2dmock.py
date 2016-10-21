@@ -4,7 +4,7 @@ import sys
 import os
 import attestation_pb2
 
-server_address = '/home/georg/Projekte/tpm2d/tpm2d.sock'
+server_address = './tpm2d.sock'
 
 # Make sure the socket does not already exist
 try:
