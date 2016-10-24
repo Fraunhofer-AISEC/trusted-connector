@@ -21,6 +21,36 @@
 
 	<name>Camel IDS Component</name>
 	<url>http://camel.apache.org</url>
+	<profiles>
+	<profile>
+	    <id>windows-properties</id>
+	    <activation>
+		<os>
+		  <family>Windows</family>
+		</os>
+	    </activation>
+	    <properties>
+		<run.command>cmd</run.command>
+		<run.command.additionnal.arg>/c</run.command.additionnal.arg>
+		<tpm2d.start.script>start-tpm2d.bat</tpm2d.start.script>
+		<tpm2d.stop.script>stop-tpm2d.bat</tpm2d.stop.script>
+	    </properties>
+	</profile>
+	<profile>
+	    <id>linux-properties</id>
+	    <activation>
+		<os>
+		  <family>unix</family>
+		</os>
+	    </activation>
+	    <properties>
+		<run.command>sh</run.command>
+		<run.command.additionnal.arg></run.command.additionnal.arg>
+		<tpm2d.start.script>start-tpm2d.sh</tpm2d.start.script>
+		<tpm2d.stop.script>stop-tpm2d.sh</tpm2d.stop.script>
+	    </properties>
+	</profile>
+	</profiles>
 
 	<properties>
 		<camel-version>2.16.3</camel-version>
@@ -58,33 +88,30 @@
 		</dependency>
 		
 		  <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jmx</artifactId>
-            <version>${jetty-version}</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>${jetty-version}</version>
 		</dependency>
-	    <dependency>
-	      <groupId>org.apache.camel</groupId>
-	      <artifactId>camel-ahc</artifactId>
-		  <version>${camel-version}</version>
-	    </dependency>
-       <dependency>
-            <groupId>com.ning</groupId>
-            <artifactId>async-http-client</artifactId>
-            <version>${ahc-version}</version>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlets</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-jmx</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-ahc</artifactId>
+			<version>${camel-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ning</groupId>
+			<artifactId>async-http-client</artifactId>
+			<version>${ahc-version}</version>
 		</dependency> 		
-		
-
-		<!-- logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
@@ -95,10 +122,6 @@
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>2.6.2</version>
 		</dependency>
-
-
-
-		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -122,12 +145,9 @@
 			<artifactId>jnr-unixsocket</artifactId>
 			<version>0.13</version>
 		</dependency>
-
 	</dependencies>
-
 	<build>
 		<defaultGoal>install</defaultGoal>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -159,22 +179,18 @@
 				</executions>
 			</plugin>
 			
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-	                <argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
-                    <excludes>
-                        <exclude>**/WebsocketEndpointTest.java</exclude>
-                        <exclude>**/WebsocketComponentTest.java</exclude>
-                    </excludes>
-                </configuration>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
+					<excludes>
+						<exclude>**/WebsocketEndpointTest.java</exclude>
+						<exclude>**/WebsocketComponentTest.java</exclude>
+					</excludes>
+				</configuration>
+			
 			</plugin>			
-
-			<!-- The following configuration is required because bnd-maven-plugin 
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
-				the manifest from this location, then the following config is not needed. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -184,6 +200,46 @@
 					</archive>
 				</configuration>
 			</plugin>
+			<plugin>
+			    <artifactId>maven-antrun-plugin</artifactId>
+			    <version>1.6</version>
+			    <executions>
+				<execution>
+				    <id>start-tpm2d-server-mock</id>
+				    <phase>generate-sources</phase>
+				    <configuration>
+					<target>
+					    <exec executable="${run.command}"
+						  dir="${basedir}/../tpm2dmock"
+						  spawn="true">
+						<arg value="${run.command.additionnal.arg}"/>
+						<arg value="${basedir}/../tpm2dmock/${tpm2d.start.script}"/>
+					    </exec>
+					</target>
+				    </configuration>
+				    <goals>
+					<goal>run</goal>
+				    </goals>
+				</execution>
+				<execution>
+				    <id>stop-tpm2d-server-mock</id>
+				    <phase>post-integration-test</phase>
+				    <configuration>
+					<target>
+					    <exec executable="${run.command}"
+						  dir="${basedir}/../tpm2dmock"
+						  spawn="false">
+						<arg value="${run.command.additionnal.arg}"/>
+						<arg value="${basedir}/../tpm2dmock/${tpm2d.stop.script}"/>
+					    </exec>
+					</target>
+				    </configuration>
+				    <goals>
+					<goal>run</goal>
+				    </goals>
+			       </execution>
+			    </executions>
+			</plugin>		
 		</plugins>
 	</build>
 </project>
