@@ -1,81 +1,142 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.io.IOException;
+import java.util.List;
 
-import com.google.protobuf.ByteString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.protobuf.MessageLite;
 
-import de.fhg.aisec.ids.messages.IdsProtocolMessages;
-import de.fhg.aisec.ids.messages.IdsProtocolMessages.RatType;
+import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
+import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
+import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
+import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
+import de.fhg.aisec.ids.messages.Idscp.Pcr;
+import de.fhg.ids.comm.unixsocket.UnixSocketThread;
+import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
-public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
+public class RemoteAttestationClientHandler {
 	private final FSM fsm;
-	private byte[] myNonce;
-	private byte[] yourNonce;
+	private String myNonce;
+	private String yourNonce;
+	private IdsAttestationType aType;
+	private boolean attestationSucccessfull = false;
+	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
+	private UnixSocketResponsHandler handler;
+	private UnixSocketThread client;
+	private Thread thread;
 	
-	public RemoteAttestationClientHandler(FSM fsm) {
+	public RemoteAttestationClientHandler(FSM fsm, IdsAttestationType type) {
 		this.fsm = fsm;
-		this.myNonce = this.setNonce();
+		this.aType = type;
+		try {
+			this.client = new UnixSocketThread();
+			this.thread = new Thread(client);
+			this.thread.setDaemon(true);
+			this.thread.start();
+			this.handler = new UnixSocketResponsHandler();
+		} catch (IOException e) {
+			LOG.debug("could not initialze thread!");
+			e.printStackTrace();
+		}		
 	}
 
-	public String enterRat(Event e) {
-		return "entering rat";
-	}
-
-	public MessageLite handleEnterRatRequest(Event e) {
-		return IdsProtocolMessages
-				.EnterRatReq
+	public MessageLite enterRatRequest(Event e) {
+		this.myNonce = NonceGenerator.generate();
+		return ConnectorMessage
 				.newBuilder()
-				.setType(RatType.ENTER_RAT_REQUEST)
+				.setId(0)
+				.setType(ConnectorMessage.Type.RAT_REQUEST)
+				.setAttestationRequest(
+						AttestationRequest
+						.newBuilder()
+						.setAtype(this.aType)
+						.setQualifyingData(this.myNonce)
+						.build())
 				.build();
 	}
 
-	public MessageLite sendClientIdAndNonce(Event e) {		
-		ByteString client_nonce = ByteString.copyFrom(this.myNonce);
-		return IdsProtocolMessages
-				.RatCMyNonce
+	public MessageLite sendTPM2Ddata(Event e) {
+		this.yourNonce = e.getMessage().getAttestationResponse().getQualifyingData().toString();
+		ControllerToTpm msg = ControllerToTpm
+								.newBuilder()
+								.setAtype(this.aType)
+								.setQualifyingData(this.yourNonce)
+								.setCode(Code.INTERNAL_ATTESTATION_REQ)
+								.build();
+		
+		try {
+			client.send(msg.toByteArray(), this.handler);
+			TpmToController answer = this.handler.waitForResponse();
+			LOG.debug("got msg from tpm2d:" + answer.toString());
+			Iterable<Pcr> pcr_values = answer.getPcrValuesList();
+			return ConnectorMessage
+					.newBuilder()
+					.setId(0)
+					.setType(ConnectorMessage.Type.RAT_RESPONSE)
+					.setAttestationResponse(
+							AttestationResponse
+							.newBuilder()
+							.setAtype(this.aType)
+							.setHalg(answer.getHalg())
+							.setQuoted(answer.getQuoted())
+							.setSignature(answer.getSignature())
+							.addAllPcrValues(pcr_values)
+							.setCertificateUri(answer.getCertificateUri())
+							.build()
+							)
+					.build();
+		} catch (IOException e1) {
+			LOG.debug("IOException when writing to unix socket");
+			e1.printStackTrace();
+			return ConnectorMessage
+					.newBuilder()
+					.build();
+		}
+		
+		
+	}
+	
+	public MessageLite sendResult(Event e) {
+		this.attestationSucccessfull = false;
+
+		// TODO :: TPP check of values		
+		
+		return ConnectorMessage
 				.newBuilder()
-				.setType(RatType.RAT_C_MY_NONCE)
-				.setNonceC(client_nonce)
+				.setId(0)
+				.setType(ConnectorMessage.Type.RAT_RESULT)
+				.setAttestationResult(
+						AttestationResult
+						.newBuilder()
+						.setAtype(this.aType)
+						.setResult(this.attestationSucccessfull)
+						.build()
+						)
 				.build();
 	}
 
-	public MessageLite sendPcr(Event e) {
-		
-		
-		// TODO retrieve measurement list from TPM
-		ByteString ml = ByteString.EMPTY;
-		
-		// TODO retrieve AIK_CERT from TPM
-		ByteString aik_cert = ByteString.EMPTY;
-		
-		// TODO retrieve pcr from TPM
-		ByteString pcr = ByteString.EMPTY;
-		
-		return IdsProtocolMessages
-				.RatCReqPcr
+	public MessageLite leaveRatRequest(Event e) {
+		this.thread.interrupt();
+		return ConnectorMessage
 				.newBuilder()
-				.setType(RatType.RAT_C_REQ_PCR)
-				.setMeasurementList(ml)
-				.setAikCert(aik_cert)
-				.setSignedPcr(pcr)
-				.build();	
-	}
-
-	public MessageLite sendSignedServerNonce(Event e) {		
-		// TODO sign nonce from P and sign it
-		ByteString nonce_signed = ByteString.EMPTY;
-		
-		return IdsProtocolMessages
-				.RatCYourNonce
-				.newBuilder()
-				.setType(RatType.RAT_C_YOUR_NONCE)
-				.setSignedNonceP(nonce_signed )
-				.build();	
-	}
+				.setId(0)
+				.setType(ConnectorMessage.Type.RAT_LEAVE)
+				.setAttestationLeave(
+						AttestationLeave
+						.newBuilder()
+						.setAtype(this.aType)
+						.build()
+						)
+				.build();
+	}	
 
 }
