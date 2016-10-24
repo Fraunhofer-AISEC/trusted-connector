@@ -86,13 +86,13 @@ echo "Successfully found requrired files"
 ########## ROOT CA CERT ########## 
 # -nodes option omits passphrase
 echo "Create self-signed root CA certificate"
-openssl req -batch -x509 -config ${ROOTCA_CONFIG} -days 7300 -newkey rsa:2048 -sha1 -nodes -out ${ROOTCA_CERT} -outform PEM
+openssl req -batch -x509 -config ${ROOTCA_CONFIG} -newkey rsa:2048 -sha1 -nodes -out ${ROOTCA_CERT} -outform PEM -days 7300 
 error_check $? "Failed to create self signed root CA certificate"
 
 ########## SUB CA CERT ########## 
 # -nodes option omits passphrase
 echo "Create sub CA CSR"
-openssl req -batch -config ${SUBCA_CONFIG} -newkey rsa:4096 -sha1 -nodes -out ${SUBCA_CSR} -outform PEM
+openssl req -batch -config ${SUBCA_CONFIG} -newkey rsa:2048 -sha1 -nodes -out ${SUBCA_CSR} -outform PEM
 error_check $? "Failed to create sub CA CSR"
 
 echo "Sign sub CA CSR with root CA"

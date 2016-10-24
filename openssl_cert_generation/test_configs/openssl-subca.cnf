@@ -28,7 +28,7 @@ unique_subject  = no            # Set to 'no' to allow creation of
 
 ####################################################################
 [ req ]
-default_bits        = 4096
+default_bits        = 2048
 default_keyfile     = test_ca_certs/subca.key
 distinguished_name  = ca_distinguished_name
 req_extensions     = ca_extensions
@@ -52,8 +52,8 @@ subjectKeyIdentifier=hash
 #authorityKeyIdentifier=keyid:always, issuer
 basicConstraints = critical, CA:true
 keyUsage = digitalSignature, keyCertSign, cRLSign
-crlDistributionPoints=URI.0:http://crl.aisec.fraunhofer.de/ids.crl
-authorityInfoAccess=caIssuers;URI.1=http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
+crlDistributionPoints=URI:http://crl.aisec.fraunhofer.de/ids.crl
+authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
 
 ####################################################################
 [ signing_policy ]
@@ -72,5 +72,5 @@ authorityKeyIdentifier=keyid,issuer
 
 basicConstraints = CA:FALSE
 keyUsage = digitalSignature, keyEncipherment
-crlDistributionPoints=URI.0:http://crl.aisec.fraunhofer.de/ids.crl
-authorityInfoAccess=caIssuers;URI.1=http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
+crlDistributionPoints=URI:http://crl.aisec.fraunhofer.de/ids.crl
+authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
