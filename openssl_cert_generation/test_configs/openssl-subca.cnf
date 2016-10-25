@@ -40,10 +40,10 @@ countryName         = Country Name (2 letter code)
 countryName_default     = DE
 
 organizationName         = Organization Name (eg, company)
-organizationName_default    = Company
+organizationName_default    = Fraunhofer
 
 commonName          = Common Name (e.g. server FQDN or YOUR name)
-commonName_default      = Test SubCA 2016
+commonName_default      = IDS SubCA 2016
 
 ####################################################################
 [ ca_extensions ]
@@ -52,8 +52,8 @@ subjectKeyIdentifier=hash
 #authorityKeyIdentifier=keyid:always, issuer
 basicConstraints = critical, CA:true
 keyUsage = digitalSignature, keyCertSign, cRLSign
-#crlDistributionPoints=URI:http://crl.myurl.de/ids.crl
-#authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
+crlDistributionPoints=URI:http://crl.aisec.fraunhofer.de/ids.crl
+authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
 
 ####################################################################
 [ signing_policy ]
@@ -72,5 +72,5 @@ authorityKeyIdentifier=keyid,issuer
 
 basicConstraints = CA:FALSE
 keyUsage = digitalSignature, keyEncipherment
-#crlDistributionPoints=URI:http://crl.aisec.fraunhofer.de/ids.crl
-#authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
+crlDistributionPoints=URI:http://crl.aisec.fraunhofer.de/ids.crl
+authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert

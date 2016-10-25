@@ -155,8 +155,8 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         tmp.setKeyStore(tsp);
 
         SSLContextServerParameters scsp = new SSLContextServerParameters();
-        scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
-        //scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+        //scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
+        scsp.setClientAuthentication(ClientAuthentication.NONE.name());
 
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);
@@ -184,8 +184,8 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         tmp.setKeyStore(tsp);
 
         SSLContextServerParameters scsp = new SSLContextServerParameters();
-        scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
-        //scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+        //scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
+        scsp.setClientAuthentication(ClientAuthentication.NONE.name());
 	
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);
