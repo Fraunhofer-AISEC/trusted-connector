@@ -56,11 +56,11 @@ CONNECTOR_CERT="$1.cert"
 CONNECTOR_KEY="$1.key"
 CONNECTOR_P12="$1.p12"
 
-if [ $# -eq 1 ] ; then
+if [ $# -eq 2 ] ; then
   echo "One arguments supplied, which is good"
 else
   echo "Invalid number of arguments: $# (expected 1)"
-  echo "Usage: $0 filename"
+  echo "Usage: $0 filename pkcs12_password"
   exit 1
 fi
 
@@ -109,7 +109,9 @@ openssl verify -CAfile ${CACHAIN_CERT} ${CONNECTOR_CERT}
 error_check $? "Failed to verify newly signed test certificate"
 
 echo "Create connector token with certifcate and key"
-openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
+#openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
+
+openssl pkcs12 -export -chain -in ${CONNECTOR_CERT} -inkey ${CONNECTOR_KEY} -out ${CONNECTOR_P12} -name $1 -CAfile ${CACHAIN_CERT} -password pass:$2
 
 echo "Test certificates successfully created"
 cleanup

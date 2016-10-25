@@ -54,20 +54,20 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected List<Object> messages;
 	private static String PWD = "password";
     
-	static {
-	    //for localhost testing only
-	    javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
-	    new javax.net.ssl.HostnameVerifier(){
-
-	        public boolean verify(String hostname,
-	                javax.net.ssl.SSLSession sslSession) {
-	            if (hostname.equals("localhost")) {
-	                return true;
-	            }
-	            return false;
-	        }
-	    });
-	}
+//	static {
+//	    //for localhost testing only
+//	    javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+//	    new javax.net.ssl.HostnameVerifier(){
+//
+//	        public boolean verify(String hostname,
+//	                javax.net.ssl.SSLSession sslSession) {
+//	            if (hostname.equals("localhost")) {
+//	                return true;
+//	            }
+//	            return false;
+//	        }
+//	    });
+//	}
 
 	
     public void startTestServer() throws Exception {
@@ -139,7 +139,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     private static SSLContextParameters defineClientSSLContextClientParameters() {
 
         KeyStoreParameters ksp = new KeyStoreParameters();
-        ksp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/source-keystore.jks").toString());
+        ksp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/client-keystore.jks").toString());
         ksp.setPassword(PWD);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
@@ -147,7 +147,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         kmp.setKeyStore(ksp);
 
         KeyStoreParameters tsp = new KeyStoreParameters();
-        tsp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/source-truststore.jks").toString());
+        tsp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/client-truststore.jks").toString());
         
         tsp.setPassword(PWD);
         
@@ -156,7 +156,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
         SSLContextServerParameters scsp = new SSLContextServerParameters();
         scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
-        scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+        //scsp.setClientAuthentication(ClientAuthentication.NONE.name());
 
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);
@@ -169,7 +169,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     
     private static SSLContextParameters defineServerSSLContextParameters() {
         KeyStoreParameters ksp = new KeyStoreParameters();
-        ksp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/target-keystore.jks").toString());
+        ksp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/server-keystore.jks").toString());
         ksp.setPassword(PWD);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
@@ -177,7 +177,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         kmp.setKeyStore(ksp);
 
         KeyStoreParameters tsp = new KeyStoreParameters();
-        tsp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/target-truststore.jks").toString());
+        tsp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/server-truststore.jks").toString());
         tsp.setPassword(PWD);
         
         TrustManagersParameters tmp = new TrustManagersParameters();
@@ -185,7 +185,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
         SSLContextServerParameters scsp = new SSLContextServerParameters();
         scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
-        scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+        //scsp.setClientAuthentication(ClientAuthentication.NONE.name());
 	
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);

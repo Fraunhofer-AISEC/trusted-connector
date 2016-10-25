@@ -13,8 +13,10 @@ fi
 #keytool -keystore $2_truststore -importcert -alias ca -file test_ca_certs/rootca.cert
 #keytool -keystore $2_keystore -importcert -alias subca -file test_ca_certs/subca.cert
 #keytool -keystore $1-truststore.jks -importcert -alias subca -file test_ca_certs/cachain.cert -noprompt
+echo "Importing Root CA Cert"
 keytool -keystore $1-truststore.jks -importcert -alias ca -file test_ca_certs/rootca.cert
+echo "Importing Sub CA Cert"
 keytool -keystore $1-truststore.jks -importcert -alias subca -file test_ca_certs/subca.cert
-
-keytool -v -importkeystore -srckeystore $1.p12 -srcstoretype PKCS12 -destkeystore $1-keystore.jks -deststoretype JKS
+echo "Importing Client PKCS12 Token"
+keytool -v -noprompt -importkeystore -srckeystore $1.p12 -srcstoretype PKCS12 -destkeystore $1-keystore.jks -deststoretype JKS -alias $1 
 
