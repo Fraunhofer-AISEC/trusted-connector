@@ -1,11 +1,21 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
@@ -32,6 +42,9 @@ public class RemoteAttestationServerHandler {
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationServerHandler.class);
 	private UnixSocketThread client;
 	private UnixSocketResponsHandler handler;
+	private ByteString yourQuoted;
+	private ByteString yourSignature;
+	private String certUri;
 	
 	public RemoteAttestationServerHandler(FSM fsm, IdsAttestationType type) {
 		this.fsm = fsm;
@@ -61,8 +74,7 @@ public class RemoteAttestationServerHandler {
 			
 			client.send(msg.toByteArray(), this.handler);
 			TpmToController answer = this.handler.waitForResponse();
-			Iterable<Pcr> pcr_values = answer.getPcrValuesList();
-			LOG.debug("got msg from tpm2d:" + answer.toString());
+			//byte[]
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)
@@ -75,7 +87,7 @@ public class RemoteAttestationServerHandler {
 							.setHalg(answer.getHalg())
 							.setQuoted(answer.getQuoted())
 							.setSignature(answer.getSignature())
-							.addAllPcrValues(pcr_values)
+							.addAllPcrValues(answer.getPcrValuesList())
 							.setCertificateUri(answer.getCertificateUri())
 							.build()
 							)
@@ -92,8 +104,46 @@ public class RemoteAttestationServerHandler {
 	public MessageLite sendResult(Event e) {
 		this.attestationSucccessfull  = false;
 		
-		// TODO :: TPP check of values
-				
+		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
+		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
+		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
+		URL url = null;
+		try {
+			url = new URL(this.certUri);;
+		} catch (MalformedURLException e2) {
+			LOG.debug(String.format("could not parse certificate-uri: %s", this.certUri));
+			e2.printStackTrace();
+		}
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream is = null;
+		try {
+			if(url!= null) {
+				is = url.openStream ();
+				byte[] byteChunk = new byte[4096];
+				int n;
+				while ( (n = is.read(byteChunk)) > 0 ) {
+					baos.write(byteChunk, 0, n);
+				}				
+			}
+		}
+		catch (IOException ioe) {
+		  LOG.debug(String.format("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage()));
+		  ioe.printStackTrace ();
+		}
+		finally {
+		  if (is != null) { try {
+			is.close();
+		} catch (IOException e1) {
+			LOG.debug("could not close url stream");
+			e1.printStackTrace();
+		} }
+		}
+		if(baos.size() > 0) {
+			X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(baos.toByteArray());
+			LOG.debug("loaded public key !");
+		}
+		
 		return ConnectorMessage
 				.newBuilder()
 				.setId(0)

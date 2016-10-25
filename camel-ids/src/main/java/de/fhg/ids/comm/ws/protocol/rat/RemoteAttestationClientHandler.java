@@ -76,8 +76,6 @@ public class RemoteAttestationClientHandler {
 		try {
 			client.send(msg.toByteArray(), this.handler);
 			TpmToController answer = this.handler.waitForResponse();
-			LOG.debug("got msg from tpm2d:" + answer.toString());
-			Iterable<Pcr> pcr_values = answer.getPcrValuesList();
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)
@@ -89,7 +87,7 @@ public class RemoteAttestationClientHandler {
 							.setHalg(answer.getHalg())
 							.setQuoted(answer.getQuoted())
 							.setSignature(answer.getSignature())
-							.addAllPcrValues(pcr_values)
+							.addAllPcrValues(answer.getPcrValuesList())
 							.setCertificateUri(answer.getCertificateUri())
 							.build()
 							)

@@ -16,6 +16,7 @@
  */
 package de.fhg.camel.ids.both;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -32,6 +33,8 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.fhg.camel.ids.client.TestServletFactory;
@@ -45,6 +48,8 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
+    private Process tpm2d;
+    private Process tpp;
    
     protected List<Object> messages;
 	private static String PWD = "changeit";
@@ -63,6 +68,32 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         
         server.start();
         assertTrue(server.isStarted());      
+    }
+    
+    @Before
+    public void initMockServer() {
+    	try {
+    		tpm2d = new ProcessBuilder("python", "tpm2d/tpm2d.py").start();    		
+		} catch (IOException e) {
+			log.debug("could not start python tpm2d mock");
+			e.printStackTrace();
+		}
+    	try {
+    		tpp = new ProcessBuilder("python", "tpp/tpp.py").start();
+		} catch (IOException e) {
+			log.debug("could not start python tpp mock");
+			e.printStackTrace();
+		}
+    }
+    
+    @After
+    public void teardownMockServer() {
+    	if(tpm2d.isAlive()) {
+    		tpm2d.destroy();
+    	}
+    	if(tpp.isAlive()) {
+    		tpp.destroy();
+    	}    	
     }
     
     public void stopTestServer() throws Exception {
