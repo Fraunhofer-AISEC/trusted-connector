@@ -17,6 +17,8 @@
 package de.fhg.camel.ids.both;
 
 import java.io.IOException;
+import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
@@ -123,6 +125,11 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
     @Override
     public void setUp() throws Exception {
+        
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL trustStoreURL = classLoader.getResource("jsse/client-truststore.jks");
+        System.setProperty("javax.net.ssl.trustStore", trustStoreURL.getFile());
+        System.setProperty("javax.net.ssl.trustStorePassword", "password");
         startTestServer();
         super.setUp();
     }
