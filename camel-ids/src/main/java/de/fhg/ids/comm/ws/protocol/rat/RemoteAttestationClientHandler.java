@@ -4,6 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,6 +31,7 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPM2B_PUBLIC;
 
 public class RemoteAttestationClientHandler {
 	private final FSM fsm;
@@ -79,18 +85,16 @@ public class RemoteAttestationClientHandler {
 		byte[] publicKey = null;
 		try {
 			publicKey = this.fetchPublicKey(this.certUri);
+			// bytes of public key are now converted to a TPM2B_PUBLIC
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC();
+			// via
+			// current TODO
+			//key.fromBytes(publicKey, 0);
+			
 		} catch (Exception ex) {
 			LOG.debug("error: exception " + ex.getMessage());
 			ex.printStackTrace();
 		}
-		
-		StringBuilder sb = new StringBuilder();
-	    for (byte b : publicKey) {
-	        sb.append(String.format("%02X ", b));
-	    }
-		
-		LOG.debug("client fetched public key: " + sb.toString());
-		
 		ControllerToTpm msg = ControllerToTpm
 								.newBuilder()
 								.setAtype(this.aType)
