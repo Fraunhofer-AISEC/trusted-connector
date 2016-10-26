@@ -41,15 +41,5 @@ public class TPM2B_DIGEST extends StandardTPMStruct {
         int parmSize = brw.readInt32();
         this.setBufferBytes(brw.readBytes(parmSize));
 	}
-	
-    public String toString() {
-        TPM_KEY_PARMS_Data parmData = this.getParmData();
-        String parmDataString = ( parmData == null ) 
-            ? ByteArrayUtil.toHexString( this.parmsBytes )
-            : parmData.toString(); 
-        
-        return "TPM2B_DIGEST: buffer (" + this.getBufferSize() + " bytes):\n" 
-            + parmDataString;
-    }
 
 }
