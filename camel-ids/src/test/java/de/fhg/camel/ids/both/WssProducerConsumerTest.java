@@ -55,8 +55,8 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private Process tpm2d;
-    private Process tpp;
+    private Process tpm2d = null;
+    private Process tpp = null;
    
     protected List<Object> messages;
 	private static String PWD = "password";
@@ -94,10 +94,10 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     
     @After
     public void teardownMockServer() {
-    	if(tpm2d.isAlive()) {
+    	if(tpm2d != null && tpm2d.isAlive()) {
     		tpm2d.destroy();
     	}
-    	if(tpp.isAlive()) {
+    	if(tpp != null && tpp.isAlive()) {
     		tpp.destroy();
     	}    	
     }

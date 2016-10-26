@@ -1,11 +1,15 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
@@ -33,6 +37,9 @@ public class RemoteAttestationClientHandler {
 	private UnixSocketResponsHandler handler;
 	private UnixSocketThread client;
 	private Thread thread;
+	private ByteString yourQuoted;
+	private ByteString yourSignature;
+	private String certUri;
 	
 	public RemoteAttestationClientHandler(FSM fsm, IdsAttestationType type) {
 		this.fsm = fsm;
@@ -66,6 +73,25 @@ public class RemoteAttestationClientHandler {
 
 	public MessageLite sendTPM2Ddata(Event e) {
 		this.yourNonce = e.getMessage().getAttestationResponse().getQualifyingData().toString();
+		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
+		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
+		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
+		LOG.debug("----------------------------------------------------->msg:" + e.getMessage().toString());
+		byte[] publicKey = null;
+		try {
+			publicKey = this.fetchPublicKey(this.certUri);
+		} catch (Exception ex) {
+			LOG.debug("error: exception " + ex.getMessage());
+			ex.printStackTrace();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+	    for (byte b : publicKey) {
+	        sb.append(String.format("%02X ", b));
+	    }
+		
+		LOG.debug("client fetched public key: " + sb.toString());
+		
 		ControllerToTpm msg = ControllerToTpm
 								.newBuilder()
 								.setAtype(this.aType)
@@ -98,15 +124,19 @@ public class RemoteAttestationClientHandler {
 			return ConnectorMessage
 					.newBuilder()
 					.build();
+		} catch (InterruptedException e1) {
+			LOG.debug("InterruptedException when writing to unix socket");
+			e1.printStackTrace();
+			return ConnectorMessage
+					.newBuilder()
+					.build();
 		}
-		
-		
 	}
 	
 	public MessageLite sendResult(Event e) {
 		this.attestationSucccessfull = false;
 
-		// TODO :: TPP check of values		
+				
 		
 		return ConnectorMessage
 				.newBuilder()
@@ -121,6 +151,20 @@ public class RemoteAttestationClientHandler {
 						)
 				.build();
 	}
+	
+	private byte[] fetchPublicKey(String uri) throws Exception {
+		LOG.debug("URL:"+uri);
+		URL cert = new URL(uri);
+		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
+		String base64 = "";
+		String inputLine = "";
+        while ((inputLine = in.readLine()) != null) {
+        	base64 += inputLine;
+        }
+        in.close();
+        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
+	}
+	
 
 	public MessageLite leaveRatRequest(Event e) {
 		this.thread.interrupt();

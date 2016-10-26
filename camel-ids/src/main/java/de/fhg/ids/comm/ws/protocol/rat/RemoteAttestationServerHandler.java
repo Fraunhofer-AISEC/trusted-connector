@@ -1,16 +1,29 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.CertificateFactory;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
+
+import javax.security.cert.X509Certificate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +58,7 @@ public class RemoteAttestationServerHandler {
 	private ByteString yourQuoted;
 	private ByteString yourSignature;
 	private String certUri;
+	private PublicKey yourPublicKey;
 	
 	public RemoteAttestationServerHandler(FSM fsm, IdsAttestationType type) {
 		this.fsm = fsm;
@@ -74,7 +88,6 @@ public class RemoteAttestationServerHandler {
 			
 			client.send(msg.toByteArray(), this.handler);
 			TpmToController answer = this.handler.waitForResponse();
-			//byte[]
 			return ConnectorMessage
 					.newBuilder()
 					.setId(0)
@@ -98,6 +111,12 @@ public class RemoteAttestationServerHandler {
 			return ConnectorMessage
 					.newBuilder()
 					.build();
+		} catch (InterruptedException e1) {
+			LOG.debug("InterruptedException when writing to unix socket");
+			e1.printStackTrace();
+			return ConnectorMessage
+					.newBuilder()
+					.build();
 		}
 	}
 
@@ -107,42 +126,20 @@ public class RemoteAttestationServerHandler {
 		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
 		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-		URL url = null;
+		byte[] publicKey = null;
 		try {
-			url = new URL(this.certUri);;
-		} catch (MalformedURLException e2) {
-			LOG.debug(String.format("could not parse certificate-uri: %s", this.certUri));
-			e2.printStackTrace();
+			publicKey = this.fetchPublicKey(this.certUri);
+		} catch (Exception ex) {
+			LOG.debug("error: exception " + ex.getMessage());
+			ex.printStackTrace();
 		}
 		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		InputStream is = null;
-		try {
-			if(url!= null) {
-				is = url.openStream ();
-				byte[] byteChunk = new byte[4096];
-				int n;
-				while ( (n = is.read(byteChunk)) > 0 ) {
-					baos.write(byteChunk, 0, n);
-				}				
-			}
-		}
-		catch (IOException ioe) {
-		  LOG.debug(String.format("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage()));
-		  ioe.printStackTrace ();
-		}
-		finally {
-		  if (is != null) { try {
-			is.close();
-		} catch (IOException e1) {
-			LOG.debug("could not close url stream");
-			e1.printStackTrace();
-		} }
-		}
-		if(baos.size() > 0) {
-			X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(baos.toByteArray());
-			LOG.debug("loaded public key !");
-		}
+		StringBuilder sb = new StringBuilder();
+	    for (byte b : publicKey) {
+	        sb.append(String.format("%02X ", b));
+	    }
+		
+		LOG.debug("server fetched public key: " + sb.toString());
 		
 		return ConnectorMessage
 				.newBuilder()
@@ -156,6 +153,18 @@ public class RemoteAttestationServerHandler {
 						.build()
 						)
 				.build();
+	}
+
+	private byte[] fetchPublicKey(String uri) throws Exception {
+		URL cert = new URL(uri);
+		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
+		String base64 = "";
+		String inputLine = "";
+        while ((inputLine = in.readLine()) != null) {
+        	base64 += inputLine;
+        }
+        in.close();
+        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
 	}
 
 	public MessageLite leaveRatRequest(Event e) {

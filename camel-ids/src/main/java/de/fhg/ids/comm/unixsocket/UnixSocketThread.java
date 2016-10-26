@@ -20,7 +20,7 @@ public class UnixSocketThread implements Runnable {
 	private Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
 	private UnixSocketAddress address;
 	private UnixSocketChannel channel;
-	private String SOCKET = "/tmp/tpm2d.sock";
+	private String SOCKET = "tpm2d/tpm2d.sock";
 
 	// The selector we'll be monitoring
 	private Selector selector;
@@ -49,7 +49,7 @@ public class UnixSocketThread implements Runnable {
 	}
 
 	// send some data to the unix socket 
-	public void send(byte[] data, UnixSocketResponsHandler handler) throws IOException {
+	public void send(byte[] data, UnixSocketResponsHandler handler) throws IOException, InterruptedException {
 		// Start a new connection
 		UnixSocketChannel channel = this.initiateConnection();
 		
@@ -203,24 +203,17 @@ public class UnixSocketThread implements Runnable {
 		key.interestOps(SelectionKey.OP_WRITE);
 	}
 
-	private UnixSocketChannel initiateConnection() throws IOException {
+	private UnixSocketChannel initiateConnection() throws IOException, InterruptedException {
 		// open the socket address
 		File socketFile = new File(SOCKET);
-		LOG.debug("opening socket: "+ SOCKET);
 		// Try to open socket file 10 times
 		int retries = 0;
-        while (!socketFile.getAbsoluteFile().exists()) {
-            try {
-            	++retries;
-            	TimeUnit.MILLISECONDS.sleep(250L);
-				socketFile = new File(SOCKET);
-			} catch (Exception e) {
-				LOG.info("Bad news everyone: " + e.getMessage());
-				e.printStackTrace();
-			}
+        while (!socketFile.getAbsoluteFile().exists() && retries < 10) {
+        	++retries;
+        	TimeUnit.MILLISECONDS.sleep(500L);
+			socketFile = new File(SOCKET);
             if (retries < 10) {
-            	LOG.info(String.format("socket %s does not exist after %s retry.", socketFile.getAbsolutePath(), retries));
-            	return null;
+            	LOG.debug(String.format("error: socket \"%s\" does not exist after %s retry.", socketFile.getAbsolutePath(), retries));
             }
         }
 		this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());	

@@ -24,7 +24,6 @@ public class UnixSocketResponsHandler {
 			} catch (InterruptedException e) {
 			}
 		}
-		LOG.debug("a unix socket msg arrived:" + new String(this.rsp));
 		try {
 			return TpmToController.parseFrom(this.rsp);
 		} catch (InvalidProtocolBufferException e) {

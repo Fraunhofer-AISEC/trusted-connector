@@ -103,7 +103,7 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
-        LOG.debug("server received onMessage " + new String(data));
+        //LOG.debug("server received onMessage " + new String(data));
         
         if (idsFsm.getState().equals("SUCCESS")) {//TODO Check if fsm is in its final state and successful
         	System.out.println("Successfully finished IDSP");
@@ -116,7 +116,7 @@ public class DefaultWebsocket implements Serializable {
         } else {
 			try {
 				ConnectorMessage msg = ConnectorMessage.parseFrom(data);
-	        	System.out.println("Feeding message into provider fsm: " + data);
+	        	//System.out.println("Feeding message into provider fsm: " + data);
 	        	idsFsm.feedEvent(new Event(msg.getType(), new String(data), msg));	//we need to de-protobuf here and split messages into cmd and payload
 			} catch (InvalidProtocolBufferException e) {
 				// An invalid message has been received during IDS protocol. close connection
