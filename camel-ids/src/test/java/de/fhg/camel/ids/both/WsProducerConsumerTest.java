@@ -48,8 +48,9 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private Process tpm2d = null;
-    private Process tpp = null;
+    private Process tpm2dserver = null;
+    private Process tpm2dclient = null;
+    private Process ttp = null;
    
     protected List<Object> messages;
 	private static String PWD = "changeit";
@@ -73,26 +74,25 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     @Before
     public void initMockServer() {
     	try {
-    		tpm2d = new ProcessBuilder("python", "tpm2d/tpm2d.py").start();    		
+    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", "mock/tpm2dc.sock").start();
+    		tpm2dserver = new ProcessBuilder("python", "mock/tpm2d.py", "mock/tpm2ds.sock").start();
+    		ttp = new ProcessBuilder("python", "mock/ttp.py").start();
 		} catch (IOException e) {
-			log.debug("could not start python tpm2d mock");
-			e.printStackTrace();
-		}
-    	try {
-    		tpp = new ProcessBuilder("python", "tpp/tpp.py").start();
-		} catch (IOException e) {
-			log.debug("could not start python tpp mock");
+			log.debug("could not start python mock server");
 			e.printStackTrace();
 		}
     }
     
     @After
     public void teardownMockServer() {
-    	if(tpm2d != null && tpm2d.isAlive()) {
-    		tpm2d.destroy();
+    	if(tpm2dclient != null && tpm2dclient.isAlive()) {
+    		tpm2dclient.destroy();
     	}
-    	if(tpp != null && tpp.isAlive()) {
-    		tpp.destroy();
+    	if(tpm2dserver != null && tpm2dserver.isAlive()) {
+    		tpm2dserver.destroy();
+    	}
+    	if(ttp != null && ttp.isAlive()) {
+    		ttp.destroy();
     	}    	
     }
     

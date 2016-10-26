@@ -45,7 +45,7 @@ public class RemoteAttestationClientHandler {
 		this.fsm = fsm;
 		this.aType = type;
 		try {
-			this.client = new UnixSocketThread();
+			this.client = new UnixSocketThread("mock/tpm2dc.sock");
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();
@@ -76,7 +76,6 @@ public class RemoteAttestationClientHandler {
 		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
 		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-		LOG.debug("----------------------------------------------------->msg:" + e.getMessage().toString());
 		byte[] publicKey = null;
 		try {
 			publicKey = this.fetchPublicKey(this.certUri);

@@ -6,7 +6,7 @@ import cgi
 import json
 import base64
  
-with open('tpp/sigpubkey.bin', 'rb') as f:
+with open('mock/sigpubkey.bin', 'rb') as f:
     data = f.read()
      
 class RestHTTPRequestHandler(BaseHTTPRequestHandler):

@@ -64,7 +64,7 @@ public class RemoteAttestationServerHandler {
 		this.fsm = fsm;
 		this.aType = type;
 		try {
-			this.client = new UnixSocketThread();
+			this.client = new UnixSocketThread("mock/tpm2ds.sock");
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();
