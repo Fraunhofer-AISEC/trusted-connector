@@ -113,14 +113,17 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
         ALG_ID hashId = this.nameAlg.getHashId().getAlgId();
         switch(algId) {
         	case TPM_ALG_RSA:
-        		this.parameters = new TPMS_RSA_PARMS();
-        		brw.readStruct(this.parameters);
+        			this.parameters = new TPMS_RSA_PARMS();
+        			brw.readStruct(this.parameters);
+        			this.unique = new TPM2B_PUBLIC_KEY_RSA();
+        			brw.readStruct(this.unique);
         		break;
+
+        		// TODO: put other cases like ecc here
+
         	default:
         		break;
         }
-        //this.unique = new TPMU_PUBLIC_ID();
-        brw.readStruct(this.unique);
 	}
 	
 	@Override

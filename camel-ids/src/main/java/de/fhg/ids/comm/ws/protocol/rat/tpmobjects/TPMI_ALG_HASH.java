@@ -9,8 +9,11 @@ public class TPMI_ALG_HASH extends StandardTPMStruct {
 	private TPM_ALG_ID hashId;
 	
 	public TPMI_ALG_HASH() {
-		// nothing
 	}
+	
+	public TPMI_ALG_HASH(TPM_ALG_ID id) {
+		this.hashId = id;
+	}	
 
 	public TPMI_ALG_HASH(byte[] buffer) {
 		this.fromBytes(buffer, 0);
@@ -22,10 +25,6 @@ public class TPMI_ALG_HASH extends StandardTPMStruct {
 
 	public void setHashId(TPM_ALG_ID hashId) {
 		this.hashId = hashId;
-	}
-	
-	public String toString() {
-		return "TPMI_ALG_HASH : " + this.hashId.toString();
 	}
 
 	@Override
@@ -39,4 +38,10 @@ public class TPMI_ALG_HASH extends StandardTPMStruct {
 		this.hashId = new TPM_ALG_ID();
         brw.readStruct(this.hashId);
 	}
+	
+	@Override
+    public String toString() {
+        return "TPMI_ALG_HASH:[\n" 
+        		+ "TPM_ALG_ID = " + this.hashId.toString() + "\n]\n";
+    }	
 }

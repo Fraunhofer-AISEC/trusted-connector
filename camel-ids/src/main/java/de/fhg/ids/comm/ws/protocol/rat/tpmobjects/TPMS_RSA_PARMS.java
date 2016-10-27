@@ -61,18 +61,17 @@ public class TPMS_RSA_PARMS extends TPMU_PUBLIC_PARMS {
         brw.readStruct(this.symmetric);
         this.scheme = new TPMT_RSA_SCHEME();
         brw.readStruct(this.scheme);
-        /*
-        this.keyBits = new TPMI_RSA_KEY_BITS();
+        this.keyBits = new TPM_KEY_BITS();
         brw.readStruct(this.keyBits);
-        this.exponent = brw.readInt32();   */     
+        this.exponent = brw.readInt32();
 	}
 
 	@Override
 	public String toString() {
-        return "TPMS_RSA_PARMS: \n" 
+        return "TPMS_RSA_PARMS:[\n" 
         		+ "symmetric = " + this.symmetric.toString() + "\n"
         		+ "scheme = " + this.scheme.toString() + "\n"
         		+ "keyBits = " + this.keyBits.toString() + "\n"
-        		+ "exponent = " + exponent + "\n";
+        		+ "exponent = " + this.exponent + "\n]\n";
     }
 }

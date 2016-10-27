@@ -49,15 +49,16 @@ public class TPMT_SYM_DEF_OBJECT extends TPMU_PUBLIC_PARMS {
         ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
         this.algorithm = new TPMI_ALG_SYM_OBJECT();
         brw.readStruct(this.algorithm);
-        /*
         switch(this.algorithm.getAlgId().getAlgId()) {
-        case
-        	
-        }
-        this.keyBits = new TPMU_SYM_KEY_BITS();
-        brw.readStruct(this.keyBits);
-        this.mode = new TPMU_SYM_MODE();
-        brw.readStruct(this.mode);       */ 
+        	case TPM_ALG_AES:
+        		//this.keyBits = new
+        		// CURRENT TODO !
+        		break;
+        	case TPM_ALG_NULL:
+        		break;
+        	default:
+        		break;
+        } 
 	}
 
 	public String toString() {

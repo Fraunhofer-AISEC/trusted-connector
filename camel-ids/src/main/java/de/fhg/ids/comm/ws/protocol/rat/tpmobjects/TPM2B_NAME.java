@@ -10,7 +10,16 @@ public class TPM2B_NAME extends StandardTPMStruct {
 	 *  } TPM2B_NAME;
 	 */
 	
+	private short size = 0;
 	private byte[] name = new byte[0];
+	
+	public short getSize() {
+		return size;
+	}
+
+	public void setSize(short size) {
+		this.size = size;
+	}
 	
 	public byte[] getName() {
 		return name;
@@ -33,13 +42,13 @@ public class TPM2B_NAME extends StandardTPMStruct {
 	@Override
 	public void fromBytes(byte[] source, int offset) {
         ByteArrayReadWriter brw = new ByteArrayReadWriter(source, offset);
-        short keyLength = brw.readShort();
-        this.setName(brw.readBytes(keyLength));
+        this.size = brw.readShort();
+        this.setName(brw.readBytes(this.size));
 	}
 
 	@Override
 	public String toString() {
-		return "TPM2B_NAME (" + this.getNameLength() + " bytes): "
+		return "TPM2B_NAME (" + this.getSize() + " bytes): "
 	            + ByteArrayUtil.toPrintableHexString(this.name);
 	}
 }

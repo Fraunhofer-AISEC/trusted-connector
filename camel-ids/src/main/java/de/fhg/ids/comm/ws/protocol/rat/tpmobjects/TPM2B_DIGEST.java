@@ -10,8 +10,17 @@ public class TPM2B_DIGEST extends StandardTPMStruct {
 	 * } TPM2B_DIGEST;
 	 */
 
+	private short size = 0;
 	private byte[] buffer = new byte[0];
 	
+	public short getSize() {
+		return size;
+	}
+
+	public void setSize(short size) {
+		this.size = size;
+	}
+
 	public TPM2B_DIGEST() {
 	}
 	
@@ -27,25 +36,21 @@ public class TPM2B_DIGEST extends StandardTPMStruct {
 		this.buffer = buffer;
 	}
 
-	public int getBufferLength() {
-		return this.buffer.length;
-	}
-
 	@Override
 	public byte[] toBytes() {
-		int bufferLength = this.getBufferLength();
-		return ByteArrayUtil.buildBuf(bufferLength, this.buffer);
+		return ByteArrayUtil.buildBuf(this.getSize(), this.buffer);
 	}
 
 	@Override
 	public void fromBytes(byte[] source, int offset) {
 		ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
-		short keyLength = brw.readShort();
-        this.setBuffer(brw.readBytes(keyLength));
+		this.size = brw.readShort();
+        this.setBuffer(brw.readBytes(this.size));
 	}
 
+	@Override
 	public String toString() {
-		return "TPM2B_DIGEST (" + this.getBufferLength() + " bytes): "
+		return "TPM2B_DIGEST (" + this.getSize() + " bytes): "
 	            + ByteArrayUtil.toPrintableHexString(this.buffer);
 	}
 }

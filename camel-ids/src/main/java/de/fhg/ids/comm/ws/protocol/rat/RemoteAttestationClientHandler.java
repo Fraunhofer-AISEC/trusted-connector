@@ -86,8 +86,8 @@ public class RemoteAttestationClientHandler {
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
 		try {
 			// bytes of public key are now being converted to a TPM2B_PUBLIC structure
-			//TPM2B_PUBLIC key = new TPM2B_PUBLIC();
-			//key.fromBytes(this.fetchPublicKey(this.certUri), 0);
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC();
+			key.fromBytes(this.fetchPublicKey(this.certUri), 0);
 			// bytes of yourQuoted are now converted to a TPMS_ATTEST
 			//TPMS_ATTEST attestation = new TPMS_ATTEST();
 			//attestation.fromBytes(this.yourQuoted.toByteArray(), 0);

@@ -30,7 +30,7 @@ public class TPMI_ALG_SYM_OBJECT extends StandardTPMStruct {
 	}
 	
 	public String toString() {
-		return "TPMI_ALG_PUBLIC : " + this.algId.toString();
+		return "TPMI_ALG_PUBLIC:[" + this.algId.toString() + "]\n";
 	}
 
 	@Override
