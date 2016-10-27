@@ -5,3 +5,4 @@ ALLOW raw.* TO .*Process.*
 ALLOW processed.* TO .*Output.*
 LABEL .test.* AS inputHDFS
 ALLOW inputHDFS.* TO .*foo.*
+ALLOW inputHDFS.* TO hdfs2://*

@@ -44,6 +44,7 @@ public class MyProcessor implements AsyncProcessor {
     
     
     private void loadRules(String rulefile) {
+   	
     	BufferedReader bufferedreader;
     	String line, attribute, label;
 		try {
@@ -95,12 +96,15 @@ public class MyProcessor implements AsyncProcessor {
 					// otherwise log error
 					else {
 						LOG.error("Error: Could not parse line " +line + " from rules file");
+						System.out.println("Error: Could not parse line " +line + " from rules file");
 					} 
 				}
 			} catch (IOException e) {
 				LOG.error("Caught IOException: " + e.getMessage());
+				System.out.println("Caught IOException: " + e.getMessage());
 				e.printStackTrace();
 			}
+			
     		LOG.info("Loaded LABEL rules: " + labelRules.toString());
     		LOG.info("Loaded REMOVELABEL rules: " + removeLabelRules.toString());
     		LOG.info("Loaded ALLOW rules: " + allowRules.toString()); 		
@@ -109,7 +113,7 @@ public class MyProcessor implements AsyncProcessor {
     
     // Checks for a line in the rule-file that each keyword exists only once, keyword1 before keyword 2, etc... 
     public boolean checkRuleSyntax(String line, String keyword1, String keyword2){
-    	//keyword1 in the beginning?
+		//keyword1 in the beginning?
     	if (line.startsWith(keyword1)
     			//keyword 2 exists?
 				&& line.contains(keyword2)
@@ -124,6 +128,7 @@ public class MyProcessor implements AsyncProcessor {
     }
 
 	public void process(Exchange exchange) throws Exception {
+		System.out.println("Start 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
 		
 		InstrumentationProcessor instrumentationprocessor;
 		SendProcessor sendprocessor;
@@ -135,7 +140,7 @@ public class MyProcessor implements AsyncProcessor {
 		// set labels from Property
 		exchange_labels = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
 
-		
+		System.out.println("process - after LabelingProcess");
 		//figuring out where the message should go to
 		if (target instanceof InstrumentationProcessor) {
 			instrumentationprocessor = (InstrumentationProcessor) target;
@@ -156,64 +161,96 @@ public class MyProcessor implements AsyncProcessor {
 			return;
 		}
 		
+		System.out.println("********************************************");
+		boolean destinationAndRuleMatch = false;
 		for (AllowRule rule : allowRules) {
-			
+			System.out.println("--------------------------------------------");
+			System.out.println("Allow rule: " + rule.getLabel());
 			//match for destination
 			Pattern pattern = Pattern.compile(rule.getDestination());
 			Matcher matcher = pattern.matcher(destination);
 			
-			//the destination matches, now let's see if the label matches
+			System.out.println("pattern: " + rule.getDestination());
+			System.out.println("matcher: " + destination);
+			
 			if (matcher.find()) {
-				
+				//the destination matches, now let's see if the label matches
 				//Check if the message has the required label. If not, we stop 
 				if (!checkIfLabelExists (rule.getLabel(), exchange_labels)) {
 					System.out.println("Required label " + rule.getLabel() + " not found, message will be dropped...");
 					return;
+				} else {
+					//TODO Aus if/for rausspringen, sobald einmal ein passendes Label gefunden wurde. 
+					destinationAndRuleMatch = true;
+					System.out.println("Destination '" + destination + "' and labels '" + exchange_labels + "' match.");	
 				}
-
+					
+			} else {
+				System.out.println("Destination does not match.");
+				continue;
 			}
+			System.out.println("--------------------------------------------");
 		}
-		
-		System.out.println("Message with labels  '" + exchange_labels +"' has all required labels for destination '" + destination + "', forwarding...");
+		System.out.println("********************************************");
 
-		
-		//store labels in message body
-		body = exchange.getIn().getBody().toString();
-		if (body.startsWith("Labels: ") && body.contains("\n\n")) {
-			body = body.substring(body.indexOf("\n\n") + "\n\n".length(), body.length() - 1 );
+		if (destinationAndRuleMatch)
+		{
+			System.out.println("Message with labels  '" + exchange_labels +"' has all required labels for destination '" + destination + "', forwarding...");
+
+			//store labels in message body
+			body = exchange.getIn().getBody().toString();
+			if (body.startsWith("Labels: ") && body.contains("\n\n")) {
+				body = body.substring(body.indexOf("\n\n") + "\n\n".length(), body.length() - 1 );
+			}
+			exchange.getIn().setBody("Labels: " + exchange_labels + "\n\n" + body);
+					
+			target.process(exchange);	
 		}
-		exchange.getIn().setBody("Labels: " + exchange_labels + "\n\n" + body);
-				
-		target.process(exchange);
+		
+		System.out.println("Stop 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
     }
 	
 	//check if a label exists in a list of labels
 	public boolean checkIfLabelExists(String label, String labels){
-		
+		System.out.println("Start 'checkIfLabelExists' ...");
+		System.out.println("label: " + label);
+		System.out.println("labels: " + labels);
 		//There might be a , after and/or the label, so we add this to the regex
 		Pattern pattern = Pattern.compile(",?" + label + ",?");
 		Matcher matcher = pattern.matcher(labels);
 		
 		//if there are no requirements we have to fulfill, we return true
 		if (labels == null) {
+			System.out.println("labels = null");
+			System.out.println("Stop 'checkIfLabelExists' ...");
+				
 			return true;
 		}
 		
 		//if label is null, but labels isn't, we return false
 		if (label == null) {
+			System.out.println("label = null");
+			System.out.println("Stop 'checkIfLabelExists' ...");
 			return false;
 		}
 		
 		//check if the label is contained in the requirements. If not, return false;
 		if (matcher.find()) {
+			System.out.println("matcher.find() = true");
+
+			System.out.println("Stop 'checkIfLabelExists' ...");
 			return true;
 		} else {
+			System.out.println("matcher.find() = false");
+			System.out.println("Stop 'checkIfLabelExists' ...");
 			return false;
 		}
 	}
 	
 	
 	public Exchange LabelingProcess(Exchange exchange) {
+		System.out.println("Start 'LabelingProcess' ...");
+		
 		Set<String> exchange_label_set = new HashSet<String>();
 		String body = exchange.getIn().getBody().toString();
 		String labels;
@@ -244,6 +281,9 @@ public class MyProcessor implements AsyncProcessor {
 		exchange_label_set = addLabelBasedOnAttributeToSet(exchange_label_set, exchange.getIn().toString());
 		
 		exchange.setProperty("labels", joinStringSet(exchange_label_set, ","));
+		System.out.println("Labels in message: " + joinStringSet(exchange_label_set, ","));
+
+		System.out.println("Stop 'LabelingProcess' ...");
 		
 		return exchange;
 	}
@@ -259,6 +299,7 @@ public class MyProcessor implements AsyncProcessor {
 	}
 	
 	public Set<String> addLabelBasedOnAttributeToSet(Set<String> exchange_label_set, String attribute){
+		System.out.println("Start 'addLabelBasedOnAttributeToSet' ...");
 		
 		for (LabelingRule rule : labelRules) {
 			String rule_attribute = rule.getAttribute();
@@ -273,10 +314,13 @@ public class MyProcessor implements AsyncProcessor {
 			}
 		}
 		
+		System.out.println("Stop 'addLabelBasedOnAttributeToSet' ...");
+		
 		return exchange_label_set;
 	}
 
 	public Set<String> removeLabelBasedOnAttributeToSet(Set<String> exchange_label_set, String attribute){
+		System.out.println("Start 'removeLabelBasedOnAttributeToSet' ...");
 		
 		//No labels to remove here
 		if (exchange_label_set.isEmpty()) {
@@ -294,6 +338,8 @@ public class MyProcessor implements AsyncProcessor {
 				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', removed label '" + label + "'. All labels are now: '" + joinStringSet(exchange_label_set, ",") + "'");
 			}
 		}
+
+		System.out.println("Stop 'removeLabelBasedOnAttributeToSet' ...");
 		
 		return exchange_label_set;
 	}
@@ -309,11 +355,14 @@ public class MyProcessor implements AsyncProcessor {
 
 	@Override
 	public boolean process(Exchange exchange, AsyncCallback ac) {
+		System.out.println("Start ...");
 		try {
 			process(exchange);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("Stop ...");
 		return true;
 	}
  
