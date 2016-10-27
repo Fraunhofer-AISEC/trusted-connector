@@ -41,6 +41,47 @@ public class TPMA_OBJECT extends StandardTPMStruct {
 	private int sign;
 	private int reserved19_31;
 	
+	public TPMA_OBJECT() {
+	}
+	
+	public TPMA_OBJECT(
+			int reserved1,
+			int fixedTPM,
+			int stClear,
+			int reserved4,
+			int fixedParent,
+			int sensitiveDataOrigin,
+			int userWithAuth,
+			int adminWithPolicy,
+			int reserved8_9,
+			int noDA,
+			int encryptedDuplication,
+			int reserved12_15,
+			int restricted,
+			int decrypt,
+			int sign,
+			int reserved19_31) {
+		this.reserved1 = reserved1;
+		this.fixedTPM = fixedTPM;
+		this.stClear = stClear;
+		this.fixedParent = fixedParent;
+		this.sensitiveDataOrigin = sensitiveDataOrigin;
+		this.userWithAuth = userWithAuth;
+		this.adminWithPolicy = adminWithPolicy;
+		this.reserved8_9 = reserved8_9;
+		this.noDA = noDA;
+		this.encryptedDuplication = encryptedDuplication;
+		this.reserved12_15 = reserved12_15;
+		this.restricted = restricted;
+		this.decrypt = decrypt;
+		this.sign = sign;
+		this.reserved19_31 = reserved19_31;
+	}
+
+	public TPMA_OBJECT(byte[] buffer) {
+		this.fromBytes(buffer, 0);
+	}
+	
 	public int getReserved1() {
 		return reserved1;
 	}
@@ -186,7 +227,7 @@ public class TPMA_OBJECT extends StandardTPMStruct {
         		+ "restricted = " + this.restricted + "\n"
         		+ "decrypt = " + this.decrypt + "\n"
         		+ "sign = " + this.sign + "\n"
-        		+ "reserved19_31 = " + this.reserved19_31;
+        		+ "reserved19_31 = " + this.reserved19_31 + "\n";
     }
 	
 	@Override

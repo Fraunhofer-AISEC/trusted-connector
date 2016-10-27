@@ -164,6 +164,7 @@ public class WebsocketComponent extends UriEndpointComponent {
 
                 // Create ServletContextHandler
                 ServletContextHandler context = createContext(server, connector, endpoint.getHandlers());
+                
                 // setup the WebSocketComponentServlet initial parameters 
                 setWebSocketComponentServletInitialParameter(context, endpoint);
                 server.setHandler(context);

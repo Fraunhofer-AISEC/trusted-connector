@@ -1,8 +1,20 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
 public class TPMI_ALG_HASH extends StandardTPMStruct {
+	/*
+	 * TPMI_ALG_HASH Type
+	 * typedef TPM_ALG_ID TPMI_ALG_HASH;
+	 */
 
 	private TPM_ALG_ID hashId;
+	
+	public TPMI_ALG_HASH() {
+		// nothing
+	}
+
+	public TPMI_ALG_HASH(byte[] buffer) {
+		this.fromBytes(buffer, 0);
+	}
 
 	public TPM_ALG_ID getHashId() {
 		return hashId;

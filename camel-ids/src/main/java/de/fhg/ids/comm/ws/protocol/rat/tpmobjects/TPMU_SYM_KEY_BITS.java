@@ -1,15 +1,14 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
-abstract class TPMU_PUBLIC_ID extends StandardTPMStruct {
-	
+abstract class TPMU_SYM_KEY_BITS extends StandardTPMStruct {
 	/*
-	 * TPMU_PUBLIC_ID Union
+	 * TPMU_SYM_KEY_BITS Union
 	 * typedef union {
-	 *     TPM2B_DIGEST         keyedHash;
-	 *     TPM2B_DIGEST         sym;
-	 *     TPM2B_PUBLIC_KEY_RSA rsa;
-	 *     TPMS_ECC_POINT       ecc;
-	 * } TPMU_PUBLIC_ID;
+	 *     TPMI_AES_KEY_BITS aes;
+	 *     TPMI_SM4_KEY_BITS SM4;
+	 *     TPM_KEY_BITS      sym;
+	 *     TPMI_ALG_HASH     xor;
+	 * } TPMU_SYM_KEY_BITS;
 	 */
 	
 	@Override

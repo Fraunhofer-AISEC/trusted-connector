@@ -32,6 +32,8 @@ import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPM2B_PUBLIC;
+import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPMS_ATTEST;
+import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPMT_SIGNATURE;
 
 public class RemoteAttestationClientHandler {
 	private final FSM fsm;
@@ -82,14 +84,16 @@ public class RemoteAttestationClientHandler {
 		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
 		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-		byte[] publicKey = null;
 		try {
-			publicKey = this.fetchPublicKey(this.certUri);
-			// bytes of public key are now converted to a TPM2B_PUBLIC
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC();
-			// via
-			// current TODO
-			//key.fromBytes(publicKey, 0);
+			// bytes of public key are now being converted to a TPM2B_PUBLIC structure
+			//TPM2B_PUBLIC key = new TPM2B_PUBLIC();
+			//key.fromBytes(this.fetchPublicKey(this.certUri), 0);
+			// bytes of yourQuoted are now converted to a TPMS_ATTEST
+			//TPMS_ATTEST attestation = new TPMS_ATTEST();
+			//attestation.fromBytes(this.yourQuoted.toByteArray(), 0);
+			// bytes of yourSignature are now being converted to a TPMT_SIGNATURE structure
+			//TPMT_SIGNATURE signature = new TPMT_SIGNATURE();
+			//signature.fromBytes(this.yourSignature.toByteArray(), 0);
 			
 		} catch (Exception ex) {
 			LOG.debug("error: exception " + ex.getMessage());

@@ -1,5 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
+import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPM_ALG_ID.ALG_ID;
+
 public class TPMT_PUBLIC extends StandardTPMStruct {
 
 	/*
@@ -20,6 +22,28 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
 	private TPM2B_DIGEST authPolicy;
 	private TPMU_PUBLIC_PARMS parameters;
 	private TPMU_PUBLIC_ID unique;
+	
+	public TPMT_PUBLIC() {
+	}
+	
+	public TPMT_PUBLIC(byte[] buffer) {
+		this.fromBytes(buffer, 0);
+	}
+
+	public TPMT_PUBLIC(
+			TPMI_ALG_PUBLIC type, 
+			TPMI_ALG_HASH nameAlg, 
+			TPMA_OBJECT objectAttributes, 
+			TPM2B_DIGEST authPolicy,
+			TPMU_PUBLIC_PARMS parameters,
+			TPMU_PUBLIC_ID unique) {
+		this.type = type;
+		this.nameAlg = nameAlg;
+		this.objectAttributes = objectAttributes;
+		this.authPolicy = authPolicy;
+		this.parameters = parameters;
+		this.unique = unique;
+	}
 	
 	public TPMI_ALG_PUBLIC getType() {
 		return type;
@@ -85,20 +109,29 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
         brw.readStruct(this.objectAttributes);
         this.authPolicy = new TPM2B_DIGEST();
         brw.readStruct(this.authPolicy);
-        this.parameters = new TPMU_PUBLIC_PARMS();
-        brw.readStruct(this.parameters);
-        this.unique = new TPMU_PUBLIC_ID();
+        ALG_ID algId = this.type.getAlgId().getAlgId();
+        ALG_ID hashId = this.nameAlg.getHashId().getAlgId();
+        switch(algId) {
+        	case TPM_ALG_RSA:
+        		this.parameters = new TPMS_RSA_PARMS();
+        		brw.readStruct(this.parameters);
+        		break;
+        	default:
+        		break;
+        }
+        //this.unique = new TPMU_PUBLIC_ID();
         brw.readStruct(this.unique);
 	}
 	
+	@Override
     public String toString() {
-        return "TPMT_PUBLIC: \n" 
+        return "TPMT_PUBLIC:[\n" 
         		+ "type = " + this.type.toString() + "\n"
         		+ "nameAlg = " + this.nameAlg.toString() + "\n"
         		+ "objectAttributes = " + this.objectAttributes.toString() + "\n"
         		+ "authPolicy = " + this.authPolicy.toString() + "\n"
         		+ "parameters = " + this.parameters.toString() + "\n"
-        		+ "unique = " + this.unique.toString();
+        		+ "unique = " + this.unique.toString() + "\n]\n";
     }
 
 }

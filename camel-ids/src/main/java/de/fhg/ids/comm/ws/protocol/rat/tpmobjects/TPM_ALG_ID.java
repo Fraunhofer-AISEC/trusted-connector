@@ -4,7 +4,7 @@ public class TPM_ALG_ID extends StandardTPMStruct {
 	
 	public enum ALG_ID {
 		TPM_ALG_ERROR			((short)0x00, "ERROR"),
-		TPM_ALG_FIRST			((short)0x01, "FIRST"),
+		TPM_ALG_RSA				((short)0x01, "RSA"),			// ?? according to tpm20.h this is FIRST not RSA
 		TPM_ALG_SHA1			((short)0x04, "SHA1"),
 		TPM_ALG_AES				((short)0x06, "AES"),
 		TPM_ALG_KEYEDHASH		((short)0x08, "KEYEDHASH"),

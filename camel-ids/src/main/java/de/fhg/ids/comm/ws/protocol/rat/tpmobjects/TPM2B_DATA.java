@@ -1,23 +1,16 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
-public class TPM2B_DIGEST extends StandardTPMStruct {
+public class TPM2B_DATA extends StandardTPMStruct {
 	
 	/*
-	 * TPM2B_DIGEST Structure
-	 * typedef struct 
+	 * TPM2B_DATA Structure
+	 * typedef struct {
 	 *     UINT16 size;
-	 *     BYTE   buffer[sizeof(TPMU_HA)];
-	 * } TPM2B_DIGEST;
+	 *     BYTE   buffer[sizeof(TPMT_HA)];
+	 * } TPM2B_DATA;
 	 */
-
+	
 	private byte[] buffer = new byte[0];
-	
-	public TPM2B_DIGEST() {
-	}
-	
-	public TPM2B_DIGEST(byte[] buffer) {
-		this.setBuffer(buffer);
-	}
 	
 	public byte[] getBuffer() {
 		return buffer;
@@ -34,18 +27,20 @@ public class TPM2B_DIGEST extends StandardTPMStruct {
 	@Override
 	public byte[] toBytes() {
 		int bufferLength = this.getBufferLength();
-		return ByteArrayUtil.buildBuf(bufferLength, this.buffer);
+		return ByteArrayUtil.buildBuf(bufferLength, buffer);
 	}
 
 	@Override
 	public void fromBytes(byte[] source, int offset) {
-		ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
-		short keyLength = brw.readShort();
+        ByteArrayReadWriter brw = new ByteArrayReadWriter(source, offset);
+        short keyLength = brw.readShort();
         this.setBuffer(brw.readBytes(keyLength));
 	}
 
+	@Override
 	public String toString() {
-		return "TPM2B_DIGEST (" + this.getBufferLength() + " bytes): "
+		return "TPM2B_DATA (" + this.getBufferLength() + " bytes): "
 	            + ByteArrayUtil.toPrintableHexString(this.buffer);
 	}
+
 }

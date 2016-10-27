@@ -1,8 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
-public class TPMU_PUBLIC_PARMS extends StandardTPMStruct {
+abstract class TPMU_PUBLIC_PARMS extends StandardTPMStruct {
 
-	
 	/*
 	 * TPMU_PUBLIC_PARMS Union
 	 * typedef union {
@@ -13,19 +12,13 @@ public class TPMU_PUBLIC_PARMS extends StandardTPMStruct {
 	 *     TPMS_ASYM_PARMS      asymDetail;
 	 * } TPMU_PUBLIC_PARMS;
 	 */
+
+	@Override
+	public abstract byte[] toBytes();
+
+	@Override
+	public abstract void fromBytes(byte[] source, int offset);
 	
-	// TODO: implement this
-
 	@Override
-	public byte[] toBytes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void fromBytes(byte[] source, int offset) {
-		// TODO Auto-generated method stub
-		
-	}
-
+    public abstract String toString();
 }

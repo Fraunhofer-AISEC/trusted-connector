@@ -3,9 +3,7 @@ package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 public class TPM2B_PUBLIC extends StandardTPMStruct {
 
 	/*
-	 * reconstructing a TPM2B_PUBLIC structure:
-	 * 
-     * // TPM2B_PUBLIC Structure
+     * TPM2B_PUBLIC Structure
      * typedef struct {
      *     UINT16      size;
      *     TPMT_PUBLIC publicArea
@@ -15,9 +13,12 @@ public class TPM2B_PUBLIC extends StandardTPMStruct {
 
     private short size;
     private TPMT_PUBLIC publicArea;
-
+    
     public TPM2B_PUBLIC() {
-        // do nothing
+    }
+    
+    public TPM2B_PUBLIC(byte[] buffer) {
+        this.fromBytes(buffer, 0);
     }
 
     public TPM2B_PUBLIC(short size, TPMT_PUBLIC publicArea) {
@@ -55,8 +56,8 @@ public class TPM2B_PUBLIC extends StandardTPMStruct {
     }
 
     public String toString() {
-        return "TPM2B_PUBLIC: \n" 
+        return "TPM2B_PUBLIC:[\n" 
             + "size = " + this.size + "\n" 
-            + "publicArea: " + this.publicArea.toString();
+            + "publicArea: " + this.publicArea.toString() + "\n]\n";
     }
 }
