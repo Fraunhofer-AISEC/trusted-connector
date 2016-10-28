@@ -3,9 +3,9 @@ package de.fhg.ids.comm.ws.protocol.rat.tpm.objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.ids.comm.ws.protocol.rat.ByteArrayReadWriter;
-import de.fhg.ids.comm.ws.protocol.rat.ByteArrayUtil;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.ByteArrayReadWriter;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.ByteArrayUtil;
 
 public class TPM2B_PUBLIC_KEY_RSA extends TPMU_PUBLIC_ID {
 	

@@ -11,7 +11,7 @@ import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPM2B_PUBLIC;
 
 public class PublicKeyConverter {
 	
-	private String openSSLfixedHeader = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA";
+	private final String openSSLfixedHeader = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA";
 	private byte[] midHeader = new byte[2];
 	private byte[] exponent = new byte[3];
 	private PublicKey key = null;

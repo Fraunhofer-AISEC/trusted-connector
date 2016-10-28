@@ -46,6 +46,7 @@ import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPM2B_PUBLIC;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.NonceGenerator;
 import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.PublicKeyConverter;
 
 public class RemoteAttestationServerHandler {

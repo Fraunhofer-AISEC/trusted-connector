@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat;
+package de.fhg.ids.comm.ws.protocol.rat.tpm.tools;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

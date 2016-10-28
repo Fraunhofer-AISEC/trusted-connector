@@ -1,7 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpm.objects;
 
-import de.fhg.ids.comm.ws.protocol.rat.ByteArrayReadWriter;
-import de.fhg.ids.comm.ws.protocol.rat.ByteArrayUtil;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.ByteArrayReadWriter;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.ByteArrayUtil;
 
 public class TPMS_SCHEME_SM2 extends TPMU_ASYM_SCHEME {
 	

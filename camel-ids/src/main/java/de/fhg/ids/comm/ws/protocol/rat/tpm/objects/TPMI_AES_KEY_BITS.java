@@ -1,7 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpm.objects;
 
-import de.fhg.ids.comm.ws.protocol.rat.ByteArrayReadWriter;
-import de.fhg.ids.comm.ws.protocol.rat.ByteArrayUtil;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.ByteArrayReadWriter;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.ByteArrayUtil;
 
 public class TPMI_AES_KEY_BITS extends TPMU_SYM_KEY_BITS {
 	

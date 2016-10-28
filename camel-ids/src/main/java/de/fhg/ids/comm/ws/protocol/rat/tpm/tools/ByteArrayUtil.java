@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat;
+package de.fhg.ids.comm.ws.protocol.rat.tpm.tools;
 
 /*
  * Copyright (c) 2006, Massachusetts Institute of Technology (MIT)

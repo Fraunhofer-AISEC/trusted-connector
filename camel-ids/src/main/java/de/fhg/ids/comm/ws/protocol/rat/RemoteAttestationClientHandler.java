@@ -34,6 +34,7 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPM2B_PUBLIC;
 import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPMS_ATTEST;
 import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPMT_SIGNATURE;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.NonceGenerator;
 import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.PublicKeyConverter;
 
 public class RemoteAttestationClientHandler {

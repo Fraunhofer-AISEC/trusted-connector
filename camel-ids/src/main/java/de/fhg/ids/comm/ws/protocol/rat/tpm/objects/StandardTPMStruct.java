@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
-import de.fhg.ids.comm.ws.protocol.rat.BasicByteArrayable;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.BasicByteArrayable;
 
 public abstract class StandardTPMStruct extends BasicByteArrayable implements TPMStruct {
 	

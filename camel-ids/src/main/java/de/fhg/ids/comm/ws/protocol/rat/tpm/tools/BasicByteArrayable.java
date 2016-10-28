@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat;
+package de.fhg.ids.comm.ws.protocol.rat.tpm.tools;
 
 import java.util.Arrays;
 
@@ -16,7 +16,7 @@ public abstract class BasicByteArrayable implements ByteArrayable {
     }
 
     public int hashCode() {
-        return Arrays.hashCode( this.toBytes() );
+        return Arrays.hashCode(this.toBytes());
     }
 
     public String toString() {
