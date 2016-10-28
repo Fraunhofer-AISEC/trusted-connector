@@ -14,6 +14,19 @@ public class TPMT_SYM_DEF_OBJECT extends TPMU_PUBLIC_PARMS {
 	private TPMI_ALG_SYM_OBJECT algorithm;
 	private TPMU_SYM_KEY_BITS keyBits;
 	private TPMU_SYM_MODE mode;
+	
+	public TPMT_SYM_DEF_OBJECT() {
+	}
+	
+	public TPMT_SYM_DEF_OBJECT(byte[] buffer) {
+		this.fromBytes(buffer, 0);
+	}
+	
+	public TPMT_SYM_DEF_OBJECT(TPMI_ALG_SYM_OBJECT algorithm, TPMU_SYM_KEY_BITS keyBits, TPMU_SYM_MODE mode) {
+		this.algorithm = algorithm;
+		this.keyBits = keyBits;
+		this.mode = mode;
+	}
 
     public TPMI_ALG_SYM_OBJECT getAlgorithm() {
 		return algorithm;
@@ -38,6 +51,11 @@ public class TPMT_SYM_DEF_OBJECT extends TPMU_PUBLIC_PARMS {
 	public void setMode(TPMU_SYM_MODE mode) {
 		this.mode = mode;
 	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 	
 	@Override
 	public byte[] toBytes() {
@@ -49,23 +67,41 @@ public class TPMT_SYM_DEF_OBJECT extends TPMU_PUBLIC_PARMS {
         ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
         this.algorithm = new TPMI_ALG_SYM_OBJECT();
         brw.readStruct(this.algorithm);
+        TPM_KEY_BITS bits = new TPM_KEY_BITS();
         switch(this.algorithm.getAlgId().getAlgId()) {
         	case TPM_ALG_AES:
-        		//this.keyBits = new
-        		// CURRENT TODO !
+        		this.keyBits = new TPMI_AES_KEY_BITS();
+        		brw.readStruct(this.keyBits);
+        		brw.readStruct(bits);
+        		this.keyBits.setSym(bits);
         		break;
-        	case TPM_ALG_NULL:
+           	case TPM_ALG_SM4:
+           		this.keyBits = new TPMI_SM4_KEY_BITS();
+           		brw.readStruct(this.keyBits);
+           		brw.readStruct(bits);
+           		this.keyBits.setSym(bits);
+        		break;      
+           	case TPM_ALG_NULL:
+        		this.keyBits = null;
         		break;
         	default:
+        		LOG.debug("error: no TPMI_ALG_SYM_OBJECT algorithm given !");
         		break;
-        } 
+        }
+        
 	}
 
 	public String toString() {
-        return "TPMT_SYM_DEF_OBJECT: \n" 
-        		+ "algorithm = " + this.algorithm.toString() + "\n"
-        		+ "keyBits = " + this.keyBits.toString() + "\n"
-        		+ "mode = " + this.mode.toString() + "\n";
+		if(this.algorithm.getAlgId().getAlgId().equals(TPM_ALG_ID.ALG_ID.TPM_ALG_NULL)) {
+	        return "TPMT_SYM_DEF_OBJECT:[TPM_ALG_NULL]";
+		}
+		else {
+	        return "TPMT_SYM_DEF_OBJECT: \n" 
+	        		+ "algorithm = " + this.algorithm.toString() + "\n"
+	        		+ "keyBits = " + this.keyBits.toString() + "\n"
+	        		+ "mode = " + this.mode.toString() + "\n";
+			
+		}
     }
 
 }

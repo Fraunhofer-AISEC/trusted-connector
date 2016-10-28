@@ -20,4 +20,8 @@ public class TPMT_SIGNATURE extends StandardTPMStruct {
 		return null;
 	}
 
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 }

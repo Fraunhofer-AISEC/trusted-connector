@@ -2,6 +2,12 @@ package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
 public class TPMS_KEYEDHASH_PARMS extends TPMU_PUBLIC_PARMS {
 
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
+	
 	@Override
 	public byte[] toBytes() {
 		// TODO Auto-generated method stub

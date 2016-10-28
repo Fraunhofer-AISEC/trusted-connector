@@ -23,10 +23,11 @@ public class TPMI_ALG_PUBLIC extends StandardTPMStruct {
 	public void setAlgId(TPM_ALG_ID algId) {
 		this.algId = algId;
 	}
-	
-	public String toString() {
-		return "TPMI_ALG_PUBLIC : " + this.algId.toString();
-	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 
 	@Override
 	public byte[] toBytes() {
@@ -38,6 +39,11 @@ public class TPMI_ALG_PUBLIC extends StandardTPMStruct {
 		ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
 		this.algId = new TPM_ALG_ID();
         brw.readStruct(this.algId);
+	}
+
+	@Override
+	public String toString() {
+		return "TPMI_ALG_PUBLIC:[algId = " + this.algId.toString() + "]";
 	}
 	
 }

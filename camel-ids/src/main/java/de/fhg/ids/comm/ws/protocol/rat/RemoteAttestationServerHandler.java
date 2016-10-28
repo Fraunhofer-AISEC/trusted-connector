@@ -19,6 +19,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateFactory;
+import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
@@ -44,9 +45,11 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPM2B_PUBLIC;
 
 public class RemoteAttestationServerHandler {
 	private final FSM fsm;
+	private String SOCKET = "mock/tpm2ds.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
@@ -58,65 +61,79 @@ public class RemoteAttestationServerHandler {
 	private ByteString yourQuoted;
 	private ByteString yourSignature;
 	private String certUri;
-	private PublicKey yourPublicKey;
 	
 	public RemoteAttestationServerHandler(FSM fsm, IdsAttestationType type) {
+		// set finite state machine
 		this.fsm = fsm;
+		// set current attestation type (see attestation.proto)
 		this.aType = type;
+		// try to start new Thread:
+		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
-			this.client = new UnixSocketThread("mock/tpm2ds.sock");
+			// client will be used to send messages
+			this.client = new UnixSocketThread(this.SOCKET);
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();
+			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			LOG.debug("could not initialze thread!");
+			LOG.debug("could not write to/read from " + SOCKET);
 			e.printStackTrace();
 		}		
 	}
 
 	public MessageLite sendTPM2Ddata(Event e) {
+		// generate a new software nonce on the server
 		this.myNonce = NonceGenerator.generate();
+		// get the current client nonce from the message
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
+		// set the current attestation to the same as the client
+		this.aType = e.getMessage().getAttestationRequest().getAtype();
+		// construct protobuf message to send to local tpm2d via unix socket
+		ControllerToTpm msg = ControllerToTpm
+				.newBuilder()
+				.setAtype(this.aType)
+				.setQualifyingData(this.yourNonce)
+				.setCode(Code.INTERNAL_ATTESTATION_REQ)
+				.build();		
+		// try to talk to local unix socket
 		try {
-			ControllerToTpm msg = ControllerToTpm
-					.newBuilder()
-					.setAtype(this.aType)
-					.setQualifyingData(this.yourNonce)
-					.setCode(Code.INTERNAL_ATTESTATION_REQ)
-					.build();
-			
-			client.send(msg.toByteArray(), this.handler);
-			TpmToController answer = this.handler.waitForResponse();
-			return ConnectorMessage
-					.newBuilder()
-					.setId(0)
-					.setType(ConnectorMessage.Type.RAT_RESPONSE)
-					.setAttestationResponse(
-							AttestationResponse
-							.newBuilder()
-							.setAtype(this.aType)
-							.setQualifyingData(this.myNonce)
-							.setHalg(answer.getHalg())
-							.setQuoted(answer.getQuoted())
-							.setSignature(answer.getSignature())
-							.addAllPcrValues(answer.getPcrValuesList())
-							.setCertificateUri(answer.getCertificateUri())
-							.build()
-							)
-					.build();			
+			if(thread.isAlive()) {
+				// send msg to local unix socket
+				client.send(msg.toByteArray(), this.handler);
+				TpmToController answer = this.handler.waitForResponse();
+				// now return values from answer to client
+				return ConnectorMessage
+						.newBuilder()
+						.setId(0)
+						.setType(ConnectorMessage.Type.RAT_RESPONSE)
+						.setAttestationResponse(
+								AttestationResponse
+								.newBuilder()
+								.setAtype(this.aType)
+								.setQualifyingData(this.myNonce)
+								.setHalg(answer.getHalg())
+								.setQuoted(answer.getQuoted())
+								.setSignature(answer.getSignature())
+								.addAllPcrValues(answer.getPcrValuesList())
+								.setCertificateUri(answer.getCertificateUri())
+								.build()
+								)
+						.build();				
+			}
+			else {
+				LOG.debug("error: thread is not alive");
+				return null;
+			}
 		} catch (IOException e1) {
 			LOG.debug("IOException when writing to unix socket");
 			e1.printStackTrace();
-			return ConnectorMessage
-					.newBuilder()
-					.build();
+			return null;
 		} catch (InterruptedException e1) {
 			LOG.debug("InterruptedException when writing to unix socket");
 			e1.printStackTrace();
-			return ConnectorMessage
-					.newBuilder()
-					.build();
+			return null;
 		}
 	}
 
@@ -126,21 +143,19 @@ public class RemoteAttestationServerHandler {
 		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
 		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-		byte[] publicKey = null;
 		try {
-			publicKey = this.fetchPublicKey(this.certUri);
+			// construct a new public key in TPM2 format
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC();
+			// build that key with bytes from certUri
+			key.fromBytes(this.fetchPublicKey(this.certUri), 0);
+			LOG.debug("RSA KEY recvd by SERVER: " + key.toString());
+			
+			// CURRENTO TODO: now convert the TPM2 public key to a RSA DER Public key
+			
 		} catch (Exception ex) {
 			LOG.debug("error: exception " + ex.getMessage());
 			ex.printStackTrace();
 		}
-		
-		StringBuilder sb = new StringBuilder();
-	    for (byte b : publicKey) {
-	        sb.append(String.format("%02X ", b));
-	    }
-		
-		LOG.debug("server fetched public key: " + sb.toString());
-		
 		return ConnectorMessage
 				.newBuilder()
 				.setId(0)

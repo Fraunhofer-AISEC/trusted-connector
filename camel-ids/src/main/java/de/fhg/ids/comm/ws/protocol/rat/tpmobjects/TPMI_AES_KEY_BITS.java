@@ -1,14 +1,14 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
-public class TPM_KEY_BITS extends TPMI_RSA_KEY_BITS {
+public class TPMI_AES_KEY_BITS extends TPMU_SYM_KEY_BITS {
 	
-	private short bits = 0;
+	private TPM_KEY_BITS bits;
 
-	public short getBits() {
+	public TPM_KEY_BITS getBits() {
 		return bits;
 	}
 
-	public void setBits(short bits) {
+	public void setBits(TPM_KEY_BITS bits) {
 		this.bits = bits;
 	}
 
@@ -20,16 +20,18 @@ public class TPM_KEY_BITS extends TPMI_RSA_KEY_BITS {
 	@Override
 	public void fromBytes(byte[] source, int offset) {
         ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
-        this.bits = brw.readShort();
+        this.bits = new TPM_KEY_BITS();
+        brw.readStruct(this.bits);
 	}
 
 	@Override
 	public String toString() {
-        return "TPM_KEY_BITS:[(" + this.bits + ") bits : " + ByteArrayUtil.toBytesShortBE(this.bits)+ "]";
-    }
+        return "TPMI_AES_KEY_BITS:[" + this.bits.toString() + "]";
+	}
 
 	@Override
 	public byte[] getBuffer() {
 		return this.toBytes();
 	} 
+
 }

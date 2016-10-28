@@ -48,6 +48,11 @@ public class TPMS_RSA_PARMS extends TPMU_PUBLIC_PARMS {
 	public void setExponent(int exponent) {
 		this.exponent = exponent;
 	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 	
 	@Override
 	public byte[] toBytes() {
@@ -56,7 +61,7 @@ public class TPMS_RSA_PARMS extends TPMU_PUBLIC_PARMS {
 
 	@Override
 	public void fromBytes(byte[] source, int offset) {
-        ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
+        ByteArrayReadWriter brw = new ByteArrayReadWriter(source, offset);
         this.symmetric = new TPMT_SYM_DEF_OBJECT();
         brw.readStruct(this.symmetric);
         this.scheme = new TPMT_RSA_SCHEME();
@@ -68,10 +73,9 @@ public class TPMS_RSA_PARMS extends TPMU_PUBLIC_PARMS {
 
 	@Override
 	public String toString() {
-        return "TPMS_RSA_PARMS:[\n" 
-        		+ "symmetric = " + this.symmetric.toString() + "\n"
-        		+ "scheme = " + this.scheme.toString() + "\n"
-        		+ "keyBits = " + this.keyBits.toString() + "\n"
-        		+ "exponent = " + this.exponent + "\n]\n";
+        return "TPMS_RSA_PARMS:[symmetric = " + this.symmetric.toString() 
+        		+ ", scheme = " + this.scheme.toString()
+        		+ ", keyBits = " + this.keyBits.toString()
+        		+ ", exponent = " + this.exponent + "]";
     }
 }

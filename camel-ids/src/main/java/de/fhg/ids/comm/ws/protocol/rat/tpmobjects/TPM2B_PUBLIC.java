@@ -49,15 +49,19 @@ public class TPM2B_PUBLIC extends StandardTPMStruct {
 
     @Override
     public void fromBytes( byte[] source, int offset ) {
-        ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
+        ByteArrayReadWriter brw = new ByteArrayReadWriter(source, offset);
         this.size = brw.readShort();
+        LOG.debug("TPM2B_PUBLIC size: " + this.size);
         this.publicArea = new TPMT_PUBLIC();
         brw.readStruct(this.publicArea);
     }
 
     public String toString() {
-        return "TPM2B_PUBLIC:[\n" 
-            + "size = " + this.size + "\n" 
-            + "publicArea: " + this.publicArea.toString() + "\n]\n";
+        return "TPM2B_PUBLIC:[size = " + this.size + ", publicArea = " + this.publicArea.toString() + "]";
     }
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 }

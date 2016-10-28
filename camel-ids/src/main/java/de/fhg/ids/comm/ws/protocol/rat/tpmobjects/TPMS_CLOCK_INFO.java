@@ -16,6 +16,11 @@ public class TPMS_CLOCK_INFO extends StandardTPMStruct {
 	private int resetCount;
 	private int restartCount;
 	private byte[] safe = new byte[0];	// TPMI_YES_NO is just a single byte
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 	
 	@Override
 	public byte[] toBytes() {
@@ -33,11 +38,10 @@ public class TPMS_CLOCK_INFO extends StandardTPMStruct {
 	}
 	
     public String toString() {
-        return "TPMS_CLOCK_INFO: \n" 
-        		+ "clock = " + this.clock + "\n"
-        		+ "resetCount = " + this.resetCount + "\n"
-        		+ "restartCount = " + this.restartCount + "\n"
-        		+ "safe = " + this.safe + "\n";
+        return "TPMS_CLOCK_INFO:[clock = " + this.clock 
+        		+ ", resetCount = " + this.resetCount 
+        		+ ", restartCount = " + this.restartCount 
+        		+ ", safe = " + this.safe + "]";
     }
 
 }

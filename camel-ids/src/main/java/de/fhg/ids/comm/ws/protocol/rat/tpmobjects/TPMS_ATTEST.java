@@ -1,7 +1,5 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
-import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPM_ALG_ID.ALG_ID;
-
 public class TPMS_ATTEST extends StandardTPMStruct {
 
 	/*
@@ -17,7 +15,7 @@ public class TPMS_ATTEST extends StandardTPMStruct {
 	 * } TPMS_ATTEST;
 	 */
 
-	private TPM_GENERATED magic;				// TPM_GENERATED equals 4 Byte or 4*8=32 Bit = int
+	private TPM_GENERATED magic; // TPM_GENERATED equals 4 Byte or 4*8 = 32 Bit => int
 	private TPMI_ST_ATTEST type;
 	private TPM2B_NAME qualifiedSigner;
 	private TPM2B_DATA extraData;
@@ -82,6 +80,11 @@ public class TPMS_ATTEST extends StandardTPMStruct {
 	}
 
 	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
+
+	@Override
 	public byte[] toBytes() {
 		return ByteArrayUtil.buildBuf(magic, type, qualifiedSigner, extraData, clockInfo, firmwareVersion, attested);
 	}
@@ -91,7 +94,6 @@ public class TPMS_ATTEST extends StandardTPMStruct {
         ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
         this.magic = new TPM_GENERATED();
         brw.readStruct(this.magic);
-
         this.qualifiedSigner = new TPM2B_NAME();
         brw.readStruct(this.qualifiedSigner);
         this.extraData = new TPM2B_DATA();
@@ -107,13 +109,12 @@ public class TPMS_ATTEST extends StandardTPMStruct {
 
 	@Override
     public String toString() {
-        return "TPMS_ATTEST: \n" 
-        		+ "magic = " + this.magic + "\n" 
-        		+ "type = " + this.type.toString() + "\n" 
-        		+ "qualifiedSigner = " + this.qualifiedSigner.toString() + "\n"
-        		+ "extraData = " + this.extraData.toString() + "\n"
-        		+ "clockInfo = " + this.clockInfo.toString() + "\n"
-        		+ "firmwareVersion = " + this.firmwareVersion + "\n"
-        		+ "attested: " + this.attested.toString();
+        return "TPMS_ATTEST:[magic = " + this.magic 
+        		+ ", type = " + this.type.toString() 
+        		+ ", qualifiedSigner = " + this.qualifiedSigner.toString() 
+        		+ ", extraData = " + this.extraData.toString()
+        		+ ", clockInfo = " + this.clockInfo.toString()
+        		+ ", firmwareVersion = " + this.firmwareVersion
+        		+ ", attested: " + this.attested.toString() +"]";
     }
 }

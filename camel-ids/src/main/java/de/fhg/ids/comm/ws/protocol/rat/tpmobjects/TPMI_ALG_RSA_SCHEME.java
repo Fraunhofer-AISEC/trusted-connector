@@ -18,6 +18,11 @@ public class TPMI_ALG_RSA_SCHEME extends StandardTPMStruct {
 	}
 
 	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
+
+	@Override
 	public byte[] toBytes() {
 		return ByteArrayUtil.buildBuf(algId);
 	}
@@ -31,8 +36,7 @@ public class TPMI_ALG_RSA_SCHEME extends StandardTPMStruct {
 
 	@Override
     public String toString() {
-        return "TPMI_ALG_RSA_SCHEME:[\n" 
-        		+ "algId = " + this.algId.getAlgId().name() + "\n]\n";
+        return "TPMI_ALG_RSA_SCHEME:[algId = " + this.algId.getAlgId().name() + "]";
     }
 
 }

@@ -78,7 +78,7 @@ public class TPM_ALG_ID extends StandardTPMStruct {
 	}
 	
 	public String toString() {
-		return "id:[" + this.getAlgId().id() + "] description:[" + this.getAlgId().description() + "]";
+		return "id(" + this.getAlgId().id() + "),description(" + this.getAlgId().description() + ")";
 	}
 
 	@Override
@@ -90,5 +90,10 @@ public class TPM_ALG_ID extends StandardTPMStruct {
 	public void fromBytes(byte[] source, int offset) {
 		ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
         this.algId = ALG_ID.byID(brw.readShort());
+	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
 	}
 }

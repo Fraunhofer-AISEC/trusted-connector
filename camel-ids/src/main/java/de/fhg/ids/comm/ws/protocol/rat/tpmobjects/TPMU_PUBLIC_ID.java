@@ -1,6 +1,6 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpmobjects;
 
-abstract class TPMU_PUBLIC_ID extends StandardTPMStruct {
+public abstract class TPMU_PUBLIC_ID extends StandardTPMStruct {
 	
 	/*
 	 * TPMU_PUBLIC_ID Union
@@ -20,5 +20,8 @@ abstract class TPMU_PUBLIC_ID extends StandardTPMStruct {
 	
 	@Override
     public abstract String toString();
+	
+	@Override
+    public abstract byte[] getBuffer();	
 
 }

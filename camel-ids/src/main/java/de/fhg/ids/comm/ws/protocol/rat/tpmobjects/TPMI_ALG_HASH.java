@@ -41,7 +41,11 @@ public class TPMI_ALG_HASH extends StandardTPMStruct {
 	
 	@Override
     public String toString() {
-        return "TPMI_ALG_HASH:[\n" 
-        		+ "TPM_ALG_ID = " + this.hashId.toString() + "\n]\n";
+		return "TPMI_ALG_HASH:[hashId = " + this.hashId.toString() + "]";
     }	
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 }

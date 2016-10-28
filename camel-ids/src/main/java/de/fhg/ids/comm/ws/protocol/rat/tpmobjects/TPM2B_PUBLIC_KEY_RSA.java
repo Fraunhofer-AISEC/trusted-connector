@@ -31,6 +31,10 @@ public class TPM2B_PUBLIC_KEY_RSA extends TPMU_PUBLIC_ID {
 	public byte[] getBuffer() {
 		return buffer;
 	}
+	
+	public byte[] getKey() {
+		return this.getBuffer();
+	}
 
 	public void setBuffer(byte[] buffer) {
 		this.buffer = buffer;
@@ -51,7 +55,7 @@ public class TPM2B_PUBLIC_KEY_RSA extends TPMU_PUBLIC_ID {
         this.size = brw.readShort();
         if(this.size <= TPM2Constants.MAX_RSA_KEY_BYTES) {
             this.buffer = new byte[this.getSize()];
-            brw.readBytes(this.getSize());        	
+            this.buffer = brw.readBytes(this.getSize());        	
         }
         else {
         	LOG.debug("error: buffer of TPM2B_PUBLIC_KEY_RSA is larger then MAX_RSA_KEY_BYTES");
@@ -60,7 +64,7 @@ public class TPM2B_PUBLIC_KEY_RSA extends TPMU_PUBLIC_ID {
 
 	@Override
     public String toString() {
-		return "TPM2B_PUBLIC_KEY_RSA (" + this.getSize() + " bytes): [\n"
-	            + ByteArrayUtil.toPrintableHexString(this.buffer) + "\n]\n";
+		String key = ByteArrayUtil.toPrintableHexString(this.buffer).replace("\n", "");
+		return "TPM2B_PUBLIC_KEY_RSA:[(" + this.getSize() + " bytes): "+ key + "]";
     }
 }

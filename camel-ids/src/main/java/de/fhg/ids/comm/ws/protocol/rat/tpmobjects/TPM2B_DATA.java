@@ -39,8 +39,7 @@ public class TPM2B_DATA extends StandardTPMStruct {
 
 	@Override
 	public String toString() {
-		return "TPM2B_DATA (" + this.getBufferLength() + " bytes): "
-	            + ByteArrayUtil.toPrintableHexString(this.buffer);
+		return "TPM2B_DATA:[(" + this.getBufferLength() + " bytes): " + ByteArrayUtil.toPrintableHexString(this.buffer) + "]";
 	}
 
 }

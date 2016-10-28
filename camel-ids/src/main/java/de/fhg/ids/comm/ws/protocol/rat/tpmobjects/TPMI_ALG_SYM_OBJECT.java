@@ -10,7 +10,6 @@ public class TPMI_ALG_SYM_OBJECT extends StandardTPMStruct {
 	private TPM_ALG_ID algId;
 	
 	public TPMI_ALG_SYM_OBJECT() {
-		// nothing
 	}
 	
 	public TPMI_ALG_SYM_OBJECT(byte[] buffer) {
@@ -28,10 +27,11 @@ public class TPMI_ALG_SYM_OBJECT extends StandardTPMStruct {
 	public void setAlgId(TPM_ALG_ID algId) {
 		this.algId = algId;
 	}
-	
-	public String toString() {
-		return "TPMI_ALG_PUBLIC:[" + this.algId.toString() + "]\n";
-	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 
 	@Override
 	public byte[] toBytes() {
@@ -44,5 +44,9 @@ public class TPMI_ALG_SYM_OBJECT extends StandardTPMStruct {
 		this.algId = new TPM_ALG_ID();
         brw.readStruct(this.algId);
 	}
-	
+
+	@Override
+	public String toString() {
+		return "TPMI_ALG_PUBLIC:[" + this.algId.toString() + "]";
+	}
 }

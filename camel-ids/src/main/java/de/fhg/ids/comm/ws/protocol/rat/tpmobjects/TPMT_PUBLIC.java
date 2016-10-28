@@ -92,6 +92,11 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
 	public void setUnique(TPMU_PUBLIC_ID unique) {
 		this.unique = unique;
 	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 	
 	@Override
 	public byte[] toBytes() {
@@ -103,12 +108,16 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
         ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
         this.type = new TPMI_ALG_PUBLIC();
         brw.readStruct(this.type);
+        LOG.debug(this.type.toString());
         this.nameAlg = new TPMI_ALG_HASH();
         brw.readStruct(this.nameAlg);
+        LOG.debug(this.nameAlg.toString());
         this.objectAttributes = new TPMA_OBJECT();
         brw.readStruct(this.objectAttributes);
+        LOG.debug(this.objectAttributes.toString());
         this.authPolicy = new TPM2B_DIGEST();
         brw.readStruct(this.authPolicy);
+        LOG.debug(this.authPolicy.toString());
         ALG_ID algId = this.type.getAlgId().getAlgId();
         ALG_ID hashId = this.nameAlg.getHashId().getAlgId();
         switch(algId) {
@@ -119,7 +128,7 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
         			brw.readStruct(this.unique);
         		break;
 
-        		// TODO: put other cases like ecc here
+        		// TODO: put other algorithm cases here
 
         	default:
         		break;
@@ -128,13 +137,12 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
 	
 	@Override
     public String toString() {
-        return "TPMT_PUBLIC:[\n" 
-        		+ "type = " + this.type.toString() + "\n"
-        		+ "nameAlg = " + this.nameAlg.toString() + "\n"
-        		+ "objectAttributes = " + this.objectAttributes.toString() + "\n"
-        		+ "authPolicy = " + this.authPolicy.toString() + "\n"
-        		+ "parameters = " + this.parameters.toString() + "\n"
-        		+ "unique = " + this.unique.toString() + "\n]\n";
+        return "TPMT_PUBLIC:[type = " + this.type.toString() 
+        	+ ", nameAlg = " + this.nameAlg.toString() 
+        	+ ", objectAttributes = " + this.objectAttributes.toString() 
+        	+ ", authPolicy = " + this.authPolicy.toString()
+        	+ ", parameters = " + this.parameters.toString()
+        	+ ", unique = " + this.unique.toString() + "]";
     }
 
 }

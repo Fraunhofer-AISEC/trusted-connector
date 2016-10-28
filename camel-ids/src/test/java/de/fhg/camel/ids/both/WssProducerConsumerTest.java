@@ -80,9 +80,23 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     @Before
     public void initMockServer() {
     	try {
-    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", "mock/tpm2dc.sock").start();
-    		tpm2dserver = new ProcessBuilder("python", "mock/tpm2d.py", "mock/tpm2ds.sock").start();
+    		File socketServer = new File("mock/tpm2ds.sock");
+    		File socketClient = new File("mock/tpm2dc.sock");
+    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", socketServer.getPath()).start();
+    		tpm2dserver = new ProcessBuilder("python", "mock/tpm2d.py", socketClient.getPath()).start();
     		ttp = new ProcessBuilder("python", "mock/ttp.py").start();
+    		
+    		while (!socketServer.exists()) {
+    		    try { 
+    		        Thread.sleep(100);
+    		    } catch (InterruptedException ie) { /* safe to ignore */ }
+    		}
+    		
+    		while (!socketClient.exists()) {
+    		    try { 
+    		        Thread.sleep(100);
+    		    } catch (InterruptedException ie) { /* safe to ignore */ }
+    		}
 		} catch (IOException e) {
 			log.debug("could not start python tpm2d mock");
 			e.printStackTrace();

@@ -35,6 +35,11 @@ public class TPMS_ASYM_PARMS extends TPMU_PUBLIC_PARMS {
 	public void setScheme(TPMT_ASYM_SCHEME scheme) {
 		this.scheme = scheme;
 	}
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 	
 	@Override
 	public byte[] toBytes() {
@@ -53,9 +58,7 @@ public class TPMS_ASYM_PARMS extends TPMU_PUBLIC_PARMS {
 
 	@Override
     public String toString() {
-        return "TPMS_ASYM_PARMS: \n" 
-            + "size = " + this.symmetric.toString() + "\n" 
-            + "publicArea: " + this.scheme.toString();
+        return "TPMS_ASYM_PARMS:[size = " + this.symmetric.toString() + ", publicArea = " + this.scheme.toString() + "]";
     }
 
 }

@@ -11,6 +11,11 @@ public class TPMS_ECC_PARMS extends TPMU_PUBLIC_PARMS {
 	 *     TPMT_KDF_SCHEME     kdf;
 	 * } TPMS_ECC_PARMS;
 	 */
+
+	@Override
+	public byte[] getBuffer() {
+		return this.toBytes();
+	} 
 	
 	@Override
 	public byte[] toBytes() {

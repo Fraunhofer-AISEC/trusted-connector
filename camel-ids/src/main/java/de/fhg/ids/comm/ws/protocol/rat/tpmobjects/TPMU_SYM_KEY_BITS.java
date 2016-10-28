@@ -11,6 +11,8 @@ abstract class TPMU_SYM_KEY_BITS extends StandardTPMStruct {
 	 * } TPMU_SYM_KEY_BITS;
 	 */
 	
+	private TPM_KEY_BITS sym;
+	
 	@Override
 	public abstract byte[] toBytes();
 
@@ -19,5 +21,13 @@ abstract class TPMU_SYM_KEY_BITS extends StandardTPMStruct {
 	
 	@Override
     public abstract String toString();
+
+	public TPM_KEY_BITS getSym() {
+		return sym;
+	}
+
+	public void setSym(TPM_KEY_BITS sym) {
+		this.sym = sym;
+	}
 
 }
