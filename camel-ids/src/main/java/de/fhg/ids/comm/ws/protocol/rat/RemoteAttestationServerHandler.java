@@ -45,7 +45,8 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fhg.ids.comm.ws.protocol.rat.tpmobjects.TPM2B_PUBLIC;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPM2B_PUBLIC;
+import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.PublicKeyConverter;
 
 public class RemoteAttestationServerHandler {
 	private final FSM fsm;
@@ -148,7 +149,9 @@ public class RemoteAttestationServerHandler {
 			TPM2B_PUBLIC key = new TPM2B_PUBLIC();
 			// build that key with bytes from certUri
 			key.fromBytes(this.fetchPublicKey(this.certUri), 0);
-			LOG.debug("RSA KEY recvd by SERVER: " + key.toString());
+			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
+			
+			LOG.debug("RSA KEY recvd by SERVER: " + publicKey.toString());
 			
 			// CURRENTO TODO: now convert the TPM2 public key to a RSA DER Public key
 			

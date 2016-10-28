@@ -52,7 +52,8 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     private Process tpm2dserver = null;
     private Process tpm2dclient = null;
     private Process ttp = null;
-   
+    private File socketServer;
+    private File socketClient;
     protected List<Object> messages;
 	private static String PWD = "changeit";
     
@@ -75,24 +76,21 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     @Before
     public void initMockServer() {
     	try {
-    		File socketServer = new File("mock/tpm2ds.sock");
-    		File socketClient = new File("mock/tpm2dc.sock");
-    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", socketServer.getPath()).start();
+    		socketServer = new File("mock/tpm2ds.sock");
+    		socketClient = new File("mock/tpm2dc.sock");
     		tpm2dserver = new ProcessBuilder("python", "mock/tpm2d.py", socketClient.getPath()).start();
+    		while (!tpm2dserver.isAlive()) {
+    		    try { 
+    		        Thread.sleep(250);
+    		    } catch (InterruptedException ie) { /* safe to ignore */ }
+    		}
+    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", socketServer.getPath()).start();
+    		while (!tpm2dclient.isAlive()) {
+    		    try { 
+    		        Thread.sleep(250);
+    		    } catch (InterruptedException ie) { /* safe to ignore */ }
+    		}
     		ttp = new ProcessBuilder("python", "mock/ttp.py").start();
-    		
-    		while (!socketServer.exists()) {
-    		    try { 
-    		        Thread.sleep(100);
-    		    } catch (InterruptedException ie) { /* safe to ignore */ }
-    		}
-    		
-    		while (!socketClient.exists()) {
-    		    try { 
-    		        Thread.sleep(100);
-    		    } catch (InterruptedException ie) { /* safe to ignore */ }
-    		}
-    		
 		} catch (IOException e) {
 			log.debug("could not start python mock server");
 			e.printStackTrace();
@@ -103,9 +101,11 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     public void teardownMockServer() {
     	if(tpm2dclient != null && tpm2dclient.isAlive()) {
     		tpm2dclient.destroy();
+    		socketClient.delete();
     	}
     	if(tpm2dserver != null && tpm2dserver.isAlive()) {
     		tpm2dserver.destroy();
+    		socketServer.delete();
     	}
     	if(ttp != null && ttp.isAlive()) {
     		ttp.destroy();
