@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.api.internal;
 
-import de.fhg.aisec.ids.messages.ConnectorProtos.ServiceRequest;
-import de.fhg.aisec.ids.messages.ConnectorProtos.ServiceResponse;
+import de.fhg.aisec.ids.messages.Idscp.ServiceRequest;
+import de.fhg.aisec.ids.messages.Idscp.ServiceResponse;
 
 /**
  * Listener interface for notifications on data requests to a service.

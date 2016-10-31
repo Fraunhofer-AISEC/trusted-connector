@@ -37,6 +37,6 @@ public class WsProducerTest extends WsProducerTestBase {
     
     @Override
     protected String getTargetURL() {
-        return "ids-client-plain://localhost:" + PORT;
+        return "idsclientplain://localhost:" + PORT;
     }
 }

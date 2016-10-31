@@ -24,8 +24,8 @@ public final class WsConstants {
     public static final String CONTENT_TYPE_JAVA_SERIALIZED_OBJECT = "application/x-java-serialized-object";
     public static final String CONTENT_TYPE_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
-    public static final String WS_PROTOCOL = "ids-client-plain";
-    public static final String WSS_PROTOCOL = "ids-client";
+    public static final String WS_PROTOCOL = "idsclientplain";
+    public static final String WSS_PROTOCOL = "idsclient";
 
     private WsConstants() {
     }

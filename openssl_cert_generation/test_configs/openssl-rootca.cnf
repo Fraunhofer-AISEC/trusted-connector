@@ -8,7 +8,7 @@ default_ca  = CA_default        # The default ca section
 [ CA_default ]
 
 default_days    = 2920          # how long to certify for
-default_md  = sha1       # use public key default MD
+default_md  = sha256       # use public key default MD
 preserve    = no            # keep passed DN ordering
 
 x509_extensions = ca_extensions     # The extensions to add to the cert
@@ -70,5 +70,5 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid
 basicConstraints = critical, CA:true
 keyUsage = digitalSignature, keyCertSign, cRLSign
-crlDistributionPoints=URI.0:http://crl.aisec.fraunhofer.de/ids.crl
-authorityInfoAccess=caIssuers;URI.1=http://downloads.aisec.fraunhofer.de/rootcacert2016.cert
+crlDistributionPoints=URI:http://crl.aisec.fraunhofer.de/ids.crl
+authorityInfoAccess=caIssuers;URI:http://downloads.aisec.fraunhofer.de/rootcacert2016.cert

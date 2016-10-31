@@ -1,5 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.fsm;
 
+import java.util.concurrent.Callable;
+
 /**
  * A Transition transfers the FSM from a start state to an end state and is
  * triggered by an event.

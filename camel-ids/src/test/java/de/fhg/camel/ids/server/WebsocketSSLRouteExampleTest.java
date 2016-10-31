@@ -57,7 +57,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     private static List<String> received = new ArrayList<String>();
     private static CountDownLatch latch = new CountDownLatch(10);
     protected Properties originalValues = new Properties();
-    protected String pwd = "changeit";
+    protected String pwd = "password";
     protected int port;
 
     @Override
@@ -67,7 +67,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
         super.setUp();
 
-        URL trustStoreUrl = this.getClass().getClassLoader().getResource("jsse/localhost.ks");
+        URL trustStoreUrl = this.getClass().getClassLoader().getResource("jsse/truststore.jks");
         setSystemProp("javax.net.ssl.trustStore", trustStoreUrl.toURI().getPath());
     }
 
@@ -81,15 +81,18 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         AsyncHttpClient c;
         AsyncHttpClientConfig config;
 
-        DefaultAsyncHttpClientConfig.Builder builder =
-                new DefaultAsyncHttpClientConfig.Builder();
+        AsyncHttpClientConfig.Builder builder =
+                new AsyncHttpClientConfig.Builder();
 
-        SSLContext sslContext = new SSLContextParameters().createSSLContext(context());
-        JdkSslContext ssl = new JdkSslContext(sslContext, true, ClientAuth.REQUIRE);
-        builder.setSslContext(ssl);
+        SSLContextParameters param = new SSLContextParameters();
+        param.setCamelContext(context());
+        
+        SSLContext sslContext = param.createSSLContext();
+        //JdkSslContext ssl = new JdkSslContext(sslContext, true, ClientAuth.REQUIRE);
+        builder.setSSLContext(sslContext);
         builder.setAcceptAnyCertificate(true);
         config = builder.build();
-        c = new DefaultAsyncHttpClient(config);
+        c = new AsyncHttpClient(config);
 
         return c;
     }
@@ -98,7 +101,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
         KeyStoreParameters ksp = new KeyStoreParameters();
         // ksp.setResource(this.getClass().getClassLoader().getResource("jsse/localhost.ks").toString());
-        ksp.setResource("jsse/localhost.ks");
+        ksp.setResource("jsse/keystore.jks");
         ksp.setPassword(pwd);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
@@ -107,11 +110,12 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
         TrustManagersParameters tmp = new TrustManagersParameters();
         tmp.setKeyStore(ksp);
+        
 
         // NOTE: Needed since the client uses a loose trust configuration when no ssl context
         // is provided.  We turn on WANT client-auth to prefer using authentication
         SSLContextServerParameters scsp = new SSLContextServerParameters();
-
+        
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setKeyManagers(kmp);
         sslContextParameters.setTrustManagers(tmp);
@@ -124,7 +128,8 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     public void testWSHttpCall() throws Exception {
 
         AsyncHttpClient c = createAsyncHttpSSLClient();
-        WebSocket websocket = c.prepareGet("wss://127.0.0.1:" + port + "/test").execute(
+        String test = "idsserver://127.0.0.1:" + port + "/test"; 
+        WebSocket websocket = c.prepareGet("idsserver://127.0.0.1:" + port + "/test").execute(
                 new WebSocketUpgradeHandler.Builder()
                         .addWebSocketListener(new WebSocketTextListener() {
                             @Override
@@ -170,7 +175,6 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         return new RouteBuilder() {
             public void configure() {
 
-            	context.getComponentNames().forEach(x -> System.out.println(x));
                 WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
                 websocketComponent.setSslContextParameters(defineSSLContextParameters());
                 websocketComponent.setPort(port);

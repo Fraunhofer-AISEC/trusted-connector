@@ -58,19 +58,19 @@
 		</dependency>
 		
 		  <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jmx</artifactId>
-            <version>${jetty-version}</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlets</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-jmx</artifactId>
+			<version>${jetty-version}</version>
 		</dependency>
 	    <dependency>
 	      <groupId>org.apache.camel</groupId>
@@ -82,9 +82,6 @@
             <artifactId>async-http-client</artifactId>
             <version>${ahc-version}</version>
 		</dependency> 		
-		
-
-		<!-- logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
@@ -95,10 +92,6 @@
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>2.6.2</version>
 		</dependency>
-
-
-
-		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -117,11 +110,14 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.jnr</groupId>
+			<artifactId>jnr-unixsocket</artifactId>
+			<version>0.13</version>
+		</dependency>
 	</dependencies>
-
 	<build>
 		<defaultGoal>install</defaultGoal>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -153,22 +149,18 @@
 				</executions>
 			</plugin>
 			
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-	                <argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
-                    <excludes>
-                        <exclude>**/WebsocketEndpointTest.java</exclude>
-                        <exclude>**/WebsocketComponentTest.java</exclude>
-                    </excludes>
-                </configuration>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
+					<excludes>
+						<exclude>**/WebsocketEndpointTest.java</exclude>
+						<exclude>**/WebsocketComponentTest.java</exclude>
+					</excludes>
+				</configuration>
+			
 			</plugin>			
-
-			<!-- The following configuration is required because bnd-maven-plugin 
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
-				the manifest from this location, then the following config is not needed. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

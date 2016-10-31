@@ -135,12 +135,12 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         rbs[0] = new RouteBuilder() {
             public void configure() {
                 from("direct:input").routeId("foo")
-                    .to("ids-client-plain://localhost:" + PORT);
+                    .to("idsclientplain://localhost:" + PORT);
             }
         };
         rbs[1] = new RouteBuilder() {
             public void configure() {
-                from("ids-client-plain://localhost:" + PORT).routeId("bar")
+                from("idsclientplain://localhost:" + PORT).routeId("bar")
                     .to("mock:result");
             }
         };

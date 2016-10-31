@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="ids">
+    <feature version="0.0.0">
+        <feature prerequisite="false" dependency="false">wrap</feature>
+        <bundle>mvn:com.github.jnr/jffi/1.2.13</bundle>
+        <bundle>mvn:com.github.jnr/jnr-constants/0.9.4</bundle>
+        <bundle>mvn:com.github.jnr/jnr-enxio/0.13</bundle>
+        <bundle>mvn:com.github.jnr/jnr-ffi/2.1.0</bundle>
+        <bundle>mvn:com.github.jnr/jnr-posix/3.0.30</bundle>
+        <bundle>mvn:com.github.jnr/jnr-unixsocket/0.13</bundle>
+        <bundle>mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
+        <bundle>mvn:com.ning/async-http-client/1.9.31</bundle>
+        <bundle>mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
+        <bundle>mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
+        <bundle>mvn:de.fhg.ids/api/1.0.0</bundle>
+        <bundle>mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
+        <bundle>mvn:de.fhg.ids/container-manager/1.0.0</bundle>
+        <bundle>mvn:de.fhg.ids/ids-webconsole/1.0.0</bundle>
+        <bundle>mvn:io.netty/netty/3.10.5.Final</bundle>
+        <bundle>mvn:javax.servlet/javax.servlet-api/3.1.0</bundle>
+        <bundle>mvn:org.apache.camel/camel-ahc/2.16.3</bundle>
+        <bundle>mvn:org.apache.camel/camel-core/2.16.3</bundle>
+        <bundle>mvn:org.apache.felix/org.apache.felix.framework/5.4.0</bundle>
+        <bundle>mvn:org.apache.logging.log4j/log4j-api/2.6.2</bundle>
+        <bundle>mvn:org.apache.logging.log4j/log4j-core/2.6.2</bundle>
+        <bundle>mvn:org.apache.logging.log4j/log4j-slf4j-impl/2.6.2</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-api/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-client/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-common/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-server/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty.websocket/websocket-servlet/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-continuation/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-http/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-io/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-jmx/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-security/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-server/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-servlet/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-servlets/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.eclipse.jetty/jetty-util/9.2.15.v20160210</bundle>
+        <bundle>mvn:org.osgi/org.osgi.compendium/5.0.0</bundle>
+        <bundle>mvn:org.ow2.asm/asm-analysis/5.0.3</bundle>
+        <bundle>mvn:org.ow2.asm/asm-commons/5.0.3</bundle>
+        <bundle>mvn:org.ow2.asm/asm-tree/5.0.3</bundle>
+        <bundle>mvn:org.ow2.asm/asm-util/5.0.3</bundle>
+        <bundle>mvn:org.ow2.asm/asm/5.0.3</bundle>
+        <bundle>mvn:org.slf4j/slf4j-api/1.6.6</bundle>
+        <bundle>wrap:mvn:com.github.jnr/jnr-x86asm/1.0.2</bundle>
+    </feature>
+</features>

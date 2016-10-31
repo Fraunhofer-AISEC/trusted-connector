@@ -123,7 +123,6 @@ public class FSM {
 	}
 
 	public void feedEvent(Event event) {
-		System.out.println("Feeding into FSM " + event.getKey());
 		Object evtKey = event.getKey();
 		State state = states.get(currentState);
 		if (state.transitions.containsKey(evtKey)) {

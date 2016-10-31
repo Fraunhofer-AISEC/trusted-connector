@@ -46,8 +46,8 @@ import org.slf4j.LoggerFactory;
 /**
  * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.
  */
-@UriEndpoint(scheme = "ids-client-plain,ids-client", extendsScheme = "ahc,ahc", title = "IDS Protocol",
-        syntax = "ids-client:httpUri", consumerClass = WsConsumer.class, label = "websocket")
+@UriEndpoint(scheme = "idsclientplain,idsclient", extendsScheme = "ahc,ahc", title = "IDS Protocol",
+        syntax = "idsclient:httpUri", consumerClass = WsConsumer.class, label = "websocket")
 public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
@@ -132,7 +132,7 @@ public class WsEndpoint extends AhcEndpoint {
     	} else if (uri.startsWith("idsclientplain:")) {
     		uri = uri.replaceFirst("idsclientplain:", "ws:");
     	}
-
+    	
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
         

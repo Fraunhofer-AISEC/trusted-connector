@@ -51,12 +51,12 @@ public class WssProducerTest extends WsProducerTestBase {
 
     @Override
     protected String getTargetURL() {
-        return "ids-client://localhost:" + PORT;
+        return "idsclient://localhost:" + PORT;
     }
 
     @Override
     protected void setUpComponent() throws Exception {
-        WsComponent wsComponent = (WsComponent) camelContext.getComponent("ids-client");
+        WsComponent wsComponent = (WsComponent) camelContext.getComponent("idsclient");
         wsComponent.setSslContextParameters(defineSSLContextClientParameters());
     }
 

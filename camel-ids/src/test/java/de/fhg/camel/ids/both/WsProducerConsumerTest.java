@@ -16,6 +16,8 @@
  */
 package de.fhg.camel.ids.both;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -32,6 +34,8 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.fhg.camel.ids.client.TestServletFactory;
@@ -45,7 +49,11 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-   
+    private Process tpm2dserver = null;
+    private Process tpm2dclient = null;
+    private Process ttp = null;
+    private File socketServer;
+    private File socketClient;
     protected List<Object> messages;
 	private static String PWD = "changeit";
     
@@ -63,6 +71,45 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         
         server.start();
         assertTrue(server.isStarted());      
+    }
+    
+    @Before
+    public void initMockServer() {
+    	try {
+    		socketServer = new File("mock/tpm2ds.sock");
+    		socketClient = new File("mock/tpm2dc.sock");
+    		tpm2dserver = new ProcessBuilder("python", "mock/tpm2d.py", socketClient.getPath()).start();
+    		while (!tpm2dserver.isAlive()) {
+    		    try { 
+    		        Thread.sleep(250);
+    		    } catch (InterruptedException ie) { /* safe to ignore */ }
+    		}
+    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", socketServer.getPath()).start();
+    		while (!tpm2dclient.isAlive()) {
+    		    try { 
+    		        Thread.sleep(250);
+    		    } catch (InterruptedException ie) { /* safe to ignore */ }
+    		}
+    		ttp = new ProcessBuilder("python", "mock/ttp.py").start();
+		} catch (IOException e) {
+			log.debug("could not start python mock server");
+			e.printStackTrace();
+		}
+    }
+    
+    @After
+    public void teardownMockServer() {
+    	if(tpm2dclient != null && tpm2dclient.isAlive()) {
+    		tpm2dclient.destroy();
+    		socketClient.delete();
+    	}
+    	if(tpm2dserver != null && tpm2dserver.isAlive()) {
+    		tpm2dserver.destroy();
+    		socketServer.delete();
+    	}
+    	if(ttp != null && ttp.isAlive()) {
+    		ttp.destroy();
+    	}    	
     }
     
     public void stopTestServer() throws Exception {

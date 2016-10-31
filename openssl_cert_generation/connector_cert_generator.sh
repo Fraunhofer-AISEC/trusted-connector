@@ -39,27 +39,28 @@ fi
 }
 
 # signing files
-INDEX_FILE="index.txt"
-SERIAL_FILE="serial.txt"
+INDEX_FILE="test_ca_certs/index.txt"
+SERIAL_FILE="test_ca_certs/serial.txt"
 
 #CA files
 SUBCA_CONFIG="test_configs/openssl-subca.cnf"
-SUBCA_CERT="subca.cert"
-SUBCA_KEY="subca.key"
-CACHAIN_CERT="cachain.cert"
+SUBCA_CERT="test_ca_certs/subca.cert"
+SUBCA_KEY="test_ca_certs/subca.key"
+CACHAIN_CERT="test_ca_certs/cachain.cert"
 
 #CONNECTOR certificate files
 CONNECTOR_CONFIG="test_configs/openssl-connector.cnf"
 CONNECTOR_CONFIG_TEMPLATE="test_configs/openssl-connector.cnf.template"
-CONNECTOR_CSR="connector.csr"
-CONNECTOR_CERT="connector.cert"
-CONNECTOR_KEY="connector.key"
+CONNECTOR_CSR="$1.csr"
+CONNECTOR_CERT="$1.cert"
+CONNECTOR_KEY="$1.key"
+CONNECTOR_P12="$1.p12"
 
-if [ $# -eq 0 ] ; then
-  echo "No arguments supplied, which is good"
+if [ $# -eq 1 ] ; then
+  echo "One arguments supplied, which is good"
 else
-  echo "Invalid number of arguments: $# (expected 0)"
-  echo "Usage: $0"
+  echo "Invalid number of arguments: $# (expected 1)"
+  echo "Usage: $0 filename"
   exit 1
 fi
 
@@ -71,6 +72,7 @@ assert_file_not_exists ${CONNECTOR_CSR}
 assert_file_not_exists ${CONNECTOR_KEY}
 assert_file_not_exists ${CONNECTOR_CERT}
 assert_file_not_exists ${CONNECTOR_CONFIG}
+assert_file_not_exists ${CONNECTOR_P12}
 
 echo "Trying to find required files"
 assert_file_exists ${SUBCA_KEY}
@@ -92,21 +94,24 @@ sed -i "s/%%CONNECTOR_UUID%%/${UUID}/g" ${CONNECTOR_CONFIG}
 sed -i "s/%%CONNECTOR_SERIAL%%/${SERIAL}/g" ${CONNECTOR_CONFIG}
 
 echo "Create dummy connector CSR"
-openssl req -batch -config ${CONNECTOR_CONFIG} -newkey rsa:2048 -sha256 -nodes -out ${CONNECTOR_CSR} -outform PEM
-error_check $? "Failed to create dummy connector CSR"
+openssl req -batch -config ${CONNECTOR_CONFIG} -newkey rsa:2048 -sha256 -nodes -out ${CONNECTOR_CSR} -outform PEM -keyout $1.key
+error_check $? "Failed to create test connector CSR"
 
-echo "Sign dummy connector CSR with sub CA certificate"
+echo "Sign test connector CSR with sub CA certificate"
 touch ${INDEX_FILE}
 touch ${SERIAL_FILE}
 echo '01' > ${SERIAL_FILE}
 openssl ca -batch -config ${SUBCA_CONFIG} -policy signing_policy -extensions signing_req -out ${CONNECTOR_CERT} -infiles ${CONNECTOR_CSR}
 error_check $? "Failed to sign connector CSR with CA certificate"
 
-echo "Verify newly created dummy connector certificate"
+echo "Verify newly created test connector certificate"
 openssl verify -CAfile ${CACHAIN_CERT} ${CONNECTOR_CERT}
-error_check $? "Failed to verify newly signed dummy certificate"
+error_check $? "Failed to verify newly signed test certificate"
 
-echo "Dummy certificates successfully created"
+echo "Create connector token with certifcate and key"
+openssl pkcs12 -export -inkey ${CONNECTOR_KEY} -in ${CONNECTOR_CERT} -out ${CONNECTOR_P12}
+
+echo "Test certificates successfully created"
 cleanup
 
 exit 0

@@ -4,7 +4,7 @@ RANDFILE        = $ENV::HOME/.rnd
 ####################################################################
 [ req ]
 default_bits        = 2048
-default_keyfile     = connector.key
+#default_keyfile     = connector.key
 distinguished_name  = connector_distinguished_name
 req_extensions      = connector_req_extensions
 string_mask         = utf8only
@@ -27,7 +27,7 @@ organizationalUnitName	= Organizational Unit Name (department, division)
 organizationalUnitName_default 	= AISEC
 
 commonName          = Common Name (e.g. server FQDN or YOUR name)
-commonName_default      = idsconnector.aisec.fraunhofer.de
+commonName_default      = AISEC IDS Client
 
 emailAddress            = Email Address
 emailAddress_default        = ids@aisec.fraunhofer.de
@@ -39,9 +39,16 @@ emailAddress_default        = ids@aisec.fraunhofer.de
 subjectKeyIdentifier        = hash
 basicConstraints        = CA:FALSE
 keyUsage            = digitalSignature, keyEncipherment, nonRepudiation
-extendedKeyUsage	= clientAuth
+extendedKeyUsage	= clientAuth, serverAuth
 #securityProfile = ASN1:UTF8:IDS Security Profile Specification
-subjectAltName 		= URI:UUID:%%DEVICE_UUID%%
+#subjectAltName 		= URI:UUID:%%DEVICE_UUID%%
+subjectAltName          = @alternate_names
+
+[ alternate_names ]
+
+DNS.1       = localhost
+DNS.2       = 127.0.0.1
+DNS.3       = idsconnector.aisec.fraunhofer.de
 
 
 
