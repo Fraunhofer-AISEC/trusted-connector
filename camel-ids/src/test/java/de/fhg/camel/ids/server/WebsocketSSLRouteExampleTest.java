@@ -25,8 +25,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.SSLContext;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -46,8 +44,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.JdkSslContext;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 
 
 @Ignore
@@ -81,18 +79,18 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         AsyncHttpClient c;
         AsyncHttpClientConfig config;
 
-        AsyncHttpClientConfig.Builder builder =
-                new AsyncHttpClientConfig.Builder();
+        DefaultAsyncHttpClientConfig.Builder builder =
+                new DefaultAsyncHttpClientConfig.Builder();
 
         SSLContextParameters param = new SSLContextParameters();
         param.setCamelContext(context());
         
-        SSLContext sslContext = param.createSSLContext();
+        SslContext ct = SslContextBuilder.forClient().build();
         //JdkSslContext ssl = new JdkSslContext(sslContext, true, ClientAuth.REQUIRE);
-        builder.setSSLContext(sslContext);
+		builder.setSslContext(ct);
         builder.setAcceptAnyCertificate(true);
         config = builder.build();
-        c = new AsyncHttpClient(config);
+        c = new DefaultAsyncHttpClient(config);
 
         return c;
     }

@@ -16,7 +16,7 @@ except OSError:
 # Create a UDS socket
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 # Bind the socket to the port
-print >>sys.stderr, 'starting up on %s' % address
+print ('starting up on %s' % address, file=sys.stderr)
 sock.bind(address)
 
 # Listen for incoming connections
@@ -38,27 +38,27 @@ send = att.SerializeToString()
 
 while True:
     # Wait for a connection
-    print >>sys.stderr, 'waiting for a connection'
+    print ('waiting for a connection', file=sys.stderr)
     connection, address = sock.accept() 
     try:
-        print >>sys.stderr, 'connection from ', address
+        print ('connection from %s' % address, file=sys.stderr)
         while True:
             data = connection.recv(1024)
             if data:
-		msg = attestation_pb2.ControllerToTpm()
-		msg.ParseFromString(data)
-		print >>sys.stderr, 'got nonce: %s' % msg.qualifyingData	
-		print >>sys.stderr, 'sending out:\n%s' % send
-		connection.sendall(send)
+                msg = attestation_pb2.ControllerToTpm()
+                msg.ParseFromString(data)
+                print ('got nonce: %s' % msg.qualifyingData, file=sys.stderr)
+                print ('sending out:\n%s' % send, file=sys.stderr)
+                connection.sendall(send)
             else:
-                print >>sys.stderr, 'no more data from %s' % address
+                print ('no more data from %s' % address, file=sys.stderr)
                 break
 
     finally:
         # Clean up the connection
         connection.close()	
         # delete open socket
-	try:
+    try:
             os.unlink(address)
-	except OSError:
-    	    pass
+    except OSError:
+    	pass

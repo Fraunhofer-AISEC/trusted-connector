@@ -11,15 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
-import com.ning.http.client.ws.WebSocket;
 
-import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
-import de.fhg.ids.comm.ws.protocol.rat.MetaExchangeClientHandler;
-import de.fhg.ids.comm.ws.protocol.rat.MetaExchangeServerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 

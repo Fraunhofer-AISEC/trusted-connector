@@ -95,8 +95,8 @@ public class ContainerManagerService implements ContainerManager {
 	}
 
 	@Override
-	public void pullImage(String imageID) {
-		containerManager.pullImage(imageID);
+	public Optional<String> pullImage(String imageID) {
+		return containerManager.pullImage(imageID);
 	}
 
 	@Override

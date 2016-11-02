@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ public class DockerCM implements ContainerManager {
 
 
 	@Override
-	public void wipe(String containerID) {
+	public void wipe(final String containerID) {
 		try {
 			LOG.info("Wiping containerID " + containerID);
 			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "rm","-f", containerID));
@@ -100,7 +101,7 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public void startContainer(String containerID) {
+	public void startContainer(final String containerID) {
 		try {
 			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "start", containerID));
 			Process p = pb.start();
@@ -111,7 +112,7 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public void stopContainer(String containerID) {
+	public void stopContainer(final String containerID) {
 		try {
 			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop", containerID));
 			Process p = pb.start();
@@ -123,7 +124,7 @@ public class DockerCM implements ContainerManager {
 
 
 	@Override
-	public void restartContainer(String containerID) {
+	public void restartContainer(final String containerID) {
 		try {
 			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "restart", containerID));
 			Process p = pb.start();
@@ -134,7 +135,7 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public void pullImage(String imageID) {
+	public Optional<String> pullImage(final String imageID) {
 		try {
 			// Pull image from std docker registry
 			LOG.info("Pulling container image " + imageID);
@@ -148,9 +149,11 @@ public class DockerCM implements ContainerManager {
 			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "create", "-P", "--label", "created="+Instant.now().toEpochMilli(), "--name", containerID, imageID));
 			p = pb.start();
 			p.waitFor(600, TimeUnit.SECONDS);
+			return Optional.<String>of(containerID);
 		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
+		return Optional.<String>empty();
 	}
 
 	/**

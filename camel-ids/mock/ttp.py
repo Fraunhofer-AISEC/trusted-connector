@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from BaseHTTPServer import HTTPServer
-from BaseHTTPServer import BaseHTTPRequestHandler
-from urlparse import urlparse, parse_qs
+from http.server import HTTPServer
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 import cgi
 import json
 import base64
@@ -13,14 +13,14 @@ class RestHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         params = parse_qs(urlparse(self.path).query)
-	if self.path == "/cert.pub":
-		self.send_header('Content-type','application/json')	
-		self.end_headers()	
-		self.wfile.write(base64.b64encode(data))
-	else:
-		self.end_headers()
-		self.wfile.write("error: nothing to see here")
-	return
+        if self.path == "/cert.pub":
+            self.send_header('Content-type','application/json') 
+            self.end_headers()  
+            self.wfile.write(base64.b64encode(data))
+        else:
+            self.end_headers()
+            self.wfile.write("error: nothing to see here")
+        return
      
     def do_POST(self):
         form = cgi.FieldStorage(fp=self.rfile,

@@ -1,0 +1,19 @@
+core-platform:
+  image: ids/core-platform
+  volumes:
+    - /tmp/ids:/tmp
+    - /var/run/docker.sock:/var/run/docker.sock
+  ports:
+    - "8080:8080"
+broker:
+  image: ids/broker
+  volumes:
+    - /tmp/ids:/tmp
+provider:
+  image: ids/provider
+  volumes:
+    - /tmp/ids:/tmp
+consumer:
+  image: ids/consumer
+  volumes:
+    - /tmp/ids:/tmp  

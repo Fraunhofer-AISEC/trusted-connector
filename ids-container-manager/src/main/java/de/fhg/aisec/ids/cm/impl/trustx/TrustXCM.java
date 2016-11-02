@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import java.util.List;
+import java.util.Optional;
 
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
@@ -46,8 +47,9 @@ public class TrustXCM implements ContainerManager {
 	}
 
 	@Override
-	public void pullImage(String imageID) {
+	public Optional<String>  pullImage(String imageID) {
 		// TODO Auto-generated method stub
+		return Optional.<String>empty();
 
 	}
 

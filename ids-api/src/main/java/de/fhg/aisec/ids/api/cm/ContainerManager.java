@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.api.cm;
 
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -97,8 +98,9 @@ public interface ContainerManager {
 	 * As this is a long running operation, it should always be called in a separate thread.
 	 *  
 	 * @param image
+	 * @return 
 	 */
-	public void pullImage(final String imageID);
+	public Optional<String> pullImage(final String imageID);
 
 	/**
 	 * Configures an IP rule for a container.

@@ -20,7 +20,7 @@ public class UnixSocketThread implements Runnable {
 	private Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
 	private UnixSocketAddress address;
 	private UnixSocketChannel channel;
-	private String SOCKET = "tpm2d/tpm2d.sock";
+	private String SOCKET = "mock/tpm2d.sock";
 
 	// The selector we'll be monitoring
 	private Selector selector;
