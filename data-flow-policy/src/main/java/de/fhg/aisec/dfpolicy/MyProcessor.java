@@ -47,6 +47,8 @@ public class MyProcessor implements AsyncProcessor {
    	
     	BufferedReader bufferedreader;
     	String line, attribute, label;
+    	Set<String> label_set = new HashSet<String>();
+    	String[] labels;
 		try {
 	    	bufferedreader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(rulefile))));
 			while ((line = bufferedreader.readLine()
@@ -65,9 +67,28 @@ public class MyProcessor implements AsyncProcessor {
 						// label = the string after the second keyword
 						label = line.substring(line.indexOf(Constants.AS) + Constants.AS.length());
 						
-						labelRules.add(new LabelingRule(attribute, label));
+						System.out.println("******** label: " + label);
+						System.out.println("******** attribute: " + attribute);
+						
+						if (label.contains(","))
+						{
+							labels = label.split(",");
+							for (int i = 0; i < label.length(); i++)
+							{
+								label_set.add(labels[i]);
+							}
+						} else 
+						{
+							label_set.add(label);
+						}
+
+						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
+						System.out.println("******** label_set.size() 1: " + label_set.size());
+						
+						labelRules.add(new LabelingRule(attribute, label_set));
+						System.out.println("******** labelRules.size() 2: " + labelRules.size());
 					} 
-					// Check for an ALLOW-rule
+					// Check for an REMOVELABEL-rule
 					else if (checkRuleSyntax(line, Constants.REMOVELABEL, Constants.FROM)) {
 						
 						// source = the string between the first and the second keyword 
@@ -76,7 +97,21 @@ public class MyProcessor implements AsyncProcessor {
 						// label = the string after the second keyword
 						attribute = line.substring(line.indexOf(Constants.FROM) + Constants.FROM.length());
 			
-						removeLabelRules.add(new LabelingRule(attribute, label));
+						if (label.contains(","))
+						{
+							labels = label.split(",");
+							for (int i = 0; i < label.length(); i++)
+							{
+								label_set.add(labels[i]);
+							}
+						} else 
+						{
+							label_set.add(label);
+						}
+						
+						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
+						
+						removeLabelRules.add(new LabelingRule(attribute, label_set));
 					}
 					// Check for an ALLOW-rule
 					else if (checkRuleSyntax(line, Constants.ALLOW, Constants.TO)) {
@@ -87,7 +122,21 @@ public class MyProcessor implements AsyncProcessor {
 						// label = the string after the second keyword
 						attribute = line.substring(line.indexOf(Constants.TO) + Constants.TO.length());
 						
-						allowRules.add(new AllowRule(label, attribute));
+						if (label.contains(","))
+						{
+							labels = label.split(",");
+							for (int i = 0; i < label.length(); i++)
+							{
+								label_set.add(labels[i]);
+							}
+						} else 
+						{
+							label_set.add(label);
+						}
+						
+						System.out.println("allowRules - label_set: " + joinStringSet(label_set, ","));
+						
+						allowRules.add(new AllowRule(label_set, attribute));
 					} 
 					// skip if line is empty (or has just comments)
 					else if (line.isEmpty()) {
@@ -182,7 +231,7 @@ public class MyProcessor implements AsyncProcessor {
 				} else {
 					//TODO Aus if/for rausspringen, sobald einmal ein passendes Label gefunden wurde. 
 					destinationAndRuleMatch = true;
-					System.out.println("Destination '" + destination + "' and labels '" + exchange_labels + "' match.");	
+					System.out.println("Destination '" + destination + "' and label '" + exchange_labels + "' match.");
 				}
 					
 			} else {
@@ -211,12 +260,12 @@ public class MyProcessor implements AsyncProcessor {
     }
 	
 	//check if a label exists in a list of labels
-	public boolean checkIfLabelExists(String label, String labels){
+	public boolean checkIfLabelExists(Set<String> set, String labels){
 		System.out.println("Start 'checkIfLabelExists' ...");
-		System.out.println("label: " + label);
+		System.out.println("label: " + set);
 		System.out.println("labels: " + labels);
 		//There might be a , after and/or the label, so we add this to the regex
-		Pattern pattern = Pattern.compile(",?" + label + ",?");
+		Pattern pattern = Pattern.compile(",?" + set + ",?");
 		Matcher matcher = pattern.matcher(labels);
 		
 		//if there are no requirements we have to fulfill, we return true
@@ -228,7 +277,7 @@ public class MyProcessor implements AsyncProcessor {
 		}
 		
 		//if label is null, but labels isn't, we return false
-		if (label == null) {
+		if (set == null) {
 			System.out.println("label = null");
 			System.out.println("Stop 'checkIfLabelExists' ...");
 			return false;
@@ -300,15 +349,19 @@ public class MyProcessor implements AsyncProcessor {
 	
 	public Set<String> addLabelBasedOnAttributeToSet(Set<String> exchange_label_set, String attribute){
 		System.out.println("Start 'addLabelBasedOnAttributeToSet' ...");
+		System.out.println("label.size(): " + labelRules.size());
 		
 		for (LabelingRule rule : labelRules) {
+			//TODO rule.getLabel() = null, weil Exception bei rule.setLabel() geworfen wird (File Rule.java)
+			System.out.println("LabelingRule rule.getLabel(): " + rule.getLabel());
 			String rule_attribute = rule.getAttribute();
-			String label = rule.getLabel();
+			Set<String> label = rule.getLabel();
+			System.out.println("label(AddLabel....): " + label.size());
 			Pattern pattern = Pattern.compile(rule_attribute);
 			Matcher matcher = pattern.matcher(attribute);
 			
 			if (matcher.find()) {
-				exchange_label_set.add(label);
+				exchange_label_set.addAll(label);
 				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + joinStringSet(exchange_label_set, ",") + "'");
 				
 			}
@@ -329,7 +382,7 @@ public class MyProcessor implements AsyncProcessor {
 		
 		for (LabelingRule rule : removeLabelRules) {
 			String rule_attribute = rule.getAttribute();
-			String label = rule.getLabel();
+			Set<String> label = rule.getLabel();
 			Pattern pattern = Pattern.compile(rule_attribute);
 			Matcher matcher = pattern.matcher(attribute);
 			
