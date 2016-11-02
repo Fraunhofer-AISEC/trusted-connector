@@ -4,17 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.security.KeyFactory;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
@@ -26,16 +27,18 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPM2B_PUBLIC;
-import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPMS_ATTEST;
-import de.fhg.ids.comm.ws.protocol.rat.tpm.objects.TPMT_SIGNATURE;
-import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.NonceGenerator;
-import de.fhg.ids.comm.ws.protocol.rat.tpm.tools.PublicKeyConverter;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayUtil;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.NonceGenerator;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.PublicKeyConverter;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_DIGEST;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPML_PCR_SELECTION;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_ATTEST;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationClientHandler {
 	private final FSM fsm;
@@ -48,8 +51,8 @@ public class RemoteAttestationClientHandler {
 	private UnixSocketResponsHandler handler;
 	private UnixSocketThread client;
 	private Thread thread;
-	private ByteString yourQuoted;
-	private ByteString yourSignature;
+	private byte[] yourQuoted;
+	private byte[] yourSignature;
 	private String certUri;
 	
 	public RemoteAttestationClientHandler(FSM fsm, IdsAttestationType type) {
@@ -95,39 +98,71 @@ public class RemoteAttestationClientHandler {
 		// get nonce from server msg
 		this.yourNonce = e.getMessage().getAttestationResponse().getQualifyingData().toString();
 		// get quote from server msg
-		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
+		this.yourQuoted = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getQuoted());
 		// get signature from server msg
-		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
+		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
 		// construct protobuf message to send to local tpm2d via unix socket
+		
+		byte[] bkey = new byte[0];
+		PublicKey publicKey = null;
+		PublicKeyConverter conv = null;
+		try {
+			bkey = this.fetchPublicKey(this.certUri);
+			// construct a new TPM2B_PUBLIC from bkey bytes
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(bkey);
+			conv = new PublicKeyConverter(key);
+			publicKey = conv.getPublicKey();
+		} catch (Exception ex) {
+			LOG.debug("error: could not fetch public key from \""+this.certUri+"\":" + ex.getMessage());
+			ex.printStackTrace();
+			return ControllerToTpm
+					.newBuilder()
+					.build();
+		}
+		
 		ControllerToTpm msg = ControllerToTpm
 				.newBuilder()
 				.setAtype(this.aType)
 				.setQualifyingData(this.yourNonce)
 				.setCode(Code.INTERNAL_ATTESTATION_REQ)
 				.build();
-	
-		// try to talk to local unix socket
+		
 		try {
-			// try to fetch public key from certUri
+			// construct a new TPMT_SIGNATURE from yourSignature bytes
+			TPMT_SIGNATURE signature = new TPMT_SIGNATURE(this.yourSignature);
+			// construct a new TPMS_ATTEST from yourQuoted bytes
+			TPMS_ATTEST quoted = new TPMS_ATTEST(this.yourQuoted);
+			
+			switch(signature.getSignature().getHashAlg()) {
+				case TPM_ALG_SHA256:
+					Signature sig = Signature.getInstance("SHA256withRSA");
+					LOG.debug("public key: " + publicKey.toString());
+					sig.initVerify(publicKey);
+					byte[] dig = quoted.getAttested().getDigest().getBuffer();
+					LOG.debug("digest: " + ByteArrayUtil.toPrintableHexString(dig).replaceAll("\n", ""));
+					sig.update(dig);
+					boolean verifies = sig.verify(signature.getSignature().getSig());
+					LOG.debug("signature verifies: " + verifies);
+					break;
+				// todo : implement other signature algorithms here
+				default:
+					LOG.debug("error: not a valid signature algorithm: \"" + signature.getSigAlg().getAlgId().toString() + "\".");
+					break;
+				}	
+		} catch (Exception ex) {
+			LOG.debug("error:" + ex.getMessage());
+			ex.printStackTrace();
+			return ControllerToTpm
+					.newBuilder()
+					.build();
+		}
+
+	
+		if(thread.isAlive()) {
+			// send msg to local unix socket
 			try {
-				// construct a new public key in TPM2 format
-				TPM2B_PUBLIC key = new TPM2B_PUBLIC();
-				// build that key with bytes from certUri
-				key.fromBytes(this.fetchPublicKey(this.certUri), 0);
-				PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
-				
-				LOG.debug("RSA KEY recvd by CLIENT: " + publicKey.toString());
-				
-				// CURRENT TODO: now convert the TPM2 public key to a RSA DER Public key
-				
-			} catch (Exception ex) {
-				LOG.debug("error: could not fetch key from \""+this.certUri+"\":" + ex.getMessage());
-				ex.printStackTrace();
-			}
-			if(thread.isAlive()) {
-				// send msg to local unix socket
 				client.send(msg.toByteArray(), this.handler);
 				// and wait for response
 				TpmToController answer = this.handler.waitForResponse();
@@ -148,31 +183,28 @@ public class RemoteAttestationClientHandler {
 								.build()
 								)
 						.build();
+			} catch (IOException e1) {
+				LOG.debug("error: IOException");
+				e1.printStackTrace();
+				return ControllerToTpm
+						.newBuilder()
+						.build();
+			} catch (InterruptedException e1) {
+				LOG.debug("error: InterruptedException");
+				e1.printStackTrace();
+				return ControllerToTpm
+						.newBuilder()
+						.build();
 			}
-			else {
-				LOG.debug("error: thread is not alive");
-				return null;
-			}
-		} catch (IOException e1) {
-			LOG.debug("IOException when writing to unix socket");
-			e1.printStackTrace();
-			return ConnectorMessage
-					.newBuilder()
-					.build();
-		} catch (InterruptedException e1) {
-			LOG.debug("InterruptedException when writing to unix socket");
-			e1.printStackTrace();
-			return ConnectorMessage
-					.newBuilder()
-					.build();
+		}
+		else {
+			LOG.debug("error: thread is not alive");
+			return null;
 		}
 	}
 	
 	public MessageLite sendResult(Event e) {
 		this.attestationSucccessfull = false;
-
-				
-		
 		return ConnectorMessage
 				.newBuilder()
 				.setId(0)
@@ -188,7 +220,6 @@ public class RemoteAttestationClientHandler {
 	}
 	
 	private byte[] fetchPublicKey(String uri) throws Exception {
-		LOG.debug("URL:"+uri);
 		URL cert = new URL(uri);
 		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
 		String base64 = "";
