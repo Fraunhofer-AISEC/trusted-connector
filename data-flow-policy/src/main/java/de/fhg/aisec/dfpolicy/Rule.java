@@ -16,6 +16,7 @@ public class Rule {
 
 		try
 		{
+			label.clear();
 			label.addAll(newLabels);
 		} catch (Exception e)
 		{

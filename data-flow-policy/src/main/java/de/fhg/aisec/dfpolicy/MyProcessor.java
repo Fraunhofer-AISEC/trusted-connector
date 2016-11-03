@@ -26,18 +26,18 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    private static ArrayList<LabelingRule> labelRules = null;
-    private static ArrayList<LabelingRule> removeLabelRules = null;
-    private static ArrayList<AllowRule> allowRules = null;
+    private static Set<LabelingRule> labelRules = null;
+    private static Set<LabelingRule> removeLabelRules = null;
+    private static Set<AllowRule> allowRules = null;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
     	//If we didn't load the rules yet, do it now
     	if (labelRules == null || allowRules == null) {
-    		labelRules = new ArrayList<LabelingRule>();
-    		removeLabelRules = new ArrayList<LabelingRule>();
-    		allowRules = new ArrayList<AllowRule>();
+    		labelRules = new HashSet<LabelingRule>();
+    		removeLabelRules = new HashSet<LabelingRule>();
+    		allowRules = new HashSet<AllowRule>();
     		loadRules("deploy/rules");
     	}
     }
@@ -81,8 +81,9 @@ public class MyProcessor implements AsyncProcessor {
 							label_set.add(label);
 						}
 
-						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
 						labelRules.add(new LabelingRule(attribute, label_set));
+						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
+						System.out.println("labelRules - all: " + joinStringArrayLabel(labelRules, ","));
 						System.out.println("labelRules.size() : " + labelRules.size());
 					} 
 					// Check for an REMOVELABEL-rule
@@ -106,8 +107,13 @@ public class MyProcessor implements AsyncProcessor {
 							label_set.add(label);
 						}
 						
-						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
+						LabelingRule testRule = new LabelingRule(attribute, label_set);
+						System.out.println("testRule: " + testRule.hashCode());
 						removeLabelRules.add(new LabelingRule(attribute, label_set));
+						System.out.println("removeLabelRules: " + removeLabelRules.hashCode());
+						System.out.println("removeLabelRules contains testRule? " + removeLabelRules.contains(testRule));
+						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
+						System.out.println("removeLabelRules - all: " + joinStringArrayLabel(removeLabelRules, ","));
 						System.out.println("removeLabelRules.size() : " + removeLabelRules.size());
 					}
 					// Check for an ALLOW-rule
@@ -131,8 +137,9 @@ public class MyProcessor implements AsyncProcessor {
 							label_set.add(label);
 						}
 						
-						System.out.println("allowRules - label_set: " + joinStringSet(label_set, ","));
 						allowRules.add(new AllowRule(label_set, attribute));
+						System.out.println("allowRules - label_set: " + joinStringSet(label_set, ","));
+						System.out.println("allowRules - all: " + joinStringArrayAllow(allowRules, ","));
 						System.out.println("allowLabelRules.size() : " + allowRules.size());
 					} 
 					// skip if line is empty (or has just comments)
@@ -398,25 +405,27 @@ public class MyProcessor implements AsyncProcessor {
 		return builder.toString();
 	}
 
-    public String joinStringArrayLabel(ArrayList<LabelingRule> arrayList, String seperator)
+    public String joinStringArrayLabel(Set<LabelingRule> labelRules, String seperator)
     {
     	StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < arrayList.size(); i++) {
-			
-			builder.append(arrayList.get(i).getLabel()).append(seperator);
-		}
+
+		for (LabelingRule string : labelRules) {
+			  builder.append("(").append(string.getLabel().toString()).append(",").append(string.getAttribute()).append(")").append(seperator);
+			}
+
 		if (builder.length() >= seperator.length())
 			builder.setLength(builder.length() - seperator.length());
 		return builder.toString();
     }
 
-    public String joinStringArrayAllow(ArrayList<AllowRule> arrayList, String seperator)
+    public String joinStringArrayAllow(Set<AllowRule> allowRules, String seperator)
     {
     	StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < arrayList.size(); i++) {
-			
-			builder.append(arrayList.get(i).getLabel()).append(seperator);
-		}
+
+    	for (AllowRule string : allowRules) {
+			  builder.append("(").append(string.getLabel().toString()).append(",").append(string.getDestination()).append(")").append(seperator);
+			}
+
 		if (builder.length() >= seperator.length())
 			builder.setLength(builder.length() - seperator.length());
 		return builder.toString();
@@ -430,7 +439,7 @@ public class MyProcessor implements AsyncProcessor {
     		  "remove:" + MyProcessor.removeLabelRules.toString() +
     		  "]";
     }
-
+	
 	@Override
 	public boolean process(Exchange exchange, AsyncCallback ac) {
 		System.out.println("Start ...");
