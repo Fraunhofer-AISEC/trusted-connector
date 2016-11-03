@@ -1,11 +1,15 @@
 package de.fhg.aisec.ids.cm.impl.docker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.hamcrest.CoreMatchers.*;
+
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -14,7 +18,8 @@ import org.junit.Test;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 
 public class DockerCMTest {
-
+	private List<ApplicationContainer> wipes = new ArrayList<ApplicationContainer>();
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
@@ -27,12 +32,23 @@ public class DockerCMTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 	}
+	
+	@After
+	public void cleanUp() {
+		// Remove containers created during test
+		DockerCM d = new DockerCM();
+		wipes.forEach(c -> d.wipe(c.getNames()));
+	}
 
 	@Test
 	public void testList() {
 		DockerCM d = new DockerCM();
+		
+		// List running containers
 		List<ApplicationContainer> lRunning = d.list(true);
 		assertNotNull(lRunning);
+		
+		// List all containers (also stopped ones)
 		List<ApplicationContainer> lAll = d.list(false);
 		assertNotNull(lAll);
 
@@ -45,7 +61,7 @@ public class DockerCMTest {
 		DockerCM d = new DockerCM();
 		
 		// Pull the smallest possible image. Blocks. (must be online)
-		Optional<String> oContainerID = d.pullImage("true");
+		Optional<String> oContainerID = d.pullImage("tianon/true");
 		
 		// We expect a new container to be created 
 		assertTrue(oContainerID.isPresent());
@@ -53,36 +69,50 @@ public class DockerCMTest {
 		
 		// we expect the container to be in list()
 		List<ApplicationContainer> containers = d.list(false);
-		Optional<ApplicationContainer> container = containers.stream().filter(c -> c.getId().equals(oContainerID.get())).findAny();
+		Optional<ApplicationContainer> container = containers.stream().filter(c -> c.getNames().equals(oContainerID.get())).findAny();
 		assertTrue(container.isPresent());
+		wipes.add(container.get());
 		
-		assertEquals(container.get().getStatus(), "CREATED");
+		assertEquals("Created", container.get().getStatus());
 	}
 
 	@Test
 	public void testStartStop() {
 		DockerCM d = new DockerCM();
 		
-		// Pull the smallest possible image. Blocks. (must be online)
-		Optional<String> oContainerID = d.pullImage("true");
+		// Pull an image we can actually start. (must be online)
+		Optional<String> oContainerID = d.pullImage("nginx");
 		
 		// We expect a new container to be created 
 		assertTrue(oContainerID.isPresent());
 		String containerID = oContainerID.get();
+		assertNotNull(containerID);
 		
 		// we expect the container to be in list()
 		List<ApplicationContainer> containers = d.list(false);
-		Optional<ApplicationContainer> container = containers.stream().filter(c -> c.getId().equals(oContainerID.get())).findAny();
+		containers.forEach(x -> System.out.println(x.getId()));
+		Optional<ApplicationContainer> container = containers.stream().filter(c -> c.getNames().equals(oContainerID.get())).findAny();
 		assertTrue(container.isPresent());
+		wipes.add(container.get());
 		
-		assertEquals(container.get().getStatus(), "CREATED");
+		assertEquals("Created", container.get().getStatus());
 		
+		// Start container
 		d.startContainer(containerID);
 
-		assertEquals(container.get().getStatus(), "RUNNING");
+		// We now expect it in list of running containers
+		containers = d.list(true);		
+		Optional<ApplicationContainer> runningContainer = containers.stream().filter(c -> c.getNames().equals(containerID)).findAny();
+		assertTrue(runningContainer.isPresent());
+		assertTrue(runningContainer.get().getStatus().startsWith("Up"));
 		
+		// Stop container
 		d.stopContainer(containerID);
-		
-		assertEquals(container.get().getStatus(), "STOPPED");
+
+		// We expect it to be still in list of all containers
+		containers = d.list(false);		
+		Optional<ApplicationContainer> stoppedContainer = containers.stream().filter(c -> c.getNames().equals(containerID)).findAny();
+		assertTrue(stoppedContainer.isPresent());
+		assertTrue(stoppedContainer.get().getStatus().startsWith("Exited"));
 	}
 }
