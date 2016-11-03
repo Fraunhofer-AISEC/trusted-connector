@@ -57,7 +57,8 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected List<Object> messages;
 	private static String PWD = "changeit";
     
-    public void startTestServer() throws Exception {
+    @Override
+	protected void doPostSetup() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);
         Connector connector = new ServerConnector(server);
@@ -78,27 +79,28 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     	try {
     		socketServer = new File("mock/tpm2ds.sock");
     		socketClient = new File("mock/tpm2dc.sock");
-    		tpm2dserver = new ProcessBuilder("python", "mock/tpm2d.py", socketClient.getPath()).start();
+    		tpm2dserver = new ProcessBuilder("python3", "mock/tpm2d.py", socketClient.getPath()).start();
     		while (!tpm2dserver.isAlive()) {
     		    try { 
     		        Thread.sleep(250);
     		    } catch (InterruptedException ie) { /* safe to ignore */ }
     		}
-    		tpm2dclient = new ProcessBuilder("python", "mock/tpm2d.py", socketServer.getPath()).start();
+    		tpm2dclient = new ProcessBuilder("python3", "mock/tpm2d.py", socketServer.getPath()).start();
     		while (!tpm2dclient.isAlive()) {
     		    try { 
     		        Thread.sleep(250);
     		    } catch (InterruptedException ie) { /* safe to ignore */ }
     		}
-    		ttp = new ProcessBuilder("python", "mock/ttp.py").start();
+    		ttp = new ProcessBuilder("python3", "mock/ttp.py").start();
 		} catch (IOException e) {
 			log.debug("could not start python mock server");
 			e.printStackTrace();
+			fail("Could not start python mock server");
 		}
     }
     
     @After
-    public void teardownMockServer() {
+    public void teardownMockServer() throws Exception {
     	if(tpm2dclient != null && tpm2dclient.isAlive()) {
     		tpm2dclient.destroy();
     		socketClient.delete();
@@ -110,23 +112,9 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     	if(ttp != null && ttp.isAlive()) {
     		ttp.destroy();
     	}    	
-    }
-    
-    public void stopTestServer() throws Exception {
-        server.stop();
+
+    	server.stop();
         server.destroy();
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        startTestServer();
-        super.setUp();
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        stopTestServer();
     }
 
     @Test
