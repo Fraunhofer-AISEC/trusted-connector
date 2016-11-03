@@ -1,4 +1,4 @@
-src: src/main/java,src/main/resources
+src: src/main/java
 bin: target/classes
 testsrc: src/test/java
 testbin: target/test-classes
@@ -16,7 +16,7 @@ Bundle-Description: A web console for the IDS Core Platform. The web console all
 Bundle-Copyright: Fraunhofer 2016
 Bundle-Vendor: Fraunhofer AISEC
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
--wab: src/main/resources/www/dist/,src/main/resources/
+-wab: src/main/resources/www/dist/
 Import-Package: \
 	org.osgi.framework.*,\
 	de.fhg.aisec.ids.webconsole.api,\
