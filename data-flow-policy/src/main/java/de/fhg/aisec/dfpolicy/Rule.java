@@ -13,9 +13,7 @@ public class Rule {
 	}
 	
 	public void setLabel(Set<String> newLabels) {
-		System.out.println("Labeling Rule 2: " + label.size());
-		System.out.println("newLabels: " + newLabels.toString());
-		System.out.println("label: " + label.toString());
+		System.out.println("Labeling Rule 2, newLabels.size():" + newLabels.size());
 
 		try
 		{
@@ -24,6 +22,6 @@ public class Rule {
 		{
 			System.out.println("Exception e: " + e);
 		}
-		System.out.println("Labeling Rule 3: " + label.size());
+		System.out.println("Labeling Rule 3, label.size(): " + label.size());
 	}
 }

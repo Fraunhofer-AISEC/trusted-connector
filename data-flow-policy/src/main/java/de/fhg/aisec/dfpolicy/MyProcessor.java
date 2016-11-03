@@ -44,7 +44,8 @@ public class MyProcessor implements AsyncProcessor {
     
     
     private void loadRules(String rulefile) {
-   	
+
+    	System.out.println("Start 'loadRules'...");
     	BufferedReader bufferedreader;
     	String line, attribute, label;
     	Set<String> label_set = new HashSet<String>();
@@ -62,13 +63,11 @@ public class MyProcessor implements AsyncProcessor {
 
 					//Check if it is a LABEL-rule that contains LABEL and AS, and both only once
 					if (checkRuleSyntax(line, Constants.LABEL, Constants.AS)) {
+						label_set.clear();
 						// source = the string between the first and the second keyword 
 						attribute = line.substring(line.indexOf(Constants.LABEL) + Constants.LABEL.length(), line.indexOf(Constants.AS));
 						// label = the string after the second keyword
 						label = line.substring(line.indexOf(Constants.AS) + Constants.AS.length());
-						
-						System.out.println("******** label: " + label);
-						System.out.println("******** attribute: " + attribute);
 						
 						if (label.contains(","))
 						{
@@ -82,15 +81,13 @@ public class MyProcessor implements AsyncProcessor {
 							label_set.add(label);
 						}
 
-						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
-						System.out.println("******** label_set.size() 1: " + label_set.size());
-						
+						System.out.println("******** labelRules - label_set: " + joinStringSet(label_set, ","));
 						labelRules.add(new LabelingRule(attribute, label_set));
 						System.out.println("******** labelRules.size() 2: " + labelRules.size());
 					} 
 					// Check for an REMOVELABEL-rule
 					else if (checkRuleSyntax(line, Constants.REMOVELABEL, Constants.FROM)) {
-						
+						label_set.clear();
 						// source = the string between the first and the second keyword 
 						label = line.substring(line.indexOf(Constants.REMOVELABEL) + Constants.REMOVELABEL.length(), line.indexOf(Constants.FROM));
 			
@@ -115,7 +112,7 @@ public class MyProcessor implements AsyncProcessor {
 					}
 					// Check for an ALLOW-rule
 					else if (checkRuleSyntax(line, Constants.ALLOW, Constants.TO)) {
-	
+						label_set.clear();
 						// source = the string between the first and the second keyword 
 						label = line.substring(line.indexOf(Constants.ALLOW) + Constants.ALLOW.length(), line.indexOf(Constants.TO));
 						
@@ -140,6 +137,9 @@ public class MyProcessor implements AsyncProcessor {
 					} 
 					// skip if line is empty (or has just comments)
 					else if (line.isEmpty()) {
+						System.out.println("Loaded LABEL rules: " + labelRules.toString());
+						System.out.println("Loaded REMOVELABEL rules: " + removeLabelRules.toString());
+						System.out.println("Loaded ALLOW rules: " + allowRules.toString()); 		
 						
 					} 
 					// otherwise log error
@@ -154,9 +154,10 @@ public class MyProcessor implements AsyncProcessor {
 				e.printStackTrace();
 			}
 			
-    		LOG.info("Loaded LABEL rules: " + labelRules.toString());
-    		LOG.info("Loaded REMOVELABEL rules: " + removeLabelRules.toString());
-    		LOG.info("Loaded ALLOW rules: " + allowRules.toString()); 		
+		LOG.info("Loaded LABEL rules: " + labelRules.toString());
+		LOG.info("Loaded REMOVELABEL rules: " + removeLabelRules.toString());
+		LOG.info("Loaded ALLOW rules: " + allowRules.toString()); 		
+    	System.out.println("Stop'loadRules'...");
     }
     
     
@@ -175,8 +176,35 @@ public class MyProcessor implements AsyncProcessor {
 					return false;
 				}
     }
+    
+    public String joinStringArrayLabel(ArrayList<LabelingRule> arrayList, String seperator)
+    {
+    	StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < arrayList.size(); i++) {
+			
+			builder.append(arrayList.get(i).getLabel()).append(seperator);
+		}
+		if (builder.length() >= seperator.length())
+			builder.setLength(builder.length() - seperator.length());
+		return builder.toString();
+    }
 
-	public void process(Exchange exchange) throws Exception {
+    public String joinStringArrayAllow(ArrayList<AllowRule> arrayList, String seperator)
+    {
+    	StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < arrayList.size(); i++) {
+			
+			builder.append(arrayList.get(i).getLabel()).append(seperator);
+		}
+		if (builder.length() >= seperator.length())
+			builder.setLength(builder.length() - seperator.length());
+		return builder.toString();
+    }
+
+    public void process(Exchange exchange) throws Exception {
+		System.out.println("Loaded LABEL rules: " + joinStringArrayLabel(labelRules, ","));
+		System.out.println("Loaded REMOVELABEL rules: " + joinStringArrayLabel(removeLabelRules, ","));
+		System.out.println("Loaded ALLOW rules: " + joinStringArrayAllow(allowRules, ",")); 		
 		System.out.println("Start 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
 		
 		InstrumentationProcessor instrumentationprocessor;
@@ -387,11 +415,14 @@ public class MyProcessor implements AsyncProcessor {
 			Matcher matcher = pattern.matcher(attribute);
 			
 			if (matcher.find()) {
+				System.out.println("exchange_label_set-Labels: " + joinStringSet(exchange_label_set, ","));
 				exchange_label_set.remove(label);
+				System.out.println("exchange_label_set-Labels: " + joinStringSet(exchange_label_set, ","));
 				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', removed label '" + label + "'. All labels are now: '" + joinStringSet(exchange_label_set, ",") + "'");
 			}
 		}
 
+		System.out.println("exchange_label_set-Labels: " + joinStringSet(exchange_label_set, ","));
 		System.out.println("Stop 'removeLabelBasedOnAttributeToSet' ...");
 		
 		return exchange_label_set;

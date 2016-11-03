@@ -11,7 +11,7 @@
    <argument>
       <map>
          <entry key="file:///" value="org.apache.hadoop.fs.LocalFileSystem"  />
-         <entry key="hdfs://192.168.56.101:8020/" value="org.apache.hadoop.hdfs.DistributedFileSystem" />
+         <entry key="hdfs://192.168.56.102:8020/" value="org.apache.hadoop.hdfs.DistributedFileSystem" />
       </map>
    </argument>
 </bean>

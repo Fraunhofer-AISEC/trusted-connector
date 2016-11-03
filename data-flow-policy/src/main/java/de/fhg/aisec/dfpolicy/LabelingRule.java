@@ -9,9 +9,7 @@ public class LabelingRule extends Rule {
 	public LabelingRule(String attribute, Set<String> label) {
 		System.out.println("Labeling Rule 1: " + label.size());
 		super.setLabel(label);
-		System.out.println("Labeling Rule 4: " + label.size());
 		this.setAttribute(attribute);
-		System.out.println("Labeling Rule 5");
 	}
 	
 	public String getAttribute() {
