@@ -118,7 +118,37 @@ public class TPMS_ATTEST extends StandardTPMStruct {
         		this.attested = new TPMS_QUOTE_INFO();
         		brw.readStruct(this.attested);
         		break;
-        	// TODO: implement other cases here
+        	case TPM_ST_ATTEST_CERTIFY:
+        		// TODO
+        		//this.attested = new TPMS_CERTIFY_INFO();
+        		//brw.readStruct(this.attested);
+        		break;
+        	case TPM_ST_ATTEST_CREATION:
+        		// TODO
+        		//this.attested = new TPMS_CREATION_INFO();
+        		//brw.readStruct(this.attested);
+        		break;
+        	case TPM_ST_ATTEST_COMMAND_AUDIT:
+        		// TODO
+        		//this.attested = new TPMS_COMMAND_AUDIT_INFO();
+        		//brw.readStruct(this.attested);
+        		break;
+        	case TPM_ST_ATTEST_SESSION_AUDIT:
+        		// TODO
+        		//this.attested = new TPMS_SESSION_AUDIT_INFO();
+        		//brw.readStruct(this.attested);
+        		break;
+        	case TPM_ST_ATTEST_TIME:
+        		// TODO
+        		//this.attested = new TPMS_TIME_ATTEST_INFO();
+        		//brw.readStruct(this.attested);
+        		break;
+        	case TPM_ST_ATTEST_NV:
+        		// TODO
+        		//this.attested = new TPMS_NV_CERTIFY_INFO();
+        		//brw.readStruct(this.attested);
+        		break;
+        		
         	default:
         		LOG.debug("error: TPMI_ST_ATTEST type not yet implemented !");
         		break;

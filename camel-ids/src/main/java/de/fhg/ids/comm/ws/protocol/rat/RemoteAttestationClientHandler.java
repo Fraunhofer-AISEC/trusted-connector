@@ -10,6 +10,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -103,15 +104,16 @@ public class RemoteAttestationClientHandler {
 		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-		// construct protobuf message to send to local tpm2d via unix socket
+		
 		
 		byte[] bkey = new byte[0];
 		PublicKey publicKey = null;
 		PublicKeyConverter conv = null;
+		TPM2B_PUBLIC key = null;
 		try {
 			bkey = this.fetchPublicKey(this.certUri);
 			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC(bkey);
+			key = new TPM2B_PUBLIC(bkey);
 			conv = new PublicKeyConverter(key);
 			publicKey = conv.getPublicKey();
 		} catch (Exception ex) {
@@ -121,29 +123,25 @@ public class RemoteAttestationClientHandler {
 					.newBuilder()
 					.build();
 		}
-		
-		ControllerToTpm msg = ControllerToTpm
-				.newBuilder()
-				.setAtype(this.aType)
-				.setQualifyingData(this.yourNonce)
-				.setCode(Code.INTERNAL_ATTESTATION_REQ)
-				.build();
+
 		
 		try {
 			// construct a new TPMT_SIGNATURE from yourSignature bytes
 			TPMT_SIGNATURE signature = new TPMT_SIGNATURE(this.yourSignature);
 			// construct a new TPMS_ATTEST from yourQuoted bytes
 			TPMS_ATTEST quoted = new TPMS_ATTEST(this.yourQuoted);
+			byte[] dig = quoted.getAttested().getDigest().getBuffer();
+			byte[] sign = signature.getSignature().getSig();
 			
 			switch(signature.getSignature().getHashAlg()) {
 				case TPM_ALG_SHA256:
+					LOG.debug("modulus: " + ByteArrayUtil.toPrintableHexString(key.getPublicArea().getUnique().getBuffer()).replaceAll("\n", " "));
+					LOG.debug("signature: " + ByteArrayUtil.toPrintableHexString(sign).replaceAll("\n", " "));
+					LOG.debug("digest: " + ByteArrayUtil.toPrintableHexString(dig).replaceAll("\n", " "));
 					Signature sig = Signature.getInstance("SHA256withRSA");
-					LOG.debug("public key: " + publicKey.toString());
 					sig.initVerify(publicKey);
-					byte[] dig = quoted.getAttested().getDigest().getBuffer();
-					LOG.debug("digest: " + ByteArrayUtil.toPrintableHexString(dig).replaceAll("\n", ""));
-					sig.update(dig);
-					boolean verifies = sig.verify(signature.getSignature().getSig());
+					sig.update(signature.toBytes());
+					boolean verifies = sig.verify(sign);
 					LOG.debug("signature verifies: " + verifies);
 					break;
 				// todo : implement other signature algorithms here
@@ -163,6 +161,13 @@ public class RemoteAttestationClientHandler {
 		if(thread.isAlive()) {
 			// send msg to local unix socket
 			try {
+				// construct protobuf message to send to local tpm2d via unix socket
+				ControllerToTpm msg = ControllerToTpm
+						.newBuilder()
+						.setAtype(this.aType)
+						.setQualifyingData(this.yourNonce)
+						.setCode(Code.INTERNAL_ATTESTATION_REQ)
+						.build();
 				client.send(msg.toByteArray(), this.handler);
 				// and wait for response
 				TpmToController answer = this.handler.waitForResponse();

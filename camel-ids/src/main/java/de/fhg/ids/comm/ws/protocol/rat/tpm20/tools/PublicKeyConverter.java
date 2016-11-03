@@ -17,16 +17,19 @@ public class PublicKeyConverter {
 	private PublicKey key = null;
 	private KeyFactory kf;
 	private X509EncodedKeySpec spec;
+	private byte[] keyBuffer;
+	private byte[] modulus;
 	
 	public PublicKeyConverter(TPM2B_PUBLIC publicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
-		byte[] keyBuffer  = this.setExponent(this.setMidHeader(this.setModulus(this.setFixedHeader(), publicKey)));
+		keyBuffer  = this.setExponent(this.setMidHeader(this.setModulus(this.setFixedHeader(), publicKey)));
 		spec = new X509EncodedKeySpec(keyBuffer);
 		kf = KeyFactory.getInstance("RSA");
 		this.key = kf.generatePublic(spec);
 	}
 	
 	private byte[] setModulus(byte[] key, TPM2B_PUBLIC publicKey) {
-		return PublicKeyConverter.combineByteArray(key, publicKey.getPublicArea().getUnique().getBuffer());
+		this.modulus = PublicKeyConverter.combineByteArray(key, publicKey.getPublicArea().getUnique().getBuffer()); 
+		return this.modulus;
 	}
 
 	public PublicKey getPublicKey() {
@@ -57,5 +60,17 @@ public class PublicKeyConverter {
 		System.arraycopy(one, 0, three, 0, one.length);
 		System.arraycopy(two, 0, three, one.length, two.length);
 		return three;
+	}
+
+	public byte[] getExponent() {
+		return this.exponent;
+	}
+
+	public byte[] getModulus() {
+		return this.modulus;
+	}
+
+	public byte[] getDER() {
+		return this.keyBuffer;
 	}
 }

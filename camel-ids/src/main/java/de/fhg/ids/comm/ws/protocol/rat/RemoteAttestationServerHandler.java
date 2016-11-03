@@ -152,7 +152,7 @@ public class RemoteAttestationServerHandler {
 			key.fromBytes(this.fetchPublicKey(this.certUri), 0);
 			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
 			
-			LOG.debug("RSA KEY recvd by SERVER: " + publicKey.toString());
+			//LOG.debug("RSA KEY recvd by SERVER: " + publicKey.toString());
 			
 			// CURRENTO TODO: now convert the TPM2 public key to a RSA DER Public key
 			
