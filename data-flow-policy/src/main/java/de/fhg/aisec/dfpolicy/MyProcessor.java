@@ -81,9 +81,9 @@ public class MyProcessor implements AsyncProcessor {
 							label_set.add(label);
 						}
 
-						System.out.println("******** labelRules - label_set: " + joinStringSet(label_set, ","));
+						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
 						labelRules.add(new LabelingRule(attribute, label_set));
-						System.out.println("******** labelRules.size() 2: " + labelRules.size());
+						System.out.println("labelRules.size() : " + labelRules.size());
 					} 
 					// Check for an REMOVELABEL-rule
 					else if (checkRuleSyntax(line, Constants.REMOVELABEL, Constants.FROM)) {
@@ -107,8 +107,8 @@ public class MyProcessor implements AsyncProcessor {
 						}
 						
 						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
-						
 						removeLabelRules.add(new LabelingRule(attribute, label_set));
+						System.out.println("removeLabelRules.size() : " + removeLabelRules.size());
 					}
 					// Check for an ALLOW-rule
 					else if (checkRuleSyntax(line, Constants.ALLOW, Constants.TO)) {
@@ -132,14 +132,11 @@ public class MyProcessor implements AsyncProcessor {
 						}
 						
 						System.out.println("allowRules - label_set: " + joinStringSet(label_set, ","));
-						
 						allowRules.add(new AllowRule(label_set, attribute));
+						System.out.println("allowLabelRules.size() : " + allowRules.size());
 					} 
 					// skip if line is empty (or has just comments)
 					else if (line.isEmpty()) {
-						System.out.println("Loaded LABEL rules: " + labelRules.toString());
-						System.out.println("Loaded REMOVELABEL rules: " + removeLabelRules.toString());
-						System.out.println("Loaded ALLOW rules: " + allowRules.toString()); 		
 						
 					} 
 					// otherwise log error
@@ -177,34 +174,11 @@ public class MyProcessor implements AsyncProcessor {
 				}
     }
     
-    public String joinStringArrayLabel(ArrayList<LabelingRule> arrayList, String seperator)
-    {
-    	StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < arrayList.size(); i++) {
-			
-			builder.append(arrayList.get(i).getLabel()).append(seperator);
-		}
-		if (builder.length() >= seperator.length())
-			builder.setLength(builder.length() - seperator.length());
-		return builder.toString();
-    }
-
-    public String joinStringArrayAllow(ArrayList<AllowRule> arrayList, String seperator)
-    {
-    	StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < arrayList.size(); i++) {
-			
-			builder.append(arrayList.get(i).getLabel()).append(seperator);
-		}
-		if (builder.length() >= seperator.length())
-			builder.setLength(builder.length() - seperator.length());
-		return builder.toString();
-    }
-
     public void process(Exchange exchange) throws Exception {
 		System.out.println("Loaded LABEL rules: " + joinStringArrayLabel(labelRules, ","));
 		System.out.println("Loaded REMOVELABEL rules: " + joinStringArrayLabel(removeLabelRules, ","));
 		System.out.println("Loaded ALLOW rules: " + joinStringArrayAllow(allowRules, ",")); 		
+		System.out.println("-----------------------------------");
 		System.out.println("Start 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
 		
 		InstrumentationProcessor instrumentationprocessor;
@@ -217,7 +191,6 @@ public class MyProcessor implements AsyncProcessor {
 		// set labels from Property
 		exchange_labels = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
 
-		System.out.println("process - after LabelingProcess");
 		//figuring out where the message should go to
 		if (target instanceof InstrumentationProcessor) {
 			instrumentationprocessor = (InstrumentationProcessor) target;
@@ -230,10 +203,12 @@ public class MyProcessor implements AsyncProcessor {
 				//nothing to do yet, maybe some logging later 
 				return;
 			} else {
+				System.out.println("target is neither an instance of Send- nor Log-Processor: " + target.toString());
 				LOG.error("target is neither an instance of Send- nor Log-Processor: " + target.toString());
 				return;
 			}
 		} else {
+			System.out.println("target is not an instance of InstrumentactionProcessor");
 			LOG.error("target is not an instance of InstrumentactionProcessor");
 			return;
 		}
@@ -257,7 +232,7 @@ public class MyProcessor implements AsyncProcessor {
 					System.out.println("Required label " + rule.getLabel() + " not found, message will be dropped...");
 					return;
 				} else {
-					//TODO Aus if/for rausspringen, sobald einmal ein passendes Label gefunden wurde. 
+					//TODO Aus if/for rausspringen, sobald einmal ein passendes Label gefunden wurde? 
 					destinationAndRuleMatch = true;
 					System.out.println("Destination '" + destination + "' and label '" + exchange_labels + "' match.");
 				}
@@ -288,25 +263,25 @@ public class MyProcessor implements AsyncProcessor {
     }
 	
 	//check if a label exists in a list of labels
-	public boolean checkIfLabelExists(Set<String> set, String labels){
+	public boolean checkIfLabelExists(Set<String> label_set, String label){
 		System.out.println("Start 'checkIfLabelExists' ...");
-		System.out.println("label: " + set);
-		System.out.println("labels: " + labels);
+		System.out.println("label_set: " + label_set);
+		System.out.println("labels " + label);
 		//There might be a , after and/or the label, so we add this to the regex
-		Pattern pattern = Pattern.compile(",?" + set + ",?");
-		Matcher matcher = pattern.matcher(labels);
+		Pattern pattern = Pattern.compile(",?" + label_set + ",?");
+		Matcher matcher = pattern.matcher(label);
 		
 		//if there are no requirements we have to fulfill, we return true
-		if (labels == null) {
-			System.out.println("labels = null");
+		if (label == null) {
+			System.out.println("label = null");
 			System.out.println("Stop 'checkIfLabelExists' ...");
 				
 			return true;
 		}
 		
 		//if label is null, but labels isn't, we return false
-		if (set == null) {
-			System.out.println("label = null");
+		if (label_set == null) {
+			System.out.println("label != null, label_set == null");
 			System.out.println("Stop 'checkIfLabelExists' ...");
 			return false;
 		}
@@ -314,7 +289,6 @@ public class MyProcessor implements AsyncProcessor {
 		//check if the label is contained in the requirements. If not, return false;
 		if (matcher.find()) {
 			System.out.println("matcher.find() = true");
-
 			System.out.println("Stop 'checkIfLabelExists' ...");
 			return true;
 		} else {
@@ -364,34 +338,21 @@ public class MyProcessor implements AsyncProcessor {
 		
 		return exchange;
 	}
-	
-	public static String joinStringSet(Set<String> set, String seperator) {
-		StringBuilder builder = new StringBuilder();
-		for (String string : set) {
-		  builder.append(string).append(seperator);
-		}
-		if (builder.length() >= seperator.length())
-			builder.setLength(builder.length() - seperator.length());
-		return builder.toString();
-	}
-	
+
 	public Set<String> addLabelBasedOnAttributeToSet(Set<String> exchange_label_set, String attribute){
 		System.out.println("Start 'addLabelBasedOnAttributeToSet' ...");
-		System.out.println("label.size(): " + labelRules.size());
+		System.out.println(joinStringArrayLabel(labelRules, ","));
 		
 		for (LabelingRule rule : labelRules) {
-			//TODO rule.getLabel() = null, weil Exception bei rule.setLabel() geworfen wird (File Rule.java)
 			System.out.println("LabelingRule rule.getLabel(): " + rule.getLabel());
 			String rule_attribute = rule.getAttribute();
 			Set<String> label = rule.getLabel();
-			System.out.println("label(AddLabel....): " + label.size());
 			Pattern pattern = Pattern.compile(rule_attribute);
 			Matcher matcher = pattern.matcher(attribute);
 			
 			if (matcher.find()) {
 				exchange_label_set.addAll(label);
-				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + joinStringSet(exchange_label_set, ",") + "'");
-				
+				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', assigning label '" + label + "'. All labels are now: '" + joinStringSet(exchange_label_set, ",") + "'");				
 			}
 		}
 		
@@ -407,6 +368,8 @@ public class MyProcessor implements AsyncProcessor {
 		if (exchange_label_set.isEmpty()) {
 			return exchange_label_set;
 		}
+
+		System.out.println(joinStringArrayLabel(removeLabelRules, ","));
 		
 		for (LabelingRule rule : removeLabelRules) {
 			String rule_attribute = rule.getAttribute();
@@ -415,18 +378,49 @@ public class MyProcessor implements AsyncProcessor {
 			Matcher matcher = pattern.matcher(attribute);
 			
 			if (matcher.find()) {
-				System.out.println("exchange_label_set-Labels: " + joinStringSet(exchange_label_set, ","));
-				exchange_label_set.remove(label);
-				System.out.println("exchange_label_set-Labels: " + joinStringSet(exchange_label_set, ","));
+				exchange_label_set.removeAll(label);
 				System.out.println("Got a message with attribute '" + attribute + "' matching pattern '" + rule_attribute + "', removed label '" + label + "'. All labels are now: '" + joinStringSet(exchange_label_set, ",") + "'");
 			}
 		}
 
-		System.out.println("exchange_label_set-Labels: " + joinStringSet(exchange_label_set, ","));
 		System.out.println("Stop 'removeLabelBasedOnAttributeToSet' ...");
 		
 		return exchange_label_set;
 	}
+
+	public static String joinStringSet(Set<String> set, String seperator) {
+		StringBuilder builder = new StringBuilder();
+		for (String string : set) {
+		  builder.append(string).append(seperator);
+		}
+		if (builder.length() >= seperator.length())
+			builder.setLength(builder.length() - seperator.length());
+		return builder.toString();
+	}
+
+    public String joinStringArrayLabel(ArrayList<LabelingRule> arrayList, String seperator)
+    {
+    	StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < arrayList.size(); i++) {
+			
+			builder.append(arrayList.get(i).getLabel()).append(seperator);
+		}
+		if (builder.length() >= seperator.length())
+			builder.setLength(builder.length() - seperator.length());
+		return builder.toString();
+    }
+
+    public String joinStringArrayAllow(ArrayList<AllowRule> arrayList, String seperator)
+    {
+    	StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < arrayList.size(); i++) {
+			
+			builder.append(arrayList.get(i).getLabel()).append(seperator);
+		}
+		if (builder.length() >= seperator.length())
+			builder.setLength(builder.length() - seperator.length());
+		return builder.toString();
+    }
 
 	@Override
     public String toString() {
