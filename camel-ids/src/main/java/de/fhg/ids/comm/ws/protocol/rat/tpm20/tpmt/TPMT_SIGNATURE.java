@@ -6,7 +6,6 @@ import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.StandardTPMStruct;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmi.TPMI_ALG_SIG_SCHEME;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_SIGNATURE_ECDSA;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_SIGNATURE_RSAPSS;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_SIGNATURE_RSA;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmu.TPMU_SIGNATURE;
 
 public class TPMT_SIGNATURE extends StandardTPMStruct {
@@ -55,13 +54,17 @@ public class TPMT_SIGNATURE extends StandardTPMStruct {
         LOG.debug("sig scheme:" + ByteArrayUtil.toHexString(this.sigAlg.getAlgId().Id()));
         switch(this.sigAlg.getAlgId().getAlgId()) {
         	case TPM_ALG_RSASSA:
+        		// TODO !
+        		break;
         	case TPM_ALG_RSAPSS:        		
-        		this.signature = new TPMS_SIGNATURE_RSA();
+        		this.signature = new TPMS_SIGNATURE_RSAPSS();
         		brw.readStruct(this.signature);
         		break;         	
         	case TPM_ALG_ECDSA:
         	case TPM_ALG_SM2:
         	case TPM_ALG_ECDAA:
+        		// TODO !
+        		break;
         	case TPM_ALG_ECSCHNORR:
             	this.signature = new TPMS_SIGNATURE_ECDSA();
             	brw.readStruct(this.signature);

@@ -4,12 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.AlgorithmParameters;
+import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.xml.bind.DatatypeConverter;
@@ -18,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
@@ -35,11 +38,10 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayUtil;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.NonceGenerator;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.PublicKeyConverter;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_DIGEST;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPML_PCR_SELECTION;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_ATTEST;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
+
 
 public class RemoteAttestationClientHandler {
 	private final FSM fsm;
@@ -74,7 +76,8 @@ public class RemoteAttestationClientHandler {
 		} catch (IOException e) {
 			LOG.debug("could not write to/read from " + SOCKET);
 			e.printStackTrace();
-		}		
+		}
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
 
 	public MessageLite enterRatRequest(Event e) {
@@ -123,8 +126,6 @@ public class RemoteAttestationClientHandler {
 					.newBuilder()
 					.build();
 		}
-
-		
 		try {
 			// construct a new TPMT_SIGNATURE from yourSignature bytes
 			TPMT_SIGNATURE signature = new TPMT_SIGNATURE(this.yourSignature);
@@ -135,18 +136,17 @@ public class RemoteAttestationClientHandler {
 			
 			switch(signature.getSignature().getHashAlg()) {
 				case TPM_ALG_SHA256:
-					LOG.debug("modulus: " + ByteArrayUtil.toPrintableHexString(key.getPublicArea().getUnique().getBuffer()).replaceAll("\n", " "));
-					LOG.debug("signature: " + ByteArrayUtil.toPrintableHexString(sign).replaceAll("\n", " "));
+					
+					LOG.debug("publicKey: " + ByteArrayUtil.toPrintableHexString(publicKey.getEncoded()).replaceAll("\n", " "));
+					LOG.debug("Signature: " + ByteArrayUtil.toPrintableHexString(sign).replaceAll("\n", " "));
 					LOG.debug("digest: " + ByteArrayUtil.toPrintableHexString(dig).replaceAll("\n", " "));
-					Signature sig = Signature.getInstance("SHA256withRSA");
-					sig.initVerify(publicKey);
-					sig.update(signature.toBytes());
-					boolean verifies = sig.verify(sign);
-					LOG.debug("signature verifies: " + verifies);
+					LOG.debug("qualifyingData: " + new String(quoted.getExtraData().getBuffer()));
+			        LOG.debug("----> VERIFIES <----: " + this.checkSignRsaPssSha256(publicKey, sign, dig));					
 					break;
+				case TPM_ALG_SHA1:
 				// todo : implement other signature algorithms here
 				default:
-					LOG.debug("error: not a valid signature algorithm: \"" + signature.getSigAlg().getAlgId().toString() + "\".");
+					LOG.debug("error: not a valid signature algorithm: \"" + signature.getSignature().getHashAlg().toString() + "\".");
 					break;
 				}	
 		} catch (Exception ex) {
@@ -223,19 +223,6 @@ public class RemoteAttestationClientHandler {
 						)
 				.build();
 	}
-	
-	private byte[] fetchPublicKey(String uri) throws Exception {
-		URL cert = new URL(uri);
-		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
-		String base64 = "";
-		String inputLine = "";
-        while ((inputLine = in.readLine()) != null) {
-        	base64 += inputLine;
-        }
-        in.close();
-        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
-	}
-	
 
 	public MessageLite leaveRatRequest(Event e) {
 		this.thread.interrupt();
@@ -250,6 +237,28 @@ public class RemoteAttestationClientHandler {
 						.build()
 						)
 				.build();
+	}
+	
+	// fetch a public key from a uri and return the key as a byte array
+	private byte[] fetchPublicKey(String uri) throws Exception {
+		URL cert = new URL(uri);
+		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
+		String base64 = "";
+		String inputLine = "";
+        while ((inputLine = in.readLine()) != null) {
+        	base64 += inputLine;
+        }
+        in.close();
+        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
+	}
+	
+	// check a signature RSA-PSS with sha256
+	private boolean checkSignRsaPssSha256(PublicKey pub, byte[] sign, byte[] digest) throws Exception {
+        Signature signature = Signature.getInstance("SHA256WITHRSAANDMGF1", "BC");
+        signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1", new MGF1ParameterSpec("SHA-256"), 32, 1));
+        signature.initVerify(pub);
+        signature.update(digest);
+        return signature.verify(sign); 
 	}	
 
 }

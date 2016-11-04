@@ -110,10 +110,17 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--  JNR-Unixsocket -->	
 		<dependency>
 			<groupId>com.github.jnr</groupId>
 			<artifactId>jnr-unixsocket</artifactId>
 			<version>0.13</version>
+		</dependency>
+		<!-- Bouncy Castle Security -->	
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.54</version>
 		</dependency>
 	</dependencies>
 	<build>
