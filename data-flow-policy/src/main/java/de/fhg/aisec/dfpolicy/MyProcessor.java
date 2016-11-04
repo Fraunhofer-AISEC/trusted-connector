@@ -107,11 +107,7 @@ public class MyProcessor implements AsyncProcessor {
 							label_set.add(label);
 						}
 						
-						LabelingRule testRule = new LabelingRule(attribute, label_set);
-						System.out.println("testRule: " + testRule.hashCode());
 						removeLabelRules.add(new LabelingRule(attribute, label_set));
-						System.out.println("removeLabelRules: " + removeLabelRules.hashCode());
-						System.out.println("removeLabelRules contains testRule? " + removeLabelRules.contains(testRule));
 						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
 						System.out.println("removeLabelRules - all: " + joinStringArrayLabel(removeLabelRules, ","));
 						System.out.println("removeLabelRules.size() : " + removeLabelRules.size());
