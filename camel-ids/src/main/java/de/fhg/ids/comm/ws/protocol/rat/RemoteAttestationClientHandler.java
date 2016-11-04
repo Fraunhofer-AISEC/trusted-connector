@@ -132,6 +132,7 @@ public class RemoteAttestationClientHandler {
 			// construct a new TPMS_ATTEST from yourQuoted bytes
 			TPMS_ATTEST quoted = new TPMS_ATTEST(this.yourQuoted);
 			byte[] dig = quoted.getAttested().getDigest().getBuffer();
+			LOG.debug(signature.toString());
 			byte[] sign = signature.getSignature().getSig();
 			
 			switch(signature.getSignature().getHashAlg()) {

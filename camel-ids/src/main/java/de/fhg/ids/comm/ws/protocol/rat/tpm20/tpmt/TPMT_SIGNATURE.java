@@ -54,11 +54,11 @@ public class TPMT_SIGNATURE extends StandardTPMStruct {
         LOG.debug("sig scheme:" + ByteArrayUtil.toHexString(this.sigAlg.getAlgId().Id()));
         switch(this.sigAlg.getAlgId().getAlgId()) {
         	case TPM_ALG_RSASSA:
-        		// TODO !
-        		break;
-        	case TPM_ALG_RSAPSS:        		
         		this.signature = new TPMS_SIGNATURE_RSAPSS();
         		brw.readStruct(this.signature);
+        		break;
+        	case TPM_ALG_RSAPSS:        		
+        		// TODO !
         		break;         	
         	case TPM_ALG_ECDSA:
         	case TPM_ALG_SM2:
