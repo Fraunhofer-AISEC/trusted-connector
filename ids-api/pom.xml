@@ -149,21 +149,6 @@
 				</executions>
 			</plugin>
 
-			<!-- Protobuf compiler -->
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.5.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>test-compile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
@@ -185,6 +170,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>	
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

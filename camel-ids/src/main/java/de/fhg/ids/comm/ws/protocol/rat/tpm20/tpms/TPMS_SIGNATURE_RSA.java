@@ -8,9 +8,9 @@ import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC_KEY_RSA;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmi.TPMI_ALG_HASH;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmu.TPMU_SIGNATURE;
 
-public class TPMS_SIGNATURE_RSAPSS extends TPMU_SIGNATURE {
+public class TPMS_SIGNATURE_RSA extends TPMU_SIGNATURE {
 	
-	/*
+	/* from:
 	 * TPMS_SIGNATURE_RSASSA Structure
 	 * typedef struct {
 	 *     TPMI_ALG_HASH        hash;
@@ -54,7 +54,7 @@ public class TPMS_SIGNATURE_RSAPSS extends TPMU_SIGNATURE {
 
 	@Override
 	public String toString() {
-		return "TPMS_SIGNATURE_RSASSA:[hash = " + this.hash.toString() + ", sig = " + this.sig.toString() + "]";
+		return "TPMS_SIGNATURE_RSA:[hash = " + this.hash.toString() + ", sig = " + this.sig.toString() + "]";
 	}
 
 	@Override

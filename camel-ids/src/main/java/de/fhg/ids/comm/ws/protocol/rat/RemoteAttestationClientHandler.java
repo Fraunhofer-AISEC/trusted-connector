@@ -3,14 +3,17 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.URL;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.xml.bind.DatatypeConverter;
@@ -107,18 +110,40 @@ public class RemoteAttestationClientHandler {
 		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
+
 		
-		
-		byte[] bkey = new byte[0];
-		PublicKey publicKey = null;
-		PublicKeyConverter conv = null;
-		TPM2B_PUBLIC key = null;
 		try {
-			bkey = this.fetchPublicKey(this.certUri);
 			// construct a new TPM2B_PUBLIC from bkey bytes
-			key = new TPM2B_PUBLIC(bkey);
-			conv = new PublicKeyConverter(key);
-			publicKey = conv.getPublicKey();
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.fetchPublicKey(this.certUri));
+			
+			try {
+				// construct a new TPMT_SIGNATURE from yourSignature bytes
+				TPMT_SIGNATURE signature = new TPMT_SIGNATURE(this.yourSignature);
+				// construct a new TPMS_ATTEST from yourQuoted bytes
+				TPMS_ATTEST quoted = new TPMS_ATTEST(this.yourQuoted);
+				
+				switch(signature.getSignature().getHashAlg()) {
+					case TPM_ALG_SHA256:
+						
+						LOG.debug("publicKey: " + ByteArrayUtil.toPrintableHexString(key.getPublicArea().getUnique().getBuffer()).replaceAll("\n", " "));
+						LOG.debug("Signature: " + ByteArrayUtil.toPrintableHexString(signature.getSignature().getSig()).replaceAll("\n", " "));
+						LOG.debug("digest: " + ByteArrayUtil.toPrintableHexString(quoted.toBytes()).replaceAll("\n", " "));
+						LOG.debug("qualifyingData: " + new String(quoted.getExtraData().getBuffer()));
+				        LOG.debug("----> VERIFIES <----: " + this.checkSignature(key, quoted, signature));					
+						break;
+					case TPM_ALG_SHA1:
+					// todo : implement other signature algorithms here
+					default:
+						LOG.debug("error: not a valid signature algorithm: \"" + signature.getSignature().getHashAlg().toString() + "\".");
+						break;
+					}	
+			} catch (Exception ex) {
+				LOG.debug("error:" + ex.getMessage());
+				ex.printStackTrace();
+				return ControllerToTpm
+						.newBuilder()
+						.build();
+			}
 		} catch (Exception ex) {
 			LOG.debug("error: could not fetch public key from \""+this.certUri+"\":" + ex.getMessage());
 			ex.printStackTrace();
@@ -126,37 +151,7 @@ public class RemoteAttestationClientHandler {
 					.newBuilder()
 					.build();
 		}
-		try {
-			// construct a new TPMT_SIGNATURE from yourSignature bytes
-			TPMT_SIGNATURE signature = new TPMT_SIGNATURE(this.yourSignature);
-			// construct a new TPMS_ATTEST from yourQuoted bytes
-			TPMS_ATTEST quoted = new TPMS_ATTEST(this.yourQuoted);
-			byte[] dig = quoted.getAttested().getDigest().getBuffer();
-			LOG.debug(signature.toString());
-			byte[] sign = signature.getSignature().getSig();
-			
-			switch(signature.getSignature().getHashAlg()) {
-				case TPM_ALG_SHA256:
-					
-					LOG.debug("publicKey: " + ByteArrayUtil.toPrintableHexString(publicKey.getEncoded()).replaceAll("\n", " "));
-					LOG.debug("Signature: " + ByteArrayUtil.toPrintableHexString(sign).replaceAll("\n", " "));
-					LOG.debug("digest: " + ByteArrayUtil.toPrintableHexString(dig).replaceAll("\n", " "));
-					LOG.debug("qualifyingData: " + new String(quoted.getExtraData().getBuffer()));
-			        LOG.debug("----> VERIFIES <----: " + this.checkSignRsaPssSha256(publicKey, sign, dig));					
-					break;
-				case TPM_ALG_SHA1:
-				// todo : implement other signature algorithms here
-				default:
-					LOG.debug("error: not a valid signature algorithm: \"" + signature.getSignature().getHashAlg().toString() + "\".");
-					break;
-				}	
-		} catch (Exception ex) {
-			LOG.debug("error:" + ex.getMessage());
-			ex.printStackTrace();
-			return ControllerToTpm
-					.newBuilder()
-					.build();
-		}
+		
 
 	
 		if(thread.isAlive()) {
@@ -254,12 +249,16 @@ public class RemoteAttestationClientHandler {
 	}
 	
 	// check a signature RSA-PSS with sha256
-	private boolean checkSignRsaPssSha256(PublicKey pub, byte[] sign, byte[] digest) throws Exception {
-        Signature signature = Signature.getInstance("SHA256WITHRSAANDMGF1", "BC");
-        signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1", new MGF1ParameterSpec("SHA-256"), 32, 1));
-        signature.initVerify(pub);
-        signature.update(digest);
-        return signature.verify(sign); 
+	private boolean checkSignature(TPM2B_PUBLIC pub, TPMS_ATTEST digest, TPMT_SIGNATURE sign) throws Exception {
+		BigInteger modulus  = new BigInteger(pub.getPublicArea().getUnique().getBuffer());
+		BigInteger exponent = new BigInteger("010001", 16);
+		KeyFactory keyFac = KeyFactory.getInstance("RSA");
+        RSAPublicKey rsaPub = (RSAPublicKey) keyFac.generatePublic(new RSAPublicKeySpec(modulus, exponent));
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        //signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1", new MGF1ParameterSpec("SHA-256"), 32, 1));
+        signature.initVerify(rsaPub);
+        signature.update(digest.toBytes());
+        return signature.verify(sign.getSignature().getSig()); 
 	}	
 
 }
