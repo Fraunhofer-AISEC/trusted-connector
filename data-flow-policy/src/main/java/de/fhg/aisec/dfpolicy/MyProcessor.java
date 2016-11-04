@@ -5,7 +5,6 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +48,7 @@ public class MyProcessor implements AsyncProcessor {
     	BufferedReader bufferedreader;
     	String line, attribute, label;
     	Set<String> label_set = new HashSet<String>();
-    	String[] labels;
+    	String[] labels_tmp;
 		try {
 	    	bufferedreader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(rulefile))));
 			while ((line = bufferedreader.readLine()
@@ -63,6 +62,8 @@ public class MyProcessor implements AsyncProcessor {
 
 					//Check if it is a LABEL-rule that contains LABEL and AS, and both only once
 					if (checkRuleSyntax(line, Constants.LABEL, Constants.AS)) {
+						System.out.println("----------------------------------");
+						labels_tmp = null;
 						label_set.clear();
 						// source = the string between the first and the second keyword 
 						attribute = line.substring(line.indexOf(Constants.LABEL) + Constants.LABEL.length(), line.indexOf(Constants.AS));
@@ -71,23 +72,26 @@ public class MyProcessor implements AsyncProcessor {
 						
 						if (label.contains(","))
 						{
-							labels = label.split(",");
-							for (int i = 0; i < label.length(); i++)
+							labels_tmp = label.split(",");
+
+							for (int i = 0; i < labels_tmp.length; i++)
 							{
-								label_set.add(labels[i]);
+								label_set.add(labels_tmp[i]);
 							}
+							
 						} else 
-						{
 							label_set.add(label);
-						}
 
 						labelRules.add(new LabelingRule(attribute, label_set));
 						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
 						System.out.println("labelRules - all: " + joinStringArrayLabel(labelRules, ","));
 						System.out.println("labelRules.size() : " + labelRules.size());
+						System.out.println("----------------------------------");
 					} 
 					// Check for an REMOVELABEL-rule
 					else if (checkRuleSyntax(line, Constants.REMOVELABEL, Constants.FROM)) {
+						System.out.println("----------------------------------");
+						labels_tmp = null;
 						label_set.clear();
 						// source = the string between the first and the second keyword 
 						label = line.substring(line.indexOf(Constants.REMOVELABEL) + Constants.REMOVELABEL.length(), line.indexOf(Constants.FROM));
@@ -97,23 +101,26 @@ public class MyProcessor implements AsyncProcessor {
 			
 						if (label.contains(","))
 						{
-							labels = label.split(",");
-							for (int i = 0; i < label.length(); i++)
+							labels_tmp = label.split(",");
+
+							for (int i = 0; i < labels_tmp.length; i++)
 							{
-								label_set.add(labels[i]);
+								label_set.add(labels_tmp[i]);
 							}
+							
 						} else 
-						{
 							label_set.add(label);
-						}
-						
+
 						removeLabelRules.add(new LabelingRule(attribute, label_set));
 						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
 						System.out.println("removeLabelRules - all: " + joinStringArrayLabel(removeLabelRules, ","));
 						System.out.println("removeLabelRules.size() : " + removeLabelRules.size());
+						System.out.println("----------------------------------");
 					}
 					// Check for an ALLOW-rule
 					else if (checkRuleSyntax(line, Constants.ALLOW, Constants.TO)) {
+						System.out.println("----------------------------------");
+						labels_tmp = null;
 						label_set.clear();
 						// source = the string between the first and the second keyword 
 						label = line.substring(line.indexOf(Constants.ALLOW) + Constants.ALLOW.length(), line.indexOf(Constants.TO));
@@ -123,20 +130,21 @@ public class MyProcessor implements AsyncProcessor {
 						
 						if (label.contains(","))
 						{
-							labels = label.split(",");
-							for (int i = 0; i < label.length(); i++)
+							labels_tmp = label.split(",");
+
+							for (int i = 0; i < labels_tmp.length; i++)
 							{
-								label_set.add(labels[i]);
+								label_set.add(labels_tmp[i]);
 							}
+							
 						} else 
-						{
 							label_set.add(label);
-						}
 						
 						allowRules.add(new AllowRule(label_set, attribute));
 						System.out.println("allowRules - label_set: " + joinStringSet(label_set, ","));
 						System.out.println("allowRules - all: " + joinStringArrayAllow(allowRules, ","));
 						System.out.println("allowLabelRules.size() : " + allowRules.size());
+						System.out.println("----------------------------------");
 					} 
 					// skip if line is empty (or has just comments)
 					else if (line.isEmpty()) {
@@ -231,11 +239,11 @@ public class MyProcessor implements AsyncProcessor {
 			if (matcher.find()) {
 				//the destination matches, now let's see if the label matches
 				//Check if the message has the required label. If not, we stop 
+				//TODO checkIfLabelExists von einem auf mehrere Labels erweitern
 				if (!checkIfLabelExists (rule.getLabel(), exchange_labels)) {
 					System.out.println("Required label " + rule.getLabel() + " not found, message will be dropped...");
 					return;
 				} else {
-					//TODO Aus if/for rausspringen, sobald einmal ein passendes Label gefunden wurde? 
 					destinationAndRuleMatch = true;
 					System.out.println("Destination '" + destination + "' and label '" + exchange_labels + "' match.");
 				}
