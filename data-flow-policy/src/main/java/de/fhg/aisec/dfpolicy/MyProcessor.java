@@ -195,13 +195,28 @@ public class MyProcessor implements AsyncProcessor {
 		InstrumentationProcessor instrumentationprocessor;
 		SendProcessor sendprocessor;
 		String destination;
-		String exchange_labels; 
+		String exchange_labels_raw;
+		Set<String> exchange_labels = new HashSet<String>();
+		String[] exchange_labels_tmp;
 		String body;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
 		// set labels from Property
-		exchange_labels = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
+		exchange_labels_raw = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
 
+		if (exchange_labels_raw.contains(","))
+		{
+			exchange_labels_tmp = exchange_labels_raw.split(",");
+
+			for (int i = 0; i < exchange_labels_tmp.length; i++)
+			{
+				exchange_labels.add(exchange_labels_tmp[i]);
+			}
+			
+		} else 
+			exchange_labels.add(exchange_labels_raw);
+		
+		
 		//figuring out where the message should go to
 		if (target instanceof InstrumentationProcessor) {
 			instrumentationprocessor = (InstrumentationProcessor) target;
@@ -225,6 +240,7 @@ public class MyProcessor implements AsyncProcessor {
 		}
 		
 		System.out.println("********************************************");
+		System.out.println("START: Check if label(s) exist in allow rules for destination " + destination);
 		boolean destinationAndRuleMatch = false;
 		for (AllowRule rule : allowRules) {
 			System.out.println("--------------------------------------------");
@@ -238,34 +254,36 @@ public class MyProcessor implements AsyncProcessor {
 			
 			if (matcher.find()) {
 				//the destination matches, now let's see if the label matches
-				//Check if the message has the required label. If not, we stop 
-				//TODO checkIfLabelExists von einem auf mehrere Labels erweitern
-				if (!checkIfLabelExists (rule.getLabel(), exchange_labels)) {
-					System.out.println("Required label " + rule.getLabel() + " not found, message will be dropped...");
-					return;
+				//Check if the message has the required labels. If not, we stop 
+				if (!checkIfLabelsExist(rule.getLabel(), exchange_labels)) {
+					System.out.println("Required label(s) '" + exchange_labels_raw + "' not found, message will be dropped...");
+					continue;
 				} else {
 					destinationAndRuleMatch = true;
-					System.out.println("Destination '" + destination + "' and label '" + exchange_labels + "' match.");
+					System.out.println("Destination '" + destination + "' and label(s) '" + exchange_labels_raw + "' match.");
+					System.out.println("--------------------------------------------");
+					break;
 				}
 					
 			} else {
 				System.out.println("Destination does not match.");
+				System.out.println("--------------------------------------------");
 				continue;
 			}
-			System.out.println("--------------------------------------------");
 		}
+		System.out.println("STOP: Check if label(s) exist in allow rules.");
 		System.out.println("********************************************");
 
 		if (destinationAndRuleMatch)
 		{
-			System.out.println("Message with labels  '" + exchange_labels +"' has all required labels for destination '" + destination + "', forwarding...");
+			System.out.println("Message with labels  '" + exchange_labels_raw +"' has all required labels for destination '" + destination + "', forwarding...");
 
 			//store labels in message body
 			body = exchange.getIn().getBody().toString();
 			if (body.startsWith("Labels: ") && body.contains("\n\n")) {
 				body = body.substring(body.indexOf("\n\n") + "\n\n".length(), body.length() - 1 );
 			}
-			exchange.getIn().setBody("Labels: " + exchange_labels + "\n\n" + body);
+			exchange.getIn().setBody("Labels: " + exchange_labels_raw + "\n\n" + body);
 					
 			target.process(exchange);	
 		}
@@ -273,14 +291,11 @@ public class MyProcessor implements AsyncProcessor {
 		System.out.println("Stop 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
     }
 	
-	//check if a label exists in a list of labels
+	//check if a label exists in a set of labels (label_set)
 	public boolean checkIfLabelExists(Set<String> label_set, String label){
 		System.out.println("Start 'checkIfLabelExists' ...");
 		System.out.println("label_set: " + label_set);
-		System.out.println("labels " + label);
-		//There might be a , after and/or the label, so we add this to the regex
-		Pattern pattern = Pattern.compile(",?" + label_set + ",?");
-		Matcher matcher = pattern.matcher(label);
+		System.out.println("check_label: " + label);
 		
 		//if there are no requirements we have to fulfill, we return true
 		if (label == null) {
@@ -296,7 +311,10 @@ public class MyProcessor implements AsyncProcessor {
 			System.out.println("Stop 'checkIfLabelExists' ...");
 			return false;
 		}
-		
+
+		Pattern pattern = Pattern.compile(label);
+		Matcher matcher = pattern.matcher(label_set.toString());
+
 		//check if the label is contained in the requirements. If not, return false;
 		if (matcher.find()) {
 			System.out.println("matcher.find() = true");
@@ -307,6 +325,23 @@ public class MyProcessor implements AsyncProcessor {
 			System.out.println("Stop 'checkIfLabelExists' ...");
 			return false;
 		}
+	}
+	
+	public boolean checkIfLabelsExist(Set<String> label_set, Set<String> check_labels) {
+		System.out.println("Start 'checkIfLabelsExists' ...");
+		System.out.println("label_set: " + label_set);
+		System.out.println("check_labels " + check_labels);
+		
+		if (check_labels.isEmpty())
+			return false;
+		
+		for (String s : check_labels) {
+			if (!checkIfLabelExists(label_set, s)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 	
 	
@@ -352,10 +387,9 @@ public class MyProcessor implements AsyncProcessor {
 
 	public Set<String> addLabelBasedOnAttributeToSet(Set<String> exchange_label_set, String attribute){
 		System.out.println("Start 'addLabelBasedOnAttributeToSet' ...");
-		System.out.println(joinStringArrayLabel(labelRules, ","));
+		System.out.println("labelRules: " + joinStringArrayLabel(labelRules, ","));
 		
 		for (LabelingRule rule : labelRules) {
-			System.out.println("LabelingRule rule.getLabel(): " + rule.getLabel());
 			String rule_attribute = rule.getAttribute();
 			Set<String> label = rule.getLabel();
 			Pattern pattern = Pattern.compile(rule_attribute);
@@ -380,7 +414,7 @@ public class MyProcessor implements AsyncProcessor {
 			return exchange_label_set;
 		}
 
-		System.out.println(joinStringArrayLabel(removeLabelRules, ","));
+		System.out.println("removeLabelRules: " + joinStringArrayLabel(removeLabelRules, ","));
 		
 		for (LabelingRule rule : removeLabelRules) {
 			String rule_attribute = rule.getAttribute();
