@@ -14,6 +14,7 @@ message ConnectorMessage {
 		RAT_RESPONSE = 8;
 		RAT_RESULT = 10;
 		RAT_LEAVE = 11;
+		ERROR = 12;
 	}
 	
 	// Identifies which field is filled in.
@@ -41,7 +42,15 @@ message ConnectorMessage {
 		AttestationResponse attestationResponse = 10;
 		AttestationResult attestationResult = 11;
 		AttestationLeave attestationLeave = 12;
+		
+		// an error msg
+		Error error = 13;
 	}
+}
+
+message Error {
+	string errorCode = 1;
+	string errorMessage = 2;
 }
 
 message RegistrationRequest {

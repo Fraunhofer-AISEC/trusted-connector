@@ -110,10 +110,17 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--  JNR-Unixsocket -->	
 		<dependency>
 			<groupId>com.github.jnr</groupId>
 			<artifactId>jnr-unixsocket</artifactId>
 			<version>0.13</version>
+		</dependency>
+		<!--  JSON simple -->	
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -152,6 +159,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19</version>	
 				<configuration>
 					<argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
 					<excludes>
@@ -164,6 +172,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
