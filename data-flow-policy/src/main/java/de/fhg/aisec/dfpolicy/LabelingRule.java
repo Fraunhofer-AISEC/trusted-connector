@@ -19,6 +19,7 @@ public class LabelingRule extends Rule {
 		this.attribute = attribute;
 	}
 	
+	// Method can be defined arbitrary, also the values 17 and 31 
 	@Override
     public int hashCode() {
         int result = 17;

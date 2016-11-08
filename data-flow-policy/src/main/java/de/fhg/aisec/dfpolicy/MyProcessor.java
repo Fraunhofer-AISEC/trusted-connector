@@ -48,8 +48,8 @@ public class MyProcessor implements AsyncProcessor {
     	BufferedReader bufferedreader;
     	String line, attribute, label;
     	Set<String> label_set = new HashSet<String>();
-    	String[] labels_tmp;
-		try {
+ 
+    	try {
 	    	bufferedreader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(rulefile))));
 			while ((line = bufferedreader.readLine()
 					// remove empty spaces
@@ -63,86 +63,51 @@ public class MyProcessor implements AsyncProcessor {
 					//Check if it is a LABEL-rule that contains LABEL and AS, and both only once
 					if (checkRuleSyntax(line, Constants.LABEL, Constants.AS)) {
 						System.out.println("----------------------------------");
-						labels_tmp = null;
 						label_set.clear();
 						// source = the string between the first and the second keyword 
 						attribute = line.substring(line.indexOf(Constants.LABEL) + Constants.LABEL.length(), line.indexOf(Constants.AS));
+
 						// label = the string after the second keyword
 						label = line.substring(line.indexOf(Constants.AS) + Constants.AS.length());
-						
-						if (label.contains(","))
-						{
-							labels_tmp = label.split(",");
-
-							for (int i = 0; i < labels_tmp.length; i++)
-							{
-								label_set.add(labels_tmp[i]);
-							}
-							
-						} else 
-							label_set.add(label);
-
+						label_set = splitString(label, ",");
 						labelRules.add(new LabelingRule(attribute, label_set));
+						
 						System.out.println("labelRules - label_set: " + joinStringSet(label_set, ","));
-						System.out.println("labelRules - all: " + joinStringArrayLabel(labelRules, ","));
+						System.out.println("labelRules - all: " + joinStringSetLabelRule(labelRules, ","));
 						System.out.println("labelRules.size() : " + labelRules.size());
 						System.out.println("----------------------------------");
 					} 
 					// Check for an REMOVELABEL-rule
 					else if (checkRuleSyntax(line, Constants.REMOVELABEL, Constants.FROM)) {
 						System.out.println("----------------------------------");
-						labels_tmp = null;
 						label_set.clear();
-						// source = the string between the first and the second keyword 
+						// label = the string between the first and the second keyword 
 						label = line.substring(line.indexOf(Constants.REMOVELABEL) + Constants.REMOVELABEL.length(), line.indexOf(Constants.FROM));
 			
-						// label = the string after the second keyword
+						// source = the string after the second keyword
 						attribute = line.substring(line.indexOf(Constants.FROM) + Constants.FROM.length());
-			
-						if (label.contains(","))
-						{
-							labels_tmp = label.split(",");
-
-							for (int i = 0; i < labels_tmp.length; i++)
-							{
-								label_set.add(labels_tmp[i]);
-							}
-							
-						} else 
-							label_set.add(label);
-
+						label_set = splitString(label, ",");
 						removeLabelRules.add(new LabelingRule(attribute, label_set));
+						
 						System.out.println("removeLabelRules - label_set: " + joinStringSet(label_set, ","));
-						System.out.println("removeLabelRules - all: " + joinStringArrayLabel(removeLabelRules, ","));
+						System.out.println("removeLabelRules - all: " + joinStringSetLabelRule(removeLabelRules, ","));
 						System.out.println("removeLabelRules.size() : " + removeLabelRules.size());
 						System.out.println("----------------------------------");
 					}
 					// Check for an ALLOW-rule
 					else if (checkRuleSyntax(line, Constants.ALLOW, Constants.TO)) {
 						System.out.println("----------------------------------");
-						labels_tmp = null;
 						label_set.clear();
-						// source = the string between the first and the second keyword 
+						// label = the string between the first and the second keyword 
 						label = line.substring(line.indexOf(Constants.ALLOW) + Constants.ALLOW.length(), line.indexOf(Constants.TO));
 						
-						// label = the string after the second keyword
+						// destination = the string after the second keyword
 						attribute = line.substring(line.indexOf(Constants.TO) + Constants.TO.length());
-						
-						if (label.contains(","))
-						{
-							labels_tmp = label.split(",");
-
-							for (int i = 0; i < labels_tmp.length; i++)
-							{
-								label_set.add(labels_tmp[i]);
-							}
-							
-						} else 
-							label_set.add(label);
-						
+						label_set = splitString(label, ",");
 						allowRules.add(new AllowRule(label_set, attribute));
+						
 						System.out.println("allowRules - label_set: " + joinStringSet(label_set, ","));
-						System.out.println("allowRules - all: " + joinStringArrayAllow(allowRules, ","));
+						System.out.println("allowRules - all: " + joinStringSetAllowRule(allowRules, ","));
 						System.out.println("allowLabelRules.size() : " + allowRules.size());
 						System.out.println("----------------------------------");
 					} 
@@ -168,6 +133,25 @@ public class MyProcessor implements AsyncProcessor {
     	System.out.println("Stop'loadRules'...");
     }
     
+    // Splits the String at the seperator and stores the separated values in a Set<String>
+    public Set<String> splitString(String label, String separator) {
+    	String[] labels_tmp = null;
+    	Set<String> label_set = new HashSet<String>();
+    	
+		if (label.contains(separator))
+		{
+			labels_tmp = label.split(separator);
+
+			for (int i = 0; i < labels_tmp.length; i++)
+			{
+				label_set.add(labels_tmp[i]);
+			}
+			
+		} else 
+			label_set.add(label);
+		
+		return label_set;
+    }
     
     // Checks for a line in the rule-file that each keyword exists only once, keyword1 before keyword 2, etc... 
     public boolean checkRuleSyntax(String line, String keyword1, String keyword2){
@@ -186,9 +170,9 @@ public class MyProcessor implements AsyncProcessor {
     }
     
     public void process(Exchange exchange) throws Exception {
-		System.out.println("Loaded LABEL rules: " + joinStringArrayLabel(labelRules, ","));
-		System.out.println("Loaded REMOVELABEL rules: " + joinStringArrayLabel(removeLabelRules, ","));
-		System.out.println("Loaded ALLOW rules: " + joinStringArrayAllow(allowRules, ",")); 		
+		System.out.println("Loaded LABEL rules: " + joinStringSetLabelRule(labelRules, ","));
+		System.out.println("Loaded REMOVELABEL rules: " + joinStringSetLabelRule(removeLabelRules, ","));
+		System.out.println("Loaded ALLOW rules: " + joinStringSetAllowRule(allowRules, ",")); 		
 		System.out.println("-----------------------------------");
 		System.out.println("Start 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
 		
@@ -197,25 +181,13 @@ public class MyProcessor implements AsyncProcessor {
 		String destination;
 		String exchange_labels_raw;
 		Set<String> exchange_labels = new HashSet<String>();
-		String[] exchange_labels_tmp;
 		String body;
 		//label the new message if needed
 		exchange = LabelingProcess(exchange);
 		// set labels from Property
 		exchange_labels_raw = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
 
-		if (exchange_labels_raw.contains(","))
-		{
-			exchange_labels_tmp = exchange_labels_raw.split(",");
-
-			for (int i = 0; i < exchange_labels_tmp.length; i++)
-			{
-				exchange_labels.add(exchange_labels_tmp[i]);
-			}
-			
-		} else 
-			exchange_labels.add(exchange_labels_raw);
-		
+		exchange_labels = splitString(exchange_labels_raw, ",");
 		
 		//figuring out where the message should go to
 		if (target instanceof InstrumentationProcessor) {
@@ -291,7 +263,7 @@ public class MyProcessor implements AsyncProcessor {
 		System.out.println("Stop 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
     }
 	
-	//check if a label exists in a set of labels (label_set)
+	//check if a label exists in a set of labels
 	public boolean checkIfLabelExists(Set<String> label_set, String label){
 		System.out.println("Start 'checkIfLabelExists' ...");
 		System.out.println("label_set: " + label_set);
@@ -327,6 +299,7 @@ public class MyProcessor implements AsyncProcessor {
 		}
 	}
 	
+	// Check if a set of labels exist in another set of labels
 	public boolean checkIfLabelsExist(Set<String> label_set, Set<String> check_labels) {
 		System.out.println("Start 'checkIfLabelsExists' ...");
 		System.out.println("label_set: " + label_set);
@@ -387,7 +360,7 @@ public class MyProcessor implements AsyncProcessor {
 
 	public Set<String> addLabelBasedOnAttributeToSet(Set<String> exchange_label_set, String attribute){
 		System.out.println("Start 'addLabelBasedOnAttributeToSet' ...");
-		System.out.println("labelRules: " + joinStringArrayLabel(labelRules, ","));
+		System.out.println("labelRules: " + joinStringSetLabelRule(labelRules, ","));
 		
 		for (LabelingRule rule : labelRules) {
 			String rule_attribute = rule.getAttribute();
@@ -414,7 +387,7 @@ public class MyProcessor implements AsyncProcessor {
 			return exchange_label_set;
 		}
 
-		System.out.println("removeLabelRules: " + joinStringArrayLabel(removeLabelRules, ","));
+		System.out.println("removeLabelRules: " + joinStringSetLabelRule(removeLabelRules, ","));
 		
 		for (LabelingRule rule : removeLabelRules) {
 			String rule_attribute = rule.getAttribute();
@@ -433,39 +406,47 @@ public class MyProcessor implements AsyncProcessor {
 		return exchange_label_set;
 	}
 
-	public static String joinStringSet(Set<String> set, String seperator) {
+	// Join strings from a Set<String> with a separator
+	public static String joinStringSet(Set<String> set, String separator) {
 		StringBuilder builder = new StringBuilder();
+		
 		for (String string : set) {
-		  builder.append(string).append(seperator);
+		  builder.append(string).append(separator);
 		}
-		if (builder.length() >= seperator.length())
-			builder.setLength(builder.length() - seperator.length());
+		
+		if (builder.length() >= separator.length())
+			builder.setLength(builder.length() - separator.length());
+		
 		return builder.toString();
 	}
-
-    public String joinStringArrayLabel(Set<LabelingRule> labelRules, String seperator)
+	
+	// Join LabelingRule-Strings from a Set with a separator
+    public static String joinStringSetLabelRule(Set<LabelingRule> labelRules, String separator)
     {
     	StringBuilder builder = new StringBuilder();
 
 		for (LabelingRule string : labelRules) {
-			  builder.append("(").append(string.getLabel().toString()).append(",").append(string.getAttribute()).append(")").append(seperator);
+			  builder.append("(").append(string.getLabel().toString()).append(",").append(string.getAttribute()).append(")").append(separator);
 			}
 
-		if (builder.length() >= seperator.length())
-			builder.setLength(builder.length() - seperator.length());
+		if (builder.length() >= separator.length())
+			builder.setLength(builder.length() - separator.length());
+		
 		return builder.toString();
     }
 
-    public String joinStringArrayAllow(Set<AllowRule> allowRules, String seperator)
+	// Join AllowRule-Strings from a Set with a separator
+    public static String joinStringSetAllowRule(Set<AllowRule> allowRules, String separator)
     {
     	StringBuilder builder = new StringBuilder();
 
     	for (AllowRule string : allowRules) {
-			  builder.append("(").append(string.getLabel().toString()).append(",").append(string.getDestination()).append(")").append(seperator);
+			  builder.append("(").append(string.getLabel().toString()).append(",").append(string.getDestination()).append(")").append(separator);
 			}
 
-		if (builder.length() >= seperator.length())
-			builder.setLength(builder.length() - seperator.length());
+		if (builder.length() >= separator.length())
+			builder.setLength(builder.length() - separator.length());
+		
 		return builder.toString();
     }
 

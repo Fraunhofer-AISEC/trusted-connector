@@ -7,7 +7,6 @@ public class Rule {
 	
 	private Set<String> label = new HashSet<String>();
 	
-	//TODO this.label.addALL(label) -> hängt nur an ggf. this.label.clear() davor machen.
 	public Set<String> getLabel() {
 		return label;
 	}

@@ -18,9 +18,11 @@ public class AllowRule extends Rule {
 	public void setDestination(String destination) {
 		this.destination = destination;
 	}
+	
+	// Method can be defined arbitrary, also the values 17 and 31 
 	@Override
     public int hashCode() {
-        int result = 17;
+		int result = 17;
         result = 31 * result + destination.hashCode();
         result = 31 * result + getLabel().hashCode();
         return result;
