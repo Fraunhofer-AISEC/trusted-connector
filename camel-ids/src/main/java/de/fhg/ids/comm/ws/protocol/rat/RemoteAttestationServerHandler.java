@@ -25,6 +25,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
 
 import javax.security.cert.X509Certificate;
+import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.NonceGenerator;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.PublicKeyConverter;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_ATTEST;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationServerHandler {
 	private final FSM fsm;
@@ -55,14 +58,15 @@ public class RemoteAttestationServerHandler {
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
-	private boolean attestationSucccessfull = false;
 	private Thread thread;
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationServerHandler.class);
 	private UnixSocketThread client;
 	private UnixSocketResponsHandler handler;
-	private ByteString yourQuoted;
-	private ByteString yourSignature;
+	private byte[] yourQuoted;
+	private byte[] yourSignature;
 	private String certUri;
+	private boolean signatureCorrect;
+	private Pcr[] pcrValues;
 	
 	public RemoteAttestationServerHandler(FSM fsm, IdsAttestationType type) {
 		// set finite state machine
@@ -140,21 +144,42 @@ public class RemoteAttestationServerHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		this.attestationSucccessfull  = false;
-		
-		this.yourQuoted = e.getMessage().getAttestationResponse().getQuotedBytes();
-		this.yourSignature = e.getMessage().getAttestationResponse().getSignatureBytes();
+		Signature sg;
+		// get nonce from server msg
+		this.yourNonce = e.getMessage().getAttestationResponse().getQualifyingData().toString();
+		// get quote from server msg
+		this.yourQuoted = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getQuoted());
+		// get signature from server msg
+		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
+		// get cert uri from server msg
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
+
 		try {
-			// construct a new public key in TPM2 format
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC();
-			// build that key with bytes from certUri
-			key.fromBytes(this.fetchPublicKey(this.certUri), 0);
+			// construct a new TPM2B_PUBLIC from bkey bytes
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.fetchPublicKey(this.certUri));
+			// and convert it into an DER key
 			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
-			
-			//LOG.debug("RSA KEY recvd by SERVER: " + publicKey.toString());
-			
-			// CURRENTO TODO: now convert the TPM2 public key to a RSA DER Public key
+			// construct a new TPMT_SIGNATURE from yourSignature bytes
+			TPMT_SIGNATURE tpmSignature = new TPMT_SIGNATURE(this.yourSignature);
+			// construct a new TPMS_ATTEST from yourQuoted bytes
+			TPMS_ATTEST digest = new TPMS_ATTEST(this.yourQuoted);
+			// and get the raw byte quote
+			switch(tpmSignature.getSignature().getHashAlg()) {
+				case TPM_ALG_SHA256:
+					sg = Signature.getInstance("SHA256withRSA");
+				    sg.initVerify(publicKey);
+				    sg.update(digest.toBytes());
+				    this.signatureCorrect = sg.verify(tpmSignature.getSignature().getSig());
+					break;
+				case TPM_ALG_SHA1:
+					sg = Signature.getInstance("SHA1withRSA");
+				    sg.initVerify(publicKey);
+				    sg.update(digest.toBytes());
+				    this.signatureCorrect = sg.verify(tpmSignature.getSignature().getSig());
+					break;					
+				default:
+					break;
+			}
 			
 		} catch (Exception ex) {
 			LOG.debug("error: exception " + ex.getMessage());
@@ -168,7 +193,7 @@ public class RemoteAttestationServerHandler {
 						AttestationResult
 						.newBuilder()
 						.setAtype(this.aType)
-						.setResult(this.attestationSucccessfull)
+						.setResult(this.isAttestationSuccessful())
 						.build()
 						)
 				.build();
@@ -199,5 +224,9 @@ public class RemoteAttestationServerHandler {
 						.build()
 						)
 				.build();
+	}
+	
+	public boolean isAttestationSuccessful() {
+		return this.signatureCorrect && TrustedThirdParty.pcrValuesCorrect(this.pcrValues);
 	}
 }

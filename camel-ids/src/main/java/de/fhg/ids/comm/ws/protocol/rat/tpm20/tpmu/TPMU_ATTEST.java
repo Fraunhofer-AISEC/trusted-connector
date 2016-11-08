@@ -2,6 +2,7 @@ package de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmu;
 
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.StandardTPMStruct;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_DIGEST;
+import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPML_PCR_SELECTION;
 
 public abstract class TPMU_ATTEST extends StandardTPMStruct {
 	
@@ -27,5 +28,7 @@ public abstract class TPMU_ATTEST extends StandardTPMStruct {
 	@Override
     public abstract String toString();
 	
-	public abstract TPM2B_DIGEST getDigest();
+	public abstract TPM2B_DIGEST getPcrDigest();
+	
+	public abstract TPML_PCR_SELECTION getPcrSelect();
 }

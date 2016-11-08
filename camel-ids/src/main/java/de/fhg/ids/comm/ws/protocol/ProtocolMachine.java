@@ -77,6 +77,7 @@ public class ProtocolMachine {
 		fsm.addState("RAT:AWAIT_RESULT");
 		fsm.addState("RAT:AWAIT_LEAVE");
 		fsm.addState("SUCCESS");
+		fsm.addState("ERROR");
 		
 		RemoteAttestationServerHandler h = new RemoteAttestationServerHandler(fsm, IdsAttestationType.BASIC);
 
