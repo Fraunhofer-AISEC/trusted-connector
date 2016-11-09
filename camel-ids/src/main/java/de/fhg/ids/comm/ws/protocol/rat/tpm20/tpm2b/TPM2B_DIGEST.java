@@ -36,6 +36,10 @@ public class TPM2B_DIGEST extends StandardTPMStruct {
 	public byte[] getBuffer() {
 		return this.buffer;
 	}
+	
+	public void setBuffer(byte[] buffer) {
+		this.buffer = buffer;
+	}
 
 	@Override
 	public byte[] toBytes() {

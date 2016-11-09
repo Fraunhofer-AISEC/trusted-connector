@@ -24,7 +24,6 @@
         <bundle>mvn:org.apache.logging.log4j/log4j-api/2.6.2</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-core/2.6.2</bundle>
         <bundle>mvn:org.apache.logging.log4j/log4j-slf4j-impl/2.6.2</bundle>
-        <bundle>mvn:org.bouncycastle/bcprov-jdk15on/1.54</bundle>
         <bundle>mvn:org.eclipse.jetty.websocket/websocket-api/9.2.15.v20160210</bundle>
         <bundle>mvn:org.eclipse.jetty.websocket/websocket-client/9.2.15.v20160210</bundle>
         <bundle>mvn:org.eclipse.jetty.websocket/websocket-common/9.2.15.v20160210</bundle>
@@ -47,5 +46,6 @@
         <bundle>mvn:org.ow2.asm/asm/5.0.3</bundle>
         <bundle>mvn:org.slf4j/slf4j-api/1.6.6</bundle>
         <bundle>wrap:mvn:com.github.jnr/jnr-x86asm/1.0.2</bundle>
+        <bundle>wrap:mvn:com.googlecode.json-simple/json-simple/1.1</bundle>
     </feature>
 </features>

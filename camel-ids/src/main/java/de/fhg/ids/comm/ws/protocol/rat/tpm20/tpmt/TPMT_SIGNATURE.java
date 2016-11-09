@@ -1,5 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt;
 
+import java.math.BigInteger;
+
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayReadWriter;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayUtil;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.StandardTPMStruct;

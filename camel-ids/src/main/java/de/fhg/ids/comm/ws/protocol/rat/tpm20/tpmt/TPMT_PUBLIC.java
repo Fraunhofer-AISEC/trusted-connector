@@ -115,19 +115,14 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
         ByteArrayReadWriter brw = new ByteArrayReadWriter( source, offset );
         this.type = new TPMI_ALG_PUBLIC();
         brw.readStruct(this.type);
-        LOG.debug(this.type.toString());
         this.nameAlg = new TPMI_ALG_HASH();
         brw.readStruct(this.nameAlg);
-        LOG.debug(this.nameAlg.toString());
         this.objectAttributes = new TPMA_OBJECT();
         brw.readStruct(this.objectAttributes);
-        LOG.debug(this.objectAttributes.toString());
         this.authPolicy = new TPM2B_DIGEST();
         brw.readStruct(this.authPolicy);
-        LOG.debug(this.authPolicy.toString());
-        ALG_ID algId = this.type.getAlgId().getAlgId();
         ALG_ID hashId = this.nameAlg.getHashId().getAlgId();
-        switch(algId) {
+        switch(this.type.getAlgId().getAlgId()) {
         	case TPM_ALG_FIRST:
         			this.parameters = new TPMS_RSA_PARMS();
         			brw.readStruct(this.parameters);

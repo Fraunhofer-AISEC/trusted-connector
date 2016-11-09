@@ -59,25 +59,38 @@ public class TPMS_PCR_SELECTION extends StandardTPMStruct {
 		return this.hash.getHashId().getAlgId();
 	}
 	
+	public int getSize() {
+		return (int) this.sizeofSelect;
+	}
+	
+	public int getNumOfRegisters() {
+		return (int) this.sizeofSelect * 8;
+	}
+	
+	public int getNumOfSetRegisters() {
+		int ret = 0;
+		for(int i = 0; i < this.getNumOfRegisters(); i++) {
+			if(this.isPcrSelected(i)) {
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
 	// check if a single bit at position bit is set inside arr
-	public boolean isSet(byte arr, int bit) {
+	public static boolean isSet(byte arr, int bit) {
 	    return BigInteger.valueOf(arr).testBit(bit);
 	}
 	
 	// #sizeofSelect times octet (8)
-	public int getNumPcrs() {
-		return this.sizeofSelect * 8;
-	}
-	
-	// #sizeofSelect times octet (8)
-	public double getOctet(int numRegister) {
+	public static double getOctet(int numRegister) {
 		return Math.floor(numRegister / 8);
 	}
 	
 	// check if pcr @numRegister is set or not
 	public boolean isPcrSelected(int numRegister) {
-		byte mask = this.pcrSelect[(int) this.getOctet(numRegister)];
-		return this.isSet(mask, numRegister % 8);
+		byte mask = this.pcrSelect[(int) TPMS_PCR_SELECTION.getOctet(numRegister)];
+		return TPMS_PCR_SELECTION.isSet(mask, numRegister % 8);
 	}
 
 }

@@ -39,7 +39,12 @@ public class TPMS_QUOTE_INFO extends TPMU_ATTEST {
 	}
 	
 	@Override
-	public TPM2B_DIGEST getDigest() {
+	public TPM2B_DIGEST getPcrDigest() {
 		return this.pcrDigest;
+	}
+
+	@Override
+	public TPML_PCR_SELECTION getPcrSelect() {
+		return this.pcrSelect;
 	}
 }

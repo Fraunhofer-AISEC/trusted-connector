@@ -1,5 +1,7 @@
 package de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b;
 
+import java.math.BigInteger;
+
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayReadWriter;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayUtil;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.StandardTPMStruct;
@@ -68,4 +70,9 @@ public class TPM2B_PUBLIC extends StandardTPMStruct {
 	public byte[] getBuffer() {
 		return this.toBytes();
 	} 
+	
+	public BigInteger getModulus() {
+		String hex = ByteArrayUtil.toPrintableHexString(this.getPublicArea().getUnique().getBuffer()).replaceAll("\n", " ").replaceAll(" ", "");
+		return new BigInteger(hex, 16);
+	}
 }
