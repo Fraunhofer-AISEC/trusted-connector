@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.MessageLite;
 import com.ning.http.client.ws.WebSocket;
 
-import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -24,6 +23,7 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
  * Generator of protocols over a websocket session.
  * 
  * @author Julian Schütte
+ * @author Georg Räß
  *
  */
 public class ProtocolMachine {
@@ -46,25 +46,30 @@ public class ProtocolMachine {
 	public FSM initIDSConsumerProtocol(WebSocket websocket) {
 		this.ws = websocket;
 		FSM fsm = new FSM();
-		fsm.addState("START");
-		fsm.addState("RAT:AWAIT_CONFIRM");
-		fsm.addState("RAT:AWAIT_RESULT");
-		fsm.addState("RAT:AWAIT_LEAVE");
-		fsm.addState("SUCCESS");
+		// standard states
+		fsm.addState(ProtocolState.IDSCP_START);
+		fsm.addState(ProtocolState.IDSCP_ERROR);
+		fsm.addState(ProtocolState.IDSCP_SUCCESS);
+		
+		// rat states
+		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_CONFIRM);
+		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_RESULT);
+		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_LEAVE);
+		
 		
 		RemoteAttestationClientHandler h = new RemoteAttestationClientHandler(fsm, IdsAttestationType.BASIC);
 		
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition("start rat", "START", "RAT:AWAIT_CONFIRM", (e) -> {return replyProto(h.enterRatRequest(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, "RAT:AWAIT_CONFIRM", "RAT:AWAIT_RESULT", (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, "RAT:AWAIT_RESULT", "RAT:AWAIT_LEAVE", (e) -> {return replyProto(h.sendResult(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return replyProto(h.leaveRatRequest(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_START, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, (e) -> {return replyProto(h.enterRatRequest(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(h.sendResult(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_SUCCESS, (e) -> {return replyProto(h.leaveRatRequest(e));} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
-		fsm.setInitialState("START");
+		fsm.setInitialState(ProtocolState.IDSCP_START);
 		
 		return fsm;
 	}
@@ -72,26 +77,30 @@ public class ProtocolMachine {
 	public FSM initIDSProviderProtocol(Session sess) {
 		this.sess = sess;
 		FSM fsm = new FSM();
-		fsm.addState("AWAIT_RAT");
-		fsm.addState("RAT:AWAIT_CONFIRM");
-		fsm.addState("RAT:AWAIT_RESULT");
-		fsm.addState("RAT:AWAIT_LEAVE");
-		fsm.addState("SUCCESS");
-		fsm.addState("ERROR");
+		// standard states
+		fsm.addState(ProtocolState.IDSCP_START);
+		fsm.addState(ProtocolState.IDSCP_ERROR);
+		fsm.addState(ProtocolState.IDSCP_SUCCESS);
+		
+		// rat states
+		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_CONFIRM);
+		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_RESULT);
+		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_LEAVE);
+		
 		
 		RemoteAttestationServerHandler h = new RemoteAttestationServerHandler(fsm, IdsAttestationType.BASIC);
 
 		/* Remote Attestation Protocol */
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, "AWAIT_RAT", "RAT:AWAIT_CONFIRM", (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, "RAT:AWAIT_CONFIRM", "RAT:AWAIT_RESULT", (e) -> {return replyProto(h.sendResult(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, "RAT:AWAIT_RESULT", "RAT:AWAIT_LEAVE", (e) -> {return replyProto(h.leaveRatRequest(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, "RAT:AWAIT_LEAVE", "SUCCESS", (e) -> {return true;} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(h.sendResult(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(h.leaveRatRequest(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_SUCCESS, (e) -> {return true;} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
 		
 		/* Run the FSM */
-		fsm.setInitialState("START");
+		fsm.setInitialState(ProtocolState.IDSCP_START);
 		
 		return fsm;
 	}

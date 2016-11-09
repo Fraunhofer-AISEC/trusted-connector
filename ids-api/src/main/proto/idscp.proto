@@ -10,11 +10,12 @@ message ConnectorMessage {
 		SERVICE_RESPONSE = 3;
 		INTERNAL_PROPERTY_REQUEST = 4;
 		INTERNAL_PROPERTY_RESPONSE = 5;
-		RAT_REQUEST = 6;
+		RAT_START = 6;
+		RAT_REQUEST = 7;
 		RAT_RESPONSE = 8;
-		RAT_RESULT = 10;
-		RAT_LEAVE = 11;
-		ERROR = 12;
+		RAT_RESULT = 9;
+		RAT_LEAVE = 10;
+		ERROR = 11;
 	}
 	
 	// Identifies which field is filled in.

@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import de.fhg.ids.comm.ws.protocol.ProtocolState;
+
 /**
  * Implementation of a finite state machine (FSM).
  * 
@@ -33,6 +35,10 @@ public class FSM {
 		addState(state, null, null, null);
 	}
 
+	public void addState(ProtocolState state) {
+		addState(state.id(), null, null, null);
+	}
+	
 	/**
 	 * Defines an additional state. A state is identified by a name and has
 	 * three blocks of code assigned to it:
@@ -74,6 +80,10 @@ public class FSM {
 	 */
 	public void setInitialState(String state) {
 		this.initialState = state;
+	}
+	
+	public void setInitialState(ProtocolState state) {
+		this.initialState = state.id();
 	}
 
 	/**

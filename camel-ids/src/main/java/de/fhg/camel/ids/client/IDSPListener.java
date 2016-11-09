@@ -15,6 +15,7 @@ import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage.Type;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
+import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
@@ -41,7 +42,7 @@ public class IDSPListener extends DefaultWebSocketListener {
         fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket);
         
         // start the protocol with the first message
-        fsm.feedEvent(new Event("start rat", "", emptyMsg));
+        fsm.feedEvent(new Event(ConnectorMessage.Type.RAT_START, "", emptyMsg));
     }
 
     @Override
@@ -69,7 +70,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     			e.printStackTrace();
     		}
 
-    		if (fsm.getState().equals("SUCCESS")) {
+    		if (fsm.getState().equals(ProtocolState.IDSCP_SUCCESS.id())) {
 	    		isFinishedCond.signalAll();
 	    	}
 
