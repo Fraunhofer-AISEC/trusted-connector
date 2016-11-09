@@ -3,6 +3,7 @@ bin: target/classes
 testsrc: src/test/java
 testbin: target/test-classes
 Export-Package: \
+	de.fhg.aisec.ids.api,\
 	de.fhg.aisec.ids.api.broker,\
 	de.fhg.aisec.ids.api.cm,\
 	de.fhg.aisec.ids.api.configuration,\

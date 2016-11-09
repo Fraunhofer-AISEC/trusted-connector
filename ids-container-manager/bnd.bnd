@@ -10,5 +10,4 @@ Bundle-Vendor: Fraunhofer
 -noee=true
 -dsannotations: *
 Import-Package: \
-	,\
 	*

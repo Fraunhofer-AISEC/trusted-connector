@@ -1,16 +1,16 @@
-FROM frolvlad/alpine-oraclejdk8
+FROM frolvlad/alpine-oraclejdk8:cleaned
 MAINTAINER Julian Schütte (julian.schuette@aisec.fraunhofer.de)
 
-ADD docker-karaf/ /root/
+ADD docker-files/ /root/
 RUN apk --update add socat libstdc++ bash \
     && rm -rf /var/cache/apk/* \
     && rm /bin/sh \
     && ln -s /bin/bash /bin/sh
 
 # Some Java native libs require glibc, which must be added manually to Alpine linux
-RUN apk --update add wget curl ca-certificates tar && \
-    curl -Ls https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.21-r2/glibc-2.21-r2.apk > glibc.apk && \
-    apk add --allow-untrusted glibc.apk
+#RUN apk --update add wget curl ca-certificates tar && \
+#    curl -Ls https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.21-r2/glibc-2.21-r2.apk > glibc.apk && \
+#    apk add --allow-untrusted glibc.apk
 
 RUN ldconfig /lib /usr/glibc/usr/lib
 

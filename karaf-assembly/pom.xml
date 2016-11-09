@@ -38,7 +38,7 @@
 
         <!-- Import Karaf POM to use the correct version of the Karaf dependencies -->
     <dependencyManagement>
-    <dependencies>
+        <dependencies>
             <dependency>
                 <groupId>org.apache.karaf</groupId>
                 <artifactId>karaf</artifactId>
@@ -118,11 +118,11 @@
             <type>xml</type>
             <scope>runtime</scope>
         </dependency> 
-        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.15.2/camel-extra-2.15.2-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.15.2/camel-extra-2.18.0-features.xml -->
         <!--<dependency>
             <groupId>org.apache-extras.camel-extra.karaf</groupId>
             <artifactId>camel-extra</artifactId>
-            <version>2.15.0</version>
+            <version>${camel.version}</version>
             <classifier>features</classifier>
             <type>xml</type>
             <scope>runtime</scope>
@@ -163,8 +163,7 @@
             <scope>runtime</scope>
         </dependency>
 
-	
-
+        <!-- Repo for IDS feature -->
         <dependency>
             <groupId>de.fhg.ids</groupId>
             <artifactId>ids</artifactId>
@@ -173,7 +172,6 @@
             <classifier>features</classifier>
             <scope>runtime</scope>
 		</dependency>
-
     </dependencies>
     <build>
         <plugins>
@@ -229,15 +227,16 @@
                         <feature>cxf</feature>
                         <feature>camel-cxf</feature>
                         <feature>camel-blueprint</feature>
-			<feature>activemq-camel</feature>
+                        <feature>activemq-camel</feature>
                         <!--<feature>activemq-service</feature> -->
                         <feature>camel-xstream</feature>                        
                         <!--<feature>spring</feature> -->
-            			<!--<feature>spring-tx</feature> -->
-			            <feature>war</feature>
+                        <!--<feature>spring-tx</feature> -->
+                        <feature>war</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
