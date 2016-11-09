@@ -14,6 +14,8 @@ message ConnectorMessage {
 		RAT_RESPONSE = 8;
 		RAT_RESULT = 10;
 		RAT_LEAVE = 11;
+		META_DATA_REQUEST = 12;
+		META_DATA_RESPONSE = 13;
 	}
 	
 	// Identifies which field is filled in.
@@ -41,6 +43,9 @@ message ConnectorMessage {
 		AttestationResponse attestationResponse = 10;
 		AttestationResult attestationResult = 11;
 		AttestationLeave attestationLeave = 12;
+		
+		//a metadata exchange
+		MedadataExchange metadataExchange= 13;
 	}
 }
 
@@ -75,6 +80,12 @@ message PropertyResponse {
 	bool success = 1;
 	string value = 2;
 }
+
+message MedadataExchange {
+	string metadata = 1;
+}
+	
+
 
 // -------------------------------
 // REMOTE ATTESTATION BEGIN
