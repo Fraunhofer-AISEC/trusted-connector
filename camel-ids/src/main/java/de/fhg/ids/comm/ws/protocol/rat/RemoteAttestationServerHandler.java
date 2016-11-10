@@ -52,7 +52,7 @@ import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_ATTEST;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
 
-public class RemoteAttestationServerHandler {
+public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
 	private String SOCKET = "mock/tpm2ds.sock";
 	private String myNonce;
@@ -153,7 +153,9 @@ public class RemoteAttestationServerHandler {
 		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-
+		// get pcr values from server msg
+		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
+		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		try {
 			// construct a new TPM2B_PUBLIC from bkey bytes
 			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.fetchPublicKey(this.certUri));
@@ -193,22 +195,10 @@ public class RemoteAttestationServerHandler {
 						AttestationResult
 						.newBuilder()
 						.setAtype(this.aType)
-						.setResult(this.isAttestationSuccessful())
+						.setResult(this.attestationSuccessful(this.signatureCorrect, this.pcrValues))
 						.build()
 						)
 				.build();
-	}
-
-	private byte[] fetchPublicKey(String uri) throws Exception {
-		URL cert = new URL(uri);
-		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
-		String base64 = "";
-		String inputLine = "";
-        while ((inputLine = in.readLine()) != null) {
-        	base64 += inputLine;
-        }
-        in.close();
-        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
@@ -224,9 +214,5 @@ public class RemoteAttestationServerHandler {
 						.build()
 						)
 				.build();
-	}
-	
-	public boolean isAttestationSuccessful() {
-		return this.signatureCorrect && TrustedThirdParty.pcrValuesCorrect(this.pcrValues);
 	}
 }

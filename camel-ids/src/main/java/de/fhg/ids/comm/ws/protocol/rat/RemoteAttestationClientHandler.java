@@ -19,9 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
@@ -49,7 +46,7 @@ import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
 import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmu.TPMU_ATTEST;
 
 
-public class RemoteAttestationClientHandler {
+public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
 	private String SOCKET = "mock/tpm2dc.sock";
 	private String myNonce;
@@ -106,8 +103,8 @@ public class RemoteAttestationClientHandler {
 				.build();			
 	}
 	
+
 	public MessageLite sendTPM2Ddata(Event e) {
-		
 		Signature sg;
 		// get nonce from server msg
 		this.yourNonce = e.getMessage().getAttestationResponse().getQualifyingData().toString();
@@ -117,8 +114,9 @@ public class RemoteAttestationClientHandler {
 		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
 		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
-
-		
+		// get pcr values from server msg
+		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
+		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		try {
 			// construct a new TPM2B_PUBLIC from bkey bytes
 			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.fetchPublicKey(this.certUri));
@@ -212,7 +210,7 @@ public class RemoteAttestationClientHandler {
 						AttestationResult
 						.newBuilder()
 						.setAtype(this.aType)
-						.setResult(this.isAttestationSuccessful())
+						.setResult(this.attestationSuccessful(this.signatureCorrect, this.pcrValues))
 						.build()
 						)
 				.build();
@@ -231,22 +229,5 @@ public class RemoteAttestationClientHandler {
 						.build()
 						)
 				.build();
-	}
-
-	private boolean isAttestationSuccessful() {
-		return this.signatureCorrect && TrustedThirdParty.pcrValuesCorrect(this.pcrValues);
-	}
-	
-	// fetch a public key from a uri and return the key as a byte array
-	private byte[] fetchPublicKey(String uri) throws Exception {
-		URL cert = new URL(uri);
-		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
-		String base64 = "";
-		String inputLine = "";
-        while ((inputLine = in.readLine()) != null) {
-        	base64 += inputLine;
-        }
-        in.close();
-        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
 	}
 }
