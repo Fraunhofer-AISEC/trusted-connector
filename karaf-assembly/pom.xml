@@ -65,7 +65,7 @@
                  and features will installed into the system directory.
 
                  This imports the standard Karaf features described at
-                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/4.0.1/standard-4.0.1-features.xml
+                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/4.0.5/standard-4.0.5-features.xml
                  These features are installed in the karaf-maven-plugin configuration
             -->
             <groupId>org.apache.karaf.features</groupId>
@@ -75,6 +75,7 @@
             <version>${karaf.version}</version>
  			<!-- <scope>runtime</scope>  http://stackoverflow.com/questions/35433552/karaf-4-0-4-custom-distribution-karaf-maven-plugin -->
          </dependency>
+        
         <!--
             https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/4.0.1/enterprise-4.0.1-features.xml
         -->
@@ -86,7 +87,8 @@
             <version>${karaf.version}</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.1/spring-4.0.1-features.xml
+        
+        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.5/spring-4.0.5-features.xml
              Needed for Camel feature dependency
         -->
         <dependency>
@@ -97,9 +99,9 @@
             <type>xml</type>
             <scope>runtime</scope>
         </dependency>
+
         <!-- https://repo1.maven.org/maven2/org/apache/activemq/activemq-karaf/5.13.4/activemq-karaf-5.13.4-features.xml
         -->
-
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-karaf</artifactId>
@@ -109,7 +111,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.15.2/apache-camel-2.15.2-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.18.0/apache-camel-2.18.0-features.xml -->
         <dependency>
             <groupId>org.apache.camel.karaf</groupId>
             <artifactId>apache-camel</artifactId>
@@ -118,7 +120,7 @@
             <type>xml</type>
             <scope>runtime</scope>
         </dependency> 
-        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.15.2/camel-extra-2.18.0-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.18.0/camel-extra-2.18.0-features.xml -->
         <!--<dependency>
             <groupId>org.apache-extras.camel-extra.karaf</groupId>
             <artifactId>camel-extra</artifactId>
@@ -219,7 +221,6 @@
                         <feature>system</feature>
 
                         <!-- ActiveMQ with web console -->
-						<feature>ids</feature>
                         <feature>activemq-broker</feature>
                         <!-- Use this in production instead (no web console)-->
                         <!-- <feature>activemq-broker-noweb</feature> -->
@@ -227,12 +228,13 @@
                         <feature>cxf</feature>
                         <feature>camel-cxf</feature>
                         <feature>camel-blueprint</feature>
-                        <feature>activemq-camel</feature>
+                        <!--<feature>activemq-camel</feature> -->
                         <!--<feature>activemq-service</feature> -->
                         <feature>camel-xstream</feature>                        
-                        <!--<feature>spring</feature> -->
-                        <!--<feature>spring-tx</feature> -->
+                        <!-- <feature>spring</feature>
+                        <feature>spring-tx</feature> -->
                         <feature>war</feature>
+						<feature>ids</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>

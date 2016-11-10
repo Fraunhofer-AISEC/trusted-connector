@@ -160,6 +160,7 @@
 				<executions>
 					<!-- Required: The following will ensure `npm install` is called
 					     before anything else during the 'Default Lifecycle' -->
+
 					<execution>
 						<id>npm install (initialize)</id>
 						<goals>
@@ -173,8 +174,10 @@
 							</arguments>
 						</configuration>
 					</execution>
+
 					<!-- Required: The following will ensure `npm install` is called
 					     before anything else during the 'Clean Lifecycle' -->
+
 					<execution>
 						<id>npm install (clean)</id>
 						<goals>
@@ -188,7 +191,7 @@
 							</arguments>
 						</configuration>
 					</execution>
-
+				
 					<!-- Optional: The following will output the npm configuration.
 					     I do this so my CI logs will show the npm information used
 							 for the build -->
@@ -227,7 +230,7 @@
 
 					<!-- Required: The following calls the npm script that cleans
 					     up the build. -->
-					<execution>
+			<!--		<execution>
 						<id>npm run clean (clean)</id>
 						<goals>
 							<goal>exec</goal>
@@ -240,7 +243,7 @@
 								<argument>clean</argument>
 							</arguments>
 						</configuration>
-					</execution>
+					</execution> -->
 				
 				</executions>
 				
