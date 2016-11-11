@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<repository increment="1474382761517" name="ids-policy-manager" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="ids-policy-manager"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" type="Version" value="0.0.0"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="osgi.content" value="548b075fc88768bdae49f0ed5f49c851fad0828b38d8aef3a6c452e6f2f520c5"/>
+      <attribute name="url" value="generated/ids-policy-manager.jar"/>
+      <attribute name="size" type="Long" value="1803"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="osgi.wiring.bundle" value="ids-policy-manager"/>
+      <attribute name="bundle-version" type="Version" value="0.0.0"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="osgi.wiring.host" value="ids-policy-manager"/>
+      <attribute name="bundle-version" type="Version" value="0.0.0"/>
+    </capability>
+    <capability namespace="bndtools.workspace">
+      <attribute name="bndtools.workspace" value="file:/home/julian/workspace/carbits/karaf-policy-platform"/>
+      <attribute name="project.path" value="/ids-policy-manager"/>
+    </capability>
+  </resource>
+</repository>
