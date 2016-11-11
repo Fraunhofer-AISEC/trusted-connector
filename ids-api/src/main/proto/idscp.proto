@@ -10,11 +10,15 @@ message ConnectorMessage {
 		SERVICE_RESPONSE = 3;
 		INTERNAL_PROPERTY_REQUEST = 4;
 		INTERNAL_PROPERTY_RESPONSE = 5;
-		RAT_REQUEST = 6;
+		RAT_START = 6;
+		RAT_REQUEST = 7;
 		RAT_RESPONSE = 8;
-		RAT_RESULT = 10;
-		RAT_LEAVE = 11;
-		ERROR = 12;
+		RAT_RESULT = 9;
+		RAT_LEAVE = 10;
+		ERROR = 11;
+		META_DATA_REQUEST = 12;
+		META_DATA_RESPONSE = 13;
+
 	}
 	
 	// Identifies which field is filled in.
@@ -45,6 +49,8 @@ message ConnectorMessage {
 		
 		// an error msg
 		Error error = 13;
+				//a metadata exchange
+		MedadataExchange metadataExchange= 14;
 	}
 }
 
@@ -84,6 +90,12 @@ message PropertyResponse {
 	bool success = 1;
 	string value = 2;
 }
+
+message MedadataExchange {
+	string metadata = 1;
+}
+	
+
 
 // -------------------------------
 // REMOTE ATTESTATION BEGIN

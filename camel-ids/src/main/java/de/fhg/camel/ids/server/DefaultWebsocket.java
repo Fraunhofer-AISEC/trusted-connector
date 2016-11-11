@@ -34,6 +34,7 @@ import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage.Type;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
+import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
@@ -76,7 +77,7 @@ public class DefaultWebsocket implements Serializable {
     public void onMessage(String message) {
         
         // Check if fsm is in its final state and successful. Only then, the message is forwarded to Camel consumer
-        if (idsFsm.getState().equals("SUCCESS")) {
+        if (idsFsm.getState().equals(ProtocolState.IDSCP_SUCCESS.id())) {
 	        if (this.consumer != null) {
 	            this.consumer.sendMessage(this.connectionKey, message);
 	        } else {
@@ -105,7 +106,7 @@ public class DefaultWebsocket implements Serializable {
     public void onMessage(byte[] data, int offset, int length) {
         //LOG.debug("server received onMessage " + new String(data));
         
-        if (idsFsm.getState().equals("SUCCESS")) {//TODO Check if fsm is in its final state and successful
+        if (idsFsm.getState().equals(ProtocolState.IDSCP_SUCCESS.id())) {//TODO Check if fsm is in its final state and successful
         	System.out.println("Successfully finished IDSP");
 	        // TODO this should only be done when the IDS protocol has been finished successfully
 	        if (this.consumer != null) {
