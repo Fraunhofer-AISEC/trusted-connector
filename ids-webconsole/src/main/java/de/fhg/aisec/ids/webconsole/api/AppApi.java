@@ -13,7 +13,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 /**
  * REST API interface.
  * 
- * The API will be available at http://localhost:8181/cxf/api/<method>.
+ * The API will be available at http://localhost:8181/cxf/api/v1/<method>.
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *

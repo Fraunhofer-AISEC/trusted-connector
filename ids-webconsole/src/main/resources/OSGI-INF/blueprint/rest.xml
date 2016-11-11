@@ -14,7 +14,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 		</cxf:features>
 	</cxf:bus>
 
-	<jaxrs:server address="/api" id="someRestService">
+	<jaxrs:server address="/api/v1" id="ids_rest_api">
 		<!-- This is where API endpoints are registered for CXF -->
 		<jaxrs:serviceBeans>
 			<bean id="app" class="de.fhg.aisec.ids.webconsole.api.AppApi" />

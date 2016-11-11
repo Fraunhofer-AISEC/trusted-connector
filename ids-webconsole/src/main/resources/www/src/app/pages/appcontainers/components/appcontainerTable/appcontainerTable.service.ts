@@ -31,7 +31,7 @@ export class AppContainerService {
    */
   getAppList() : Promise<any> {
     // return an observable    
-    return this.jsonp.get('http://localhost:8181/cxf/api/apps/list?_jsonp=JSONP_CALLBACK')
+    return this.jsonp.get('http://localhost:8181/cxf/api/v1/apps/list?_jsonp=JSONP_CALLBACK')
     .toPromise()
     .then( (responseData:Response) => 
       responseData.json()

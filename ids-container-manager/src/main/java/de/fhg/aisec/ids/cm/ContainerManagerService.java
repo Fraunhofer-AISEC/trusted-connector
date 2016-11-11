@@ -29,22 +29,17 @@ import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
  */
 @Component(enabled=true, immediate=true, name="ids-cml")
 public class ContainerManagerService implements ContainerManager {
-	private final static Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager containerManager = null;
 
 	@Activate
 	protected void activate() {
-		System.out.println("Activating Container Manager");
+		LOG.info("Activating Container Manager");
 		// When activated, try to set container management instance
 		Optional<ContainerManager> cm = getDefaultCM();
 		if (cm.isPresent()) {
 			LOG.info("Default container management is " + cm.get());
 			containerManager = cm.get();
-			
-			List<ApplicationContainer> conts = containerManager.list(false);
-			for (ApplicationContainer cont:conts) {
-				System.out.println("   Container: " + cont);
-			}
 		} else {
 			LOG.info("There is no supported container management");
 		}
@@ -53,7 +48,7 @@ public class ContainerManagerService implements ContainerManager {
 	
 	@Deactivate
 	protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
-		
+		containerManager = null;		
 	}
 	
 	

@@ -6,9 +6,15 @@ Karaf is merely a set of different "features". A feature is a deployment unit wh
 
 In addition to standard Karaf features, we also create our own custom feature which is extends Camel with a new protocol endpoint "ids://". The actual code for this feature is in project "camel-ids" and the definition of the Karaf feature is in "ids-karaf-feature".
 
-To build the project:
 
-Built it:
+
+# How to build
+
+## Install Docker 
+
+
+
+## Run Maven
 
 ```
 mvn clean install
@@ -17,7 +23,12 @@ mvn clean install
 You will now have a custom installation of Karaf including our own features in `karaf-assembly/target/assembly`
 
 
-Run it:
+
+# How to run
+
+
+
+## Variant 1: Run locally without docker
 
 ```
 karaf-assembly/target/assembly/bin/karaf clean debug
@@ -28,7 +39,59 @@ karaf-assembly/target/assembly/bin/karaf clean debug
 
 If everything goes fine, you will see a Karaf shell. Type `help` to get started with it.
 
-# Getting around in the Karaf shell
+
+
+
+
+## Variant 2: Run in docker
+
+
+```
+./runDocker.sh
+```
+
+
+
+## URLs
+
+When running, the following URLs will be available:
+
+
+`http://localhost:8181/ids`
+
+IDS connector dashboard. This is the main UI of the connector and used for configuring the connector by the user.
+
+
+`http://localhost:8181/activemqweb/`
+
+Management console for ActiveMQ. Use it during development to set up message queues and send test events. May be turned off for production.
+
+
+`http://localhost:8181/cxf/api/v1/apps/list`
+
+REST API endpoint for listing installed containers (dockers or trustme)
+
+`http://localhost:8181/cxf/api/v1/apps/pull?imageId=<string>`
+
+Pull and image and creates a container (but does not start it yet).
+
+`http://localhost:8181/cxf/api/v1/apps/start?containerID=<string>`
+
+Starts a container.
+
+`http://localhost:8181/cxf/api/v1/apps/stop?containerId=<string>`
+
+Stops a container.
+
+
+`http://localhost:8181/cxf/api/v1/apps/wipe?containerId=<string>`
+
+Removes a container (the image remains).
+
+`http://localhost:8181/cxf/api/v1/config/list`
+
+
+## Getting around in the Karaf shell
 
 The Karaf shell is an adminstration environment for the Karaf platform. Try the following commands to check whether everything works:
 
@@ -44,7 +107,10 @@ The Karaf shell is an adminstration environment for the Karaf platform. Try the 
 
 `Ctrl+d`: Exits the Karaf shell
 
-# A simple route
+
+
+
+# Configuring routes
 
 Create a file `karaf-assembly/target/assembly/deploy/my_route.xml` and paste the following lines into it:
 

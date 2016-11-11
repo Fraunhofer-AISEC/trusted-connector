@@ -26,7 +26,7 @@ import de.fhg.aisec.ids.api.cm.ContainerManager;
  */
 @Component(enabled = true, immediate = true, name = "ids-metadata")
 public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
-	private final static Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager cm;
 
 	/**

@@ -26,12 +26,9 @@ import de.fhg.aisec.ids.cm.impl.StreamGobbler;
  *
  */
 public class DockerCM implements ContainerManager {
-	private final static Logger LOG = LoggerFactory.getLogger(DockerCM.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DockerCM.class);
 	private static final String DOCKER_CLI = "docker";	//Name of docker cli executable
-	
-	public DockerCM() {
-	}
-		
+			
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
 		List<ApplicationContainer> result = new ArrayList<ApplicationContainer>();
@@ -48,8 +45,6 @@ public class DockerCM implements ContainerManager {
 			cmd.add("--format");
 			cmd.add("{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}");
 			
-			cmd.forEach(x -> System.out.println(x));
-
 			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
 			Process p = pb.start();
 			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
