@@ -6,7 +6,24 @@
       http://www.osgi.org/xmlns/blueprint/v1.0.0
       http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
 
-  <bean id="myInterceptor" class="de.fhg.aisec.dfpolicy.PEP"/>
+<!-- The following block is necessary to make the camel-hdfs2 component load in Karaf. You will get "no filesystem for scheme hdfs" otherwise. -->
+<bean id="hdfsOsgiHelper" class="org.apache.camel.component.hdfs2.HdfsOsgiHelper">
+   <argument>
+      <map>
+         <entry key="file:///" value="org.apache.hadoop.fs.LocalFileSystem"  />
+         <entry key="hdfs://192.168.56.102:8020/" value="org.apache.hadoop.hdfs.DistributedFileSystem" />
+      </map>
+   </argument>
+</bean>
+<bean id="hdfs2" class="org.apache.camel.component.hdfs2.HdfsComponent" depends-on="hdfsOsgiHelper" />
+
+
+<!-- Completely unrelated, but this is how the contents of META-INF/MANIFEST.MF within the bundle that is created from this file can be changed -->
+<!--<manifest xmlns="http://karaf.apache.org/xmlns/deployer/blueprint/v1.0.0">
+    Import-Package=org.apache.hadoop.hdfs
+  </manifest> -->
+
+   <bean id="myInterceptor" class="de.fhg.aisec.dfpolicy.PEP"/>
 
    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
    <property name="connectionFactory">
