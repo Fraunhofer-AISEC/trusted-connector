@@ -219,7 +219,8 @@
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
-
+                        <feature>camel-spring-dm</feature>
+                        <feature>camel-sjms</feature>
                         <!-- ActiveMQ with web console -->
                         <feature>activemq-broker</feature>
                         <!-- Use this in production instead (no web console)-->
