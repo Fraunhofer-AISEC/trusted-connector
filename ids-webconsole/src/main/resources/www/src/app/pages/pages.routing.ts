@@ -9,6 +9,7 @@ const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadChildren: () => System.import('./dashboard/dashboard.module') },
       { path: 'apps/installed-apps', loadChildren: () => System.import('./appcontainers/appcontainers.module') },
+      { path: 'identities/identities-my', loadChildren: () => System.import('./identities/identities.module') },
       { path: 'pipes', loadChildren: () => System.import('./dashboard/dashboard.module') },
       { path: 'settings', loadChildren: () => System.import('./settings/settings.module') },
     ]

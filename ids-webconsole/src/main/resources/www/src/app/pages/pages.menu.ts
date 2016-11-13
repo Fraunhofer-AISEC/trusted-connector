@@ -52,7 +52,7 @@ export const PAGES_MENU = [
             path: 'identities-my',
             data: {
               menu: {
-                title: 'My Identities',
+                title: 'My Identity',
               }
             }
           },
