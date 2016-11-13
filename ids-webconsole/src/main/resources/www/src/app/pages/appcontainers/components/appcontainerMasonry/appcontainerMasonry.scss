@@ -1,0 +1,21 @@
+@import "../../../../theme/sass/conf/conf";
+
+.brick {border: 1px solid #000}
+
+.attribute {
+	margin-bottom: 15px;
+}
+
+.attribute .attribute-key {
+	padding-top: 8px;
+	font-size: 18px
+}
+
+.attribute .attribute-value {
+	padding-top: 8px;
+	font-size: 24px
+}
+
+.description {
+	padding-top: 10px;
+}

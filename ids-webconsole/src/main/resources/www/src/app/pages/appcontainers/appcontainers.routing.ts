@@ -1,13 +1,13 @@
 import { Routes, RouterModule }  from '@angular/router';
 
 import { AppContainer } from './appcontainers.component';
-import { AppContainerTable } from './components/appcontainerTable/appcontainerTable.component';
+import { AppContainerMasonry } from './components/appcontainerMasonry/appcontainerMasonry.component';
 
 // noinspection TypeScriptValidateTypes
 const routes: Routes = [
   {
     path: '',
-    component: AppContainerTable,
+    component: AppContainerMasonry,
     children: [
       //{ path: 'appcontainers', component: AppContainerTable }
     ]

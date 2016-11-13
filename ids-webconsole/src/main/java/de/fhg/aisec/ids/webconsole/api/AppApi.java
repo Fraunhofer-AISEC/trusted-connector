@@ -30,7 +30,7 @@ public class AppApi {
 			return new Gson().toJson("false");
 		}
 		
-		return new Gson().toJson(cml.list(true));		
+		return new Gson().toJson(cml.list(false));		
 	}
 	
 	@GET

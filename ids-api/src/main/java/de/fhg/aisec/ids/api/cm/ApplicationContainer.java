@@ -1,5 +1,11 @@
 package de.fhg.aisec.ids.api.cm;
 
+/**
+ * Bean representing an "Application Container" (aka a docker container).
+ * 
+ * @author julian.schuette@aisec.fraunhofer.de
+ *
+ */
 public class ApplicationContainer {
 	private String id;
 	private String image;

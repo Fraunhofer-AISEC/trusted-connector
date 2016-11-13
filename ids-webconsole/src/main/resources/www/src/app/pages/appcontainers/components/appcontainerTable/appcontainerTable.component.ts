@@ -2,6 +2,7 @@ import {Component, ViewEncapsulation} from '@angular/core';
 
 import { AppContainerService } from './appcontainerTable.service';
 import { LocalDataSource } from 'ng2-smart-table';
+ 
 
 @Component({
   selector: 'basic-tables',

@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule, JsonpModule } from '@angular/http';
 import { RouterModule } from '@angular/router';
 import { removeNgStyles, createNewHosts, createInputTransfer } from '@angularclass/hmr';
+import { MasonryModule } from 'angular2-masonry';
 
 /*
  * Platform and Environment providers/directives/pipes
@@ -47,7 +48,8 @@ type StoreType = {
     ReactiveFormsModule,
     NgaModule,
     PagesModule,
-    routing
+    routing,
+    MasonryModule
   ],
   providers: [ // expose our Services and Providers into Angular's dependency injection
     ENV_PROVIDERS,
