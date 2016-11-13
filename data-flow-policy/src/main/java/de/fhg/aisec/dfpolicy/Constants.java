@@ -1,10 +1,13 @@
 package de.fhg.aisec.dfpolicy;
 
-public interface Constants {
-	public final String LABEL = "LABEL";
-	public final String AS = "AS";
-	public final String TO = "TO";
-	public final String FROM = "FROM";
-	public final String ALLOW = "ALLOW";
-	public final String REMOVELABEL = "REMOVELABEL";
+public class Constants {
+		
+	public static final String LABEL = "LABEL";
+	public static final String AS = "AS";
+	public static final String TO = "TO";
+	public static final String FROM = "FROM";
+	public static final String ALLOW = "ALLOW";
+	public static final String REMOVELABEL = "REMOVELABEL";
+	
+	private Constants() { /*Private, do not call */ }
 }

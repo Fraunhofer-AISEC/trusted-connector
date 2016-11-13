@@ -1,13 +1,13 @@
 package de.fhg.aisec.dfpolicy;
 
-import java.util.Set;
+import java.util.List;
 
 public class LabelingRule extends Rule {
 	
 	private String attribute;
 	
-	public LabelingRule(String attribute, Set<String> label) {
-		super.setLabel(label);
+	public LabelingRule(String attribute, List<String> labels) {
+		super.setLabel(labels);
 		this.setAttribute(attribute);
 	}
 	
@@ -38,10 +38,7 @@ public class LabelingRule extends Rule {
 
         LabelingRule labelRule = (LabelingRule) o;
 
-        if (labelRule.attribute.equals(attribute) &&
-        		this.getLabel().equals(labelRule.getLabel()))
-            return true;
-        else
-        	return false;
+        return labelRule.attribute.equals(attribute) &&
+        		this.getLabel().equals(labelRule.getLabel());
     }
 }

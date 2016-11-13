@@ -6,7 +6,6 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.InterceptStrategy;
 
 /**
- * TODO Implement me!
  * 
  * @author Mathias Morbitzer (mathias.morbitzer@aisec.fraunhofer.de)
  */
@@ -18,8 +17,6 @@ public class PEP implements InterceptStrategy {
                                                  final Processor target, final Processor nextTarget) throws Exception {
  
         return new MyProcessor(target);
-        
-
     }
 
 }
