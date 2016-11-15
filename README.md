@@ -13,8 +13,10 @@ In addition to standard Karaf features, we also create our own custom feature wh
 ## Dependencies
 Denpending on your OS, you might need Node.js installed:
 For Ubuntu, (after installing curl if needed) run:
+```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 sudo apt-get install -y nodejs
+```
 
 ## Build web frontend/check Node.js installation
 go to ids-webconsole/src/main/resources/www
