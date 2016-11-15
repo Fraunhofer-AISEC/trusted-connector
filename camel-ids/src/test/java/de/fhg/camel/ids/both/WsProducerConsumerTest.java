@@ -79,19 +79,19 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     	try {
     		socketServer = new File("mock/tpm2ds.sock");
     		socketClient = new File("mock/tpm2dc.sock");
-    		tpm2dserver = new ProcessBuilder("python3", "mock/tpm2d.py", socketClient.getPath()).start();
+    		tpm2dserver = new ProcessBuilder("mock/bin/python3", "mock/tpm2d.py", socketClient.getPath()).start();
     		while (!tpm2dserver.isAlive()) {
     		    try { 
     		        Thread.sleep(250);
     		    } catch (InterruptedException ie) { /* safe to ignore */ }
     		}
-    		tpm2dclient = new ProcessBuilder("python3", "mock/tpm2d.py", socketServer.getPath()).start();
+    		tpm2dclient = new ProcessBuilder("mock/bin/python3", "mock/tpm2d.py", socketServer.getPath()).start();
     		while (!tpm2dclient.isAlive()) {
     		    try { 
     		        Thread.sleep(250);
     		    } catch (InterruptedException ie) { /* safe to ignore */ }
     		}
-    		ttp = new ProcessBuilder("python3", "mock/ttp.py").start();
+    		ttp = new ProcessBuilder("mock/bin/python3", "mock/ttp.py").start();
 		} catch (IOException e) {
 			log.debug("could not start python mock server");
 			e.printStackTrace();

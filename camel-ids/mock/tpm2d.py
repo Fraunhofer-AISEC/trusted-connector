@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env mock/bin/python3
 import socket
 import sys
 import os
