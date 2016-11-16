@@ -1,0 +1,1 @@
+/home/georg/Projekte/karaf-policy-platform/camel-ids/mock/attestation_pb2.py
