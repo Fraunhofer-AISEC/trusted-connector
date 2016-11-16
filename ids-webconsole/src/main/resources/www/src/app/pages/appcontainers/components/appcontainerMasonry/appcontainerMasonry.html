@@ -1,5 +1,5 @@
-<masonry [options]="{ 'columnWidth': '.col-xlg-3', 'gutter': 30 }">
-  <masonry-brick *ngFor="let app of apps"  class="col-xlg-3">
+<masonry [options]="{  'gutter': 0 }">
+  <masonry-brick *ngFor="let app of apps"  class="col-lg-5">
     <ba-card title="{{app.image}}" baCardClass="medium-card">
     <div class="card-body">
 	    <div class="attribute">
