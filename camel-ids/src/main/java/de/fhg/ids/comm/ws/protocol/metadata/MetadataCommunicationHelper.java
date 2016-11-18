@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat;
+package de.fhg.ids.comm.ws.protocol.metadata;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

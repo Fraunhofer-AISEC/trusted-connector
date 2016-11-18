@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat;
+package de.fhg.ids.comm.ws.protocol.metadata;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
