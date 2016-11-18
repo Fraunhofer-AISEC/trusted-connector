@@ -37,7 +37,8 @@ public class TrustedThirdPartyTest {
 
     @Test
     public void testObjToJsonString() throws Exception {
-    	String result = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"1\":\"0000000000000000000000000000000000000000000000000000000000000000\"}}";
+    	String result = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"1\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"success\":false}";
+    	System.out.println(this.ttp.jsonToString("myFunkyFreshNonce"));
     	assertTrue(this.ttp.jsonToString("myFunkyFreshNonce").equals(result));
     }
 }
