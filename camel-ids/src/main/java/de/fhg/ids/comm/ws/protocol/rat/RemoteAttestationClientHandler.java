@@ -39,6 +39,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
 	private UnixSocketResponsHandler handler;
 	private UnixSocketThread client;
+	private TrustedThirdParty ttp;
 	private Thread thread;
 	private byte[] yourQuoted;
 	private byte[] yourSignature;
@@ -103,7 +104,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		try {
 			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.fetchPublicKey(this.certUri));
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(RemoteAttestationHandler.fetchPublicKey(this.certUri));
 			// and convert it into an DER key
 			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
 			// construct a new TPMT_SIGNATURE from yourSignature bytes
@@ -186,6 +187,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
+		this.ttp = new TrustedThirdParty(this.pcrValues);
 		try {
 			return ConnectorMessage
 					.newBuilder()
@@ -195,7 +197,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 							AttestationResult
 							.newBuilder()
 							.setAtype(this.aType)
-							.setResult(this.attestationSuccessful(this.signatureCorrect, this.pcrValues))
+							.setResult(this.signatureCorrect && this.ttp.pcrValuesCorrect())
 							.build()
 							)
 					.build();

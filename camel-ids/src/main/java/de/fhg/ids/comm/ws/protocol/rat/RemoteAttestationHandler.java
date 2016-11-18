@@ -9,11 +9,6 @@ import de.fhg.aisec.ids.messages.Idscp.Pcr;
 
 public class RemoteAttestationHandler {
 
-
-	protected boolean attestationSuccessful(boolean signatureCorrect, Pcr[] pcrValues) throws IOException {
-		return signatureCorrect && TrustedThirdParty.pcrValuesCorrect(pcrValues);
-	}
-	
 	// fetch a public key from a uri and return the key as a byte array
 	protected static byte[] fetchPublicKey(String uri) throws Exception {
 		URL cert = new URL(uri);

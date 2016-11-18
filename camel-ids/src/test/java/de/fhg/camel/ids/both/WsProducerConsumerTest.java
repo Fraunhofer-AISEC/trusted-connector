@@ -90,67 +90,29 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 		String folder = socketServer.getAbsolutePath().substring(0, socketServer.getAbsolutePath().length() - sockets.length());
 
 		// build a docker imagess
-    	ProcessBuilder image = new ProcessBuilder("docker", "build", "-t", dockerName, "./mock");
-    	
-    	// then start the docker image as tpm2d for the server
-    	ProcessBuilder tpm2dsService = new ProcessBuilder("docker", 
-    			"run", 
-    			"--rm",
-    			"-v",
-    			folder +":/socket/",
-    			dockerName,
-    			"su -m tpm2d -c '/tpm2d/tpm2d.py /socket/tpm2ds.sock'");
-    	
-    	// then start the docker image as tpm2d for the client
-    	ProcessBuilder tpm2dcService = new ProcessBuilder("docker", 
-    			"run", 
-    			"--rm",
-    			"-v",
-    			folder +":/socket/",
-    			dockerName,
-    			"su -m tpm2d -c '/tpm2d/tpm2d.py /socket/tpm2dc.sock'");
-    	
-    	// then start a ttp with a port
-    	ProcessBuilder ttpService = new ProcessBuilder("docker", "run", "--rm","-P", dockerName, "/tpm2d/ttp.py");
-
-    	// start build process
+    	ProcessBuilder image = new ProcessBuilder("docker", "build", "-t", dockerName, "mock");
     	Process generator = image.start();
     	
-    	// start tpm2d services
-    	tpm2ds = tpm2dsService.start();
+    	// then start the docker image as tpm2d for the server
+    	ProcessBuilder tpm2dsService = new ProcessBuilder("docker", "run", "--name", "tpm2ds", "-d", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py");
+    	ProcessBuilder tpm2dcService = new ProcessBuilder("docker", "run", "--name", "tpm2dc", "-d", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py");
+    	ProcessBuilder ttpService = new ProcessBuilder("docker", "run", "--name", "ttp", "-d", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py");
     	tpm2dc = tpm2dcService.start();
-    	
-    	// start ttp service
+    	tpm2ds = tpm2dsService.start();
     	ttp = ttpService.start();
-    	
-    	String stdOut2 = getInputAsString(ttp.getInputStream());
-    	String stdErr2 = getInputAsString(ttp.getErrorStream());
-    	String stdOut3 = getInputAsString(tpm2ds.getInputStream());
-    	String stdErr3 = getInputAsString(tpm2ds.getErrorStream());
-    	String stdOut4 = getInputAsString(tpm2dc.getInputStream());
-    	String stdErr4 = getInputAsString(tpm2dc.getErrorStream());
-
-    	log.debug("---------------------------------------->" + stdOut2);
-    	log.debug("---------------------------------------->" + stdErr2);
-    	log.debug("---------------------------------------->" + stdOut3);
-    	log.debug("---------------------------------------->" + stdErr3);
-    	log.debug("---------------------------------------->" + stdOut4);
-    	log.debug("---------------------------------------->" + stdErr4);	
     }
     
     @After
     public void teardownMockServer() throws Exception {
-    	if(tpm2dc != null && tpm2dc.isAlive()) {
-    		tpm2dc.destroy();
-    		socketClient.delete();
-    	}
-    	if(tpm2ds != null && tpm2ds.isAlive()) {
-    		tpm2ds.destroy();
-    		socketServer.delete();
-    	}
-    	if(ttp != null && ttp.isAlive()) {
-    		ttp.destroy();
-    	}
+    	Process stopTtp = new ProcessBuilder("docker", "stop", "ttp").start();
+    	Process stopTpm2ds = new ProcessBuilder("docker", "stop", "tpm2ds").start();
+    	Process stopTpm2dc = new ProcessBuilder("docker", "stop", "tpm2dc").start();
+    	Process rmTtp = new ProcessBuilder("docker", "rm", "ttp").start();
+    	Process rmTpm2ds = new ProcessBuilder("docker", "rm", "tpm2ds").start();
+    	Process rmTpm2dc = new ProcessBuilder("docker", "rm", "tpm2dc").start();
+    	
+    	socketServer.delete();
+    	socketClient.delete();
     	server.stop();
         server.destroy();  
     }

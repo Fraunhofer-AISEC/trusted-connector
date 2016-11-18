@@ -34,8 +34,6 @@ class RestHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(pcr)
         return
      
-httpd = HTTPServer(('0.0.0.0', 7331), RestHTTPRequestHandler)
+httpd = HTTPServer(('0.0.0.0', 29663), RestHTTPRequestHandler)
 httpd.serve_forever()
-
-
 

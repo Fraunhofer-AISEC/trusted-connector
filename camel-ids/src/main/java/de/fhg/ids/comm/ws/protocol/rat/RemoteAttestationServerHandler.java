@@ -43,6 +43,7 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 	private String certUri;
 	private boolean signatureCorrect;
 	private Pcr[] pcrValues;
+	private TrustedThirdParty ttp;
 	
 	public RemoteAttestationServerHandler(FSM fsm, IdsAttestationType type) {
 		// set finite state machine
@@ -132,9 +133,10 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
 		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
+		this.ttp = new TrustedThirdParty(this.pcrValues);
 		try {
 			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.fetchPublicKey(this.certUri));
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(RemoteAttestationHandler.fetchPublicKey(this.certUri));
 			// and convert it into an DER key
 			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
 			// construct a new TPMT_SIGNATURE from yourSignature bytes
@@ -172,7 +174,7 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 							AttestationResult
 							.newBuilder()
 							.setAtype(this.aType)
-							.setResult(this.attestationSuccessful(this.signatureCorrect, this.pcrValues))
+							.setResult(this.signatureCorrect && this.ttp.pcrValuesCorrect())
 							.build()
 							)
 					.build();

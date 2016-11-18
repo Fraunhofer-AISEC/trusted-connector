@@ -12,6 +12,37 @@ option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "AttestationProtos";
 import "idscp.proto";
 
+message ControllerToTtp {
+	// type of attestation in the IDS context
+	IdsAttestationType atype = 1;
+
+	// nonce
+	string qualifyingData = 2;
+
+	// the explicit PCR values
+	repeated Pcr pcr_values = 3;
+}
+
+message TtpToController {
+	// type of attestation in the IDS context
+	IdsAttestationType atype = 1;
+
+	// nonce
+	string qualifyingData = 2;
+
+	// a signature over nonce and result
+	string signature = 3;	
+		
+	// a signature over nonce and result
+	bool result = 4;	
+
+	// the explicit PCR values
+	repeated Pcr pcr_values = 5;
+	
+	// an _optional_ URI to a certificate that includes the public key
+	string certificate_uri = 6;	
+}
+
 message ControllerToTpm {
 	enum Code {
 		INTERNAL_ATTESTATION_REQ = 0;

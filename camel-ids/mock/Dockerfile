@@ -12,7 +12,8 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 # make some directories
 RUN mkdir /tpm2d && mkdir /protoc && mkdir /socket
 # copy static data
-COPY data/tpm2d.py /tpm2d
+COPY data/tpm2ds.py /tpm2d
+COPY data/tpm2dc.py /tpm2d
 COPY data/attestation.proto /tpm2d
 COPY data/ttp.py /tpm2d
 COPY data/sigpubkey.bin /tpm2d
@@ -24,7 +25,7 @@ RUN protoc --proto_path=/tpm2d --python_out=/tpm2d /tpm2d/attestation.proto
 RUN chown -R tpm2d /tpm2d
 RUN chown -R tpm2d /socket
 RUN chown -R tpm2d /protoc
-EXPOSE 7331
+EXPOSE 29663
 #do not run on startup
 #RUN nohup /tpm2d/tpm2d.py /socket/socket1 &
 #RUN nohup /tpm2d/tpm2d.py /socket/socket2 &

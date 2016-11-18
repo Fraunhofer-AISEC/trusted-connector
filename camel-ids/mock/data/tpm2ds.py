@@ -4,7 +4,7 @@ import sys
 import os
 import attestation_pb2
 
-address = sys.argv[1]
+address = "/socket/tpm2ds.sock"
 
 try:
     os.unlink(address)
