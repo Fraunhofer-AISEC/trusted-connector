@@ -1,18 +1,16 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import com.google.protobuf.MessageLite;
-
 import de.fhg.aisec.ids.messages.Idscp.Pcr;
-import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 public class RemoteAttestationHandler {
 
 
-	protected boolean attestationSuccessful(boolean signatureCorrect, Pcr[] pcrValues) {
+	protected boolean attestationSuccessful(boolean signatureCorrect, Pcr[] pcrValues) throws IOException {
 		return signatureCorrect && TrustedThirdParty.pcrValuesCorrect(pcrValues);
 	}
 	

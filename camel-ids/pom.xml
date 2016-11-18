@@ -32,7 +32,7 @@
 	<repositories>
 		<repository>
 			<id>nexus</id>
-			<url>http://repository.netsec.aisec.fraunhofer.de/repository</url>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
 		</repository>
 	</repositories>		
 	<dependencies>

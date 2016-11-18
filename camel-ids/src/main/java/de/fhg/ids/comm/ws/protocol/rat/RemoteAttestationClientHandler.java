@@ -186,18 +186,35 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		return ConnectorMessage
-				.newBuilder()
-				.setId(0)
-				.setType(ConnectorMessage.Type.RAT_RESULT)
-				.setAttestationResult(
-						AttestationResult
-						.newBuilder()
-						.setAtype(this.aType)
-						.setResult(this.attestationSuccessful(this.signatureCorrect, this.pcrValues))
-						.build()
-						)
-				.build();
+		try {
+			return ConnectorMessage
+					.newBuilder()
+					.setId(0)
+					.setType(ConnectorMessage.Type.RAT_RESULT)
+					.setAttestationResult(
+							AttestationResult
+							.newBuilder()
+							.setAtype(this.aType)
+							.setResult(this.attestationSuccessful(this.signatureCorrect, this.pcrValues))
+							.build()
+							)
+					.build();
+		} catch (IOException e1) {
+			// attestation not successfull
+			e1.printStackTrace();
+			return ConnectorMessage
+					.newBuilder()
+					.setId(0)
+					.setType(ConnectorMessage.Type.RAT_RESULT)
+					.setAttestationResult(
+							AttestationResult
+							.newBuilder()
+							.setAtype(this.aType)
+							.setResult(false)
+							.build()
+							)
+					.build();			
+		}
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
