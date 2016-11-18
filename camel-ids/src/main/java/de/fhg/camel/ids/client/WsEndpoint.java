@@ -16,7 +16,6 @@
  */
 package de.fhg.camel.ids.client;
 
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,11 +36,6 @@ import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
-
-
-
 
 /**
  * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.

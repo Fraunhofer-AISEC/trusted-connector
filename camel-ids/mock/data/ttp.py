@@ -6,7 +6,7 @@ import cgi
 import json
 import base64
  
-with open('sigpubkey.bin', 'rb') as f:
+with open('/tpm2d/sigpubkey.bin', 'rb') as f:
     data = f.read()
      
 class RestHTTPRequestHandler(BaseHTTPRequestHandler):

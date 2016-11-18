@@ -17,14 +17,10 @@
 package de.fhg.camel.ids.both;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.security.cert.X509Certificate;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -55,53 +51,95 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private Process tpm2dclient = null;
-    private Process tpm2dserver = null;
+    private Process tpm2dc = null;
+    private Process tpm2ds = null;
     private Process ttp = null;
     private File socketServer;
     private File socketClient;
     protected List<Object> messages;
 	private static String PWD = "password";
-
+	private String dockerName = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dmock:latest";
+	private String sockets = "tpm2ds.sock";
+	private String socketc = "tpm2dc.sock";	
+	
     @Before
-    public void initMockServer() {
-    	try {
-    		socketServer = new File("mock/tpm2ds.sock");
-    		socketClient = new File("mock/tpm2dc.sock");
-    		
-    		tpm2dserver = new ProcessBuilder("mock/bin/python3", "mock/tpm2d.py", socketClient.getPath()).start();
-    		while (!tpm2dserver.isAlive()) {
-    		    try { 
-    		        Thread.sleep(250);
-    		    } catch (InterruptedException ie) { /* safe to ignore */ }
-    		}
-    		tpm2dclient = new ProcessBuilder("mock/bin/python3", "mock/tpm2d.py", socketServer.getPath()).start();
-    		while (!tpm2dclient.isAlive()) {
-    		    try { 
-    		        Thread.sleep(250);
-    		    } catch (InterruptedException ie) { /* safe to ignore */ }
-    		}
-    		ttp = new ProcessBuilder("mock/bin/python3", "mock/ttp.py").start();
-		} catch (IOException e) {
-			log.debug("could not start python tpm2d mock");
-			e.printStackTrace();
-		}
+    public void initMockServer() throws IOException, InterruptedException {
+		socketServer = new File("mock/socket/"+sockets);
+		socketClient = new File("mock/socket/"+socketc);
+		
+		String folder = socketServer.getAbsolutePath().substring(0, socketServer.getAbsolutePath().length() - sockets.length());
+
+		// build a docker imagess
+    	ProcessBuilder image = new ProcessBuilder("docker", "build", "-t", dockerName, "./mock");
+    	
+    	// then start the docker image as tpm2d for the server
+    	ProcessBuilder tpm2dsService = new ProcessBuilder("docker", 
+    			"run", 
+    			"--rm",
+    			"-v",
+    			folder +":/socket/",
+    			dockerName,
+    			"su -m tpm2d -c '/tpm2d/tpm2d.py /socket/tpm2ds.sock'");
+    	
+    	// then start the docker image as tpm2d for the client
+    	ProcessBuilder tpm2dcService = new ProcessBuilder("docker", 
+    			"run", 
+    			"--rm",
+    			"-v",
+    			folder +":/socket/",
+    			dockerName,
+    			"su -m tpm2d -c '/tpm2d/tpm2d.py /socket/tpm2dc.sock'");
+    	
+    	// then start a ttp with a port
+    	ProcessBuilder ttpService = new ProcessBuilder("docker", "run", "--rm","-P", dockerName, "/tpm2d/ttp.py");
+
+    	// start build process
+    	Process generator = image.start();
+    	
+    	// start tpm2d services
+    	tpm2ds = tpm2dsService.start();
+    	tpm2dc = tpm2dcService.start();
+    	
+    	// start ttp service
+    	ttp = ttpService.start();
+    	
+    	String stdOut2 = getInputAsString(ttp.getInputStream());
+    	String stdErr2 = getInputAsString(ttp.getErrorStream());
+    	String stdOut3 = getInputAsString(tpm2ds.getInputStream());
+    	String stdErr3 = getInputAsString(tpm2ds.getErrorStream());
+    	String stdOut4 = getInputAsString(tpm2dc.getInputStream());
+    	String stdErr4 = getInputAsString(tpm2dc.getErrorStream());
+
+    	log.debug("---------------------------------------->" + stdOut2);
+    	log.debug("---------------------------------------->" + stdErr2);
+    	log.debug("---------------------------------------->" + stdOut3);
+    	log.debug("---------------------------------------->" + stdErr3);
+    	log.debug("---------------------------------------->" + stdOut4);
+    	log.debug("---------------------------------------->" + stdErr4);		
     }
     
     @After
-    public void teardownMockServer() {
-    	if(tpm2dclient != null && tpm2dclient.isAlive()) {
-    		tpm2dclient.destroy();
+    public void teardownMockServer() throws Exception {
+    	if(tpm2dc != null && tpm2dc.isAlive()) {
+    		tpm2dc.destroy();
     		socketClient.delete();
     	}
-    	if(tpm2dserver != null && tpm2dserver.isAlive()) {
-    		tpm2dserver.destroy();
+    	if(tpm2ds != null && tpm2ds.isAlive()) {
+    		tpm2ds.destroy();
     		socketServer.delete();
     	}
     	if(ttp != null && ttp.isAlive()) {
     		ttp.destroy();
-    	}    	
+    	}
+    	server.stop();
+        server.destroy();    	
     }
+    
+    private String getInputAsString(InputStream is) {
+        try(java.util.Scanner s = new java.util.Scanner(is))  { 
+            return s.useDelimiter("\\A").hasNext() ? s.next() : ""; 
+        }
+     }    
     
     public void startTestServer() throws Exception {
         // start a simple websocket echo service

@@ -1,60 +1,36 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.CertificateFactory;
-import java.security.spec.EncodedKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.List;
 
-import javax.security.cert.X509Certificate;
 import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
-import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
+import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
-import de.fhg.ids.comm.unixsocket.UnixSocketThread;
+import de.fhg.aisec.ids.messages.Idscp.Pcr;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
+import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.NonceGenerator;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.PublicKeyConverter;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_ATTEST;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
+import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
+import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String SOCKET = "mock/tpm2ds.sock";
+	private String SOCKET = "mock/socket/tpm2ds.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;

@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat.tpm20.tools;
+package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -7,7 +7,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
 
 public class PublicKeyConverter {
 	

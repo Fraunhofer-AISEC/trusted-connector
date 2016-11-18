@@ -1,16 +1,8 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.math.BigInteger;
-import java.net.URL;
-import java.security.KeyFactory;
-import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.RSAPublicKeySpec;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -19,6 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
+import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
+import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
@@ -27,28 +22,17 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.Pcr;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.ByteArrayUtil;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.NonceGenerator;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.PublicKeyConverter;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm.TPM_ALG_ID;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm.TPM_ALG_ID.ALG_ID;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_DIGEST;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpm2b.TPM2B_PUBLIC;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpms.TPMS_ATTEST;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmt.TPMT_SIGNATURE;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tpmu.TPMU_ATTEST;
 
 
 public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String SOCKET = "mock/tpm2dc.sock";
+	private String SOCKET = "mock/socket/tpm2dc.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;

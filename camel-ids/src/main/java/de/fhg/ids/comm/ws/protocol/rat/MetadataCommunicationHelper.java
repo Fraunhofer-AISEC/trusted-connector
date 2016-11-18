@@ -11,7 +11,6 @@ import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
-import de.fhg.ids.comm.ws.protocol.rat.tpm20.tools.NonceGenerator;
 
 
 public class MetadataCommunicationHelper {
