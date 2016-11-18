@@ -29,7 +29,12 @@
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.15</ahc-version>
 	</properties>
-
+	<repositories>
+		<repository>
+			<id>nexus</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository</url>
+		</repository>
+	</repositories>		
 	<dependencies>
 		<dependency>
 			<groupId>de.fhg.ids</groupId>

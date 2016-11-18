@@ -38,6 +38,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 					<imageName>ids/core-platform:latest</imageName>
 					<dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
 				</configuration>
+				<version>0.4.13</version>
 				<executions>
 					<execution>
 						<id>build-image</id>
