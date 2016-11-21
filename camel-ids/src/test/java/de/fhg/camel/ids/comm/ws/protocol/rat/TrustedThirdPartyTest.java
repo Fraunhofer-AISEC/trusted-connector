@@ -20,21 +20,23 @@ public class TrustedThirdPartyTest {
 	Pcr[] values;
 	Pcr one;
 	Pcr two;
+	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
 	TrustedThirdParty ttp;
-	static Process docker;
 	private static String dockerName = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dmock:latest";
+	private static Process docker;
+	
 	
     @Before
     public void initTest() {
     	this.one = Pcr
     			.newBuilder()
     			.setNumber(0)
-    			.setValue("0000000000000000000000000000000000000000000000000000000000000000")
+    			.setValue(pcrValue)
     			.build();
     	this.two = Pcr
     			.newBuilder()
     			.setNumber(1)
-    			.setValue("0000000000000000000000000000000000000000000000000000000000000000")
+    			.setValue(pcrValue)
     			.build();
     	this.values = new Pcr[] {this.one, this.two};
     	this.ttp = new TrustedThirdParty(this.values);
@@ -42,28 +44,37 @@ public class TrustedThirdPartyTest {
     
     @BeforeClass
     public  static void initMockServer() throws InterruptedException, IOException {
+    	dockerStop();   	
     	// build a docker imagess
-    	new ProcessBuilder("docker", "build", "-t", dockerName, "mock").start();
+    	new ProcessBuilder("docker", "build", "-t", dockerName, "mock").start().waitFor();
     	// then start the docker image as ttp for the server
-    	new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
+    	docker = new ProcessBuilder("docker", "run", "-i", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
     }
     
     @AfterClass
     public static void teardownMockServer() throws Exception {
-		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start();
-    	new ProcessBuilder("docker", "rm", "-f", "ttp").start();
+    	dockerStop();
+    	docker.destroy();
+    }
+    
+    private static void dockerStop() throws InterruptedException, IOException {
+		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
+    	new ProcessBuilder("docker", "rm", "-f", "ttp").start().waitFor();
     }
     
     @Test
     public void testObjToJsonString() throws Exception {
-    	String result = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"1\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"success\":false,\"signature\":\"\"}";
+    	String result = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\""+pcrValue+"\",\"1\":\""+pcrValue+"\"},\"success\":false,\"signature\":\"\"}";
     	assertTrue(this.ttp.jsonToString("myFunkyFreshNonce").equals(result));
     }
 
     @Test
     public void testReadResponse() throws Exception {
-    	String request = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"1\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"success\":false,\"signature\":\"\"}";
-    	PcrMessage pcrResult = this.ttp.readResponse(request, "http://localhost:7331/");
+    	String request = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\""+pcrValue+"\",\"1\":\""+pcrValue+"\"},\"success\":false,\"signature\":\"\"}";
+    	while(!this.docker.isAlive()) {
+    		Thread.sleep(100L);
+    	}
+    	PcrMessage pcrResult = this.ttp.readResponse(request, "http://127.0.0.1:7331/");
     	assertTrue(pcrResult.getNonce().equals("myFunkyFreshNonce"));
     	assertTrue(pcrResult.getSignature().equals(""));
     	for (Map.Entry<Integer, String> entry : pcrResult.getValues().entrySet()) {
