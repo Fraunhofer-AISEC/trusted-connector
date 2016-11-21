@@ -71,9 +71,6 @@ public class TrustedThirdPartyTest {
     @Test
     public void testReadResponse() throws Exception {
     	String request = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\""+pcrValue+"\",\"1\":\""+pcrValue+"\"},\"success\":false,\"signature\":\"\"}";
-    	while(!this.docker.isAlive()) {
-    		Thread.sleep(100L);
-    	}
     	PcrMessage pcrResult = this.ttp.readResponse(request, "http://127.0.0.1:7331/");
     	assertTrue(pcrResult.getNonce().equals("myFunkyFreshNonce"));
     	assertTrue(pcrResult.getSignature().equals(""));
