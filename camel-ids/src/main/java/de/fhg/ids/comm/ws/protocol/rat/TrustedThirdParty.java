@@ -38,9 +38,9 @@ public class TrustedThirdParty {
 	public boolean pcrValuesCorrect() throws IOException {
 		freshNonce = NonceGenerator.generate();
 		if(this.pcrValues != null) {
-			JsonObject response = this.readResponse(this.jsonToString(freshNonce), ttpUrl);
-			
-			return true;
+			String json = this.jsonToString(freshNonce);
+			PcrMessage response = this.readResponse(json, ttpUrl);
+			return response.isSuccess();
 		}
 		else {
 			return false;
@@ -52,7 +52,8 @@ public class TrustedThirdParty {
 		return gson.toJson(new PcrMessage(nonce, pcrValues));
 	}
 	
-	public JsonObject readResponse(String json, String query) throws IOException {
+	public PcrMessage readResponse(String json, String query) throws IOException {
+		Gson gson = new Gson();
 		URL url = new URL(query);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setConnectTimeout(5000);
@@ -62,13 +63,12 @@ public class TrustedThirdParty {
 		conn.setRequestMethod("POST");
 		OutputStream os = conn.getOutputStream();
 		os.write(json.toString().getBytes("utf-8"));
+		os.flush();
 		os.close();
+		String jsonString = this.inputStreamToString(new BufferedInputStream(conn.getInputStream()));
 		// read the response
-		String result = this.inputStreamToString(new BufferedInputStream(conn.getInputStream()));
-		JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-		conn.disconnect();
-		return jsonObject;
-    }
+		return gson.fromJson(jsonString, PcrMessage.class);
+	}
 
 	private  String inputStreamToString(InputStream in) {
 		return new BufferedReader(new InputStreamReader(in)).lines().parallel().collect(Collectors.joining("\n"));

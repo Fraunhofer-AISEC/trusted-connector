@@ -5,6 +5,7 @@ from urllib.parse import urlparse, parse_qs
 import cgi
 import json
 import base64
+import simplejson
  
 with open('/tpm2d/sigpubkey.bin', 'rb') as f:
     data = f.read()
@@ -18,22 +19,21 @@ class RestHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()  
             self.wfile.write(base64.b64encode(data))
         else:
+            self.send_header('Content-type', 'text/html') 
             self.end_headers()
-            self.wfile.write("error: nothing to see here")
+            self.wfile.write("<html><head><title>404</title></head></html>".encode('utf-8'))
         return
      
     def do_POST(self):
-        form = cgi.FieldStorage(fp=self.rfile,
-                           headers=self.headers, environ={
-                                'REQUEST_METHOD':'POST', 
-                                'CONTENT_TYPE':self.headers['Content-Type']
-                           })
-        pcr = form['pcr'].value
-        self.send_response(201)
+        self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(pcr)
+        data = simplejson.loads(self.data_string)
+        data["success"] = True
+        self.wfile.write(simplejson.dumps(data).encode('utf-8'))
         return
-     
+ 
 httpd = HTTPServer(('0.0.0.0', 29663), RestHTTPRequestHandler)
 httpd.serve_forever()
 

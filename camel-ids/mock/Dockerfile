@@ -5,6 +5,7 @@ RUN apt-get -y update && apt-get install -y git autoconf automake libtool curl m
 RUN pip3 install --upgrade pip
 RUN pip3 install -U setuptools
 RUN pip3 install protobuf
+RUN pip3 install simplejson
 # adduser tpm2d
 RUN adduser --disabled-password --gecos '' tpm2d
 RUN adduser tpm2d sudo

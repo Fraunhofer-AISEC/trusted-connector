@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import com.google.protobuf.MessageLite;
+
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.aisec.ids.messages.Idscp.Pcr;
 
 public class RemoteAttestationHandler {
@@ -20,5 +24,22 @@ public class RemoteAttestationHandler {
         }
         in.close();
         return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
+	}
+	
+	public static MessageLite sendError(Thread t, String code, String error) {
+		if(t.isAlive()) {
+			t.interrupt();
+		}
+		return ConnectorMessage
+				.newBuilder()
+				.setId(0)
+				.setType(ConnectorMessage.Type.ERROR)
+				.setError(
+						Error
+						.newBuilder()
+						.setErrorCode(code)
+						.setErrorMessage(error)
+						.build())
+				.build();
 	}
 }

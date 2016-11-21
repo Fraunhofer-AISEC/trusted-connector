@@ -10,6 +10,23 @@ public class PcrMessage {
 	private String nonce;
 	private Map<Integer, String> values = new LinkedHashMap<Integer, String>();
 	private boolean success = false;
+	private String signature = "";
+
+	public boolean isSuccess() {
+		return success;
+	}
+
+	public void setSuccess(boolean success) {
+		this.success = success;
+	}
+
+	public String getSignature() {
+		return signature;
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
 
 	public PcrMessage(String freshNonce, Pcr[] pcrValues) {
 		this.nonce = freshNonce;

@@ -1,5 +1,5 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licen	sed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -37,7 +37,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.fhg.camel.ids.client.TestServletFactory;
@@ -51,51 +53,48 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private Process tpm2dc = null;
-    private Process tpm2ds = null;
-    private Process ttp = null;
-    private File socketServer;
-    private File socketClient;
+    private static Process generator = null;
+    private static Process tpm2dc = null;
+    private static Process tpm2ds = null;
+    private static Process ttp = null;
+    private static File socketServer;
+    private static File socketClient;
     protected List<Object> messages;
 	private static String PWD = "password";
-	private String dockerName = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dmock:latest";
-	private String sockets = "tpm2ds.sock";
-	private String socketc = "tpm2dc.sock";	
+	private static String dockerName = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dmock:latest";
+	private static String sockets = "tpm2ds.sock";
+	private static String socketc = "tpm2dc.sock";	
 	
-    @Before
-    public void initMockServer() throws IOException, InterruptedException {
+    @BeforeClass
+    public static void initMockServer() throws IOException, InterruptedException {
 		socketServer = new File("mock/socket/"+sockets);
 		socketClient = new File("mock/socket/"+socketc);
 		
 		String folder = socketServer.getAbsolutePath().substring(0, socketServer.getAbsolutePath().length() - sockets.length());
 
 		// build a docker imagess
-    	ProcessBuilder image = new ProcessBuilder("docker", "build", "-t", dockerName, "mock");
-    	Process generator = image.start();
+		generator = new ProcessBuilder("docker", "build", "-t", dockerName, "mock").start();
     	
     	// then start the docker image as tpm2d for the server
-    	ProcessBuilder tpm2dsService = new ProcessBuilder("docker", "run", "--name", "tpm2ds", "-d", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py");
-    	ProcessBuilder tpm2dcService = new ProcessBuilder("docker", "run", "--name", "tpm2dc", "-d", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py");
-    	ProcessBuilder ttpService = new ProcessBuilder("docker", "run", "--name", "ttp", "-d", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py");
-    	tpm2dc = tpm2dcService.start();
-    	tpm2ds = tpm2dsService.start();
-    	ttp = ttpService.start();
+		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
+    	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
+    	ttp = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
 
     }
     
-    @After
-    public void teardownMockServer() throws Exception {
-    	Process stopTtp = new ProcessBuilder("docker", "stop", "ttp").start();
-    	Process stopTpm2ds = new ProcessBuilder("docker", "stop", "tpm2ds").start();
-    	Process stopTpm2dc = new ProcessBuilder("docker", "stop", "tpm2dc").start();
-    	Process rmTtp = new ProcessBuilder("docker", "rm", "ttp").start();
-    	Process rmTpm2ds = new ProcessBuilder("docker", "rm", "tpm2ds").start();
-    	Process rmTpm2dc = new ProcessBuilder("docker", "rm", "tpm2dc").start();
-
+    @AfterClass
+    public static void teardownMockServer() throws Exception {
+		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start();
+    	new ProcessBuilder("docker", "rm", "-f", "ttp").start();
+    	ttp.destroy();
+		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start();
+    	new ProcessBuilder("docker", "rm", "-f", "tpm2ds").start();
+    	tpm2ds.destroy();
+		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start();
+    	new ProcessBuilder("docker", "rm", "-f", "tpm2dc").start();
+    	tpm2dc.destroy();
     	socketServer.delete();
-    	socketClient.delete();
-    	server.stop();
-        server.destroy();   	
+    	socketClient.delete(); 	
     }
     
     private String getInputAsString(InputStream is) {
