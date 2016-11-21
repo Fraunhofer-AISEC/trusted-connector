@@ -19,6 +19,7 @@ package de.fhg.camel.ids.both;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,7 +70,23 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 	private static String socketc = "tpm2dc.sock";
 	
     @Override
-	protected void doPostSetup() throws Exception {
+    public void setUp() throws Exception {
+    	setupServer();
+        super.setUp();
+    }
+    
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        stopTestServer();
+    }
+    
+    public void stopTestServer() throws Exception {
+        server.stop();
+        server.destroy();
+    }    
+    
+	protected void setupServer() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);
         Connector connector = new ServerConnector(server);
@@ -87,34 +104,36 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     
     @BeforeClass
     public static void initMockServer() throws InterruptedException, IOException {
-		socketServer = new File("mock/socket/"+sockets);
+    	dockerStop();
+    	socketServer = new File("mock/socket/"+sockets);
 		socketClient = new File("mock/socket/"+socketc);
 		
 		String folder = socketServer.getAbsolutePath().substring(0, socketServer.getAbsolutePath().length() - sockets.length());
 
 		// build a docker imagess
-		generator = new ProcessBuilder("docker", "build", "-t", dockerName, "mock").start();
+		generator = new ProcessBuilder("docker", "pull", dockerName).start();
     	
     	// then start the docker image as tpm2d for the server
-		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
-    	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
-    	ttp = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
+		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
+    	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
+    	ttp = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
     }
     
     @AfterClass
     public static void teardownMockServer() throws Exception {
-		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start();
-    	new ProcessBuilder("docker", "rm", "-f", "ttp").start();
+		dockerStop();
     	ttp.destroy();
-		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start();
-    	new ProcessBuilder("docker", "rm", "-f", "tpm2ds").start();
-    	tpm2ds.destroy();
-		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start();
-    	new ProcessBuilder("docker", "rm", "-f", "tpm2dc").start();
-    	tpm2dc.destroy();
+		tpm2ds.destroy();
+		tpm2dc.destroy();
     	socketServer.delete();
     	socketClient.delete();
     }
+    
+    private static void dockerStop() throws InterruptedException, IOException {
+		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
+		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start().waitFor();
+		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start().waitFor();
+    }    
     
     @Test
     public void testTwoRoutes() throws Exception {

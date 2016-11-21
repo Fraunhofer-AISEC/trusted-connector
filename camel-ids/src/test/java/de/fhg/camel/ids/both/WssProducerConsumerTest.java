@@ -67,41 +67,31 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 	
     @BeforeClass
     public static void initMockServer() throws IOException, InterruptedException {
-		socketServer = new File("mock/socket/"+sockets);
+    	dockerStop();
+    	socketServer = new File("mock/socket/"+sockets);
 		socketClient = new File("mock/socket/"+socketc);
 		
 		String folder = socketServer.getAbsolutePath().substring(0, socketServer.getAbsolutePath().length() - sockets.length());
 
 		// build a docker imagess
-		generator = new ProcessBuilder("docker", "build", "-t", dockerName, "mock").start();
+		generator = new ProcessBuilder("docker", "pull", dockerName).start();
     	
     	// then start the docker image as tpm2d for the server
-		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
-    	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
-    	ttp = new ProcessBuilder("docker", "run", "--rm", "-i", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
+		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
+    	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
+    	ttp = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
 
     }
     
     @AfterClass
     public static void teardownMockServer() throws Exception {
-		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start();
-    	new ProcessBuilder("docker", "rm", "-f", "ttp").start();
+    	dockerStop();
     	ttp.destroy();
-		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start();
-    	new ProcessBuilder("docker", "rm", "-f", "tpm2ds").start();
-    	tpm2ds.destroy();
-		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start();
-    	new ProcessBuilder("docker", "rm", "-f", "tpm2dc").start();
-    	tpm2dc.destroy();
+		tpm2ds.destroy();
+		tpm2dc.destroy();
     	socketServer.delete();
     	socketClient.delete(); 	
     }
-    
-    private String getInputAsString(InputStream is) {
-        try(java.util.Scanner s = new java.util.Scanner(is))  { 
-            return s.useDelimiter("\\A").hasNext() ? s.next() : ""; 
-        }
-     }    
     
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
@@ -119,6 +109,12 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         assertTrue(server.isStarted());      
     }
     
+    private static void dockerStop() throws InterruptedException, IOException {
+		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
+		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start().waitFor();
+		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start().waitFor();
+    }    
+    
     public void stopTestServer() throws Exception {
         server.stop();
         server.destroy();
@@ -126,7 +122,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
     @Override
     public void setUp() throws Exception {
-        
         ClassLoader classLoader = getClass().getClassLoader();
         URL trustStoreURL = classLoader.getResource("jsse/client-truststore.jks");
         System.setProperty("javax.net.ssl.trustStore", trustStoreURL.getFile());
@@ -143,6 +138,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
     @Test
     public void testTwoRoutes() throws Exception {
+    	System.out.println(tpm2ds.isAlive());
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
 

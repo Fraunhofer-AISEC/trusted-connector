@@ -46,9 +46,9 @@ public class TrustedThirdPartyTest {
     public  static void initMockServer() throws InterruptedException, IOException {
     	dockerStop();   	
     	// build a docker imagess
-    	new ProcessBuilder("docker", "build", "-t", dockerName, "mock").start();
+    	new ProcessBuilder("docker", "pull", dockerName).start();
     	// then start the docker image as ttp for the server
-    	docker = new ProcessBuilder("docker", "run", "-i", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
+    	docker = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
     }
     
     @AfterClass
@@ -59,7 +59,6 @@ public class TrustedThirdPartyTest {
     
     private static void dockerStop() throws InterruptedException, IOException {
 		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
-    	new ProcessBuilder("docker", "rm", "-f", "ttp").start().waitFor();
     }
     
     @Test
