@@ -19,3 +19,18 @@
 .description {
 	padding-top: 10px;
 }
+
+.card-footer > ul {
+	padding-left:0px;
+}
+.card-footer > ul > li {
+	display: inline;
+	padding-right: 30px;
+}
+.card-footer > ul > li > i {
+	font-size:20px;
+}
+
+.deactivated {
+	color:#c0c0c0;
+}

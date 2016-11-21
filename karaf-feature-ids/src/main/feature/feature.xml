@@ -27,10 +27,12 @@
         <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
         <bundle start-level="80">mvn:com.google.code.gson/gson/2.7</bundle>
         <feature prerequisite="true" dependency="true">wrap</feature>
-        <feature version="2.18.0" prerequisite="false" dependency="true">camel</feature>
+        <feature version="2.18.0" prerequisite="false" dependency="true">camel</feature>        
         <feature version="4.2.6" prerequisite="false" dependency="true">pax-http-jetty</feature>
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
-       	<feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>
+        <feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>
+        <!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
+        <bundle version="2.18.0" prerequisite="false" dependency="true">mvn:org.apache.camel/camel-core-osgi/2.18.0</bundle>
         
         <!-- This is how to add a custom config file which will be picked up by Config Admin-->
         <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->

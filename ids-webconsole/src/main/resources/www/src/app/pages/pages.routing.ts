@@ -10,7 +10,8 @@ const routes: Routes = [
       { path: 'dashboard', loadChildren: () => System.import('./dashboard/dashboard.module') },
       { path: 'apps/installed-apps', loadChildren: () => System.import('./appcontainers/appcontainers.module') },
       { path: 'identities/identities-my', loadChildren: () => System.import('./identities/identities.module') },
-      { path: 'pipes', loadChildren: () => System.import('./dashboard/dashboard.module') },
+      { path: 'pipes', loadChildren: () => System.import('./pipes/pipes.module') },
+      { path: 'policies', loadChildren: () => System.import('./policies/policies.module') },
       { path: 'settings', loadChildren: () => System.import('./settings/settings.module') },
     ]
   }

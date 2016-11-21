@@ -1,23 +1,43 @@
 <masonry [options]="{  'gutter': 0 }">
   <masonry-brick *ngFor="let app of apps"  class="col-lg-5">
-    <ba-card title="{{app.image}}" baCardClass="medium-card">
-    <div class="card-body">
-	    <div class="attribute">
-	    	<div class="attribute-key">Uptime</div>
-		    <div class="attribute-value">{{app.uptime}}</div>
+    <div class="card {{app.status.startsWith('Up') ? 'card-primary' : ''}}">
+	    <div class="card-header">
+	    	<h3>{{app.image}}</h3>
 	    </div>
-	    <div class="attribute">
-	    	<div class="attribute-key">Ports</div>
-		    <div class="attribute-value">{{app.ports}}</div>
+	    <div class="card-block">
+		    <div class="card-text">
+				<div class="row">
+					<div class="col-lg-3">
+					    <div class="attribute">
+					    	<div class="attribute-key">Trust</div>
+						    <div class="attribute-value"><span class="label label-primary">Trusted</span></div>
+					    </div>
+					</div>
+					<div class="col-lg-3">
+					    <div class="attribute">
+					    	<div class="attribute-key">Uptime</div>
+						    <div class="attribute-value">{{app.uptime}}</div>
+					    </div>
+					</div>
+					<div class="col-lg-6">
+					    <div class="attribute">
+					    	<div class="attribute-key">Ports</div>
+						    <div class="attribute-value">{{app.ports}}</div>
+					    </div>
+					</div>
+				</div>			
+		    	<div class="description">
+					Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et 
+				</div>
+		    </div>
 	    </div>
-	    <div class="attribute">
-	    	<div class="attribute-key">Creation</div>
-		    <div class="attribute-value">{{app.created}}</div>
+	    <div class="card-footer">
+			<ul>
+			<li><i class="ion-play {{app.status.startsWith('Up') ? 'deactivated' : ''}}"></i></li>
+			<li><i class="ion-pause {{app.status.startsWith('Up') ? '' : 'deactivated'}}"></i></li>
+			<li><i class="ion-ios-trash {{app.status.startsWith('Up') ? 'deactivated' : ''}}"></i></li>
+			</ul>
 	    </div>
-    	<div class="description">
-			Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et 
-		</div>
-    </div>
-  </ba-card>
+  	</div>
   </masonry-brick>
 </masonry>
