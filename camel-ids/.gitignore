@@ -2,3 +2,4 @@
 /bin/
 /generated/
 /cp.txt
+*.pyc
