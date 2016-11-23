@@ -9,8 +9,8 @@ MAINTAINER Julian Schütte (julian.schuette@aisec.fraunhofer.de)
 RUN apk --update add socat libstdc++ bash \
     && rm -rf /var/cache/apk/* \
     && rm /bin/sh \
-    && ln -s /bin/bash /bin/sh
-    && ldconfig /lib /usr/glibc/usr/lib
+    && ln -s /bin/bash /bin/sh \
+    && ldconfig /lib /usr/glibc/usr/lib \
     && echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf 
 # The latter is required for proper hostname resolution in Java on Alpine linux
 

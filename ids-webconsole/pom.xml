@@ -122,6 +122,16 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 
+		<resources>
+		  <resource>
+		    <directory>src/main/resources</directory>
+		    <includes>
+		      <include>dist</include>
+		    </includes>
+		  </resource>
+		</resources>
+
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -239,7 +249,7 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
-								<argument>build</argument>
+								<argument>build:dev</argument>
 							</arguments>
 						</configuration>
 					</execution>
