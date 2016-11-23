@@ -1,12 +1,17 @@
 package de.fhg.aisec.ids.webconsole;
 
+
 import java.util.Optional;
 
 import org.apache.camel.Route;
 import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
+import org.apache.camel.core.osgi.OsgiServiceRegistry;
+import org.apache.camel.impl.SimpleRegistry;
+import org.apache.camel.spi.Registry;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -38,15 +43,34 @@ public class WebConsoleComponent {
 	private static Optional<ConfigurationService> configService = Optional.empty();
 	private static Optional<ContainerManager> cml = Optional.empty();
 	private static Optional<RouteManager> routeManagerService = Optional.empty();
-	private static Optional<OsgiDefaultCamelContext> camelContext = Optional.empty();
 	private static ComponentContext componentCtx;
+	private static OsgiDefaultCamelContext camelContext;
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole activated");
 		WebConsoleComponent.componentCtx = componentContext;
+		
+		//Just for testing: Create camel context
+		camelContext = new OsgiDefaultCamelContext(componentContext.getBundleContext(), createCamelRegistry());
+        try {
+            camelContext.start();
+        } catch (Exception e) {
+            LOG.error("Failed to start Camel", e);
+        }
 	}
+	
+	private Registry createCamelRegistry() {
+        SimpleRegistry registry = new SimpleRegistry();
+        return registry;
+    }	
 
+	@Deactivate
+	protected void deactivate(ComponentContext componentContext) throws Exception {
+		LOG.info("IDS webconsole deactivated");
+		WebConsoleComponent.componentCtx = null;
+	}
+	
 	@Reference(name = "cml.service",
             service = ContainerManager.class,
             cardinality = ReferenceCardinality.OPTIONAL,
@@ -106,12 +130,15 @@ public class WebConsoleComponent {
 			return Optional.empty();
 		}
 		
+		if (camelContext==null) {
+			return Optional.empty();
+		}
 		// Create Apache Camel context
-		camelContext = Optional.of(new OsgiDefaultCamelContext(componentCtx.getBundleContext()));
+		
 		LOG.info("Camel routes:");
-		for (Route route : camelContext.get().getRoutes()) {
+		for (Route route : camelContext.getRoutes()) {
 			LOG.info("  Route: " + route.getId());
 		}
-		return camelContext;
+		return Optional.of(camelContext);
 	}
 }

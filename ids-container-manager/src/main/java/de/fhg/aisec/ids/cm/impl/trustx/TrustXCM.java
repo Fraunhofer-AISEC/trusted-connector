@@ -81,10 +81,10 @@ public class TrustXCM implements ContainerManager {
 		
 	}
 
-	@Override
-	public String getCml() {
-		// TODO Auto-generated method stub
-		return "trust-X";
-	}
+//	@Override
+//	public String getCml() {
+//		// TODO Auto-generated method stub
+//		return "trust-X";
+//	}
 
 }

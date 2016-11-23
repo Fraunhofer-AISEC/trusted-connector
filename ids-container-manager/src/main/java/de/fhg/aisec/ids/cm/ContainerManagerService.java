@@ -15,6 +15,7 @@ import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
 import de.fhg.aisec.ids.api.cm.Direction;
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.api.cm.Protocol;
 import de.fhg.aisec.ids.cm.impl.docker.DockerCM;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
@@ -28,6 +29,7 @@ import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
  *
  */
 @Component(enabled=true, immediate=true, name="ids-cml")
+
 public class ContainerManagerService implements ContainerManager {
 	private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager containerManager = null;
@@ -71,37 +73,75 @@ public class ContainerManagerService implements ContainerManager {
 
 	@Override
 	public void wipe(String containerID) {
-		containerManager.wipe(containerID);
+		try {
+			containerManager.wipe(containerID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void startContainer(String containerID) {
-		containerManager.startContainer(containerID);
+		try {
+			containerManager.startContainer(containerID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void stopContainer(String containerID) {
-		containerManager.stopContainer(containerID);
+		try {
+			containerManager.stopContainer(containerID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void restartContainer(String containerID) {
-		containerManager.restartContainer(containerID);
+		try {
+			containerManager.restartContainer(containerID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public Optional<String> pullImage(String imageID) {
-		return containerManager.pullImage(imageID);
+		try {
+			return containerManager.pullImage(imageID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
 	public String inspectContainer(String containerID) {
-		return containerManager.inspectContainer(containerID);
+		try {
+			return containerManager.inspectContainer(containerID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	@Override
 	public Object getMetadata(String containerID) {
-		return containerManager.getMetadata(containerID);
+		try {
+			return containerManager.getMetadata(containerID);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override

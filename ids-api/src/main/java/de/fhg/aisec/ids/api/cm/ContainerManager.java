@@ -21,7 +21,7 @@ public interface ContainerManager {
 	 * 
 	 * @return
 	 */
-	public String getCml();
+//	public String getCml();
 
 	/**
 	 * List currently installed containers.

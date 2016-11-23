@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
@@ -55,7 +56,11 @@ public class AppApi {
 		new Thread() {
 			@Override
 			public void run() {
-				cml.get().pullImage(imageId);		
+				try {
+					cml.get().pullImage(imageId);
+				} catch (Exception e) {
+					
+				}
 			}
 		}.start();			
 		return new Gson().toJson("true");
@@ -71,7 +76,12 @@ public class AppApi {
 			return new Gson().toJson("false");
 		}
 
-		cml.get().startContainer(containerId);
+		try {
+			cml.get().startContainer(containerId);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return new Gson().toJson("true");
 	}
 
@@ -85,7 +95,12 @@ public class AppApi {
 			return new Gson().toJson("false");
 		}
 
-		cml.get().stopContainer(containerId);
+		try {
+			cml.get().stopContainer(containerId);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return new Gson().toJson("true");
 	}
 
@@ -99,7 +114,12 @@ public class AppApi {
 			return new Gson().toJson("false");
 		}
 
-		cml.get().wipe(containerId);
+		try {
+			cml.get().wipe(containerId);
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return new Gson().toJson("true");
 	}
 }

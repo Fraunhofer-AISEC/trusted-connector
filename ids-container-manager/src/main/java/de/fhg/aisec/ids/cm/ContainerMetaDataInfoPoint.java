@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.MetaDataInfoPoint;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 
 /**
  * Provides meta data (= information) about running applications (= containers).
@@ -74,13 +75,19 @@ public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
 
 		// TODO currently returns only the output of "docker inspect <id>". Must
 		// be converted to some standardized meta data format
-		String containerLabels = (String) this.cm.getMetadata(containerID);
-		String[] labelLines = containerLabels.split("\n");
-		for (String line : labelLines) {
-			String[] kv = line.split(":");
-			if (kv.length == 2) {
-				result.put(kv[0], kv[1]);
+		String containerLabels;
+		try {
+			containerLabels = (String) this.cm.getMetadata(containerID);
+			String[] labelLines = containerLabels.split("\n");
+			for (String line : labelLines) {
+				String[] kv = line.split(":");
+				if (kv.length == 2) {
+					result.put(kv[0], kv[1]);
+				}
 			}
+		} catch (NoContainerExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return result;
 	}

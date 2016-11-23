@@ -63,7 +63,12 @@
 			<version>2.6.2</version>
 		</dependency>
 
-
+		<!--  JNR-Unixsocket -->	
+		<dependency>
+			<groupId>com.github.jnr</groupId>
+			<artifactId>jnr-unixsocket</artifactId>
+			<version>0.13</version>
+		</dependency>
 
 		<!-- for testing -->
 		<dependency>
