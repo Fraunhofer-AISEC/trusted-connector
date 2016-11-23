@@ -11,24 +11,21 @@
         <details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
         
         <!-- Our bundles which make up the IDS feature -->
-        <bundle start-level="80">mvn:de.fhg.ids/api/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.ids/ids-webconsole/1.0.0</bundle> 
-        <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.ids/ids-container-manager/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.aisec/data-flow-policy/1.0.0</bundle>
-        <bundle start-level="80">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
-        <bundle start-level="80">mvn:com.github.jnr/jnr-enxio/0.13</bundle>
-        <bundle start-level="80">mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
-        <bundle start-level="80">mvn:com.github.jnr/jnr-posix/3.0.30</bundle>
-        <bundle start-level="80">mvn:com.github.jnr/jnr-unixsocket/0.13</bundle>
-        <bundle start-level="80">mvn:com.github.jnr/jnr-ffi/2.1.0</bundle>
-        <bundle start-level="80">mvn:com.github.jnr/jffi/1.2.13</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jnr-enxio/0.13</bundle>
+        <bundle start-level="70">mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jnr-posix/3.0.30</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jnr-unixsocket/0.13</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jnr-ffi/2.1.0</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jffi/1.2.13</bundle>
 
         <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
-        <bundle start-level="80">mvn:com.google.code.gson/gson/2.7</bundle>
+        <bundle start-level="70">mvn:com.google.code.gson/gson/2.7</bundle>
+        <bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.18.0</bundle>
         <feature prerequisite="true" dependency="true">wrap</feature>
         <feature version="2.18.0" prerequisite="false" dependency="true">camel</feature>        
         <feature version="4.2.6" prerequisite="false" dependency="true">pax-http-jetty</feature>
+        <feature version="3.1.7" prerequisite="false" dependency="true">cxf</feature>
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
         <feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>
         <!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
@@ -36,6 +33,12 @@
         
         <!-- This is how to add a custom config file which will be picked up by Config Admin-->
         <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
+
+        <bundle start-level="80">mvn:de.fhg.ids/api/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/ids-webconsole/1.0.0</bundle> 
+        <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/ids-container-manager/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.aisec/data-flow-policy/1.0.0</bundle>
 
     </feature>
 </features>
