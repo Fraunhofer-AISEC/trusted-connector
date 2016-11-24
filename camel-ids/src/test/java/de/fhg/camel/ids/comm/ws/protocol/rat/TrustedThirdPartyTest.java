@@ -37,7 +37,7 @@ public class TrustedThirdPartyTest {
     	socketFile = new File(SOCKET_PATH);
 		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
 		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "pull", DOCKER_IMAGE)).start().waitFor(660, TimeUnit.SECONDS);
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "./tpm2sim/")).start().waitFor(660, TimeUnit.SECONDS);
     	// then start the docker image
 		TrustedThirdPartyTest.kill("ttp");
 		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ttp", "-v", folder +":/data/cml/communication/tpm2d/", "-p", "127.0.0.1:7331:29663", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(2, TimeUnit.SECONDS);

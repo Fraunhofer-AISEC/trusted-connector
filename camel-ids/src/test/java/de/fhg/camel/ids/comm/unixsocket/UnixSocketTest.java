@@ -36,7 +36,7 @@ public class UnixSocketTest {
 		socketFile = new File(SOCKET_PATH);
 		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
 		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "pull", DOCKER_IMAGE)).start().waitFor(5, TimeUnit.SECONDS);
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "./tpm2sim/")).start().waitFor(660, TimeUnit.SECONDS);
     	// then start the docker image
 		UnixSocketTest.kill("ust");
 		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ust", "-v", folder +":/data/cml/communication/tpm2d/", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(3, TimeUnit.SECONDS);
