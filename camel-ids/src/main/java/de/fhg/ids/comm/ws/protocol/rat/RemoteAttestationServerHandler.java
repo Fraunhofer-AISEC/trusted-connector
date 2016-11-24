@@ -80,7 +80,6 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 				.setQualifyingData(this.yourNonce)
 				.setCode(Code.INTERNAL_ATTESTATION_REQ)
 				.build();
-		LOG.debug("--------------------------------------------------------------------------------------SIZE:" + msg.toByteArray().length);
 		// try to talk to local unix socket
 		try {
 			if(thread.isAlive()) {
