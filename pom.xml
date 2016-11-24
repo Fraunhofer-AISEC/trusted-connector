@@ -16,7 +16,7 @@
     <module>karaf-feature-ids</module>
     <module>data-flow-policy</module>
     <module>karaf-assembly</module>
-    <module>dist-docker</module>
+<!--    <module>dist-docker</module> -->
   </modules>
   
   <build>
