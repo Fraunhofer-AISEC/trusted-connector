@@ -16,14 +16,14 @@ import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -32,7 +32,7 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String SOCKET = "mock/socket/tpm2dc.sock";
+	private String SOCKET = "/data/cml/communication/tpm2d/control.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
@@ -104,7 +104,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		try {
 			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC(RemoteAttestationHandler.fetchPublicKey(this.certUri));
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.certUri.getBytes());
 			// and convert it into an DER key
 			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
 			// construct a new TPMT_SIGNATURE from yourSignature bytes
@@ -152,7 +152,8 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 						.build();
 				client.send(msg.toByteArray(), this.handler);
 				// and wait for response
-				TpmToController answer = this.handler.waitForResponse();
+				byte[] toParse = this.handler.waitForResponse();
+				TpmToController response = TpmToController.parseFrom(toParse);
 				// now return values from answer to server
 				return ConnectorMessage
 						.newBuilder()
@@ -162,11 +163,11 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 								AttestationResponse
 								.newBuilder()
 								.setAtype(this.aType)
-								.setHalg(answer.getHalg())
-								.setQuoted(answer.getQuoted())
-								.setSignature(answer.getSignature())
-								.addAllPcrValues(answer.getPcrValuesList())
-								.setCertificateUri(answer.getCertificateUri())
+								.setHalg(response.getHalg())
+								.setQuoted(response.getQuoted())
+								.setSignature(response.getSignature())
+								.addAllPcrValues(response.getPcrValuesList())
+								.setCertificateUri(response.getCertificateUri())
 								.build()
 								)
 						.build();

@@ -18,7 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 public class TrustedThirdParty {
 

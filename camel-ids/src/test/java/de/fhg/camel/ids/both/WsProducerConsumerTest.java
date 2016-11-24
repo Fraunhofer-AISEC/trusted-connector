@@ -102,6 +102,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         assertTrue(server.isStarted());      
     }
     
+	/*
     @BeforeClass
     public static void initMockServer() throws InterruptedException, IOException {
     	dockerStop();
@@ -118,7 +119,9 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
     	ttp = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
     }
+    */
     
+	/*
     @AfterClass
     public static void teardownMockServer() throws Exception {
 		dockerStop();
@@ -128,6 +131,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     	socketServer.delete();
     	socketClient.delete();
     }
+    */
     
     private static void dockerStop() throws InterruptedException, IOException {
 		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();

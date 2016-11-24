@@ -7,84 +7,72 @@
  *          Oliver Melnyk, Michael Velten, Michael Weiß, Sascha Wessel
  */
 
-syntax = "proto3";
+syntax = "proto2";
 option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "AttestationProtos";
-import "idscp.proto";
 
-message ControllerToTtp {
-	// type of attestation in the IDS context
-	IdsAttestationType atype = 1;
+// type of attestation in the IDS context
+enum IdsAttestationType {
+  // kernel + core container (PCR 0 to 10)
+  BASIC = 0;
 
-	// nonce
-	string qualifyingData = 2;
+  // everything (PCRs 0 to 23)
+  ALL = 1;
 
-	// the explicit PCR values
-	repeated Pcr pcr_values = 3;
+  // PCRs must be specified manually
+  ADVANCED = 2;
 }
 
-message TtpToController {
-	// type of attestation in the IDS context
-	IdsAttestationType atype = 1;
+message Pcr {
+  // the PCR number (usually between 0 and 23)
+  optional int32 number = 1;
 
-	// nonce
-	string qualifyingData = 2;
-
-	// a signature over nonce and result
-	string signature = 3;	
-		
-	// a signature over nonce and result
-	bool result = 4;	
-
-	// the explicit PCR values
-	repeated Pcr pcr_values = 5;
-	
-	// an _optional_ URI to a certificate that includes the public key
-	string certificate_uri = 6;	
+  // the value of PCR<number>
+  optional string value = 2;
 }
 
 message ControllerToTpm {
 	enum Code {
-		INTERNAL_ATTESTATION_REQ = 0;
+		INTERNAL_ATTESTATION_REQ = 1;
 	}
 
-	Code code = 1;
+	required Code code = 1;
 
 	// type of attestation in the IDS context
-	IdsAttestationType atype = 2;
+	optional IdsAttestationType atype = 2 [default = BASIC];
 
 	// qualifingData (i.e. external data provided by the caller, such as a nonce)
-	string qualifyingData = 3;
+	optional string qualifyingData = 3;
 
 	// pcr bitmask for AttestationType ADVANCED only
 	//  - for BASIC, the default PCRs are PCRs 0 to 10
 	//  - for ALL  , the default PCRs are PCRs 0 to 23
-	int32 pcrs = 4;
+	optional int32 pcrs = 4;
 }
 
 message TpmToController {
-	enum Code {		
-		INTERNAL_ATTESTATION_RES = 0;
+	enum Code {
+		INTERNAL_ATTESTATION_RES = 1;
 	}
 
-	Code code = 1;
+	required Code code = 1;
 
 	// type of attestation in the IDS context
-	IdsAttestationType atype = 2;
+	optional IdsAttestationType atype = 2 [default = BASIC];
 
 	// the hash algorith used to sign the quoted information
-	string halg = 3;
+	optional string halg = 3;
 
 	// the quoted information (a TPM2B_ATTEST data structure)
-	string quoted = 4;
+	optional string quoted = 4;
 
 	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
-	string signature = 5;
+	optional string signature = 5;
 
 	// the explicit PCR values
 	repeated Pcr pcr_values = 6;
 
 	// an _optional_ URI to a certificate that includes the public key
-	string certificate_uri = 7;
+	optional string certificate_uri = 7;
 
 }

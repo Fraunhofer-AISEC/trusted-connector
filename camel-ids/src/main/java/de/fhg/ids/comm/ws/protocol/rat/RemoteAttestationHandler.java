@@ -9,7 +9,6 @@ import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
 
 public class RemoteAttestationHandler {
 

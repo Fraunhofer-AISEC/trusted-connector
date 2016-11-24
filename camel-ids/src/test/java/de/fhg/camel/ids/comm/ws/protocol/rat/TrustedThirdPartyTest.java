@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.ids.comm.ws.protocol.rat.PcrMessage;
 import de.fhg.ids.comm.ws.protocol.rat.TrustedThirdParty;
 

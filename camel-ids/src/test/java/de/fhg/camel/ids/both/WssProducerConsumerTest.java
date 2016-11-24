@@ -65,6 +65,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 	private static String sockets = "tpm2ds.sock";
 	private static String socketc = "tpm2dc.sock";	
 	
+	/*
     @BeforeClass
     public static void initMockServer() throws IOException, InterruptedException {
     	dockerStop();
@@ -80,9 +81,10 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
     	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
     	ttp = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
-
     }
+    */
     
+	/*
     @AfterClass
     public static void teardownMockServer() throws Exception {
     	dockerStop();
@@ -92,6 +94,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     	socketServer.delete();
     	socketClient.delete(); 	
     }
+    */
     
     public void startTestServer() throws Exception {
         // start a simple websocket echo service

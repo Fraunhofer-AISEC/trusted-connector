@@ -20,13 +20,13 @@ public class UnixSocketThread implements Runnable {
 	private Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
 	private UnixSocketAddress address;
 	private UnixSocketChannel channel;
-	private String SOCKET = "mock/tpm2d.sock";
+	private String SOCKET = "SOCKET";
 
 	// The selector we'll be monitoring
 	private Selector selector;
 
 	// The buffer into which we'll read data when it's available
-	private ByteBuffer readBuffer = ByteBuffer.allocate(1024);
+	private ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 1024);
 
 	// A list of PendingChange instances
 	private List<ChangeRequest> pendingChanges = new LinkedList<ChangeRequest>();
@@ -50,12 +50,18 @@ public class UnixSocketThread implements Runnable {
 
 	// send some data to the unix socket 
 	public void send(byte[] data, UnixSocketResponsHandler handler) throws IOException, InterruptedException {
-		// Start a new connection
-		UnixSocketChannel channel = this.initiateConnection();
+
 		
+    	int length = data.length;
+    	ByteBuffer bb = ByteBuffer.allocate(4 + length);
+    	bb.put(ByteBuffer.allocate(4).putInt(length).array());
+    	bb.put(data);
+    	byte[] result = bb.array();
+    	// Start a new connection
+		UnixSocketChannel channel = this.initiateConnection();
 		// Register the response handler
 		this.rspHandlers.put(channel, handler);
-		
+				
 		// And queue the data we want written
 		synchronized (this.pendingData) {
 			List queue = (List) this.pendingData.get(channel);
@@ -63,7 +69,7 @@ public class UnixSocketThread implements Runnable {
 				queue = new ArrayList();
 				this.pendingData.put(channel, queue);
 			}
-			queue.add(ByteBuffer.wrap(data));
+			queue.add(ByteBuffer.wrap(result));
 		}
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();

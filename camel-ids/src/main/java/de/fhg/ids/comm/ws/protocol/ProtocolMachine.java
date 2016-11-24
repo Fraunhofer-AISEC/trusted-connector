@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.IdsAttestationType;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataCommunicationHelper;

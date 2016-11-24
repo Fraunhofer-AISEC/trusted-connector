@@ -3,7 +3,7 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import de.fhg.aisec.ids.messages.Idscp.Pcr;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 public class PcrMessage {
 
