@@ -30,7 +30,7 @@ import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String SOCKET = "/data/cml/communication/tpm2d/control.sock";
+	private String SOCKET = "tpm2sim/socket/control.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;

@@ -2,8 +2,12 @@ package de.fhg.camel.ids.comm.ws.protocol.rat;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,9 +26,35 @@ public class TrustedThirdPartyTest {
 	Pcr two;
 	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
 	TrustedThirdParty ttp;
-	private static String dockerName = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dmock:latest";
-	private static Process docker;
+    private static String DOCKER_CLI ="docker";
+    private static String DOCKER_IMAGE = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest";
+    private static String SOCKET = "control.sock";
+    private static String SOCKET_PATH = "tpm2sim/socket/" + SOCKET;
+	private static File socketFile;
+    
+	@BeforeClass
+    public static void initSimServer() throws InterruptedException, IOException {
+    	socketFile = new File(SOCKET_PATH);
+		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
+		// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "tpm2sim")).start().waitFor(5, TimeUnit.SECONDS);
+    	// then start the docker image
+		TrustedThirdPartyTest.kill("ttp");
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ttp", "-v", folder +":/data/cml/communication/tpm2d/", "-p", "127.0.0.1:7331:29663", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(5, TimeUnit.SECONDS);
+    }
 	
+	@AfterClass
+    public static void teardownSimServer() throws Exception {
+		TrustedThirdPartyTest.kill("ttp");
+		socketFile.delete();
+    }
+	
+	private static void kill(String id) throws InterruptedException, IOException {
+		// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop", id)).start().waitFor(4, TimeUnit.SECONDS);
+    	// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "rm", id)).start().waitFor(4, TimeUnit.SECONDS);
+	}
 	
     @Before
     public void initTest() {
@@ -40,25 +70,6 @@ public class TrustedThirdPartyTest {
     			.build();
     	this.values = new Pcr[] {this.one, this.two};
     	this.ttp = new TrustedThirdParty(this.values);
-    }
-    
-    @BeforeClass
-    public  static void initMockServer() throws InterruptedException, IOException {
-    	dockerStop();   	
-    	// build a docker imagess
-    	new ProcessBuilder("docker", "pull", dockerName).start();
-    	// then start the docker image as ttp for the server
-    	docker = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
-    }
-    
-    @AfterClass
-    public static void teardownMockServer() throws Exception {
-    	dockerStop();
-    	docker.destroy();
-    }
-    
-    private static void dockerStop() throws InterruptedException, IOException {
-		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
     }
     
     @Test

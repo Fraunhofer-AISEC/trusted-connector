@@ -18,9 +18,12 @@ package de.fhg.camel.ids.both;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ProcessBuilder.Redirect;
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -53,49 +56,38 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private static Process generator = null;
-    private static Process tpm2dc = null;
-    private static Process tpm2ds = null;
-    private static Process ttp = null;
-    private static File socketServer;
-    private static File socketClient;
+    private static File socketFile;
+    private static String DOCKER_CLI ="docker";
+    private static String DOCKER_IMAGE = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest";
+    private static String SOCKET = "control.sock";
+    private static String SOCKET_PATH = "tpm2sim/socket/" + SOCKET;
     protected List<Object> messages;
 	private static String PWD = "password";
-	private static String dockerName = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dmock:latest";
-	private static String sockets = "tpm2ds.sock";
-	private static String socketc = "tpm2dc.sock";	
-	
-	/*
-    @BeforeClass
-    public static void initMockServer() throws IOException, InterruptedException {
-    	dockerStop();
-    	socketServer = new File("mock/socket/"+sockets);
-		socketClient = new File("mock/socket/"+socketc);
-		
-		String folder = socketServer.getAbsolutePath().substring(0, socketServer.getAbsolutePath().length() - sockets.length());
 
-		// build a docker imagess
-		generator = new ProcessBuilder("docker", "pull", dockerName).start();
-    	
-    	// then start the docker image as tpm2d for the server
-		tpm2ds = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2ds", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2ds.py").start();
-    	tpm2dc = new ProcessBuilder("docker", "run", "--rm", "--name", "tpm2dc", "-v", folder +":/socket/", dockerName, "su", "-m", "tpm2d", "-c", "/tpm2d/tpm2dc.py").start();
-    	ttp = new ProcessBuilder("docker", "run", "--rm", "--name", "ttp", "-p", "127.0.0.1:7331:29663", dockerName, "/tpm2d/ttp.py").start();
+	@BeforeClass
+    public static void initSimServer() throws InterruptedException, IOException {
+		WssProducerConsumerTest.kill("wsspc");
+		socketFile = new File(SOCKET_PATH);
+		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
+		// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "tpm2sim")).start().waitFor(5, TimeUnit.SECONDS);
+    	// then start the docker image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "wsspc", "-v", folder +":/data/cml/communication/tpm2d/", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(5, TimeUnit.SECONDS);
     }
-    */
-    
-	/*
-    @AfterClass
-    public static void teardownMockServer() throws Exception {
-    	dockerStop();
-    	ttp.destroy();
-		tpm2ds.destroy();
-		tpm2dc.destroy();
-    	socketServer.delete();
-    	socketClient.delete(); 	
+	
+	@AfterClass
+    public static void teardownSimServer() throws Exception {
+		WssProducerConsumerTest.kill("wsspc");
+		socketFile.delete();
     }
-    */
-    
+
+	private static void kill(String id) throws InterruptedException, IOException {
+		// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop", id)).start().waitFor(4, TimeUnit.SECONDS);
+    	// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "rm", id)).start().waitFor(4, TimeUnit.SECONDS);
+	}
+	
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);
@@ -111,12 +103,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         server.start();
         assertTrue(server.isStarted());      
     }
-    
-    private static void dockerStop() throws InterruptedException, IOException {
-		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
-		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start().waitFor();
-		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start().waitFor();
-    }    
     
     public void stopTestServer() throws Exception {
         server.stop();
@@ -141,7 +127,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
     @Test
     public void testTwoRoutes() throws Exception {
-    	System.out.println(tpm2ds.isAlive());
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
 

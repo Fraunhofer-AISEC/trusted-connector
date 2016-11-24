@@ -22,54 +22,54 @@ import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 
 public class UnixSocketTest {
 	
-    private static final String SOCKET_FILE = "control.sock";
-    private static final File LOCAL_SOCKET = new File("tpm2sim/socket/" + SOCKET_FILE);
-    private static final String REMOTE_SOCKET = "/data/cml/communication/tpm2d/" + SOCKET_FILE;
-    private static final String DOCKER_CLI = "docker";
-    private static final String DOCKER_CONTAINER = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest";
+    private static String DOCKER_CLI ="docker";
+    private static String DOCKER_IMAGE = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest";
+    private static String SOCKET = "control.sock";
+    private static String SOCKET_PATH = "tpm2sim/socket/" + SOCKET;
 	private static UnixSocketThread client;
 	private static Thread thread;
 	private static UnixSocketResponsHandler handler;
-	private static File socketClient;
+	private static File socketFile;
 
-	/*
 	@BeforeClass
-    public static void initTest() throws InterruptedException {
-		String sourceFolder = LOCAL_SOCKET.getAbsolutePath().substring(0, LOCAL_SOCKET.getAbsolutePath().length() - SOCKET_FILE.length());
-		String targetFolder = REMOTE_SOCKET.substring(0, REMOTE_SOCKET.length() - SOCKET_FILE.length());
-
-		Process p = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "-i", "--rm", "--name", "tpm2dsim", "-v", sourceFolder +":"+targetFolder, DOCKER_CONTAINER, "/tpm2d/start.sh")).start();
-        p.waitFor(660, TimeUnit.SECONDS);
+    public static void initSimServer() throws InterruptedException, IOException {
+		socketFile = new File(SOCKET_PATH);
+		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
+		// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "tpm2sim")).start().waitFor(5, TimeUnit.SECONDS);
+    	// then start the docker image
+		UnixSocketTest.kill("ust");
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ust", "-v", folder +":/data/cml/communication/tpm2d/", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(5, TimeUnit.SECONDS);
     }
-    
-	@AfterClass
-	public static void endTest() throws IOException, InterruptedException {
-		Process p = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop" , DOCKER_CONTAINER)).start();
-        p.waitFor(660, TimeUnit.SECONDS);
-		thread.interrupt();
-		thread = null;
-	}
-	*/
 	
-	@Before
-    public void initThread() throws InterruptedException {
-		try {
+	@AfterClass
+    public static void teardownSimServer() throws Exception {
+		UnixSocketTest.kill("ust");
+		socketFile.delete();
+    }
+	
+	private static void kill(String id) throws InterruptedException, IOException {
+		// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop", id)).start().waitFor(4, TimeUnit.SECONDS);
+    	// pull the image
+		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "rm", id)).start().waitFor(4, TimeUnit.SECONDS);
+	}
+		
+    @Test
+    public void testSocketConnection() throws Exception {
+    	try {
 			// client will be used to send messages
-			client = new UnixSocketThread(UnixSocketTest.REMOTE_SOCKET);
+			client = new UnixSocketThread(UnixSocketTest.SOCKET_PATH);
 			thread = new Thread(client);
 			//this.thread.setDaemon(true);
 			thread.start();
 			// responseHandler will be used to wait for messages
 			handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			System.out.println("could not write to/read from " + REMOTE_SOCKET);
+			System.out.println("could not write to/read from " + SOCKET_PATH);
 			e.printStackTrace();
 		}
-    }	
-	
-    @Test
-    public void testSocketConnection() throws Exception {
-		// construct protobuf message to send to local tpm2d via unix socket
+    	// construct protobuf message to send to local tpm2d via unix socket
 		ControllerToTpm msg = ControllerToTpm
 				.newBuilder()
 				.setAtype(IdsAttestationType.BASIC)
