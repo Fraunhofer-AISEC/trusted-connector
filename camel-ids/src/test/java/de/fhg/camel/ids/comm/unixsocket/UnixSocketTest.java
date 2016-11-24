@@ -35,14 +35,25 @@ public class UnixSocketTest {
 	/*
 	@BeforeClass
     public static void initTest() throws InterruptedException {
+		String sourceFolder = LOCAL_SOCKET.getAbsolutePath().substring(0, LOCAL_SOCKET.getAbsolutePath().length() - SOCKET_FILE.length());
+		String targetFolder = REMOTE_SOCKET.substring(0, REMOTE_SOCKET.length() - SOCKET_FILE.length());
+
+		Process p = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "-i", "--rm", "--name", "tpm2dsim", "-v", sourceFolder +":"+targetFolder, DOCKER_CONTAINER, "/tpm2d/start.sh")).start();
+        p.waitFor(660, TimeUnit.SECONDS);
+    }
+    
+	@AfterClass
+	public static void endTest() throws IOException, InterruptedException {
+		Process p = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop" , DOCKER_CONTAINER)).start();
+        p.waitFor(660, TimeUnit.SECONDS);
+		thread.interrupt();
+		thread = null;
+	}
+	*/
+	
+	@Before
+    public void initThread() throws InterruptedException {
 		try {
-			
-			String sourceFolder = LOCAL_SOCKET.getAbsolutePath().substring(0, LOCAL_SOCKET.getAbsolutePath().length() - SOCKET_FILE.length());
-			String targetFolder = REMOTE_SOCKET.substring(0, REMOTE_SOCKET.length() - SOCKET_FILE.length());
-
-			Process p = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "-i", "--rm", "--name", "tpm2dsim", "-v", sourceFolder +":"+targetFolder, DOCKER_CONTAINER, "/tpm2d/start.sh")).start();
-            p.waitFor(660, TimeUnit.SECONDS);
-
 			// client will be used to send messages
 			client = new UnixSocketThread(UnixSocketTest.REMOTE_SOCKET);
 			thread = new Thread(client);
@@ -54,16 +65,7 @@ public class UnixSocketTest {
 			System.out.println("could not write to/read from " + REMOTE_SOCKET);
 			e.printStackTrace();
 		}
-    }
-    
-	@AfterClass
-	public static void endTest() throws IOException, InterruptedException {
-		Process p = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop" , DOCKER_CONTAINER)).start();
-        p.waitFor(660, TimeUnit.SECONDS);
-		thread.interrupt();
-		thread = null;
-	}
-	*/
+    }	
 	
     @Test
     public void testSocketConnection() throws Exception {
@@ -76,8 +78,7 @@ public class UnixSocketTest {
 				.build();
 		client.send(msg.toByteArray(), UnixSocketTest.handler);
 		// and wait for response
-		byte[] toParse = UnixSocketTest.handler.waitForResponse();
-		TpmToController response = TpmToController.parseFrom(toParse);
+		TpmToController response = TpmToController.parseFrom(UnixSocketTest.handler.waitForResponse());
 		//System.out.println(response.toString());
 		assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
     }

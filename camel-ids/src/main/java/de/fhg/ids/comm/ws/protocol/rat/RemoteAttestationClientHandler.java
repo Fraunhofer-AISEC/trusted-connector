@@ -1,8 +1,12 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -11,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
+import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
 import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
@@ -43,7 +48,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 	private Thread thread;
 	private byte[] yourQuoted;
 	private byte[] yourSignature;
-	private String certUri;
+	private byte[] cert;
 	private boolean signatureCorrect = false;
 	private Pcr[] pcrValues;
 	
@@ -98,48 +103,90 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 		// get signature from server msg
 		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
-		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
+		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
 		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
+		// construct a new TPM2B_PUBLIC from bkey bytes
+		TPM2B_PUBLIC key;
 		try {
-			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.certUri.getBytes());
-			// and convert it into an DER key
-			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
-			// construct a new TPMT_SIGNATURE from yourSignature bytes
-			TPMT_SIGNATURE tpmSignature = new TPMT_SIGNATURE(this.yourSignature);
-			// and get the raw byte signature
-			byte[] signature = tpmSignature.getSignature().getSig();
-			// construct a new TPMS_ATTEST from yourQuoted bytes
-			TPMS_ATTEST digest = new TPMS_ATTEST(this.yourQuoted);
-			// and get the raw byte quote
-			byte[] quote = digest.toBytes();
-			switch(tpmSignature.getSignature().getHashAlg()) {
-				case TPM_ALG_SHA256:
-					sg = Signature.getInstance("SHA256withRSA");
-				    sg.initVerify(publicKey);
-				    sg.update(this.yourQuoted);
-				    this.signatureCorrect = sg.verify(signature);
-					break;
-				case TPM_ALG_SHA1:
-					sg = Signature.getInstance("SHA1withRSA");
-				    sg.initVerify(publicKey);
-				    sg.update(this.yourQuoted);
-				    this.signatureCorrect = sg.verify(signature);
-					break;					
-				default:
-					break;
-			}
-			
+			key = new TPM2B_PUBLIC(this.cert);
 		} catch (Exception ex) {
-			LOG.debug("error: could not fetch public key from \""+this.certUri+"\":" + ex.getMessage());
+			String error = "error: could not create a TPM2B_PUBLIC key from bytes \""+ByteArrayUtil.toPrintableHexString(this.cert)+"\":" + ex.getMessage();
+			LOG.debug(error);
 			ex.printStackTrace();
-			return ControllerToTpm
-					.newBuilder()
-					.build();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
 		}
-			
+		// and convert it into an DER key
+		PublicKey publicKey;
+		try {
+			publicKey = new PublicKeyConverter(key).getPublicKey();
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+			String error = "error: could not convert TPM2B_PUBLIC to a PublicKey \""+key+"\":" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		}
+		// construct a new TPMT_SIGNATURE from yourSignature bytes
+		TPMT_SIGNATURE tpmSignature;
+		try {
+			tpmSignature = new TPMT_SIGNATURE(this.yourSignature);
+		} catch (Exception ex) {
+			String error = "error: could not create a TPMT_SIGNATURE from bytes \""+this.yourSignature+"\":" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		}
+		// and get the raw byte signature
+		byte[] signature = tpmSignature.getSignature().getSig();
+		// construct a new TPMS_ATTEST from yourQuoted bytes
+		TPMS_ATTEST digest;
+		try {
+			digest = new TPMS_ATTEST(this.yourQuoted);
+		} catch (Exception ex) {
+			String error = "error: could not create a TPMS_ATTEST from bytes \""+this.yourQuoted+"\":" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		}
+		try {
+		// and get the raw byte quote
+		byte[] quote = digest.toBytes();
+		switch(tpmSignature.getSignature().getHashAlg()) {
+			case TPM_ALG_SHA256:
+
+				sg = Signature.getInstance("SHA256withRSA");
+
+			    sg.initVerify(publicKey);
+			    sg.update(this.yourQuoted);
+			    this.signatureCorrect = sg.verify(signature);
+				break;
+			case TPM_ALG_SHA1:
+				sg = Signature.getInstance("SHA1withRSA");
+			    sg.initVerify(publicKey);
+			    sg.update(this.yourQuoted);
+			    this.signatureCorrect = sg.verify(signature);
+				break;					
+			default:
+				break;
+		}
+		} catch (NoSuchAlgorithmException ex) {
+			String error = "error: NoSuchAlgorithmException when checking signature :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		} catch (InvalidKeyException ex) {
+			String error = "error: InvalidKeyException when checking signature :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		} catch (SignatureException ex) {
+			String error = "error: SignatureException when checking signature :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		}
+		
 		if(thread.isAlive()) {
 			// send msg to local unix socket
 			try {
@@ -163,6 +210,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 								AttestationResponse
 								.newBuilder()
 								.setAtype(this.aType)
+								.setQualifyingData(this.yourNonce)
 								.setHalg(response.getHalg())
 								.setQuoted(response.getQuoted())
 								.setSignature(response.getSignature())
@@ -171,19 +219,22 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 								.build()
 								)
 						.build();
-			} catch (IOException e1) {
-				LOG.debug("error: IOException");
-				e1.printStackTrace();
-				return null;
-			} catch (InterruptedException e1) {
-				LOG.debug("error: InterruptedException");
-				e1.printStackTrace();
-				return null;
+			} catch (IOException ex) {
+				String error = "error: IOException when talking to tpm2d :" + ex.getMessage();
+				LOG.debug(error);
+				ex.printStackTrace();
+				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+			} catch (InterruptedException ex) {
+				String error = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
+				LOG.debug(error);
+				ex.printStackTrace();
+				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
 			}
 		}
 		else {
-			LOG.debug("error: thread is not alive");
-			return null;
+			String error = "error: Thread is not alive !";
+			LOG.debug(error);
+			return RemoteAttestationHandler.sendError(this.thread, "thread error", error);
 		}
 	}
 

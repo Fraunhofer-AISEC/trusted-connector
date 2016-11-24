@@ -12,6 +12,7 @@ import de.fhg.aisec.ids.messages.Idscp.Error;
 
 public class RemoteAttestationHandler {
 
+	/*
 	// fetch a public key from a uri and return the key as a byte array
 	protected static byte[] fetchPublicKey(String uri) throws Exception {
 		URL cert = new URL(uri);
@@ -24,6 +25,7 @@ public class RemoteAttestationHandler {
         in.close();
         return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
 	}
+	*/
 	
 	public static MessageLite sendError(Thread t, String code, String error) {
 		if(t.isAlive()) {

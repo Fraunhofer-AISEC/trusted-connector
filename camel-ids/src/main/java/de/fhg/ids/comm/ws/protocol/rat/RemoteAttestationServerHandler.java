@@ -40,7 +40,7 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 	private UnixSocketResponsHandler handler;
 	private byte[] yourQuoted;
 	private byte[] yourSignature;
-	private String certUri;
+	private byte[] cert;
 	private boolean signatureCorrect;
 	private Pcr[] pcrValues;
 	private TrustedThirdParty ttp;
@@ -131,14 +131,14 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 		// get signature from server msg
 		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
 		// get cert uri from server msg
-		this.certUri = e.getMessage().getAttestationResponse().getCertificateUri();
+		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
 		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		this.ttp = new TrustedThirdParty(this.pcrValues);
 		try {
 			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.certUri.getBytes());
+			TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.cert);
 			// and convert it into an DER key
 			PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
 			// construct a new TPMT_SIGNATURE from yourSignature bytes

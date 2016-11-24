@@ -131,14 +131,15 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     	socketServer.delete();
     	socketClient.delete();
     }
-    */
+
     
     private static void dockerStop() throws InterruptedException, IOException {
 		new ProcessBuilder("docker", "stop", "-t", "0", "ttp").start().waitFor();
 		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2ds").start().waitFor();
 		new ProcessBuilder("docker", "stop", "-t", "0", "tpm2dc").start().waitFor();
     }    
-    
+    */
+	
     @Test
     public void testTwoRoutes() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
