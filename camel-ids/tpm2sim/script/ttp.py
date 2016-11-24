@@ -2,11 +2,25 @@
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+import simplejson
 import cgi
 import json
 import base64
      
 class RestHTTPRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        params = parse_qs(urlparse(self.path).query)
+        if self.path == "/cert.pub":
+            self.send_header('Content-type','application/json') 
+            self.end_headers()  
+            self.wfile.write(base64.b64encode(data))
+        else:
+            self.send_header('Content-type', 'text/html') 
+            self.end_headers()
+            self.wfile.write("<html><head><title>404</title></head><body>nothing to see here .. this is just a ttp mock</body></html>".encode('utf-8'))
+        return
+
     def do_POST(self):
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
         self.send_response(200)
