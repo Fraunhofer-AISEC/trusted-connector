@@ -206,6 +206,21 @@
 				</configuration>
 				<executions>
 					<execution>
+						<id>stop-existing-tpm2d</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+							    <image>
+								<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
+							    </image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
 						<id>run-tpm2d</id>
 						<phase>compile</phase>
 						<goals>
@@ -217,9 +232,6 @@
 								<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
 								<alias>tpm2d-sim</alias>
 								<run>
-								    <cmd>
-									/tpm2d/start.sh
-								    </cmd>
 								    <ports>
 									<port>7331:29663</port>
 								    </ports>
@@ -240,10 +252,13 @@
 								    <volumes>
 									<bind>
 									    <volume>
-										${project.basedir}/tpm2sim/socket/:/data/cml/communication/tpm2d/
+										${project.basedir}/tpm2sim/socket:/data/cml/communication/tpm2d
 									    </volume>
 									</bind>
 								    </volumes>
+								    <cmd>
+									/tpm2d/start.sh
+								    </cmd>
 								</run>
 							    </image>
 							</images>
@@ -251,10 +266,18 @@
 					</execution>
 					<execution>
 						<id>remove-tpm2d</id>
-						<phase>verify</phase>
+						<phase>post-integration-test</phase>
 						<goals>
 							<goal>stop</goal>
+							<goal>remove</goal>
 						</goals>
+						<configuration>
+							<images>
+							    <image>
+								<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
+							    </image>
+							</images>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
