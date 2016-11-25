@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -36,10 +37,16 @@ public class UnixSocketTest {
 		socketFile = new File(SOCKET_PATH);
 		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
 		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "./tpm2sim/")).start().waitFor(660, TimeUnit.SECONDS);
+		Process p1 = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "./tpm2sim/")).start();
+		p1.waitFor(4, TimeUnit.SECONDS);
+		System.out.println(getInputAsString(p1.getInputStream()));
+		//System.out.println(UnixSocketTest.getInputAsString(p1.getInputStream()));
     	// then start the docker image
 		UnixSocketTest.kill("ust");
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ust", "-v", folder +":/data/cml/communication/tpm2d/", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(3, TimeUnit.SECONDS);
+		Process p2 = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ust", "-v", folder +":/data/cml/communication/tpm2d/", DOCKER_IMAGE, "/tpm2d/start.sh")).start();
+		p2.waitFor(4, TimeUnit.SECONDS);
+		System.out.println(getInputAsString(p2.getInputStream()));
+		//System.out.println(UnixSocketTest.getInputAsString(p2.getInputStream()));
     }
 	
 	@AfterClass
@@ -47,6 +54,12 @@ public class UnixSocketTest {
 		UnixSocketTest.kill("ust");
 		socketFile.delete();
     }
+	
+	private static String getInputAsString(InputStream is) {
+	   try(java.util.Scanner s = new java.util.Scanner(is))  { 
+	       return s.useDelimiter("\\A").hasNext() ? s.next() : ""; 
+	   }
+	}
 	
 	private static void kill(String id) throws InterruptedException, IOException {
 		// pull the image
