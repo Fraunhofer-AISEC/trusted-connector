@@ -232,7 +232,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 			}
 		}
 		else {
-			String error = "error: Thread is not alive !";
+			String error = "error: RAT client thread is not alive !";
 			LOG.debug(error);
 			return RemoteAttestationHandler.sendError(this.thread, "thread error", error);
 		}
@@ -253,21 +253,11 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
 							.build()
 							)
 					.build();
-		} catch (IOException e1) {
-			// attestation not successfull
-			e1.printStackTrace();
-			return ConnectorMessage
-					.newBuilder()
-					.setId(0)
-					.setType(ConnectorMessage.Type.RAT_RESULT)
-					.setAttestationResult(
-							AttestationResult
-							.newBuilder()
-							.setAtype(this.aType)
-							.setResult(false)
-							.build()
-							)
-					.build();			
+		} catch (IOException ex) {
+			String error = "error: IOException when talking to ttp :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);		
 		}
 	}
 

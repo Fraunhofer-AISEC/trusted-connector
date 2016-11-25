@@ -28,6 +28,8 @@
 		<jetty-version>9.2.15.v20160210</jetty-version>
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.2</ahc-version>
+		<docker.follow>false</docker.follow>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>
 		<repository>
@@ -133,6 +135,11 @@
                         <artifactId>tpm2j</artifactId>
                         <version>1.0.1</version>
                 </dependency>
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>docker-maven-plugin</artifactId>
+			<version>0.18.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<defaultGoal>install</defaultGoal>
@@ -189,6 +196,67 @@
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.18.1</version>
+				<configuration>
+					<startParallel>true</startParallel>
+				</configuration>
+				<executions>
+					<execution>
+						<id>run-tpm2d</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+							    <image>
+								<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
+								<alias>tpm2d-sim</alias>
+								<run>
+								    <cmd>
+									/tpm2d/start.sh
+								    </cmd>
+								    <ports>
+									<port>7331:29663</port>
+								    </ports>
+								    <wait>
+									<http>
+										<url>
+											http://127.0.0.1:7331
+										</url>
+										<method>
+											GET
+										</method>
+										<status>
+											200..399
+										</status>
+									</http>
+									<time>10000</time>
+								    </wait>
+								    <volumes>
+									<bind>
+									    <volume>
+										${project.basedir}/tpm2sim/socket/:/data/cml/communication/tpm2d/
+									    </volume>
+									</bind>
+								    </volumes>
+								</run>
+							    </image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-tpm2d</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

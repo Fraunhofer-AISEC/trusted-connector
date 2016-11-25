@@ -1,9 +1,10 @@
-package de.fhg.camel.ids.comm.ws.protocol.rat;
+package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
 import java.util.Map;
@@ -14,9 +15,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.ids.comm.ws.protocol.rat.PcrMessage;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.ids.comm.ws.protocol.rat.TrustedThirdParty;
 
 public class TrustedThirdPartyTest {
@@ -26,36 +30,19 @@ public class TrustedThirdPartyTest {
 	Pcr two;
 	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
 	TrustedThirdParty ttp;
-    private static String DOCKER_CLI ="docker";
-    private static String DOCKER_IMAGE = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest";
-    private static String SOCKET = "control.sock";
-    private static String SOCKET_PATH = "tpm2sim/socket/" + SOCKET;
-	private static File socketFile;
+	private static String dockerName = "ttp";
     
+	/*
 	@BeforeClass
-    public static void initSimServer() throws InterruptedException, IOException {
-    	socketFile = new File(SOCKET_PATH);
-		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
-		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "./tpm2sim/")).start().waitFor(660, TimeUnit.SECONDS);
-    	// then start the docker image
-		TrustedThirdPartyTest.kill("ttp");
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "ttp", "-v", folder +":/data/cml/communication/tpm2d/", "-p", "127.0.0.1:7331:29663", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(2, TimeUnit.SECONDS);
+    public static void initTTP() throws InterruptedException, IOException {
+		Docker.initDocker(dockerName, 4);
     }
 	
 	@AfterClass
-    public static void teardownSimServer() throws Exception {
-		TrustedThirdPartyTest.kill("ttp");
-		socketFile.delete();
+    public static void kilTTP() throws Exception {
+		Docker.killDocker(dockerName, 4);
     }
-	
-	private static void kill(String id) throws InterruptedException, IOException {
-		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop", id)).start().waitFor(5, TimeUnit.SECONDS);
-    	// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "rm", id)).start().waitFor(5, TimeUnit.SECONDS);
-	}
-	
+	*/
     @Before
     public void initTest() {
     	this.one = Pcr

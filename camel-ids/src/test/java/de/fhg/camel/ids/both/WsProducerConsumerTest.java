@@ -59,39 +59,10 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private static File socketFile;
-    private static String DOCKER_CLI ="docker";
-    private static String DOCKER_IMAGE = "registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest";
-    private static String SOCKET = "control.sock";
-    private static String SOCKET_PATH = "tpm2sim/socket/" + SOCKET;
     protected List<Object> messages;
 	private static String PWD = "changeit";
 	
-	@BeforeClass
-    public static void initSimServer() throws InterruptedException, IOException {
-		WsProducerConsumerTest.kill("wspc");
-		socketFile = new File(SOCKET_PATH);
-		String folder = socketFile.getAbsolutePath().substring(0, socketFile.getAbsolutePath().length() - SOCKET.length());
-		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "build", "-t", DOCKER_IMAGE, "./tpm2sim/")).start().waitFor(660, TimeUnit.SECONDS);
-    	// then start the docker image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "run", "--name", "wspc", "-v", folder +":/data/cml/communication/tpm2d/", DOCKER_IMAGE, "/tpm2d/start.sh")).start().waitFor(5, TimeUnit.SECONDS);
-    }
 	
-	@AfterClass
-    public static void teardownSimServer() throws Exception {
-		WsProducerConsumerTest.kill("wspc");
-		socketFile.delete();
-    }
-	
-	private static void kill(String id) throws InterruptedException, IOException {
-		// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "stop", id)).start().waitFor(4, TimeUnit.SECONDS);
-    	// pull the image
-		new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "rm", id)).start().waitFor(4, TimeUnit.SECONDS);
-	}
-	
-    
     @Override
     public void setUp() throws Exception {
     	setupServer();

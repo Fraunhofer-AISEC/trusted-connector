@@ -30,7 +30,7 @@ public final class ProtocolState {
 
     public static final ProtocolState IDSCP_START = 			new ProtocolState("IDSCP:START", 		"Idscp: start of protocol.");
     public static final ProtocolState IDSCP_ERROR = 			new ProtocolState("IDSCP:ERROR", 		"Idscp: error in protocol.");
-    public static final ProtocolState IDSCP_SUCCESS = 			new ProtocolState("IDSCP:SUCCESS", 		"Idscp: success of protocol.");
+    public static final ProtocolState IDSCP_END =	 			new ProtocolState("IDSCP:END", 			"Idscp: end of protocol.");
     public static final ProtocolState IDSCP_RAT_START =			new ProtocolState("IDSCP:RAT:START", 	"Idscp: Rat: start of rat sub protocol.");
     public static final ProtocolState IDSCP_RAT_SUCCESS =		new ProtocolState("IDSCP:RAT:SUCCESS", 	"Idscp: Rat: successful execution of rat sub protocol.");
     public static final ProtocolState IDSCP_RAT_AWAIT_CONFIRM =	new ProtocolState("IDSCP:RAT:CONFIRM", 	"Idscp: Rat: awaiting confirmation.");

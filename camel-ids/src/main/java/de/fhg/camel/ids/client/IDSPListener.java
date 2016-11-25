@@ -69,7 +69,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     			e.printStackTrace();
     		}
 
-    		if (fsm.getState().equals(ProtocolState.IDSCP_SUCCESS.id())) {
+    		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
 	    		isFinishedCond.signalAll();
 	    	}
 

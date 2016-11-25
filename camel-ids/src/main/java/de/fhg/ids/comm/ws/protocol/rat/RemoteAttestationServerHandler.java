@@ -107,17 +107,20 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 						.build();				
 			}
 			else {
-				LOG.debug("error: thread is not alive");
-				return null;
+				String error = "error: RAT server thread is not alive !";
+				LOG.debug(error);
+				return RemoteAttestationHandler.sendError(this.thread, "thread error", error);	
 			}
-		} catch (IOException e1) {
-			LOG.debug("IOException when writing to unix socket");
-			e1.printStackTrace();
-			return null;
-		} catch (InterruptedException e1) {
-			LOG.debug("InterruptedException when writing to unix socket");
-			e1.printStackTrace();
-			return null;
+		} catch (IOException ex) {
+			String error = "error: IOException when talking to ttp :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
+		} catch (InterruptedException ex) {
+			String error = "error: InterruptedException when talking to ttp :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
 		}
 	}
 
@@ -163,8 +166,10 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 			}
 			
 		} catch (Exception ex) {
-			LOG.debug("error: exception " + ex.getMessage());
+			String error = "error: Exception when talking to tpm2d :" + ex.getMessage();
+			LOG.debug(error);
 			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
 		}
 		try {
 			return ConnectorMessage
@@ -179,21 +184,11 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
 							.build()
 							)
 					.build();
-		} catch (IOException e1) {
-			// attestation not successfull
-			e1.printStackTrace();
-			return ConnectorMessage
-					.newBuilder()
-					.setId(0)
-					.setType(ConnectorMessage.Type.RAT_RESULT)
-					.setAttestationResult(
-							AttestationResult
-							.newBuilder()
-							.setAtype(this.aType)
-							.setResult(false)
-							.build()
-							)
-					.build();			
+		} catch (IOException ex) {
+			String error = "error: IOException when talking to ttp :" + ex.getMessage();
+			LOG.debug(error);
+			ex.printStackTrace();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
 		}
 	}
 
