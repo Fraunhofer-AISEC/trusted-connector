@@ -24,8 +24,7 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 
 public class UnixSocketTest {
 	
-	private static String SOCKET = "control.sock";
-    static String SOCKET_PATH = "./tpm2sim/" + SOCKET;
+    static String SOCKET_PATH = "tpm2sim/control.sock";
 	private UnixSocketThread client;
 	private Thread thread;
 	private static UnixSocketResponsHandler handler;

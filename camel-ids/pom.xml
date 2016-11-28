@@ -262,6 +262,9 @@
 										<cmd>
 											/tpm2d/start.sh
 										</cmd>
+                                        <env>
+                                            <LOCAL_USER_ID>${project.activeProfiles[0].id}</LOCAL_USER_ID>
+                                        </env>
 									</run>
 								</image>
 							</images>

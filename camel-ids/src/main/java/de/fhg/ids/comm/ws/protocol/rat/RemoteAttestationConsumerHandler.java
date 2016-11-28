@@ -62,7 +62,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		// UnixSocketThread will be used to communicate with local TPM2d
 		try {
 			// client will be used to send messages
-			this.client = new UnixSocketThread(this.SOCKET);
+			this.client = new UnixSocketThread(SOCKET);
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();
