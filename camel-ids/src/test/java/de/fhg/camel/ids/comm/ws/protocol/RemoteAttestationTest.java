@@ -2,11 +2,6 @@ package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -82,7 +77,6 @@ public class RemoteAttestationTest {
     @Test
     public void test4() throws Exception {
     	msg4 = ConnectorMessage.parseFrom(provider.sendResult(new Event(msg3.getType(), msg3.toString(), msg3)).toByteString());
-    	System.out.println(msg4.toString());
     	assertTrue(msg4.getId() == id + 4);
     	assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));

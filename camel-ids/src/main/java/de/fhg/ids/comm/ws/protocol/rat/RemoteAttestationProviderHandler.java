@@ -31,7 +31,6 @@ import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String SOCKET = "tpm2sim/socket/control.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
@@ -56,7 +55,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
 			// client will be used to send messages
-			this.client = new UnixSocketThread(this.SOCKET);
+			this.client = new UnixSocketThread(SOCKET);
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();

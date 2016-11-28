@@ -38,7 +38,6 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String SOCKET = "tpm2sim/socket/control.sock";
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;

@@ -11,6 +11,8 @@ import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 
 public class RemoteAttestationHandler {
+	
+	protected String SOCKET = "tpm2sim/control.sock";
 
 	/*
 	// fetch a public key from a uri and return the key as a byte array
