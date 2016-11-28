@@ -11,10 +11,16 @@ public class ErrorHandler {
 	
 	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
-	public boolean handleError(Event e, ProtocolState state) {
+	public boolean handleError(Event e, ProtocolState state, boolean isConsumer) {
+		String entity = "Provider";
+		if(isConsumer) {
+			entity = "Consumer";
+		}
 		LOG.debug("*******************************************************************************************************");
-		LOG.debug("*  error during rat protocol execution in the state: " + state.description());
-		LOG.debug("*  the error was: " + e.getMessage().getError().getErrorMessage());
+		LOG.debug("*  error during rat protocol execution ");
+		LOG.debug("*  -> state: " + state.description());
+		LOG.debug("*  -> side: "+entity+"");		
+		LOG.debug("*  -> error: " + e.getMessage().getError().getErrorMessage());
 		LOG.debug("*******************************************************************************************************");
 		/*
 		 * if(errorWasHandled) {

@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.ids.comm.ws.protocol.rat.PcrMessage;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.TrustedThirdParty;
 
 public class TrustedThirdPartyTest {
@@ -31,18 +31,7 @@ public class TrustedThirdPartyTest {
 	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
 	TrustedThirdParty ttp;
 	private static String dockerName = "ttp";
-    
-	/*
-	@BeforeClass
-    public static void initTTP() throws InterruptedException, IOException {
-		Docker.initDocker(dockerName, 4);
-    }
-	
-	@AfterClass
-    public static void kilTTP() throws Exception {
-		Docker.killDocker(dockerName, 4);
-    }
-	*/
+
     @Before
     public void initTest() {
     	this.one = Pcr

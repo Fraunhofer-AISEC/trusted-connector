@@ -55,4 +55,12 @@ public class PcrMessage {
 		}
 	}
 	
+	public String toString() {
+		String ret = "\n";
+		for(int i = 0; i < values.size(); i++) {
+			ret += "\t" + i + ":" + values.get(i) + "\n";
+		}
+		return ret;
+	}
+	
 }

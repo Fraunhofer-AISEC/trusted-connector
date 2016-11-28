@@ -23,7 +23,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 public class TrustedThirdParty {
 
 	private Logger LOG = LoggerFactory.getLogger(TrustedThirdParty.class);
-	private String ttpUrl = "http://localhost:7331";
+	private String ttpUrl = "http://127.0.0.1:7331";
 	private String freshNonce = "";
 	private Pcr[] pcrValues = null;
 	
@@ -40,11 +40,7 @@ public class TrustedThirdParty {
 		if(this.pcrValues != null) {
 			String json = this.jsonToString(freshNonce);
 			PcrMessage response = this.readResponse(json, ttpUrl);
-			LOG.debug("---------------------------------------------------------------------------------------------------------------");
-			LOG.debug("---------------------------------------------------------------------------------------------------------------");
 			LOG.debug(response.toString());
-			LOG.debug("---------------------------------------------------------------------------------------------------------------");
-			LOG.debug("---------------------------------------------------------------------------------------------------------------");
 			return response.isSuccess();
 		}
 		else {

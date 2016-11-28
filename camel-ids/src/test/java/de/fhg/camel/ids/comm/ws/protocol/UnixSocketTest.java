@@ -20,29 +20,16 @@ import de.fhg.aisec.ids.messages.AttestationProtos.*;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 
 public class UnixSocketTest {
 	
-	private static String dockerName = "unix";
 	private static String SOCKET = "control.sock";
-    private static String SOCKET_PATH = "tpm2sim/socket/" + SOCKET;
+    static String SOCKET_PATH = "./tpm2sim/socket/" + SOCKET;
 	private UnixSocketThread client;
 	private Thread thread;
 	private static UnixSocketResponsHandler handler;
 
-	/*
-	@BeforeClass
-    public static void initTTP() throws InterruptedException, IOException {
-		Docker.initDocker(dockerName, 4);
-    }
-	
-	@AfterClass
-    public static void kilTTP() throws Exception {
-		Docker.killDocker(dockerName, 4);
-    }
-    */
-	
     @Test
     public void testSocketConnection() throws Exception {
     	try {

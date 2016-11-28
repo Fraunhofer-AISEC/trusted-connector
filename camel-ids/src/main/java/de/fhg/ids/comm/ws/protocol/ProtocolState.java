@@ -36,7 +36,6 @@ public final class ProtocolState {
     public static final ProtocolState IDSCP_RAT_AWAIT_CONFIRM =	new ProtocolState("IDSCP:RAT:CONFIRM", 	"Idscp: Rat: awaiting confirmation.");
     public static final ProtocolState IDSCP_RAT_AWAIT_RESULT =	new ProtocolState("IDSCP:RAT:RESULT", 	"Idscp: Rat: awaiting result.");
     public static final ProtocolState IDSCP_RAT_AWAIT_LEAVE =	new ProtocolState("IDSCP:RAT:LEAVE", 	"Idscp: Rat: awaiting to leave.");
-    public static final ProtocolState IDSCP_META_AWAIT_METADATA_REQUEST =	new ProtocolState("IDSCP:META:AWAITREQUEST", 	"Idscp: Metadataexchange: awaiting metadata request.");
-    public static final ProtocolState IDSCP_META_AWAIT_METADATA_RESPONSE =	new ProtocolState("IDSCP:META:AWAITRESPONSE", 	"Idscp: Metadataexchange: awaiting metadata response.");
-
+    public static final ProtocolState IDSCP_META_AWAIT_REQUEST =new ProtocolState("IDSCP:META:REQUEST", "Idscp: Metadataexchange: await request.");
+    
   }

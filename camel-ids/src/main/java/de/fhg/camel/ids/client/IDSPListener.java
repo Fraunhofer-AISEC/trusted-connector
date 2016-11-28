@@ -31,7 +31,11 @@ public class IDSPListener extends DefaultWebSocketListener {
     private FSM fsm;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
-    private final ConnectorMessage emptyMsg = Idscp.ConnectorMessage.newBuilder().build();
+    private final ConnectorMessage emptyMsg = Idscp.ConnectorMessage
+    		.newBuilder()
+    		.setType(ConnectorMessage.Type.RAT_START)
+    		.setId(new java.util.Random().nextLong())
+    		.build();
 
 	@Override
     public void onOpen(WebSocket websocket) {
@@ -41,7 +45,7 @@ public class IDSPListener extends DefaultWebSocketListener {
         fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket);
         
         // start the protocol with the first message
-        fsm.feedEvent(new Event(ConnectorMessage.Type.RAT_START, "", emptyMsg));
+        fsm.feedEvent(new Event(emptyMsg.getType(), emptyMsg.toString(), emptyMsg));
     }
 
     @Override

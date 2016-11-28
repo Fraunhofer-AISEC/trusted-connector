@@ -19,7 +19,6 @@ message ConnectorMessage {
 		ERROR = 11;
 		META_DATA_REQUEST = 12;
 		META_DATA_RESPONSE = 13;
-
 	}
 	
 	// Identifies which field is filled in.

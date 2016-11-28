@@ -18,8 +18,8 @@ import de.fhg.ids.comm.ws.protocol.error.ErrorHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataCommunicationHelper;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 
 /**
  * Generator of protocols over a websocket session.
@@ -50,6 +50,11 @@ public class ProtocolMachine {
 		this.ws = websocket;
 		FSM fsm = new FSM();
 
+		// all handler
+		RemoteAttestationConsumerHandler remoteAttestationHandler = new RemoteAttestationConsumerHandler(fsm, IdsAttestationType.BASIC);
+		ErrorHandler errorHandler = new ErrorHandler();
+		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();		
+		
 		// standard states
 		fsm.addState(ProtocolState.IDSCP_START);
 		fsm.addState(ProtocolState.IDSCP_ERROR);
@@ -61,28 +66,24 @@ public class ProtocolMachine {
 		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_LEAVE);
 		
 		//Metadata exchange
-		fsm.addState(ProtocolState.IDSCP_META_AWAIT_METADATA_REQUEST);
-		
-	
-		RemoteAttestationClientHandler remoteAttestationHandler = new RemoteAttestationClientHandler(fsm, IdsAttestationType.BASIC);
-		ErrorHandler errorHandler = new ErrorHandler();
-		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();
+		fsm.addState(ProtocolState.IDSCP_META_AWAIT_REQUEST);
 		
 		/* Remote Attestation Protocol */
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_START, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, (e) -> {return replyProto(remoteAttestationHandler.enterRatRequest(e));} ));
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(remoteAttestationHandler.sendTPM2Ddata(e));} ));
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(remoteAttestationHandler.sendResult(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_AWAIT_METADATA_REQUEST, (e) -> {return replyProto(remoteAttestationHandler.leaveRatRequest(e));} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_AWAIT_REQUEST, (e) -> {return replyProto(remoteAttestationHandler.leaveRatRequest(e));} ));
 		
-		//TODO: Curently, state change is done as soon as meta data request comes in and response is sent. We need to evaluate the metadata 
-		fsm.addTransition(new Transition(ConnectorMessage.Type.META_DATA_REQUEST, ProtocolState.IDSCP_META_AWAIT_METADATA_REQUEST, ProtocolState.IDSCP_END, (e) -> {return replyProto(mComHelper.buildMetaDataResponse(e));} ));
+		/* Metadata Exchange Protocol */ 
+		fsm.addTransition(new Transition(ConnectorMessage.Type.META_DATA_REQUEST, ProtocolState.IDSCP_META_AWAIT_REQUEST, ProtocolState.IDSCP_END, (e) -> {return replyProto(mComHelper.buildMetaDataResponse(e));} ));
 		
 		/* error protocol */
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_START, (e) -> { return errorHandler.handleError(e, ProtocolState.IDSCP_START);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_AWAIT_METADATA_REQUEST, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_AWAIT_METADATA_REQUEST);} ));
+		// in case of error go back to IDSC_START state
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_START, (e) -> { return errorHandler.handleError(e, ProtocolState.IDSCP_START, true);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, true);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT, true);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, true);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_AWAIT_REQUEST, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_AWAIT_REQUEST, true);} ));
 
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState());});
@@ -97,6 +98,11 @@ public class ProtocolMachine {
 		this.sess = sess;
 		FSM fsm = new FSM();
 
+		// all handler
+		RemoteAttestationProviderHandler h = new RemoteAttestationProviderHandler(fsm, IdsAttestationType.BASIC);
+		ErrorHandler errorHandler = new ErrorHandler();
+		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();
+		
 		// standard states
 		fsm.addState(ProtocolState.IDSCP_START);
 		fsm.addState(ProtocolState.IDSCP_ERROR);
@@ -108,26 +114,24 @@ public class ProtocolMachine {
 		fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_LEAVE);
 		
 		//metadata exchange states
-		fsm.addState(ProtocolState.IDSCP_META_AWAIT_METADATA_RESPONSE);
-		
-		RemoteAttestationServerHandler h = new RemoteAttestationServerHandler(fsm, IdsAttestationType.BASIC);
-		ErrorHandler errorHandler = new ErrorHandler();
-		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();
+		fsm.addState(ProtocolState.IDSCP_META_AWAIT_REQUEST);
 		
 		/* Remote Attestation Protocol */
-
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, (e) -> {return replyProto(h.sendTPM2Ddata(e));} ));
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(h.sendResult(e));} ));
 		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(h.leaveRatRequest(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_AWAIT_METADATA_RESPONSE, (e) -> {return replyProto(mComHelper.buildMetaDataRequest(e));} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.META_DATA_RESPONSE, ProtocolState.IDSCP_META_AWAIT_METADATA_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return true;} ));		
+		fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_AWAIT_REQUEST, (e) -> {return replyProto(mComHelper.buildMetaDataRequest(e));} ));
+		
+		/* Metadata Exchange Protocol */
+		fsm.addTransition(new Transition(ConnectorMessage.Type.META_DATA_RESPONSE, ProtocolState.IDSCP_META_AWAIT_REQUEST, ProtocolState.IDSCP_END, (e) -> {return true;} ));		
 		
 		/* error protocol */
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_START);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE);} ));
-		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_AWAIT_METADATA_RESPONSE, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_AWAIT_METADATA_RESPONSE);} ));
+		// in case of error go back to IDSC_START state
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_START, false);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_CONFIRM, false);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT, false);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, false);} ));
+		fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_AWAIT_REQUEST, ProtocolState.IDSCP_START, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_AWAIT_REQUEST, false);} ));
 		
 		/* Add listener to log state transitions*/
 		fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
