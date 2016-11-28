@@ -56,7 +56,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected Server server;
-    private static File socketFile;
     protected List<Object> messages;
 	private static String PWD = "password";
 

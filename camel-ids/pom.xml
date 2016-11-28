@@ -208,8 +208,25 @@
 				<version>0.18.1</version>
 				<configuration>
 					<startParallel>true</startParallel>
+					<autoPull>always</autoPull>
+					<showLogs>true</showLogs>
 				</configuration>
 				<executions>
+					<execution>
+						<id>stop-ttp</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>				
 					<execution>
 						<id>stop-tpm2d</id>
 						<phase>initialize</phase>
@@ -237,23 +254,6 @@
 									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
 									<alias>tpm2d-sim</alias>
 									<run>
-										<ports>
-											<port>7331:29663</port>
-										</ports>
-										<wait>
-											<http>
-												<url>
-													http://127.0.0.1:7331
-												</url>
-												<method>
-													GET
-												</method>
-												<status>
-													200..399
-												</status>
-											</http>
-											<time>10000</time>
-										</wait>
 										<volumes>
 											<bind>
 												<volume>${project.basedir}/tpm2sim/:/data/cml/communication/tpm2d/</volume>
@@ -271,6 +271,43 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>run-ttp</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+									<alias>ttp-sim</alias>
+									<run>
+										<ports>
+											<port>7331:29663</port>
+										</ports>
+										<wait>
+											<http>
+												<url>
+													http://127.0.0.1:7331
+												</url>
+												<method>
+													GET
+												</method>
+												<status>
+													200..399
+												</status>
+											</http>
+											<time>10000</time>
+										</wait>
+										<cmd>
+											/tpm2d/ttp.py
+										</cmd>
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>					
+					<execution>
 						<id>remove-tpm2d</id>
 						<phase>post-integration-test</phase>
 						<goals>
@@ -281,6 +318,21 @@
 							<images>
 								<image>
 									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-ttp</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
 								</image>
 							</images>
 						</configuration>

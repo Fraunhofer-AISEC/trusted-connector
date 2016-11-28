@@ -33,7 +33,7 @@ public class UnixSocketTest {
     public void testSocketConnection() throws Exception {
     	try {
 			// client will be used to send messages
-			client = new UnixSocketThread(UnixSocketTest.SOCKET_PATH);
+			client = new UnixSocketThread(SOCKET_PATH);
 			thread = new Thread(client);
 			//this.thread.setDaemon(true);
 			thread.start();

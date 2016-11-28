@@ -30,7 +30,6 @@ public class TrustedThirdPartyTest {
 	Pcr two;
 	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
 	TrustedThirdParty ttp;
-	private static String dockerName = "ttp";
 
     @Before
     public void initTest() {

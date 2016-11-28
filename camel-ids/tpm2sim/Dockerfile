@@ -5,7 +5,6 @@ RUN apt-get -y update && apt-get -y upgrade && apt-get -y install sudo python3 p
 RUN pip3 install --upgrade pip
 RUN pip3 install -U setuptools
 RUN pip3 install protobuf
-RUN pip3 install simplejson
 # run gosu
 ENV GOSU_VERSION 1.9
 RUN set -x \
@@ -21,10 +20,8 @@ RUN set -x \
     && gosu nobody true \
     && apt-get purge -y --auto-remove ca-certificates wget
 # make some directories
-RUN mkdir -p /data/cml/communication/tpm2d/
-EXPOSE 29663
-# copy static data
-COPY script/ttp.py /tpm2d/
+RUN mkdir /tpm2d/ && mkdir -p /data/cml/communication/tpm2d/
+# copy data
 COPY bin/cml-tpm2d /tpm2d/
 COPY bin/tpm2_simulator /tpm2d/
 COPY script/start.sh /tpm2d/
