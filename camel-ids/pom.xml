@@ -256,9 +256,7 @@
 										</wait>
 										<volumes>
 											<bind>
-												<volume>
-													${project.basedir}/tpm2sim/socket/:/data/cml/communication/tpm2d/
-												</volume>
+												<volume>${project.basedir}/tpm2sim/socket/:/data/cml/communication/tpm2d/</volume>
 											</bind>
 										</volumes>
 										<cmd>
