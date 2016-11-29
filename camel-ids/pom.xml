@@ -256,15 +256,12 @@
 									<run>
 										<volumes>
 											<bind>
-												<volume>${project.basedir}/tpm2sim/:/data/cml/communication/tpm2d/</volume>
+												<volume>${project.basedir}/tpm2sim/sock/:/data/cml/communication/tpm2d/</volume>
 											</bind>
 										</volumes>
 										<cmd>
-											/tpm2d/start.sh
+											/tpm2d/cml-tpm2d
 										</cmd>
-                                        <env>
-                                            <LOCAL_USER_ID>${project.activeProfiles[0].id}</LOCAL_USER_ID>
-                                        </env>
 									</run>
 								</image>
 							</images>
