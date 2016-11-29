@@ -122,15 +122,16 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 
+		<!-- Do not copy everything from src/main/resources, but rather only blueprint descriptor and compiled Angular stuff -->
 		<resources>
 		  <resource>
-		    <directory>src/main/resources</directory>
+		    <directory>src/main/resources/</directory>
 		    <includes>
-		      <include>dist</include>
+		      <include>www/dist</include>
+		      <include>OSGI-INF/**</include>
 		    </includes>
 		  </resource>
 		</resources>
-
 
 		<plugins>
 			<plugin>
