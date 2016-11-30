@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spi.InterceptStrategy;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -18,6 +19,7 @@ public class CamelTest extends CamelBlueprintTestSupport {
     }
     
     @Test
+    @Ignore
     public void testBlockedMessage() throws Exception {
         
     	// Create a mock endpoint for the route
