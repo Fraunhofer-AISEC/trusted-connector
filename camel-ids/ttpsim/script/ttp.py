@@ -11,20 +11,15 @@ class RestHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         params = parse_qs(urlparse(self.path).query)
-        if self.path == "/cert.pub":
-            self.send_header('Content-type','application/json') 
-            self.end_headers()  
-            self.wfile.write(base64.b64encode(data))
-        else:
-            self.send_header('Content-type', 'text/html') 
-            self.end_headers()
-            self.wfile.write("<html><head><title>404</title></head><body>nothing to see here .. this is just a ttp mock</body></html>".encode('utf-8'))
+        self.send_header('Content-type', 'text/html') 
+        self.end_headers()
+        self.wfile.write("<html><head><title>404</title></head><body>nothing to see here .. this is just a simple ttp mock</body></html>".encode('utf-8'))
         return
 
     def do_POST(self):
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-type', 'application/json')
         self.end_headers()
         data = simplejson.loads(self.data_string)
         data["success"] = True

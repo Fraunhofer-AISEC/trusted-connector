@@ -67,7 +67,6 @@ public class TrustedThirdParty {
 		os.flush();
 		os.close();
 		String jsonString = this.inputStreamToString(new BufferedInputStream(conn.getInputStream()));
-		// read the response
 		return gson.fromJson(jsonString, PcrMessage.class);
 	}
 
