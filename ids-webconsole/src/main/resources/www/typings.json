@@ -1,0 +1,9 @@
+{
+  "globalDependencies": {
+    "c3": "registry:dt/c3#0.0.0+20160811144020",
+    "cal-heatmap": "registry:dt/cal-heatmap#0.0.0+20160317120654",
+    "core-js": "registry:dt/core-js#0.0.0+20160725163759",
+    "d3": "registry:dt/d3#0.0.0+20160727131401",
+    "jasmine": "registry:dt/jasmine#2.2.0+20160621224255"
+  }
+}

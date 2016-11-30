@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/">
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Clouditor">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+  <link rel="shortcut icon" href="images/favicon.png">
+
+  <link rel="stylesheet" href="jspm_packages/npm/material-design-lite@1.2.1/material.min.css">
+  <link rel="stylesheet" href="jspm_packages/npm/c3@0.4.11/c3.min.css">
+  <link rel="stylesheet" href="jspm_packages/npm/cal-heatmap@3.6.1/cal-heatmap.css">
+
+  <link rel="stylesheet" href="css/app.css">
+
+  <!-- Google Web Fonts -->
+  <link rel="stylesheet" href="fonts/fonts.css">
+</head>
+
+<body>
+  <iot-connector></iot-connector>
+  <!-- Global configuration (e.g. for API url) -->
+  <script src="iot-connector.config.js"></script>
+
+  <script src="jspm_packages/system.js"></script>
+  <script src="config.js"></script>
+
+  <!-- Additional libraries, that cannot be loaded via SystemJS -->
+  <script src="node_modules/viz.js/viz.js"></script>
+  <script src="jspm_packages/npm/material-design-lite@1.2.1/dist/material.min.js"></script>
+  <script src="jspm_packages/npm/d3@3.5.17/d3.js"></script>
+  <script src="jspm_packages/npm/c3@0.4.11/c3.js"></script>
+  <script src="jspm_packages/npm/cal-heatmap@3.6.1/cal-heatmap.js"></script>
+
+  <script>
+    System.baseURL = '/'
+    System.import('app');
+  </script>
+</body>

@@ -173,12 +173,6 @@
 				</configuration>
 			</plugin>
 
-
-
-
-
-
-
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -247,10 +241,11 @@
 						</goals>
 						<phase>compile</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>nmpm</executable>
 							<arguments>
 								<argument>run</argument>
-								<argument>build:dev</argument>
+								<argument>gulp</argument>
+								<argument>bundle</argument>
 							</arguments>
 						</configuration>
 					</execution>
