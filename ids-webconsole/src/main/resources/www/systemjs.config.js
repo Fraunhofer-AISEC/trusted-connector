@@ -17,9 +17,6 @@
        rxjs: {
          defaultExtension: 'js'
        },
-       d3: {
-         main: './build/d3.min.js',
-       }
      }
    });
 })(this);
