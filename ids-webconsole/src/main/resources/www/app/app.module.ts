@@ -3,7 +3,10 @@ import { BrowserModule, Title } from '@angular/platform-browser';
 import { HttpModule }     from '@angular/http';
 
 import { AppComponent } from './app.component';
+
 import { DashboardComponent }  from './dashboard/dashboard.component';
+import { ActivityComponent }  from './dashboard/activity.component';
+
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
@@ -21,6 +24,7 @@ import { routing } from './app.routing';
   declarations: [
     AppComponent,
     DashboardComponent,
+    ActivityComponent,
     AppsComponent,
     AppCardComponent,
     ValuesPipe ],

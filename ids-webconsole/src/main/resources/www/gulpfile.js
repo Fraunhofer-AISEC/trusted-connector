@@ -81,22 +81,14 @@ gulp.task('bundle:dependencies', function() {
     .pipe(gulp.dest(bundleDest))
 });
 
-gulp.task('bundle:jspm', function () {
-  return plugins.jspmBuild({
-      bundleOptions: {
-          minify: true,
-          mangle: false
-      },
-      bundleSfx: true,
-      bundles: [
-          { src: 'app/main.js', dst: 'iot-connector.min.js' },
-      ]
-  })
-  .pipe(gulp.dest(bundleDest));
+gulp.task('bundle:webpack', function () {
+  return gulp.src('build/app/main.js')
+    .pipe(plugins.webpack())
+    .pipe(gulp.dest(bundleDest));
 });
 
 gulp.task('bundle', function() {
-  runSequence('build', ['bundle:jspm', 'bundle:index', 'bundle:css', 'bundle:static', 'bundle:dependencies', 'bundle:config']);
+  runSequence('build', ['bundle:webpack', 'bundle:index', 'bundle:css', 'bundle:static', 'bundle:dependencies', 'bundle:config']);
 });
 
 // copy static assets
@@ -106,7 +98,7 @@ gulp.task('copy:assets', function() {
              'images/**/*',
              'index.html',
              'iot-connector.config.js',
-             'config.js',
+             'systemjs.config.js',
              '!app/**/*.ts'], { base : './' })
     .pipe(gulp.dest(dest))
 });
@@ -121,7 +113,7 @@ gulp.task('compile', function () {
   return gulp.src(tscConfig.filesGlob)
     // tsProject.src should work but doesnt
     .pipe(plugins.sourcemaps.init())
-    .pipe(plugins.typescript(tsProject))
+    .pipe(tsProject())
     .js
     .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest(dest + '/app'));
@@ -136,7 +128,8 @@ gulp.task('connect', function () {
 });
 
 gulp.task('watch', function() {
-  return gulp.watch(['app/**/*', 'index.html', 'css/*', 'config.js'], ['build'])
+  // TODO: define assets array
+  return gulp.watch(['app/**/*', 'index.html', 'css/*', 'systemjs.config.js'], ['build'])
 })
 
 gulp.task('build', ['compile', 'copy:config', 'copy:libs', 'copy:assets', 'fonts']);

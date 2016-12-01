@@ -10,9 +10,7 @@
 
   <link rel="shortcut icon" href="images/favicon.png">
 
-  <link rel="stylesheet" href="jspm_packages/npm/material-design-lite@1.2.1/material.min.css">
-  <link rel="stylesheet" href="jspm_packages/npm/c3@0.4.11/c3.min.css">
-  <link rel="stylesheet" href="jspm_packages/npm/cal-heatmap@3.6.1/cal-heatmap.css">
+  <link rel="stylesheet" href="node_modules/material-design-lite/material.min.css">
 
   <link rel="stylesheet" href="css/app.css">
 
@@ -25,18 +23,16 @@
   <!-- Global configuration (e.g. for API url) -->
   <script src="iot-connector.config.js"></script>
 
-  <script src="jspm_packages/system.js"></script>
-  <script src="config.js"></script>
+  <!-- Polyfill(s) for older browsers -->
+  <script src="node_modules/core-js/client/shim.min.js"></script>
+  <script src="node_modules/zone.js/dist/zone.js"></script>
+  <script src="node_modules/reflect-metadata/Reflect.js"></script>
+  <script src="node_modules/systemjs/dist/system.src.js"></script>
 
-  <!-- Additional libraries, that cannot be loaded via SystemJS -->
-  <script src="node_modules/viz.js/viz.js"></script>
-  <script src="jspm_packages/npm/material-design-lite@1.2.1/dist/material.min.js"></script>
-  <script src="jspm_packages/npm/d3@3.5.17/d3.js"></script>
-  <script src="jspm_packages/npm/c3@0.4.11/c3.js"></script>
-  <script src="jspm_packages/npm/cal-heatmap@3.6.1/cal-heatmap.js"></script>
+  <!-- SystemJS config -->
+  <script src="systemjs.config.js"></script>
 
   <script>
-    System.baseURL = '/'
-    System.import('app');
+    System.import("app");
   </script>
 </body>

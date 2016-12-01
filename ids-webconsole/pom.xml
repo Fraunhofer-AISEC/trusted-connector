@@ -127,7 +127,7 @@
 		  <resource>
 		    <directory>src/main/resources/</directory>
 		    <includes>
-		      <include>www/dist</include>
+		      <include>www/build</include>
 		      <include>OSGI-INF/**</include>
 		    </includes>
 		  </resource>
@@ -245,7 +245,7 @@
 							<arguments>
 								<argument>run</argument>
 								<argument>gulp</argument>
-								<argument>bundle</argument>
+								<argument>build</argument>
 							</arguments>
 						</configuration>
 					</execution>

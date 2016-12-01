@@ -1,9 +1,7 @@
-import 'zone.js';
-import 'reflect-metadata';
-import 'jsog';
-import 'intl';
-import 'intl/locale-data/jsonp/en.js';
-import 'cal-heatmap';
+//import 'intl';
+//import 'intl/locale-data/jsonp/en.js';
+
+import 'material-design-lite';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app.module';
