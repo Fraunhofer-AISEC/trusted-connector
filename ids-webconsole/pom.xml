@@ -241,7 +241,7 @@
 						</goals>
 						<phase>compile</phase>
 						<configuration>
-							<executable>nmpm</executable>
+							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
 								<argument>gulp</argument>
