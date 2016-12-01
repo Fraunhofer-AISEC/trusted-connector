@@ -56,7 +56,7 @@ public class PcrMessage {
 	}
 	
 	public String toString() {
-		String ret = "\n*************************************************************************PCR Values :\n";
+		String ret = "\n*************************************************************************\nPCR Values :\n";
 		for(int i = 0; i < values.size(); i++) {
 			ret += "\t" + i + " \t" + values.get(i) + "\n";
 		}
