@@ -45,6 +45,6 @@ export class AppCardComponent implements OnInit {
   @Input() app: App;
 
   ngOnInit(): void {
-    console.log(this.app);
+
   }
 }

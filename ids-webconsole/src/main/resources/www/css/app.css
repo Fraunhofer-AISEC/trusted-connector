@@ -20,6 +20,10 @@ i.connect-icons {
   padding-right: 5px;
 }
 
+.mdl-layout-title {
+  font-size: 24px;
+}
+
 .mdl-card__title {
   color: white;
   font-size: 24px;
@@ -154,6 +158,7 @@ i.connect-icons {
 
 .iot-connector-aisec-logo {
   height: 45px;
+  padding-top: 20px;
 }
 
 .iot-connector-layout .iot-connector-header .mdl-textfield {

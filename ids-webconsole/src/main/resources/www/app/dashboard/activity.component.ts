@@ -27,23 +27,34 @@ export class ActivityComponent implements OnInit {
     this.chart = c3.generate({
         data: {
             columns: [
-                ['data1', 300, 350, 300, 0, 0, 0],
-                ['data2', 130, 100, 140, 200, 150, 50]
+                ['data1', 300, 350, 300, 100, 50, 200],
             ],
             types: {
-                data1: 'area',
-                data2: 'area-spline'
-            }
+                data1: 'area-spline'
+            },
+        },
+        color: {
+          pattern: ['#209e91']
+        },
+        grid: {
+            y: {
+                lines: [{
+                  value: 300,
+                  text: "Warning Threshold"
+                }]
+              }
+        },
+        legend: {
+          show: false
         }
     });
 
     this.subscriptions.push(Observable
-      .timer(0, 3000)
+      .timer(0, 2000)
       .subscribe(() => {
         this.chart.flow({
           columns: [
             ['data1', Math.random()* 400],
-            ['data2', Math.random()* 400],
           ]
         });
       }));
