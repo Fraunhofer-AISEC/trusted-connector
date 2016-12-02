@@ -17,6 +17,7 @@
     <module>data-flow-policy</module>
     <module>karaf-assembly</module>
     <module>dist-docker</module>
+    <module>attestation-repository</module>
   </modules>
   
   <build>
