@@ -1,0 +1,36 @@
+<div class="mdl-layout__container">
+  <!-- Drawer stays open on larger screens (fixed drawer). -->
+  <div class="iot-connector-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+    <header class="iot-connector-header mdl-layout__header mdl-layout__header--seamed">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title iot-connector-product-title">Connector</span><span class="mdl-layout-title">Console > {{titleService.getTitle()}}</span>
+        <div class="mdl-layout-spacer"></div>
+        <!--<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+          <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
+            <i class="material-icons">search</i>
+          </label>
+          <div class="mdl-textfield__expandable-holder">
+               <input class="mdl-textfield__input" type="text" id="search">
+               <label class="mdl-textfield__label" for="search">Enter your query...</label>
+          </div>
+        </div>-->
+
+      </div>
+    </header>
+    <div class="iot-connector-drawer mdl-layout__drawer">
+      <header class="iot-connector-drawer-header">
+        <img class="iot-connector-aisec-logo" src="images/aisec.png" />
+      </header>
+      <nav class="iot-connector-navigation mdl-navigation">
+        <a class="mdl-navigation__link" routerLink="/dashboard"><i class="material-icons" role="presentation">home</i> Overview</a>
+        <a class="mdl-navigation__link" routerLink="/apps"><i class="material-icons" role="presentation">dns</i> App Containers</a>
+        <a class="mdl-navigation__link" routerLink="/dashboard"><i class="material-icons" role="presentation">call_split</i> Data Pipes</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content mdl-color--grey-100 mdl-color-text--grey-600">
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>
