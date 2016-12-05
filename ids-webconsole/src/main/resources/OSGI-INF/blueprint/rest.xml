@@ -18,6 +18,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 		<!-- This is where API endpoints are registered for CXF -->
 		<jaxrs:serviceBeans>
 			<bean id="app" class="de.fhg.aisec.ids.webconsole.api.AppApi" />
+			<bean id="route" class="de.fhg.aisec.ids.webconsole.api.RouteApi" />
 			<bean id="config" class="de.fhg.aisec.ids.webconsole.api.ConfigApi" />
 		</jaxrs:serviceBeans>
 
@@ -27,6 +28,9 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 			<entry key="json" value="application/json" />
 			<entry key="jsonp" value="application/javascript" />
 		</jaxrs:extensionMappings>
+		<jaxrs:providers>
+            <bean class="de.fhg.aisec.ids.webconsole.api.CORSResponseFilter"/>
+		</jaxrs:providers>
  		<jaxrs:inInterceptors>
             <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpInInterceptor"/>
         </jaxrs:inInterceptors>

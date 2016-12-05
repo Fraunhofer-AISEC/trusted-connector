@@ -228,4 +228,32 @@ public class DockerCM implements ContainerManager {
 		return null;
 	}
 
+//
+//	@Override
+//	public String getCml() {
+//		StringBuilder sb = new StringBuilder();
+//		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
+//		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
+//		try {
+//			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "--version"));
+//			Process p = pb.start();
+//			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
+//			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
+//			errorGobbler.start();
+//			outputGobbler.start();
+//			p.waitFor(30, TimeUnit.SECONDS);
+//			errorGobbler.close();
+//			outputGobbler.close();
+//		} catch (Exception e) {
+//			LOG.error(e.getMessage(),e);
+//		}
+//
+//		// Parse JSON output from "docker --version" and return labels.
+//		String[] lines = bbStd.toString().split("\n");
+//		for (String line:lines) {
+//			System.out.println(line);
+//		}
+//		return sb.toString();
+//	}
+
 }

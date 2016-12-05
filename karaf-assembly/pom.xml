@@ -177,6 +177,13 @@
     </dependencies>
     <build>
         <plugins>
+           <plugin>
+            <groupId>org.apache.karaf.tooling</groupId>
+            <artifactId>features-maven-plugin</artifactId>
+            <version>2.2.1</version>
+
+          </plugin>
+
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
@@ -185,7 +192,7 @@
                 <version>${karaf.plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <ignoreDependencyFlag>true</ignoreDependencyFlag>
+                    <ignoreDependencyFlag>false</ignoreDependencyFlag>
                     <installedFeatures>
                         <feature>wrapper</feature>
                     </installedFeatures>
@@ -200,6 +207,7 @@
                         <!-- <feature>standard</feature> -->
                         <!-- The following features are the same like "standard".
                                 In a productive version we might want to exclude "management" and "ssh" -->
+                        <feature>kar</feature>
                         <feature>wrap</feature>
                         <feature>aries-blueprint</feature>
                         <feature>shell</feature>
@@ -236,7 +244,7 @@
                         <!-- <feature>spring</feature>
                         <feature>spring-tx</feature> -->
                         <feature>war</feature>
-						<feature>ids</feature>
+						            <feature>ids</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>
@@ -273,7 +281,31 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <id>copy</id>
+                    <phase>generate-resources</phase>
+                    <goals>
+                     <goal>copy</goal>
+                    </goals>
+                    <configuration>
+                     <artifactItems>
+                          <artifactItem>
+                              <groupId>org.jledit</groupId>
+                              <artifactId>core</artifactId>
+                              <version>0.2.1</version>
+                              <outputDirectory>target/assembly/system/org/jledit/core/0.2.1</outputDirectory>
+                          </artifactItem>
+                         </artifactItems>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>            
         </plugins>
+
         <pluginManagement>
         	<plugins>
         		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->

@@ -58,7 +58,18 @@
 		    <artifactId>javax.servlet-api</artifactId>
 		    <version>3.1.0</version>
 		</dependency>
-
+		
+		<!--  Camel -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>${camel-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core-osgi</artifactId>
+			<version>${camel-version}</version>
+		</dependency>
 
 		<!-- OSGi core framework and compendium services -->
 		<dependency>
@@ -87,7 +98,6 @@
 		</dependency>
 
 
-
 		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -101,10 +111,27 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.6.2</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
+
+		<!-- Do not copy everything from src/main/resources, but rather only blueprint descriptor and compiled Angular stuff -->
+		<resources>
+		  <resource>
+		    <directory>src/main/resources/</directory>
+		    <includes>
+		      <include>www/build</include>
+		      <include>OSGI-INF/**</include>
+		    </includes>
+		  </resource>
+		</resources>
 
 		<plugins>
 			<plugin>
@@ -145,12 +172,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-
-
-
-
-
-
 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -223,6 +244,7 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
+								<argument>gulp</argument>
 								<argument>build</argument>
 							</arguments>
 						</configuration>
