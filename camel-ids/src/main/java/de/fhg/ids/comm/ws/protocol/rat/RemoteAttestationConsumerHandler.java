@@ -7,7 +7,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -23,7 +22,6 @@ import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
@@ -50,7 +48,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private byte[] yourSignature;
 	private byte[] cert;
 	private boolean signatureCorrect = false;
-	private Pcr[] pcrValues;
+	private ConnectorMessage msg;
 	private long sessionID = 0;
 	
 	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type) {
@@ -105,7 +103,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
+		this.msg = e.getMessage();
 		if(this.sessionID + 1 == e.getMessage().getId()) {
 			++this.sessionID;
 			// construct a new TPM2B_PUBLIC from bkey bytes
@@ -243,7 +241,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		this.ttp = new TrustedThirdParty(this.pcrValues);
+		this.ttp = new TrustedThirdParty(this.msg);
 		try {
 			boolean pcrCorrect = this.ttp.pcrValuesCorrect();
 			if(this.sessionID + 1 == e.getMessage().getId()) {

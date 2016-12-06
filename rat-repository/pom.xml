@@ -4,9 +4,9 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.fhg.ids</groupId>
-	<artifactId>attestation-repository</artifactId>
+	<artifactId>rat-repository</artifactId>
 	<version>1.0.0</version>
-	<name>attestation-repository</name>
+	<name>rat-repository</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -38,13 +38,11 @@
 			<artifactId>camel-ids</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.6</version>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.15.1</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>

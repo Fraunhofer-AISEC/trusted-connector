@@ -1,4 +1,4 @@
-package de.fhg.ids.attestation;
+package de.fhg.aisec.ids.attestation;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;

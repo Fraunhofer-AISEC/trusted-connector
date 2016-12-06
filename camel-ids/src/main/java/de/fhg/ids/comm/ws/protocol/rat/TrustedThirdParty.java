@@ -18,26 +18,28 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
 public class TrustedThirdParty {
 
 	private Logger LOG = LoggerFactory.getLogger(TrustedThirdParty.class);
 	private String ttpUrl = "http://127.0.0.1:7331";
 	private String freshNonce = "";
-	private Pcr[] pcrValues = null;
+	private ConnectorMessage msg = null;
 	
-	public TrustedThirdParty(Pcr[] pcrValues) {
-		this.pcrValues = pcrValues;
+	public TrustedThirdParty(ConnectorMessage msg) {
+		this.msg = msg;
 	}
 
 	public TrustedThirdParty() {
-		this.pcrValues = null;
+		this.msg = null;
 	}
 
 	public boolean pcrValuesCorrect() throws IOException {
 		freshNonce = NonceGenerator.generate();
-		if(this.pcrValues != null) {
+		if(this.msg != null) {
 			String json = this.jsonToString(freshNonce);
 			PcrMessage response = this.readResponse(json, ttpUrl);
 			LOG.debug(response.toString());
@@ -50,7 +52,7 @@ public class TrustedThirdParty {
 	
 	public String jsonToString(String nonce) throws IOException {
 		Gson gson = new Gson();
-		return gson.toJson(new PcrMessage(nonce, pcrValues));
+		return gson.toJson(new PcrMessage(msg));
 	}
 	
 	public PcrMessage readResponse(String json, String query) throws IOException {

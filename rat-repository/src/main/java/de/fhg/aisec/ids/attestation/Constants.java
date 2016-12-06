@@ -1,4 +1,4 @@
-package de.fhg.ids.attestation;
+package de.fhg.aisec.ids.attestation;
 
 public interface Constants {
 	public final String HOST = "localhost";

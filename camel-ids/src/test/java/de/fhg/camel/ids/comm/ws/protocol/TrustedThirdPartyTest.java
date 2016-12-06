@@ -18,17 +18,20 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.rat.PcrMessage;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.TrustedThirdParty;
 
 public class TrustedThirdPartyTest {
     
-	Pcr[] values;
 	Pcr one;
 	Pcr two;
 	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
+	ConnectorMessage msg;
 	TrustedThirdParty ttp;
 
     @Before
@@ -43,24 +46,38 @@ public class TrustedThirdPartyTest {
     			.setNumber(1)
     			.setValue(pcrValue)
     			.build();
-    	this.values = new Pcr[] {this.one, this.two};
-    	this.ttp = new TrustedThirdParty(this.values);
+    	this.msg = ConnectorMessage
+				.newBuilder()
+				.setId(1)
+				.setType(ConnectorMessage.Type.RAT_RESPONSE)
+				.setAttestationResponse(
+						AttestationResponse
+						.newBuilder()
+						.setAtype(IdsAttestationType.BASIC)
+						.setQualifyingData("aaa")
+						.setHalg("halg")
+						.setQuoted("quoted")
+						.setSignature("sign")
+						.addAllPcrValues(Arrays.asList(new Pcr[] {this.one, this.two}))
+						.setCertificateUri("public")
+						.build()
+						)
+				.build();
+    	this.ttp = new TrustedThirdParty(this.msg);
     }
     
     @Test
     public void testObjToJsonString() throws Exception {
-    	String result = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\""+pcrValue+"\",\"1\":\""+pcrValue+"\"},\"success\":false,\"signature\":\"\"}";
+    	String result = "";
     	assertTrue(this.ttp.jsonToString("myFunkyFreshNonce").equals(result));
     }
 
     @Test
     public void testReadResponse() throws Exception {
-    	String request = "{\"nonce\":\"myFunkyFreshNonce\",\"values\":{\"0\":\""+pcrValue+"\",\"1\":\""+pcrValue+"\"},\"success\":false,\"signature\":\"\"}";
+    	String request = "";
     	PcrMessage pcrResult = this.ttp.readResponse(request, "http://127.0.0.1:7331/");
     	assertTrue(pcrResult.getNonce().equals("myFunkyFreshNonce"));
     	assertTrue(pcrResult.getSignature().equals(""));
-    	for (Map.Entry<Integer, String> entry : pcrResult.getValues().entrySet()) {
-    	    assertTrue(entry.getValue().equals(this.one.getValue()));
-    	}
+    	
     }
 }

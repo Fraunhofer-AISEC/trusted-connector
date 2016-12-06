@@ -42,7 +42,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private byte[] yourSignature;
 	private byte[] cert;
 	private boolean signatureCorrect;
-	private Pcr[] pcrValues;
+	private ConnectorMessage msg;
 	private TrustedThirdParty ttp;
 	private long sessionID = 0;
 	
@@ -138,8 +138,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
-		this.ttp = new TrustedThirdParty(this.pcrValues);
+		this.ttp = new TrustedThirdParty(e.getMessage());
 		try {
 			boolean pcrCorrect = this.ttp.pcrValuesCorrect();
 			if(this.sessionID + 1 == e.getMessage().getId()) {

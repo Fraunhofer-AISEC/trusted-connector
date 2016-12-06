@@ -1,16 +1,25 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
 public class PcrMessage {
-
+	
 	private String nonce;
-	private Map<Integer, String> values = new LinkedHashMap<Integer, String>();
 	private boolean success = false;
 	private String signature = "";
+	private ConnectorMessage msg;
+	
+	public PcrMessage(ConnectorMessage msg) {
+		this.msg = msg;
+	}
+
+	public String getNonce() {
+		return nonce;
+	}
+
+	public void setNonce(String nonce) {
+		this.nonce = nonce;
+	}
 
 	public boolean isSuccess() {
 		return success;
@@ -28,37 +37,19 @@ public class PcrMessage {
 		this.signature = signature;
 	}
 
-	public PcrMessage(String freshNonce, Pcr[] pcrValues) {
-		this.nonce = freshNonce;
-		this.setValues(pcrValues);
-	}
-	
-	public String getNonce() {
-		return nonce;
+	public ConnectorMessage getMsg() {
+		return msg;
 	}
 
-	public void setNonce(String nonce) {
-		this.nonce = nonce;
-	}
-
-	public Map<Integer, String> getValues() {
-		return values;
-	}
-
-	public void setValues(Map<Integer, String> localValues) {
-		this.values = localValues;
-	}
-
-	public void setValues(Pcr[] newValues) {
-		for(int i = 0; i < newValues.length; i++) {
-			values.put(newValues[i].getNumber(), newValues[i].getValue());
-		}
+	public void setMsg(ConnectorMessage msg) {
+		this.msg = msg;
 	}
 	
 	public String toString() {
-		String ret = "\n*************************************************************************\nPCR Values :\n";
-		for(int i = 0; i < values.size(); i++) {
-			ret += "\t" + i + " \t" + values.get(i) + "\n";
+		String ret = "\n*************************************************************************"
+				+ "\nPCR Values :\n";
+		for(int i = 0; i < msg.getAttestationResponse().getPcrValuesCount(); i++) {
+			ret += "\t" + i + " \t" + msg.getAttestationResponse().getPcrValuesList().get(i) + "\n";
 		}
 		ret += "\n************************************************************************\n";
 		return ret;
