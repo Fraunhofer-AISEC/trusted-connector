@@ -122,15 +122,16 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 
+		<!-- Do not copy everything from src/main/resources, but rather only blueprint descriptor and compiled Angular stuff -->
 		<resources>
 		  <resource>
-		    <directory>src/main/resources</directory>
+		    <directory>src/main/resources/</directory>
 		    <includes>
-		      <include>dist</include>
+		      <include>www/build</include>
+		      <include>OSGI-INF/**</include>
 		    </includes>
 		  </resource>
 		</resources>
-
 
 		<plugins>
 			<plugin>
@@ -171,12 +172,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-
-
-
-
-
-
 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -249,7 +244,8 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
-								<argument>build:dev</argument>
+								<argument>gulp</argument>
+								<argument>build</argument>
 							</arguments>
 						</configuration>
 					</execution>
