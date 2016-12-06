@@ -11,10 +11,15 @@
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
       <route id="opctorest">
         <!--<from uri="timer://simpleTimer?period=1000"/>        -->
-        <from uri="milo-client:tcp://0.0.0.0:4840/freeopcua/server?nodeId=2&amp;samplingInterval=1000&amp;namespaceUri=http://examples.freeopcua.github.io"/>        
-        <log message="Triggered Route: opctorest: Sensorreading body: ${body}"/>
-        <convertBodyTo type="java.lang.String"/>        
-        <to uri="stream:out"/>
+        <from uri="milo-client:tcp://0.0.0.0:4840/freeopcua/server?nodeId=2&amp;samplingInterval=100000&amp;namespaceUri=http://examples.freeopcua.github.io"/>        
+        <log message="Triggered Route: opctorest, requesting node 2: Sensorreading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
       </route>
     </camelContext>
 </blueprint>
+<!--         <convertBodyTo type="java.lang.String"/>        
+        <to uri="stream:out"/> -->
