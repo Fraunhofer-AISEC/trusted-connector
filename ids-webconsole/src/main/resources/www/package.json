@@ -10,6 +10,7 @@
     "@angular/common": "^2.2.4",
     "@angular/compiler": "^2.2.4",
     "@angular/core": "^2.2.4",
+    "@angular/forms": "^2.2.4",
     "@angular/http": "^2.2.4",
     "@angular/platform-browser": "^2.2.4",
     "@angular/platform-browser-dynamic": "^2.2.4",
@@ -26,6 +27,7 @@
     "zone.js": "^0.6.26"
   },
   "devDependencies": {
+    "@types/c3": "^0.4.37",
     "@types/node": "^6.0.51",
     "del": "^2.1.0",
     "gulp": "^3.9.0",
