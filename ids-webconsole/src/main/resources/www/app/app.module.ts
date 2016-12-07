@@ -10,6 +10,10 @@ import { ActivityComponent }  from './dashboard/activity.component';
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
+import { CamelRoutesComponent } from './camelRoutes/camelRoutes.component';
+import { IdsComponent } from './ids/ids.component';
+import { KeycertsComponent } from './keycerts/keycerts.component';
+
 import { AppService } from './apps/app.service';
 
 import { ValuesPipe } from './values.pipe';
@@ -27,6 +31,9 @@ import { routing } from './app.routing';
     ActivityComponent,
     AppsComponent,
     AppCardComponent,
+    CamelRoutesComponent,
+    IdsComponent,
+    KeycertsComponent,
     ValuesPipe ],
   providers: [
     AppService,
