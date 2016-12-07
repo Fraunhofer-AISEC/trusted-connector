@@ -156,6 +156,12 @@
             <type>xml</type>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.servicemix.features</groupId>
             <artifactId>servicemix-kie</artifactId>
@@ -228,6 +234,7 @@
                         <feature>service</feature>
                         <feature>system</feature>
                         <feature>camel-spring-dm</feature>
+                        <feature>camel-stream</feature>
                         <feature>camel-sjms</feature>
                         <!-- ActiveMQ with web console -->
                         <feature>activemq-broker</feature>
