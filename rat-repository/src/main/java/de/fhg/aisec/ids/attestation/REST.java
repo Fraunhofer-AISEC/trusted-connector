@@ -1,7 +1,6 @@
 package de.fhg.aisec.ids.attestation;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
@@ -15,6 +14,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.fhg.ids.comm.ws.protocol.rat.*;
 
 import com.google.gson.Gson;
@@ -23,8 +25,9 @@ import com.google.gson.Gson;
 public class REST {
 	
 	private PcrMessage message;
-	private String index;
+	private Logger LOG = LoggerFactory.getLogger(REST.class);
 	private Database db;
+	private String ret;
 	
 	public REST() {
 		try {
@@ -37,16 +40,28 @@ public class REST {
 	
 	@GET
 	@Path("/configurations/list")
-	@Produces(MediaType.TEXT_HTML)
-	public String configurationList() {
-		Gson gson = new Gson();
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getConfigurationList() {
 		try {
-			return gson.toJson(this.db.getConfigurations());
-		} catch (SQLException e) {
-			System.out.println("could not gsonify configurations list.");
-			e.printStackTrace();
-			return "";
+			ret = this.db.getConfigurationList();
+		} catch (Exception e) {
+			ret = e.getMessage();
 		}
+		return ret;
+	}
+	
+	@GET
+	@Path("/configurations/{cid}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getConfiguration(@PathParam("cid") String cid) {
+		if(isInteger(cid)) {
+			long id = Long.parseLong(cid);
+			ret = this.db.getConfiguration(id);
+		}
+		else {
+			ret = "id " + cid + " is not an Integer!";				
+		}
+		return ret;
 	}
 	
 	@POST
@@ -76,6 +91,18 @@ public class REST {
 		
 	}
 	
+	private static boolean isInteger(String s) {
+	    if(s.isEmpty()) return false;
+	    for(int i = 0; i < s.length(); i++) {
+	        if(i == 0 && s.charAt(i) == '-') {
+	            if(s.length() == 1) return false;
+	            else continue;
+	        }
+	        if(Character.digit(s.charAt(i), 10) < 0) return false;
+	    }
+	    return true;
+	}
+	
 	// SIMPLE FILE TRANSFER FROM HERE ON
 
 	@GET
@@ -100,7 +127,7 @@ public class REST {
 	
 	@GET
 	@Path("/js/{filename}")
-	@Produces(MediaType.TEXT_HTML)
+	@Produces(MediaType.TEXT_PLAIN)
 	public String jsFile(@PathParam("filename") String filename) {
 		return this.getFile("webapp/js/" + filename);
 	}

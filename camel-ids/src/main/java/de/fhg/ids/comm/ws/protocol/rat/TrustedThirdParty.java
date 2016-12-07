@@ -25,7 +25,7 @@ import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 public class TrustedThirdParty {
 
 	private Logger LOG = LoggerFactory.getLogger(TrustedThirdParty.class);
-	private String ttpUrl = "http://127.0.0.1:7331";
+	private String ttpUrl = "http://127.0.0.1:8080";
 	private String freshNonce = "";
 	private ConnectorMessage msg = null;
 	

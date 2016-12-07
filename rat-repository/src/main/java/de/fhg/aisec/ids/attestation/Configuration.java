@@ -4,11 +4,27 @@ public class Configuration {
 	private long id;
 	private String name;
 	private String type;
+	private Pcr[] values;
+	
+	public Configuration(long id, String name, String type, Pcr[] values) {
+		this.id = id;
+		this.name = name;
+		this.type = type;
+		this.values = values;
+	}
 	
 	public Configuration(long id, String name, String type) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
+	}	
+	
+	public Pcr[] getValues() {
+		return values;
+	}
+
+	public void setValues(Pcr[] values) {
+		this.values = values;
 	}
 
 	public long getId() {
