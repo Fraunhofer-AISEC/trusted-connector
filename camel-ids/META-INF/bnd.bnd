@@ -12,7 +12,6 @@ Bundle-Vendor: Fraunhofer Gesellschaft
 Export-Package: \
 	de.fraunhofer.aisec.tpm2j,\
 	de.fraunhofer.aisec.tpm2j.struct,\
-	de.fraunhofer.aisec.tpm2j.test,\
 	de.fraunhofer.aisec.tpm2j.tools,\
 	de.fraunhofer.aisec.tpm2j.tpm,\
 	de.fraunhofer.aisec.tpm2j.tpm2b,\
