@@ -16,17 +16,7 @@
  */
 package de.fhg.camel.ids.both;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ProcessBuilder.Redirect;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -42,10 +32,6 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.fhg.camel.ids.client.TestServletFactory;
@@ -195,7 +181,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 
 		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("idsclientplain://localhost:9292/echo")
+                	.to("idsclientplain://localhost:"+PORT+"/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
@@ -209,7 +195,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 //					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
 
 					// This route is set to use TLS, referring to the parameters set above
-                    from("idsserver:localhost:9292/echo")
+                    from("idsserver:localhost:"+PORT+"/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }
