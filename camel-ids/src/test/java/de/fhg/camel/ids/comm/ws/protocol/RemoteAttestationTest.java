@@ -73,11 +73,13 @@ public class RemoteAttestationTest {
 		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ttpUri);
 	}
 	
+	/*
 	@AfterClass
 	public static void stopRepo() throws Exception {
 		server.stop();
 		server.destroy();
-	}	
+	}
+	*/
 
     @Test
     public void test1() throws Exception {
