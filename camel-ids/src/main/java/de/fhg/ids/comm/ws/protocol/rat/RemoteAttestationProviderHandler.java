@@ -1,6 +1,8 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Random;
@@ -12,11 +14,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
+import de.fhg.aisec.ids.attestation.PcrValue;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
@@ -42,11 +45,14 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private byte[] yourSignature;
 	private byte[] cert;
 	private boolean signatureCorrect;
-	private Pcr[] pcrValues;
+	private ConnectorMessage msg;
 	private TrustedThirdParty ttp;
 	private long sessionID = 0;
+	private URI ttpUri;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
+		// set ttp uri
+		this.ttpUri = ttpUri;
 		// set finite state machine
 		this.fsm = fsm;
 		// set current attestation type (see attestation.proto)
@@ -138,78 +144,61 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
-		this.ttp = new TrustedThirdParty(this.pcrValues);
-		try {
-			boolean pcrCorrect = this.ttp.pcrValuesCorrect();
-			if(this.sessionID + 1 == e.getMessage().getId()) {
-				++this.sessionID;
-				try {
-					// construct a new TPM2B_PUBLIC from bkey bytes
-					TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.cert);
-					// and convert it into an DER key
-					PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
-					// construct a new TPMT_SIGNATURE from yourSignature bytes
-					TPMT_SIGNATURE tpmSignature = new TPMT_SIGNATURE(this.yourSignature);
-					// construct a new TPMS_ATTEST from yourQuoted bytes
-					TPMS_ATTEST digest = new TPMS_ATTEST(this.yourQuoted);
-					// and get the raw byte quote
-					switch(tpmSignature.getSignature().getHashAlg()) {
-						case TPM_ALG_SHA256:
-							sg = Signature.getInstance("SHA256withRSA");
-						    sg.initVerify(publicKey);
-						    sg.update(digest.toBytes());
-						    this.signatureCorrect = sg.verify(tpmSignature.getSignature().getSig());
-							break;
-						case TPM_ALG_SHA1:
-							sg = Signature.getInstance("SHA1withRSA");
-						    sg.initVerify(publicKey);
-						    sg.update(digest.toBytes());
-						    this.signatureCorrect = sg.verify(tpmSignature.getSignature().getSig());
-							break;					
-						default:
-							break;
-					}
-					
-				} catch (Exception ex) {
-					String error = "error: Exception when talking to tpm2d :" + ex.getMessage();
-					LOG.debug(error);
-					ex.printStackTrace();
-					return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
+		PcrValue[] values = this.ttp.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
+		this.ttp = new TrustedThirdParty(values, ttpUri);
+		boolean pcrCorrect = this.ttp.pcrValuesCorrect();
+		if(this.sessionID + 1 == e.getMessage().getId()) {
+			++this.sessionID;
+			try {
+				// construct a new TPM2B_PUBLIC from bkey bytes
+				TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.cert);
+				// and convert it into an DER key
+				PublicKey publicKey = new PublicKeyConverter(key).getPublicKey();
+				// construct a new TPMT_SIGNATURE from yourSignature bytes
+				TPMT_SIGNATURE tpmSignature = new TPMT_SIGNATURE(this.yourSignature);
+				// construct a new TPMS_ATTEST from yourQuoted bytes
+				TPMS_ATTEST digest = new TPMS_ATTEST(this.yourQuoted);
+				// and get the raw byte quote
+				switch(tpmSignature.getSignature().getHashAlg()) {
+					case TPM_ALG_SHA256:
+						sg = Signature.getInstance("SHA256withRSA");
+					    sg.initVerify(publicKey);
+					    sg.update(digest.toBytes());
+					    this.signatureCorrect = sg.verify(tpmSignature.getSignature().getSig());
+						break;
+					case TPM_ALG_SHA1:
+						sg = Signature.getInstance("SHA1withRSA");
+					    sg.initVerify(publicKey);
+					    sg.update(digest.toBytes());
+					    this.signatureCorrect = sg.verify(tpmSignature.getSignature().getSig());
+						break;					
+					default:
+						break;
 				}
-				try {
-					return ConnectorMessage
-							.newBuilder()
-							.setId(++this.sessionID)
-							.setType(ConnectorMessage.Type.RAT_RESULT)
-							.setAttestationResult(
-									AttestationResult
-									.newBuilder()
-									.setAtype(this.aType)
-									.setResult(this.signatureCorrect && this.ttp.pcrValuesCorrect())
-									.build()
-									)
-							.build();
-				} catch (IOException ex) {
-					String error = "error: IOException when talking to ttp :" + ex.getMessage();
-					LOG.debug(error);
-					ex.printStackTrace();
-					return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
-				}
-			}
-			else {
-				String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+				
+			} catch (Exception ex) {
+				String error = "error: Exception when talking to tpm2d :" + ex.getMessage();
 				LOG.debug(error);
-				return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
+				ex.printStackTrace();
+				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
 			}
-		} catch (IOException e1) {
-			String error = "IOException:" +  e1.getMessage();
+			return ConnectorMessage
+					.newBuilder()
+					.setId(++this.sessionID)
+					.setType(ConnectorMessage.Type.RAT_RESULT)
+					.setAttestationResult(
+							AttestationResult
+							.newBuilder()
+							.setAtype(this.aType)
+							.setResult(this.signatureCorrect && pcrCorrect)
+							.build())
+					.build();
+		}
+		else {
+			String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			LOG.debug(error);
 			return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
 		}
-		
-		
-		
 	}
 
 	public MessageLite leaveRatRequest(Event e) {

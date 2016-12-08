@@ -1,13 +1,14 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -20,6 +21,7 @@ import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
 import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
+import de.fhg.aisec.ids.attestation.PcrValue;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
@@ -50,10 +52,13 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private byte[] yourSignature;
 	private byte[] cert;
 	private boolean signatureCorrect = false;
-	private Pcr[] pcrValues;
+	private PcrValue[] values;
 	private long sessionID = 0;
+	private URI ttpUri;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type) {
+	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
+		// set ttp uri
+		this.ttpUri = ttpUri;
 		// set finite state machine
 		this.fsm = fsm;
 		// set current attestation type (see attestation.proto)
@@ -91,7 +96,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 						.build())
 				.build();			
 	}
-	
 
 	public MessageLite sendTPM2Ddata(Event e) {
 		Signature sg;
@@ -105,7 +109,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		this.pcrValues = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
+		this.values = this.ttp.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
 		if(this.sessionID + 1 == e.getMessage().getId()) {
 			++this.sessionID;
 			// construct a new TPM2B_PUBLIC from bkey bytes
@@ -243,36 +247,28 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		this.ttp = new TrustedThirdParty(this.pcrValues);
-		try {
-			boolean pcrCorrect = this.ttp.pcrValuesCorrect();
-			if(this.sessionID + 1 == e.getMessage().getId()) {
-				++this.sessionID;
-				return ConnectorMessage
-						.newBuilder()
-						.setId(++this.sessionID)
-						.setType(ConnectorMessage.Type.RAT_RESULT)
-						.setAttestationResult(
-								AttestationResult
-								.newBuilder()
-								.setAtype(this.aType)
-								.setResult(this.signatureCorrect && pcrCorrect)
-								.build()
-								)
-						.build();
-			}
-			else {
-				String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-				LOG.debug(error);
-				return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
-			}			
-		} catch (IOException e1) {
-			String error = "IOException :" + e1.getMessage();
+		this.ttp = new TrustedThirdParty(this.values, ttpUri);
+		boolean pcrCorrect = pcrCorrect = this.ttp.pcrValuesCorrect();
+		if(this.sessionID + 1 == e.getMessage().getId()) {
+			++this.sessionID;
+			return ConnectorMessage
+					.newBuilder()
+					.setId(++this.sessionID)
+					.setType(ConnectorMessage.Type.RAT_RESULT)
+					.setAttestationResult(
+							AttestationResult
+							.newBuilder()
+							.setAtype(this.aType)
+							.setResult(this.signatureCorrect && pcrCorrect)
+							.build()
+							)
+					.build();
+		}
+		else {
+			String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			LOG.debug(error);
 			return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
-		}
-		
-
+		}			
 	}
 
 	public MessageLite leaveRatRequest(Event e) {

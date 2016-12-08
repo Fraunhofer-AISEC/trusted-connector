@@ -16,6 +16,7 @@
  */
 package de.fhg.camel.ids.both;
 
+import java.net.URI;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -32,8 +33,12 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.fhg.aisec.ids.attestation.REST;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
@@ -43,11 +48,12 @@ import de.fhg.camel.ids.server.WebsocketComponent;
  */
 public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable();
+    protected static int PORT; // = AvailablePortFinder.getNextAvailable();
     protected Server server;
+    private static Server ttpserver;
     protected List<Object> messages;
+	private URI serverUri;
 	private static String PWD = "changeit";
-	
 	
     @Override
     public void setUp() throws Exception {
@@ -68,8 +74,9 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     
 	protected void setupServer() throws Exception {
         // start a simple websocket echo service
-        server = new Server(PORT);
-        Connector connector = new ServerConnector(server);
+        server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(0);
         server.addConnector(connector);
 
         ServletContextHandler ctx = new ServletContextHandler();
@@ -79,6 +86,8 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         server.setHandler(ctx);
         
         server.start();
+        PORT = connector.getLocalPort();
+        serverUri = new URI(String.format("http://127.0.0.1:%d", PORT));        
         assertTrue(server.isStarted());      
     }
     

@@ -16,6 +16,11 @@
  */
 package de.fhg.camel.ids.both;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ProcessBuilder.Redirect;
+import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -33,8 +38,14 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.fhg.aisec.ids.attestation.REST;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
@@ -44,15 +55,48 @@ import de.fhg.camel.ids.server.WebsocketComponent;
  */
 public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable();
+    protected static int PORT = AvailablePortFinder.getNextAvailable();
+    protected static int PORTTTP = AvailablePortFinder.getNextAvailable();
     protected Server server;
     protected List<Object> messages;
+	private URI serverUri;
 	private static String PWD = "password";
+	private static Server ttpserver;
+	private static URI ttpUri;
 
+	@BeforeClass
+	public static void initRepo() throws Exception {
+		ttpserver = new Server();
+        ServerConnector connector = new ServerConnector(ttpserver);
+        connector.setPort(PORTTTP); // let connector pick an unused port #
+        ttpserver.addConnector(connector);
+
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        ttpserver.setHandler(context);
+        
+        ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
+        jerseyServlet.setInitOrder(0);
+        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", REST.class.getCanonicalName());
+
+        // Start Server
+        ttpserver.start();
+
+        PORTTTP = connector.getLocalPort();
+        ttpUri = new URI(String.format("http://127.0.0.1:%d/check", PORT));
+	}
+	
+	@AfterClass
+	public static void stopRepo() throws Exception {
+		ttpserver.stop();
+		ttpserver.destroy();
+	}
+	
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
-        server = new Server(PORT);
-        Connector connector = new ServerConnector(server);
+        server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(PORT);
         server.addConnector(connector);
 
         ServletContextHandler ctx = new ServletContextHandler();
@@ -62,6 +106,9 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         server.setHandler(ctx);
         
         server.start();
+        PORT = connector.getLocalPort();
+        serverUri = new URI(String.format("http://127.0.0.1:%d", PORT));
+        
         assertTrue(server.isStarted());      
     }
     
@@ -90,9 +137,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     public void testTwoRoutes() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
-
         template.sendBody("direct:input", TEST_MESSAGE);
-
         mock.assertIsSatisfied();
     }
 
@@ -100,22 +145,15 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     public void testTwoRoutesRestartConsumer() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
-
         template.sendBody("direct:input", TEST_MESSAGE);
-
         mock.assertIsSatisfied();
-
         resetMocks();
-
         log.info("Restarting bar route");
         context.stopRoute("bar");
         Thread.sleep(500);
         context.startRoute("bar");
-
         mock.expectedBodiesReceived(TEST_MESSAGE);
-
         template.sendBody("direct:input", TEST_MESSAGE);
-
         mock.assertIsSatisfied();
     }
 

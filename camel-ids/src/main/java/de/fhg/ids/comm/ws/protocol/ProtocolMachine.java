@@ -3,6 +3,8 @@ package de.fhg.ids.comm.ws.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 
 import org.asynchttpclient.ws.WebSocket;
@@ -33,6 +35,7 @@ public class ProtocolMachine {
 	/** The session to send and receive messages */
 	private WebSocket ws;
 	private Session sess;
+	private String ttpURL = "http://127.0.0.1:31330";
 	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
 	/** C'tor */
@@ -49,9 +52,15 @@ public class ProtocolMachine {
 	public FSM initIDSConsumerProtocol(WebSocket websocket) {
 		this.ws = websocket;
 		FSM fsm = new FSM();
-
+		URI ttp = null;
+		try {
+			ttp = new URI(ttpURL);
+		} catch (URISyntaxException e1) {
+			LOG.debug("TTP URI Syntax exception");
+			e1.printStackTrace();
+		}
 		// all handler
-		RemoteAttestationConsumerHandler remoteAttestationHandler = new RemoteAttestationConsumerHandler(fsm, IdsAttestationType.BASIC);
+		RemoteAttestationConsumerHandler remoteAttestationHandler = new RemoteAttestationConsumerHandler(fsm, IdsAttestationType.BASIC, ttp);
 		ErrorHandler errorHandler = new ErrorHandler();
 		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();		
 		
@@ -97,9 +106,16 @@ public class ProtocolMachine {
 	public FSM initIDSProviderProtocol(Session sess) {
 		this.sess = sess;
 		FSM fsm = new FSM();
+		URI ttp = null;
+		try {
+			ttp = new URI(ttpURL);
+		} catch (URISyntaxException e1) {
+			LOG.debug("TTP URI Syntax exception");
+			e1.printStackTrace();
+		}
 
 		// all handler
-		RemoteAttestationProviderHandler h = new RemoteAttestationProviderHandler(fsm, IdsAttestationType.BASIC);
+		RemoteAttestationProviderHandler h = new RemoteAttestationProviderHandler(fsm, IdsAttestationType.BASIC, ttp);
 		ErrorHandler errorHandler = new ErrorHandler();
 		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();
 		
