@@ -57,11 +57,13 @@ public class TrustedThirdPartyTest {
         ttpUri = new URI(String.format("http://127.0.0.1:%d", 7331));
 	}
 	
+	/*
 	@AfterClass
 	public static void stopRepo() throws Exception {
 		server.stop();
 		server.destroy();
 	}
+	*/
 	
     @Before
     public void initTest() {
