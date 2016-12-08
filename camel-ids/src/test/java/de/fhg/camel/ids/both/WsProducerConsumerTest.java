@@ -54,17 +54,16 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected List<Object> messages;
 	private URI serverUri;
 	private static String PWD = "changeit";
-
 	
     @Override
     public void setUp() throws Exception {
     	setupServer();
-        //super.setUp();
+        super.setUp();
     }
     
     @Override
     public void tearDown() throws Exception {
-        //super.tearDown();
+        super.tearDown();
         stopTestServer();
     }
     
