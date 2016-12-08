@@ -64,24 +64,26 @@ public class REST {
 	
 	@POST
 	@Path("/check")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public String postMethod(@FormParam("data") String jsonData) {
+	public String postMethod(String input) {
 		Gson gson = new Gson();
-		message = gson.fromJson(jsonData, PcrMessage.class);
-		if(this.checkPcrValues(message)) {
-			message.setSuccess(true);
+		PcrMessage msg = gson.fromJson(input, PcrMessage.class);
+		LOG.debug(".............................................................................:" + msg);
+		System.out.println(gson.toJson(msg));
+		LOG.debug(gson.toJson(msg));
+		if(this.checkPcrValues(msg)) {
+			msg.setSuccess(true);
 		}
 		else {
-			message.setSuccess(false);
+			msg.setSuccess(false);
 		}
-		//this.signMessage(message);
-		return gson.toJson(message);
+		//this.signMessage(message);*/
+		return gson.toJson(msg);
 	}
 
 	private boolean checkPcrValues(PcrMessage message) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	private void signMessage(PcrMessage message) {

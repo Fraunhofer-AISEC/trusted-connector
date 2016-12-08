@@ -57,18 +57,19 @@ import de.fhg.camel.ids.server.WebsocketComponent;
  */
 public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable();
+    protected static int PORT; //= AvailablePortFinder.getNextAvailable();
     protected Server server;
     protected List<Object> messages;
+	private URI serverUri;
 	private static String PWD = "password";
 	private static Server ttpserver;
-	private static URI ttpServerUri;
+	private static URI ttpUri;
 
 	@BeforeClass
 	public static void initRepo() throws Exception {
 		ttpserver = new Server();
         ServerConnector connector = new ServerConnector(ttpserver);
-        connector.setPort(31330); // let connector pick an unused port #
+        connector.setPort(0); // let connector pick an unused port #
         ttpserver.addConnector(connector);
 
         ServletContextHandler context = new ServletContextHandler();
@@ -82,13 +83,8 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         // Start Server
         ttpserver.start();
 
-        String host = connector.getHost();
-        if (host == null)
-        {
-            host = "127.0.0.1";
-        }
-        int port = connector.getLocalPort();
-        ttpServerUri = new URI(String.format("http://%s:%d/", host, port));
+        PORT = connector.getLocalPort();
+        ttpUri = new URI(String.format("http://127.0.0.1:%d/check", PORT));
 	}
 	
 	@AfterClass
@@ -99,8 +95,9 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 	
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
-        server = new Server(PORT);
-        Connector connector = new ServerConnector(server);
+        server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(0);
         server.addConnector(connector);
 
         ServletContextHandler ctx = new ServletContextHandler();
@@ -110,6 +107,9 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         server.setHandler(ctx);
         
         server.start();
+        int port = connector.getLocalPort();
+        serverUri = new URI(String.format("http://127.0.0.1:%d/check", port));
+        
         assertTrue(server.isStarted());      
     }
     
@@ -138,9 +138,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     public void testTwoRoutes() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
-
         template.sendBody("direct:input", TEST_MESSAGE);
-
         mock.assertIsSatisfied();
     }
 
@@ -148,22 +146,15 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     public void testTwoRoutesRestartConsumer() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
-
         template.sendBody("direct:input", TEST_MESSAGE);
-
         mock.assertIsSatisfied();
-
         resetMocks();
-
         log.info("Restarting bar route");
         context.stopRoute("bar");
         Thread.sleep(500);
         context.startRoute("bar");
-
         mock.expectedBodiesReceived(TEST_MESSAGE);
-
         template.sendBody("direct:input", TEST_MESSAGE);
-
         mock.assertIsSatisfied();
     }
 

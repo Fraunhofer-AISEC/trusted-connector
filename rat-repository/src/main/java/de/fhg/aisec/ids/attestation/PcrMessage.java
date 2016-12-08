@@ -46,12 +46,16 @@ public class PcrMessage {
 	}
 	
 	public String toString() {
-		String ret = "\n*************************************************************************"
-				+ "\nPCR Values :\n";
-		for(int i = 0; i < msg.getAttestationResponse().getPcrValuesCount(); i++) {
-			ret += "\t" + i + " \t" + msg.getAttestationResponse().getPcrValuesList().get(i) + "\n";
+		String ret = "";
+		if(msg != null) {
+			ret += "\n*************************************************************************"
+					+ "\nPCR Values :\n";
+			for(int i = 0; i < msg.getAttestationResponse().getPcrValuesCount(); i++) {
+				ret += "\t" + i + " \t" + msg.getAttestationResponse().getPcrValuesList().get(i) + "\n";
+			}
+			ret += "\n************************************************************************\n";
+			
 		}
-		ret += "\n************************************************************************\n";
 		return ret;
 	}
 	

@@ -48,55 +48,23 @@ import de.fhg.camel.ids.server.WebsocketComponent;
  */
 public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable();
+    protected static int PORT; // = AvailablePortFinder.getNextAvailable();
     protected Server server;
     private static Server ttpserver;
     protected List<Object> messages;
+	private URI serverUri;
 	private static String PWD = "changeit";
-	private static URI ttpServerUri;
-	
-	@BeforeClass
-	public static void initRepo() throws Exception {
-		ttpserver = new Server();
-        ServerConnector connector = new ServerConnector(ttpserver);
-        connector.setPort(31330); // let connector pick an unused port #
-        ttpserver.addConnector(connector);
 
-        ServletContextHandler context = new ServletContextHandler();
-        context.setContextPath("/");
-        ttpserver.setHandler(context);
-        
-        ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
-        jerseyServlet.setInitOrder(0);
-        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", REST.class.getCanonicalName());
-
-        // Start Server
-        ttpserver.start();
-
-        String host = connector.getHost();
-        if (host == null)
-        {
-            host = "127.0.0.1";
-        }
-        int port = connector.getLocalPort();
-        ttpServerUri = new URI(String.format("http://%s:%d/", host, port));
-	}
-	
-	@AfterClass
-	public static void stopRepo() throws Exception {
-		ttpserver.stop();
-		ttpserver.destroy();
-	}
 	
     @Override
     public void setUp() throws Exception {
     	setupServer();
-        super.setUp();
+        //super.setUp();
     }
     
     @Override
     public void tearDown() throws Exception {
-        super.tearDown();
+        //super.tearDown();
         stopTestServer();
     }
     
@@ -107,8 +75,9 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     
 	protected void setupServer() throws Exception {
         // start a simple websocket echo service
-        server = new Server(PORT);
-        Connector connector = new ServerConnector(server);
+        server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(0);
         server.addConnector(connector);
 
         ServletContextHandler ctx = new ServletContextHandler();
@@ -118,6 +87,8 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         server.setHandler(ctx);
         
         server.start();
+        PORT = connector.getLocalPort();
+        serverUri = new URI(String.format("http://127.0.0.1:%d", PORT));        
         assertTrue(server.isStarted());      
     }
     

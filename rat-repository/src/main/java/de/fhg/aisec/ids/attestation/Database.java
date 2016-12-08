@@ -60,7 +60,7 @@ public class Database {
 		try {
 			connection = DriverManager.getConnection("jdbc:sqlite:configuration.db");
 			if (connection != null) {
-				LOG.debug("connection to mysql db successful!");
+				LOG.debug("connection to sqlite db successful!");
 			} else {
 				LOG.debug("Failed to make connection to mysql db!");
 			}

@@ -53,7 +53,7 @@ public class RemoteAttestationTest {
 		
 		server = new Server();
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(31330); // let connector pick an unused port #
+        connector.setPort(0); // let connector pick an unused port #
         server.addConnector(connector);
 
         ServletContextHandler context = new ServletContextHandler();
@@ -67,13 +67,8 @@ public class RemoteAttestationTest {
         // Start Server
         server.start();
 
-        String host = connector.getHost();
-        if (host == null)
-        {
-            host = "127.0.0.1";
-        }
         int port = connector.getLocalPort();
-        ttpUri = new URI(String.format("http://%s:%d/check", host, port));
+        ttpUri = new URI(String.format("http://127.0.0.1:%d/check", port));
 		consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ttpUri);
 		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ttpUri);
 	}

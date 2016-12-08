@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.gson.Gson;
+
 import de.fhg.aisec.ids.attestation.PcrMessage;
 import de.fhg.aisec.ids.attestation.REST;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
@@ -25,7 +27,7 @@ import de.fhg.ids.comm.ws.protocol.rat.TrustedThirdParty;
 public class TrustedThirdPartyTest {
     
 	private static Server server;
-	private static URI serverUri;
+	private static URI ttpUri;
 	Pcr one;
 	Pcr two;
 	String pcrValue = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -49,7 +51,9 @@ public class TrustedThirdPartyTest {
 
         // Start Server
         server.start();
-        serverUri = new URI("http://127.0.0.1:31330/check");
+
+        int port = connector.getLocalPort();
+        ttpUri = new URI(String.format("http://127.0.0.1:%d/check", port));
 	}
 	
 	@AfterClass
@@ -87,7 +91,7 @@ public class TrustedThirdPartyTest {
 						.build()
 						)
 				.build();
-    	this.ttp = new TrustedThirdParty(this.msg, serverUri);
+    	this.ttp = new TrustedThirdParty(this.msg, ttpUri);
     }
     
     @Test
@@ -99,10 +103,14 @@ public class TrustedThirdPartyTest {
     @Test
     public void testReadResponse() throws Exception {
     	// Issue request to server
-    	String request = "sers";
-    	PcrMessage pcrResult = this.ttp.readResponse(request);
-    	assertTrue(pcrResult.getNonce().equals("myFunkyFreshNonce"));
-    	assertTrue(pcrResult.getSignature().equals(""));
+    	PcrMessage testMsg = new PcrMessage(ConnectorMessage.newBuilder().build());
+    	testMsg.setNonce("nonce");
+    	testMsg.setSignature("signature");
+    	testMsg.setSuccess(false);
+    	Gson gson = new Gson();
+    	PcrMessage pcrResult = this.ttp.readResponse(gson.toJson(testMsg));
+    	assertTrue(pcrResult.getNonce().equals("nonce"));
+    	assertTrue(pcrResult.getSignature().equals("signature"));
     	
     }
 }

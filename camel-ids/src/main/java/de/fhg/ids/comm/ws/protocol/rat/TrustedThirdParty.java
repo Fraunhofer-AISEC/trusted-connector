@@ -70,13 +70,13 @@ public class TrustedThirdParty {
 		Gson gson = new Gson();
 		HttpURLConnection conn = (HttpURLConnection) this.adr.toURL().openConnection();
 		conn.setConnectTimeout(5000);
+		conn.setRequestProperty("Cache-Control", "no-cache");
 		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 		conn.setDoOutput(true);
 		conn.setDoInput(true);
 		conn.setRequestMethod("POST");
 		OutputStream os = conn.getOutputStream();
-		String toWrite = "data=" + json.toString();
-		os.write(toWrite.getBytes("utf-8"));
+		os.write(json.getBytes("utf-8"));
 		os.flush();
 		os.close();
 		InputStream is = conn.getInputStream();
