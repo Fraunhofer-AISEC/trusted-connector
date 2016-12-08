@@ -17,8 +17,6 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.ids.comm.ws.protocol.rat.*;
-
 import com.google.gson.Gson;
 
 @Path("/")
@@ -65,7 +63,7 @@ public class REST {
 	}
 	
 	@POST
-	@Path("post")
+	@Path("/check")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public String postMethod(@FormParam("data") String jsonData) {
@@ -77,7 +75,7 @@ public class REST {
 		else {
 			message.setSuccess(false);
 		}
-		this.signMessage(message);
+		//this.signMessage(message);
 		return gson.toJson(message);
 	}
 
@@ -102,7 +100,7 @@ public class REST {
 	    }
 	    return true;
 	}
-	
+
 	// SIMPLE FILE TRANSFER FROM HERE ON
 
 	@GET

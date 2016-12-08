@@ -35,19 +35,18 @@ public class Database {
 		insertDefaultConfiguration();
 	}
 
-
 	private void insertDefaultConfiguration() throws SQLException {
-		Pcr[] one = new Pcr[4];
-		Pcr[] two = new Pcr[3];
-		for (int i = 0; i < 4 ; i++) {
-			one[i] = new Pcr(i, zero);
+		Pcr[] basic = new Pcr[10];
+		Pcr[] advanced = new Pcr[24];
+		for (int i = 0; i < 10 ; i++) {
+			basic[i] = new Pcr(i, zero);
 		}
-		for (int i = 0; i < 3 ; i++) {
-			two[i] = new Pcr(i, zero);
+		for (int i = 0; i < 24 ; i++) {
+			advanced[i] = new Pcr(i, zero);
 		}
 		LOG.debug("insertDefaultConfiguration---------------------------------------------------------------");
-    	this.insertConfiguration("default_one", "BASIC", one);
-    	this.insertConfiguration("default_two", "BASIC", two);
+    	this.insertConfiguration("default_one", "BASIC", basic);
+    	this.insertConfiguration("default_two", "ADVANCED", advanced);
 	}
 
 	private void makeJDBCConnection() {

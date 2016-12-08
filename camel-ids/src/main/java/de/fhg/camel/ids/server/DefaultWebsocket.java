@@ -17,6 +17,7 @@
 package de.fhg.camel.ids.server;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.UUID;
 
 import org.eclipse.jetty.websocket.api.CloseStatus;

@@ -1,6 +1,8 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -50,8 +52,11 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private boolean signatureCorrect = false;
 	private ConnectorMessage msg;
 	private long sessionID = 0;
+	private URI ttpUri;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type) {
+	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
+		// set ttp uri
+		this.ttpUri = ttpUri;
 		// set finite state machine
 		this.fsm = fsm;
 		// set current attestation type (see attestation.proto)
@@ -89,7 +94,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 						.build())
 				.build();			
 	}
-	
 
 	public MessageLite sendTPM2Ddata(Event e) {
 		Signature sg;
@@ -241,36 +245,28 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		this.ttp = new TrustedThirdParty(this.msg);
-		try {
-			boolean pcrCorrect = this.ttp.pcrValuesCorrect();
-			if(this.sessionID + 1 == e.getMessage().getId()) {
-				++this.sessionID;
-				return ConnectorMessage
-						.newBuilder()
-						.setId(++this.sessionID)
-						.setType(ConnectorMessage.Type.RAT_RESULT)
-						.setAttestationResult(
-								AttestationResult
-								.newBuilder()
-								.setAtype(this.aType)
-								.setResult(this.signatureCorrect && pcrCorrect)
-								.build()
-								)
-						.build();
-			}
-			else {
-				String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-				LOG.debug(error);
-				return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
-			}			
-		} catch (IOException e1) {
-			String error = "IOException :" + e1.getMessage();
+		this.ttp = new TrustedThirdParty(this.msg, ttpUri);
+		boolean pcrCorrect = pcrCorrect = this.ttp.pcrValuesCorrect();
+		if(this.sessionID + 1 == e.getMessage().getId()) {
+			++this.sessionID;
+			return ConnectorMessage
+					.newBuilder()
+					.setId(++this.sessionID)
+					.setType(ConnectorMessage.Type.RAT_RESULT)
+					.setAttestationResult(
+							AttestationResult
+							.newBuilder()
+							.setAtype(this.aType)
+							.setResult(this.signatureCorrect && pcrCorrect)
+							.build()
+							)
+					.build();
+		}
+		else {
+			String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			LOG.debug(error);
 			return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
-		}
-		
-
+		}			
 	}
 
 	public MessageLite leaveRatRequest(Event e) {

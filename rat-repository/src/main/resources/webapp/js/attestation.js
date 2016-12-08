@@ -1,7 +1,7 @@
 var app = angular.module('ratAdminApp', ['ngRoute', 'ngResource']);
 
 app.factory('listservice', function ($resource) {
-    var source = $resource('http://localhost:8080/configurations/list', {}, {
+    var source = $resource('http://localhost:31330/configurations/list', {}, {
           'query': {method:'GET',isArray:true}
       });
     var data = source.query({},function(){
@@ -13,7 +13,7 @@ app.factory('listservice', function ($resource) {
 app.factory('editservice',function($resource){
   return{
   query: function(id) {
-      return $resource('http://localhost:8080/configurations/'+id, {}, {
+      return $resource('http://localhost:31330/configurations/'+id, {}, {
              query: { method: 'GET', isArray: false }
       }).query();
     }

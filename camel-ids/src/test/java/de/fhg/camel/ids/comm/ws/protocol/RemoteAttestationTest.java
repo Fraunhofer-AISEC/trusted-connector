@@ -2,12 +2,20 @@ package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.*;
 
+import java.net.URI;
+
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.attestation.REST;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -35,14 +43,46 @@ public class RemoteAttestationTest {
 	private static ConnectorMessage msg5;
 	private static ConnectorMessage msg6;
 	private static ConnectorMessage msg7;
+	private static URI ttpUri;
+	private static Server server;
 	
 	@BeforeClass
-	public static void setupSocket() {
+	public static void setupSocket() throws Exception {
 		FSM fsm1 = new FSM();
 		FSM fsm2 = new FSM();
-		consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC);
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC);
+		
+		server = new Server();
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(31330); // let connector pick an unused port #
+        server.addConnector(connector);
+
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        server.setHandler(context);
+        
+        ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
+        jerseyServlet.setInitOrder(0);
+        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", REST.class.getCanonicalName());
+
+        // Start Server
+        server.start();
+
+        String host = connector.getHost();
+        if (host == null)
+        {
+            host = "127.0.0.1";
+        }
+        int port = connector.getLocalPort();
+        ttpUri = new URI(String.format("http://%s:%d/check", host, port));
+		consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ttpUri);
+		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ttpUri);
 	}
+	
+	@AfterClass
+	public static void stopRepo() throws Exception {
+		server.stop();
+		server.destroy();
+	}	
 
     @Test
     public void test1() throws Exception {

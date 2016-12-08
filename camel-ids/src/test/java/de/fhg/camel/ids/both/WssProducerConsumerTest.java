@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -39,12 +40,14 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.fhg.aisec.ids.attestation.REST;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
@@ -58,7 +61,42 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     protected Server server;
     protected List<Object> messages;
 	private static String PWD = "password";
+	private static Server ttpserver;
+	private static URI ttpServerUri;
 
+	@BeforeClass
+	public static void initRepo() throws Exception {
+		ttpserver = new Server();
+        ServerConnector connector = new ServerConnector(ttpserver);
+        connector.setPort(31330); // let connector pick an unused port #
+        ttpserver.addConnector(connector);
+
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        ttpserver.setHandler(context);
+        
+        ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
+        jerseyServlet.setInitOrder(0);
+        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", REST.class.getCanonicalName());
+
+        // Start Server
+        ttpserver.start();
+
+        String host = connector.getHost();
+        if (host == null)
+        {
+            host = "127.0.0.1";
+        }
+        int port = connector.getLocalPort();
+        ttpServerUri = new URI(String.format("http://%s:%d/", host, port));
+	}
+	
+	@AfterClass
+	public static void stopRepo() throws Exception {
+		ttpserver.stop();
+		ttpserver.destroy();
+	}
+	
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);

@@ -1,4 +1,4 @@
-package de.fhg.ids.comm.ws.protocol.rat;
+package de.fhg.aisec.ids.attestation;
 
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
