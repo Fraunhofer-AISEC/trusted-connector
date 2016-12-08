@@ -3,37 +3,29 @@ package de.fhg.camel.ids.comm.ws.protocol;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
-import java.util.Arrays;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.gson.Gson;
 
 import de.fhg.aisec.ids.attestation.PcrMessage;
 import de.fhg.aisec.ids.attestation.PcrValue;
-import de.fhg.aisec.ids.attestation.REST;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.rat.TrustedThirdParty;
 
 public class TrustedThirdPartyTest {
     
-	private static Server server;
+	//private static Server server;
 	private static URI ttpUri;
-	Pcr one;
-	Pcr two;
 	String zero = "0000000000000000000000000000000000000000000000000000000000000000";
 	TrustedThirdParty ttp;
 	PcrMessage msg;
+	PcrValue[] one;
+	PcrValue[] two;
 
 	@BeforeClass
 	public static void initRepo() throws Exception {
@@ -67,25 +59,28 @@ public class TrustedThirdPartyTest {
 	
     @Before
     public void initTest() {
-    	PcrValue[] one = new PcrValue[10];
-    	PcrValue[] two = new PcrValue[23];
+    	one = new PcrValue[10];
+    	two = new PcrValue[23];
     	for(int i = 0; i<10;i++) {
     		one[i] = new PcrValue(i, zero);
     	}
     	for(int i = 0; i<23;i++) {
     		two[i] = new PcrValue(i, zero);
     	}
-    	msg = new PcrMessage(two);
-    	this.ttp = new TrustedThirdParty(one, ttpUri);
+    	msg = new PcrMessage(one);
+    	this.ttp = new TrustedThirdParty(ttpUri);
     }
     
     @Test
     public void testObjToJsonString() throws Exception {
     	String result = "{\"success\":false,\"signature\":\"\",\"values\":[{\"order\":0,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":1,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":2,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":3,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":4,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":5,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":6,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":7,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":8,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":9,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"}]}";
+    	this.ttp.setValues(one);
+    	System.out.println(this.ttp.jsonToString("ads"));
     	assertTrue(this.ttp.jsonToString("").equals(result));
     }
 
     @Test
+    @Ignore
     public void testReadResponse() throws Exception {
     	msg.setNonce("abc");
     	msg.setSignature("bcd");

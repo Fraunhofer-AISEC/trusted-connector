@@ -41,6 +41,7 @@ public class TrustedThirdParty {
 
 	public void setValues(PcrValue[] values) {
 		this.values = values;
+		this.msg = new PcrMessage(this.values);
 	}
 
 	public boolean pcrValuesCorrect() {
