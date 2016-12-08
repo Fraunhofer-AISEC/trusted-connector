@@ -44,7 +44,6 @@ public class RemoteAttestationTest {
 	private static ConnectorMessage msg6;
 	private static ConnectorMessage msg7;
 	private static URI ttpUri;
-	private static Server server;
 	
 	@BeforeClass
 	public static void setupSocket() throws Exception {

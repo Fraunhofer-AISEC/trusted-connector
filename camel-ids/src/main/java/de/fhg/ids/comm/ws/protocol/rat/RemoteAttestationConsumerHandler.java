@@ -2,7 +2,6 @@ package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -55,6 +54,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private PcrValue[] values;
 	private long sessionID = 0;
 	private URI ttpUri;
+	private boolean pcrCorrect;
 	
 	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
 		// set ttp uri
@@ -109,7 +109,9 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		this.values = this.ttp.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
+		this.values = TrustedThirdParty.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
+		this.ttp = new TrustedThirdParty(values, ttpUri);
+		this.pcrCorrect = this.ttp.pcrValuesCorrect();
 		if(this.sessionID + 1 == e.getMessage().getId()) {
 			++this.sessionID;
 			// construct a new TPM2B_PUBLIC from bkey bytes
@@ -247,8 +249,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		this.ttp = new TrustedThirdParty(this.values, ttpUri);
-		boolean pcrCorrect = pcrCorrect = this.ttp.pcrValuesCorrect();
 		if(this.sessionID + 1 == e.getMessage().getId()) {
 			++this.sessionID;
 			return ConnectorMessage

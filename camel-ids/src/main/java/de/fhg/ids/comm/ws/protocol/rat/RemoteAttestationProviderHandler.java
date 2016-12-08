@@ -49,6 +49,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private TrustedThirdParty ttp;
 	private long sessionID = 0;
 	private URI ttpUri;
+	private boolean pcrCorrect;
 	
 	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
 		// set ttp uri
@@ -144,9 +145,9 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		PcrValue[] values = this.ttp.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
+		PcrValue[] values = TrustedThirdParty.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
 		this.ttp = new TrustedThirdParty(values, ttpUri);
-		boolean pcrCorrect = this.ttp.pcrValuesCorrect();
+		this.pcrCorrect = this.ttp.pcrValuesCorrect();
 		if(this.sessionID + 1 == e.getMessage().getId()) {
 			++this.sessionID;
 			try {

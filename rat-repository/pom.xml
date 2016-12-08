@@ -15,7 +15,7 @@
 		<jetty-version>8.1.19.v20160209</jetty-version>
 		<jetty-version>9.2.15.v20160210</jetty-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.2</ahc-version>
+		<ahc-version>2.0.24</ahc-version>
 		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>

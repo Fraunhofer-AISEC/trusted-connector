@@ -33,7 +33,6 @@ public class WsComponent extends AhcComponent {
     	} else if (uri.startsWith("idsclient:")) {
     		return uri.replaceFirst("idsclient:", "wss:");    		
     	}
-    	
     	//Should not happen
     	return uri;
     }

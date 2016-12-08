@@ -66,9 +66,8 @@ public class REST {
 	@POST
 	@Path("/check")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	public String postMethod(String msg) {
-		//System.out.println(".-----------------------------------------------------." + msg);
 		Gson gson = new Gson();
 		PcrMessage pcrMsg = gson.fromJson(msg, PcrMessage.class);
 		if(this.checkPcrValues(pcrMsg)) {
