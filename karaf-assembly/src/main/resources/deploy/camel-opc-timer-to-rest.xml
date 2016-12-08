@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"    
+           xmlns:camel="http://camel.apache.org/schema/blueprint"
+           xsi:schemaLocation="
+               http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+               http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+    <bean id="milo-client" class="org.apache.camel.component.milo.client.MiloClientComponent">
+        <!--<property name="enableAnonymousAuthentication" value="true"/>-->
+    </bean>
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+      <route id="opctorest">
+        <!--<from uri="timer://simpleTimer?period=1000"/>        -->
+        <from uri="milo-client:tcp://0.0.0.0:4840/freeopcua/server?nodeId=2&amp;samplingInterval=100000&amp;namespaceUri=http://examples.freeopcua.github.io"/>        
+        <log message="Triggered Route: opctorest, requesting node 2: Sensorreading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
+      </route>
+    </camelContext>
+</blueprint>
+<!--         <convertBodyTo type="java.lang.String"/>        
+        <to uri="stream:out"/> -->

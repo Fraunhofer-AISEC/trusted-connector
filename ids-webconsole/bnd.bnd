@@ -16,7 +16,7 @@ Bundle-Description: A web console for the IDS Core Platform. The web console all
 Bundle-Copyright: Fraunhofer 2016
 Bundle-Vendor: Fraunhofer AISEC
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
--wab: src/main/resources/www/dist/
+-wab: src/main/resources/www/build/
 Import-Package: \
 	org.osgi.framework.*,\
 	de.fhg.aisec.ids.webconsole.api,\
