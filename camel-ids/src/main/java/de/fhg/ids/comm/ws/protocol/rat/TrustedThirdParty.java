@@ -79,6 +79,7 @@ public class TrustedThirdParty {
 		HttpURLConnection conn = (HttpURLConnection) this.adr.toURL().openConnection();
 		conn.setConnectTimeout(2500);
 		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+		conn.setFixedLengthStreamingMode(json.getBytes("utf-8").length);
 		conn.setDoOutput(true);
 		conn.setDoInput(true);
 		conn.setRequestMethod("POST");

@@ -20,6 +20,7 @@ class RestHTTPRequestHandler(BaseHTTPRequestHandler):
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
+	self.send_header("Content-Length", self.headers['Content-Length'])
         self.end_headers()
         data = simplejson.loads(self.data_string)
         data["success"] = True
