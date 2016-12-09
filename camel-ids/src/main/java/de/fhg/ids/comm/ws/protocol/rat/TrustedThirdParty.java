@@ -2,11 +2,14 @@ package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -20,34 +23,22 @@ import de.fhg.aisec.ids.attestation.PcrMessage;
 public class TrustedThirdParty {
 
 	private Logger LOG = LoggerFactory.getLogger(TrustedThirdParty.class);
-	private PcrMessage msg = null;
 	private URI adr;
-	
-	public PcrMessage getMsg() {
-		return msg;
-	}
+	private HttpURLConnection conn;
 
-	public void setMsg(PcrMessage msg) {
-		this.msg = msg;
-	}
-	
 	public TrustedThirdParty(URI adr) {
-		LOG.debug("RAT REPOSITORY starting @ " + adr);
 		this.adr = adr;
 	}	
 
 	public boolean pcrValuesCorrect(PcrValue[] values, String nonce) {
 		if(values != null) {
-			this.msg = new PcrMessage(values, nonce);
-			PcrMessage response;
 			try {
-				response = this.readResponse(this.toJsonString(this.msg));
-				LOG.debug(response.toString());
+				PcrMessage response = this.readResponse(new PcrMessage(values, nonce));
+				return response.isSuccess();
 			} catch (IOException e) {
 				e.printStackTrace();
 				return false;
 			}
-			return response.isSuccess();
 		}
 		else {
 			return false;
@@ -56,30 +47,33 @@ public class TrustedThirdParty {
 	
 	public String toJsonString(PcrMessage msg) {
 		Gson gson = new Gson();
-		if(this.msg != null) {
-			return gson.toJson(msg);	
-		}
-		else {
-			return "";
-		}
-		
+		return gson.toJson(msg);
 	}
 	
-	public PcrMessage readResponse(String json) throws IOException {
+	public PcrMessage readResponse(PcrMessage msg) throws IOException {
+		try {
+			conn = (HttpURLConnection) this.adr.toURL().openConnection();
+		} catch (MalformedURLException e) {
+			LOG.debug("TrustedThirdParty: MalformedURLException ! " + e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			LOG.debug("TrustedThirdParty: IOException ! " + e.getMessage());
+			e.printStackTrace();
+		}
+		LOG.debug("TrustedThirdParty connected to: " + this.adr.toURL());		
 		Gson gson = new Gson();
-		HttpURLConnection conn = (HttpURLConnection) this.adr.toURL().openConnection();
-		LOG.debug("---------------------------------------connecting to : " + this.adr.toURL().toString());
-		conn.setConnectTimeout(2500);
+		LOG.debug("sending: " + gson.toJson(msg));
+		conn.setConnectTimeout(5000);
 		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+		conn.setRequestProperty("Accept", "application/json");
 		//conn.setFixedLengthStreamingMode(json.getBytes("utf-8").length);
 		conn.setDoOutput(true);
 		conn.setDoInput(true);
 		conn.setRequestMethod("POST");
+		OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+		out.write(gson.toJson(msg));
+		out.close();
 		InputStream is = conn.getInputStream();
-		OutputStream os = conn.getOutputStream();
-		os.write(json.getBytes("utf-8"));
-		os.flush();
-		os.close();
 		BufferedInputStream bis = new BufferedInputStream(is);
 		String jsonString = this.inputStreamToString(bis);
 		return gson.fromJson(jsonString, PcrMessage.class);

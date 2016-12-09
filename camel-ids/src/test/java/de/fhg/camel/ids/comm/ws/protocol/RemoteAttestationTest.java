@@ -37,7 +37,7 @@ public class RemoteAttestationTest {
 	
 	private static RemoteAttestationConsumerHandler consumer;
 	private static RemoteAttestationProviderHandler provider;
-	private static Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
+	private static Logger LOG = LoggerFactory.getLogger(RemoteAttestationTest.class);
 	private long id = 1234567;
 	private IdsAttestationType aType = IdsAttestationType.BASIC;
 	private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
@@ -56,27 +56,27 @@ public class RemoteAttestationTest {
 	private static Server server;
 	private static FSM fsm1;
 	private static FSM fsm2;
-	static RemoteAttestationServer ratServer;
+	static RemoteAttestationServer ratServer1;
+	static RemoteAttestationServer ratServer2;
 
 	@BeforeClass
 	public static void initRepo() throws Exception {
-		ratServer = new RemoteAttestationServer("127.0.0.1" , "check", AvailablePortFinder.getNextAvailable());
+		ratServer1 = new RemoteAttestationServer("127.0.0.1", "check", AvailablePortFinder.getNextAvailable());
+		ratServer2 = new RemoteAttestationServer("127.0.0.1", "check", AvailablePortFinder.getNextAvailable());
 		fsm1 = new FSM();
-		fsm2 = new FSM();	
-        try {
-        	ratServer.start();
-        	//ratServer.join();
-        } finally {
-        	ratServer.stop();
-        }
-        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ratServer.getURI());
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ratServer.getURI());
+		fsm2 = new FSM();
+		ratServer1.start();
+    	ratServer2.start();
+        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ratServer1.getURI());
+		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ratServer2.getURI());
 	}
 	
 	@AfterClass
 	public static void stopRepo() throws Exception {
-		ratServer.stop();
-		ratServer.destroy();
+		ratServer1.stop();
+		ratServer1.destroy();
+		ratServer2.stop();
+		ratServer2.destroy();		
 	}
 	
     @Test

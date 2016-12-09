@@ -66,15 +66,10 @@ public class REST {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public String postMethod(String msg) {
+		LOG.debug("REST service received :" + msg);
 		Gson gson = new Gson();
 		PcrMessage pcrMsg = gson.fromJson(msg, PcrMessage.class);
-		if(this.checkPcrValues(pcrMsg)) {
-			pcrMsg.setSuccess(true);
-		}
-		else {
-			pcrMsg.setSuccess(false);
-		}
-		//this.signMessage(message);*/
+		pcrMsg.setSuccess(true);
 		return gson.toJson(pcrMsg);
 	}
 

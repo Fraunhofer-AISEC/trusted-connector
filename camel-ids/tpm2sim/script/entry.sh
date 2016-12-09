@@ -5,5 +5,5 @@ useradd --shell /bin/bash -u $USER_ID -o -c "" -m tpm2d
 export HOME=/tpm2d
 chown -R tpm2d /tpm2d/
 nohup runuser -l tpm2d -c /tpm2d/tpm2_simulator &
-sleep 1
+sleep 2 
 exec /usr/local/bin/gosu tpm2d "$@"

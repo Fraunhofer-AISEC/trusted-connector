@@ -17,6 +17,7 @@ public class RemoteAttestationServer {
 	private int PORT = 0;
 	private String host;
 	private String path;
+	private URI uri;
 	private Logger LOG = LoggerFactory.getLogger(Database.class);
 
 	public RemoteAttestationServer(String host, String path, int port) {
@@ -24,6 +25,12 @@ public class RemoteAttestationServer {
 		this.host = host;
 		this.path = path;
 		this.PORT = port;
+		try {
+			this.uri = new URI(String.format("http://%s:%d/%s", this.host, this.PORT, this.path));
+		} catch (URISyntaxException e) {
+			LOG.debug("could not format URI !" );
+			e.printStackTrace();
+		}
 	}
 
 	public void start() {
@@ -61,7 +68,7 @@ public class RemoteAttestationServer {
 	}
 	
 	public URI getURI() {
-		return this.server.getURI();
+		return this.uri;
 	}
 	
 	public void destroy() {
