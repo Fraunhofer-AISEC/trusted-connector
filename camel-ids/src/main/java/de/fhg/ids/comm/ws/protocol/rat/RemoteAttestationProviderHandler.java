@@ -146,8 +146,8 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// get pcr values from server msg
 		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
 		PcrValue[] values = TrustedThirdParty.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
-		this.ttp = new TrustedThirdParty(values, ttpUri);
-		this.pcrCorrect = this.ttp.pcrValuesCorrect();
+		this.ttp = new TrustedThirdParty(ttpUri);
+		this.pcrCorrect = this.ttp.pcrValuesCorrect(values, NonceGenerator.generate());
 		if(this.sessionID + 1 == e.getMessage().getId()) {
 			++this.sessionID;
 			try {

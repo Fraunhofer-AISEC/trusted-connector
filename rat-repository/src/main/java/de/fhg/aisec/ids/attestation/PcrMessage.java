@@ -11,6 +11,11 @@ public class PcrMessage {
 		this.values = values;
 	}
 
+	public PcrMessage(PcrValue[] values, String freshNonce) {
+		this.values = values;
+		this.nonce = freshNonce;
+	}
+
 	public String getNonce() {
 		return nonce;
 	}

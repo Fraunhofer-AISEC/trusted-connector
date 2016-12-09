@@ -28,13 +28,11 @@ public class REST {
 	private Database db;
 	private String ret;
 	
+	public REST(Database db) {
+		this.db = db;
+	}
+	
 	public REST() {
-		try {
-			this.db = new Database();
-		} catch (SQLException e) {
-			System.out.println("could not connect to SQLite db.");
-			e.printStackTrace();
-		}
 	}
 	
 	@GET

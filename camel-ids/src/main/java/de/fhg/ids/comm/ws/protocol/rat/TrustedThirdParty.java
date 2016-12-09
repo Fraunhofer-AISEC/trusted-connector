@@ -20,37 +20,28 @@ import de.fhg.aisec.ids.attestation.PcrMessage;
 public class TrustedThirdParty {
 
 	private Logger LOG = LoggerFactory.getLogger(TrustedThirdParty.class);
-	private String freshNonce = "";
-	private PcrValue[] values = null;
 	private PcrMessage msg = null;
 	private URI adr;
 	
-	public TrustedThirdParty(PcrValue[] values, URI adr) {
-		this.values = values;
-		this.msg = new PcrMessage(this.values);
-		this.adr = adr;
+	public PcrMessage getMsg() {
+		return msg;
 	}
 
+	public void setMsg(PcrMessage msg) {
+		this.msg = msg;
+	}
+	
 	public TrustedThirdParty(URI adr) {
+		LOG.debug("RAT REPOSITORY starting @ " + adr);
 		this.adr = adr;
 	}	
-	
-	public PcrValue[] getValues() {
-		return values;
-	}
 
-	public void setValues(PcrValue[] values) {
-		this.values = values;
-		this.msg = new PcrMessage(this.values);
-	}
-
-	public boolean pcrValuesCorrect() {
-		freshNonce = NonceGenerator.generate();
-		if(this.values != null) {
-			String json = this.jsonToString(freshNonce);
+	public boolean pcrValuesCorrect(PcrValue[] values, String nonce) {
+		if(values != null) {
+			this.msg = new PcrMessage(values, nonce);
 			PcrMessage response;
 			try {
-				response = this.readResponse(json);
+				response = this.readResponse(this.toJsonString(this.msg));
 				LOG.debug(response.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -63,10 +54,10 @@ public class TrustedThirdParty {
 		}
 	}
 	
-	public String jsonToString(String nonce) {
+	public String toJsonString(PcrMessage msg) {
 		Gson gson = new Gson();
 		if(this.msg != null) {
-			return gson.toJson(this.msg);	
+			return gson.toJson(msg);	
 		}
 		else {
 			return "";
@@ -77,9 +68,10 @@ public class TrustedThirdParty {
 	public PcrMessage readResponse(String json) throws IOException {
 		Gson gson = new Gson();
 		HttpURLConnection conn = (HttpURLConnection) this.adr.toURL().openConnection();
+		LOG.debug("---------------------------------------connecting to : " + this.adr.toURL().toString());
 		conn.setConnectTimeout(2500);
 		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-		conn.setFixedLengthStreamingMode(json.getBytes("utf-8").length);
+		//conn.setFixedLengthStreamingMode(json.getBytes("utf-8").length);
 		conn.setDoOutput(true);
 		conn.setDoInput(true);
 		conn.setRequestMethod("POST");

@@ -3,19 +3,27 @@ package de.fhg.camel.ids.comm.ws.protocol;
 import static org.junit.Assert.*;
 
 import java.net.URI;
+import java.sql.SQLException;
 
+import org.apache.camel.test.AvailablePortFinder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.attestation.Database;
 import de.fhg.aisec.ids.attestation.REST;
+import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -29,6 +37,7 @@ public class RemoteAttestationTest {
 	
 	private static RemoteAttestationConsumerHandler consumer;
 	private static RemoteAttestationProviderHandler provider;
+	private static Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private long id = 1234567;
 	private IdsAttestationType aType = IdsAttestationType.BASIC;
 	private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
@@ -42,50 +51,40 @@ public class RemoteAttestationTest {
 	private static ConnectorMessage msg4;
 	private static ConnectorMessage msg5;
 	private static ConnectorMessage msg6;
-	private static ConnectorMessage msg7;
+	private static ConnectorMessage msg7; 
 	private static URI ttpUri;
-	
+	private static Server server;
+	private static FSM fsm1;
+	private static FSM fsm2;
+	static RemoteAttestationServer ratServer;
+
 	@BeforeClass
-	public static void setupSocket() throws Exception {
-		FSM fsm1 = new FSM();
-		FSM fsm2 = new FSM();
-		/*
-		server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(0); // let connector pick an unused port #
-        server.addConnector(connector);
-
-        ServletContextHandler context = new ServletContextHandler();
-        context.setContextPath("/");
-        server.setHandler(context);
-        
-        ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
-        jerseyServlet.setInitOrder(0);
-        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", REST.class.getCanonicalName());
-
-        // Start Server
-        server.start();
-
-        int port = connector.getLocalPort();*/
-        ttpUri = new URI(String.format("http://127.0.0.1:%d", 7331));
-		consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ttpUri);
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ttpUri);
+	public static void initRepo() throws Exception {
+		ratServer = new RemoteAttestationServer("127.0.0.1" , "check", AvailablePortFinder.getNextAvailable());
+		fsm1 = new FSM();
+		fsm2 = new FSM();	
+        try {
+        	ratServer.start();
+        	//ratServer.join();
+        } finally {
+        	ratServer.stop();
+        }
+        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ratServer.getURI());
+		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ratServer.getURI());
 	}
 	
-	/*
 	@AfterClass
 	public static void stopRepo() throws Exception {
-		server.stop();
-		server.destroy();
+		ratServer.stop();
+		ratServer.destroy();
 	}
-	*/
-
+	
     @Test
     public void test1() throws Exception {
     	msg1 = ConnectorMessage.parseFrom(consumer.enterRatRequest(startEvent).toByteString());
     	assertTrue(msg1.getId() == id + 1);
     	assertTrue(msg1.getType().equals(ConnectorMessage.Type.RAT_REQUEST));
-    	System.out.println(msg1.toString());
+    	LOG.debug(msg1.toString());
     }
     
     @Test
@@ -96,7 +95,7 @@ public class RemoteAttestationTest {
     	assertTrue(msg2.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg2.getAttestationResponse().getHalg().equals(hAlg.name()));
     	assertTrue(msg2.getAttestationResponse().getPcrValuesCount() == 11);
-    	System.out.println(msg2.toString());
+    	LOG.debug(msg2.toString());
     }
    
     @Test
@@ -107,7 +106,7 @@ public class RemoteAttestationTest {
     	assertTrue(msg3.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg3.getAttestationResponse().getHalg().equals(hAlg.name()));
     	assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 11);
-    	System.out.println(msg3.toString());
+    	LOG.debug(msg3.toString());
     }
 
     @Test
@@ -116,7 +115,7 @@ public class RemoteAttestationTest {
     	assertTrue(msg4.getId() == id + 4);
     	assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
-    	System.out.println(msg4.toString());
+    	LOG.debug(msg4.toString());
     }
     
     @Test
@@ -125,7 +124,7 @@ public class RemoteAttestationTest {
     	assertTrue(msg5.getId() == id + 5);
     	assertTrue(msg5.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	assertTrue(msg5.getAttestationResponse().getAtype().equals(aType));
-    	System.out.println(msg5.toString());
+    	LOG.debug(msg5.toString());
     }
 
     @Test
@@ -134,7 +133,7 @@ public class RemoteAttestationTest {
     	assertTrue(msg6.getId() == id + 6);
     	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     	assertTrue(msg6.getAttestationResponse().getAtype().equals(aType));
-    	System.out.println(msg6.toString());
+    	LOG.debug(msg6.toString());
     }
 
     @Test
@@ -143,6 +142,6 @@ public class RemoteAttestationTest {
     	assertTrue(msg7.getId() == id + 7);
     	assertTrue(msg7.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     	assertTrue(msg7.getAttestationResponse().getAtype().equals(aType));
-    	System.out.println(msg7.toString());
+    	LOG.debug(msg7.toString());
     }
 }

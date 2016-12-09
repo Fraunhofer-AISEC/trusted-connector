@@ -29,10 +29,20 @@ public class Database {
 	private String sql;
 	private String zero = "0000000000000000000000000000000000000000000000000000000000000000";
  
-	public Database() throws SQLException {
+	public Database() {
 		makeJDBCConnection();
-		createTables();
-		insertDefaultConfiguration();
+		try {
+			createTables();
+		} catch (SQLException e) {
+			LOG.debug("ERROR: could not create Tables !");
+			e.printStackTrace();
+		}
+		try {
+			insertDefaultConfiguration();
+		} catch (SQLException e) {
+			LOG.debug("ERROR: could not insert default Configuration !");
+			e.printStackTrace();
+		}
 	}
 
 	private void insertDefaultConfiguration() throws SQLException {
