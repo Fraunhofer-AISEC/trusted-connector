@@ -16,7 +16,6 @@
  */
 package de.fhg.camel.ids.both;
 
-import java.net.URI;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -33,12 +32,13 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
-import de.fhg.aisec.ids.attestation.REST;
+import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
@@ -46,37 +46,34 @@ import de.fhg.camel.ids.server.WebsocketComponent;
 /**
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static int PORT; // = AvailablePortFinder.getNextAvailable();
-    protected Server server;
-    private static Server ttpserver;
+    protected static final int PORT = AvailablePortFinder.getNextAvailable(4321);
+    protected static Server server;
     protected List<Object> messages;
-	private URI serverUri;
 	private static String PWD = "changeit";
+	private static RemoteAttestationServer ratServer;
+  
+	@BeforeClass
+	public static void initRepo() throws Exception {
+		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31330);
+		ratServer.start();
+		//startTestServer();
+	}
 	
-    @Override
-    public void setUp() throws Exception {
-    	setupServer();
-        super.setUp();
-    }
-    
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        stopTestServer();
-    }
-    
-    public void stopTestServer() throws Exception {
-        server.stop();
+	/*
+	@AfterClass
+	public static void stopRepo() throws Exception {
+		server.stop();
         server.destroy();
-    }    
-    
-	protected void setupServer() throws Exception {
+	} 
+	*/
+	
+    public static void startTestServer() throws Exception {
         // start a simple websocket echo service
-        server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(0);
+        server = new Server(PORT);
+        Connector connector = new ServerConnector(server);
         server.addConnector(connector);
 
         ServletContextHandler ctx = new ServletContextHandler();
@@ -86,12 +83,27 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         server.setHandler(ctx);
         
         server.start();
-        PORT = connector.getLocalPort();
-        serverUri = new URI(String.format("http://127.0.0.1:%d", PORT));        
         assertTrue(server.isStarted());      
     }
+
     
-	@Test
+	/*
+    
+    @Override
+    public void setUp() throws Exception {
+        //startTestServer();
+        super.setUp();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        //stopTestServer();
+    }
+        */
+
+
+    @Test
     public void testTwoRoutes() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
@@ -101,7 +113,8 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         mock.assertIsSatisfied();
     }
 
-    @Test
+    
+	@Test
     public void testTwoRoutesRestartConsumer() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived(TEST_MESSAGE);
@@ -123,7 +136,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 
         mock.assertIsSatisfied();
     }
-    
+	
     private static SSLContextParameters defineClientSSLContextClientParameters() {
 
         KeyStoreParameters ksp = new KeyStoreParameters();

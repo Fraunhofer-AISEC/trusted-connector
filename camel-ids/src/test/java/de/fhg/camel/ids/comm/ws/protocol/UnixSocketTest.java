@@ -2,25 +2,13 @@ package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ProcessBuilder.Redirect;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.*;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 
 public class UnixSocketTest {
 	

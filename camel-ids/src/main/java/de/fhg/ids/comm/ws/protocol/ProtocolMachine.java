@@ -35,7 +35,7 @@ public class ProtocolMachine {
 	/** The session to send and receive messages */
 	private WebSocket ws;
 	private Session sess;
-	private String ttpURL = "http://127.0.0.1:31330";
+	private String ttpURL = "http://127.0.0.1:31330/configurations/check";
 	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
 	/** C'tor */

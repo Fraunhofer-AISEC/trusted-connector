@@ -47,7 +47,7 @@ public class TrustedThirdPartyTest {
 	
 	@BeforeClass
 	public static void initRepo() throws Exception {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "check", AvailablePortFinder.getNextAvailable());
+		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
 		ratServer.start();
 		ttp = new TrustedThirdParty(ratServer.getURI());
     	one = new PcrValue[10];

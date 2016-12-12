@@ -37,7 +37,6 @@ public class RemoteAttestationServer {
 	    server = new Server(this.PORT);
 	    ServletContextHandler handler = new ServletContextHandler();
 	    handler.setContextPath("");
-	    // adds Jersey Servlet with a customized ResourceConfig
 	    handler.addServlet(new ServletHolder(new ServletContainer(resourceConfig())), "/*");
 	    server.setHandler(handler); 
 	    try {
@@ -69,6 +68,10 @@ public class RemoteAttestationServer {
 	
 	public URI getURI() {
 		return this.uri;
+	}
+	
+	public Database getDatabase() {
+		return this.database;
 	}
 	
 	public void destroy() {

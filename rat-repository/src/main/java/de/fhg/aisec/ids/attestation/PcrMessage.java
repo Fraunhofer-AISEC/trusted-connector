@@ -1,5 +1,7 @@
 package de.fhg.aisec.ids.attestation;
 
+import java.util.Arrays;
+
 public class PcrMessage {
 	
 	private String nonce;
@@ -43,12 +45,17 @@ public class PcrMessage {
 	public PcrValue[] getValues() {
 		return values;
 	}
+	
+	public PcrValue getValue(int i) {
+		return values[i];
+	}	
 
 	public void setValues(PcrValue[] values) {
 		this.values = values;
 	}
 	
 	public String toString() {
+		Arrays.sort(values, PcrValue.orderComparator);
 		String ret = "";
 		if(values != null) {
 			ret += "\n*************************************************************************"
@@ -61,5 +68,7 @@ public class PcrMessage {
 		}
 		return ret;
 	}
+
+
 	
 }

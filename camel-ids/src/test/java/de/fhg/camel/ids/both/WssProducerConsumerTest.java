@@ -46,6 +46,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.fhg.aisec.ids.attestation.REST;
+import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
@@ -55,44 +56,28 @@ import de.fhg.camel.ids.server.WebsocketComponent;
  */
 public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static int PORT = AvailablePortFinder.getNextAvailable();
-    protected static int PORTTTP = AvailablePortFinder.getNextAvailable();
-    protected Server server;
+    protected static int PORT = AvailablePortFinder.getNextAvailable(8000);
+    protected static Server server;
     protected List<Object> messages;
-	private URI serverUri;
 	private static String PWD = "password";
-	private static Server ttpserver;
-	private static URI ttpUri;
+	private static RemoteAttestationServer ratServer;
 
 	@BeforeClass
 	public static void initRepo() throws Exception {
-		ttpserver = new Server();
-        ServerConnector connector = new ServerConnector(ttpserver);
-        connector.setPort(PORTTTP); // let connector pick an unused port #
-        ttpserver.addConnector(connector);
-
-        ServletContextHandler context = new ServletContextHandler();
-        context.setContextPath("/");
-        ttpserver.setHandler(context);
-        
-        ServletHolder jerseyServlet = context.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/*");
-        jerseyServlet.setInitOrder(0);
-        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", REST.class.getCanonicalName());
-
-        // Start Server
-        ttpserver.start();
-
-        PORTTTP = connector.getLocalPort();
-        ttpUri = new URI(String.format("http://127.0.0.1:%d/check", PORT));
+		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31330);
+		//startTestServer();
 	}
 	
+	/*
 	@AfterClass
 	public static void stopRepo() throws Exception {
-		ttpserver.stop();
-		ttpserver.destroy();
+		server.stop();
+        server.destroy();
+		ratServer.destroy();
 	}
+	*/
 	
-    public void startTestServer() throws Exception {
+    public static void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server();
         ServerConnector connector = new ServerConnector(server);
@@ -106,31 +91,18 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         server.setHandler(ctx);
         
         server.start();
-        PORT = connector.getLocalPort();
-        serverUri = new URI(String.format("http://127.0.0.1:%d", PORT));
-        
         assertTrue(server.isStarted());      
     }
-    
-    public void stopTestServer() throws Exception {
-        server.stop();
-        server.destroy();
-    }
 
+    
     @Override
     public void setUp() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         URL trustStoreURL = classLoader.getResource("jsse/client-truststore.jks");
         System.setProperty("javax.net.ssl.trustStore", trustStoreURL.getFile());
         System.setProperty("javax.net.ssl.trustStorePassword", "password");
-        startTestServer();
+        //startTestServer();
         super.setUp();
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        stopTestServer();
     }
 
     @Test

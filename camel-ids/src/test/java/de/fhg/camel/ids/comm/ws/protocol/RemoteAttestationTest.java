@@ -61,8 +61,8 @@ public class RemoteAttestationTest {
 
 	@BeforeClass
 	public static void initRepo() throws Exception {
-		ratServer1 = new RemoteAttestationServer("127.0.0.1", "check", AvailablePortFinder.getNextAvailable());
-		ratServer2 = new RemoteAttestationServer("127.0.0.1", "check", AvailablePortFinder.getNextAvailable());
+		ratServer1 = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
+		ratServer2 = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
 		fsm1 = new FSM();
 		fsm2 = new FSM();
 		ratServer1.start();

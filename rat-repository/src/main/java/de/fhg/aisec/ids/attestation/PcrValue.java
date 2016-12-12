@@ -1,6 +1,8 @@
 package de.fhg.aisec.ids.attestation;
 
-public class PcrValue {
+import java.util.Comparator;
+
+public class PcrValue implements Comparable<PcrValue> {
 	private int order;
 	private String value;
 	
@@ -28,4 +30,16 @@ public class PcrValue {
 	public String toString() {
 		return "[" + this.order + ":" + this.value + "]";
 	}
+
+	@Override
+	public int compareTo(PcrValue o) {
+		return this.order - o.order;
+	}
+	
+	public static Comparator<PcrValue> orderComparator = new Comparator<PcrValue>() {
+		public int compare(PcrValue value1, PcrValue value2) {
+			//ascending order
+			return value1.compareTo(value2);
+		}
+	};
 }

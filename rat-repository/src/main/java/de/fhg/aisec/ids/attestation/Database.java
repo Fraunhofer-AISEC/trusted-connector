@@ -9,8 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +84,11 @@ public class Database {
 
 	}
 	
+	public Connection getConnection() {
+		return connection;
+	}
+	
+	
 	public void close() throws SQLException {
 		if(pStatement != null) {
 			pStatement.close();
@@ -135,6 +143,22 @@ public class Database {
 		}
 	}
 	
+	private Configuration[] getConfigurationIdBy(PcrValue value) throws SQLException {
+		Configuration c = null;
+		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
+		pStatement = connection.prepareStatement(sql);
+		pStatement.setInt(1, value.getOrder());
+		pStatement.setString(2, value.getValue());
+		ResultSet rs = pStatement.executeQuery();
+		List<Configuration> ids = new LinkedList<Configuration>();
+		while(rs.next()) {
+			ids.add(new Configuration(rs.getLong("ID"), rs.getString("NAME"), rs.getString("TYPE")));
+		}
+ 		pStatement.close();
+ 		rs.close();
+ 		return ids.toArray(new Configuration[ids.size()]);
+	}	
+	
 	public String getConfigurationList() throws SQLException {
 		List<Configuration> ll = new LinkedList<Configuration>();
 		ResultSet rs = statement.executeQuery("SELECT * FROM CONFIG");
@@ -144,7 +168,7 @@ public class Database {
 		return gson.toJson(ll);
 	}
 
-	public String getConfiguration(long id) {
+	public Configuration getConfiguration(long id) {
 		Configuration c;
 		List<PcrValue> values = new ArrayList<PcrValue>();
 		String sql1 = "select * from CONFIG where ID = ?;";
@@ -172,14 +196,47 @@ public class Database {
 				pStatement2.close();			
 				rs1.close();
 				rs2.close();
-				return gson.toJson(c);
+				return c;
 			}
 			else {
-				return gson.toJson("");
+				return null;
 			}
 
 		} catch (SQLException e) {
-			return gson.toJson(e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public boolean checkMessage(PcrMessage message) throws SQLException {
+		Configuration tmp;
+		Set<Long> names = new HashSet<Long>();
+		Arrays.sort(message.getValues(), PcrValue.orderComparator);
+		Configuration[] start = this.getConfigurationIdBy(message.getValue(0));
+		this.computeHashSet(start, names, true);
+		for(int i = 1; i < message.getValues().length; i++) {
+			this.computeHashSet(this.getConfigurationIdBy(message.getValue(i)), names, false);
+		}
+		if(names.size() == 1) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	private void computeHashSet(Configuration[] configs, Set<Long> set, boolean initial) {
+		for (Configuration c:configs) {
+			if(initial) {
+				set.add(c.getId());
+			}
+			else {
+				if (set.contains(c.getId())) {
+					// keep in set
+				} else {
+					set.remove(c.getId());
+				}
+			}
 		}
 	}
 }

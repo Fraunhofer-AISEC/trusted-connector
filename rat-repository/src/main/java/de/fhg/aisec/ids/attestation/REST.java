@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.attestation;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -51,9 +52,9 @@ public class REST {
 	@Path("/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getConfiguration(@PathParam("cid") String cid) {
+		Gson gson = new Gson();
 		if(isInteger(cid)) {
-			long id = Long.parseLong(cid);
-			ret = this.db.getConfiguration(id);
+			ret = gson.toJson(this.db.getConfiguration(Long.parseLong(cid)));
 		}
 		else {
 			ret = "id " + cid + " is not an Integer!";				
@@ -62,24 +63,23 @@ public class REST {
 	}
 	
 	@POST
-	@Path("/check")
+	@Path("/configurations/check")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public String postMethod(String msg) {
-		LOG.debug("REST service received :" + msg);
+	public String postMethod(String msg) throws SQLException {
 		Gson gson = new Gson();
 		PcrMessage pcrMsg = gson.fromJson(msg, PcrMessage.class);
-		pcrMsg.setSuccess(true);
+		if(this.db.checkMessage(pcrMsg)) {
+			pcrMsg.setSuccess(true);
+			pcrMsg.setSignature(this.signMessage(gson.toJson(pcrMsg)));
+		}
 		return gson.toJson(pcrMsg);
 	}
 
-	private boolean checkPcrValues(PcrMessage message) {
-		return true;
-	}
-
-	private void signMessage(PcrMessage message) {
-		// TODO Auto-generated method stub
-		
+	private String signMessage(String message) {
+		String sign = "sign";
+		// TODO
+		return sign;
 	}
 	
 	private static boolean isInteger(String s) {

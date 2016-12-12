@@ -50,5 +50,4 @@ public class Configuration {
 	public void setType(String type) {
 		this.type = type;
 	}
-
 }
