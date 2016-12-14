@@ -20,7 +20,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  * 
  * This implementation uses Camel Routes as data pipes, i.e. the API methods allow inspection of camel routes in different camel contexts.
  * 
- * The API will be available at http://localhost:8181/cxf/api/v1/<method>.
+ * The API will be available at http://localhost:8181/cxf/api/v1/routes/<method>.
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *

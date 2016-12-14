@@ -10,6 +10,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -19,15 +22,18 @@ import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
- * REST API interface.
+ * REST API interface for managing "apps" in the connector.
  * 
- * The API will be available at http://localhost:8181/cxf/api/v1/<method>.
+ * In this implementation, apps are either docker or trustX containers. 
+ * 
+ * The API will be available at http://localhost:8181/cxf/api/v1/apps/<method>.
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
  */
 @Path("/apps")
 public class AppApi {
+	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
 	
 	@GET
 	@Path("list")
@@ -50,20 +56,22 @@ public class AppApi {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
-			return new Gson().toJson("false");
+			return new Gson().toJson(false);
 		}
 
 		new Thread() {
 			@Override
 			public void run() {
 				try {
-					cml.get().pullImage(imageId);
+					if (cml.isPresent()) {
+						cml.get().pullImage(imageId);
+					}
 				} catch (Exception e) {
-					
+					LOG.error(e.getMessage(), e);					
 				}
 			}
 		}.start();			
-		return new Gson().toJson("true");
+		return new Gson().toJson(true);
 	}
 	
 	@GET
@@ -73,16 +81,15 @@ public class AppApi {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
-			return new Gson().toJson("false");
+			return new Gson().toJson(false);
 		}
 
 		try {
 			cml.get().startContainer(containerId);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
-		return new Gson().toJson("true");
+		return new Gson().toJson(true);
 	}
 
 	@GET
@@ -92,16 +99,15 @@ public class AppApi {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
-			return new Gson().toJson("false");
+			return new Gson().toJson(false);
 		}
 
 		try {
 			cml.get().stopContainer(containerId);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
-		return new Gson().toJson("true");
+		return new Gson().toJson(true);
 	}
 
 	@GET
@@ -111,15 +117,14 @@ public class AppApi {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
 		if (!cml.isPresent()) {
-			return new Gson().toJson("false");
+			return new Gson().toJson(false);
 		}
 
 		try {
 			cml.get().wipe(containerId);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
-		return new Gson().toJson("true");
+		return new Gson().toJson(true);
 	}
 }
