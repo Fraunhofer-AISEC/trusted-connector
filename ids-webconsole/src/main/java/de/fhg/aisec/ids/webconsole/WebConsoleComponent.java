@@ -1,13 +1,16 @@
 package de.fhg.aisec.ids.webconsole;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
-import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
-import org.apache.camel.core.osgi.OsgiServiceRegistry;
-import org.apache.camel.impl.SimpleRegistry;
-import org.apache.camel.spi.Registry;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -44,27 +47,49 @@ public class WebConsoleComponent {
 	private static Optional<ContainerManager> cml = Optional.empty();
 	private static Optional<RouteManager> routeManagerService = Optional.empty();
 	private static ComponentContext componentCtx;
-	private static OsgiDefaultCamelContext camelContext;
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole activated");
 		WebConsoleComponent.componentCtx = componentContext;
-		
-		//Just for testing: Create camel context
-		camelContext = new OsgiDefaultCamelContext(componentContext.getBundleContext(), createCamelRegistry());
-        try {
-            camelContext.start();
-        } catch (Exception e) {
-            LOG.error("Failed to start Camel", e);
-        }
+
 	}
 	
-	private Registry createCamelRegistry() {
-        SimpleRegistry registry = new SimpleRegistry();
-        return registry;
-    }	
+	public static List<CamelContext> getCamelContexts() {
+		if (WebConsoleComponent.componentCtx==null) {
+			LOG.warn("Component not activated. Cannot list camel contexts.");
+			return new ArrayList<>();
+		}
+		BundleContext bCtx = WebConsoleComponent.componentCtx.getBundleContext();
 
+		// List all current camel contexts
+		List<CamelContext> camelContexts = new ArrayList<>();
+		try {
+			ServiceReference<?>[] references = bCtx.getServiceReferences(CamelContext.class.getName(), null);
+			if (references == null) {
+				LOG.warn("Component not activated. Cannot list camel contexts.");
+				return new ArrayList<>();
+			}
+
+			for (ServiceReference<?> reference : references) {
+				if (reference == null) {
+					continue;
+				}
+
+				CamelContext camelContext = (CamelContext) bCtx.getService(reference);
+				if (camelContext != null) {
+					camelContexts.add(camelContext);
+				}
+			}
+		} catch (Exception e) {
+			LOG.warn("Cannot retrieve the list of Camel contexts.", e);
+		}
+
+		// sort the list
+		Collections.sort(camelContexts, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+		return camelContexts;
+	}
+	
 	@Deactivate
 	protected void deactivate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole deactivated");
@@ -123,22 +148,5 @@ public class WebConsoleComponent {
 
 	public static Optional<RouteManager> getRouteManagerService() {
 		return routeManagerService;
-	}
-	
-	public static Optional<OsgiDefaultCamelContext> getCamelContext() {
-		if (componentCtx==null) {
-			return Optional.empty();
-		}
-		
-		if (camelContext==null) {
-			return Optional.empty();
-		}
-		// Create Apache Camel context
-		
-		LOG.info("Camel routes:");
-		for (Route route : camelContext.getRoutes()) {
-			LOG.info("  Route: " + route.getId());
-		}
-		return Optional.of(camelContext);
 	}
 }
