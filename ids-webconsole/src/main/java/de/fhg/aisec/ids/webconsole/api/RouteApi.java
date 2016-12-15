@@ -54,28 +54,13 @@ public class RouteApi {
 		List<HashMap<String, String>> result = new ArrayList<>();
 		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
 
-		// Visualize Camel routes in graphviz format
-		// TODO Do not put all routes in one image but rather visualize each on its own.
-		CamelRouteToDot viz = new CamelRouteToDot();
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		PrintWriter writer = new PrintWriter(bos);
-		Map<String, List<RouteDefinition>> map = camelO.stream().collect(Collectors.toMap(c->c.getName(), c->c.getRouteDefinitions()));
-		viz.generateFile(writer, map);
-		writer.flush();
-		String dot="";
-		try {
-			dot = bos.toString("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		
 		// Create response
 		for (CamelContext cCtx : camelO) {
 			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
 				HashMap<String, String> route = new HashMap<>();				
 				route.put("id", rd.getId());
 				route.put("description", (rd.getDescriptionText()!=null)?rd.getDescriptionText():"");
-				route.put("dot", dot);
+				route.put("dot", routeToDot(rd)); // Visualize route in graphviz
 				route.put("shortName", rd.getShortName());
 				route.put("context", cCtx.getName());
 				route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
@@ -125,5 +110,21 @@ public class RouteApi {
 				.map(ep -> ep.getEndpointUri())
 				.collect(Collectors.toList())));		
 		return new GsonBuilder().create().toJson(endpoints);
+	}
+	
+
+	private String routeToDot(RouteDefinition rd) {
+		String result="";
+		CamelRouteToDot viz = new CamelRouteToDot();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		PrintWriter writer = new PrintWriter(bos);
+		viz.printSingleRoute(writer, rd);
+		writer.flush();
+		try {
+			result = bos.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return result;
 	}
 }

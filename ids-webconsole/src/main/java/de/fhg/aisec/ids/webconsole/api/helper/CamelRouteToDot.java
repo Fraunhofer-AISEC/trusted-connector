@@ -24,7 +24,8 @@ import org.apache.camel.model.ToDefinition;
  */
 public class CamelRouteToDot {
 	protected final Map<Object, NodeData> nodeMap = new HashMap<>();
-	private int clusterCounter = 2;
+	private int clusterCounter = 0;
+	private static final String PREFIX = "http://www.eaipatterns.com/img/";
 
 	protected void printRoutes(PrintWriter writer, Map<String, List<RouteDefinition>> map) {
 		Set<Map.Entry<String, List<RouteDefinition>>> entries = map.entrySet();
@@ -56,6 +57,26 @@ public class CamelRouteToDot {
 		}
 	}
 
+	/**
+	 * Prints graphviz code of a single RouteDefinition to the provided PrintWriter.
+	 * 
+	 * @param writer
+	 * @param route
+	 */
+	public void printSingleRoute(PrintWriter writer, final RouteDefinition route) {
+		writer.println("digraph {");
+		writer.println();
+
+		writer.println("node [style = \"rounded,filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
+		List<FromDefinition> inputs = route.getInputs();
+		for (FromDefinition input : inputs) {
+			printRoute(writer, route, input);
+		}
+		
+		writer.println();
+		writer.println("}");
+	}
+	
 	protected void printRoute(PrintWriter writer, final RouteDefinition route, FromDefinition input) {
 		NodeData nodeData = getNodeData(input);
 
@@ -169,7 +190,7 @@ public class CamelRouteToDot {
 		}
 		if (answer == null) {
 			String id = "node" + (nodeMap.size() + 1);
-			answer = new NodeData(id, node, "prefix");
+			answer = new NodeData(id, node, PREFIX );
 			nodeMap.put(key, answer);
 		}
 		return answer;
