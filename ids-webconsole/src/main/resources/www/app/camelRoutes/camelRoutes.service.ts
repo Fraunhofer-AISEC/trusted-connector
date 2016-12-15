@@ -11,7 +11,7 @@ declare var API_URL: string;
 export class CamelRoutesService {
   constructor(private http: Http) { }
 
-  getApps() {
+  getRoutes() {
     return this.http.get(API_URL + '/routes/list/')
                .map(response => {
                  return response.json() as Route[]

@@ -1,8 +1,9 @@
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -115,14 +116,14 @@ public class RouteApi {
 
 	private String routeToDot(RouteDefinition rd) {
 		String result="";
-		CamelRouteToDot viz = new CamelRouteToDot();
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		PrintWriter writer = new PrintWriter(bos);
-		viz.printSingleRoute(writer, rd);
-		writer.flush();
 		try {
+			CamelRouteToDot viz = new CamelRouteToDot();
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, "UTF-8"));
+			viz.printSingleRoute(writer, rd);
+			writer.flush();
 			result = bos.toString("UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
 		return result;
