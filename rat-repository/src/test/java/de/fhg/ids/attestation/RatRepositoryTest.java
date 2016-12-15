@@ -2,27 +2,50 @@ package de.fhg.ids.attestation;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.SQLException;
+import java.util.Arrays;
 
+import org.apache.camel.test.AvailablePortFinder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
+import com.google.protobuf.MessageLite;
 
-import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.ids.attestation.RemoteAttestationServer;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
+
 /**
  * Unit test for ratRepositoryTest
  */
 public class RatRepositoryTest {
 	
 	static RemoteAttestationServer ratServer;
-	Gson gson = new Gson();
+	static Pcr[] values;
+	static int numOfPcrValues = 10;
+	static String zero = "0000000000000000000000000000000000000000000000000000000000000000";
+	private static HttpURLConnection conn;
+	private static int port = AvailablePortFinder.getNextAvailable();
+	private Logger LOG = LoggerFactory.getLogger(RatRepositoryTest.class);
 	
 	@BeforeClass
 	public static void initRepo() {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31337);
+		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", port );
+		ratServer.start();
 	}
 	
 	@AfterClass
@@ -32,7 +55,7 @@ public class RatRepositoryTest {
 
 	@Test
     public void testURL() throws MalformedURLException{
-        assertTrue(ratServer.getURI().toURL().toString().equals("http://127.0.0.1:31337/configurations/check"));
+        assertTrue(ratServer.getURI().toURL().toString().equals("http://127.0.0.1:"+port+"/configurations/check"));
     }
 	
 	@Test
@@ -47,14 +70,47 @@ public class RatRepositoryTest {
     }
 	
 	@Test
-    public void testDefaulConfiguration1() throws MalformedURLException, SQLException{
-		String result = "{\"id\":1,\"name\":\"default_one\",\"type\":\"BASIC\",\"values\":[{\"order\":0,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":1,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":2,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":3,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":4,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":5,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":6,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":7,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":8,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":9,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"}]}";
-		assertTrue(gson.toJson(ratServer.getDatabase().getConfiguration(1)).equals(result));
+    public void testUsingURLConnection() throws IOException {
+		String qualifyingData = "abc";
+		String signature = "";
+		String uri = "";
+		long id = 12334324;
+		values = new Pcr[numOfPcrValues];
+    	for(int i = 0; i < numOfPcrValues;i++) {
+    		values[i] = Pcr.newBuilder()
+    				.setNumber(i)
+    				.setValue(zero)
+    				.build();
+    	}	
+        ConnectorMessage msg = ConnectorMessage
+        		.newBuilder()
+        		.setId(id++)
+				.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
+        		.setAttestationRepositoryRequest(
+		        		AttestationRepositoryRequest
+		        		.newBuilder()
+		        		.setAtype(IdsAttestationType.BASIC)
+		        		.setQualifyingData(qualifyingData)
+		        		.addAllPcrValues(Arrays.asList(values))
+		        		.build()
+		        ).build();    
+        URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
+        HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+        urlc.setDoInput(true);
+        urlc.setDoOutput(true);
+        urlc.setRequestMethod("POST");
+        urlc.setRequestProperty("Accept", "application/x-protobuf");
+        urlc.setRequestProperty("Content-Type", "application/x-protobuf");
+        msg.writeTo(urlc.getOutputStream());
+        ConnectorMessage result = ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
+        assertTrue(result.getId() == id);
+        assertTrue(result.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE));
+        assertTrue(result.getAttestationRepositoryResponse().getAtype().equals(IdsAttestationType.BASIC));
+        assertTrue(result.getAttestationRepositoryResponse().getQualifyingData().equals(qualifyingData));
+        assertTrue(result.getAttestationRepositoryResponse().getResult());
+        assertTrue(result.getAttestationRepositoryResponse().getSignature().equals(signature));
+        assertTrue(result.getAttestationRepositoryResponse().getCertificateUri().equals(uri));
+        
     }
-	
-	@Test
-    public void testDefaulConfiguration2() throws MalformedURLException, SQLException{
-		String result = "{\"id\":2,\"name\":\"default_two\",\"type\":\"ADVANCED\",\"values\":[{\"order\":0,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":1,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":2,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":3,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":4,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":5,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":6,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":7,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":8,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":9,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":10,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":11,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":12,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":13,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":14,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":15,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":16,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":17,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":18,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":19,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":20,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":21,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":22,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},{\"order\":23,\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"}]}";		
-		assertTrue(gson.toJson(ratServer.getDatabase().getConfiguration(2)).equals(result));
-    }
+    
 }

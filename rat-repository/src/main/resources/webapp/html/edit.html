@@ -1,5 +1,6 @@
 <h3>Edit "{{configuration.name}}"</h3>
 <center>
+<form>
 <div>
 	<div class="divTableBody">
 		<div class="divTableRow">
@@ -13,9 +14,18 @@
 <div>
 	<div class="divTableBody">
 		<div class="divTableRow" ng-repeat="pcr in configuration.values | orderBy : order">
-			<div class="divTableCell" style="width: 30px;">order:{{pcr.order}}</div>
-			<div class="divTableCell" style="width: 90px;"><input type="text" size="64" maxlength="64" ng-model="pcr.value"></div>
+			<div class="divTableCell" style="width: 30px;">order:{{pcr.number_}}</div>
+			<div class="divTableCell" style="width: 90px;"><input type="text" size="64" maxlength="64" ng-model="pcr.value_"></div>
 		</div>
 	</div>
+</div>
+<div>
+&nbsp;<br />
+<button>Save Changes</button>
+</div>
+</form>
+<div>
+&nbsp;<br />
+<button ng-click="go('/list')">Back to List</button><br />
 </div>
 </center>

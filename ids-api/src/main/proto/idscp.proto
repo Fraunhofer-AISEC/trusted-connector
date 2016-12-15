@@ -16,9 +16,11 @@ message ConnectorMessage {
 		RAT_RESPONSE = 8;
 		RAT_RESULT = 9;
 		RAT_LEAVE = 10;
-		ERROR = 11;
-		META_DATA_REQUEST = 12;
-		META_DATA_RESPONSE = 13;
+		RAT_REPO_REQUEST = 11;
+		RAT_REPO_RESPONSE = 12;
+		ERROR = 13;
+		META_DATA_REQUEST = 14;
+		META_DATA_RESPONSE = 15;
 	}
 	
 	// Identifies which field is filled in.
@@ -47,10 +49,13 @@ message ConnectorMessage {
 		AttestationResult attestationResult = 11;
 		AttestationLeave attestationLeave = 12;
 		
+		AttestationRepositoryRequest attestationRepositoryRequest = 13;
+		AttestationRepositoryResponse attestationRepositoryResponse = 14;
+		
 		// an error msg
-		Error error = 13;
+		Error error = 15;
 		//a metadata exchange
-		MedadataExchange metadataExchange= 14;
+		MedadataExchange metadataExchange= 16;
 	}
 }
 
@@ -98,6 +103,28 @@ message MedadataExchange {
 // -------------------------------
 // REMOTE ATTESTATION BEGIN
 // -------------------------------
+
+//External Attestation Repository Request, sent to Repository
+message AttestationRepositoryRequest {
+	required IdsAttestationType atype = 1;
+	//nonce for attestation request
+	required string qualifyingData = 2;
+	// the explicit PCR values
+	repeated Pcr pcr_values = 3;	
+}
+
+//External Attestation Repository Response, sent to Repository
+message AttestationRepositoryResponse {
+	required IdsAttestationType atype = 1;
+	//nonce for attestation request
+	required string qualifyingData = 2;
+	//boolean for result
+	required bool result = 3;
+	// optional signature
+	optional string signature = 4;
+	// optional cert
+	optional string certificate_uri = 5;
+}
 
 //External Attestation Request, sent to other connector
 message AttestationRequest {

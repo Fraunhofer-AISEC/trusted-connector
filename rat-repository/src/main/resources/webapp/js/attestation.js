@@ -1,24 +1,30 @@
 var app = angular.module('ratAdminApp', ['ngRoute', 'ngResource']);
 
 app.factory('listservice', function ($resource) {
-    var source = $resource('http://localhost:31330/configurations/list', {}, {
-          'query': {method:'GET',isArray:true}
-      });
-    var data = source.query({},function(){
-     //console.log (data); 
-    })
-    return data;
+    return{
+        query: function(id) {
+          return $resource('http://localhost:31337/configurations/list', {}, {
+             query: { method: 'GET', isArray: true }
+          }).query();
+        }
+    }
 });
 
 app.factory('editservice',function($resource){
   return{
-  query: function(id) {
-      return $resource('http://localhost:31330/configurations/'+id, {}, {
+    query: function(id) {
+      return $resource('http://localhost:31337/configurations/'+id, {}, {
              query: { method: 'GET', isArray: false }
       }).query();
-    }
+    },
+    delete: function(id) {
+      $resource('http://localhost:31337/configurations/delete/'+id, {}, {
+             query: { method: 'GET', isArray: false }
+      }).query();
+    }    
   }
 });
+
 
 app.config(['$routeProvider', function ($routeProvider) {
   $routeProvider
@@ -29,16 +35,23 @@ app.config(['$routeProvider', function ($routeProvider) {
 }]);
 
 app.controller('PageCtrl', function (/* $scope, $location, $http */) {
-  console.log("Page Controller reporting for duty.");
+  console.log("Page Controller reporting in for duty.");
 
 });
 
-app.controller('ListCtrl', function ($scope, listservice) {
-    $scope.configurations = listservice;
+app.controller('ListCtrl', function ($scope, $rootScope, $location, listservice, editservice) {
+    $scope.configurations = listservice.query();
+    $scope.deleteConfig = function ( id ) {
+        editservice.delete(id);
+        $scope.configurations = listservice.query();
+    };    
 });
 
-app.controller('EditCtrl', function ($scope, $routeParams, editservice) {
+app.controller('EditCtrl', function ($scope, $location, $routeParams, editservice) {
     $scope.id = $routeParams.id;
     $scope.configuration = editservice.query($scope.id);
-	$scope.types = ['BASIC','ADVANCED','ALL'];
+    $scope.types = ['BASIC','ADVANCED','ALL'];
+    $scope.go = function ( path ) {
+        $location.path( path );
+    };
 });

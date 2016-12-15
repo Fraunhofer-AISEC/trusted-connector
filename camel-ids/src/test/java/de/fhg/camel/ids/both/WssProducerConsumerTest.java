@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -45,35 +46,37 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.fhg.aisec.ids.attestation.REST;
-import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
+import de.fhg.ids.attestation.REST;
+import de.fhg.ids.attestation.RemoteAttestationServer;
 
 /**
  *
  */
 public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static int PORT = AvailablePortFinder.getNextAvailable(8000);
+    protected static int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "password";
 	private static RemoteAttestationServer ratServer;
 
+	/*
+	 * Remote Attestation Repository is started via pom.xml
+	 * 
 	@BeforeClass
-	public static void initRepo() throws Exception {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31330);
-		//startTestServer();
+	public static void initRepo() throws InterruptedException {
+		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
+		ratServer.start();
 	}
 	
-	/*
 	@AfterClass
-	public static void stopRepo() throws Exception {
-		server.stop();
-        server.destroy();
+	public static void closeRepo() {
+		ratServer.stop();
 		ratServer.destroy();
+		ratServer = null;
 	}
 	*/
 	
@@ -131,7 +134,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
     
     private static SSLContextParameters defineClientSSLContextClientParameters() {
-
         KeyStoreParameters ksp = new KeyStoreParameters();
         ksp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/client-keystore.jks").toString());
         ksp.setPassword(PWD);
@@ -157,7 +159,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         sslContextParameters.setTrustManagers(tmp);
         sslContextParameters.setServerParameters(scsp);
         
-
         return sslContextParameters;
     }
     
@@ -186,7 +187,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         sslContextParameters.setTrustManagers(tmp);
         sslContextParameters.setServerParameters(scsp);
 	   
-	
 	   return sslContextParameters;
     }
     
@@ -196,7 +196,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         
         // An IDS consumer
         rbs[0] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
         		
             	// Needed to configure TLS on the client side
 		        WsComponent wsComponent = (WsComponent) context.getComponent("idsclient");
@@ -211,7 +211,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         
         // An IDS provider
         rbs[1] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
             	
             		// Needed to configure TLS on the server side
             		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");

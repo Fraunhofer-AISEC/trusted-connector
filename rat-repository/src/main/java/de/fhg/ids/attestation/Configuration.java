@@ -1,12 +1,14 @@
-package de.fhg.aisec.ids.attestation;
+package de.fhg.ids.attestation;
+
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 public class Configuration {
 	private long id;
 	private String name;
 	private String type;
-	private PcrValue[] values;
+	private Pcr[] values;
 	
-	public Configuration(long id, String name, String type, PcrValue[] values) {
+	public Configuration(long id, String name, String type, Pcr[] values) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
@@ -19,11 +21,11 @@ public class Configuration {
 		this.type = type;
 	}	
 	
-	public PcrValue[] getValues() {
+	public Pcr[] getValues() {
 		return values;
 	}
 
-	public void setValues(PcrValue[] values) {
+	public void setValues(Pcr[] values) {
 		this.values = values;
 	}
 
@@ -49,5 +51,14 @@ public class Configuration {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+	
+	@Override
+	public String toString() {
+		String pcr = "";
+		for(int i = 0; i < this.values.length; i++) {
+			pcr += "{"+this.values[i].getNumber()+":"+this.values[i].getValue()+"},";
+		}
+		return "["+this.name+"(id:"+this.id+", type:"+this.type+")=["+pcr.substring(0, pcr.length() - 1)+"]]";
 	}
 }

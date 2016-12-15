@@ -16,6 +16,7 @@
  */
 package de.fhg.camel.ids.both;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -38,10 +39,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
+import de.fhg.ids.attestation.RemoteAttestationServer;
 
 /**
  *
@@ -49,25 +50,27 @@ import de.fhg.camel.ids.server.WebsocketComponent;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable(4321);
+    protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "changeit";
 	private static RemoteAttestationServer ratServer;
-  
-	@BeforeClass
-	public static void initRepo() throws Exception {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31330);
-		ratServer.start();
-		//startTestServer();
-	}
 	
 	/*
+	 * Remote Attestation Repository is started via pom.xml
+	 * 
+	@BeforeClass
+	public static void initRepo() throws InterruptedException {
+		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
+		ratServer.start();
+	}
+	
 	@AfterClass
-	public static void stopRepo() throws Exception {
-		server.stop();
-        server.destroy();
-	} 
+	public static void closeRepo() {
+		ratServer.stop();
+		ratServer.destroy();
+		ratServer = null;
+	}
 	*/
 	
     public static void startTestServer() throws Exception {
@@ -195,7 +198,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         
         // An IDS consumer
         rbs[0] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
         		
             	// Needed to configure TLS on the client side
 		        WsComponent wsComponent = (WsComponent) context.getComponent("idsclientplain");
@@ -210,7 +213,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         
         // An IDS provider
         rbs[1] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
             	
             		// Needed to configure TLS on the server side
             		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
