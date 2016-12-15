@@ -1,7 +1,9 @@
 export class Route {
-  routeId: string;
-  fromURI: string;
-  logMessage: string;
-  toURI: string;
-  name: string;
+  id: string;
+  description: string;
+  dot: string;
+  shortName: string;
+  context: string;
+  uptime: string;
+  status: string;
 }

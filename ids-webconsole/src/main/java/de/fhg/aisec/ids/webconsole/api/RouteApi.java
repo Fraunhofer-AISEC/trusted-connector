@@ -1,6 +1,11 @@
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,10 +15,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.RouteDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.helper.CamelRouteToDot;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -27,6 +36,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  */
 @Path("/routes")
 public class RouteApi {
+	private static final Logger LOG = LoggerFactory.getLogger(RouteApi.class);
 	
 	/**
 	 * Returns map from camel context to list of camel routes.
@@ -41,13 +51,40 @@ public class RouteApi {
 	@Path("list")
 	@Produces("application/json")
 	public String list() {				
+		List<HashMap<String, String>> result = new ArrayList<>();
 		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		Map<String, List<String>> routes = camelO.stream()
-				.collect(Collectors.toMap(c -> c.getName(), c -> c.getRouteDefinitions()
-						.stream()
-						.map(rd -> rd.toString())
-						.collect(Collectors.toList())));		
-		return new GsonBuilder().create().toJson(routes);
+
+		// Visualize Camel routes in graphviz format
+		// TODO Do not put all routes in one image but rather visualize each on its own.
+		CamelRouteToDot viz = new CamelRouteToDot();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		PrintWriter writer = new PrintWriter(bos);
+		Map<String, List<RouteDefinition>> map = camelO.stream().collect(Collectors.toMap(c->c.getName(), c->c.getRouteDefinitions()));
+		viz.generateFile(writer, map);
+		writer.flush();
+		String dot="";
+		try {
+			dot = bos.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		
+		// Create response
+		for (CamelContext cCtx : camelO) {
+			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
+				HashMap<String, String> route = new HashMap<>();				
+				route.put("id", rd.getId());
+				route.put("description", (rd.getDescriptionText()!=null)?rd.getDescriptionText():"");
+				route.put("dot", dot);
+				route.put("shortName", rd.getShortName());
+				route.put("context", cCtx.getName());
+				route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
+				route.put("status", cCtx.getStatus().toString());
+				result.add(route);
+			}
+		}		
+		
+		return new GsonBuilder().create().toJson(result);
 	}
 
 

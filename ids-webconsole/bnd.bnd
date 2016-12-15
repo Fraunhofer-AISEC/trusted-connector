@@ -27,3 +27,4 @@ Import-Package: \
 	*
 -noee=true
 -dsannotations: *
+Private-Package: de.fhg.aisec.ids.webconsole.api.helper

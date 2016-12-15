@@ -33,7 +33,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  */
 @Path("/apps")
 public class AppApi {
-	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AppApi.class);
 	
 	@GET
 	@Path("list")
