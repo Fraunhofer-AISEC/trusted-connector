@@ -2,7 +2,9 @@ package de.fhg.aisec.ids.webconsole.api.helper;
 
 import static org.apache.camel.util.ObjectHelper.isNotEmpty;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +26,10 @@ import org.apache.camel.model.ToDefinition;
  */
 public class CamelRouteToDot {
 	protected final Map<Object, NodeData> nodeMap = new HashMap<>();
-	private int clusterCounter = 2;
+	private int clusterCounter = 0;
+	private static final String PREFIX = "http://www.eaipatterns.com/img/";
 
-	protected void printRoutes(PrintWriter writer, Map<String, List<RouteDefinition>> map) {
+	protected void printRoutes(Writer writer, Map<String, List<RouteDefinition>> map) throws IOException {
 		Set<Map.Entry<String, List<RouteDefinition>>> entries = map.entrySet();
 		for (Map.Entry<String, List<RouteDefinition>> entry : entries) {
 			String group = entry.getKey();
@@ -34,29 +37,45 @@ public class CamelRouteToDot {
 		}
 	}
 
-	protected void printRoutes(PrintWriter writer, String group, List<RouteDefinition> routes) {
+	protected void printRoutes(Writer writer, String group, List<RouteDefinition> routes) throws IOException {
 		if (group != null) {
-			writer.println("subgraph cluster_" + (clusterCounter++) + " {");
-			writer.println("label = \"" + group + "\";");
-			writer.println("color = grey;");
-			writer.println("style = \"dashed\";");
-			writer.println("URL = \"" + group + ".html\";");
-			writer.println();
+			writer.write("subgraph cluster_" + (clusterCounter++) + " {\n");
+			writer.write("label = \"" + group + "\";\n");
+			writer.write("color = grey;\n");
+			writer.write("style = \"dashed\";\n");
+			writer.write("URL = \"" + group + ".html\";\n\n");
 		}
 		for (RouteDefinition route : routes) {
 			List<FromDefinition> inputs = route.getInputs();
 			for (FromDefinition input : inputs) {
 				printRoute(writer, route, input);
 			}
-			writer.println();
+			writer.write("\n");
 		}
 		if (group != null) {
-			writer.println("}");
-			writer.println();
+			writer.write("}\n\n");
 		}
 	}
 
-	protected void printRoute(PrintWriter writer, final RouteDefinition route, FromDefinition input) {
+	/**
+	 * Prints graphviz code of a single RouteDefinition to the provided PrintWriter.
+	 * 
+	 * @param writer
+	 * @param route
+	 * @throws IOException 
+	 */
+	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
+		writer.write("digraph { rankdir=LR; size=\"6,7\" \n\n");
+		writer.write("node [style = \"rounded,filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
+		List<FromDefinition> inputs = route.getInputs();
+		for (FromDefinition input : inputs) {
+			printRoute(writer, route, input);
+		}
+		
+		writer.write("\n}");
+	}
+	
+	protected void printRoute(Writer writer, final RouteDefinition route, FromDefinition input) throws IOException {
 		NodeData nodeData = getNodeData(input);
 
 		printNode(writer, nodeData);
@@ -68,7 +87,7 @@ public class CamelRouteToDot {
 		}
 	}
 
-	protected NodeData printNode(PrintWriter writer, NodeData fromData, ProcessorDefinition<?> node) {
+	protected NodeData printNode(Writer writer, NodeData fromData, ProcessorDefinition<?> node) throws IOException {
 		if (node instanceof MulticastDefinition) {
 			// no need for a multicast or interceptor node
 			List<ProcessorDefinition<?>> outputs = node.getOutputs();
@@ -88,16 +107,16 @@ public class CamelRouteToDot {
 		printNode(writer, toData);
 
 		if (fromData != null) {
-			writer.print(fromData.id);
-			writer.print(" -> ");
-			writer.print(toData.id);
-			writer.println(" [");
+			writer.write(fromData.id);
+			writer.write(" -> ");
+			writer.write(toData.id);
+			writer.write(" [\n");
 
 			String label = fromData.edgeLabel;
 			if (isNotEmpty(label)) {
-				writer.println("label = \"" + label + "\"");
+				writer.write("label = \"" + label + "\"\n");
 			}
-			writer.println("];");
+			writer.write("];\n");
 		}
 
 		// now lets write any children
@@ -113,41 +132,40 @@ public class CamelRouteToDot {
 		return toData;
 	}
 
-	protected void printNode(PrintWriter writer, NodeData data) {
+	protected void printNode(Writer writer, NodeData data) throws IOException {
 		if (!data.nodeWritten) {
 			data.nodeWritten = true;
 
-			writer.println();
-			writer.print(data.id);
-			writer.println(" [");
-			writer.println("label = \"" + data.label + "\"");
-			writer.println("tooltip = \"" + data.tooltop + "\"");
+			writer.write("\n");
+			writer.write(data.id + "\n");
+			writer.write(" [\n");
+			writer.write("label = \"" + data.label + "\"\n");
+			writer.write("tooltip = \"" + data.tooltop + "\"\n");
 			if (data.url != null) {
-				writer.println("URL = \"" + data.url + "\"");
+				writer.write("URL = \"" + data.url + "\"\n");
 			}
 
 			String image = data.image;
 			if (image != null) {
-				writer.println("shapefile = \"" + image + "\"");
-				writer.println("peripheries=0");
+				writer.write("shapefile = \"" + image + "\"\n");
+				writer.write("peripheries=0");
 			}
 			String shape = data.shape;
 			if (shape == null && image != null) {
 				shape = "custom";
 			}
 			if (shape != null) {
-				writer.println("shape = \"" + shape + "\"");
+				writer.write("shape = \"" + shape + "\"\n");
 			}
-			writer.println("];");
-			writer.println();
+			writer.write("];\n\n");
 		}
 	}
 
-	public void generateFile(PrintWriter writer, Map<String, List<RouteDefinition>> map) {
+	public void generateFile(PrintWriter writer, Map<String, List<RouteDefinition>> map) throws IOException {
 		writer.println("digraph CamelRoutes {");
 		writer.println();
 
-		writer.println("node [style = \"rounded,filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
+		writer.println("node [style = \"rounded,filled\", fillcolor = white, color = \"#898989\", " + "fontname=\"Helvetica-Oblique\"];");
 		writer.println();
 		printRoutes(writer, map);
 
@@ -169,7 +187,7 @@ public class CamelRouteToDot {
 		}
 		if (answer == null) {
 			String id = "node" + (nodeMap.size() + 1);
-			answer = new NodeData(id, node, "prefix");
+			answer = new NodeData(id, node, PREFIX );
 			nodeMap.put(key, answer);
 		}
 		return answer;

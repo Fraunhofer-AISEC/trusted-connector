@@ -17,6 +17,7 @@ import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 
 import { AppService } from './apps/app.service';
+import { CamelRoutesService } from './camelRoutes/camelRoutes.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -40,6 +41,7 @@ import { routing } from './app.routing';
     ValuesPipe ],
   providers: [
     AppService,
+    CamelRoutesService,
     Title
   ],
   bootstrap: [

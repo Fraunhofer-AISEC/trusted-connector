@@ -4,6 +4,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Route } from './route';
 import { CamelRoutesService } from './camelRoutes.service';
 
+declare var Viz: any;
+
 @Component({
   selector: 'route-card',
   template: `
@@ -11,16 +13,13 @@ import { CamelRoutesService } from './camelRoutes.service';
         <h2 class="mdl-card__title-text">{{route.id}}</h2>
       </div>
       <div class="mdl-card__supporting-text">
-        <div class="col-3">  Description: </div> <div class="col-9">{{route.description}}</div>
+        {{route.description}}
         <div class="mdl-grid">
-          <div class="mdl-cell mdl-cell--4-col">
-            Trust
-          </div>
+          <div class="mdl-cell mdl-cell--2-col">Uptime</div><div class="mdl-cell mdl-cell--10-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+          <div class="mdl-cell mdl-cell--2-col">Context</div><div class="mdl-cell mdl-cell--10-col">{{route.context}}</div>
+          <div class="mdl-cell mdl-cell--2-col">Status</div><div class="mdl-cell mdl-cell--10-col">{{route.status}}</div>
         </div>
-        <div class="col-3">Uptime:</div> <div class="col-9">{{route.uptime}}</div>
-        <div class="col-3">Context:</div> <div class="col-9">{{route.context}}</div>
-        <div class="col-3">Visualization:</div> <div class="col-9">{{route.dot}}</div>
-        <div class="col-3">Status:</div> <div class="col-9">{{route.status}}</div>
+        <div style="padding-top:30px" [innerHTML]="vizResult"></div>
       </div>
       <div class="mdl-card__actions mdl-card--border">
           <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">start</i></a>
@@ -31,8 +30,12 @@ import { CamelRoutesService } from './camelRoutes.service';
 })
 export class RouteCardComponent implements OnInit {
   @Input() route: Route;
+  vizResult: SafeHtml;
+
+  constructor(private dom: DomSanitizer) {}
 
   ngOnInit(): void {
-
+    var graph = this.route.dot;
+    this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
   }
 }
