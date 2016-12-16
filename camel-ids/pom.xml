@@ -25,7 +25,7 @@
 	<properties>
 		<camel-version>2.18.0</camel-version>
 		<jetty-version>8.1.19.v20160209</jetty-version>
-		<jetty-version>9.2.15.v20160210</jetty-version>
+		<jetty-version>9.3.14.v20161028</jetty-version>
 		<jersey-version>2.25</jersey-version>
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.2</ahc-version>
@@ -157,12 +157,6 @@
 			<artifactId>jnr-unixsocket</artifactId>
 			<version>0.13</version>
 		</dependency>
-		<!-- Google gson -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.0</version>
-		</dependency>
 		<!-- tpm2j -->
 		<dependency>
 			<groupId>de.fraunhofer.aisec</groupId>
@@ -184,7 +178,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 	</dependencies>
 	<build>
 		<defaultGoal>install</defaultGoal>
@@ -249,6 +242,7 @@
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
+					<autoPull>always</autoPull>
 				</configuration>
 				<executions>
 					<execution>
@@ -266,6 +260,21 @@
 							</images>
 						</configuration>
 					</execution>
+					<execution>
+						<id>stop-ttpsim</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>					
 					<execution>
 						<id>run-tpm2d</id>
 						<phase>compile</phase>
@@ -292,6 +301,55 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>run-ttpsim</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+									<alias>tpm2d-sim</alias>
+									<run>
+										<ports>
+											<port>31337:31337</port>
+										</ports>
+										<wait>
+											<http>
+												<url>
+													http://127.0.0.1:31337
+												</url>
+												<method>
+													GET
+												</method>
+												<status>
+													200..399
+												</status>
+											</http>
+											<time>10000</time>
+										</wait>										
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-ttpsim</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
 						<id>remove-tpm2d</id>
 						<phase>post-integration-test</phase>
 						<goals>
@@ -308,8 +366,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Run remote attestation repository -->
-
 		</plugins>
 	</build>
 </project>

@@ -3,6 +3,7 @@ package de.fhg.camel.ids.comm.ws.protocol;
 import static org.junit.Assert.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 
 import org.apache.camel.test.AvailablePortFinder;
@@ -23,9 +24,6 @@ import org.slf4j.LoggerFactory;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.ids.attestation.Database;
-import de.fhg.ids.attestation.REST;
-import de.fhg.ids.attestation.RemoteAttestationServer;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
@@ -56,21 +54,14 @@ public class RemoteAttestationTest {
 	private static Server server;
 	private static FSM fsm1;
 	private static FSM fsm2;
-	static RemoteAttestationServer ratServer1;
+	private static String ratRepoUri = "http://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
-	public static void initRepo() {
-		ratServer1 = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
-		ratServer1.start();
+	public static void initRepo() throws URISyntaxException {
 		fsm1 = new FSM();
 		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, ratServer1.getURI());
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, ratServer1.getURI());		
-	}
-	
-	@AfterClass
-	public static void closeRepo() {
-		ratServer1 = null;
+        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, new URI(ratRepoUri));
+		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, new URI(ratRepoUri));		
 	}
 	
     @Test

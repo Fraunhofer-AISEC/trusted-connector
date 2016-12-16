@@ -42,7 +42,6 @@ import org.junit.runners.MethodSorters;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
-import de.fhg.ids.attestation.RemoteAttestationServer;
 
 /**
  *
@@ -50,21 +49,12 @@ import de.fhg.ids.attestation.RemoteAttestationServer;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable();
+    //protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "changeit";
-	private static RemoteAttestationServer ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31337);
 	
-	@AfterClass
-	public static void closeRepo() throws InterruptedException {
-		ratServer.stop();
-		ratServer.destroy();
-		ratServer = null;
-		Thread.sleep(500L);
-	}
 
-	
 	/*
     public static void startTestServer() throws Exception {
         // start a simple websocket echo service
@@ -82,9 +72,6 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         assertTrue(server.isStarted());      
     }
 
-    
-
-    
     @Override
     public void setUp() throws Exception {
         //startTestServer();
@@ -96,8 +83,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         super.tearDown();
         //stopTestServer();
     }
-        */
-
+    */
 
     @Test
     public void testTwoRoutes() throws Exception {

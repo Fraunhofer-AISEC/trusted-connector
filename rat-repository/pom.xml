@@ -13,12 +13,13 @@
 	<properties>
 		<camel-version>2.18.0</camel-version>
 		<jetty-version>8.1.19.v20160209</jetty-version>
-		<jetty-version>9.2.15.v20160210</jetty-version>
+		<jetty-version>9.3.14.v20161028</jetty-version>
 		<jersey-version>2.25</jersey-version>
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.24</ahc-version>
 		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<start.class>de.fhg.ids.attestation.Start</start.class>
 	</properties>
 
 	<dependencies>
@@ -66,12 +67,6 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
-			<version>${jersey-version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-jetty-http</artifactId>
 			<version>${jersey-version}</version>
 		</dependency>
 		<dependency>
@@ -133,23 +128,89 @@
 				</configuration>
 			</plugin>
 			<plugin>
-     <groupId>org.springframework.boot</groupId>
-     <artifactId>spring-boot-maven-plugin</artifactId>
-     <version>1.0.1.RELEASE</version>
-     <executions>
-          <execution>
-              <goals>
-                  <goal>repackage</goal>
-              </goals>
-              <configuration>
-                  <mainClass>${start.class}</mainClass>
-              </configuration>
-          </execution>
-      </executions>
-      <configuration>
-          <mainClass>${start.class}</mainClass>
-      </configuration>
-  </plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>1.4.2.RELEASE</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>${start.class}</mainClass>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>${start.class}</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/main/docker/jar/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/target/</directory>
+									<includes>
+										<include>**/*.jar</include>
+									</includes>
+								</resource>
+							</resources>
+							<encoding>UTF-8</encoding>
+							<useBuildFilters>false</useBuildFilters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<configuration>
+					<imageName>ids/ttpsim:latest</imageName>
+					<dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
+				</configuration>
+				<version>0.4.13</version>
+				<executions>
+					<execution>
+						<id>build-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>tag-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>ids/ttpsim:latest</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</imageName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

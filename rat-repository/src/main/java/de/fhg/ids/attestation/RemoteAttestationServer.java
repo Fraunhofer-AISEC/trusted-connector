@@ -25,7 +25,7 @@ public class RemoteAttestationServer {
 	private String path;
 	private URI uri;
 	private Logger LOG = LoggerFactory.getLogger(Database.class);
-
+	
 	public RemoteAttestationServer(String host, String path, int port)  {
 		this.database = new Database();
 		this.host = host;

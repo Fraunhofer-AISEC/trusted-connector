@@ -1,13 +1,10 @@
-FROM debian:latest
+FROM openjdk:8
 MAINTAINER Georg Raess "georg.raess@aisec.fraunhofer.de"
 # install used software
-RUN apt-get -y update && apt-get -y upgrade && apt-get -y install sudo python3 python3-pip
-RUN pip3 install --upgrade pip
-RUN pip3 install -U setuptools
-RUN pip3 install simplejson
+RUN apt-get -y update && apt-get -y upgrade
 # make some directories
-RUN mkdir /tpm2d/ && mkdir -p /data/cml/communication/tpm2d/
-EXPOSE 29663
+RUN mkdir /rat/
+EXPOSE 31337
 # copy data
-COPY script/ttp.py /tpm2d/
-WORKDIR /tpm2d
+COPY rat-repository-1.0.0.jar /rat
+WORKDIR /rat

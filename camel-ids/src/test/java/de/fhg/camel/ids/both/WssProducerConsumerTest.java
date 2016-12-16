@@ -49,9 +49,6 @@ import org.junit.Test;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
-import de.fhg.ids.attestation.REST;
-import de.fhg.ids.attestation.RemoteAttestationServer;
-
 /**
  *
  */
@@ -60,17 +57,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
     //protected static int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
-	private static String PWD = "password";
-	private static RemoteAttestationServer ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31337);
-	
-	@AfterClass
-	public static void closeRepo() throws InterruptedException {
-		ratServer.stop();
-		ratServer.destroy();
-		ratServer = null;
-		Thread.sleep(500L);
-	}
-	
+	private static String PWD = "password";	
 
 	/*
     public static void startTestServer() throws Exception {
