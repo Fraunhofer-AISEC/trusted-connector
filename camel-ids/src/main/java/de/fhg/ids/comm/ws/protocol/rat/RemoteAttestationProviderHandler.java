@@ -127,7 +127,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 				return RemoteAttestationHandler.sendError(this.thread, "thread error", error);	
 			}
 		} catch (IOException ex) {
-			String error = "error: IOException :" + ex.getMessage();
+			String error = "IOException :" + ex.getMessage();
 			LOG.debug(error);
 			ex.printStackTrace();
 			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	

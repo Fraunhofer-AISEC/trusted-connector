@@ -57,29 +57,22 @@ import de.fhg.ids.attestation.RemoteAttestationServer;
  */
 public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static int PORT = AvailablePortFinder.getNextAvailable();
+    //protected static int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "password";
-	private static RemoteAttestationServer ratServer;
-
-	/*
-	 * Remote Attestation Repository is started via pom.xml
-	 * 
-	@BeforeClass
-	public static void initRepo() throws InterruptedException {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
-		ratServer.start();
-	}
+	private static RemoteAttestationServer ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31337);
 	
 	@AfterClass
-	public static void closeRepo() {
+	public static void closeRepo() throws InterruptedException {
 		ratServer.stop();
 		ratServer.destroy();
 		ratServer = null;
+		Thread.sleep(500L);
 	}
-	*/
 	
+
+	/*
     public static void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server();
@@ -96,7 +89,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         server.start();
         assertTrue(server.isStarted());      
     }
-
+    */
     
     @Override
     public void setUp() throws Exception {
@@ -204,7 +197,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 	        
 		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("idsclient://localhost:"+PORT+"/echo")
+                	.to("idsclient://localhost:9292/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
@@ -218,7 +211,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
 
 					// This route is set to use TLS, referring to the parameters set above
-                    from("idsserver:localhost:"+PORT+"/echo")
+                    from("idsserver:localhost:9292/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }

@@ -184,6 +184,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 	</dependencies>
 	<build>
 		<defaultGoal>install</defaultGoal>
@@ -308,37 +309,7 @@
 				</executions>
 			</plugin>
 			<!-- Run remote attestation repository -->
-			<plugin>
-				<groupId>com.bazaarvoice.maven.plugins</groupId>
-				<artifactId>process-exec-maven-plugin</artifactId>
-				<version>0.4</version>
-				<executions>
-					<!--Start process -->
-					<execution>
-						<id>start-jar</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<workingDir>${project.basedir}../rat-repository/</workingDir>
-							<arguments>
-								<argument>java</argument>
-								<argument>-jar</argument>
-								<argument>target/rat-repository-1.0.0.jar</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<!--Stop Process -->
-					<execution>
-						<id>stop-jar-process</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop-all</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+
 		</plugins>
 	</build>
 </project>

@@ -54,25 +54,18 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "changeit";
-	private static RemoteAttestationServer ratServer;
-	
-	/*
-	 * Remote Attestation Repository is started via pom.xml
-	 * 
-	@BeforeClass
-	public static void initRepo() throws InterruptedException {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", AvailablePortFinder.getNextAvailable());
-		ratServer.start();
-	}
+	private static RemoteAttestationServer ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31337);
 	
 	@AfterClass
-	public static void closeRepo() {
+	public static void closeRepo() throws InterruptedException {
 		ratServer.stop();
 		ratServer.destroy();
 		ratServer = null;
+		Thread.sleep(500L);
 	}
-	*/
+
 	
+	/*
     public static void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);
@@ -90,7 +83,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
     }
 
     
-	/*
+
     
     @Override
     public void setUp() throws Exception {
@@ -206,7 +199,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 
 		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("idsclientplain://localhost:"+PORT+"/echo")
+                	.to("idsclientplain://localhost:9292/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
@@ -216,11 +209,11 @@ public class WsProducerConsumerTest extends CamelTestSupport {
             public void configure() throws MalformedURLException {
             	
             		// Needed to configure TLS on the server side
-            		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
+            		WebsocketComponent websocketsComponent = (WebsocketComponent) context.getComponent("idsserver");
 //					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
 
 					// This route is set to use TLS, referring to the parameters set above
-                    from("idsserver:localhost:"+PORT+"/echo")
+                    from("idsserver:localhost:9292/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }
