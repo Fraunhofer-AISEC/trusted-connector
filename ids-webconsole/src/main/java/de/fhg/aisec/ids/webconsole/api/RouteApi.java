@@ -13,9 +13,11 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Route;
 import org.apache.camel.model.RouteDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,12 +70,42 @@ public class RouteApi {
 				route.put("status", cCtx.getStatus().toString());
 				result.add(route);
 			}
-		}		
+		}	
+		
 		
 		return new GsonBuilder().create().toJson(result);
 	}
 
 
+	/**
+	 * Stop a route based on an id.
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 */
+	@GET
+	@Path("/stoproute/{id}")
+	public String stopRoute(@PathParam("id") String id) {
+		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+		
+		for (CamelContext cCtx : camelO) {
+			Route rt = cCtx.getRoute(id);
+			if(rt != null)
+			{
+				try {
+					cCtx.stopRoute(id);
+				} catch(Exception e) {
+					return "{\"status\": \"bad\"}";
+				}
+			}
+		}
+		
+		return "{\"status\": \"ok\"}";	
+		
+	}
+	
 	/**
 	 * Returns map from camel contexts to list of camel components.
 	 * 

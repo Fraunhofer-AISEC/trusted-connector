@@ -23,19 +23,25 @@ declare var Viz: any;
       </div>
       <div class="mdl-card__actions mdl-card--border">
           <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">start</i></a>
-          <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">pause</i></a>
+          <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" (click)="onStop(route.id)"><i class="material-icons" role="presentation">pause</i></a>
           <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a>
-      </div>`,
-      styleUrls: ['app/camelRoutes/route-card.component.css']
+      </div>`
 })
 export class RouteCardComponent implements OnInit {
   @Input() route: Route;
   vizResult: SafeHtml;
+  result: string;
 
-  constructor(private dom: DomSanitizer) {}
+  constructor(private dom: DomSanitizer, private camelRoutesService: CamelRoutesService) {}
 
   ngOnInit(): void {
     var graph = this.route.dot;
     this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+  }
+
+  onStop(routeId: string): void {
+      this.camelRoutesService.stopRoute(routeId).subscribe(result => {
+         this.result = result;
+       });
   }
 }

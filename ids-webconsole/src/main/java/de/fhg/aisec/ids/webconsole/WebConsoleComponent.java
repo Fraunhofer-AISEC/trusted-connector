@@ -74,6 +74,7 @@ public class WebConsoleComponent {
 				CamelContext camelCtx = (CamelContext) bCtx.getService(reference);
 				if (camelCtx != null) {
 					camelContexts.add(camelCtx);
+					//camelCtx.stopRoute("demo-route-c");
 				}
 			}
 		} catch (Exception e) {

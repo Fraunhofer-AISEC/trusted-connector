@@ -16,6 +16,7 @@ export class CamelRoutesComponent  implements OnInit{
   title = 'Current Routes';
   routes: Route[];
   selectedRoute: Route;
+  
 
   @Output() changeTitle = new EventEmitter();
 
