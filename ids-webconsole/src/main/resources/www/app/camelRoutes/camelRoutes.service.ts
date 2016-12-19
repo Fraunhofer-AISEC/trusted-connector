@@ -24,4 +24,11 @@ export class CamelRoutesService {
                    return response.json() as string
                  })
   }
+
+  startRoute(routeId: string) {
+      return this.http.get(API_URL + '/routes/startroute/' + routeId)
+                 .map(response => {
+                   return response.json() as string
+                 })
+  }
 }

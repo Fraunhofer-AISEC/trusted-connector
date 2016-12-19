@@ -87,6 +87,35 @@ public class RouteApi {
 	 * 
 	 */
 	@GET
+	@Path("/startroute/{id}")
+	public String startRoute(@PathParam("id") String id) {
+		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+		
+		for (CamelContext cCtx : camelO) {
+			Route rt = cCtx.getRoute(id);
+			if(rt != null)
+			{
+				try {
+					cCtx.startRoute(id);
+				} catch(Exception e) {
+					return "{\"status\": \"bad\"}";
+				}
+			}
+		}
+		
+		return "{\"status\": \"ok\"}";	
+		
+	}
+	
+	/**
+	 * Stop a route based on an id.
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 */
+	@GET
 	@Path("/stoproute/{id}")
 	public String stopRoute(@PathParam("id") String id) {
 		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
