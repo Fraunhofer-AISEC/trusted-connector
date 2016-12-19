@@ -67,7 +67,8 @@ public class RouteApi {
 				route.put("shortName", rd.getShortName());
 				route.put("context", cCtx.getName());
 				route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
-				route.put("status", cCtx.getStatus().toString());
+				route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
+				route.put("status",cCtx.getRouteStatus(rd.getId()).toString());
 				result.add(route);
 			}
 		}	
@@ -95,7 +96,7 @@ public class RouteApi {
 			if(rt != null)
 			{
 				try {
-					cCtx.stopRoute(id);
+					cCtx.suspendRoute(id);//stopRoute(id);
 				} catch(Exception e) {
 					return "{\"status\": \"bad\"}";
 				}

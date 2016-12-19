@@ -22,7 +22,7 @@ declare var Viz: any;
         <div style="padding-top:30px" [innerHTML]="vizResult"></div>
       </div>
       <div class="mdl-card__actions mdl-card--border">
-          <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">start</i></a>
+          <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i>start</i></a>
           <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" (click)="onStop(route.id)"><i class="material-icons" role="presentation">pause</i></a>
           <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a>
       </div>`
@@ -43,5 +43,6 @@ export class RouteCardComponent implements OnInit {
       this.camelRoutesService.stopRoute(routeId).subscribe(result => {
          this.result = result;
        });
+       this.route.status = "Stopped";
   }
 }
