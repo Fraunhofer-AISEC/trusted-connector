@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -37,6 +38,9 @@ public class REST {
 	private Logger LOG = LoggerFactory.getLogger(REST.class);
 	private Database db;
 	private String ret;
+	private Gson gson = new Gson();
+	private final String PROTOBUF_URL = "/configurations/check";
+	private boolean corsEnabled = true;
 	protected @Context HttpServletResponse response;
 	
 	public REST(Database db) {
@@ -47,7 +51,7 @@ public class REST {
 	}
 	
 	@POST
-	@Path("/configurations/check")
+	@Path(PROTOBUF_URL)
 	@Produces(MediaTypeExt.APPLICATION_PROTOBUF)
 	@Consumes(MediaTypeExt.APPLICATION_PROTOBUF)
 	public ConnectorMessage checkConfiguration(ConnectorMessage msg) throws SQLException {
@@ -121,25 +125,26 @@ public class REST {
 		}
 	}
 	
+	// get all configurations using json
 	@GET
-	@Path("/configurations/list")
+	@Path("/json/configurations/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getConfigurationList() {
-		response.setCharacterEncoding("utf-8");
+		this.setCORSHeader(response, corsEnabled);
 		try {
-			ret = this.db.getConfigurationList();
+			ret = gson.toJson(this.db.getConfigurationList());
 		} catch (Exception e) {
 			ret = e.getMessage();
 		}
 		return ret;
 	}
 	
+	// get a single configuration with id {cid} using json	
 	@GET
-	@Path("/configurations/{cid}")
+	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getConfiguration(@PathParam("cid") String cid) {
-		response.setCharacterEncoding("utf-8");
-		Gson gson = new Gson();
+		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			ret = gson.toJson(this.db.getConfiguration(Long.parseLong(cid)));
 		}
@@ -149,24 +154,24 @@ public class REST {
 		return ret;
 	}
 	
-	@GET
-	@Path("/configurations/delete/{cid}")
+	// delete a single configuration with id {cid} using json	
+	@DELETE
+	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
-		response.setCharacterEncoding("utf-8");
-		Gson gson = new Gson();
+	public Response deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
+		LOG.debug("DELETE ----------------------------------------------------------------------------------------------------------------------------------" + cid);
+		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			if(this.db.deleteConfigurationById(Integer.parseInt(cid))) {
-				return gson.toJson(true);
+				return Response.ok(cid).build();
 			}
 			else {
-				return gson.toJson(false);
+				return Response.serverError().build();
 			}
 		}
 		else {
-			ret = "id " + cid + " is not an Integer!";				
+			return Response.serverError().build();	
 		}
-		return ret;
 	}
 	
 	private static boolean isInteger(String s) {
@@ -180,8 +185,19 @@ public class REST {
 	    }
 	    return true;
 	}
+	
+	private void setCORSHeader(HttpServletResponse response, boolean enable) {
+		response.setCharacterEncoding("utf-8");
+		if(enable) {
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			response.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+			response.setHeader("Access-Control-Allow-Credentials", "true");
+			response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+			response.setHeader("Access-Control-Max-Age", "1209600");			
+		}
+	}
 
-	// SIMPLE FILE TRANSFER FROM HERE ON
+	/* SIMPLE FILE TRANSFER FROM HERE ON
 
 	@GET
 	@Produces(MediaType.TEXT_HTML)
@@ -218,4 +234,5 @@ public class REST {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		return new BufferedReader(new InputStreamReader(loader.getResourceAsStream(file))).lines().collect(Collectors.joining("\n"));
 	}
+	*/
 }

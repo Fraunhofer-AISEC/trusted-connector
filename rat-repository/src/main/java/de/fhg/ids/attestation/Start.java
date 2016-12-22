@@ -45,6 +45,15 @@ public class Start {
 	        	ratServer.stop();
 	        }	
 		}
+		else if(args.length == 0) {
+			ratServer = new RemoteAttestationServer(host, "configurations/check", port);
+	        try {
+	        	ratServer.start();
+	        	ratServer.join();
+	        } finally {
+	        	ratServer.stop();
+	        }	
+		}
 		else {
 			System.out.println("IDS: Remote Attestation Repository v" + version);
 			System.out.println("-----------------------------------------");

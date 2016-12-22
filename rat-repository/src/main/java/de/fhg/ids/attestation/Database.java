@@ -20,15 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import org.sqlite.jdbc4.*;
 
-import com.google.gson.Gson;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
 public class Database {
 	
 	private static PreparedStatement pStatement = null;
-	private Gson gson = new Gson();
 	private Logger LOG = LoggerFactory.getLogger(Database.class);
 	private Connection connection;
 	private Statement statement;
@@ -154,7 +151,7 @@ public class Database {
 		ResultSet rs = pStatement.executeQuery();
 		List<Configuration> ids = new LinkedList<Configuration>();
 		while(rs.next()) {
-			ids.add(new Configuration(rs.getLong("ID"), rs.getString("NAME"), rs.getString("TYPE")));
+			ids.add(this.getConfiguration(rs.getLong("ID")));
 		}
  		pStatement.close();
  		rs.close();
@@ -163,13 +160,17 @@ public class Database {
 
 
 	public boolean deleteConfigurationById(long id) throws SQLException {
-		LOG.debug("DELETE FROM CONFIG WHERE ID = " + id);
 		sql = "DELETE FROM CONFIG WHERE ID = ?";
 		pStatement = connection.prepareStatement(sql);
 		pStatement.setLong(1, id);
  		int val = pStatement.executeUpdate();
  		pStatement.close();
  		if(val==1) {
+ 	 		sql = "DELETE FROM PCR WHERE CID = ?";
+ 	 		pStatement = connection.prepareStatement(sql);
+ 			pStatement.setLong(1, id);
+ 	 		pStatement.executeUpdate();
+ 	 		pStatement.close();
  			return true;
  		}
  		else {
@@ -177,13 +178,13 @@ public class Database {
  		}
 	}
 	
-	public String getConfigurationList() throws SQLException {
+	public Configuration[] getConfigurationList() throws SQLException {
 		List<Configuration> ll = new LinkedList<Configuration>();
 		ResultSet rs = statement.executeQuery("SELECT * FROM CONFIG");
 		while (rs.next()) {
-			ll.add(new Configuration(rs.getLong("ID"), rs.getString("NAME"), rs.getString("TYPE")));
+			ll.add(this.getConfiguration(rs.getLong("ID")));
 		}
-		return gson.toJson(ll);
+		return ll.toArray(new Configuration[ll.size()]);
 	}
 
 	public Configuration getConfiguration(long id) {

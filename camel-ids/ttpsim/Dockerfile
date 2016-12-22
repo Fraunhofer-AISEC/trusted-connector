@@ -8,3 +8,4 @@ EXPOSE 31337
 # copy data
 COPY rat-repository-1.0.0.jar /rat
 WORKDIR /rat
+ENTRYPOINT ["java","-jar","/rat/rat-repository-1.0.0.jar"]

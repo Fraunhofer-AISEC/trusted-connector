@@ -52,13 +52,4 @@ public class Configuration {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-	@Override
-	public String toString() {
-		String pcr = "";
-		for(int i = 0; i < this.values.length; i++) {
-			pcr += "{"+this.values[i].getNumber()+":"+this.values[i].getValue()+"},";
-		}
-		return "["+this.name+"(id:"+this.id+", type:"+this.type+")=["+pcr.substring(0, pcr.length() - 1)+"]]";
-	}
 }

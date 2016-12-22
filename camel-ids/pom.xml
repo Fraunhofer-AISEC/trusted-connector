@@ -318,7 +318,7 @@
 										<wait>
 											<http>
 												<url>
-													http://127.0.0.1:31337
+													http://127.0.0.1:31337/json/configurations/
 												</url>
 												<method>
 													GET
