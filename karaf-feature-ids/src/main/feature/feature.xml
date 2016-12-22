@@ -35,7 +35,6 @@
         <bundle start-level="70">mvn:org.eclipse.jetty/jetty-security/9.3.14.v20161028</bundle>
         <feature prerequisite="true" dependency="true">wrap</feature>
         <feature version="2.18.0" prerequisite="false" dependency="true">camel</feature>        
-        <feature version="4.2.6" prerequisite="false" dependency="true">pax-http-jetty</feature>
         <feature version="3.1.7" prerequisite="false" dependency="true">cxf</feature>
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
         <feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>
