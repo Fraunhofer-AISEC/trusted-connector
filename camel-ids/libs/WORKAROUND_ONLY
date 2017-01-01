@@ -1,0 +1,8 @@
+######################################################################
+# Workaround for missing de.fhg.aisec.ids.attestation:
+#    The whole rat-repo library is statically included in this bundle.
+#    The proper fix is to not depend on the rat-repo library, but to 
+#    move the respective shared classes to ids-api.
+#
+# The whole lib dir may be deleted after the fix.
+#######################################################################

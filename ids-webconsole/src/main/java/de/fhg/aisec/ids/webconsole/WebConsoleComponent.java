@@ -1,13 +1,15 @@
 package de.fhg.aisec.ids.webconsole;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
-import org.apache.camel.Route;
-import org.apache.camel.core.osgi.OsgiDefaultCamelContext;
-import org.apache.camel.core.osgi.OsgiServiceRegistry;
-import org.apache.camel.impl.SimpleRegistry;
-import org.apache.camel.spi.Registry;
+import org.apache.camel.CamelContext;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -20,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.configuration.ConfigurationService;
-import de.fhg.aisec.ids.api.router.RouteManager;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -42,33 +43,52 @@ public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
 	private static Optional<ConfigurationService> configService = Optional.empty();
 	private static Optional<ContainerManager> cml = Optional.empty();
-	private static Optional<RouteManager> routeManagerService = Optional.empty();
-	private static ComponentContext componentCtx;
-	private static OsgiDefaultCamelContext camelContext;
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole activated");
-		WebConsoleComponent.componentCtx = componentContext;
-		
-		//Just for testing: Create camel context
-		camelContext = new OsgiDefaultCamelContext(componentContext.getBundleContext(), createCamelRegistry());
-        try {
-            camelContext.start();
-        } catch (Exception e) {
-            LOG.error("Failed to start Camel", e);
-        }
 	}
 	
-	private Registry createCamelRegistry() {
-        SimpleRegistry registry = new SimpleRegistry();
-        return registry;
-    }	
+	public static List<CamelContext> getCamelContexts() {
+		// Get OSGi bundle context
+		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
+		if (bCtx==null) {
+			LOG.warn("Component not activated. Cannot list camel contexts.");
+			return new ArrayList<>();
+		}
 
+		// List all camel contexts in current JVM
+		List<CamelContext> camelContexts = new ArrayList<>();
+		try {
+			ServiceReference<?>[] references = bCtx.getServiceReferences(CamelContext.class.getName(), null);
+			if (references == null) {
+				LOG.warn("No camel contexts.");
+				return new ArrayList<>();
+			}
+
+			for (ServiceReference<?> reference : references) {
+				if (reference == null) {
+					continue;
+				}
+
+				CamelContext camelCtx = (CamelContext) bCtx.getService(reference);
+				if (camelCtx != null) {
+					camelContexts.add(camelCtx);
+					//camelCtx.stopRoute("demo-route-c");
+				}
+			}
+		} catch (Exception e) {
+			LOG.warn("Cannot retrieve list of Camel contexts.", e);
+		}
+
+		// sort the list
+		Collections.sort(camelContexts, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+		return camelContexts;
+	}
+	
 	@Deactivate
 	protected void deactivate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole deactivated");
-		WebConsoleComponent.componentCtx = null;
 	}
 	
 	@Reference(name = "cml.service",
@@ -105,40 +125,5 @@ public class WebConsoleComponent {
 
 	public static Optional<ConfigurationService> getConfigService() {
 		return WebConsoleComponent.configService;
-	}
-
-	@Reference(name = "route.service",
-            service = RouteManager.class,
-            cardinality = ReferenceCardinality.OPTIONAL,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unbindRouteManagerService")
-	public void bindRouteManagerService(RouteManager router) {
-		LOG.info("Bound to container manager");
-		WebConsoleComponent.routeManagerService = Optional.of(router);
-	}
-
-	public void unbindRouteManagerService(RouteManager router) {
-		WebConsoleComponent.routeManagerService = Optional.empty();
-	}
-
-	public static Optional<RouteManager> getRouteManagerService() {
-		return routeManagerService;
-	}
-	
-	public static Optional<OsgiDefaultCamelContext> getCamelContext() {
-		if (componentCtx==null) {
-			return Optional.empty();
-		}
-		
-		if (camelContext==null) {
-			return Optional.empty();
-		}
-		// Create Apache Camel context
-		
-		LOG.info("Camel routes:");
-		for (Route route : camelContext.getRoutes()) {
-			LOG.info("  Route: " + route.getId());
-		}
-		return Optional.of(camelContext);
 	}
 }

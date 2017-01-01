@@ -11,10 +11,13 @@ import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
 import { CamelRoutesComponent } from './camelRoutes/camelRoutes.component';
+import { RouteCardComponent } from './camelRoutes/route-card.component';
+
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 
 import { AppService } from './apps/app.service';
+import { CamelRoutesService } from './camelRoutes/camelRoutes.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -32,11 +35,13 @@ import { routing } from './app.routing';
     AppsComponent,
     AppCardComponent,
     CamelRoutesComponent,
+    RouteCardComponent,
     IdsComponent,
     KeycertsComponent,
     ValuesPipe ],
   providers: [
     AppService,
+    CamelRoutesService,
     Title
   ],
   bootstrap: [

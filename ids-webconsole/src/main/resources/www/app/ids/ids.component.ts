@@ -1,5 +1,4 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
-import { Route } from './route';
 import { Title } from '@angular/platform-browser'
 
 
@@ -11,7 +10,6 @@ import { Title } from '@angular/platform-browser'
 export class IdsComponent  implements OnInit{
 
   title = 'IDS';
-  //routes = ;
 
   @Output() changeTitle = new EventEmitter();
 
