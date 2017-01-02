@@ -25,10 +25,10 @@ i.connect-icons {
 }
 
 .mdl-card__title {
-  color: white;
+  color: white!important;
   font-size: 24px;
   font-weight: 400;
-  background: #209e91;
+  background: rgb(0, 150, 136);	# teal
 }
 
 .card-good > .mdl-card__title,

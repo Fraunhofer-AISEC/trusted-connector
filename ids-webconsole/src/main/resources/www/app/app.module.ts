@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 
 import { DashboardComponent }  from './dashboard/dashboard.component';
 import { ActivityComponent }  from './dashboard/activity.component';
+import { MetricCardComponent }  from './dashboard/metric-card.component';
 
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
@@ -32,6 +33,7 @@ import { routing } from './app.routing';
     AppComponent,
     DashboardComponent,
     ActivityComponent,
+    MetricCardComponent,
     AppsComponent,
     AppCardComponent,
     CamelRoutesComponent,
