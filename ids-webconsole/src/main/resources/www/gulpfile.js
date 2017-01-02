@@ -95,6 +95,7 @@ gulp.task('bundle', function() {
 gulp.task('copy:assets', function() {
   return gulp.src(['app/**/*',
              'css/**/*',
+             'js/**/*',
              'images/**/*',
              'index.html',
              'iot-connector.config.js',
@@ -129,7 +130,7 @@ gulp.task('connect', function () {
 
 gulp.task('watch', function() {
   // TODO: define assets array
-  return gulp.watch(['app/**/*', 'index.html', 'css/*', 'systemjs.config.js'], ['build'])
+  return gulp.watch(['app/**/*', 'index.html', 'js/*', 'css/*', 'systemjs.config.js'], ['build'])
 })
 
 gulp.task('build', ['compile', 'copy:config', 'copy:libs', 'copy:assets', 'fonts']);

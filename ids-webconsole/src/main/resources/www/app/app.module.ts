@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 
 import { DashboardComponent }  from './dashboard/dashboard.component';
 import { ActivityComponent }  from './dashboard/activity.component';
+import { NetworkGraphComponent }  from './dashboard/network-graph.component';
 import { MetricCardComponent }  from './dashboard/metric-card.component';
 
 import { AppsComponent } from './apps/apps.component';
@@ -33,6 +34,7 @@ import { routing } from './app.routing';
     AppComponent,
     DashboardComponent,
     ActivityComponent,
+    NetworkGraphComponent,
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
