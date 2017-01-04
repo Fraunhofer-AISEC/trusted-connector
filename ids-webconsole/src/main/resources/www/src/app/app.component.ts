@@ -5,7 +5,8 @@ declare var componentHandler: any;
 
 @Component({
   selector: 'iot-connector',
-  templateUrl: 'app/app.component.html'
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements AfterViewInit {
 

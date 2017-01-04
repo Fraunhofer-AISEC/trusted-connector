@@ -1,22 +1,12 @@
 # Installation
 ```
 npm install
-npm run postinstall
 ```
 
-# Run (development)
-```
-gulp
-```
+# Development
+Run `ng serve` for a development server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-You can then access the web server at http://localhost:5000.
-
-To bundle the website for production mode:
-```
-NODE_ENV=production gulp bundle
-```
-
-The final bundle can be found in `dist`.
+To bundle the website for production mode, use `ng build --prod --env=prod`. The final bundle can be found in `dist`.
 
 # Run (docker)
 ```

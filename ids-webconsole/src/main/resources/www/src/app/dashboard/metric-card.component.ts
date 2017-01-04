@@ -18,30 +18,30 @@ export class MetricCardComponent implements OnInit {
   @Input('value') value:string = '0';
   @Input('value-url') valueUrl:string = null;
   @Output('valueChange') valueChange: EventEmitter<string> = new EventEmitter();
-  
-  private interval:number;
-  
+
+  private interval;
+
   constructor(private http: Http) {}
-  
+
   ngOnInit() {
     // If remote date source is given, update value from there. Otherwise use static values
     if (this.valueUrl==null) {
       return;
     }
-    
+
     // TODO use an Angular2 service to regularly poll metrics from the backend
     this.interval = setInterval(() => {
         this.getMetrics();
       }, 2000);
    }
-  
+
   ngOnDestroy() {
     clearInterval(this.interval);
   }
-  
+
   private getMetrics():void {
        this.http.get(this.valueUrl)
       .map(res => res.json())
-      .subscribe(value => this.value = value);    
+      .subscribe(value => this.value = value);
   }
 }

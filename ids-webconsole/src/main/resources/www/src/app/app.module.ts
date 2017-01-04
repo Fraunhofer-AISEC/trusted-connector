@@ -25,6 +25,8 @@ import { ValuesPipe } from './values.pipe';
 
 import { routing } from './app.routing';
 
+import 'material-design-lite';
+
 @NgModule({
   imports: [
     BrowserModule,
