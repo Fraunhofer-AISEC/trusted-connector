@@ -12,14 +12,9 @@ EXPOSE 80
 
 WORKDIR /tmp
 
-RUN npm install -g jspm gulp
-RUN jspm config registries.github.auth 9766c9c82013e1eba50c2797872521da99ee9a4e
-
 # this should hopefully trigger Docker to only update npm/jspm if dependencies have changed
 ADD package.json .
-ADD typings.json .
-ADD config.js .
-RUN npm install
+RUN npm install --no-optional
 RUN npm run postinstall
 
 # add the rest of the files
@@ -29,7 +24,7 @@ ADD . .
 ENV NODE_ENV production
 
 # build everything for production
-RUN gulp bundle
+RUN npm run bundle
 
 # copy to nginx
 RUN cp -r dist/* /var/www/html/

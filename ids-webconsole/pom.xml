@@ -192,6 +192,7 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>install</argument>
+								<argument>--no-optional</argument>
 							</arguments>
 						</configuration>
 					</execution>
