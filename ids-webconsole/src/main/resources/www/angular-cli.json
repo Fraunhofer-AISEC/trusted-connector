@@ -19,7 +19,7 @@
       "prefix": "app",
       "mobile": false,
       "styles": [
-        "fonts.css",
+        "fonts/fonts.css",
         "../node_modules/material-design-lite/material.css",
         "../node_modules/c3/c3.css",
         "styles.css"

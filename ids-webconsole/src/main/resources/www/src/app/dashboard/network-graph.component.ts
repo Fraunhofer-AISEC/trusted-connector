@@ -43,7 +43,7 @@ export class NetworkGraphComponent implements OnInit, AfterViewInit {
     });
   }
 
-  loadLocations(): Promise<any> {
+  loadLocations(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       d3.tsv('data/locations.tsv', (error, json) => {
         if(error) {
@@ -70,7 +70,7 @@ export class NetworkGraphComponent implements OnInit, AfterViewInit {
     // theoretically works and uses dependency from package.json but looks different, they changed the API somehow
     //let hexbin = d3_hexbin.hexbin()
 
-    // this uses the old version, which we need to supply extra
+    // this uses the old version, which we need to supply extra (in vendor/hexbin.min.js)
     let hexbin = (d3 as any).hexbin()
         .size([width, height])
         .radius(10);
