@@ -9,7 +9,7 @@ import { KeycertsComponent } from './keycerts/keycerts.component';
 
 const appRoutes: Routes = [{
     path: '',
-  	redirectTo: '/dashboard',
+    redirectTo: '/dashboard',
   	pathMatch: 'full'
   }, {
     path: 'dashboard',
@@ -30,7 +30,6 @@ const appRoutes: Routes = [{
     path: 'certificates',
     component: KeycertsComponent
   }
-
 ];
 
 export const routing = RouterModule.forRoot(appRoutes, { useHash: true });

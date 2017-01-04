@@ -7,7 +7,7 @@ import { Route } from './route';
 import { RouteService } from './route.service';
 
 @Component({
-  selector: 'routes',
+  selector: 'route-list',
   templateUrl: './routes.component.html',
 })
 

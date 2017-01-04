@@ -35,7 +35,7 @@ export class RouteCardComponent implements OnInit {
   constructor(private dom: DomSanitizer, private routeService: RouteService) {}
 
   ngOnInit(): void {
-    var graph = this.route.dot;
+    let graph = this.route.dot;
     this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
   }
 
@@ -43,13 +43,13 @@ export class RouteCardComponent implements OnInit {
     this.routeService.startRoute(routeId).subscribe(result => {
        this.result = result;
      });
-     this.route.status = "Started";
+     this.route.status = 'Started';
   }
 
   onStop(routeId: string): void {
     this.routeService.stopRoute(routeId).subscribe(result => {
        this.result = result;
      });
-     this.route.status = "Stopped";
+     this.route.status = 'Stopped';
   }
 }

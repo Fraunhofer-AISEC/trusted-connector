@@ -15,20 +15,20 @@ export class RouteService {
     return this.http.get(environment.apiURL + '/routes/list/')
                .map(response => {
                  return response.json() as Route[]
-               })
+               });
   }
 
   stopRoute(routeId: string) {
       return this.http.get(environment.apiURL + '/routes/stoproute/' + routeId)
                  .map(response => {
                    return response.json() as string
-                 })
+                 });
   }
 
   startRoute(routeId: string) {
       return this.http.get(environment.apiURL + '/routes/startroute/' + routeId)
                  .map(response => {
                    return response.json() as string
-                 })
+                 });
   }
 }
