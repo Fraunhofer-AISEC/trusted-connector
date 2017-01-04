@@ -4,9 +4,9 @@ npm install
 ```
 
 # Development
-Run `ng serve` for a development server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `npm run start` for a development server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-To bundle the website for production mode, use `ng build --prod --env=prod`. The final bundle can be found in `dist`.
+To bundle the website for production mode, use `npm run bundle`. The final bundle can be found in `dist`.
 
 # Run (docker)
 ```

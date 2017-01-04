@@ -6,7 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "bundle": "ng build --prod --env=prod",
+    "bundle": "ng build --env=prod",
     "lint": "tslint \"src/**/*.ts\""
   },
   "private": true,

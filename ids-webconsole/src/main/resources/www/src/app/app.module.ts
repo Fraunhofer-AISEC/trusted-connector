@@ -12,14 +12,14 @@ import { MetricCardComponent }  from './dashboard/metric-card.component';
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
-import { CamelRoutesComponent } from './camelRoutes/camelRoutes.component';
-import { RouteCardComponent } from './camelRoutes/route-card.component';
+import { RoutesComponent } from './routes/routes.component';
+import { RouteCardComponent } from './routes/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 
 import { AppService } from './apps/app.service';
-import { CamelRoutesService } from './camelRoutes/camelRoutes.service';
+import { RouteService } from './routes/route.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -40,14 +40,14 @@ import 'material-design-lite';
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
-    CamelRoutesComponent,
+    RoutesComponent,
     RouteCardComponent,
     IdsComponent,
     KeycertsComponent,
     ValuesPipe ],
   providers: [
     AppService,
-    CamelRoutesService,
+    RouteService,
     Title
   ],
   bootstrap: [

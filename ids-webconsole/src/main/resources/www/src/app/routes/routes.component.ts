@@ -4,26 +4,25 @@ import { FormsModule }   from '@angular/forms';
 import { Title } from '@angular/platform-browser'
 
 import { Route } from './route';
-import { CamelRoutesService } from './camelRoutes.service';
+import { RouteService } from './route.service';
 
 @Component({
-  selector: 'camelRoutes',
-  templateUrl: 'app/camelRoutes/camelRoutes.component.html',
+  selector: 'routes',
+  templateUrl: './routes.component.html',
 })
 
-export class CamelRoutesComponent  implements OnInit{
+export class RoutesComponent  implements OnInit{
 
   title = 'Current Routes';
   routes: Route[];
   selectedRoute: Route;
-  
 
   @Output() changeTitle = new EventEmitter();
 
-  constructor(private titleService: Title, private camelRoutesService: CamelRoutesService) {
+  constructor(private titleService: Title, private routeService: RouteService) {
     this.titleService.setTitle("Data Pipes");
 
-    this.camelRoutesService.getRoutes().subscribe(routes => {
+    this.routeService.getRoutes().subscribe(routes => {
        this.routes = routes;
      });
   }

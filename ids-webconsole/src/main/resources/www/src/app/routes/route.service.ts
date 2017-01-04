@@ -5,28 +5,28 @@ import 'rxjs/add/operator/map';
 
 import { Route } from './route';
 
-declare var API_URL: string;
+import { environment } from '../../environments/environment';
 
 @Injectable()
-export class CamelRoutesService {
+export class RouteService {
   constructor(private http: Http) { }
 
   getRoutes() {
-    return this.http.get(API_URL + '/routes/list/')
+    return this.http.get(environment.apiURL + '/routes/list/')
                .map(response => {
                  return response.json() as Route[]
                })
   }
 
   stopRoute(routeId: string) {
-      return this.http.get(API_URL + '/routes/stoproute/' + routeId)
+      return this.http.get(environment.apiURL + '/routes/stoproute/' + routeId)
                  .map(response => {
                    return response.json() as string
                  })
   }
 
   startRoute(routeId: string) {
-      return this.http.get(API_URL + '/routes/startroute/' + routeId)
+      return this.http.get(environment.apiURL + '/routes/startroute/' + routeId)
                  .map(response => {
                    return response.json() as string
                  })

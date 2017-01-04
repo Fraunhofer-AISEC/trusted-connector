@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { Route } from './route';
-import { CamelRoutesService } from './camelRoutes.service';
+import { RouteService } from './route.service';
 
 declare var Viz: any;
 
@@ -32,7 +32,7 @@ export class RouteCardComponent implements OnInit {
   vizResult: SafeHtml;
   result: string;
 
-  constructor(private dom: DomSanitizer, private camelRoutesService: CamelRoutesService) {}
+  constructor(private dom: DomSanitizer, private routeService: RouteService) {}
 
   ngOnInit(): void {
     var graph = this.route.dot;
@@ -40,16 +40,16 @@ export class RouteCardComponent implements OnInit {
   }
 
   onStart(routeId: string): void {
-      this.camelRoutesService.startRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
-       this.route.status = "Started";
+    this.routeService.startRoute(routeId).subscribe(result => {
+       this.result = result;
+     });
+     this.route.status = "Started";
   }
 
   onStop(routeId: string): void {
-      this.camelRoutesService.stopRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
-       this.route.status = "Stopped";
+    this.routeService.stopRoute(routeId).subscribe(result => {
+       this.result = result;
+     });
+     this.route.status = "Stopped";
   }
 }

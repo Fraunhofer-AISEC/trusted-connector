@@ -5,14 +5,14 @@ import 'rxjs/add/operator/map';
 
 import { App } from './app';
 
-declare var API_URL: string;
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AppService {
   constructor(private http: Http) { }
 
   getApps() {
-    return this.http.get(API_URL + '/apps/list/')
+    return this.http.get(environment.apiURL + '/apps/list/')
                .map(response => {
                  return response.json() as App[]
                })

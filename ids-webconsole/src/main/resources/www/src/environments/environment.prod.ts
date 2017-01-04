@@ -1,6 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  apiURL: 'http://localhost:8181/cxf/api/v1'
 };
-
-var ENV = 'production';
-var API_URL = 'http://localhost:8181/cxf/api/v1'

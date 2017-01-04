@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppsComponent } from './apps/apps.component';
 
-import { CamelRoutesComponent } from './camelRoutes/camelRoutes.component';
+import { RoutesComponent } from './routes/routes.component';
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 
@@ -22,7 +22,7 @@ const appRoutes: Routes = [{
     component: AppsComponent
   }, {
     path: 'routes',
-    component: CamelRoutesComponent
+    component: RoutesComponent
   }, {
     path: 'ids',
     component: IdsComponent
