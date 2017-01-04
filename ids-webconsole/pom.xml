@@ -127,7 +127,7 @@
 		  <resource>
 		    <directory>src/main/resources/</directory>
 		    <includes>
-		      <include>www/build</include>
+		      <include>www/dist</include>
 		      <include>OSGI-INF/**</include>
 		    </includes>
 		  </resource>
@@ -277,7 +277,7 @@
 						<NPM_CONFIG_CACHE>${NPM_CONFIG_PREFIX}/cache</NPM_CONFIG_CACHE>
 						<NPM_CONFIG_TMP>${project.build.directory}/npmtmp</NPM_CONFIG_TMP>
 					</environmentVariables>
-					<workingDirectory>${project.build.resources[0].directory}/dist</workingDirectory>
+					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
 			</configuration>
 			</plugin>
 
