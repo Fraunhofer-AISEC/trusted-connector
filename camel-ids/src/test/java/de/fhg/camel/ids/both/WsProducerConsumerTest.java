@@ -16,6 +16,7 @@
  */
 package de.fhg.camel.ids.both;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -38,7 +39,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
@@ -49,27 +49,13 @@ import de.fhg.camel.ids.server.WebsocketComponent;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WsProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static final int PORT = AvailablePortFinder.getNextAvailable(4321);
+    //protected static final int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "changeit";
-	private static RemoteAttestationServer ratServer;
-  
-	@BeforeClass
-	public static void initRepo() throws Exception {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31330);
-		ratServer.start();
-		//startTestServer();
-	}
 	
+
 	/*
-	@AfterClass
-	public static void stopRepo() throws Exception {
-		server.stop();
-        server.destroy();
-	} 
-	*/
-	
     public static void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);
@@ -86,9 +72,6 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         assertTrue(server.isStarted());      
     }
 
-    
-	/*
-    
     @Override
     public void setUp() throws Exception {
         //startTestServer();
@@ -100,8 +83,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         super.tearDown();
         //stopTestServer();
     }
-        */
-
+    */
 
     @Test
     public void testTwoRoutes() throws Exception {
@@ -195,7 +177,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
         
         // An IDS consumer
         rbs[0] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
         		
             	// Needed to configure TLS on the client side
 		        WsComponent wsComponent = (WsComponent) context.getComponent("idsclientplain");
@@ -203,21 +185,21 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 
 		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("idsclientplain://localhost:"+PORT+"/echo")
+                	.to("idsclientplain://localhost:9292/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
         
         // An IDS provider
         rbs[1] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
             	
             		// Needed to configure TLS on the server side
-            		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
+            		WebsocketComponent websocketsComponent = (WebsocketComponent) context.getComponent("idsserver");
 //					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
 
 					// This route is set to use TLS, referring to the parameters set above
-                    from("idsserver:localhost:"+PORT+"/echo")
+                    from("idsserver:localhost:9292/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }

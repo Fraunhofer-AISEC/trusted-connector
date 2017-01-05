@@ -3,6 +3,7 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 import com.google.protobuf.MessageLite;
@@ -44,5 +45,16 @@ public class RemoteAttestationHandler {
 						.setErrorMessage(error)
 						.build())
 				.build();
+	}
+	
+	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr) throws IOException {
+        HttpURLConnection urlc = (HttpURLConnection) adr.openConnection();
+        urlc.setDoInput(true);
+        urlc.setDoOutput(true);
+        urlc.setRequestMethod("POST");
+        urlc.setRequestProperty("Accept", "application/x-protobuf");
+        urlc.setRequestProperty("Content-Type", "application/x-protobuf");
+        msg.writeTo(urlc.getOutputStream());
+        return ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
 	}
 }

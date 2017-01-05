@@ -16,6 +16,7 @@
  */
 package de.fhg.camel.ids.client;
 
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 

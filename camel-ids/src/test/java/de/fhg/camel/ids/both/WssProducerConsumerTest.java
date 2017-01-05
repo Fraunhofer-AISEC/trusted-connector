@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -45,38 +46,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.fhg.aisec.ids.attestation.REST;
-import de.fhg.aisec.ids.attestation.RemoteAttestationServer;
 import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
-
 /**
  *
  */
 public class WssProducerConsumerTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
-    protected static int PORT = AvailablePortFinder.getNextAvailable(8000);
+    //protected static int PORT = AvailablePortFinder.getNextAvailable();
     protected static Server server;
     protected List<Object> messages;
-	private static String PWD = "password";
-	private static RemoteAttestationServer ratServer;
+	private static String PWD = "password";	
 
-	@BeforeClass
-	public static void initRepo() throws Exception {
-		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", 31330);
-		//startTestServer();
-	}
-	
 	/*
-	@AfterClass
-	public static void stopRepo() throws Exception {
-		server.stop();
-        server.destroy();
-		ratServer.destroy();
-	}
-	*/
-	
     public static void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server();
@@ -93,7 +76,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         server.start();
         assertTrue(server.isStarted());      
     }
-
+    */
     
     @Override
     public void setUp() throws Exception {
@@ -131,7 +114,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 
     
     private static SSLContextParameters defineClientSSLContextClientParameters() {
-
         KeyStoreParameters ksp = new KeyStoreParameters();
         ksp.setResource(Thread.currentThread().getContextClassLoader().getResource("jsse/client-keystore.jks").toString());
         ksp.setPassword(PWD);
@@ -157,7 +139,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         sslContextParameters.setTrustManagers(tmp);
         sslContextParameters.setServerParameters(scsp);
         
-
         return sslContextParameters;
     }
     
@@ -186,7 +167,6 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         sslContextParameters.setTrustManagers(tmp);
         sslContextParameters.setServerParameters(scsp);
 	   
-	
 	   return sslContextParameters;
     }
     
@@ -196,7 +176,7 @@ public class WssProducerConsumerTest extends CamelTestSupport {
         
         // An IDS consumer
         rbs[0] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
         		
             	// Needed to configure TLS on the client side
 		        WsComponent wsComponent = (WsComponent) context.getComponent("idsclient");
@@ -204,21 +184,21 @@ public class WssProducerConsumerTest extends CamelTestSupport {
 	        
 		        from("direct:input").routeId("foo")
                 	.log(">>> Message from direct to WebSocket Client : ${body}")
-                	.to("idsclient://localhost:"+PORT+"/echo")
+                	.to("idsclient://localhost:9292/echo")
                     .log(">>> Message from WebSocket Client to server: ${body}");
                 }
         };
         
         // An IDS provider
         rbs[1] = new RouteBuilder() {
-            public void configure() {
+            public void configure() throws MalformedURLException {
             	
             		// Needed to configure TLS on the server side
             		WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("idsserver");
 					websocketComponent.setSslContextParameters(defineServerSSLContextParameters());
 
 					// This route is set to use TLS, referring to the parameters set above
-                    from("idsserver:localhost:"+PORT+"/echo")
+                    from("idsserver:localhost:9292/echo")
                     .log(">>> Message from WebSocket Server to mock: ${body}")
                 	.to("mock:result");
             }

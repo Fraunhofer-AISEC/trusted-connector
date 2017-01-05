@@ -1,10 +1,12 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
@@ -14,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
-import de.fhg.aisec.ids.attestation.PcrValue;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
@@ -24,6 +25,8 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -46,10 +49,12 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private byte[] cert;
 	private boolean signatureCorrect;
 	private ConnectorMessage msg;
-	private TrustedThirdParty ttp;
-	private long sessionID = 0;
+	private long sessionID = 0;		// used to count messages between ids connectors during attestation
+	private long privateID = 0;		// used to count messages between ids connector and attestation repository
 	private URI ttpUri;
-	private boolean pcrCorrect;
+	private boolean pcrCorrect = true;
+	private Pcr[] values;
+	private String qualifyingData;
 	
 	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
 		// set ttp uri
@@ -58,6 +63,8 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		this.fsm = fsm;
 		// set current attestation type (see attestation.proto)
 		this.aType = type;
+		// set random private id
+		this.privateID = new java.util.Random().nextLong();		
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
@@ -94,8 +101,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			if(thread.isAlive()) {
 				// send msg to local unix socket
 				client.send(msg.toByteArray(), this.handler);
-				byte[] toParse = this.handler.waitForResponse();
-				TpmToController response = TpmToController.parseFrom(toParse);
+				TpmToController response = TpmToController.parseFrom(this.handler.waitForResponse());
 				// now return values from answer to client
 				return ConnectorMessage
 						.newBuilder()
@@ -121,7 +127,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 				return RemoteAttestationHandler.sendError(this.thread, "thread error", error);	
 			}
 		} catch (IOException ex) {
-			String error = "error: IOException :" + ex.getMessage();
+			String error = "IOException :" + ex.getMessage();
 			LOG.debug(error);
 			ex.printStackTrace();
 			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);	
@@ -144,12 +150,48 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// get cert uri from server msg
 		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
 		// get pcr values from server msg
-		int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-		PcrValue[] values = TrustedThirdParty.fill(e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]));
-		this.ttp = new TrustedThirdParty(ttpUri);
-		this.pcrCorrect = this.ttp.pcrValuesCorrect(values, NonceGenerator.generate());
-		if(this.sessionID + 1 == e.getMessage().getId()) {
-			++this.sessionID;
+		try {
+			int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
+			this.values = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
+			ConnectorMessage msgRepo = RemoteAttestationHandler.readRepositoryResponse(
+					ConnectorMessage
+					.newBuilder()
+					.setId(this.privateID)
+					.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
+					.setAttestationRepositoryRequest(
+							AttestationRepositoryRequest
+			        		.newBuilder()
+			        		.setAtype(IdsAttestationType.BASIC)
+			        		.setQualifyingData(this.myNonce)
+			        		.addAllPcrValues(Arrays.asList(this.values))
+			        		.build()
+							)
+					.build()
+					,ttpUri.toURL());
+			
+			if(msgRepo.getType().equals(ConnectorMessage.Type.ERROR)) {
+				this.pcrCorrect = false;
+				String error = "error: Attestation Repository Error:" + msgRepo.getError().getErrorMessage();
+				return RemoteAttestationHandler.sendError(this.thread, "rat-repository", error);
+			}
+			else {
+				this.pcrCorrect = (
+						msgRepo.getAttestationRepositoryResponse().getResult() 
+						&& (msgRepo.getId() == this.privateID + 1) 
+						&& (msgRepo.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE))
+						&& (msgRepo.getAttestationRepositoryResponse().getQualifyingData().equals(this.myNonce))
+						&& true); // TODO : signature check here !
+			}
+		}
+		catch(MalformedURLException ex) {
+			String error = "error: MalformedURLException:" + ex.getMessage();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		}
+		catch(IOException ex) {
+			String error = "error: IOException:" + ex.getMessage();
+			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+		}
+		if(++this.sessionID == e.getMessage().getId()) {
 			try {
 				// construct a new TPM2B_PUBLIC from bkey bytes
 				TPM2B_PUBLIC key = new TPM2B_PUBLIC(this.cert);
@@ -204,8 +246,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 
 	public MessageLite leaveRatRequest(Event e) {
 		this.thread.interrupt();
-		if(e.getMessage().getId() == this.sessionID + 1) {
-			++this.sessionID;
+		if(++this.sessionID == e.getMessage().getId()) {
 			return ConnectorMessage
 					.newBuilder()
 					.setId(++this.sessionID)

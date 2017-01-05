@@ -17,6 +17,7 @@
 package de.fhg.camel.ids.client;
 
 import java.net.URI;
+import java.net.URL;
 
 import org.apache.camel.component.ahc.AhcComponent;
 import org.apache.camel.component.ahc.AhcEndpoint;
@@ -25,8 +26,9 @@ import org.apache.camel.component.ahc.AhcEndpoint;
  * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>
  */
 public class WsComponent extends AhcComponent {
-    
-    @Override
+
+
+	@Override
     protected String createAddressUri(String uri, String remaining) {
     	if (uri.startsWith("idsclientplain:")) {
     		return uri.replaceFirst("idsclientplain:", "ws:");
@@ -41,5 +43,4 @@ public class WsComponent extends AhcComponent {
     protected AhcEndpoint createAhcEndpoint(String endpointUri, AhcComponent component, URI httpUri) {
         return new WsEndpoint(endpointUri, (WsComponent)component);
     }
-
 }

@@ -637,7 +637,7 @@ public class WebsocketComponent extends UriEndpointComponent {
     public Integer getPort() {
         return port;
     }
-
+    
     /**
      * The port number. The default value is <tt>9292</tt>
      */

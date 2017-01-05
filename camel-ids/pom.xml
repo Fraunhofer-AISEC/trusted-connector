@@ -25,9 +25,10 @@
 	<properties>
 		<camel-version>2.18.0</camel-version>
 		<jetty-version>8.1.19.v20160209</jetty-version>
-		<jetty-version>9.2.15.v20160210</jetty-version>
+		<jetty-version>9.3.14.v20161028</jetty-version>
+		<jersey-version>2.25</jersey-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.24</ahc-version>
+		<ahc-version>2.0.2</ahc-version>
 		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -38,11 +39,11 @@
 		</repository>
 	</repositories>
 	<dependencies>
-               <dependency>
-                        <groupId>de.fhg.ids</groupId>
-                        <artifactId>rat-repository</artifactId>
-                        <version>1.0.0</version>
-                </dependency>
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>rat-repository</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
@@ -69,12 +70,39 @@
 			<artifactId>websocket-client</artifactId>
 			<version>${jetty-version}</version>
 		</dependency>
-		<dependency>
-                        <groupId>org.glassfish.jersey.containers</groupId>
-                        <artifactId>jersey-container-servlet-core</artifactId>
-                        <version>2.7</version>
-                </dependency>
 
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-jetty-http</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-moxy</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
@@ -128,12 +156,6 @@
 			<groupId>com.github.jnr</groupId>
 			<artifactId>jnr-unixsocket</artifactId>
 			<version>0.13</version>
-		</dependency>
-		<!-- Google gson -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.0</version>
 		</dependency>
 		<!-- tpm2j -->
 		<dependency>
@@ -220,6 +242,7 @@
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
+					<autoPull>always</autoPull>
 				</configuration>
 				<executions>
 					<execution>
@@ -237,6 +260,21 @@
 							</images>
 						</configuration>
 					</execution>
+					<execution>
+						<id>stop-ttpsim</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>					
 					<execution>
 						<id>run-tpm2d</id>
 						<phase>compile</phase>
@@ -258,6 +296,55 @@
 											/tpm2d/cml-tpm2d
 										</cmd>
 									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>run-ttpsim</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+									<alias>tpm2d-sim</alias>
+									<run>
+										<ports>
+											<port>31337:31337</port>
+										</ports>
+										<wait>
+											<http>
+												<url>
+													http://127.0.0.1:31337/json/configurations/
+												</url>
+												<method>
+													GET
+												</method>
+												<status>
+													200..399
+												</status>
+											</http>
+											<time>10000</time>
+										</wait>										
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-ttpsim</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
 								</image>
 							</images>
 						</configuration>

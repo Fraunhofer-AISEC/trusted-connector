@@ -85,7 +85,7 @@
             <classifier>features</classifier>
             <type>xml</type>
             <version>${karaf.version}</version>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
         
         <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.5/spring-4.0.5-features.xml
@@ -97,7 +97,7 @@
             <version>${karaf.version}</version>
             <classifier>features</classifier>
             <type>xml</type>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
 
         <!-- https://repo1.maven.org/maven2/org/apache/activemq/activemq-karaf/5.13.4/activemq-karaf-5.13.4-features.xml
@@ -108,7 +108,7 @@
             <version>${activemq.version}</version>
             <classifier>features</classifier>
             <type>xml</type>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
 
         <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.18.0/apache-camel-2.18.0-features.xml -->
@@ -118,7 +118,7 @@
             <version>${camel.version}</version>
             <classifier>features</classifier>
             <type>xml</type>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency> 
         <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.18.0/camel-extra-2.18.0-features.xml -->
         <!--<dependency>
@@ -136,7 +136,7 @@
             <type>xml</type>
             <version>${cxf.version}</version>
             <classifier>features</classifier>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
 
         <!-- Apache ServiceMix -->
@@ -146,7 +146,7 @@
             <version>7.0.0.M2</version>
             <classifier>features</classifier>
             <type>xml</type>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix.features</groupId>
@@ -154,7 +154,7 @@
             <version>7.0.0.M2</version>
             <classifier>features</classifier>
             <type>xml</type>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
 
         <dependency>
@@ -168,7 +168,7 @@
             <version>7.0.0.M2</version>
             <classifier>features</classifier>
             <type>xml</type>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
 
         <!-- Repo for IDS feature -->
@@ -187,7 +187,6 @@
             <groupId>org.apache.karaf.tooling</groupId>
             <artifactId>features-maven-plugin</artifactId>
             <version>2.2.1</version>
-
           </plugin>
 
             <plugin>
