@@ -22,21 +22,36 @@ declare var Viz: any;
         <div style="padding-top:30px" [innerHTML]="vizResult"></div>
       </div>
       <div class="mdl-card__actions mdl-card--border">
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onStart(route.id)"><i class="material-icons" role="presentation">play_arrow</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onStop(route.id)"><i class="material-icons" role="presentation">pause</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a>
+          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored" (click)="onToggle(route.id)">
+            <i class="material-icons">{{statusIcon}}</i>
+          </button>
+          <!--<a class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)"><i class="material-icons" role="presentation">{{statusIcon}}</i></a>
+          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a> -->
+          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+            <i class="material-icons">delete</i>
+          </button>
+
       </div>`
 })
 export class RouteCardComponent implements OnInit {
   @Input() route: Route;
   vizResult: SafeHtml;
   result: string;
+  statusIcon: string;
+
 
   constructor(private dom: DomSanitizer, private routeService: RouteService) {}
 
   ngOnInit(): void {
     let graph = this.route.dot;
-    this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+    if(this.route.status == "Started") {
+      this.statusIcon = "play_arrow";
+    } else {
+      this.statusIcon = "stop";
+
+    }
+
+  //this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
   }
 
   onStart(routeId: string): void {
@@ -44,6 +59,7 @@ export class RouteCardComponent implements OnInit {
        this.result = result;
      });
      this.route.status = 'Started';
+       this.statusIcon = "play_arrow";
   }
 
   onStop(routeId: string): void {
@@ -51,5 +67,23 @@ export class RouteCardComponent implements OnInit {
        this.result = result;
      });
      this.route.status = 'Stopped';
+     this.statusIcon = "stop";
+  }
+
+  onToggle(routeId: string): void {
+    if(this.statusIcon == "play_arrow") {
+      this.statusIcon = "stop";
+      this.routeService.stopRoute(routeId).subscribe(result => {
+         this.result = result;
+       });
+       this.route.status = 'Stopped';
+
+    } else {
+      this.statusIcon = "play_arrow";
+      this.routeService.startRoute(routeId).subscribe(result => {
+         this.result = result;
+       });
+       this.route.status = 'Started';
+    }
   }
 }
