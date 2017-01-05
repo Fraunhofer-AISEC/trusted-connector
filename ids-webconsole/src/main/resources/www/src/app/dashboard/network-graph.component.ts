@@ -10,9 +10,7 @@ import 'rxjs/add/observable/timer';
 
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
-import * as d3_hexbin from 'd3-hexbin';
-
-import 'vendor/hexbin.min.js';
+import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
 
 @Component({
   selector: 'network-graph',
@@ -67,11 +65,7 @@ export class NetworkGraphComponent implements OnInit, AfterViewInit {
         .range(['#004D40', '#4DB6AC'])
         .interpolate(d3.interpolateLab);
 
-    // theoretically works and uses dependency from package.json but looks different, they changed the API somehow
-    //let hexbin = d3_hexbin.hexbin()
-
-    // this uses the old version, which we need to supply extra (in vendor/hexbin.min.js)
-    let hexbin = (d3 as any).hexbin()
+    let hexbin = d3_hexbin.default()
         .size([width, height])
         .radius(10);
 
