@@ -13,10 +13,10 @@ export class AppsComponent {
   apps: App[];
 
   constructor(private appService: AppService, private titleService: Title) {
-    this.titleService.setTitle("Apps");
+    this.titleService.setTitle('Apps');
 
     this.appService.getApps().subscribe(apps => {
-       this.apps = apps
+       this.apps = apps;
      });
   }
 }

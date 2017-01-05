@@ -40,7 +40,7 @@ export class ActivityComponent implements OnInit {
             y: {
                 lines: [{
                   value: 300,
-                  text: "Warning Threshold"
+                  text: 'Warning Threshold'
                 }]
               }
         },
@@ -61,7 +61,7 @@ export class ActivityComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    console.log("Unsubscribing...");
+    console.log('Unsubscribing...');
     for(let subscription of this.subscriptions) {
       subscription.unsubscribe();
     }

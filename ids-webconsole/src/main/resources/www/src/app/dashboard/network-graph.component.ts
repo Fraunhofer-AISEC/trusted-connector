@@ -15,7 +15,7 @@ import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
 @Component({
   selector: 'network-graph',
   template: `<div id="network-graph"></div>`,
-  //styleUrls:  ['css/network-graph.css'],  // Include CSS classes for land and countries this file is missing!!!
+  styleUrls:  ['./network-graph.component.css'],  // Include CSS classes for land and countries
   encapsulation: ViewEncapsulation.None   // Generate global CSS classes
 })
 export class NetworkGraphComponent implements OnInit, AfterViewInit {

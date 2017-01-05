@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
-import { Title } from '@angular/platform-browser'
+import { Title } from '@angular/platform-browser';
 
 import { Route } from './route';
 import { RouteService } from './route.service';
@@ -20,7 +20,7 @@ export class RoutesComponent  implements OnInit{
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title, private routeService: RouteService) {
-    this.titleService.setTitle("Data Pipes");
+    this.titleService.setTitle('Data Pipes');
 
     this.routeService.getRoutes().subscribe(routes => {
        this.routes = routes;

@@ -9,7 +9,7 @@ export class DashboardComponent implements OnInit {
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title) {
-     this.titleService.setTitle("Dashboard");
+     this.titleService.setTitle('Dashboard');
   }
 
   ngOnInit(): void {
