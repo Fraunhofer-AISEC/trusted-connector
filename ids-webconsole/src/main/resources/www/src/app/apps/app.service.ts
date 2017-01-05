@@ -14,7 +14,7 @@ export class AppService {
   getApps() {
     return this.http.get(environment.apiURL + '/apps/list/')
                .map(response => {
-                 return response.json() as App[]
-               })
+                 return response.json() as App[];
+               });
   }
 }

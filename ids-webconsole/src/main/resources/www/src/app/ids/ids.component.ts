@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
-import { Title } from '@angular/platform-browser'
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -14,7 +14,7 @@ export class IdsComponent  implements OnInit{
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title) {
-     this.titleService.setTitle("IDS");
+     this.titleService.setTitle('IDS');
   }
 
   ngOnInit(): void {
