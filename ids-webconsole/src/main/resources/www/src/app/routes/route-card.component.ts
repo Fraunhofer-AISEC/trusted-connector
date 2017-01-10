@@ -73,16 +73,17 @@ export class RouteCardComponent implements OnInit {
   onToggle(routeId: string): void {
     if(this.statusIcon == "play_arrow") {
       this.statusIcon = "stop";
-      this.routeService.stopRoute(routeId).subscribe(result => {
+      this.routeService.startRoute(routeId).subscribe(result => {
          this.result = result;
        });
        this.route.status = 'Started';
 
     } else {
       this.statusIcon = "play_arrow";
-      this.routeService.startRoute(routeId).subscribe(result => {
+      this.routeService.stopRoute(routeId).subscribe(result => {
          this.result = result;
        });
+
        this.route.status = 'Stopped';
     }
   }
