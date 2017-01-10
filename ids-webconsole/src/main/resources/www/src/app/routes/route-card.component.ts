@@ -45,9 +45,9 @@ export class RouteCardComponent implements OnInit {
   ngOnInit(): void {
     let graph = this.route.dot;
     if(this.route.status == "Started") {
-      this.statusIcon = "play_arrow";
-    } else {
       this.statusIcon = "stop";
+    } else {
+      this.statusIcon = "play_arrow";
 
     }
 
@@ -76,14 +76,14 @@ export class RouteCardComponent implements OnInit {
       this.routeService.stopRoute(routeId).subscribe(result => {
          this.result = result;
        });
-       this.route.status = 'Stopped';
+       this.route.status = 'Started';
 
     } else {
       this.statusIcon = "play_arrow";
       this.routeService.startRoute(routeId).subscribe(result => {
          this.result = result;
        });
-       this.route.status = 'Started';
+       this.route.status = 'Stopped';
     }
   }
 }
