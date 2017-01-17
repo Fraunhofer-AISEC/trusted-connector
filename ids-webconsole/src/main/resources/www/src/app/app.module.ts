@@ -16,7 +16,11 @@ import { RoutesComponent } from './routes/routes.component';
 import { RouteCardComponent } from './routes/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
+
+
 import { KeycertsComponent } from './keycerts/keycerts.component';
+import { CertificateCardComponent } from './keycerts/certificate-cart.component';
+import { CertificateService } from './keycerts/keycert.service';
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
@@ -44,10 +48,12 @@ import 'material-design-lite';
     RouteCardComponent,
     IdsComponent,
     KeycertsComponent,
+    CertificateCardComponent,
     ValuesPipe ],
   providers: [
     AppService,
     RouteService,
+    CertificateService,
     Title
   ],
   bootstrap: [
