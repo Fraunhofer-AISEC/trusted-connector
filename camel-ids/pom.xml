@@ -242,7 +242,7 @@
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
-					<autoPull>always</autoPull>
+					<autoPull>once</autoPull>
 				</configuration>
 				<executions>
 					<execution>
@@ -277,7 +277,7 @@
 					</execution>
 					<execution>
 						<id>run-tpm2d</id>
-						<phase>compile</phase>
+						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>start</goal>
 						</goals>
@@ -302,7 +302,7 @@
 					</execution>
 					<execution>
 						<id>run-ttpsim</id>
-						<phase>compile</phase>
+						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>start</goal>
 						</goals>
@@ -327,7 +327,7 @@
 													200..399
 												</status>
 											</http>
-											<time>10000</time>
+											<time>30000</time>
 										</wait>
 									</run>
 								</image>
