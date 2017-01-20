@@ -246,36 +246,6 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>stop-tpm2d</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>stop</goal>
-							<goal>remove</goal>
-						</goals>
-						<configuration>
-							<images>
-								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
-								</image>
-							</images>
-						</configuration>
-					</execution>
-					<execution>
-						<id>stop-ttpsim</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>stop</goal>
-							<goal>remove</goal>
-						</goals>
-						<configuration>
-							<images>
-								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
-								</image>
-							</images>
-						</configuration>
-					</execution>
-					<execution>
 						<id>run-tpm2d</id>
 						<phase>pre-integration-test</phase>
 						<goals>

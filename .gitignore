@@ -4,3 +4,4 @@
 .settings
 rat-repository/src/main/docker/jar/rat-repository-1.0.0.jar
 /.sonarlint/
+/dist-docker/
