@@ -10,7 +10,7 @@ import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 
-public class UnixSocketTest {
+public class UnixSocketIT {
 	
     static String SOCKET_PATH = "tpm2sim/socket/control.sock";
 	private UnixSocketThread client;
@@ -38,9 +38,9 @@ public class UnixSocketTest {
 				.setQualifyingData(NonceGenerator.generate())
 				.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
 				.build();
-		client.send(msg.toByteArray(), UnixSocketTest.handler);
+		client.send(msg.toByteArray(), UnixSocketIT.handler);
 		// and wait for response
-		TpmToController response = TpmToController.parseFrom(UnixSocketTest.handler.waitForResponse());
+		TpmToController response = TpmToController.parseFrom(UnixSocketIT.handler.waitForResponse());
 		//System.out.println(response.toString());
 		assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
     }

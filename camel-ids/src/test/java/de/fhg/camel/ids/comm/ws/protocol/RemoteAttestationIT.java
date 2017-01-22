@@ -31,11 +31,11 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RemoteAttestationTest {
+public class RemoteAttestationIT {
 	
 	private static RemoteAttestationConsumerHandler consumer;
 	private static RemoteAttestationProviderHandler provider;
-	private static Logger LOG = LoggerFactory.getLogger(RemoteAttestationTest.class);
+	private static Logger LOG = LoggerFactory.getLogger(RemoteAttestationIT.class);
 	private long id = 87654321;
 	private IdsAttestationType aType = IdsAttestationType.BASIC;
 	private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;

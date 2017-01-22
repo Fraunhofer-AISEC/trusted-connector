@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 
-public class DockerCMTest {
+public class DockerCmIT {
 	private List<ApplicationContainer> wipes = new ArrayList<ApplicationContainer>();
 	
 	@BeforeClass

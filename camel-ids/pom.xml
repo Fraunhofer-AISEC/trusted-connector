@@ -242,42 +242,12 @@
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
-					<autoPull>always</autoPull>
+					<autoPull>once</autoPull>
 				</configuration>
 				<executions>
 					<execution>
-						<id>stop-tpm2d</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>stop</goal>
-							<goal>remove</goal>
-						</goals>
-						<configuration>
-							<images>
-								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
-								</image>
-							</images>
-						</configuration>
-					</execution>
-					<execution>
-						<id>stop-ttpsim</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>stop</goal>
-							<goal>remove</goal>
-						</goals>
-						<configuration>
-							<images>
-								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
-								</image>
-							</images>
-						</configuration>
-					</execution>
-					<execution>
 						<id>run-tpm2d</id>
-						<phase>compile</phase>
+						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>start</goal>
 						</goals>
@@ -302,7 +272,7 @@
 					</execution>
 					<execution>
 						<id>run-ttpsim</id>
-						<phase>compile</phase>
+						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>start</goal>
 						</goals>
@@ -327,7 +297,7 @@
 													200..399
 												</status>
 											</http>
-											<time>10000</time>
+											<time>30000</time>
 										</wait>
 									</run>
 								</image>
