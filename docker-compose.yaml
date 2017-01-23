@@ -1,0 +1,19 @@
+version: '2'
+services:
+  # Image for TPM simulator
+  ids-tpm2dsim:
+    image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim
+    volumes:
+      - /tmp/tpm2sim/socket/:/data/cml/communication/tpm2d/
+  # Image for TPM trusted third party (RAT repository)
+  ids-ttpsim:      
+    image: registry.netsec.aisec.fraunhofer.de/ids/ttpsim
+  # TODO mount docker control socket into core-platform container to allow CML access
+  ids-core:
+    image: registry.netsec.aisec.fraunhofer.de/ids/core-platform
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+    ports:
+      - "31337:31337"
+      - "5005:5005"
+      - "8181:8181"

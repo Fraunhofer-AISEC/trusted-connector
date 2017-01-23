@@ -14,7 +14,7 @@ RUN apk --update add socat libstdc++ bash \
     && echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf 
 # The latter is required for proper hostname resolution in Java on Alpine linux
 
-ADD docker-files/ /root/
+ADD * /root/
 
 CMD "/bin/bash"
 RUN chmod 0755 /root/bin/karaf
@@ -24,4 +24,4 @@ EXPOSE 29998
 EXPOSE 5005
 EXPOSE 1099
 EXPOSE 1098
-ENTRYPOINT ["/root/bin/karaf", "debug"]
+ENTRYPOINT ["/root/bin/karaf"]
