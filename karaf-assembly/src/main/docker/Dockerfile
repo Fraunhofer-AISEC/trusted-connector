@@ -1,24 +1,31 @@
 FROM frolvlad/alpine-oraclejdk8:cleaned
 MAINTAINER Julian Schütte (julian.schuette@aisec.fraunhofer.de)
 
-# Some Java native libs require glibc, which must be added manually to Alpine linux
-#RUN apk --update add wget curl ca-certificates tar && \
-#    curl -Ls https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.21-r2/glibc-2.21-r2.apk > glibc.apk && \
-#    apk add --allow-untrusted glibc.apk
-
-RUN apk --update add socat libstdc++ bash \
+# Add some additional packages:
+# socat is not important, just for debugging and playing around with UNIX sockets
+# libstdc++ is required for some (core) Java functionality
+# bash is just a nicer shell than sh
+# libtdl is required for the docker CLI client
+RUN apk --update add socat libstdc++ bash libltdl \
     && rm -rf /var/cache/apk/* \
     && rm /bin/sh \
     && ln -s /bin/bash /bin/sh \
     && ldconfig /lib /usr/glibc/usr/lib \
-    && echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf 
+    && echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 # The latter is required for proper hostname resolution in Java on Alpine linux
 
+# Adding the actual core platform files to /root
 ADD * /root/
 
+# Making karaf start script and docker CLI executable
+RUN chmod 0755 /root/bin/karaf \
+	&& chmod 0755 /root/bin/docker \
+	&& ln -s /root/bin/docker /bin/docker
+
 CMD "/bin/bash"
-RUN chmod 0755 /root/bin/karaf
 WORKDIR "/root"
+
+# Ports to expose
 EXPOSE 8181
 EXPOSE 29998
 EXPOSE 5005
