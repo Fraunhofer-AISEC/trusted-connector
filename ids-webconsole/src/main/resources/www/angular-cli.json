@@ -22,6 +22,7 @@
         "fonts/fonts.css",
         "../node_modules/material-design-lite/material.css",
         "../node_modules/c3/c3.css",
+        "material.teal-pink.min.css",
         "styles.css"
       ],
       "scripts": [],
