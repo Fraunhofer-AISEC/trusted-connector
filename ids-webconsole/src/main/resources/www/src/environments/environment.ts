@@ -5,5 +5,5 @@
 
 export const environment = {
   production: false,
-  apiURL: './cxf/api/v1'
+  apiURL: 'http://172.18.0.3:8181/cxf/api/v1'
 };

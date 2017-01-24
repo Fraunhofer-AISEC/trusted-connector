@@ -1,10 +1,14 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.io.IOException;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.Provider;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * This filter adds Cross-Origin Resource Sharing (CORS) headers to each
@@ -12,6 +16,8 @@ import javax.ws.rs.core.MultivaluedMap;
  * 
  * @author Christian Banse
  */
+@Provider
+@Component(immediate = true)
 public class CORSResponseFilter implements ContainerResponseFilter {
 
     @Override
