@@ -20,6 +20,7 @@
         <bundle start-level="70">mvn:com.github.jnr/jffi/1.2.13</bundle>
 
         <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
+        <bundle start-level="70">mvn:org.apache.felix/org.apache.felix.prefs/1.1.0</bundle>
         <bundle start-level="70">mvn:com.google.code.gson/gson/2.7</bundle>
         <bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.18.0</bundle>
         <bundle start-level="70">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>

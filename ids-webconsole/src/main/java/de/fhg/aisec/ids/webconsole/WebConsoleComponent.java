@@ -7,12 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Properties;
-import org.apache.camel.Property;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -20,6 +17,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +41,7 @@ import de.fhg.aisec.ids.api.cm.ContainerManager;
 @Component(name="ids-webconsole")
 public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
-	private static Optional<ConfigurationAdmin> configService = Optional.empty();
+	private static Optional<PreferencesService> configService = Optional.empty();
 	private static Optional<ContainerManager> cml = Optional.empty();
 	
 	@Activate
@@ -111,20 +109,20 @@ public class WebConsoleComponent {
 	}
 
 	@Reference(name = "config.service",
-            service = ConfigurationAdmin.class,
+            service = PreferencesService.class,
             cardinality = ReferenceCardinality.OPTIONAL,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unbindConfigurationService")
-	public void bindConfigurationService(ConfigurationAdmin conf) {
+	public void bindConfigurationService(PreferencesService conf) {
 		LOG.info("Bound to configuration service");
 		WebConsoleComponent.configService = Optional.of(conf);
 	}
 
-	public void unbindConfigurationService(ConfigurationAdmin conf) {
+	public void unbindConfigurationService(PreferencesService conf) {
 		WebConsoleComponent.configService = Optional.empty();
 	}
 
-	public static Optional<ConfigurationAdmin> getConfigService() {
+	public static Optional<PreferencesService> getConfigService() {
 		return WebConsoleComponent.configService;
 	}
 }
