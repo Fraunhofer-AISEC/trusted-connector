@@ -25,7 +25,8 @@ const appRoutes: Routes = [{
     component: RoutesComponent
   }, {
     path: 'ids',
-    component: IdsComponent
+    component: IdsComponent,
+    canDeactivate: [IdsComponent],
   }, {
     path: 'certificates',
     component: KeycertsComponent

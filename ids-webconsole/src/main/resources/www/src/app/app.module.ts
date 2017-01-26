@@ -2,6 +2,8 @@ import { NgModule }      from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { HttpModule }     from '@angular/http';
 
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 import { AppComponent } from './app.component';
 
 import { DashboardComponent }  from './dashboard/dashboard.component';
@@ -35,7 +37,8 @@ import 'material-design-lite';
   imports: [
     BrowserModule,
     routing,
-    HttpModule ],
+    HttpModule, 
+    ReactiveFormsModule  ],
   declarations: [
     AppComponent,
     DashboardComponent,
@@ -53,6 +56,7 @@ import 'material-design-lite';
   providers: [
     AppService,
     RouteService,
+    IdsComponent,
     CertificateService,
     Title
   ],
