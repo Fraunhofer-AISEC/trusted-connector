@@ -10,6 +10,8 @@
     <feature name="ids" description="IDS Karaf Feature" version="1.0.0">
         <details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
         
+        <bundle start-level="70">mvn:org.asynchttpclient/org.asynchttpclient/2.0.15</bundle>
+
         <!-- Our bundles which make up the IDS feature -->
         <bundle start-level="70">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jnr-enxio/0.13</bundle>
