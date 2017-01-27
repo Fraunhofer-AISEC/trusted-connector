@@ -36,15 +36,48 @@ import { AppService } from './app.service';
         Status: {{app.status}}<br />
       </div>
       <div class="mdl-card__actions mdl-card--border">
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">start</i></a>
+      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored" (click)="onToggle(app.id)">
+        <i class="material-icons">{{statusIcon}}</i>
+      </button>
+
+      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+        <i class="material-icons">delete</i>
+      </button>
+
+        <!--  <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">start</i></a>
           <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">pause</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a>
+          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a>-->
       </div>`
 })
 export class AppCardComponent implements OnInit {
   @Input() app: App;
+  statusIcon: string;
 
+  constructor( private routeService: AppService) {}
   ngOnInit(): void {
+    if(this.app.status.indexOf("Up") >= 0) {
+      this.statusIcon = "stop";
+    } else {
+      this.statusIcon = "play_arrow";
 
+    }
+  }
+
+  onToggle(routeId: string): void {
+    if(this.statusIcon == "play_arrow") {
+      this.statusIcon = "stop";
+      //this.routeService.startRouteServiceRoute(routeId).subscribe(result => {
+        // this.result = result;
+       //});
+       //this.route.status = 'Started';
+
+    } else {
+      this.statusIcon = "play_arrow";
+      //this.routeService.stopRoute(routeId).subscribe(result => {
+      //   this.result = result;
+      // });
+
+       //this.route.status = 'Stopped';
+    }
   }
 }

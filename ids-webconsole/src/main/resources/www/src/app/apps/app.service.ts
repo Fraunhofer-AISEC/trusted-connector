@@ -17,4 +17,18 @@ export class AppService {
                  return response.json() as App[];
                });
   }
+
+  stopApp(appId: string) {
+    //  return this.http.get(environment.apiURL + '/routes/stoproute/' + routeId)
+      //           .map(response => {
+        //           return response.json() as string;
+          //       });
+  }
+
+  startapp(appId: string) {
+      //return this.http.get(environment.apiURL + '/routes/startroute/' + routeId)
+        //         .map(response => {
+          //         return response.json() as string;
+            //     });
+  }
 }
