@@ -15,5 +15,18 @@
 	<classpathentry kind="lib" path="libs/async-http-client-2.0.15.jar"/>
 	<classpathentry kind="lib" path="libs/netty-reactive-streams-1.0.5.jar"/>
 	<classpathentry kind="lib" path="libs/reactive-streams-1.0.0.jar"/>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/async-http-client-netty-utils-2.0.15.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

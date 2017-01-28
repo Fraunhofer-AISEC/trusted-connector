@@ -12,17 +12,24 @@
 
 	<properties>
 		<camel-version>2.18.0</camel-version>
-		<jetty-version>8.1.19.v20160209</jetty-version>
-		<jetty-version>9.3.14.v20161028</jetty-version>
+		<jetty-version>9.2.15.v20160210</jetty-version>
 		<jersey-version>2.25</jersey-version>
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.24</ahc-version>
+		<protobuf-version>3.0.0</protobuf-version>
 		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start.class>de.fhg.ids.attestation.Start</start.class>
 	</properties>
 
 	<dependencies>
+		<!-- Protobuf -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${protobuf-version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>

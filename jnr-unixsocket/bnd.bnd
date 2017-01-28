@@ -3,14 +3,17 @@ dir = libs
 
 # get the contents of the directory (lsa = absolute, lsr=relative)
 files = ${lsa;${dir}}}
+filesRelative = ${lsr;${dir}}}
 
 # restrict to only JAR files with the filter operator
 jars = ${filter;${files};.*\.jar$} 
+jarsRelative = ${filter;${filesRelative};.*\.jar$}
 Bundle-Version: 0.9.0
 src: src/main/java,src/test/java
 -includeresource: ${jars}
 -dsannotations: *
 -exportcontents: jnr.enxio.*,jnr.enxio.channels
+Bundle-ClassPath: ${jarsRelative}
 Export-Package: \
 	jnr.enxio,\
 	jnr.constants,\
@@ -81,3 +84,8 @@ Export-Package: \
 	jnr.enxio.channels,\
 	jnr.unixsocket
 -noee=true
+-consumer-policy :    ${range;[==,==]}
+Import-Package: \
+	com.google.protobuf;version='[3.0.0,4)',\
+	sun.misc;resolution:=optional,\
+	*

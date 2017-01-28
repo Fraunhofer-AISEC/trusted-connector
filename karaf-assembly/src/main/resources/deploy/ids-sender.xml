@@ -12,7 +12,7 @@
 	          <simple>Hello!</simple> 
 	      </setBody>
 	      <log message="sending ${body}"/>
-	      <to uri="idsclient:localhost:9292/echo"/>
+	      <to uri="idsclientplain:localhost:9292/echo"/>
 	    </route>
     </camelContext>
 </blueprint>

@@ -2,12 +2,11 @@ src=src/main/java
 bin=target/classes
 Bundle-Version: 2.0.15
 Bundle-Name: asynchttpclient
--includeresource: libs/async-http-client-2.0.15.jar,libs/netty-reactive-streams-1.0.5.jar,libs/reactive-streams-1.0.0.jar
-Bundle-ClassPath: .,async-http-client-2.0.15.jar,netty-reactive-streams-1.0.5.jar,reactive-streams-1.0.0.jar
+-includeresource: libs/async-http-client-2.0.15.jar,libs/netty-reactive-streams-1.0.5.jar,libs/reactive-streams-1.0.0.jar,libs/async-http-client-netty-utils-2.0.15.jar
+Bundle-ClassPath: .,async-http-client-2.0.15.jar,netty-reactive-streams-1.0.5.jar,reactive-streams-1.0.0.jar,async-http-client-netty-utils-2.0.15.jar
 Import-Package: \
 	io.netty.channel;version='[4.1.5,5)',\
 	 io.netty.util.internal;version='[4.1.5,5)',\
-	org.asynchttpclient.netty.util;resolution:=optional,\
 	io.netty.channel.epoll;resolution:=optional,\
 	*
 Export-Package: \
@@ -46,5 +45,6 @@ Export-Package: \
 	org.asynchttpclient.util,\
 	org.asynchttpclient.webdav,\
 	org.asynchttpclient.ws,\
-	org.asynchttpclient
+	org.asynchttpclient,\
+	org.asynchttpclient.netty.util
 Bundle-Description: OSGi-compliant version of org.asynchttpclient

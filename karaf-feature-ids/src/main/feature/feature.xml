@@ -13,28 +13,31 @@
         <bundle start-level="70">mvn:org.asynchttpclient/org.asynchttpclient/2.0.15</bundle>
 
         <!-- Our bundles which make up the IDS feature -->
+       <!--
         <bundle start-level="70">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jnr-enxio/0.13</bundle>
-        <bundle start-level="70">mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jnr-posix/3.0.30</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jnr-unixsocket/0.13</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jnr-ffi/2.1.0</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jffi/1.2.13</bundle>
+    -->
+        <bundle start-level="70">mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
+        <bundle start-level="70">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
 
         <!-- Dependencies which must be available at runtime. Can be features or bundles. -->
         <bundle start-level="70">mvn:com.google.code.gson/gson/2.7</bundle>
         <bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.18.0</bundle>
         <bundle start-level="70">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-jmx/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-util/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-server/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-http/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-io/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlet/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlets/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-api/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-servlet/9.3.14.v20161028</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-security/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-jmx/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-util/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-server/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-http/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-io/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlet/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlets/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-api/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-servlet/9.2.15.v20160210</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-security/9.2.15.v20160210</bundle>
         <feature prerequisite="true" dependency="true">wrap</feature>
         <feature version="2.18.0" prerequisite="false" dependency="true">camel</feature>        
         <feature version="3.1.7" prerequisite="false" dependency="true">cxf</feature>
