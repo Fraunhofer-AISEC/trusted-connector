@@ -51,7 +51,7 @@ export class RouteCardComponent implements OnInit {
 
     }
 
-  //this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+ 	this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
   }
 
   onStart(routeId: string): void {
