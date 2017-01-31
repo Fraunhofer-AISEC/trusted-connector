@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'ids',
-  templateUrl: 'app/ids/ids.component.html'
+  templateUrl: 'ids.component.html'
 })
 
 export class IdsComponent  implements OnInit{

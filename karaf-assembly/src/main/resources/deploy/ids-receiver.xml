@@ -8,7 +8,7 @@
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 	    <route id="ids-receiver">
 	      <from uri="idsserver://0.0.0.0:9292/echo" />
-	      <log message="timer://simpleTimer?period=10000"/>
+	      <log message="IDS message received: The message contains ${body}" id="log-ids"/>
 	    </route>
     </camelContext>
 </blueprint>
