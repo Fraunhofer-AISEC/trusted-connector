@@ -5,7 +5,7 @@ services:
   ids-tpm2dsim:
     image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim
     volumes:
-      - ./camel-ids/tpm2sim/socket/:/data/cml/communication/tpm2d/
+      - ./camel-ids/socket/:/data/cml/communication/tpm2d/
     command: /tpm2d/cml-tpm2d
 
   # Image for TPM trusted third party (RAT repository)
@@ -20,6 +20,8 @@ services:
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./camel-ids/socket/:/var/run/tpm2d/
     ports:
       - "5005:5005"
+      - "9292:9292"
       - "8181:8181"

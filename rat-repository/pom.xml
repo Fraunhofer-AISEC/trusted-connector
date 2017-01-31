@@ -213,7 +213,7 @@
 					</execution>
 					<execution>
 						<id>push-image</id>
-						<phase>deploy</phase>
+						<phase>install</phase>
 						<goals>
 							<goal>push</goal>
 						</goals>

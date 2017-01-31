@@ -9,10 +9,10 @@
 	    <route id="ids-sender">
 	      <from uri="timer://simpleTimer?period=10000"/>
 	      <setBody>
-	          <simple>Hello!</simple> 
+	          <simple>Hello via IDS from IDS1!</simple> 
 	      </setBody>
 	      <log message="sending ${body}"/>
-	      <to uri="idsclientplain:localhost:9292/echo"/>
+	      <to uri="idsclientplain:10.1.2.14:9292/echo"/>
 	    </route>
     </camelContext>
 </blueprint>

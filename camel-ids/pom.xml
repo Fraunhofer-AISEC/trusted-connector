@@ -251,7 +251,7 @@
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
-					<autoPull>once</autoPull>
+				<!--	<autoPull>once</autoPull> --> 
 				</configuration>
 				<executions>
 					<execution>
@@ -268,7 +268,7 @@
 									<run>
 										<volumes>
 											<bind>
-												<volume>${project.basedir}/tpm2sim/socket/:/data/cml/communication/tpm2d/</volume>
+												<volume>${project.basedir}/socket/:/data/cml/communication/tpm2d/</volume>
 											</bind>
 										</volumes>
 										<cmd>
@@ -345,6 +345,45 @@
 					</execution>
 				</executions>
 			</plugin>
+                        <plugin>
+                                <groupId>com.spotify</groupId>
+                                <artifactId>docker-maven-plugin</artifactId>
+                                <configuration>
+                                        <imageName>ids/tpm2dsim:latest</imageName>
+                                        <dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
+                                </configuration>
+                                <version>0.4.13</version>
+                                <executions>
+                                        <execution>
+                                                <id>build-image</id>
+                                                <phase>install</phase>
+                                                <goals>
+                                                        <goal>build</goal>
+                                                </goals>
+                                        </execution>
+                                        <execution>
+                                                <id>tag-image</id>
+                                                <phase>install</phase>
+                                                <goals>
+                                                        <goal>tag</goal>
+                                                </goals>
+                                                <configuration>
+                                                        <image>ids/tpm2dsim:latest</image>
+                                                        <newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</newName>
+                                                </configuration>
+                                        </execution>
+                                        <execution>
+                                                <id>push-image</id>
+                                                <phase>install</phase>
+                                                <goals>
+                                                        <goal>push</goal>
+                                                </goals>
+                                                <configuration>
+                                                        <imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</imageName>
+                                                </configuration>
+                                        </execution>
+                                </executions>
+                        </plugin>
 		</plugins>
 	</build>
 </project>

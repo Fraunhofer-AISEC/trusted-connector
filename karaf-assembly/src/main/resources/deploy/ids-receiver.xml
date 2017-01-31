@@ -7,7 +7,7 @@
                http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 	    <route id="ids-receiver">
-	      <from uri="idsserver://localhost:9292/echo" />
+	      <from uri="idsserver://0.0.0.0:9292/echo" />
 	      <log message="timer://simpleTimer?period=10000"/>
 	    </route>
     </camelContext>

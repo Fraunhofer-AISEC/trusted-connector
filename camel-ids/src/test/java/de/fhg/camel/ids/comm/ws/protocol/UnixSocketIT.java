@@ -12,7 +12,7 @@ import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 
 public class UnixSocketIT {
 	
-    static String SOCKET_PATH = "tpm2sim/socket/control.sock";
+    static String SOCKET_PATH = "/var/run/control.sock";
 	private UnixSocketThread client;
 	private Thread thread;
 	private static UnixSocketResponsHandler handler;
