@@ -60,31 +60,45 @@ public class RouteApi {
 		// Create response
 		for (CamelContext cCtx : camelO) {
 			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
-				HashMap<String, String> route = new HashMap<>();				
-				route.put("id", rd.getId());
-				route.put("description", (rd.getDescriptionText()!=null)?rd.getDescriptionText():"");
-				route.put("dot", routeToDot(rd)); // Visualize route in graphviz
-				route.put("shortName", rd.getShortName());
-				route.put("context", cCtx.getName());
-				route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
-				route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
-				route.put("status",cCtx.getRouteStatus(rd.getId()).toString());
-				result.add(route);
+				result.add(routeDefinitionToMap(cCtx, rd));
 			}
-		}	
-		
+		}		
 		
 		return new GsonBuilder().create().toJson(result);
 	}
 
-
+	@GET
+	@Path("/get/{id}")
+	@Produces("application/json")
+	public String get(String id) {				
+		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+		HashMap<String, String> result = new HashMap<>();				
+		for (CamelContext cCtx : camelO) {
+			RouteDefinition def = cCtx.getRouteDefinition(id);
+			if (def != null) {
+				result = routeDefinitionToMap(cCtx, def);
+				break;
+			}
+			
+		}
+		return new GsonBuilder().create().toJson(result);
+	}
+	
+	private HashMap<String, String> routeDefinitionToMap(CamelContext cCtx, RouteDefinition rd) {
+		HashMap<String, String> route = new HashMap<>();				
+		route.put("id", rd.getId());
+		route.put("description", (rd.getDescriptionText()!=null)?rd.getDescriptionText():"");
+		route.put("dot", routeToDot(rd)); // Visualize route in graphviz
+		route.put("shortName", rd.getShortName());
+		route.put("context", cCtx.getName());
+		route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
+		route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
+		route.put("status",cCtx.getRouteStatus(rd.getId()).toString());
+		return route;
+	}
+	
 	/**
 	 * Stop a route based on an id.
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
 	 */
 	@GET
 	@Path("/startroute/{id}")

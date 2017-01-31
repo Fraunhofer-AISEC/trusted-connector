@@ -14,7 +14,9 @@ import { MetricCardComponent }  from './dashboard/metric-card.component';
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
+import { DataflowpoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
 import { RoutesComponent } from './routes/routes.component';
+import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { RouteCardComponent } from './routes/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
@@ -47,7 +49,9 @@ import 'material-design-lite';
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
+    DataflowpoliciesComponent,
     RoutesComponent,
+    RouteeditorComponent,
     RouteCardComponent,
     IdsComponent,
     KeycertsComponent,

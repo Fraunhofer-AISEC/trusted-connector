@@ -22,14 +22,18 @@ declare var Viz: any;
         <div style="padding-top:30px" [innerHTML]="vizResult"></div>
       </div>
       <div class="mdl-card__actions mdl-card--border">
-          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored" (click)="onToggle(route.id)">
+          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" (click)="onToggle(route.id)">
             <i class="material-icons">{{statusIcon}}</i>
           </button>
           <!--<a class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)"><i class="material-icons" role="presentation">{{statusIcon}}</i></a>
           <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a> -->
-          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
             <i class="material-icons">delete</i>
           </button>
+          <a class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" routerLink="/routeeditor">
+            <i class="material-icons">edit</i>
+          </a>
+
 
       </div>`
 })
