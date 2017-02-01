@@ -11,30 +11,7 @@ declare var Viz: any;
 
 @Component({
   selector: 'routeeditor',
-  template: `
-      <div class="mdl-card__title mdl-card--expand">
-        <h2 class="mdl-card__title-text">{{camelRoute.id}}</h2>
-      </div>
-      <div class="mdl-card__supporting-text">
-        {{camelRoute.description}}
-        <div class="mdl-grid">
-          <div class="mdl-cell mdl-cell--2-col">Uptime</div><div class="mdl-cell mdl-cell--10-col">{{(camelRoute.uptime/1000/60).toFixed()}} minutes</div>
-          <div class="mdl-cell mdl-cell--2-col">Context</div><div class="mdl-cell mdl-cell--10-col">{{camelRoute.context}}</div>
-          <div class="mdl-cell mdl-cell--2-col">Status</div><div class="mdl-cell mdl-cell--10-col">{{camelRoute.status}}</div>
-        </div>
-        <div style="padding-top:30px" [innerHTML]="vizResult"></div>
-      </div>
-      <div class="mdl-card__actions mdl-card--border">
-          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" (click)="onToggle(camelRoute.id)">
-            <i class="material-icons">{{statusIcon}}</i>
-          </button>
-          <!--<a class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(camelRoute.id)"><i class="material-icons" role="presentation">{{statusIcon}}</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a> -->
-          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
-            <i class="material-icons">delete</i>
-          </button>
-
-      </div>`
+  templateUrl: './routeeditor-widget.html'
 })
 export class RouteeditorComponent implements OnInit {
   private camelRoute: Route = new Route();
