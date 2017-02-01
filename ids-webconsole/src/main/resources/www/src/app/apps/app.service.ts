@@ -19,16 +19,16 @@ export class AppService {
   }
 
   stopApp(appId: string) {
-    //  return this.http.get(environment.apiURL + '/routes/stoproute/' + routeId)
-      //           .map(response => {
-        //           return response.json() as string;
-          //       });
+      return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId)
+                 .map(response => {
+                   return response.json() as string;
+                 });
   }
 
-  startapp(appId: string) {
-      //return this.http.get(environment.apiURL + '/routes/startroute/' + routeId)
-        //         .map(response => {
-          //         return response.json() as string;
-            //     });
+  startApp(appId: string) {
+      return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId)
+                 .map(response => {
+                  return response.json() as string;
+                 });
   }
 }
