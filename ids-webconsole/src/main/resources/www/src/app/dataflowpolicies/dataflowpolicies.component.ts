@@ -2,7 +2,7 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 @Component({
-  templateUrl: 'app/dataflowpolicies/dataflowpolicies.component.html',
+  templateUrl: './dataflowpolicies.component.html',
   providers: []
 })
 export class DataflowpoliciesComponent implements OnInit {
