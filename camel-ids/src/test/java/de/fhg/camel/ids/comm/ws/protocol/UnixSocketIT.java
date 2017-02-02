@@ -28,7 +28,7 @@ public class UnixSocketIT {
 			// responseHandler will be used to wait for messages
 			handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			System.out.println("could not write to/read from " + SOCKET_PATH);
+			System.out.println("could not write to/read from " + socket);
 			e.printStackTrace();
 		}
     	// construct protobuf message to send to local tpm2d via unix socket
