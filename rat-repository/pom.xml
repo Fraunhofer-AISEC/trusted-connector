@@ -169,7 +169,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/src/main/docker/jar/</outputDirectory>
+							<outputDirectory>${basedir}/src/main/docker/</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}/target/</directory>
