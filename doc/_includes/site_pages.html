@@ -1,0 +1,12 @@
+{% for mypage in site.pages %}
+  {% if mypage.title %}
+
+    {% if mypage.url == page.url %}
+      {% assign a = "active" %}
+    {% else %}
+      {% assign a = "" %}
+    {% endif %}
+
+    <li class="bold {{ a }}"><a href="{{ mypage.url | prepend: site.baseurl }}" class="waves-effect waves-teal">{{ mypage.title }}</a></li>
+  {% endif %}
+{% endfor %}
