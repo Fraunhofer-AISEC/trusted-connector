@@ -17,4 +17,18 @@ export class AppService {
                  return response.json() as App[];
                });
   }
+
+  stopApp(appId: string) {
+      return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId)
+                 .map(response => {
+                   return response.json() as string;
+                 });
+  }
+
+  startApp(appId: string) {
+      return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId)
+                 .map(response => {
+                  return response.json() as string;
+                 });
+  }
 }

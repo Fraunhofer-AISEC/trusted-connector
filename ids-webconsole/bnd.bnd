@@ -4,7 +4,7 @@ testsrc: src/test/java
 testbin: target/test-classes
 -sources: false 
 Bundle-Version: 1.0.0
-Web-ContextPath: ids
+Web-ContextPath: /
 Export-Package: \
 	de.fhg.aisec.ids.webconsole,\
 	de.fhg.aisec.ids.webconsole.servlets,\

@@ -17,7 +17,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="/api"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/protobuf/protobuf-java/3.0.0/protobuf-java-3.0.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/camel/camel-core/2.18.0/camel-core-2.18.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar"/>
@@ -48,5 +47,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/ids-api"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
