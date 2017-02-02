@@ -56,7 +56,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private Pcr[] values;
 	private String qualifyingData;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
@@ -69,14 +69,14 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
 			// client will be used to send messages
-			this.client = new UnixSocketThread(SOCKET);
+			this.client = new UnixSocketThread(socket);
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();
 			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			LOG.debug("could not write to/read from " + SOCKET);
+			LOG.debug("could not write to/read from " + socket);
 			e.printStackTrace();
 		}		
 	}

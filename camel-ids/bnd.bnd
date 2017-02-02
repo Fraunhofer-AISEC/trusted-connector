@@ -6,42 +6,26 @@ Bundle-Description: Camel support for the IDS protocol
 Bundle-Copyright: Fraunhofer 2016
 Bundle-Vendor: Fraunhofer Gesellschaft
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
-######################################################################
-# Workaround for missing de.fhg.aisec.ids.attestation:
-#    The whole rat-repo library is statically included in this bundle.
-#    The proper fix is to not depend on the rat-repo library, but to 
-#    move the respective shared classes to ids-api.
-#######################################################################
-# set the base directory
-dir = libs
-# get the contents of the directory (lsa = absolute, lsr=relative)
-files = ${lsa;${dir}}}
-# restrict to only JAR files with the filter operator
-jars = ${filter;${files};.*\.jar$}
-#######################################################
--includeresource: src/main/resources,libs/rat-repository-1.0.0.jar
-Bundle-ClassPath: .,rat-repository-1.0.0.jar
+-includeresource: src/main/resources
 Export-Package: de.fhg.camel.ids.server,\
 	de.fhg.camel.ids.client
 Import-Package: \
+	de.fhg.aisec.ids.messages, \
 	com.ning.http.client.ws;resolution:=optional,\
 	de.fraunhofer.aisec.tpm2j,\
 	de.fraunhofer.aisec.tpm2j.struct,\
 	de.fraunhofer.aisec.tpm2j.tools,\
 	de.fraunhofer.aisec.tpm2j.tpm,\
 	de.fraunhofer.aisec.tpm2j.tpm2b,\
-	jnr.ffi.provider.*,\
 	de.fraunhofer.aisec.tpm2j.tpma,\
 	de.fraunhofer.aisec.tpm2j.tpmi,\
 	de.fraunhofer.aisec.tpm2j.tpml,\
 	de.fraunhofer.aisec.tpm2j.tpms,\
 	de.fraunhofer.aisec.tpm2j.tpmt,\
-	jnr.ffni.*;version=0.9.0,\
+	de.fraunhofer.aisec.tpm2j.tpmu,\
 	jnr.unixsocket;version=0.9.0,\
-	jnr.constants*;version=0.9.0,\
 	jnr.posix;version=0.9.0,\
 	jnr.enxio;version=0.9.0,\
 	jnr.enxio.channels;version=0.9.0,\
-	de.fraunhofer.aisec.tpm2j.tpmu,\
 	!org.glassfish.jersey.*,\
 	*

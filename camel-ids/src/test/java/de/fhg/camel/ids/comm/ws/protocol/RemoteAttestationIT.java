@@ -54,14 +54,15 @@ public class RemoteAttestationIT {
 	private static Server server;
 	private static FSM fsm1;
 	private static FSM fsm2;
+	private static final String socket = "socket/control.sock";
 	private static String ratRepoUri = "http://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
 		fsm1 = new FSM();
 		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, new URI(ratRepoUri));
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, new URI(ratRepoUri));		
+        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, new URI(ratRepoUri), socket);
+		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, new URI(ratRepoUri), socket);		
 	}
 	
     @Test

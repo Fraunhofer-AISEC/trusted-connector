@@ -39,18 +39,6 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<dependency>
-			<groupId>de.fhg.ids</groupId>
-			<artifactId>rat-repository</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.fhg.ids</groupId>
-			<artifactId>api</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
 		<!-- Protobuf -->
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
@@ -172,6 +160,12 @@
 			<version>1.0.4</version>
 			<scope>compile</scope>
 		</dependency>
+		<!-- IDS API -->
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>api</artifactId>
+			<version>1.0.0</version>
+		</dependency>		
 		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>docker-maven-plugin</artifactId>
@@ -220,7 +214,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

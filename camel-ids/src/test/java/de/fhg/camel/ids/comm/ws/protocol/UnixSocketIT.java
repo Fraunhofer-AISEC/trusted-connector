@@ -12,23 +12,23 @@ import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 
 public class UnixSocketIT {
 	
-    static String SOCKET_PATH = "/var/run/control.sock";
 	private UnixSocketThread client;
 	private Thread thread;
+	private static final String socket = "socket/control.sock";
 	private static UnixSocketResponsHandler handler;
 
     @Test
     public void testSocketConnection() throws Exception {
     	try {
 			// client will be used to send messages
-			client = new UnixSocketThread(SOCKET_PATH);
+			client = new UnixSocketThread(socket);
 			thread = new Thread(client);
 			//this.thread.setDaemon(true);
 			thread.start();
 			// responseHandler will be used to wait for messages
 			handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			System.out.println("could not write to/read from " + SOCKET_PATH);
+			System.out.println("could not write to/read from " + socket);
 			e.printStackTrace();
 		}
     	// construct protobuf message to send to local tpm2d via unix socket

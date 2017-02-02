@@ -36,6 +36,7 @@ public class ProtocolMachine {
 	private WebSocket ws;
 	private Session sess;
 	private String ttpURL = "http://127.0.0.1:31337/configurations/check";
+	private String socket = "/var/run/tpm2d/control.sock";
 	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
 	/** C'tor */
@@ -60,7 +61,7 @@ public class ProtocolMachine {
 			e1.printStackTrace();
 		}
 		// all handler
-		RemoteAttestationConsumerHandler remoteAttestationHandler = new RemoteAttestationConsumerHandler(fsm, IdsAttestationType.BASIC, ttp);
+		RemoteAttestationConsumerHandler remoteAttestationHandler = new RemoteAttestationConsumerHandler(fsm, IdsAttestationType.BASIC, ttp, socket);
 		ErrorHandler errorHandler = new ErrorHandler();
 		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();		
 		
@@ -115,7 +116,7 @@ public class ProtocolMachine {
 		}
 
 		// all handler
-		RemoteAttestationProviderHandler h = new RemoteAttestationProviderHandler(fsm, IdsAttestationType.BASIC, ttp);
+		RemoteAttestationProviderHandler h = new RemoteAttestationProviderHandler(fsm, IdsAttestationType.BASIC, ttp, socket);
 		ErrorHandler errorHandler = new ErrorHandler();
 		MetadataCommunicationHelper mComHelper = new MetadataCommunicationHelper();
 		

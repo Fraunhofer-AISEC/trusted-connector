@@ -59,7 +59,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private boolean pcrCorrect = true;
 	private Pcr[] values;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri) {
+	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
@@ -72,14 +72,14 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		// UnixSocketThread will be used to communicate with local TPM2d
 		try {
 			// client will be used to send messages
-			this.client = new UnixSocketThread(SOCKET);
+			this.client = new UnixSocketThread(socket);
 			this.thread = new Thread(client);
 			this.thread.setDaemon(true);
 			this.thread.start();
 			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			LOG.debug("could not write to/read from " + SOCKET);
+			LOG.debug("could not write to/read from " + socket);
 			e.printStackTrace();
 		}
 	}
@@ -154,6 +154,8 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 			String error = "error: IOException:" + ex.getMessage();
 			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
 		}
+		
+		
 		if(++this.sessionID == e.getMessage().getId()) {
 			// construct a new TPM2B_PUBLIC from bkey bytes
 			TPM2B_PUBLIC key;
