@@ -1,153 +1,38 @@
 <div class="mdl-grid">
-  <div class="test-case-card mdl-card mdl-cell mdl-cell--12-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">IDS</h2>
-    </div>
-    <div class="mdl-card__supporting-text ">
-      <!-- setting -->
-      <div class="row" id="block-settings">
-        <div class="col-lg-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">Settings</div>
-              <form id="form_config" lpformnum="47" role="form">
-              <div class="panel-body">
-                <div id="form_config_text" class="alert bg-error hidden" role="alert"></div>
-                <div class="col-lg-12">
-                  <div class="form-group">
-                    <label>Broker URL</label>
-                    <input id="broker.url" name="broker.url" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4EaVTO26DQBD1ohQWaS2lg9JybZ+AK7hNwx2oIoVf4UPQ0Lj1FdKktevIpel8AKNUkDcWMxpgSaIEaTVv3sx7uztiTdu2s/98DywOw3Dued4Who/M2aIx5lZV1aEsy0+qiwHELyi+Ytl0PQ69SxAxkWIA4RMRTdNsKE59juMcuZd6xIAFeZ6fGCdJ8kY4y7KAuTRNGd7jyEBXsdOPE3a0QGPsniOnnYMO67LgSQN9T41F2QGrQRRFCwyzoIF2qyBuKKbcOgPXdVeY9rMWgNsjf9ccYesJhk3f5dYT1HX9gR0LLQR30TnjkUEcx2uIuS4RnI+aj6sJR0AM8AaumPaM/rRehyWhXqbFAA9kh3/8/NvHxAYGAsZ/il8IalkCLBfNVAAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-position: right center; cursor: auto;" class="form-control" placeholder="Placeholder">
-                  </div>
-                </div>
-                <div class="col-lg-12">
-                  <button class="btn btn-primary" (click)="saveSettings()">Save</button>
-                    <div *ngIf="edited" class="alert alert-success box-msg" role="alert">
-                        <strong>Settings Saved!</strong> Your changes has been saved.
-                    </div>
-                  <!--  <button type="reset" class="btn btn-default">Reset Button</button> -->
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- pipes -->
-      <div class="row " id="block-routes">
-        <div class="col-lg-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">Pipes</div>
-              <form id="form_pipes" lpformnum="47" role="form">
-              <div class="panel-body">
-                <div id="form_config_text" class="alert bg-error hidden" role="alert">
-                  Pipes connect applications within the IDS connector. Use pipes to route data from system connectors through transformers to publishing endpoints.
-                </div>
-                <div class="col-lg-12">
-                  <div class="form-group">
-                    <label>Pipes definition</label>
-                    <textarea id="form_routes_text" class="form-control" rows="30"></textarea>
-                  </div>
-                </div>
-                <div class="col-lg-12">
-                  <button class="btn btn-primary" (click)="savePipes()">Save</button>
-                  <div *ngIf="edited" class="alert alert-success box-msg" role="alert">
-                        <strong>Pipes Saved!</strong> Your changes has been saved.
-                </div>
-                  <!--  <button type="reset" class="btn btn-default">Reset Button</button> -->
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- bundles -->
-      <div class="row" id="block-bundles">
-        <div class="col-lg-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">Bundles</div>
-            <div class="panel-body">
-              <table data-toggle="table" data-url="bundles/list"  data-show-refresh="true" data-show-toggle="false" data-show-columns="false" data-search="true" data-select-item-name="toolbar1" data-pagination="false" data-sort-name="name" data-sort-order="desc">
-                  <thead>
-                  <tr>
-                      <th data-field="state" data-checkbox="true" >Bundle ID</th>
-                      <th data-field="id" data-sortable="true">Bundle ID</th>
-                      <th data-field="name"  data-sortable="true">Bundle Name</th>
-                      <th data-field="version"  data-sortable="true">Version</th>
-                      <th data-field="status" data-sortable="true">Status</th>
-                  </tr>
-                  </thead>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- endpoints -->
-      <div class="row " id="block-endpoints">
-        <div class="col-lg-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">Endpoints registered at broker</div>
-            <div class="panel-body">
-              <table data-toggle="table" data-url="endpoints/list"  data-show-refresh="true" data-show-toggle="false" data-show-columns="false" data-search="true" data-select-item-name="toolbar1" data-pagination="true" data-sort-name="name" data-sort-order="desc">
-                  <thead>
-                  <tr>
-                      <th data-field="epAddress" data-sortable="true">Address</th>
-                      <th data-field="description"  data-sortable="true">Description</th>
-                  </tr>
-                  </thead>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="row " id="block-containers">
-  <div class="col-lg-12">
-
-    <div class="panel panel-default">
-      <div class="panel-heading">Install container image</div>
-        <form id="form_container" lpformnum="47" role="form">
-        <div class="panel-body">
-          <div id="form_container_text" class="alert bg-error hidden" role="alert"></div>
-          <div class="col-lg-12">
-            <div class="form-group">
-              <label>Image ID</label>
-              <input id="image.id" name="image.id" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4EaVTO26DQBD1ohQWaS2lg9JybZ+AK7hNwx2oIoVf4UPQ0Lj1FdKktevIpel8AKNUkDcWMxpgSaIEaTVv3sx7uztiTdu2s/98DywOw3Dued4Who/M2aIx5lZV1aEsy0+qiwHELyi+Ytl0PQ69SxAxkWIA4RMRTdNsKE59juMcuZd6xIAFeZ6fGCdJ8kY4y7KAuTRNGd7jyEBXsdOPE3a0QGPsniOnnYMO67LgSQN9T41F2QGrQRRFCwyzoIF2qyBuKKbcOgPXdVeY9rMWgNsjf9ccYesJhk3f5dYT1HX9gR0LLQR30TnjkUEcx2uIuS4RnI+aj6sJR0AM8AaumPaM/rRehyWhXqbFAA9kh3/8/NvHxAYGAsZ/il8IalkCLBfNVAAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-position: right center; cursor: auto;" class="form-control" placeholder="ImageID (e.g. fhg/opc-ua-ingress:latest)">
-            </div>
-          </div>
-          <div class="col-lg-12">
-            <button class="btn btn-primary" (click)="install()">Install</button>
-            <!--  <button type="reset" class="btn btn-default">Reset Button</button> -->
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <!-- containers -->
-    <div class="panel panel-default">
-      <div class="panel-heading">Local application containers</div>
-          <div class="panel-body">
-            <table id="container-table" data-toggle="table" data-url="containers/list?all=true"  data-show-refresh="true" data-show-toggle="false" data-show-columns="false" data-search="true" data-select-item-name="toolbar1" data-pagination="true" data-sort-name="name" data-sort-order="desc">
-                <thead>
-                <tr>
-                    <th data-field="id" data-formatter="shorten_container" data-sortable="true">ID</th>
-                    <th data-field="image"  data-formatter="shorten_image" data-sortable="true">Image</th>
-                    <th data-field="name"  data-sortable="true">name</th>
-                    <th data-field="uptime"  data-sortable="true">Uptime</th>
-                    <th data-field="status"  data-sortable="true">Status</th>
-                    <th data-field="ports"  data-sortable="true">Ports</th>
-                    <th data-field="size"  data-sortable="true">Size</th>
-                    <th data-field="id" data-formatter="actionButton">Action</th>
-                </tr>
-                </thead>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    </div>
-  </div>
+	<div class="mdl-card mdl-cell mdl-cell--12-col">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">Settings</h2>
+		</div>
+		<div class="mdl-card__supporting-text ">
+			<form [formGroup]="myForm"
+				novalidate (ngSubmit)="save(myForm.value, myForm.valid)">
+				<div class="mdl-cell--12-col">
+					<div
+						class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
+						<label class="mdl-textfield__label" for="broker_url">Broker
+							URL</label> <input class="mdl-textfield__input" id="broker_url"
+							type="text" formControlName="broker_url"> <span
+							[hidden]="myForm.controls.broker_url.valid || (myForm.controls.broker_url.pristine && !submitted)"
+							class="mdl-textfield__error"> Broker URL is required. </span>
+						<!--<pre class="margin-20">{{ myForm.controls.name.errors | json }}</pre>-->
+					</div>
+				</div>
+				<div class="mdl-cell--12-col">
+					<div
+						class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
+						<label class="mdl-textfield__label" for="ttp_address">Attestation
+							Trusted Third Party URL</label> <input type="text"
+							class="mdl-textfield__input" id="ttp_address"
+							formControlName="ttp_address"> <span
+							[hidden]="myForm.controls.ttp_address.valid || (myForm.controls.ttp_address.pristine && !submitted)"
+							class="mdl-textfield__error"> URL required </span>
+					</div>
+				</div>
+				<button type="submit"
+					class="mdl-button mdl-js-button mdl-button--raised"
+					[ngClass]="{'mdl-button--colored': !saved }">Save
+					Settings</button>
+			</form>
+		</div>
+	</div>
 </div>

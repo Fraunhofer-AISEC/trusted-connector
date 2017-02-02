@@ -1,59 +1,92 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
+import { Headers, Http, Response, RequestOptions } from '@angular/http';
+import { CanDeactivate } from '@angular/router';
+import { Settings } from './settings.interface';
+import { environment } from '../../environments/environment';
 
 @Component({
-  selector: 'ids',
-  templateUrl: 'ids.component.html'
+  selector: 'my-app',
+  templateUrl: './ids.component.html',
 })
+export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
+    public myForm: FormGroup;
+    public submitted: boolean;
+    public saved: boolean;
+    public events: any[] = [];
 
-export class IdsComponent  implements OnInit{
+    constructor(private _fb: FormBuilder, private _http: Http) { 
+    	this.saved = true;
+    }
+    
+    canDeactivate(target: IdsComponent){
+    	return target.saved; // false stops navigation, true continue navigation
+  	}
 
-  title = 'IDS';
+    ngOnInit() {
+        // the long way
+        // this.myForm = new FormGroup({
+        //     name: new FormControl('', [<any>Validators.required, <any>Validators.minLength(5)]),
+        //     address: new FormGroup({
+        //         address1: new FormControl('', <any>Validators.required),
+        //         postcode: new FormControl('8000')
+        //     })
+        // });
 
-  @Output() changeTitle = new EventEmitter();
+        // the short way
+        this.myForm = this._fb.group({
+            broker_url: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
+            ttp_address: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
+            
+            // This is how to deal with form groups:
+            //ttp_address: this._fb.group({
+            //    street: ['', <any>Validators.required],
+            //    postcode: ['8000']
+            //})
+        });
 
-  constructor(private titleService: Title) {
-     this.titleService.setTitle('IDS');
-  }
+        // subscribe to form changes  
+        this.subcribeToFormChanges();
+        
+        // Update single value
+        (<FormControl>this.myForm.controls['broker_url']).patchValue('ids://localhost', { onlySelf: true });
+        
+        // This is how to update the whole form model
+        // const people = {
+        // 	name: 'Jane',
+        // 	address: {
+        // 		street: 'High street',
+        // 		postcode: '94043'
+        // 	}
+        // };
+        // (<FormGroup>this.myForm).setValue(people, { onlySelf: true });
 
-  ngOnInit(): void {
-    this.changeTitle.emit('IDS');
-  }
+    }
 
-  public editedSettings = false;
+    subcribeToFormChanges() {
+        const myFormStatusChanges$ = this.myForm.statusChanges;
+        const myFormValueChanges$ = this.myForm.valueChanges;
+        
+        myFormStatusChanges$.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
+        myFormValueChanges$.subscribe(x => { this.saved = false;
+        									 this.events.push({ event: 'VALUE_CHANGED', object: x }) });
+    }
 
-  saveSettings(): void {
-     //show box msg
-     this.editedSettings = true;
-     //wait 3 Seconds and hide
-     setTimeout(function() {
-         this.editedSettings = false;
-         console.log(this.editedSettings);
-     }.bind(this), 3000);
-  }
+    save(model: Settings, isValid: boolean) {
+        this.submitted = true;
+        console.log(model, isValid);
+        
+    	let headers = new Headers({ 'Content-Type': 'application/json' });
+    	let options = new RequestOptions({ headers: headers });
 
-  public editedPipes = false;
-
-   save(): void {
-      //show box msg
-      this.editedPipes = true;
-      //wait 3 Seconds and hide
-      setTimeout(function() {
-          this.editedPipes = false;
-          console.log(this.editedPipes);
-      }.bind(this), 3000);
-   }
-
-   public installed = false;
-
-    install(): void {
-       //show box msg
-       this.installed = true;
-       //wait 3 Seconds and hide
-       setTimeout(function() {
-           this.installed = false;
-           console.log(this.installed);
-       }.bind(this), 3000);
+         // Call REST POST to store settings
+         let result = this._http.post(environment.apiURL + '/config/set', model, options)
+               .subscribe(
+			      () => {
+			        // If saved successfully, user may leave the route (=saved=true)
+			        this.saved = true;
+			      },
+			      err => console.log("Did not save form " + err.json().message)
+			    );
     }
 }

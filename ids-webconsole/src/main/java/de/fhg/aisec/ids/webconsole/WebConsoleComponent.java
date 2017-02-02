@@ -17,11 +17,11 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.configuration.ConfigurationService;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -41,11 +41,11 @@ import de.fhg.aisec.ids.api.configuration.ConfigurationService;
 @Component(name="ids-webconsole")
 public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
-	private static Optional<ConfigurationService> configService = Optional.empty();
+	private static Optional<PreferencesService> configService = Optional.empty();
 	private static Optional<ContainerManager> cml = Optional.empty();
 	
 	@Activate
-	protected void activate(ComponentContext componentContext) throws Exception {
+	protected void activate(ComponentContext componentContext) {
 		LOG.info("IDS webconsole activated");
 	}
 	
@@ -74,7 +74,6 @@ public class WebConsoleComponent {
 				CamelContext camelCtx = (CamelContext) bCtx.getService(reference);
 				if (camelCtx != null) {
 					camelContexts.add(camelCtx);
-					//camelCtx.stopRoute("demo-route-c");
 				}
 			}
 		} catch (Exception e) {
@@ -110,20 +109,20 @@ public class WebConsoleComponent {
 	}
 
 	@Reference(name = "config.service",
-            service = ConfigurationService.class,
+            service = PreferencesService.class,
             cardinality = ReferenceCardinality.OPTIONAL,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unbindConfigurationService")
-	public void bindConfigurationService(ConfigurationService conf) {
+	public void bindConfigurationService(PreferencesService conf) {
 		LOG.info("Bound to configuration service");
 		WebConsoleComponent.configService = Optional.of(conf);
 	}
 
-	public void unbindConfigurationService(ConfigurationService conf) {
+	public void unbindConfigurationService(PreferencesService conf) {
 		WebConsoleComponent.configService = Optional.empty();
 	}
 
-	public static Optional<ConfigurationService> getConfigService() {
+	public static Optional<PreferencesService> getConfigService() {
 		return WebConsoleComponent.configService;
 	}
 }

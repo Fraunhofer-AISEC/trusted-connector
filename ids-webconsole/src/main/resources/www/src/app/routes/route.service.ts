@@ -11,6 +11,13 @@ import { environment } from '../../environments/environment';
 export class RouteService {
   constructor(private http: Http) { }
 
+  getRoute(route: any) {
+    return this.http.get(environment.apiURL + '/routes/get/' + route)
+               .map(response => {
+                 return response.json() as Route;
+               });
+  }
+
   getRoutes() {
     return this.http.get(environment.apiURL + '/routes/list/')
                .map(response => {
