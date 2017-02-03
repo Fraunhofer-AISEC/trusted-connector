@@ -11,43 +11,13 @@ In addition to standard Karaf features, we also create our own custom feature wh
 # How to build
 
 ## Dependencies
-Denpending on your OS, you might need Node.js installed:
-For Ubuntu, (after installing curl if needed) run:
-```
-curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
 
-## Build web frontend/check Node.js installation
-go to ids-webconsole/src/main/resources/www
-And run:
-
-```
-npm install
-sudo npm install -g --save process-nextick-args
-```
-
-Now we need ng2admin:
-```
-git clone https://github.com/akveo/ng2-admin.git
-cd ng2-admin
-npm install
-```
-
-And sometimes we need to do:
-```
-npm rebuild node-sass
-```
-
-TODO: We should fix this to get an automated build
-
-
-
-## Install Docker 
-Please see here: https://docs.docker.com/engine/installation/
+You need `docker`, `docker-compose` and `npm` installed.
 
 
 ## Run Maven
+
+If you do not have access to Fraunhofer AISEC's internal docker registry, you will not be able to run integration tests nor wrap the Core Platform build in a container. In this case, append the `-Ddocker.skip` flag to your build command:
 
 ```
 mvn clean install
@@ -55,8 +25,8 @@ mvn clean install
 
 You will now have a custom installation of Karaf including our own features in `karaf-assembly/target/assembly`
 
-# How to run
 
+# How to run
 
 
 ## Variant 1: Run locally without docker
@@ -76,16 +46,23 @@ If everything goes fine, you will see a Karaf shell. Type `help` to get started 
 
 ## Variant 2: Run in docker
 
+If you have omitted the `-Ddocker.skip` flag for the build, you now have three docker containers:
+
+- `registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest` is the Core Platform container
+- `registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest` is the TPM 2.0 simulator
+- `registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest` is the TPM 2.0 daemon which connects Core Platform to the TPM 2.0 simulator
+
+You can run these three containers with a simple
 
 ```
-./runDocker.sh
+docker-compose up
 ```
 
 
 
 ## URLs
 
-When running, the following URLs will be available:
+When running, the following URLs will be available (note that `localhost` applies whenn runnning without docker. If you used `docker-compose up`, the hostname is the name of the Core Platform container):
 
 
 `http://localhost:8181/ids`
