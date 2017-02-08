@@ -240,7 +240,8 @@
                         <!-- Use this in production instead (no web console)-->
                         <!-- <feature>activemq-broker-noweb</feature> -->
                         <feature>camel</feature>
-                        <feature>cxf</feature>
+                        <feature>cxf-core</feature>
+                        <feature>cxf-jaxrs</feature>
                         <feature>camel-cxf</feature>
                         <feature>camel-hdfs2</feature>
                         <feature>camel-blueprint</feature>

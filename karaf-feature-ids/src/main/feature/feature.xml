@@ -41,15 +41,40 @@
         <bundle start-level="70">mvn:org.eclipse.jetty/jetty-security/9.2.15.v20160210</bundle>
         <feature prerequisite="true" dependency="true">wrap</feature>
         <feature version="2.18.0" prerequisite="false" dependency="true">camel</feature>        
-        <feature version="3.1.7" prerequisite="false" dependency="true">cxf</feature>
+
+        <!-- REST feature provided by CXF -->
+        <feature version="3.1.7" prerequisite="false" dependency="true">cxf-jaxrs</feature>
+        
+        <!-- Declarative OSGi Services -->
         <feature version="4.0.5" prerequisite="false" dependency="true">scr</feature>
+        
+        <!-- Asynchronous HTTP requests, required for camel-ids -->
         <feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>
+        
         <!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
         <bundle version="2.18.0" prerequisite="false" dependency="true">mvn:org.apache.camel/camel-core-osgi/2.18.0</bundle>
         
         <!-- This is how to add a custom config file which will be picked up by Config Admin-->
         <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
 
+        <!-- Camel Milo (OPC-UA) dependencies -->
+        <!-- <feature version="0.1.1.SNAPSHOT" prerequisite="false" dependency="true">camel-milo</feature>-->
+
+        <!--<bundle dependency="true">mvn:com.google.guava/guava/19.0</bundle>
+        <bundle dependency="true">mvn:org.jooq/jool/0.9.10</bundle>
+        <bundle dependency="true">mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
+        <bundle dependency="true">mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
+        <bundle dependency="true">mvn:io.netty/netty-codec/4.0.36.Final</bundle>
+        <bundle dependency="true">mvn:io.netty/netty-transport/4.0.36.Final</bundle>
+        <bundle dependency="true">mvn:io.netty/netty-handler/4.0.36.Final</bundle>
+        <bundle dependency="true">mvn:io.netty/netty-buffer/4.0.36.Final</bundle>
+        <bundle dependency="true">mvn:io.netty/netty-common/4.0.36.Final</bundle>
+        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
+        <bundle>wrap:mvn:org.reflections/reflections/0.9.10</bundle>
+        <bundle dependency="true">mvn:org.javassist/javassist/3.19.0-GA</bundle>
+        <bundle dependency="true">mvn:com.codepoetics/protonpack/1.10</bundle> -->
+
+        <!-- IDS specific bundles -->
         <bundle start-level="80">mvn:de.fhg.ids/api/1.0.0</bundle>
         <bundle start-level="80">mvn:de.fhg.ids/ids-webconsole/1.0.0</bundle> 
         <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
