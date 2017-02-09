@@ -44,6 +44,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.fhg.camel.ids.client.TestServletFactory;
@@ -52,6 +53,7 @@ import de.fhg.camel.ids.server.WebsocketComponent;
 /**
  *
  */
+@Ignore
 public class WssProducerConsumerIT extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     //protected static int PORT = AvailablePortFinder.getNextAvailable();

@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.junit.Ignore;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
@@ -54,15 +55,16 @@ public class RemoteAttestationIT {
 	private static Server server;
 	private static FSM fsm1;
 	private static FSM fsm2;
-	private static final String socket = "socket/control.sock";
+	private static final String socket1 = "socket/sim1/control.sock";
+	private static final String socket2 = "socket/sim2/control.sock";
 	private static String ratRepoUri = "http://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
 		fsm1 = new FSM();
 		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, new URI(ratRepoUri), socket);
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, new URI(ratRepoUri), socket);		
+        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, new URI(ratRepoUri), socket1);
+		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, new URI(ratRepoUri), socket2);		
 	}
 	
     @Test
@@ -85,7 +87,7 @@ public class RemoteAttestationIT {
     	assertTrue(msg2.getAttestationResponse().getPcrValuesCount() == 11);
     	
     }
-   
+
     @Test
     public void test3() throws Exception {
     	msg3 = ConnectorMessage.parseFrom(consumer.sendTPM2Ddata(new Event(msg2.getType(), msg2.toString(), msg2)).toByteString());
@@ -107,7 +109,7 @@ public class RemoteAttestationIT {
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
     	
     }
-    
+
     @Test
     public void test5() throws Exception {
     	msg5 = ConnectorMessage.parseFrom(consumer.sendResult(new Event(msg4.getType(), msg4.toString(), msg4)).toByteString());
@@ -125,7 +127,7 @@ public class RemoteAttestationIT {
     	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     	assertTrue(msg6.getAttestationResponse().getAtype().equals(aType));
     }
-
+    
     @Test
     public void test7() throws Exception {
     	msg7 = ConnectorMessage.parseFrom(consumer.leaveRatRequest(new Event(msg6.getType(), msg6.toString(), msg6)).toByteString());

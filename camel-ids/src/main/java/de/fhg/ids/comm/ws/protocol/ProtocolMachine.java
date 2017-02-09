@@ -36,7 +36,7 @@ public class ProtocolMachine {
 	private WebSocket ws;
 	private Session sess;
 	private String ttpURL = "http://127.0.0.1:31337/configurations/check";
-	private String socket = "/var/run/tpm2d/control.sock";
+	private String socket = "socket/control.sock";
 	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
 	/** C'tor */

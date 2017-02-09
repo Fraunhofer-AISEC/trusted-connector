@@ -3,6 +3,7 @@ package de.fhg.ids.comm.unixsocket;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -28,6 +29,9 @@ public class UnixSocketThread implements Runnable {
 	// The buffer into which we'll read data when it's available
 	private ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 1024);
 
+	// The buffer into which we'll read data when it's available
+	private byte[] readBufferLength = new byte[4];	
+	
 	// A list of PendingChange instances
 	private List<ChangeRequest> pendingChanges = new LinkedList<ChangeRequest>();
 
@@ -50,8 +54,6 @@ public class UnixSocketThread implements Runnable {
 
 	// send some data to the unix socket 
 	public void send(byte[] data, UnixSocketResponsHandler handler) throws IOException, InterruptedException {
-
-		
     	int length = data.length;
     	ByteBuffer bb = ByteBuffer.allocate(4 + length);
     	bb.put(ByteBuffer.allocate(4).putInt(length).array());
@@ -134,6 +136,8 @@ public class UnixSocketThread implements Runnable {
 		int numRead;
 		try {
 			numRead = channel.read(this.readBuffer);
+			System.out.println("unixsocketthread numRead: " + numRead);
+			
 		} catch (IOException e) {
 			// The remote forcibly closed the connection, cancel the selection key and close the channel.
 			key.cancel();
@@ -147,18 +151,54 @@ public class UnixSocketThread implements Runnable {
 			key.cancel();
 			return;
 		}
-		// Handle the read data
-		this.handleResponse(channel, this.readBuffer.array(), numRead);
+		// buffer length comes alone
+		else if (numRead == 4) {
+			System.out.println("Message of length " + numRead + " arrived!");
+			System.arraycopy(Arrays.copyOfRange(this.readBuffer.array(), 0, 4), 0, this.readBufferLength, 0, 4);
+		}
+		// buffer length + protobuf message
+		else {
+			System.out.println("Message of length " + numRead + " arrived!");
+			if(this.bufferLengthIsAppended(this.readBuffer)) {
+				System.arraycopy(Arrays.copyOfRange(this.readBuffer.array(), 0, 4), 0, this.readBufferLength, 0, 4);
+				// Handle the read data
+				int length = new BigInteger(this.readBufferLength).intValue();
+				byte[] reduced = new byte[length];
+				System.arraycopy(this.readBuffer.array(), 4, reduced, 0, length);
+				this.handleResponse(channel, reduced);	
+			}
+			else {
+				// Handle the read data
+				this.handleResponse(channel, this.readBuffer.array());				
+			}
+		}
+	}
+
+	private boolean bufferLengthIsAppended(ByteBuffer buf) {
+		byte[] localreadBuffer = new byte[4];
+		byte[] data = buf.array();
+		System.arraycopy(Arrays.copyOfRange(data, 0, 4), 0, localreadBuffer, 0, 4);
+		if((data.length - 4) == new BigInteger(localreadBuffer).intValue()) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	// function to handle the data read from unix socket
-	private void handleResponse(UnixSocketChannel channel, byte[] data, int numRead) throws IOException {
+	private void handleResponse(UnixSocketChannel channel, byte[] data) throws IOException {
+		
+		int length = new BigInteger(this.readBufferLength).intValue();
+		System.out.println("handleResponse:" + length);
 		// Make a correctly sized copy of the data before handing it to the client
-		byte[] rspData = new byte[numRead];
-		System.arraycopy(data, 0, rspData, 0, numRead);
+		byte[] rspData = new byte[length];
+		System.arraycopy(data, 0, rspData, 0, length);
 		
 		// Look up the handler for this channel
 		UnixSocketResponsHandler handler = (UnixSocketResponsHandler) this.rspHandlers.get(channel);
+		System.out.println("unixsocketthread recieved: " + rspData.length);
+		
 		
 		// And pass the response to it
 		if (handler.handleResponse(rspData)) {

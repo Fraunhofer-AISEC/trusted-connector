@@ -36,6 +36,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -46,6 +47,7 @@ import de.fhg.camel.ids.server.WebsocketComponent;
 /**
  *
  */
+@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WsProducerConsumerIT extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";

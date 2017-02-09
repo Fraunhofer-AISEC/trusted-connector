@@ -31,6 +31,7 @@
 		<ahc-version>2.0.2</ahc-version>
 		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<skipITs>true</skipITs>
 	</properties>
 	<repositories>
 		<repository>
@@ -227,6 +228,25 @@
 				</configuration>
 
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.19.1</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -257,11 +277,11 @@
 							<images>
 								<image>
 									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
-									<alias>tpm2d-sim</alias>
+									<alias>tpm2d-sim1</alias>
 									<run>
 										<volumes>
 											<bind>
-												<volume>${project.basedir}/socket/:/data/cml/communication/tpm2d/</volume>
+												<volume>${project.basedir}/socket/sim1/:/data/cml/communication/tpm2d/</volume>
 											</bind>
 										</volumes>
 										<cmd>
@@ -269,6 +289,20 @@
 										</cmd>
 									</run>
 								</image>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
+									<alias>tpm2d-sim2</alias>
+									<run>
+										<volumes>
+											<bind>
+												<volume>${project.basedir}/socket/sim2/:/data/cml/communication/tpm2d/</volume>
+											</bind>
+										</volumes>
+										<cmd>
+											/tpm2d/cml-tpm2d
+										</cmd>
+									</run>
+								</image>								
 							</images>
 						</configuration>
 					</execution>
@@ -316,8 +350,11 @@
 						<configuration>
 							<images>
 								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
+									<name>tpm2d-sim1</name>
 								</image>
+								<image>
+									<name>tpm2d-sim2</name>
+								</image>								
 							</images>
 						</configuration>
 					</execution>

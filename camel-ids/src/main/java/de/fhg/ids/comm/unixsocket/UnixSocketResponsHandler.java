@@ -28,8 +28,9 @@ public class UnixSocketResponsHandler {
 			} catch (InterruptedException e) {
 			}
 		}
-		int length = new BigInteger(pop(this.rsp, 4, true)).intValue();
-		return slice(slice(this.rsp, 4, true), length, false);
+		//int length = new BigInteger(pop(this.rsp, 4, true)).intValue();
+		//System.out.println("UnixSocketResponsHandler recieved : " + this.rsp.length + " bytes");
+		return slice(this.rsp, this.rsp.length, false);
 	}
 	
 	static byte[] slice(byte[] original, int length, boolean fromLeft) {
