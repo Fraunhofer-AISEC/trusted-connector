@@ -158,27 +158,24 @@ public class UnixSocketThread implements Runnable {
 		}
 		// buffer length + protobuf message
 		else {
-			System.out.println("Message of length " + numRead + " arrived!");
-			if(this.bufferLengthIsAppended(this.readBuffer)) {
-				System.arraycopy(Arrays.copyOfRange(this.readBuffer.array(), 0, 4), 0, this.readBufferLength, 0, 4);
-				// Handle the read data
+			if(this.bufferLengthIsAppended(this.readBuffer, numRead)) {
 				int length = new BigInteger(this.readBufferLength).intValue();
-				byte[] reduced = new byte[length];
-				System.arraycopy(this.readBuffer.array(), 4, reduced, 0, length);
-				this.handleResponse(channel, reduced);	
+				System.out.println("Message (with header) of length " + length + " arrived!");
+				// Handle the read data
+				this.handleResponse(channel, Arrays.copyOfRange(this.readBuffer.array(), 4, numRead));	
 			}
 			else {
+				int length = new BigInteger(this.readBufferLength).intValue();
+				System.out.println("Message (without header) of length " + length + " arrived!");
 				// Handle the read data
 				this.handleResponse(channel, this.readBuffer.array());				
 			}
 		}
 	}
 
-	private boolean bufferLengthIsAppended(ByteBuffer buf) {
-		byte[] localreadBuffer = new byte[4];
-		byte[] data = buf.array();
-		System.arraycopy(Arrays.copyOfRange(data, 0, 4), 0, localreadBuffer, 0, 4);
-		if((data.length - 4) == new BigInteger(localreadBuffer).intValue()) {
+	private boolean bufferLengthIsAppended(ByteBuffer buf, int length) {
+		if((length - 4) == new BigInteger(Arrays.copyOfRange(buf.array(), 0, 4)).intValue()) {
+			System.arraycopy(Arrays.copyOfRange(buf.array(), 0, 4), 0, this.readBufferLength, 0, 4);
 			return true;
 		}
 		else {
