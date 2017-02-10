@@ -1,5 +1,5 @@
 export class Certificate {
   id: string;
-  title: string;
-  description: string;
+  name: string;
+  publicKey: string;
 }

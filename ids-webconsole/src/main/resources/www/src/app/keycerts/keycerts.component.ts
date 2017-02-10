@@ -20,7 +20,9 @@ export class KeycertsComponent implements OnInit{
   constructor(private titleService: Title, private certificateService: CertificateService) {
     this.titleService.setTitle('Key Certification');
 
-    this.certificates = this.certificateService.getCertificates();
+    this.certificateService.getCertificates().subscribe(certificates => {
+       this.certificates = certificates;
+     });
   }
 
   ngOnInit(): void {

@@ -10,11 +10,17 @@ declare var Viz: any;
   selector: 'certificate-card',
   template: `
       <div class="mdl-card__title mdl-card--expand">
-        <h2 class="mdl-card__title-text">{{certificate.title}}</h2>
+        <h2 class="mdl-card__title-text">{{certificate.name}}</h2>
       </div>
       <div class="mdl-card__supporting-text">
-        {{certificate.description}}
-      </div>`
+        <span>{{certificate.publicKey}}</span>
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+        <i class="material-icons">delete</i>
+      </button>
+      </div>
+  `
 })
 export class CertificateCardComponent implements OnInit {
   @Input() certificate: Certificate;
