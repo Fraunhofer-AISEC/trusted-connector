@@ -39,12 +39,11 @@ public class CertApi {
 	     mockedCert cert2 = new mockedCert();
 	     
 	     cert1.id = "cert1";
-	     cert1.name = "This is certification one";
-	     cert1.publicKey = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
-	     
+	     cert1.name = "This is certificate one";
+	     cert1.publicKey = "publick key comes here";
 	     cert2.id = "cert2";
-	     cert2.name = "This is certification two";
-	     cert2.publicKey = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.Mauris sagittis pellentesque lacus eleifend lacinia...Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+	     cert2.name = "This is certificate two";
+	     cert2.publicKey = "publick key comes here";
 	     
 	     certs.add(cert1);
 	     certs.add(cert2);

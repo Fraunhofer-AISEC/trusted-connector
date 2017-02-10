@@ -18,7 +18,7 @@ export class KeycertsComponent implements OnInit{
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title, private certificateService: CertificateService) {
-    this.titleService.setTitle('Key Certification');
+    this.titleService.setTitle('Certificates');
 
     this.certificateService.getCertificates().subscribe(certificates => {
        this.certificates = certificates;
