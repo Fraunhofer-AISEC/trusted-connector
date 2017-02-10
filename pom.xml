@@ -30,6 +30,13 @@
 		</repository>
 	</distributionManagement>
   
+  <repositories>
+  	<repository>
+  		<id>netsec-release</id>
+  		<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
+  	</repository>
+  </repositories>  
+  
   <build>
     <pluginManagement>
       <plugins>
