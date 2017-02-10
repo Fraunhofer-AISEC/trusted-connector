@@ -9,6 +9,12 @@
 	<version>1.0.0</version>
 	<name>rat-repository</name>
 	<url>http://maven.apache.org</url>
+  
+  <parent>
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>core-platform</artifactId>
+    <version>1.0.0</version>
+  </parent>  
 
 	<properties>
 		<camel-version>2.18.0</camel-version>

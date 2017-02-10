@@ -19,6 +19,12 @@
 	<artifactId>ids</artifactId>
 	<version>1.0.0</version>
 	<packaging>feature</packaging>
+  
+  <parent>
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>core-platform</artifactId>
+    <version>1.0.0</version>
+  </parent>
 
 	<properties>
         <karaf.version>4.0.5</karaf.version>

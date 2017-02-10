@@ -18,6 +18,12 @@
 	<artifactId>ids-webconsole</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
+  
+  <parent>
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>core-platform</artifactId>
+    <version>1.0.0</version>
+  </parent>
 
 	<name>IDS Core Platform Webconsole</name>
 

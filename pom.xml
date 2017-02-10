@@ -19,12 +19,16 @@
     <module>rat-repository</module>
   </modules>
 
-  <distributionManagement>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>netsec-snapshots</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/snapshots/</url>
+		</snapshotRepository>
 		<repository>
-			<id>nexus</id>
-			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
+			<id>netsec-release</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases/</url>
 		</repository>
-  </distributionManagement>
+	</distributionManagement>
   
   <build>
     <pluginManagement>

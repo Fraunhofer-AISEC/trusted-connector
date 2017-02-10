@@ -18,6 +18,12 @@
 	<artifactId>data-flow-policy</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
+  
+  <parent>
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>core-platform</artifactId>
+    <version>1.0.0</version>
+  </parent>
 
 	<name>Data Flow Policy</name>
 
