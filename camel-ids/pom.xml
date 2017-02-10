@@ -33,12 +33,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<skipITs>true</skipITs>
 	</properties>
-	<repositories>
-		<repository>
-			<id>nexus</id>
-			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
-		</repository>
-	</repositories>
 	<dependencies>
 		<!-- Protobuf -->
 		<dependency>
