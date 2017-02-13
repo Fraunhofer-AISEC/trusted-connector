@@ -34,6 +34,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage.Type;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -69,7 +70,7 @@ public class DefaultWebsocket implements Serializable {
         this.connectionKey = UUID.randomUUID().toString();
         
         // Integrate server-side of IDS protocol
-        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session);
+        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, IdsAttestationType.BASIC);
         
         sync.addSocket(this);
     }

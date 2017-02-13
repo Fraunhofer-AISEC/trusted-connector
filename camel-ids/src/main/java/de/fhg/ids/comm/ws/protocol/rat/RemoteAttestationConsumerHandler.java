@@ -53,7 +53,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private URI ttpUri;
 	private boolean repoCheck = false;
 	private boolean success = false;
-	private AttestationResponse resp;
 	
 	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
 		// set ttp uri
@@ -155,10 +154,9 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendResult(Event e) {
-		this.resp = e.getMessage().getAttestationResponse();
-		if(this.checkSignature(this.resp, this.myNonce)) {
+		if(this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), this.resp, ttpUri)) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), e.getMessage().getAttestationResponse(), ttpUri)) {
 					this.success = true;
 				}
 				else {

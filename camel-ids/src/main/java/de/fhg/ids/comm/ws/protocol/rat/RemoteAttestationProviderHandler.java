@@ -98,6 +98,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendTPM2Ddata(Event e) {
+		// temporarly safe attestation response in order to check it in the result phase
 		this.resp = e.getMessage().getAttestationResponse();
 		// get nonce from server msg
 		if(thread.isAlive()) {

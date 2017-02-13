@@ -89,48 +89,41 @@ public class RemoteAttestationHandler {
 	}
 	
 	public boolean checkSignature(AttestationResponse response, String nonce) {
+		Signature sig;
 		byte[] byteSignature = DatatypeConverter.parseHexBinary(response.getSignature());
 		LOG.debug("signature:" + ByteArrayUtil.toPrintableHexString(byteSignature));
 		byte[] byteCert = DatatypeConverter.parseHexBinary(response.getCertificateUri());
 		LOG.debug("cert:" + ByteArrayUtil.toPrintableHexString(byteCert));
 		byte[] byteQuoted = DatatypeConverter.parseHexBinary(response.getQuoted());
-		// construct a new TPM2B_PUBLIC from bkey bytes
 		try {
+			// construct a new TPM2B_PUBLIC from byteCert bytes
 			TPM2B_PUBLIC tpm2bPublickey = new TPM2B_PUBLIC(byteCert);
 			try {
-				// and convert it into an DER key
+				// and convert it into a java DER PublicKey key
 				PublicKey publicKey = new PublicKeyConverter(tpm2bPublickey).getPublicKey();
 				try {
-					// construct a new TPMT_SIGNATURE from yourSignature bytes
+					// construct a new TPMT_SIGNATURE from byteSignature bytes
 					TPMT_SIGNATURE tpmtSignature = new TPMT_SIGNATURE(byteSignature);
-					try {
-						// and get the raw byte signature
-						// construct a new TPMS_ATTEST from yourQuoted bytes
-						TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
+					// safe computation time and do NOT generate TPMS_ATTEST ..... just check bytes of TPMS_ATTEST in switch/case
+					// TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
 					
-						boolean nonceCorrect = nonce.equals(response.getQualifyingData());
-						Signature sig;
-						// and get the raw byte quote
-						switch(tpmtSignature.getSignature().getHashAlg()) {
-							case TPM_ALG_SHA256:
-								sig = Signature.getInstance("SHA256withRSA");
-							    sig.initVerify(publicKey);
-							    sig.update(byteQuoted);
-							    return nonceCorrect && sig.verify(tpmtSignature.getSignature().getSig());
-							case TPM_ALG_SHA1:
-								sig = Signature.getInstance("SHA1withRSA");
-							    sig.initVerify(publicKey);
-							    sig.update(byteQuoted);
-							    return nonceCorrect && sig.verify(tpmtSignature.getSignature().getSig());				
-							default:
-								return false;
-						}
-						
-					} catch (Exception ex) {
-						lastError = "error: could not create a TPMS_ATTEST from bytes \""+tpmtSignature.getSignature().getSig()+"\":" + ex.getMessage();
-						LOG.debug(lastError);
-						ex.printStackTrace();
-						return false;
+					// check if nonces match
+					boolean nonceCorrect = nonce.equals(response.getQualifyingData());
+
+					// check signature depending on HashAlg() 
+					switch(tpmtSignature.getSignature().getHashAlg()) {
+						case TPM_ALG_SHA256:
+							sig = Signature.getInstance("SHA256withRSA");
+						    sig.initVerify(publicKey);
+						    sig.update(byteQuoted);
+						    return nonceCorrect && sig.verify(tpmtSignature.getSignature().getSig());
+						case TPM_ALG_SHA1:
+							sig = Signature.getInstance("SHA1withRSA");
+						    sig.initVerify(publicKey);
+						    sig.update(byteQuoted);
+						    return nonceCorrect && sig.verify(tpmtSignature.getSignature().getSig());				
+						default:
+							return false;
 					}
 				} catch (Exception ex) {
 					lastError = "error: could not create a TPMT_SIGNATURE from bytes \""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\":" + ex.getMessage();
@@ -139,13 +132,13 @@ public class RemoteAttestationHandler {
 					return false;
 				}
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-				lastError = "error: could not convert TPM2B_PUBLIC to a PublicKey \""+tpm2bPublickey+"\":" + ex.getMessage();
+				lastError = "error: could not convert from TPM2B_PUBLIC (\""+tpm2bPublickey+"\") to a PublicKey :" + ex.getMessage();
 				LOG.debug(lastError);
 				ex.printStackTrace();
 				return false;
 			}
 		} catch (Exception ex) {
-			lastError = "error: could not create a TPM2B_PUBLIC key from bytes \""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\":" + ex.getMessage();
+			lastError = "error: could not create a TPM2B_PUBLIC (\""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\") :" + ex.getMessage();
 			LOG.debug(lastError);
 			ex.printStackTrace();
 			return false;
