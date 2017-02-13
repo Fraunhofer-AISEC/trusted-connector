@@ -1,17 +1,42 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+
+import javax.xml.bind.DatatypeConverter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.ids.comm.ws.protocol.fsm.Event;
+import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
+import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
+import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationHandler {
+	
+	protected static Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
+	protected static String lastError = "";
+	// used to count messages between ids connector and attestation repository
+	protected static long privateID = new java.util.Random().nextLong();
+	
 	/*
 	// fetch a public key from a uri and return the key as a byte array
 	protected static byte[] fetchPublicKey(String uri) throws Exception {
@@ -27,18 +52,118 @@ public class RemoteAttestationHandler {
 	}
 	*/
 	
-	public static MessageLite sendError(Thread t, String code, String error) {
+	public static boolean checkRepository(IdsAttestationType basic, String nonce, AttestationResponse response, URI ttpUri) {
+		int numPcrValues = response.getPcrValuesCount();
+		Pcr[] values = response.getPcrValuesList().toArray(new Pcr[numPcrValues]);
+		try {
+			ConnectorMessage msgRepo = RemoteAttestationHandler.readRepositoryResponse(
+					ConnectorMessage
+					.newBuilder()
+					.setId(privateID)
+					.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
+					.setAttestationRepositoryRequest(
+							AttestationRepositoryRequest
+			        		.newBuilder()
+			        		.setAtype(IdsAttestationType.BASIC)
+			        		.setQualifyingData(nonce)
+			        		.addAllPcrValues(Arrays.asList(values))
+			        		.build()
+							)
+					.build()
+					, ttpUri.toURL());
+			
+			return (
+					msgRepo.getAttestationRepositoryResponse().getResult() 
+					&& (msgRepo.getId() == privateID + 1) 
+					&& (msgRepo.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE))
+					&& (msgRepo.getAttestationRepositoryResponse().getQualifyingData().equals(nonce))
+					&& true); // TODO : signature check of repo answer ... !
+			
+		} catch (MalformedURLException e1) {
+			lastError = "MalformedURLException:" + e1.getMessage();
+			return false;
+		} catch (IOException e2) {
+			lastError = "IOException:" + e2.getMessage();
+			return false;
+		}
+	}
+	
+	public boolean checkSignature(AttestationResponse response, String nonce) {
+		byte[] byteSignature = DatatypeConverter.parseHexBinary(response.getSignature());
+		LOG.debug("signature:" + ByteArrayUtil.toPrintableHexString(byteSignature));
+		byte[] byteCert = DatatypeConverter.parseHexBinary(response.getCertificateUri());
+		LOG.debug("cert:" + ByteArrayUtil.toPrintableHexString(byteCert));
+		byte[] byteQuoted = DatatypeConverter.parseHexBinary(response.getQuoted());
+		// construct a new TPM2B_PUBLIC from bkey bytes
+		try {
+			TPM2B_PUBLIC tpm2bPublickey = new TPM2B_PUBLIC(byteCert);
+			try {
+				// and convert it into an DER key
+				PublicKey publicKey = new PublicKeyConverter(tpm2bPublickey).getPublicKey();
+				try {
+					// construct a new TPMT_SIGNATURE from yourSignature bytes
+					TPMT_SIGNATURE tpmtSignature = new TPMT_SIGNATURE(byteSignature);
+					try {
+						// and get the raw byte signature
+						// construct a new TPMS_ATTEST from yourQuoted bytes
+						TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
+					
+						boolean nonceCorrect = nonce.equals(response.getQualifyingData());
+						Signature sig;
+						// and get the raw byte quote
+						switch(tpmtSignature.getSignature().getHashAlg()) {
+							case TPM_ALG_SHA256:
+								sig = Signature.getInstance("SHA256withRSA");
+							    sig.initVerify(publicKey);
+							    sig.update(byteQuoted);
+							    return nonceCorrect && sig.verify(tpmtSignature.getSignature().getSig());
+							case TPM_ALG_SHA1:
+								sig = Signature.getInstance("SHA1withRSA");
+							    sig.initVerify(publicKey);
+							    sig.update(byteQuoted);
+							    return nonceCorrect && sig.verify(tpmtSignature.getSignature().getSig());				
+							default:
+								return false;
+						}
+						
+					} catch (Exception ex) {
+						lastError = "error: could not create a TPMS_ATTEST from bytes \""+tpmtSignature.getSignature().getSig()+"\":" + ex.getMessage();
+						LOG.debug(lastError);
+						ex.printStackTrace();
+						return false;
+					}
+				} catch (Exception ex) {
+					lastError = "error: could not create a TPMT_SIGNATURE from bytes \""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\":" + ex.getMessage();
+					LOG.debug(lastError);
+					ex.printStackTrace();
+					return false;
+				}
+			} catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+				lastError = "error: could not convert TPM2B_PUBLIC to a PublicKey \""+tpm2bPublickey+"\":" + ex.getMessage();
+				LOG.debug(lastError);
+				ex.printStackTrace();
+				return false;
+			}
+		} catch (Exception ex) {
+			lastError = "error: could not create a TPM2B_PUBLIC key from bytes \""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\":" + ex.getMessage();
+			LOG.debug(lastError);
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static MessageLite sendError(Thread t, long id, String error) {
 		if(t.isAlive()) {
 			t.interrupt();
 		}
 		return ConnectorMessage
 				.newBuilder()
-				.setId(0)
+				.setId(id)
 				.setType(ConnectorMessage.Type.ERROR)
 				.setError(
 						Error
 						.newBuilder()
-						.setErrorCode(code)
+						.setErrorCode("")
 						.setErrorMessage(error)
 						.build())
 				.build();

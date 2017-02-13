@@ -49,15 +49,11 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private UnixSocketResponsHandler handler;
 	private UnixSocketThread client;
 	private Thread thread;
-	private byte[] yourQuoted;
-	private byte[] yourSignature;
-	private byte[] cert;
-	private boolean signatureCorrect = false;
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
-	private long privateID = 0;		// used to count messages between ids connector and attestation repository
 	private URI ttpUri;
-	private boolean pcrCorrect = true;
-	private Pcr[] values;
+	private boolean repoCheck = false;
+	private boolean success = false;
+	private AttestationResponse resp;
 	
 	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
 		// set ttp uri
@@ -66,8 +62,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		this.fsm = fsm;
 		// set current attestation type (see attestation.proto)
 		this.aType = type;
-		// set random private id
-		this.privateID = new java.util.Random().nextLong();
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d
 		try {
@@ -79,9 +73,14 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponsHandler();
 		} catch (IOException e) {
-			LOG.debug("could not write to/read from " + socket);
+			lastError = "could not write to/read from " + socket;
+			LOG.debug(lastError);
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean isSuccessful() {
+		return this.success;
 	}
 
 	public MessageLite enterRatRequest(Event e) {
@@ -103,140 +102,12 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendTPM2Ddata(Event e) {
-		Signature sg;
 		// get nonce from server msg
-		this.yourNonce = e.getMessage().getAttestationResponse().getQualifyingData().toString();
-		// get quote from server msg
-		this.yourQuoted = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getQuoted());
-		// get signature from server msg
-		this.yourSignature = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getSignature());
-		// get cert uri from server msg
-		this.cert = DatatypeConverter.parseHexBinary(e.getMessage().getAttestationResponse().getCertificateUri());
-		// get pcr values from server msg
-		try {
-			int numPcrValues = e.getMessage().getAttestationResponse().getPcrValuesCount();
-			this.values = e.getMessage().getAttestationResponse().getPcrValuesList().toArray(new Pcr[numPcrValues]);
-			ConnectorMessage msgRepo = RemoteAttestationHandler.readRepositoryResponse(
-					ConnectorMessage
-					.newBuilder()
-					.setId(this.privateID)
-					.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
-					.setAttestationRepositoryRequest(
-							AttestationRepositoryRequest
-			        		.newBuilder()
-			        		.setAtype(IdsAttestationType.BASIC)
-			        		.setQualifyingData("nonce")
-			        		.addAllPcrValues(Arrays.asList(this.values))
-			        		.build()
-							)
-					.build()
-					, ttpUri.toURL());
-			
-			if(msgRepo.getType().equals(ConnectorMessage.Type.ERROR)) {
-				String error = "error: Attestation Repository Error:" + msgRepo.getError().getErrorMessage();
-				return RemoteAttestationHandler.sendError(this.thread, "rat-repository", error);
-			}
-			else {
-				this.pcrCorrect = (
-						msgRepo.getAttestationRepositoryResponse().getResult() 
-						&& (msgRepo.getId() == this.privateID + 1) 
-						&& (msgRepo.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE))
-						&& (msgRepo.getAttestationRepositoryResponse().getQualifyingData().equals(this.myNonce))
-						&& true); // TODO : signature check here !
-			}
-			
-		}
-		catch(MalformedURLException ex) {
-			String error = "error: MalformedURLException:" + ex.getMessage();
-			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-		}
-		catch(IOException ex) {
-			String error = "error: IOException:" + ex.getMessage();
-			return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-		}
-		
-		
+		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
 		if(++this.sessionID == e.getMessage().getId()) {
-			// construct a new TPM2B_PUBLIC from bkey bytes
-			TPM2B_PUBLIC key;
-			try {
-				key = new TPM2B_PUBLIC(this.cert);
-			} catch (Exception ex) {
-				String error = "error: could not create a TPM2B_PUBLIC key from bytes \""+ByteArrayUtil.toPrintableHexString(this.cert)+"\":" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			}
-			// and convert it into an DER key
-			PublicKey publicKey;
-			try {
-				publicKey = new PublicKeyConverter(key).getPublicKey();
-			} catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-				String error = "error: could not convert TPM2B_PUBLIC to a PublicKey \""+key+"\":" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			}
-			// construct a new TPMT_SIGNATURE from yourSignature bytes
-			TPMT_SIGNATURE tpmSignature;
-			try {
-				tpmSignature = new TPMT_SIGNATURE(this.yourSignature);
-			} catch (Exception ex) {
-				String error = "error: could not create a TPMT_SIGNATURE from bytes \""+this.yourSignature+"\":" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			}
-			// and get the raw byte signature
-			byte[] signature = tpmSignature.getSignature().getSig();
-			// construct a new TPMS_ATTEST from yourQuoted bytes
-			TPMS_ATTEST digest;
-			try {
-				digest = new TPMS_ATTEST(this.yourQuoted);
-			} catch (Exception ex) {
-				String error = "error: could not create a TPMS_ATTEST from bytes \""+this.yourQuoted+"\":" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			}
-			try {
-			// and get the raw byte quote
-			byte[] quote = digest.toBytes();
-			switch(tpmSignature.getSignature().getHashAlg()) {
-				case TPM_ALG_SHA256:
-					sg = Signature.getInstance("SHA256withRSA");
-				    sg.initVerify(publicKey);
-				    sg.update(this.yourQuoted);
-				    this.signatureCorrect = sg.verify(signature);
-					break;
-				case TPM_ALG_SHA1:
-					sg = Signature.getInstance("SHA1withRSA");
-				    sg.initVerify(publicKey);
-				    sg.update(this.yourQuoted);
-				    this.signatureCorrect = sg.verify(signature);
-					break;					
-				default:
-					break;
-			}
-			} catch (NoSuchAlgorithmException ex) {
-				String error = "error: NoSuchAlgorithmException when checking signature :" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			} catch (InvalidKeyException ex) {
-				String error = "error: InvalidKeyException when checking signature :" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			} catch (SignatureException ex) {
-				String error = "error: SignatureException when checking signature :" + ex.getMessage();
-				LOG.debug(error);
-				ex.printStackTrace();
-				return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
-			}
 			if(thread.isAlive()) {
-				// send msg to local unix socket
 				try {
+					// send msg to local unix socket
 					// construct protobuf message to send to local tpm2d via unix socket
 					ControllerToTpm msg = ControllerToTpm
 							.newBuilder()
@@ -267,50 +138,53 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 									)
 							.build();
 				} catch (IOException ex) {
-					String error = "error: IOException when talking to tpm2d :" + ex.getMessage();
-					LOG.debug(error);
-					ex.printStackTrace();
-					return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+					lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
 				} catch (InterruptedException ex) {
-					String error = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
-					LOG.debug(error);
-					ex.printStackTrace();
-					return RemoteAttestationHandler.sendError(this.thread, ex.getStackTrace().toString(), error);
+					lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
 				}
 			}
 			else {
-				String error = "error: RAT client thread is not alive !";
-				LOG.debug(error);
-				return RemoteAttestationHandler.sendError(this.thread, "thread error", error);
-			}
+				lastError = "error: RAT client thread is not alive !";
+			}	
 		}
 		else {
-			String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-			LOG.debug(error);
-			return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
+			lastError = "error: repository entries do not match";
 		}
+		LOG.debug(lastError);
+		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
 	}
 
 	public MessageLite sendResult(Event e) {
-		if(++this.sessionID == e.getMessage().getId()) {
-			return ConnectorMessage
-					.newBuilder()
-					.setId(++this.sessionID)
-					.setType(ConnectorMessage.Type.RAT_RESULT)
-					.setAttestationResult(
-							AttestationResult
-							.newBuilder()
-							.setAtype(this.aType)
-							.setResult(this.signatureCorrect && this.pcrCorrect)
-							.build()
-							)
-					.build();
+		this.resp = e.getMessage().getAttestationResponse();
+		if(this.checkSignature(this.resp, this.myNonce)) {
+			if(++this.sessionID == e.getMessage().getId()) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), this.resp, ttpUri)) {
+					this.success = true;
+				}
+				else {
+					this.success = false;
+				}
+				return ConnectorMessage
+						.newBuilder()
+						.setId(++this.sessionID)
+						.setType(ConnectorMessage.Type.RAT_RESULT)
+						.setAttestationResult(
+								AttestationResult
+								.newBuilder()
+								.setAtype(this.aType)
+								.setResult(this.success)
+								.build())
+						.build();
+			}
+			else {
+				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+			}
 		}
 		else {
-			String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-			LOG.debug(error);
-			return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
-		}			
+			lastError = "error: signature check not ok";
+		}
+		LOG.debug(lastError);
+		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);	
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
@@ -328,11 +202,8 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 							)
 					.build();			
 		}
-		else {
-			String error = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-			LOG.debug(error);
-			return RemoteAttestationHandler.sendError(this.thread, "sessionID", error);
-		}
-
+		lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+		LOG.debug(lastError);
+		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
 	}
 }
