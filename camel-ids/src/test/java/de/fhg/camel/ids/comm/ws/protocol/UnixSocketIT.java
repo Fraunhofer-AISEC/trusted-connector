@@ -14,7 +14,6 @@ import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 
-@Ignore
 public class UnixSocketIT {
 	
 	private UnixSocketThread client;

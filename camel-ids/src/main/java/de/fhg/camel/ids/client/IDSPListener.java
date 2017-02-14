@@ -13,6 +13,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage.Type;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -42,7 +43,7 @@ public class IDSPListener extends DefaultWebSocketListener {
         LOG.debug("Websocket opened");
         
         // create Finite State Machine for IDS protocol
-        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket);
+        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, IdsAttestationType.BASIC);
         
         // start the protocol with the first message
         fsm.feedEvent(new Event(emptyMsg.getType(), emptyMsg.toString(), emptyMsg));

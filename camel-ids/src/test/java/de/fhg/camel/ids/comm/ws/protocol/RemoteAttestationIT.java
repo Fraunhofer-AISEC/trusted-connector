@@ -41,8 +41,7 @@ public class RemoteAttestationIT {
 	private IdsAttestationType aType = IdsAttestationType.BASIC;
 	private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
 	
-	private ConnectorMessage startMsg = Idscp.ConnectorMessage.newBuilder().setType(ConnectorMessage.Type.RAT_START).setId(id).build();
-	private Event startEvent = new Event(startMsg.getType(), startMsg.toString(), startMsg);
+	private ConnectorMessage msg0 = Idscp.ConnectorMessage.newBuilder().setType(ConnectorMessage.Type.RAT_START).setId(id).build();
 	
 	private static ConnectorMessage msg1;
 	private static ConnectorMessage msg2;
@@ -50,7 +49,8 @@ public class RemoteAttestationIT {
 	private static ConnectorMessage msg4;
 	private static ConnectorMessage msg5;
 	private static ConnectorMessage msg6;
-	private static ConnectorMessage msg7; 
+	private static ConnectorMessage msg7;
+	private static ConnectorMessage msg8;
 	private static URI ttpUri;
 	private static Server server;
 	private static FSM fsm1;
@@ -69,7 +69,7 @@ public class RemoteAttestationIT {
 	
     @Test
     public void test1() throws Exception {
-    	msg1 = ConnectorMessage.parseFrom(consumer.enterRatRequest(startEvent).toByteString());
+    	msg1 = ConnectorMessage.parseFrom(consumer.enterRatRequest(new Event(msg0.getType(), msg0.toString(), msg0)).toByteString());
     	LOG.debug(msg1.toString());
     	assertTrue(msg1.getId() == id + 1);
     	assertTrue(msg1.getType().equals(ConnectorMessage.Type.RAT_REQUEST));
@@ -78,19 +78,16 @@ public class RemoteAttestationIT {
     
     @Test
     public void test2() throws Exception {
-    	msg2 = ConnectorMessage.parseFrom(provider.sendTPM2Ddata(new Event(msg1.getType(), msg1.toString(), msg1)).toByteString()); 
+    	msg2 = ConnectorMessage.parseFrom(provider.enterRatRequest(new Event(msg1.getType(), msg1.toString(), msg1)).toByteString());
     	LOG.debug(msg2.toString());
     	assertTrue(msg2.getId() == id + 2);
-    	assertTrue(msg2.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
-    	assertTrue(msg2.getAttestationResponse().getAtype().equals(aType));
-    	assertTrue(msg2.getAttestationResponse().getHalg().equals(hAlg.name()));
-    	assertTrue(msg2.getAttestationResponse().getPcrValuesCount() == 11);
+    	assertTrue(msg2.getType().equals(ConnectorMessage.Type.RAT_REQUEST));
     	
-    }
-
+    }    
+    
     @Test
     public void test3() throws Exception {
-    	msg3 = ConnectorMessage.parseFrom(consumer.sendTPM2Ddata(new Event(msg2.getType(), msg2.toString(), msg2)).toByteString());
+    	msg3 = ConnectorMessage.parseFrom(consumer.sendTPM2Ddata(new Event(msg2.getType(), msg2.toString(), msg2)).toByteString()); 
     	LOG.debug(msg3.toString());
     	assertTrue(msg3.getId() == id + 3);
     	assertTrue(msg3.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
@@ -102,11 +99,13 @@ public class RemoteAttestationIT {
 
     @Test
     public void test4() throws Exception {
-    	msg4 = ConnectorMessage.parseFrom(provider.sendResult(new Event(msg3.getType(), msg3.toString(), msg3)).toByteString());
+    	msg4 = ConnectorMessage.parseFrom(provider.sendTPM2Ddata(new Event(msg3.getType(), msg3.toString(), msg3)).toByteString());
     	LOG.debug(msg4.toString());
     	assertTrue(msg4.getId() == id + 4);
-    	assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESULT));
+    	assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
+    	assertTrue(msg4.getAttestationResponse().getHalg().equals(hAlg.name()));
+    	assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 11);
     	
     }
 
@@ -116,24 +115,36 @@ public class RemoteAttestationIT {
     	LOG.debug(msg5.toString());
     	assertTrue(msg5.getId() == id + 5);
     	assertTrue(msg5.getType().equals(ConnectorMessage.Type.RAT_RESULT));
-    	assertTrue(msg5.getAttestationResponse().getAtype().equals(aType));
+    	assertTrue(msg5.getAttestationResult().getResult() == true);
+    	assertTrue(msg5.getAttestationResult().getAtype().equals(aType));
+    	
     }
 
     @Test
     public void test6() throws Exception {
-    	msg6 = ConnectorMessage.parseFrom(provider.leaveRatRequest(new Event(msg5.getType(), msg5.toString(), msg5)).toByteString());
+    	msg6 = ConnectorMessage.parseFrom(provider.sendResult(new Event(msg5.getType(), msg5.toString(), msg5)).toByteString());
     	LOG.debug(msg6.toString());
     	assertTrue(msg6.getId() == id + 6);
-    	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
-    	assertTrue(msg6.getAttestationResponse().getAtype().equals(aType));
+    	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_RESULT));
+    	assertTrue(msg6.getAttestationResult().getResult() == true);
+    	assertTrue(msg6.getAttestationResult().getAtype().equals(aType));
     }
-    
+
     @Test
     public void test7() throws Exception {
     	msg7 = ConnectorMessage.parseFrom(consumer.leaveRatRequest(new Event(msg6.getType(), msg6.toString(), msg6)).toByteString());
     	LOG.debug(msg7.toString());
     	assertTrue(msg7.getId() == id + 7);
     	assertTrue(msg7.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
-    	assertTrue(msg7.getAttestationResponse().getAtype().equals(aType));
+    	assertTrue(msg7.getAttestationLeave().getAtype().equals(aType));
+    }
+    
+    @Test
+    public void test8() throws Exception {
+    	msg8 = ConnectorMessage.parseFrom(provider.leaveRatRequest(new Event(msg7.getType(), msg7.toString(), msg7)).toByteString());
+    	LOG.debug(msg8.toString());
+    	assertTrue(msg8.getId() == id + 8);
+    	assertTrue(msg8.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
+    	assertTrue(msg8.getAttestationLeave().getAtype().equals(aType));
     }
 }
