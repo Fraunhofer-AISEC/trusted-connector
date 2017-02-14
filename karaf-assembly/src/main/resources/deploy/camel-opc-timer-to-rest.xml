@@ -8,17 +8,34 @@
     <bean id="milo-client" class="org.apache.camel.component.milo.client.MiloClientComponent">
         <!--<property name="enableAnonymousAuthentication" value="true"/>-->
     </bean>
+
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
       <route id="opctorest">
-        <!--<from uri="timer://simpleTimer?period=1000"/>        -->
-        <from uri="milo-client:tcp://0.0.0.0:4840/freeopcua/server?nodeId=2&amp;samplingInterval=100000&amp;namespaceUri=http://examples.freeopcua.github.io"/>        
-        <log message="Triggered Route: opctorest, requesting node 2: Sensorreading body: ${body}"/>
+        <from uri="milo-client:tcp://10.244.192.172:4840?node=RAW(ns=2;i=3)&amp;samplingInterval=10000"/>        
+        <log message="Triggered Route: opctorest, requesting node: Sensorreading body: ${body}"/>
         <setHeader headerName="CamelHttpMethod">
           <constant>POST</constant>
         </setHeader>
         <convertBodyTo type="java.lang.String"/>
         <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
+        <log message="Got ${body}"/>        
       </route>
+      <!--<route id="opctorestpower">
+        <from uri="milo-client:tcp://10.244.192.172:4840?node=RAW(ns=2;i=3)&amp;samplingInterval=10000"/>        
+        <log message="Triggered Route: opctorest, requesting node: Sensorreading body: ${body}"/>
+        <convertBodyTo type="java.lang.String"/>
+        <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
+        <log message="Got ${body}"/>
+        <to uri="mock:foo"/>
+      </route>-->
+      <!--<route id="opctorestwrite">
+        <from uri="timer://simpleTimer?period=10000"/>  
+        <setBody>
+          <simple>33</simple>
+        </setBody>
+        <log message="Triggered Route: opctorestwrite, writingSensorreading body: ${body}"/>
+        <to uri="milo-client:tcp://10.244.192.172:4840?node=RAW(ns=2;i=2)"/>        
+      </route>-->
     </camelContext>
 </blueprint>
 <!--         <convertBodyTo type="java.lang.String"/>        
