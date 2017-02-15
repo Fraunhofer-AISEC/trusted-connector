@@ -61,7 +61,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private boolean sessionSupport;
     @UriParam(label = "cors")
     private boolean crossOriginFilterOn;
-    @UriParam(label = "security")
+    @UriParam(label = "sslContextParameters")
     private SSLContextParameters sslContextParameters;
     @UriParam(label = "cors")
     private String allowedOrigins;
@@ -79,6 +79,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private Integer maxBinaryMessageSize;
     @UriParam(label = "advanced", defaultValue = "13")
     private Integer minVersion;
+    
 
     public WebsocketEndpoint(WebsocketComponent component, String uri, String resourceUri, Map<String, Object> parameters) {
         super(uri, component);

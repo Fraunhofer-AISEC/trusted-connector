@@ -26,6 +26,7 @@ import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -54,7 +55,11 @@ public class WsEndpoint extends AhcEndpoint {
     private boolean useStreaming;
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
-
+    @UriParam(defaultValue = "0", label = "annotationType")
+    private int annotationType;
+    @UriParam(label = "sslContextParameters")
+    private SSLContextParameters sslContextParameters;
+    
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
     }
@@ -100,12 +105,29 @@ public class WsEndpoint extends AhcEndpoint {
     public boolean isSendMessageOnError() {
         return sendMessageOnError;
     }
+    
 
+    public void setAnnotationType(int type) {
+        this.annotationType = type;
+    }
+
+    public int getAnnotationType() {
+        return this.annotationType;
+    }
+
+    
     /**
      * Whether to send an message if the web-socket listener received an error.
      */
     public void setSendMessageOnError(boolean sendMessageOnError) {
         this.sendMessageOnError = sendMessageOnError;
+    }    
+    
+    /**
+     * To configure security using SSLContextParameters
+     */
+    public void setSslContextParameters(SSLContextParameters sslContextParameters) {
+        this.sslContextParameters = sslContextParameters;
     }
 
     @Override
@@ -130,6 +152,8 @@ public class WsEndpoint extends AhcEndpoint {
     	
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
+        
+        LOG.debug("Annotation Typ is {}", this.getAnnotationType());
         
         // Execute IDS protocol immediately after connect
         IDSPListener idspListener = new IDSPListener();

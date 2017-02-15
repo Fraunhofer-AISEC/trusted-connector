@@ -5,6 +5,22 @@
            xsi:schemaLocation="
                http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
                http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+  <camel:sslContextParameters
+      id="mySslContext">
+    <camel:keyManagers
+        keyPassword="password">
+      <camel:keyStore
+          resource="/root/etc/client-keystore.jks"
+          password="password"/>
+    </camel:keyManagers>
+    <camel:trustManagers>
+      <camel:keyStore
+          resource="/root/etc/client-truststore.jks"
+          password="password"/>
+    </camel:trustManagers>        
+  </camel:sslContextParameters>
+
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 	    <route id="ids-sender">
 	      <from uri="timer://simpleTimer?period=10000"/>
@@ -12,7 +28,7 @@
 	          <simple>Hello via IDS from IDS1!</simple> 
 	      </setBody>
 	      <log message="sending ${body}"/>
-	      <to uri="idsclientplain:10.1.2.17:9292/echo"/>
+	      <to uri="idsclient:10.1.2.17:9292/echo?sslContextParameters=#mySslContext"/>
 	    </route>
     </camelContext>
 </blueprint>
