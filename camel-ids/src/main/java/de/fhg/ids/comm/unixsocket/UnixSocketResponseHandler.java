@@ -11,8 +11,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 
-public class UnixSocketResponsHandler {
-	private Logger LOG = LoggerFactory.getLogger(UnixSocketResponsHandler.class);
+public class UnixSocketResponseHandler {
+	private Logger LOG = LoggerFactory.getLogger(UnixSocketResponseHandler.class);
 	private byte[] rsp = null;
 	
 	public synchronized boolean handleResponse(byte[] rsp) {

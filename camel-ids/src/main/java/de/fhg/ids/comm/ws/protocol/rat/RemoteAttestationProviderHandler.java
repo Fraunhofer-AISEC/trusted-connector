@@ -28,7 +28,7 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
-import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
+import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -44,7 +44,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private Thread thread;
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private UnixSocketThread client;
-	private UnixSocketResponsHandler handler;
+	private UnixSocketResponseHandler handler;
 	private ConnectorMessage msg;
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
 	private URI ttpUri;
@@ -68,7 +68,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			this.thread.setDaemon(true);
 			this.thread.start();
 			// responseHandler will be used to wait for messages
-			this.handler = new UnixSocketResponsHandler();
+			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			LOG.debug("could not write to/read from " + socket);
 			e.printStackTrace();
@@ -113,7 +113,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 							.setQualifyingData(this.yourNonce)
 							.setCode(Code.INTERNAL_ATTESTATION_REQ)
 							.build();
-					client.send(msg.toByteArray(), this.handler);
+					client.send(msg.toByteArray(), this.handler, true);
 					// and wait for response
 					byte[] toParse = this.handler.waitForResponse();
 					TpmToController response = TpmToController.parseFrom(toParse);
