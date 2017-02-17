@@ -49,6 +49,10 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
     public String getPath() {
         return endpoint.getPath();
     }
+    
+    public int getAttestationType() {
+        return endpoint.getAttestationType();
+    }    
 
     public void sendMessage(final String connectionKey, final String message) {
         sendMessage(connectionKey, (Object)message);

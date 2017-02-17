@@ -21,6 +21,9 @@ enum IdsAttestationType {
 
   // PCRs must be specified manually
   ADVANCED = 2;
+  
+  // no PCRs at all
+  ZERO = 3;  
 }
 
 message Pcr {

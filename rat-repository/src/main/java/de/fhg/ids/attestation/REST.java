@@ -138,12 +138,28 @@ public class REST {
 		}
 		return ret;
 	}
-	
+
 	// get a single configuration with id {cid} using json	
 	@GET
 	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getConfiguration(@PathParam("cid") String cid) {
+		this.setCORSHeader(response, corsEnabled);
+		if(isInteger(cid)) {
+			ret = gson.toJson(this.db.getConfiguration(Long.parseLong(cid)));
+		}
+		else {
+			ret = "id " + cid + " is not an Integer!";				
+		}
+		return ret;
+	}
+
+	// post a new configuration	
+	@POST
+	@Path("/json/configurations/new")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public String addConfiguration(@PathParam("cid") String cid) {
 		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			ret = gson.toJson(this.db.getConfiguration(Long.parseLong(cid)));
@@ -159,7 +175,6 @@ public class REST {
 	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
-		LOG.debug("DELETE ----------------------------------------------------------------------------------------------------------------------------------" + cid);
 		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			if(this.db.deleteConfigurationById(Integer.parseInt(cid))) {

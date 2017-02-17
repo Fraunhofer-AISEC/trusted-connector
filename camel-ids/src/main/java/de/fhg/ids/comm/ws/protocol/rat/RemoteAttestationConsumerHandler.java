@@ -52,7 +52,8 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
 	private URI ttpUri;
 	private boolean repoCheck = false;
-	private boolean success = false;
+	private boolean yourSuccess = false;
+	private boolean mySuccess = false;
 	
 	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
 		// set ttp uri
@@ -79,7 +80,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 	
 	public boolean isSuccessful() {
-		return this.success;
+		return this.yourSuccess && this.mySuccess;
 	}
 
 	public MessageLite enterRatRequest(Event e) {
@@ -118,7 +119,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 					// and wait for response
 					byte[] toParse = this.handler.waitForResponse();
 					TpmToController response = TpmToController.parseFrom(toParse);
-					// now return values from answer to server
+					// now return values from answer to provider
 					return ConnectorMessage
 							.newBuilder()
 							.setId(++this.sessionID)
@@ -157,10 +158,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		if(this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
 				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), e.getMessage().getAttestationResponse(), ttpUri)) {
-					this.success = true;
-				}
-				else {
-					this.success = false;
+					this.mySuccess = true;
 				}
 				return ConnectorMessage
 						.newBuilder()
@@ -170,7 +168,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 								AttestationResult
 								.newBuilder()
 								.setAtype(this.aType)
-								.setResult(this.success)
+								.setResult(this.mySuccess)
 								.build())
 						.build();
 			}
@@ -186,6 +184,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
+		this.yourSuccess = e.getMessage().getAttestationResult().getResult();
 		this.thread.interrupt();
 		if(++this.sessionID == e.getMessage().getId()) {
 			return ConnectorMessage
@@ -204,4 +203,13 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		LOG.debug(lastError);
 		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
 	}
+	
+	public MessageLite sendNoAttestation(Event e) {
+		LOG.debug("we are skipping remote attestation");
+		return ConnectorMessage
+	    		.newBuilder()
+	    		.setType(ConnectorMessage.Type.RAT_START)
+	    		.setId(new java.util.Random().nextLong())
+	    		.build();			
+	}	
 }

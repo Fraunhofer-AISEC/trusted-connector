@@ -18,9 +18,11 @@ message ConnectorMessage {
 		RAT_LEAVE = 10;
 		RAT_REPO_REQUEST = 11;
 		RAT_REPO_RESPONSE = 12;
-		ERROR = 13;
-		META_DATA_REQUEST = 14;
-		META_DATA_RESPONSE = 15;
+		META_START = 13;
+		META_REQUEST = 14;
+		META_RESPONSE = 15;
+		META_LEAVE = 16;
+		ERROR = 17;
 	}
 	
 	// Identifies which field is filled in.
@@ -97,7 +99,12 @@ message PropertyResponse {
 }
 
 message MedadataExchange {
-	optional string metadata = 1;
+	repeated string keys = 1;
+	repeated string values = 2;
+	// optional signature over values
+	optional string signature = 3;
+	// optional cert
+	optional string certificate_uri = 5;	
 }
 
 // -------------------------------

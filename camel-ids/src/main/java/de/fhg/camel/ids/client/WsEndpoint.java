@@ -55,8 +55,8 @@ public class WsEndpoint extends AhcEndpoint {
     private boolean useStreaming;
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
-    @UriParam(defaultValue = "0", label = "annotationType")
-    private int annotationType;
+    @UriParam(defaultValue = "0", label = "attestation")
+    private int attestation;
     @UriParam(label = "sslContextParameters")
     private SSLContextParameters sslContextParameters;
     
@@ -107,12 +107,12 @@ public class WsEndpoint extends AhcEndpoint {
     }
     
 
-    public void setAnnotationType(int type) {
-        this.annotationType = type;
+    public void enableAttestation(int type) {
+        this.attestation = type;
     }
 
-    public int getAnnotationType() {
-        return this.annotationType;
+    public int isAttestationEnabled() {
+        return this.attestation;
     }
 
     
@@ -153,10 +153,10 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
         
-        LOG.debug("Annotation Typ is {}", this.getAnnotationType());
+        LOG.debug("Attestation is enabled: {}", this.isAttestationEnabled());
         
         // Execute IDS protocol immediately after connect
-        IDSPListener idspListener = new IDSPListener();
+        IDSPListener idspListener = new IDSPListener(this.isAttestationEnabled());
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
         
         // wait for IDS protocol to finish 

@@ -1,5 +1,7 @@
 FROM debian:latest
 MAINTAINER Georg Raess "georg.raess@aisec.fraunhofer.de"
+LABEL de.fhg.aisec.ids.container.label="tpm2d"
+LABEL de.fhg.aisec.ids.version="1.0"
 # install used software
 RUN apt-get -y update && apt-get -y upgrade && apt-get -y install sudo python3 python3-pip
 RUN pip3 install --upgrade pip
