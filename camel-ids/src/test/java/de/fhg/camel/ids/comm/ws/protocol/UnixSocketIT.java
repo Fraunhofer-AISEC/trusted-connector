@@ -8,7 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.*;
-import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
+import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
@@ -19,7 +19,7 @@ public class UnixSocketIT {
 	private UnixSocketThread client;
 	private Thread thread;
 	private static final String socket = "socket/sim1/control.sock";
-	private static UnixSocketResponsHandler handler;
+	private static UnixSocketResponseHandler handler;
 
     @Test
     public void testSocketConnection() throws Exception {
@@ -30,7 +30,7 @@ public class UnixSocketIT {
 			thread.setDaemon(true);
 			thread.start();
 			// responseHandler will be used to wait for messages
-			handler = new UnixSocketResponsHandler();
+			handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			System.out.println("could not write to/read from " + socket);
 			e.printStackTrace();
@@ -42,7 +42,7 @@ public class UnixSocketIT {
 				.setQualifyingData(NonceGenerator.generate())
 				.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
 				.build();
-		client.send(msg.toByteArray(), handler);
+		client.send(msg.toByteArray(), handler, true);
 		System.out.println("waiting for socket response ....");
 		byte[] tpmData = handler.waitForResponse();
 		System.out.println("tpmData length : " + tpmData.length);

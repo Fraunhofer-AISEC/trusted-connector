@@ -12,8 +12,6 @@ import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
-import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 
