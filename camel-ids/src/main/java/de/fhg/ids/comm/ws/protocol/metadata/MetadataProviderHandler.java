@@ -9,6 +9,7 @@ import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationHandler;
+import de.fhg.ids.docker.Docker;
 
 public class MetadataProviderHandler extends MetadataHandler {
 	private long sessionID = -1;
@@ -20,12 +21,12 @@ public class MetadataProviderHandler extends MetadataHandler {
 	private List<String> myValues = Arrays.asList();
 	// all metadata values you provide to me	
 	private List<String> yourValues = Arrays.asList();
-	
+
 		
 	public MessageLite request(Event e) {
 		this.sessionID = e.getMessage().getId();
 		this.yourKeys = e.getMessage().getMetadataExchange().getKeysList();
-		this.myValues = MetadataHandler.getValues(this.yourKeys);
+		//this.myValues = getMetaData();
 		return ConnectorMessage
 				.newBuilder()
 				.setId(++this.sessionID)

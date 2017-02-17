@@ -141,13 +141,13 @@ public class UnixSocketThread implements Runnable {
 		int numRead;
 		try {
 			numRead = channel.read(this.readBuffer);
-			//System.out.println("unixsocketthread numRead: " + numRead);
 		} catch (IOException e) {
 			// The remote forcibly closed the connection, cancel the selection key and close the channel.
 			key.cancel();
 			channel.close();
 			return;
 		}
+		LOG.debug("bytes read: " + numRead);
 		if (numRead == -1) {
 			// Remote entity shut the socket down cleanly. Do the same from our end and cancel the channel.
 			key.channel().close();
