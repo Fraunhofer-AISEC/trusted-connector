@@ -79,16 +79,16 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private Integer maxBinaryMessageSize;
     @UriParam(label = "advanced", defaultValue = "13")
     private Integer minVersion;
-    @UriParam(defaultValue = "0", label = "attestation")
-    private int attestation;    
+    @UriParam(label = "attestation", defaultValue = "1")
+    private Integer attestation;    
     
 
-    public int getAttestationType() {
+    public int isAttestation() {
 		return attestation;
 	}
 
-	public void enableAttestation(int attestation) {
-		this.attestation = attestation;
+	public void setAttestation(int i) {
+		attestation = i;
 	}
 
 	public WebsocketEndpoint(WebsocketComponent component, String uri, String resourceUri, Map<String, Object> parameters) {

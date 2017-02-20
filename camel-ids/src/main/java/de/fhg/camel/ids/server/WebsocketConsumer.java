@@ -51,7 +51,7 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
     }
     
     public int getAttestationType() {
-        return endpoint.getAttestationType();
+        return endpoint.isAttestation();
     }    
 
     public void sendMessage(final String connectionKey, final String message) {

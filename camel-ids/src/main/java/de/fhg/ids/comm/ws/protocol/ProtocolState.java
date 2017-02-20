@@ -38,6 +38,5 @@ public final class ProtocolState {
     public static final ProtocolState IDSCP_RAT_AWAIT_LEAVE =	new ProtocolState("IDSCP:RAT:LEAVE", 	"Idscp/RemoteAttestation: awaiting to leave.");
     public static final ProtocolState IDSCP_META_REQUEST =      new ProtocolState("IDSCP:META:REQUEST", "Idscp/Metadataexchange: request.");
     public static final ProtocolState IDSCP_META_RESPONSE =     new ProtocolState("IDSCP:META:RESPONSE","Idscp/Metadataexchange: response.");
-    public static final ProtocolState IDSCP_META_LEAVE =        new ProtocolState("IDSCP:META:LEAVE",   "Idscp/Metadataexchange: leave.");
     
   }

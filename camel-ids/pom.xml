@@ -167,11 +167,19 @@
 			<artifactId>api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.docker-java</groupId>
-			<artifactId>docker-java</artifactId>
-			<version>3.0.7</version>
-		</dependency>
+		<!-- 
+		<dependency> 
+			<groupId>org.json</groupId> 
+			<artifactId>json</artifactId> 
+			<version>1.5-20090211</version> 
+			<scope>provided</scope> 
+		</dependency> 
+		<dependency> 
+			<groupId>com.github.docker-java</groupId> 
+			<artifactId>docker-java</artifactId> 
+			<version>3.0.7</version> 
+		</dependency> 
+		-->
 		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>docker-maven-plugin</artifactId>

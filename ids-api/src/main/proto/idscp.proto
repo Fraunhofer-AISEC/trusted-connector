@@ -99,8 +99,8 @@ message PropertyResponse {
 }
 
 message MedadataExchange {
-	repeated string keys = 1;
-	repeated string values = 2;
+	repeated string key = 1;
+	repeated string value = 2;
 	// optional signature over values
 	optional string signature = 3;
 	// optional cert
