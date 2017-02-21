@@ -32,13 +32,14 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RemoteAttestationIT {
+// BASIC test
+public class BASICAttestationIT {
 	
 	private static RemoteAttestationConsumerHandler consumer;
 	private static RemoteAttestationProviderHandler provider;
-	private static Logger LOG = LoggerFactory.getLogger(RemoteAttestationIT.class);
+	private static Logger LOG = LoggerFactory.getLogger(BASICAttestationIT.class);
 	private long id = 87654321;
-	private IdsAttestationType aType = IdsAttestationType.BASIC;
+	private static IdsAttestationType aType = IdsAttestationType.BASIC;
 	private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
 	
 	private ConnectorMessage msg0 = Idscp.ConnectorMessage.newBuilder().setType(ConnectorMessage.Type.RAT_START).setId(id).build();
@@ -63,8 +64,8 @@ public class RemoteAttestationIT {
 	public static void initRepo() throws URISyntaxException {
 		fsm1 = new FSM();
 		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, IdsAttestationType.BASIC, new URI(ratRepoUri), socket1);
-		provider = new RemoteAttestationProviderHandler(fsm2, IdsAttestationType.BASIC, new URI(ratRepoUri), socket2);		
+        consumer = new RemoteAttestationConsumerHandler(fsm1, aType, 0, new URI(ratRepoUri), socket1);
+		provider = new RemoteAttestationProviderHandler(fsm2, aType, 0, new URI(ratRepoUri), socket2);		
 	}
 	
     @Test

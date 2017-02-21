@@ -80,16 +80,9 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     @UriParam(label = "advanced", defaultValue = "13")
     private Integer minVersion;
     @UriParam(label = "attestation", defaultValue = "1")
-    private Integer attestation;    
-    
-
-    public int isAttestation() {
-		return attestation;
-	}
-
-	public void setAttestation(int i) {
-		attestation = i;
-	}
+    private Integer attestation;
+    @UriParam(label = "attestationMask", defaultValue = "0")
+    private Integer attestationMask;
 
 	public WebsocketEndpoint(WebsocketComponent component, String uri, String resourceUri, Map<String, Object> parameters) {
         super(uri, component);
@@ -223,6 +216,22 @@ public class WebsocketEndpoint extends DefaultEndpoint {
         return bufferSize;
     }
 
+    public int getAttestation() {
+		return attestation;
+	}
+
+	public void setAttestation(int i) {
+		attestation = i;
+	}
+
+    public int getAttestationMask() {
+		return attestationMask;
+	}
+
+	public void setAttestationMask(int i) {
+		attestationMask = i;
+	}
+    
     /**
      * Set the buffer size of the websocketServlet, which is also the max frame byte size (default 8192)
      */

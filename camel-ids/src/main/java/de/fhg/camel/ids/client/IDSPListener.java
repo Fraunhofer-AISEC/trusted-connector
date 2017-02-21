@@ -31,6 +31,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     private Logger LOG = LoggerFactory.getLogger(IDSPListener.class);
     private FSM fsm;
     private int attestationType = 0;
+    private int attestationMask = 0;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
     private final ConnectorMessage startMsg = Idscp.ConnectorMessage
@@ -39,8 +40,9 @@ public class IDSPListener extends DefaultWebSocketListener {
     		.setId(new java.util.Random().nextLong())
     		.build(); 
 
-	public IDSPListener(int attestationType) {
+	public IDSPListener(int attestationType, int attestationMask) {
 		this.attestationType = attestationType;
+		this.attestationMask = attestationMask;
 	}
 
 	@Override
@@ -62,7 +64,7 @@ public class IDSPListener extends DefaultWebSocketListener {
 	    		break;
         }
         // create Finite State Machine for IDS protocol
-        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, type);
+        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, type, this.attestationMask);
         // start the protocol with the first message
         fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
         

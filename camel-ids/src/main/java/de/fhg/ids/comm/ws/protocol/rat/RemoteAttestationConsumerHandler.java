@@ -39,7 +39,6 @@ import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
-
 public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
 	private String myNonce;
@@ -54,14 +53,16 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private boolean repoCheck = false;
 	private boolean yourSuccess = false;
 	private boolean mySuccess = false;
+	private int attestationMask = 0;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
+	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
 		this.fsm = fsm;
-		// set current attestation type (see attestation.proto)
+		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
+		this.attestationMask = attestationMask;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d
 		try {
@@ -114,6 +115,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 							.setAtype(this.aType)
 							.setQualifyingData(this.yourNonce)
 							.setCode(Code.INTERNAL_ATTESTATION_REQ)
+							.setPcrs(this.attestationMask)
 							.build();
 					client.send(msg.toByteArray(), this.handler, true);
 					// and wait for response

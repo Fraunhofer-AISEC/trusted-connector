@@ -83,7 +83,7 @@ public class DefaultWebsocket implements Serializable {
         		break;
         }
 		// Integrate server-side of IDS protocol
-        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, type);
+        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, type, this.consumer.getAttestationMask());
         sync.addSocket(this);
     }
 

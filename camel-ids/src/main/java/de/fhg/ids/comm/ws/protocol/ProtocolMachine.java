@@ -52,7 +52,7 @@ public class ProtocolMachine {
 	 * 
 	 * @return a FSM implementing the IDSP protocol.
 	 */
-	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type) {
+	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type, int attestationMask) {
 		this.ws = websocket;
 		FSM fsm = new FSM();
 		URI ttp = null;
@@ -63,7 +63,7 @@ public class ProtocolMachine {
 			e1.printStackTrace();
 		}
 		// all handler
-		RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, ttp, socket);
+		RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket);
 		ErrorHandler errorHandler = new ErrorHandler();
 		MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();		
 		
@@ -130,7 +130,7 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type) {
+	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask) {
 		this.sess = sess;
 		FSM fsm = new FSM();
 		URI ttp = null;
@@ -142,7 +142,7 @@ public class ProtocolMachine {
 		}
 
 		// all handler
-		RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, ttp, socket);
+		RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket);
 		ErrorHandler errorHandler = new ErrorHandler();
 		MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 		
