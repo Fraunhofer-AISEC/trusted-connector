@@ -10,9 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -117,16 +119,16 @@ public class Database {
 		statement.close();
 	}
 	
-	public void insertConfiguration(String name, String type, Pcr[] values) throws SQLException {
+	public long insertConfiguration(String name, String type, Pcr[] values) throws SQLException {
 		sql = "INSERT INTO CONFIG (NAME, TYPE) VALUES (?,?)";
 		pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		pStatement.setString(1, name);
 		pStatement.setString(2, type);
  		pStatement.executeUpdate();
  		pStatement.close();
- 		LOG.debug("INSERT CONFIG----------------------------------------------------------------------------");
- 		LOG.debug(name);
- 		this.insertPcrs(values, pStatement.getGeneratedKeys().getLong(1));
+ 		long key = pStatement.getGeneratedKeys().getLong(1);
+ 		this.insertPcrs(values, key);
+ 		return key;
 	}
 	
 	private void insertPcrs(Pcr[] values, long key) throws SQLException {
@@ -157,7 +159,19 @@ public class Database {
  		rs.close();
  		return ids.toArray(new Configuration[ids.size()]);
 	}
-
+	
+	public Configuration[] getConfigurationsIdBy(Pcr[] values) throws SQLException {
+		Configuration[] start = this.getConfigurationIdBy(values[0]);
+		values = Arrays.copyOfRange(values, 1, values.length);
+		for(Pcr value: values){
+			Configuration[] current = this.getConfigurationIdBy(value);
+			Set<Configuration> s1 = new HashSet<Configuration>(Arrays.asList(current));
+			Set<Configuration> s2 = new HashSet<Configuration>(Arrays.asList(start));
+			s1.retainAll(s2);
+			start = s1.toArray(new Configuration[s1.size()]);
+		}
+		return start;
+	}
 
 	public boolean deleteConfigurationById(long id) throws SQLException {
 		sql = "DELETE FROM CONFIG WHERE ID = ?";
@@ -228,18 +242,26 @@ public class Database {
 	}
 
 	
-	public boolean checkMessage(ConnectorMessage message) throws SQLException {
-		Configuration tmp;
-		Set<Long> names = new HashSet<Long>();
-		Configuration[] validConfigs = this.getConfigurationIdBy(message.getAttestationRepositoryRequest().getPcrValues(0));
-		this.computeHashSet(validConfigs, names, true);
-		for(int i = 2; i < message.getAttestationRepositoryRequest().getPcrValuesCount(); i++) {
-			this.computeHashSet(this.getConfigurationIdBy(message.getAttestationRepositoryRequest().getPcrValues(i)), names, false);
+	public boolean checkMessage(ConnectorMessage message) {
+		try {
+			Set<Long> names = new HashSet<Long>();
+			Configuration[] validConfigs = this.getConfigurationIdBy(message.getAttestationRepositoryRequest().getPcrValues(0));
+			this.computeHashSet(validConfigs, names, true);
+			for(int i = 2; i < message.getAttestationRepositoryRequest().getPcrValuesCount(); i++) {
+				this.computeHashSet(this.getConfigurationIdBy(message.getAttestationRepositoryRequest().getPcrValues(i)), names, false);
+			}
+			if(names.size() == 1) {
+				return true;
+			}
+			if(names.size() > 1) {
+				LOG.debug("found more than one matching configuration o.O this shouldn't happen !");
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
-		if(names.size() > 0) {
-			return true;
-		}
-		else {
+		catch(Exception ex) {
 			return false;
 		}
 	}
@@ -260,4 +282,35 @@ public class Database {
 			}
 		}
 	}
+	
+	private static <T> List<T> intersectArrays(List<T> a, List<T> b) {
+	    Map<T, Long> intersectionCountMap = new HashMap<T, Long>((((Math.max(a.size(), b.size()))*4)/3)+1);
+	    List<T> returnList = new LinkedList<T>();
+	    for(T element : a) {
+	        Long count = intersectionCountMap.get(element);
+	        if (count != null) {
+	            intersectionCountMap.put(element, count+1);
+	        } else {
+	            intersectionCountMap.put(element, 1L);
+	        }
+	    }
+	    for (T element : b) {
+	        Long count = intersectionCountMap.get(element);
+	        if (count != null) {
+	            intersectionCountMap.put(element, count-1);
+	        } else {
+	            intersectionCountMap.put(element, -1L);
+	        }            
+	    }
+	    for(T key : intersectionCountMap.keySet()) {
+	        Long count = intersectionCountMap.get(key);
+	        if (count != null && count != 0) {
+	            for(long i = 0; i < count; i++) {
+	                returnList.add(key);
+	            }
+	        }
+	    }
+	    return returnList;
+	}
+	
 }
