@@ -46,14 +46,49 @@ public class CertApi {
 		
 		try {
 
-		        File file = new File("/home/hamed/Documents/Projects/karaf-policy-platform/openssl_cert_generation/client-truststore.jks");
-		        FileInputStream fis = new FileInputStream(file);
+			//String keyStoreLocation = System.getProperty("javax.net.ssl.keyStore");
+			String keyStoreLocation = System.getProperty("user.dir") + "/../../../openssl_cert_generation/client-keystore.jks";
+			File file = new File(keyStoreLocation);
+	        FileInputStream fis = new FileInputStream(file);
+	        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+	        String password = "password";
+	        keystore.load(fis, password.toCharArray());
+
+	        Enumeration<String> enumeration = keystore.aliases();
+	        while(enumeration.hasMoreElements()) {
+	            String alias = (String)enumeration.nextElement();
+	            Certificate certificate = keystore.getCertificate(alias);
+	            Cert cert = new Cert();
+	            cert.alias = alias;
+	            cert.file = "client-keystore";
+	            cert.certificate = certificate.toString();
+	            
+	            certs.add(cert);
+	        }
+
+	    } catch (java.security.cert.CertificateException e) {
+	        e.printStackTrace();
+	    } catch (NoSuchAlgorithmException e) {
+	        e.printStackTrace();
+	    } catch (FileNotFoundException e) {
+	        e.printStackTrace();
+	    } catch (KeyStoreException e) {
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+		
+		try {
+
+				//String keyStoreLocation = System.getProperty("javax.net.ssl.truststore");
+				String keyStoreLocation = System.getProperty("user.dir") + "/../../../openssl_cert_generation/client-truststore.jks";
+				File file = new File(keyStoreLocation);
+	        	FileInputStream fis = new FileInputStream(file);
 		        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 		        String password = "password";
 		        keystore.load(fis, password.toCharArray());
 
-		        int i = 0;
-		        Enumeration enumeration = keystore.aliases();
+		        Enumeration<String> enumeration = keystore.aliases();
 		        while(enumeration.hasMoreElements()) {
 		            String alias = (String)enumeration.nextElement();
 		            Certificate certificate = keystore.getCertificate(alias);
@@ -63,41 +98,6 @@ public class CertApi {
 		            cert.certificate = certificate.toString();
 		            
 		            certs.add(cert);
-		            
-		        }
-
-		    } catch (java.security.cert.CertificateException e) {
-		        e.printStackTrace();
-		    } catch (NoSuchAlgorithmException e) {
-		        e.printStackTrace();
-		    } catch (FileNotFoundException e) {
-		        e.printStackTrace();
-		    } catch (KeyStoreException e) {
-		        e.printStackTrace();
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    }
-		
-		 try {
-
-		        File file = new File("/home/hamed/Documents/Projects/karaf-policy-platform/openssl_cert_generation/client-keystore.jks");
-		        FileInputStream fis = new FileInputStream(file);
-		        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-		        String password = "password";
-		        keystore.load(fis, password.toCharArray());
-
-		        int i = 0;
-		        Enumeration enumeration = keystore.aliases();
-		        while(enumeration.hasMoreElements()) {
-		            String alias = (String)enumeration.nextElement();
-		            Certificate certificate = keystore.getCertificate(alias);
-		            Cert cert = new Cert();
-		            cert.alias = alias;
-		            cert.file = "client-keystore";
-		            cert.certificate = certificate.toString();
-		            
-		            certs.add(cert);
-		            
 		        }
 
 		    } catch (java.security.cert.CertificateException e) {
@@ -127,8 +127,5 @@ public class CertApi {
 		public String alias;
 		public String file;
 		public String certificate;
-
 	}
 }
-
-

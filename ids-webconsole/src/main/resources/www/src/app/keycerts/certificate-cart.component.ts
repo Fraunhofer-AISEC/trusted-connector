@@ -4,6 +4,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Certificate } from './certificate';
 import { CertificateService } from './keycert.service';
 
+import {PrettifyPipe} from '../prettify-json.pipe';
+
 declare var Viz: any;
 
 @Component({
@@ -13,7 +15,7 @@ declare var Viz: any;
         <h2 class="mdl-card__title-text">{{certificate.file}} -> {{certificate.alias}}</h2>
       </div>
       <div class="mdl-card__supporting-text">
-        <span>{{certificate.certificate}}</span>
+        <pre innerHTML = "{{ certificate.certificate | prettify }}"></pre>
       </div>
       <div class="mdl-card__actions mdl-card--border">
       <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
