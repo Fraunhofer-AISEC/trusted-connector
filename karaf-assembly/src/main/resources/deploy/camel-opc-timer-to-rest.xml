@@ -20,23 +20,14 @@
         <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
         <log message="Got ${body}"/>        
       </route>
-      <!--<route id="opctorestpower">
-        <from uri="milo-client:tcp://10.244.192.172:4840?node=RAW(ns=2;i=3)&amp;samplingInterval=10000"/>        
-        <log message="Triggered Route: opctorest, requesting node: Sensorreading body: ${body}"/>
-        <convertBodyTo type="java.lang.String"/>
-        <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
-        <log message="Got ${body}"/>
-        <to uri="mock:foo"/>
-      </route>-->
-      <!--<route id="opctorestwrite">
+      <route id="opctorestwrite">
         <from uri="timer://simpleTimer?period=10000"/>  
         <setBody>
-          <simple>33</simple>
+          <simple>10</simple>
         </setBody>
+        <convertBodyTo type="java.lang.Integer"/>
         <log message="Triggered Route: opctorestwrite, writingSensorreading body: ${body}"/>
         <to uri="milo-client:tcp://10.244.192.172:4840?node=RAW(ns=2;i=2)"/>        
-      </route>-->
+      </route>
     </camelContext>
 </blueprint>
-<!--         <convertBodyTo type="java.lang.String"/>        
-        <to uri="stream:out"/> -->
