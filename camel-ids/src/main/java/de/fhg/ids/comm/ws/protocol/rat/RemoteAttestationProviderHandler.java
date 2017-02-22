@@ -28,7 +28,7 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
-import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
+import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -44,20 +44,23 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private Thread thread;
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private UnixSocketThread client;
-	private UnixSocketResponsHandler handler;
+	private UnixSocketResponseHandler handler;
 	private ConnectorMessage msg;
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
 	private URI ttpUri;
-	private boolean success = false;
+	private boolean yourSuccess = false;
+	private boolean mySuccess = false;
 	private AttestationResponse resp;
+	private int attestationMask = 0;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
 		this.fsm = fsm;
-		// set current attestation type (see attestation.proto)
+		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
+		this.attestationMask = attestationMask;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
@@ -67,7 +70,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			this.thread.setDaemon(true);
 			this.thread.start();
 			// responseHandler will be used to wait for messages
-			this.handler = new UnixSocketResponsHandler();
+			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			LOG.debug("could not write to/read from " + socket);
 			e.printStackTrace();
@@ -75,7 +78,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 	
 	public boolean isSuccessful() {
-		return this.success;
+		return this.yourSuccess && this.mySuccess;
 	}	
 	
 	public MessageLite enterRatRequest(Event e) {
@@ -111,8 +114,9 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 							.setAtype(this.aType)
 							.setQualifyingData(this.yourNonce)
 							.setCode(Code.INTERNAL_ATTESTATION_REQ)
+							.setPcrs(this.attestationMask)
 							.build();
-					client.send(msg.toByteArray(), this.handler);
+					client.send(msg.toByteArray(), this.handler, true);
 					// and wait for response
 					byte[] toParse = this.handler.waitForResponse();
 					TpmToController response = TpmToController.parseFrom(toParse);
@@ -155,10 +159,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		if(this.checkSignature(this.resp, this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
 				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), this.resp, ttpUri)) {
-					this.success = true;					
-				}
-				else {
-					this.success = false;
+					this.mySuccess = true;					
 				}
 				return ConnectorMessage
 						.newBuilder()
@@ -168,7 +169,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 								AttestationResult
 								.newBuilder()
 								.setAtype(this.aType)
-								.setResult(this.success)
+								.setResult(this.mySuccess)
 								.build())
 						.build();
 			}
@@ -185,6 +186,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
+		this.yourSuccess = e.getMessage().getAttestationResult().getResult();
 		this.thread.interrupt();
 		if(++this.sessionID == e.getMessage().getId()) {
 			return ConnectorMessage

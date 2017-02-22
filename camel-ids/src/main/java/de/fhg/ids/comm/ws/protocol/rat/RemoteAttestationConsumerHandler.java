@@ -35,10 +35,9 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
-import de.fhg.ids.comm.unixsocket.UnixSocketResponsHandler;
+import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-
 
 public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
@@ -46,21 +45,24 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private String yourNonce;
 	private IdsAttestationType aType;
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
-	private UnixSocketResponsHandler handler;
+	private UnixSocketResponseHandler handler;
 	private UnixSocketThread client;
 	private Thread thread;
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
 	private URI ttpUri;
 	private boolean repoCheck = false;
-	private boolean success = false;
+	private boolean yourSuccess = false;
+	private boolean mySuccess = false;
+	private int attestationMask = 0;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, URI ttpUri, String socket) {
+	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
 		this.fsm = fsm;
-		// set current attestation type (see attestation.proto)
+		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
+		this.attestationMask = attestationMask;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d
 		try {
@@ -70,7 +72,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 			this.thread.setDaemon(true);
 			this.thread.start();
 			// responseHandler will be used to wait for messages
-			this.handler = new UnixSocketResponsHandler();
+			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			lastError = "could not write to/read from " + socket;
 			LOG.debug(lastError);
@@ -79,7 +81,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 	
 	public boolean isSuccessful() {
-		return this.success;
+		return this.yourSuccess && this.mySuccess;
 	}
 
 	public MessageLite enterRatRequest(Event e) {
@@ -113,12 +115,13 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 							.setAtype(this.aType)
 							.setQualifyingData(this.yourNonce)
 							.setCode(Code.INTERNAL_ATTESTATION_REQ)
+							.setPcrs(this.attestationMask)
 							.build();
-					client.send(msg.toByteArray(), this.handler);
+					client.send(msg.toByteArray(), this.handler, true);
 					// and wait for response
 					byte[] toParse = this.handler.waitForResponse();
 					TpmToController response = TpmToController.parseFrom(toParse);
-					// now return values from answer to server
+					// now return values from answer to provider
 					return ConnectorMessage
 							.newBuilder()
 							.setId(++this.sessionID)
@@ -157,10 +160,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		if(this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
 				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), e.getMessage().getAttestationResponse(), ttpUri)) {
-					this.success = true;
-				}
-				else {
-					this.success = false;
+					this.mySuccess = true;
 				}
 				return ConnectorMessage
 						.newBuilder()
@@ -170,7 +170,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 								AttestationResult
 								.newBuilder()
 								.setAtype(this.aType)
-								.setResult(this.success)
+								.setResult(this.mySuccess)
 								.build())
 						.build();
 			}
@@ -186,6 +186,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
+		this.yourSuccess = e.getMessage().getAttestationResult().getResult();
 		this.thread.interrupt();
 		if(++this.sessionID == e.getMessage().getId()) {
 			return ConnectorMessage
@@ -204,4 +205,13 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		LOG.debug(lastError);
 		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
 	}
+	
+	public MessageLite sendNoAttestation(Event e) {
+		LOG.debug("we are skipping remote attestation");
+		return ConnectorMessage
+	    		.newBuilder()
+	    		.setType(ConnectorMessage.Type.RAT_START)
+	    		.setId(new java.util.Random().nextLong())
+	    		.build();			
+	}	
 }

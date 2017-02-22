@@ -30,23 +30,44 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 public class IDSPListener extends DefaultWebSocketListener {
     private Logger LOG = LoggerFactory.getLogger(IDSPListener.class);
     private FSM fsm;
+    private int attestationType = 0;
+    private int attestationMask = 0;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
-    private final ConnectorMessage emptyMsg = Idscp.ConnectorMessage
+    private final ConnectorMessage startMsg = Idscp.ConnectorMessage
     		.newBuilder()
     		.setType(ConnectorMessage.Type.RAT_START)
     		.setId(new java.util.Random().nextLong())
-    		.build();
+    		.build(); 
+
+	public IDSPListener(int attestationType, int attestationMask) {
+		this.attestationType = attestationType;
+		this.attestationMask = attestationMask;
+	}
 
 	@Override
     public void onOpen(WebSocket websocket) {
         LOG.debug("Websocket opened");
-        
+        IdsAttestationType type;
+        switch(this.attestationType) {
+	    	case 1:            
+	    		type = IdsAttestationType.BASIC;
+	    		break;
+	    	case 2:
+	    		type = IdsAttestationType.ADVANCED;
+	    		break;
+	    	case 3:
+	    		type = IdsAttestationType.ALL;
+	    		break;
+	    	default:
+	    		type = IdsAttestationType.ZERO;
+	    		break;
+        }
         // create Finite State Machine for IDS protocol
-        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, IdsAttestationType.BASIC);
-        
+        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, type, this.attestationMask);
         // start the protocol with the first message
-        fsm.feedEvent(new Event(emptyMsg.getType(), emptyMsg.toString(), emptyMsg));
+        fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
+        
     }
 
     @Override

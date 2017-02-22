@@ -39,7 +39,7 @@ public class UnixSocketThread implements Runnable {
 	private Map<UnixSocketChannel, List<ChangeRequest>> pendingData = new HashMap<UnixSocketChannel, List<ChangeRequest>>();
 	
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
-	private Map<UnixSocketChannel, UnixSocketResponsHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponsHandler>());
+	private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponseHandler>());
 	
 	// default constructor
 	public UnixSocketThread() throws IOException {
@@ -53,17 +53,22 @@ public class UnixSocketThread implements Runnable {
 	}
 
 	// send some data to the unix socket 
-	public void send(byte[] data, UnixSocketResponsHandler handler) throws IOException, InterruptedException {
-    	int length = data.length;
-    	ByteBuffer bb = ByteBuffer.allocate(4 + length);
-    	bb.put(ByteBuffer.allocate(4).putInt(length).array());
-    	bb.put(data);
-    	byte[] result = bb.array();
-    	// Start a new connection
+	public void send(byte[] data, UnixSocketResponseHandler handler, boolean withLengthHeader) throws IOException, InterruptedException {
+		byte[] result = data;
+		// if message has to be sent with length header
+		if(withLengthHeader) {
+			// then append the length of the message
+    		int length = data.length;
+    		// in the first 4 bytes
+        	ByteBuffer bb = ByteBuffer.allocate(4 + length);
+        	bb.put(ByteBuffer.allocate(4).putInt(length).array());
+        	bb.put(data);
+        	result = bb.array();
+    	}
+		// Start a new connection
 		UnixSocketChannel channel = this.initiateConnection();
 		// Register the response handler
 		this.rspHandlers.put(channel, handler);
-				
 		// And queue the data we want written
 		synchronized (this.pendingData) {
 			List queue = (List) this.pendingData.get(channel);
@@ -75,7 +80,7 @@ public class UnixSocketThread implements Runnable {
 		}
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
-	}
+	}	
 	
 	// thread run method
 	public void run() {
@@ -136,15 +141,13 @@ public class UnixSocketThread implements Runnable {
 		int numRead;
 		try {
 			numRead = channel.read(this.readBuffer);
-			System.out.println("unixsocketthread numRead: " + numRead);
-			
 		} catch (IOException e) {
 			// The remote forcibly closed the connection, cancel the selection key and close the channel.
 			key.cancel();
 			channel.close();
 			return;
 		}
-
+		LOG.debug("bytes read: " + numRead);
 		if (numRead == -1) {
 			// Remote entity shut the socket down cleanly. Do the same from our end and cancel the channel.
 			key.channel().close();
@@ -153,7 +156,7 @@ public class UnixSocketThread implements Runnable {
 		}
 		// buffer length comes alone
 		else if (numRead == 4) {
-			System.out.println("Message of length " + numRead + " arrived!");
+			//System.out.println("Message header with length arrived!");
 			System.arraycopy(Arrays.copyOfRange(this.readBuffer.array(), 0, 4), 0, this.readBufferLength, 0, 4);
 		}
 		// buffer length + protobuf message
@@ -173,6 +176,7 @@ public class UnixSocketThread implements Runnable {
 		}
 	}
 
+	// check if the first 4 bytes of a ByteBuffer equals the length of the rest of the buffer
 	private boolean bufferLengthIsAppended(ByteBuffer buf, int length) {
 		if((length - 4) == new BigInteger(Arrays.copyOfRange(buf.array(), 0, 4)).intValue()) {
 			System.arraycopy(Arrays.copyOfRange(buf.array(), 0, 4), 0, this.readBufferLength, 0, 4);
@@ -185,18 +189,14 @@ public class UnixSocketThread implements Runnable {
 
 	// function to handle the data read from unix socket
 	private void handleResponse(UnixSocketChannel channel, byte[] data) throws IOException {
-		
 		int length = new BigInteger(this.readBufferLength).intValue();
-		System.out.println("handleResponse:" + length);
+		//System.out.println("handleResponse:" + length);
 		// Make a correctly sized copy of the data before handing it to the client
 		byte[] rspData = new byte[length];
 		System.arraycopy(data, 0, rspData, 0, length);
-		
 		// Look up the handler for this channel
-		UnixSocketResponsHandler handler = (UnixSocketResponsHandler) this.rspHandlers.get(channel);
+		UnixSocketResponseHandler handler = (UnixSocketResponseHandler) this.rspHandlers.get(channel);
 		System.out.println("unixsocketthread recieved: " + rspData.length);
-		
-		
 		// And pass the response to it
 		if (handler.handleResponse(rspData)) {
 			// The handler has seen enough, close the connection
@@ -207,10 +207,8 @@ public class UnixSocketThread implements Runnable {
 
 	private void write(SelectionKey key) throws IOException {
 		UnixSocketChannel channel = this.getChannel(key);
-
 		synchronized (this.pendingData) {
 			List queue = (List) this.pendingData.get(channel);
-
 			// Write until there's not more data
 			while (!queue.isEmpty()) {
 				ByteBuffer buf = (ByteBuffer) queue.get(0);
@@ -221,7 +219,6 @@ public class UnixSocketThread implements Runnable {
 				}
 				queue.remove(0);
 			}
-
 			if (queue.isEmpty()) {
 				// We wrote away all data, so we're no longer interested in writing on this socket. Switch back to waiting for data.
 				key.interestOps(SelectionKey.OP_READ);
@@ -266,7 +263,6 @@ public class UnixSocketThread implements Runnable {
 		synchronized(this.pendingChanges) {
 			this.pendingChanges.add(new ChangeRequest(channel, ChangeRequest.REGISTER, SelectionKey.OP_CONNECT));
 		}
-		
 		return this.channel;
 	}
 	

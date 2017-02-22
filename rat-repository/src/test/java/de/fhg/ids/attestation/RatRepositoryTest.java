@@ -12,6 +12,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.apache.camel.test.AvailablePortFinder;
 import org.junit.AfterClass;
@@ -38,7 +39,6 @@ public class RatRepositoryTest {
 	
 	static RemoteAttestationServer ratServer;
 	static Pcr[] values;
-	static int numOfPcrValues = 10;
 	static String zero = "0000000000000000000000000000000000000000000000000000000000000000";
 	private static HttpURLConnection conn;
 	private static int port = AvailablePortFinder.getNextAvailable();
@@ -73,13 +73,14 @@ public class RatRepositoryTest {
     }
 	
 	@Test
-    public void testUsingURLConnection() throws IOException {
-		String qualifyingData = "abc";
+    public void testBASICConfiguration() throws IOException {
+		// this tests the BASIC pcr values configuration 0-10
+		String qualifyingData = UUID.randomUUID().toString();
 		String signature = "";
 		String uri = "";
-		long id = 12334324;
-		values = new Pcr[numOfPcrValues];
-    	for(int i = 0; i < numOfPcrValues;i++) {
+		long id = new java.util.Random().nextLong();
+		values = new Pcr[10];
+    	for(int i = 0; i < 10;i++) {
     		values[i] = Pcr.newBuilder()
     				.setNumber(i)
     				.setValue(zero)
@@ -87,7 +88,7 @@ public class RatRepositoryTest {
     	}	
         ConnectorMessage msg = ConnectorMessage
         		.newBuilder()
-        		.setId(id++)
+        		.setId(id)
 				.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
         		.setAttestationRepositoryRequest(
 		        		AttestationRepositoryRequest
@@ -97,6 +98,8 @@ public class RatRepositoryTest {
 		        		.addAllPcrValues(Arrays.asList(values))
 		        		.build()
 		        ).build();    
+        LOG.debug("-----------------------------------msg to repo:-------------------------------------");
+        LOG.debug(msg.toString());
         URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
         HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
         urlc.setDoInput(true);
@@ -106,14 +109,110 @@ public class RatRepositoryTest {
         urlc.setRequestProperty("Content-Type", "application/x-protobuf");
         msg.writeTo(urlc.getOutputStream());
         ConnectorMessage result = ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
-        assertTrue(result.getId() == id);
+        LOG.debug("-----------------------------------answer from repo:-------------------------------------");
+        LOG.debug(result.toString());
+        assertTrue(result.getId() == id + 1);
         assertTrue(result.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE));
         assertTrue(result.getAttestationRepositoryResponse().getAtype().equals(IdsAttestationType.BASIC));
         assertTrue(result.getAttestationRepositoryResponse().getQualifyingData().equals(qualifyingData));
         assertTrue(result.getAttestationRepositoryResponse().getResult());
         assertTrue(result.getAttestationRepositoryResponse().getSignature().equals(signature));
         assertTrue(result.getAttestationRepositoryResponse().getCertificateUri().equals(uri));
-        
     }
-    
+	
+	@Test
+    public void testALLConfiguration() throws IOException {
+		// this tests the ALL pcr values configuration 0-23
+		String qualifyingData = UUID.randomUUID().toString();
+		String signature = "";
+		String uri = "";
+		long id = new java.util.Random().nextLong();
+		values = new Pcr[24];
+    	for(int i = 0; i < 24;i++) {
+    		values[i] = Pcr.newBuilder()
+    				.setNumber(i)
+    				.setValue(zero)
+    				.build();
+    	}	
+        ConnectorMessage msg = ConnectorMessage
+        		.newBuilder()
+        		.setId(id)
+				.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
+        		.setAttestationRepositoryRequest(
+		        		AttestationRepositoryRequest
+		        		.newBuilder()
+		        		.setAtype(IdsAttestationType.ALL)
+		        		.setQualifyingData(qualifyingData)
+		        		.addAllPcrValues(Arrays.asList(values))
+		        		.build()
+		        ).build();
+        LOG.debug("-----------------------------------msg to repo:-------------------------------------");
+        LOG.debug(msg.toString());
+        URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
+        HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+        urlc.setDoInput(true);
+        urlc.setDoOutput(true);
+        urlc.setRequestMethod("POST");
+        urlc.setRequestProperty("Accept", "application/x-protobuf");
+        urlc.setRequestProperty("Content-Type", "application/x-protobuf");
+        msg.writeTo(urlc.getOutputStream());
+        ConnectorMessage result = ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
+        LOG.debug("-----------------------------------answer from repo:-------------------------------------");
+        LOG.debug(result.toString());
+        assertTrue(result.getId() == id + 1);
+        assertTrue(result.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE));
+        assertTrue(result.getAttestationRepositoryResponse().getAtype().equals(IdsAttestationType.ALL));
+        assertTrue(result.getAttestationRepositoryResponse().getQualifyingData().equals(qualifyingData));
+        assertTrue(result.getAttestationRepositoryResponse().getResult());
+        assertTrue(result.getAttestationRepositoryResponse().getSignature().equals(signature));
+        assertTrue(result.getAttestationRepositoryResponse().getCertificateUri().equals(uri));
+    }
+
+	@Test
+    public void testADVANCEDConfiguration() throws IOException {
+		// this tests the ADVANCED pcr values configuration in this case with 5 values: PCR0, PCR2, PCR4, PCR6, PCR8
+		String qualifyingData = UUID.randomUUID().toString();
+		String signature = "";
+		String uri = "";
+		long id = new java.util.Random().nextLong();
+		values = new Pcr[5];
+    	for(int i = 0; i < 5;i++) {
+    		values[i] = Pcr.newBuilder()
+    				.setNumber(2*i)
+    				.setValue(zero)
+    				.build();
+    	}	
+        ConnectorMessage msg = ConnectorMessage
+        		.newBuilder()
+        		.setId(id)
+				.setType(ConnectorMessage.Type.RAT_REPO_REQUEST)
+        		.setAttestationRepositoryRequest(
+		        		AttestationRepositoryRequest
+		        		.newBuilder()
+		        		.setAtype(IdsAttestationType.ADVANCED)
+		        		.setQualifyingData(qualifyingData)
+		        		.addAllPcrValues(Arrays.asList(values))
+		        		.build()
+		        ).build();
+        LOG.debug("-----------------------------------msg to repo:-------------------------------------");
+        LOG.debug(msg.toString());
+        URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
+        HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+        urlc.setDoInput(true);
+        urlc.setDoOutput(true);
+        urlc.setRequestMethod("POST");
+        urlc.setRequestProperty("Accept", "application/x-protobuf");
+        urlc.setRequestProperty("Content-Type", "application/x-protobuf");
+        msg.writeTo(urlc.getOutputStream());
+        ConnectorMessage result = ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
+        LOG.debug("-----------------------------------answer from repo:-------------------------------------");
+        LOG.debug(result.toString());
+        assertTrue(result.getId() == id + 1);
+        assertTrue(result.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE));
+        assertTrue(result.getAttestationRepositoryResponse().getAtype().equals(IdsAttestationType.ADVANCED));
+        assertTrue(result.getAttestationRepositoryResponse().getQualifyingData().equals(qualifyingData));
+        assertTrue(result.getAttestationRepositoryResponse().getResult());
+        assertTrue(result.getAttestationRepositoryResponse().getSignature().equals(signature));
+        assertTrue(result.getAttestationRepositoryResponse().getCertificateUri().equals(uri));
+    }
 }

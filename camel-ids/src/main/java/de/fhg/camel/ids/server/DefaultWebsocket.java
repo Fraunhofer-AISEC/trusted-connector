@@ -47,7 +47,6 @@ public class DefaultWebsocket implements Serializable {
 
     private final WebsocketConsumer consumer;
     private final NodeSynchronization sync;
-    private final ConnectorMessage emptyMsg = Idscp.ConnectorMessage.newBuilder().build();
     private Session session;
     private String connectionKey;
 	private FSM idsFsm;
@@ -68,10 +67,23 @@ public class DefaultWebsocket implements Serializable {
         //LOG.trace("onConnect {}", session);
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
-        
-        // Integrate server-side of IDS protocol
-        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, IdsAttestationType.BASIC);
-        
+        IdsAttestationType type;
+        switch(this.consumer.getAttestationType()) {
+        	case 1:            
+        		type = IdsAttestationType.BASIC;
+        		break;
+        	case 2:
+        		type = IdsAttestationType.ADVANCED;
+        		break;
+        	case 3:
+        		type = IdsAttestationType.ALL;
+        		break;
+        	default:
+        		type = IdsAttestationType.ZERO;
+        		break;
+        }
+		// Integrate server-side of IDS protocol
+        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, type, this.consumer.getAttestationMask());
         sync.addSocket(this);
     }
 

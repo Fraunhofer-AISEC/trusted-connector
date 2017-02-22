@@ -56,72 +56,43 @@ public class REST {
 	@Consumes(MediaTypeExt.APPLICATION_PROTOBUF)
 	public ConnectorMessage checkConfiguration(ConnectorMessage msg) throws SQLException {
 		if(msg.getType().equals(ConnectorMessage.Type.RAT_REPO_REQUEST)) {
-			if(msg.getAttestationRepositoryRequest().getPcrValuesCount() > 0) {
-				LOG.debug("REPO msg to check : " + msg.toString());
-				int numPcrValues = msg.getAttestationResponse().getPcrValuesCount();
-				if(this.db.checkMessage(msg)) {
-					return ConnectorMessage
-							.newBuilder()
-							.setId(msg.getId() + 1)
-							.setType(ConnectorMessage.Type.RAT_REPO_RESPONSE)
-							.setAttestationRepositoryResponse(
-									AttestationRepositoryResponse
-					        		.newBuilder()
-					        		.setAtype(IdsAttestationType.BASIC)
-					        		.setResult(true)
-					        		.setQualifyingData(msg.getAttestationRepositoryRequest().getQualifyingData())
-					        		.setSignature("")
-					        		.setCertificateUri("")
-					        		.build()
-									)
-							.build();
+			try {
+				AttestationRepositoryRequest request = msg.getAttestationRepositoryRequest();
+				int numPcrValues = request.getPcrValuesCount();
+				IdsAttestationType type = request.getAtype();
+				// check if attestation type matches # opf pcr values
+				if(numPcrValues > 0) {
+					switch(type) {
+						case BASIC:
+							if(numPcrValues == 10) {
+								return this.checkMessage(msg);
+							}
+							else {
+								return this.sendError("error: IdsAttestationType is BASIC, but number of PCR values (\""+numPcrValues+"\") send is not 11", msg.getId());
+							}
+						case ADVANCED:
+							return this.checkMessage(msg);					
+						case ALL:
+							if(numPcrValues == 24) {
+								return this.checkMessage(msg);
+							}
+							else {
+								return this.sendError("error: IdsAttestationType is ALL, but number of PCR values (\""+numPcrValues+"\") send is not 24", msg.getId());
+							}
+						default:
+							return this.sendError("error: unknown IdsAttestationType", msg.getId());
+					}
 				}
 				else {
-					return ConnectorMessage
-							.newBuilder()
-							.setId(msg.getId() + 1)
-							.setType(ConnectorMessage.Type.RAT_REPO_RESPONSE)
-							.setAttestationRepositoryResponse(
-									AttestationRepositoryResponse
-					        		.newBuilder()
-					        		.setAtype(IdsAttestationType.BASIC)
-					        		.setResult(false)
-					        		.setQualifyingData(msg.getAttestationRepositoryRequest().getQualifyingData())
-					        		.setSignature("")
-					        		.setCertificateUri("")
-					        		.build()
-									)
-							.build();
+					return this.sendError("there were no PCR values in the request", msg.getId());
 				}
 			}
-			else {
-				return ConnectorMessage
-						.newBuilder()
-						.setId(msg.getId() + 1)
-						.setType(ConnectorMessage.Type.ERROR)
-						.setError(
-								Error
-								.newBuilder()
-								.setErrorCode("")
-								.setErrorMessage("there were no PCR values in the request")
-								.build()
-								)
-						.build();
+			catch (Exception e) {
+				return this.sendError(e.getMessage(), msg.getId());
 			}
 		}
 		else {
-			return ConnectorMessage
-					.newBuilder()
-					.setId(msg.getId() + 1)
-					.setType(ConnectorMessage.Type.ERROR)
-					.setError(
-							Error
-							.newBuilder()
-							.setErrorCode("")
-							.setErrorMessage("request was not of type RAT_REPO_REQUEST")
-							.build()
-							)
-					.build();
+			return this.sendError("request was not of type RAT_REPO_REQUEST", msg.getId());
 		}
 	}
 	
@@ -138,7 +109,7 @@ public class REST {
 		}
 		return ret;
 	}
-	
+
 	// get a single configuration with id {cid} using json	
 	@GET
 	@Path("/json/configurations/{cid}")
@@ -153,13 +124,34 @@ public class REST {
 		}
 		return ret;
 	}
+
+	// post a new configuration	
+	@POST
+	@Path("/json/configurations/new")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addConfiguration(Configuration config) {
+		this.setCORSHeader(response, corsEnabled);
+		try {
+			Configuration[] existing = this.db.getConfigurationsIdBy(config.getValues());
+			if(existing.length == 0) {
+				long key = this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
+				return Response.ok(key).build();
+			}
+			else {
+				return Response.serverError().build();
+			}
+		} catch (Exception e) {
+			LOG.debug(e.getMessage());
+			return Response.serverError().build();
+		}
+	}
 	
 	// delete a single configuration with id {cid} using json	
 	@DELETE
 	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
-		LOG.debug("DELETE ----------------------------------------------------------------------------------------------------------------------------------" + cid);
 		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			if(this.db.deleteConfigurationById(Integer.parseInt(cid))) {
@@ -196,6 +188,42 @@ public class REST {
 			response.setHeader("Access-Control-Max-Age", "1209600");			
 		}
 	}
+	
+	
+	private ConnectorMessage checkMessage(ConnectorMessage msg) throws SQLException {
+		return ConnectorMessage
+				.newBuilder()
+				.setId(msg.getId() + 1)
+				.setType(ConnectorMessage.Type.RAT_REPO_RESPONSE)
+				.setAttestationRepositoryResponse(
+						AttestationRepositoryResponse
+		        		.newBuilder()
+		        		.setAtype(msg.getAttestationRepositoryRequest().getAtype())
+		        		.setResult(this.db.checkMessage(msg))
+		        		.setQualifyingData(msg.getAttestationRepositoryRequest().getQualifyingData())
+		        		.setSignature("")
+		        		.setCertificateUri("")
+		        		.build()
+						)
+				.build();
+
+	}
+	
+	private ConnectorMessage sendError(String error, long id) {
+		return ConnectorMessage
+				.newBuilder()
+				.setId(id + 1)
+				.setType(ConnectorMessage.Type.ERROR)
+				.setError(
+						Error
+						.newBuilder()
+						.setErrorCode("")
+						.setErrorMessage(error)
+						.build()
+						)
+				.build();
+	}
+	
 
 	/* SIMPLE FILE TRANSFER FROM HERE ON
 

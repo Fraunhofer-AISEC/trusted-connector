@@ -26,6 +26,7 @@ import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -54,7 +55,13 @@ public class WsEndpoint extends AhcEndpoint {
     private boolean useStreaming;
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
-
+    @UriParam(label = "attestation", defaultValue = "1")
+    private Integer attestation;
+    @UriParam(label = "attestationMask", defaultValue = "0")
+    private Integer attestationMask;    
+    @UriParam(label = "sslContextParameters")
+    private SSLContextParameters sslContextParameters;
+    
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
     }
@@ -101,11 +108,35 @@ public class WsEndpoint extends AhcEndpoint {
         return sendMessageOnError;
     }
 
+    public void setAttestation(int type) {
+        this.attestation = type;
+    }
+
+    public int getAttestation() {
+        return attestation;
+    }
+
+    public void setAttestationMask(int type) {
+        this.attestationMask = type;
+    }
+
+    public int getAttestationMask() {
+        return attestationMask;
+    }
+
+    
     /**
      * Whether to send an message if the web-socket listener received an error.
      */
     public void setSendMessageOnError(boolean sendMessageOnError) {
         this.sendMessageOnError = sendMessageOnError;
+    }    
+    
+    /**
+     * To configure security using SSLContextParameters
+     */
+    public void setSslContextParameters(SSLContextParameters sslContextParameters) {
+        this.sslContextParameters = sslContextParameters;
     }
 
     @Override
@@ -131,8 +162,11 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
         
+        LOG.debug("Attestation is enabled: {}", this.getAttestation());
+        LOG.debug("Attestation Mask is: {}", this.getAttestationMask());
+        
         // Execute IDS protocol immediately after connect
-        IDSPListener idspListener = new IDSPListener();
+        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask());
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
         
         // wait for IDS protocol to finish 

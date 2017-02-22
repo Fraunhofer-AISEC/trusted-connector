@@ -9,7 +9,7 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 public class ErrorHandler {
 	
-	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
+	private Logger LOG = LoggerFactory.getLogger(ErrorHandler.class);
 
 	public boolean handleError(Event e, ProtocolState state, boolean isConsumer) {
 		String entity = "Provider";
@@ -17,21 +17,13 @@ public class ErrorHandler {
 			entity = "Consumer";
 		}
 		LOG.debug("*******************************************************************************************************");
-		LOG.debug("*  error during rat protocol execution ");
+		LOG.debug("*  error handler during rat protocol execution ");
 		LOG.debug("*  -> state: " + state.description());
 		LOG.debug("*  -> side: "+entity+"");		
 		LOG.debug("*  -> error: " + e.getMessage().getError().getErrorMessage());
 		LOG.debug("*******************************************************************************************************");
-		/*
-		 * if(errorWasHandled) {
-		 *     return true; // and thus change the state to IDSCP_START
-		 * }
-		 * else {
-		 */
-			return false;
-		/*
-		 * }
-		 */
+		
+		return true;
 	}
 
 }

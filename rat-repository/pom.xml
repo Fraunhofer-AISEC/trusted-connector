@@ -9,12 +9,12 @@
 	<version>1.0.0</version>
 	<name>rat-repository</name>
 	<url>http://maven.apache.org</url>
-  
-  <parent>
-    <groupId>de.fhg.ids</groupId>
-    <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
-  </parent>  
+
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.0.0</version>
+	</parent>
 
 	<properties>
 		<camel-version>2.18.0</camel-version>
@@ -180,7 +180,7 @@
 								<resource>
 									<directory>${basedir}/target/</directory>
 									<includes>
-										<include>**/*.jar</include>
+										<include>**/${project.name}-${project.version}.jar</include>
 									</includes>
 								</resource>
 							</resources>
@@ -195,7 +195,7 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<configuration>
 					<imageName>ids/ttpsim:latest</imageName>
-					<dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
+					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 				</configuration>
 				<version>0.4.13</version>
 				<executions>

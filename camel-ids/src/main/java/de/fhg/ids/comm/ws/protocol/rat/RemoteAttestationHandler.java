@@ -64,7 +64,7 @@ public class RemoteAttestationHandler {
 					.setAttestationRepositoryRequest(
 							AttestationRepositoryRequest
 			        		.newBuilder()
-			        		.setAtype(IdsAttestationType.BASIC)
+			        		.setAtype(basic)
 			        		.setQualifyingData(nonce)
 			        		.addAllPcrValues(Arrays.asList(values))
 			        		.build()

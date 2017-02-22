@@ -61,7 +61,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private boolean sessionSupport;
     @UriParam(label = "cors")
     private boolean crossOriginFilterOn;
-    @UriParam(label = "security")
+    @UriParam(label = "sslContextParameters")
     private SSLContextParameters sslContextParameters;
     @UriParam(label = "cors")
     private String allowedOrigins;
@@ -79,8 +79,12 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private Integer maxBinaryMessageSize;
     @UriParam(label = "advanced", defaultValue = "13")
     private Integer minVersion;
+    @UriParam(label = "attestation", defaultValue = "1")
+    private Integer attestation;
+    @UriParam(label = "attestationMask", defaultValue = "0")
+    private Integer attestationMask;
 
-    public WebsocketEndpoint(WebsocketComponent component, String uri, String resourceUri, Map<String, Object> parameters) {
+	public WebsocketEndpoint(WebsocketComponent component, String uri, String resourceUri, Map<String, Object> parameters) {
         super(uri, component);
         this.resourceUri = resourceUri;
         this.component = component;
@@ -212,6 +216,22 @@ public class WebsocketEndpoint extends DefaultEndpoint {
         return bufferSize;
     }
 
+    public int getAttestation() {
+		return attestation;
+	}
+
+	public void setAttestation(int i) {
+		attestation = i;
+	}
+
+    public int getAttestationMask() {
+		return attestationMask;
+	}
+
+	public void setAttestationMask(int i) {
+		attestationMask = i;
+	}
+    
     /**
      * Set the buffer size of the websocketServlet, which is also the max frame byte size (default 8192)
      */
