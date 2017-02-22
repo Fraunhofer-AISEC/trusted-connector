@@ -19,7 +19,7 @@
         <convertBodyTo type="java.lang.String"/>
         <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
         <log message="Got ${body}"/>        
-      </route>-
+      </route>
       <route id="opctorestwrite">
         <from uri="timer://simpleTimer?period=10000"/>  
         <setBody>
@@ -31,7 +31,7 @@
       </route>
      <route id="opctorest-LED">
         <from uri="milo-client:tcp://sensordemo-pi-5.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1002)&amp;samplingInterval=10000"/>        
-        <log message="Triggered Route: opctorest-LED, requesting node: Sensorreading body: ${body}"/>
+        <log message="Triggered Route: opctorest, requesting node: Sensorreading body: ${body}"/>
         <setHeader headerName="CamelHttpMethod">
           <constant>POST</constant>
         </setHeader>
@@ -43,10 +43,10 @@
       <route id="opctorestwrite-LED">
         <from uri="timer://simpleTimer?period=10000"/>  
         <setBody>
-          <simple>0</simple>
+          <simple>6</simple>
         </setBody>
-        <convertBodyTo type="java.lang.Integer"/>
-        <log message="Triggered Route: opctorestwrite-LED, writingSensorreading body: ${body}"/>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Triggered Route: opctorestwrite, writingSensorreading body: ${body}"/>
         <to uri="milo-client:tcp://sensordemo-pi-5.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1002)"/>        
       </route>
     </camelContext>
