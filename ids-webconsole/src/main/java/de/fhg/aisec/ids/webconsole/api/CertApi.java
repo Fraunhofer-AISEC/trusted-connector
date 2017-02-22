@@ -1,6 +1,15 @@
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,21 +42,76 @@ public class CertApi {
 	@Path("list")
 	@Produces("application/json")
 	public String list() {
-		List<mockedCert> certs = new ArrayList<>();
+		List<Cert> certs = new ArrayList<>();
 		
-	     mockedCert cert1 = new mockedCert();
-	     mockedCert cert2 = new mockedCert();
-	     
-	     cert1.id = "cert1";
-	     cert1.name = "This is certificate one";
-	     cert1.publicKey = "publick key comes here";
-	     cert2.id = "cert2";
-	     cert2.name = "This is certificate two";
-	     cert2.publicKey = "publick key comes here";
-	     
-	     certs.add(cert1);
-	     certs.add(cert2);
+		try {
+
+		        File file = new File("/home/hamed/Documents/Projects/karaf-policy-platform/openssl_cert_generation/client-truststore.jks");
+		        FileInputStream fis = new FileInputStream(file);
+		        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+		        String password = "password";
+		        keystore.load(fis, password.toCharArray());
+
+		        int i = 0;
+		        Enumeration enumeration = keystore.aliases();
+		        while(enumeration.hasMoreElements()) {
+		            String alias = (String)enumeration.nextElement();
+		            Certificate certificate = keystore.getCertificate(alias);
+		            Cert cert = new Cert();
+		            cert.alias = alias;
+		            cert.file = "client-truststore";
+		            cert.certificate = certificate.toString();
+		            
+		            certs.add(cert);
+		            
+		        }
+
+		    } catch (java.security.cert.CertificateException e) {
+		        e.printStackTrace();
+		    } catch (NoSuchAlgorithmException e) {
+		        e.printStackTrace();
+		    } catch (FileNotFoundException e) {
+		        e.printStackTrace();
+		    } catch (KeyStoreException e) {
+		        e.printStackTrace();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
 		
+		 try {
+
+		        File file = new File("/home/hamed/Documents/Projects/karaf-policy-platform/openssl_cert_generation/client-keystore.jks");
+		        FileInputStream fis = new FileInputStream(file);
+		        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+		        String password = "password";
+		        keystore.load(fis, password.toCharArray());
+
+		        int i = 0;
+		        Enumeration enumeration = keystore.aliases();
+		        while(enumeration.hasMoreElements()) {
+		            String alias = (String)enumeration.nextElement();
+		            Certificate certificate = keystore.getCertificate(alias);
+		            Cert cert = new Cert();
+		            cert.alias = alias;
+		            cert.file = "client-keystore";
+		            cert.certificate = certificate.toString();
+		            
+		            certs.add(cert);
+		            
+		        }
+
+		    } catch (java.security.cert.CertificateException e) {
+		        e.printStackTrace();
+		    } catch (NoSuchAlgorithmException e) {
+		        e.printStackTrace();
+		    } catch (FileNotFoundException e) {
+		        e.printStackTrace();
+		    } catch (KeyStoreException e) {
+		        e.printStackTrace();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
+		 
 	    return new GsonBuilder().create().toJson(certs);
 	}
 	
@@ -59,10 +123,10 @@ public class CertApi {
 		return new Gson().toJson(true);
 	}
 	
-	public class mockedCert {
-		public String name;
-		public String id;
-		public String publicKey;
+	public class Cert {
+		public String alias;
+		public String file;
+		public String certificate;
 
 	}
 }

@@ -10,10 +10,10 @@ declare var Viz: any;
   selector: 'certificate-card',
   template: `
       <div class="mdl-card__title mdl-card--expand">
-        <h2 class="mdl-card__title-text">{{certificate.name}}</h2>
+        <h2 class="mdl-card__title-text">{{certificate.file}} -> {{certificate.alias}}</h2>
       </div>
       <div class="mdl-card__supporting-text">
-        <span>{{certificate.publicKey}}</span>
+        <span>{{certificate.certificate}}</span>
       </div>
       <div class="mdl-card__actions mdl-card--border">
       <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
