@@ -59,9 +59,9 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private boolean enableJmx;
     @UriParam(label = "consumer")
     private boolean sessionSupport;
-    @UriParam(label = "cors")
+    @UriParam(label = "cors", description = "enables or disables Cross Origin Filter")
     private boolean crossOriginFilterOn;
-    @UriParam(label = "sslContextParameters")
+    @UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
     private SSLContextParameters sslContextParameters;
     @UriParam(label = "cors")
     private String allowedOrigins;
@@ -79,10 +79,10 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private Integer maxBinaryMessageSize;
     @UriParam(label = "advanced", defaultValue = "13")
     private Integer minVersion;
-    @UriParam(label = "attestation", defaultValue = "1")
-    private Integer attestation;
-    @UriParam(label = "attestationMask", defaultValue = "0")
-    private Integer attestationMask;
+    @UriParam(label = "attestation", defaultValue = "0", description = "defines the remote attestation mode: 0=BASIC, 1=ALL, 2=ADVANCED, 3=ZERO. default value is 0=BASIC. (see api/attestation.proto for more details)")
+    private Integer attestation = 0;
+    @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
+    private Integer attestationMask = 0;
 
 	public WebsocketEndpoint(WebsocketComponent component, String uri, String resourceUri, Map<String, Object> parameters) {
         super(uri, component);

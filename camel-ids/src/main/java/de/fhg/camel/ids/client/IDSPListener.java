@@ -50,18 +50,22 @@ public class IDSPListener extends DefaultWebSocketListener {
         LOG.debug("Websocket opened");
         IdsAttestationType type;
         switch(this.attestationType) {
-	    	case 1:            
+	    	case 0:            
 	    		type = IdsAttestationType.BASIC;
+	    		break;
+	    	case 1:
+	    		type = IdsAttestationType.ALL;
 	    		break;
 	    	case 2:
 	    		type = IdsAttestationType.ADVANCED;
 	    		break;
 	    	case 3:
-	    		type = IdsAttestationType.ALL;
+	    		type = IdsAttestationType.ZERO;
 	    		break;
 	    	default:
 	    		type = IdsAttestationType.ZERO;
-	    		break;
+	    		LOG.debug("error: unknown attestation type. attestation set to ZERO.");
+	    		break;	    		
         }
         // create Finite State Machine for IDS protocol
         fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, type, this.attestationMask);
