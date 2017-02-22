@@ -23,7 +23,7 @@
   
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 	    <route id="ids-receiver">
-	      <from uri="idsserver://0.0.0.0:9292/echo?sslContextParameters=#mySslContext&amp;attestation=1" />
+	      <from uri="idsserver://0.0.0.0:9292/echo?sslContextParameters=#mySslContext&amp;attestation=2&amp;attestationMask=5" />
 	      <log message="IDS message received: The message contains ${body}" id="log-ids" />
 	    </route>
     </camelContext>

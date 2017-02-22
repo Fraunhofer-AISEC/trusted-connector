@@ -68,22 +68,28 @@ public class DefaultWebsocket implements Serializable {
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
         IdsAttestationType type;
+        int attestationMask = 0;
         switch(this.consumer.getAttestationType()) {
-        	case 1:            
-        		type = IdsAttestationType.BASIC;
-        		break;
-        	case 2:
-        		type = IdsAttestationType.ADVANCED;
-        		break;
-        	case 3:
-        		type = IdsAttestationType.ALL;
-        		break;
-        	default:
-        		type = IdsAttestationType.ZERO;
-        		break;
+	    	case 0:            
+	    		type = IdsAttestationType.BASIC;
+	    		break;
+	    	case 1:
+	    		type = IdsAttestationType.ALL;
+	    		break;
+	    	case 2:
+	    		type = IdsAttestationType.ADVANCED;
+	    		attestationMask = this.consumer.getAttestationMask();
+	    		break;
+	    	case 3:
+	    		type = IdsAttestationType.ZERO;
+	    		break;
+	    	default:
+	    		type = IdsAttestationType.ZERO;
+	    		LOG.debug("error: unknown attestation type. attestation set to ZERO");
+	    		break;
         }
 		// Integrate server-side of IDS protocol
-        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, type, this.consumer.getAttestationMask());
+        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, type, attestationMask);
         sync.addSocket(this);
     }
 

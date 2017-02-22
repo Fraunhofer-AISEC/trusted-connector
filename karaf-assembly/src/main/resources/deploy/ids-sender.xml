@@ -28,7 +28,7 @@
 	          <simple>Hello via IDS from IDS1!</simple> 
 	      </setBody>
 	      <log message="sending ${body}"/>
-	      <to uri="idsclient:10.1.2.21:9292/echo?sslContextParameters=#mySslContext&amp;attestation=1" />
+	      <to uri="idsclient:10.1.2.20:9292/echo?sslContextParameters=#mySslContext&amp;attestation=2&amp;attestationMask=5" />
 	    </route>
     </camelContext>
 </blueprint>

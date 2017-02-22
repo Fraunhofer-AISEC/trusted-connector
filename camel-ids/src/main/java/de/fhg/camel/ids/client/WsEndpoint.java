@@ -55,11 +55,11 @@ public class WsEndpoint extends AhcEndpoint {
     private boolean useStreaming;
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
-    @UriParam(label = "attestation", defaultValue = "1")
-    private Integer attestation;
-    @UriParam(label = "attestationMask", defaultValue = "0")
-    private Integer attestationMask;    
-    @UriParam(label = "sslContextParameters")
+    @UriParam(label = "attestation", defaultValue = "0", description = "defines the remote attestation mode: 0=BASIC, 1=ALL, 2=ADVANCED, 3=ZERO. default value is 0=BASIC. (see api/attestation.proto for more details)")
+    private Integer attestation = 0;
+    @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
+    private Integer attestationMask = 0;    
+    @UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
     private SSLContextParameters sslContextParameters;
     
     public WsEndpoint(String endpointUri, WsComponent component) {
