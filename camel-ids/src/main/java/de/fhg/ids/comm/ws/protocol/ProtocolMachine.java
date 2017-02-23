@@ -109,6 +109,8 @@ public class ProtocolMachine {
 					break;
 
 				case ZERO:
+					fsm.addState(ProtocolState.IDSCP_RAT_AWAIT_RESULT);
+					
 					/* NO Remote Attestation Protocol at all */
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_START, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratConsumerHandler.sendNoAttestation(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_END, (e) -> {return setConsumerSuccess(true);} ));
