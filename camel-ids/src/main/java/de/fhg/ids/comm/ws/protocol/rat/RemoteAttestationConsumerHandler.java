@@ -110,15 +110,28 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		if(++this.sessionID == e.getMessage().getId()) {
 			if(thread.isAlive()) {
 				try {
-					// send msg to local unix socket
-					// construct protobuf message to send to local tpm2d via unix socket
-					ControllerToTpm msg = ControllerToTpm
-							.newBuilder()
-							.setAtype(this.aType)
-							.setQualifyingData(this.yourNonce)
-							.setCode(Code.INTERNAL_ATTESTATION_REQ)
-							.setPcrs(this.attestationMask)
-							.build();
+					ControllerToTpm msg;
+					if(this.aType.equals(IdsAttestationType.ADVANCED)) {
+						// send msg to local unix socket with bitmask set
+						// construct protobuf message to send to local tpm2d via unix socket
+						msg = ControllerToTpm
+								.newBuilder()
+								.setAtype(this.aType)
+								.setQualifyingData(this.yourNonce)
+								.setCode(Code.INTERNAL_ATTESTATION_REQ)
+								.setPcrs(this.attestationMask)
+								.build();
+					}
+					else {
+						// send msg to local unix socket
+						// construct protobuf message to send to local tpm2d via unix socket
+						msg = ControllerToTpm
+								.newBuilder()
+								.setAtype(this.aType)
+								.setQualifyingData(this.yourNonce)
+								.setCode(Code.INTERNAL_ATTESTATION_REQ)
+								.build();
+					}
 					client.send(msg.toByteArray(), this.handler, true);
 					// and wait for response
 					byte[] toParse = this.handler.waitForResponse();
