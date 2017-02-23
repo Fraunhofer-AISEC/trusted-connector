@@ -18,7 +18,7 @@ declare var Viz: any;
         <pre innerHTML = "{{ certificate.certificate | prettify }}"></pre>
       </div>
       <div class="mdl-card__actions mdl-card--border">
-      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored">
+      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored" (click)="onDelete(certificate.alias, certificate.file)">
         <i class="material-icons">delete</i>
       </button>
       </div>
@@ -26,9 +26,25 @@ declare var Viz: any;
 })
 export class CertificateCardComponent implements OnInit {
   @Input() certificate: Certificate;
+  result: string;
 
   constructor(private certificateService: CertificateService) {}
 
   ngOnInit(): void {
+  }
+
+  onDelete(alias: string, file: string): void {
+    this.certificateService.deleteEntry(alias, file).subscribe(result => {
+       this.result = result;
+       console.log("result:" + this.result + "==");
+
+       if(result.toString() == 'true') {
+          location.reload();
+        } else {
+           console.log("okkkkk: " + result);
+        }
+     });
+
+
   }
 }
