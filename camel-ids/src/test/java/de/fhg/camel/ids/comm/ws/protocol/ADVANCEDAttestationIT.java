@@ -96,7 +96,7 @@ public class ADVANCEDAttestationIT {
     	assertTrue(msg3.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     	assertTrue(msg3.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg3.getAttestationResponse().getHalg().equals(hAlg.name()));
-    	assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 11);
+    	assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == bitmask);
     	
     }
 
@@ -108,7 +108,7 @@ public class ADVANCEDAttestationIT {
     	assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg4.getAttestationResponse().getHalg().equals(hAlg.name()));
-    	assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 11);
+    	assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == bitmask);
     	
     }
 

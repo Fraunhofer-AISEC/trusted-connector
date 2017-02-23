@@ -1,7 +1,5 @@
 package de.fhg.ids.comm.ws.protocol.fsm;
 
-import java.util.concurrent.Callable;
-
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 
 /**

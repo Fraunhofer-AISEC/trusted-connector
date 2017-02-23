@@ -81,6 +81,8 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	}
 	
 	public boolean isSuccessful() {
+		LOG.debug("your success: " + this.yourSuccess);
+		LOG.debug("my success: " + this.mySuccess);		
 		return this.yourSuccess && this.mySuccess;
 	}
 
@@ -210,8 +212,8 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		LOG.debug("we are skipping remote attestation");
 		return ConnectorMessage
 	    		.newBuilder()
-	    		.setType(ConnectorMessage.Type.RAT_START)
-	    		.setId(new java.util.Random().nextLong())
+	    		.setType(ConnectorMessage.Type.RAT_REQUEST)
+	    		.setId(e.getMessage().getId() + 1)
 	    		.build();			
 	}	
 }

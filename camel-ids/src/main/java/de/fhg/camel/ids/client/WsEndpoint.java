@@ -50,6 +50,8 @@ public class WsEndpoint extends AhcEndpoint {
     private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
     private final WebSocketListener listener = new DefaultWebSocketListener();
     private transient WebSocket websocket;
+    
+    private boolean ratSuccess = false;
 
     @UriParam(label = "producer")
     private boolean useStreaming;
@@ -162,8 +164,8 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
         
-        LOG.debug("Attestation is enabled: {}", this.getAttestation());
-        LOG.debug("Attestation Mask is: {}", this.getAttestationMask());
+        LOG.debug("remote-attestation mode: {}", this.getAttestation());
+        LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
         
         // Execute IDS protocol immediately after connect
         IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask());
@@ -174,8 +176,11 @@ public class WsEndpoint extends AhcEndpoint {
         try {
 	        idspListener.isFinished().await();
         } finally {
+        	ratSuccess = idspListener.ratSuccessful();
         	idspListener.semaphore().unlock();
         }
+        
+        LOG.debug("remote attestation was successful: " + ratSuccess);
         
         // When IDS protocol has finished, hand over to normal web socket listener
         websocket.removeWebSocketListener(idspListener);

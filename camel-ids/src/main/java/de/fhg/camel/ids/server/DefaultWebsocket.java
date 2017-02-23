@@ -47,6 +47,7 @@ public class DefaultWebsocket implements Serializable {
 
     private final WebsocketConsumer consumer;
     private final NodeSynchronization sync;
+    private ProtocolMachine machine;
     private Session session;
     private String connectionKey;
 	private FSM idsFsm;
@@ -84,12 +85,12 @@ public class DefaultWebsocket implements Serializable {
 	    		type = IdsAttestationType.ZERO;
 	    		break;
 	    	default:
-	    		type = IdsAttestationType.ZERO;
-	    		LOG.debug("error: unknown attestation type. attestation set to ZERO");
+	    		type = IdsAttestationType.BASIC;
 	    		break;
         }
 		// Integrate server-side of IDS protocol
-        idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, type, attestationMask);
+        machine = new ProtocolMachine();
+        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
         sync.addSocket(this);
     }
 
@@ -110,7 +111,6 @@ public class DefaultWebsocket implements Serializable {
         try {
         	ConnectorMessage msg = ConnectorMessage.parseFrom(message.getBytes());
         	//LOG.debug("Feeding message into provider fsm: " + message);
-
         	//we de-protobuf and split messages into cmd and payload
         	idsFsm.feedEvent(new Event(msg.getType(), message, msg));
 		} catch (InvalidProtocolBufferException e) {
@@ -125,16 +125,22 @@ public class DefaultWebsocket implements Serializable {
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
         //LOG.debug("server received onMessage " + new String(data));
-        
-        if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {//TODO Check if fsm is in its final state and successful
-        	System.out.println("Successfully finished IDSP");
-	        // TODO this should only be done when the IDS protocol has been finished successfully
+        if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+        	System.out.println("Successfully finished IDSCP");
 	        if (this.consumer != null) {
-	            this.consumer.sendMessage(this.connectionKey, data);
-	        } else {
+	        	if(machine.getIDSCPProviderSuccess()) {
+	        		this.consumer.sendMessage(this.connectionKey, data);
+	        	}
+	        	else {
+	        		LOG.debug("remote attestation was NOT successful ... ");
+	        		// do stuff when attestation was not successful here
+	        	}
+	        } 
+	        else {
 	            LOG.debug("No consumer to handle message received: {}", data);
 	        }
-        } else {
+        } 
+        else {
 			try {
 				ConnectorMessage msg = ConnectorMessage.parseFrom(data);
 	        	//System.out.println("Feeding message into provider fsm: " + data);

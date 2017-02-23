@@ -78,6 +78,8 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 	
 	public boolean isSuccessful() {
+		LOG.debug("your success: " + this.yourSuccess);
+		LOG.debug("my success: " + this.mySuccess);
 		return this.yourSuccess && this.mySuccess;
 	}	
 	
@@ -205,4 +207,13 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		LOG.debug(lastError);
 		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
 	}
+
+	public MessageLite sendNoAttestation(Event e) {
+		LOG.debug("we are skipping remote attestation");
+		return ConnectorMessage
+	    		.newBuilder()
+	    		.setType(ConnectorMessage.Type.RAT_RESULT)
+	    		.setId(e.getMessage().getId() + 1)
+	    		.build();			
+	}	
 }
