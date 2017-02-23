@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"    
+           xmlns:camel="http://camel.apache.org/schema/blueprint"
+           xsi:schemaLocation="
+               http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+               http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+  <camel:sslContextParameters
+      id="mySslContext">
+    <camel:keyManagers
+        keyPassword="password">
+      <camel:keyStore
+          resource="/root/etc/server-keystore.jks"
+          password="password"/>
+    </camel:keyManagers>
+    <camel:trustManagers>
+      <camel:keyStore
+          resource="/root/etc/server-truststore.jks"
+          password="password"/>
+    </camel:trustManagers>
+  </camel:sslContextParameters>
+  
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+	    <route id="ids-receiver">
+	      <from uri="idsserver://0.0.0.0:9292/advanced?sslContextParameters=#mySslContext&amp;attestation=2&amp;attestationMask=5" />
+	      <log message="IDS1-advanced received: ${body}" id="log-ids" />
+	    </route>
+    </camelContext>
+</blueprint>
