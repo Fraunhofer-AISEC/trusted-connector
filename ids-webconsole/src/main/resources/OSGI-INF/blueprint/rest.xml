@@ -19,7 +19,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 		<jaxrs:serviceBeans>
 			<bean id="app" class="de.fhg.aisec.ids.webconsole.api.AppApi" />
 			<bean id="route" class="de.fhg.aisec.ids.webconsole.api.RouteApi" />
-			<bean id="cert" class="de.fhg.aisec.ids.webconsole.api.CertApi" />
+			<bean id="certs" class="de.fhg.aisec.ids.webconsole.api.CertApi" />
 			<bean id="config" class="de.fhg.aisec.ids.webconsole.api.ConfigApi" />
 		</jaxrs:serviceBeans>
 

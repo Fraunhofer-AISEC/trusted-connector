@@ -23,7 +23,7 @@ import { IdsComponent } from './ids/ids.component';
 
 
 import { KeycertsComponent } from './keycerts/keycerts.component';
-import { CertificateCardComponent } from './keycerts/certificate-cart.component';
+import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
 
 import { AppService } from './apps/app.service';
