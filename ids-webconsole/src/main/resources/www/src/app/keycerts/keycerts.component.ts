@@ -14,6 +14,7 @@ export class KeycertsComponent implements OnInit{
 
   title = 'Current Certificates';
   certificates: Certificate[];
+  trusts: Certificate[];
 
   @Output() changeTitle = new EventEmitter();
 
@@ -22,11 +23,12 @@ export class KeycertsComponent implements OnInit{
 
     this.certificateService.getCertificates().subscribe(certificates => {
        this.certificates = certificates;
+       this.trusts = certificates;	//TODO Replace by trust store certs.
      });
   }
 
   ngOnInit(): void {
-    this.changeTitle.emit('Certificatres');
+    this.changeTitle.emit('Certificates');
   }
 
 }

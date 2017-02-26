@@ -10,7 +10,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -46,8 +49,14 @@ public class CertApi {
 		List<Cert> certs = new ArrayList<>();
 		List<File> files = new ArrayList<>();
 
-		files.add(getKeystoreFile("client-keystore.jks"));
-		files.add(getKeystoreFile("client-truststore.jks"));
+		File file = getKeystoreFile("client-keystore.jks");
+		if (file!=null) {
+			files.add(file);
+		}
+		file = getKeystoreFile("client-truststore.jks");
+		if (file!=null) {
+			files.add(file);			
+		}
 
 		for (File f : files) {
 			try (FileInputStream fis = new FileInputStream(f);) {
@@ -61,8 +70,33 @@ public class CertApi {
 					Certificate certificate = keystore.getCertificate(alias);
 					Cert cert = new Cert();
 					cert.alias = alias;
-					cert.file = f.getName().replaceFirst("[.][^.]+$", "");
+					cert.file = f.getName().replaceFirst("[.][^.]+$", "");					
 					cert.certificate = certificate.toString();
+					if (certificate instanceof X509Certificate) {
+						X509Certificate c = (X509Certificate) certificate;
+						cert.subjectAltNames = c.getSubjectAlternativeNames();
+						// Get distinguished name
+						String dn = c.getSubjectX500Principal().getName();
+						for (String entry: dn.split(",")) {
+							String[] kv = entry.split("=");
+							switch (kv[0]) {
+								case "CN": cert.subjectCN = kv[1];
+									break;
+								case "OU": cert.subjectOU = kv[1]; 
+									break;
+								case "O": cert.subjectO = kv[1]; 
+									break;
+								case "L": cert.subjectL = kv[1]; 
+									break;
+								case "S": cert.subjectS = kv[1]; 
+									break;
+								case "C": cert.subjectC = kv[1]; 
+									break;
+								default: 
+									break;
+							}
+						}
+					}
 
 					certs.add(cert);
 				}
@@ -108,6 +142,14 @@ public class CertApi {
 	}
 
 	public class Cert {
+		public String subjectC;
+		public String subjectS;
+		public String subjectL;
+		public String subjectO;
+		public String subjectOU;
+		public Collection<List<?>> subjectAltNames;
+		public String subjectCN;
+		public String issuerDistinguishedName;
 		public String alias;
 		public String file;
 		public String certificate;
@@ -157,4 +199,10 @@ public class CertApi {
 		return null;
 	}
 
+//	private void createSelfSignedCert(File keystoreFile) {
+//		CertificateFactory factory = CertificateFactory.getInstance("X.509");
+//		X509Certificate cert = (X509Certificate) factory.generateCertificate(input);
+//		KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());		
+//		keystore.setCertificateEntry(alias, cert);
+//	}
 }

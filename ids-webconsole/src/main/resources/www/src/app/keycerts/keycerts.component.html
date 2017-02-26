@@ -1,5 +1,33 @@
 <div class="mdl-grid">
-  <div class="app-card mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp" *ngFor="let certificate of certificates">
-		<certificate-card [certificate]="certificate"></certificate-card>
+
+ 	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
+	  <div class="mdl-card__title mdl-card--expand">
+        <h2 class="mdl-card__title-text">My Identities</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+	 	<certificate-card [certificates]="certificates"></certificate-card>
+	  </div>
+	  <div class="mdl-card__menu">
+		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+      		<i class="material-icons">add</i>
+    	</button>
+      </div>
+</div>
+	
+ 
+ 	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
+	  <div class="mdl-card__title mdl-card--expand">
+        <h2 class="mdl-card__title-text">Trusted Identities</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+	 	<certificate-card [certificates]="trusts"></certificate-card>
+	  </div>
+	  <div class="mdl-card__menu">
+		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+      		<i class="material-icons">add</i>
+    	</button>
+      </div>
 	</div>
+
+
 </div>

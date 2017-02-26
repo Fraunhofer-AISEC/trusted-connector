@@ -6,26 +6,31 @@ import { CertificateService } from './keycert.service';
 
 import {PrettifyPipe} from '../prettify-json.pipe';
 
-declare var Viz: any;
-
 @Component({
   selector: 'certificate-card',
   template: `
-      <div class="mdl-card__title mdl-card--expand">
-        <h2 class="mdl-card__title-text">{{certificate.file}} -> {{certificate.alias}}</h2>
-      </div>
-      <div class="mdl-card__supporting-text">
-        <pre innerHTML = "{{ certificate.certificate | prettify }}"></pre>
-      </div>
-      <div class="mdl-card__actions mdl-card--border">
-      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored" (click)="onDelete(certificate.alias, certificate.file)">
-        <i class="material-icons">delete</i>
-      </button>
-      </div>
+    <ul class="mdl-list">
+	    <li class="mdl-list__item mdl-list__item--three-line" *ngFor="let certificate of certificates">
+		    <span class="mdl-list__item-primary-content">
+		      <i class="material-icons mdl-list__item-avatar">person</i>
+		      <span>{{certificate.subjectCN}}</span>
+		      <span class="mdl-list__item-text-body">
+		        {{certificate.subjectOU}} {{certificate.subjectO}} {{certificate.subjectL}}
+		      </span>
+		    </span>
+		    <span class="mdl-list__item-secondary-content">
+		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" href="#"><i class="material-icons">open_in_browser</i></a>
+			</span>
+		    <span class="mdl-list__item-secondary-content">
+		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" href="#"><i class="material-icons">delete</i></a>
+		    </span>
+	    </li>
+    </ul>
   `
 })
 export class CertificateCardComponent implements OnInit {
-  @Input() certificate: Certificate;
+  @Input() certificates: Certificate[];
+  @Input() trusts: Certificate[];
   result: string;
 
   constructor(private certificateService: CertificateService) {}
@@ -41,7 +46,7 @@ export class CertificateCardComponent implements OnInit {
        if(result.toString() == 'true') {
           location.reload();
         } else {
-           console.log("okkkkk: " + result);
+           console.log("ok: " + result);
         }
      });
 
