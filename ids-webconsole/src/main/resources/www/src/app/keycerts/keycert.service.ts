@@ -13,12 +13,21 @@ export class CertificateService {
 
   constructor(private http: Http) { }
 
-  getCertificates() {
-    return this.http.get(environment.apiURL + '/certs/list/')
+  getIdentities() {
+    return this.http.get(environment.apiURL + '/certs/list_identities')
                .map(response => {
                  return response.json() as Certificate[];
                });
   }
+
+  getCertificates() {
+    return this.http.get(environment.apiURL + '/certs/list_certs')
+               .map(response => {
+                 return response.json() as Certificate[];
+               });
+  }
+
+  // TODO Create identity
 
   deleteEntry(alias: string, file: string) {
     let params = new URLSearchParams();

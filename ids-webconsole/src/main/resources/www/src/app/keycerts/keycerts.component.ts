@@ -11,19 +11,21 @@ import { CertificateService } from './keycert.service';
   templateUrl: 'keycerts.component.html'
 })
 export class KeycertsComponent implements OnInit{
-
   title = 'Current Certificates';
+  identities: Certificate[];
   certificates: Certificate[];
-  trusts: Certificate[];
 
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title, private certificateService: CertificateService) {
     this.titleService.setTitle('Certificates');
 
+    this.certificateService.getIdentities().subscribe(identities => {
+       this.identities = identities;
+     });
+
     this.certificateService.getCertificates().subscribe(certificates => {
        this.certificates = certificates;
-       this.trusts = certificates;	//TODO Replace by trust store certs.
      });
   }
 
