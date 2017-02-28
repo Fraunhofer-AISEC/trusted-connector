@@ -16,8 +16,28 @@
 		      <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--teal">done</i></a>
 		    </span>
 		  </li>
-
 	  </ul>
+	  <pre>
+	<i># Description of services</i>
+	<b>service</b> SERVICE:
+	     <b>property</b> PROPERTY
+	     <b>capability</b> CAPABILITY
+	
+	<i># transformation function (tainting)</i>
+	<b>service</b> Anonymizer:
+		<b>mark</b> free_for_public <b>if label</b> classified <b>and label</b> raw_data
+		<b>unmark</b> classified <b>if</b> 
+	
+	<i># transformation function (data source)</i>
+	<b>service</b> ANOTHER_SERVICE:
+		<b>mark</b> LABEL_4
+	
+	<i># Rules</i>
+	<b>rule</b> RULE_NAME:
+		<b>on message</b> LABEL_1 <b>and</b> LABEL_2
+		<b>on service</b> PROPERTY_1 <b>and</b> PROPERTY_2
+		<b>require</b> CAPABILITY	  
+	  </pre>
     </div>
   </div>
   

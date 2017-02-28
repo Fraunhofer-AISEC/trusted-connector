@@ -5,9 +5,13 @@ import java.lang.ProcessBuilder.Redirect;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +35,11 @@ public class DockerCM implements ContainerManager {
 			
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
-		List<ApplicationContainer> result = new ArrayList<ApplicationContainer>();
+		List<ApplicationContainer> result = new ArrayList<>();
 		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
 		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
 		try {
-			ArrayList<String> cmd = new ArrayList<String>();
+			ArrayList<String> cmd = new ArrayList<>();
 			cmd.add(DOCKER_CLI);
 			cmd.add("ps");
 			cmd.add("--no-trunc");
@@ -72,7 +76,13 @@ public class DockerCM implements ContainerManager {
 			String status = columns[5];
 			String size = columns[6];
 			String names = columns[7];
-			result.add(new ApplicationContainer(id, image, created, status, ports, names, size, uptime));
+			
+			//Extract owner, signature, description from container labels
+			Map<String, String> labels = getMetadata(id);
+			String signature = labels.get("ids.signature");
+			String owner = labels.get("ids.owner");
+			String description = labels.get("ids.description");
+			result.add(new ApplicationContainer(id, image, created, status, ports, names, size, uptime, signature, owner, description, labels));
 		}
 		return result;
 	}
@@ -189,8 +199,7 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public String getMetadata(String containerID) {
-		StringBuilder sb = new StringBuilder();
+	public Map<String, String> getMetadata(String containerID) {
 		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
 		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
 		try {
@@ -209,10 +218,27 @@ public class DockerCM implements ContainerManager {
 
 		// Parse JSON output from "docker inspect" and return labels.
 		String[] lines = bbStd.toString().split("\n");
+		Map<String, String> labels = new HashMap<>();
+		boolean reading = false;
 		for (String line:lines) {
-			System.out.println(line);
+			if (line.trim().startsWith("\"Labels\":")) {
+				reading = true;
+				continue;
+			}
+			
+			if (reading && line.trim().startsWith("}")) {
+				reading = false;
+			}			
+
+			if (reading) {
+				Pattern p = Pattern.compile(".*\"(.*?)\"\\W*:\\W*\"(.*?)\".*");
+				Matcher m = p.matcher(line);
+				if (m.matches()) {
+					labels.put(m.group(1), m.group(2));
+				}
+			}
 		}
-		return sb.toString();
+		return labels;
 	}
 
 	@Override
@@ -224,36 +250,45 @@ public class DockerCM implements ContainerManager {
 
 	@Override
 	public String inspectContainer(final String containerID) {
-		//TODO Implement me.
-		return null;
+		StringBuilder sb = new StringBuilder();
+		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
+		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
+		try {
+			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "inspect", containerID));
+			Process p = pb.start();
+			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
+			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
+			errorGobbler.start();
+			outputGobbler.start();
+			p.waitFor(30, TimeUnit.SECONDS);
+			errorGobbler.close();
+			outputGobbler.close();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(),e);
+		}
+
+		return sb.toString();
 	}
 
-//
-//	@Override
-//	public String getCml() {
-//		StringBuilder sb = new StringBuilder();
-//		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
-//		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
-//		try {
-//			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "--version"));
-//			Process p = pb.start();
-//			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
-//			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
-//			errorGobbler.start();
-//			outputGobbler.start();
-//			p.waitFor(30, TimeUnit.SECONDS);
-//			errorGobbler.close();
-//			outputGobbler.close();
-//		} catch (Exception e) {
-//			LOG.error(e.getMessage(),e);
-//		}
-//
-//		// Parse JSON output from "docker --version" and return labels.
-//		String[] lines = bbStd.toString().split("\n");
-//		for (String line:lines) {
-//			System.out.println(line);
-//		}
-//		return sb.toString();
-//	}
 
+	@Override
+	public String getVersion() {
+		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
+		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
+		try {
+			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "--version"));
+			Process p = pb.start();
+			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
+			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
+			errorGobbler.start();
+			outputGobbler.start();
+			p.waitFor(30, TimeUnit.SECONDS);
+			errorGobbler.close();
+			outputGobbler.close();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(),e);
+		}
+
+		return bbStd.toString();
+	}
 }

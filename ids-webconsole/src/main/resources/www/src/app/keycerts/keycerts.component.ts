@@ -11,20 +11,26 @@ import { CertificateService } from './keycert.service';
   templateUrl: 'keycerts.component.html'
 })
 export class KeycertsComponent implements OnInit{
-
   title = 'Current Certificates';
+  identities: Certificate[];
   certificates: Certificate[];
 
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title, private certificateService: CertificateService) {
-    this.titleService.setTitle('Key Certification');
+    this.titleService.setTitle('Certificates');
 
-    this.certificates = this.certificateService.getCertificates();
+    this.certificateService.getIdentities().subscribe(identities => {
+       this.identities = identities;
+     });
+
+    this.certificateService.getCertificates().subscribe(certificates => {
+       this.certificates = certificates;
+     });
   }
 
   ngOnInit(): void {
-    this.changeTitle.emit('Certificatres');
+    this.changeTitle.emit('Certificates');
   }
 
 }
