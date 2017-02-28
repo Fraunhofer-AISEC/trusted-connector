@@ -76,8 +76,7 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			containerManager.wipe(containerID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 	}
 
@@ -86,8 +85,7 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			containerManager.startContainer(containerID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 	}
 
@@ -96,8 +94,7 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			containerManager.stopContainer(containerID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 	}
 
@@ -106,8 +103,7 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			containerManager.restartContainer(containerID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 	}
 
@@ -116,10 +112,9 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			return containerManager.pullImage(imageID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
@@ -127,8 +122,7 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			return containerManager.inspectContainer(containerID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		return "";
 	}
@@ -138,8 +132,7 @@ public class ContainerManagerService implements ContainerManager {
 		try {
 			return containerManager.getMetadata(containerID);
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -148,5 +141,10 @@ public class ContainerManagerService implements ContainerManager {
 	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange,
 			Protocol protocol, Decision decision) {
 		containerManager.setIpRule(containerID, direction, srcPort, dstPort, srcDstRange, protocol, decision);
+	}
+
+	@Override
+	public String getVersion() {
+		return containerManager.getVersion();
 	}
 }

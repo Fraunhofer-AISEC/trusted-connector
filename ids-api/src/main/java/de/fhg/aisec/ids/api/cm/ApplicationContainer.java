@@ -1,5 +1,7 @@
 package de.fhg.aisec.ids.api.cm;
 
+import java.util.Map;
+
 /**
  * Bean representing an "Application Container" (aka a docker container).
  * 
@@ -15,9 +17,12 @@ public class ApplicationContainer {
 	private String names;
 	private String size;
 	private String uptime;
+	private String signature;
+	private String owner;
+	private String description;
+	private Map<String, String> labels;
 	
-	public ApplicationContainer(String id, String image, String created, String status, String ports,
-			String names, String size, String uptime) {
+	public ApplicationContainer(String id, String image, String created, String status, String ports, String names, String size, String uptime, String signature, String owner, String description, Map<String, String> labels) {
 		super();
 		this.id = id;
 		this.image = image;
@@ -27,6 +32,10 @@ public class ApplicationContainer {
 		this.names = names;
 		this.size = size;
 		this.uptime = uptime;
+		this.signature = signature;
+		this.owner = owner;
+		this.description = description;
+		this.labels = labels;
 	}
 
 	public String getSize() {
@@ -92,11 +101,43 @@ public class ApplicationContainer {
 	public void setNames(String names) {
 		this.names = names;
 	}
+	
+	public String getSignature() {
+		return signature;
+	}
+	
+	public String getOwner() {
+		return owner;
+	}
+	
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public Map<String, String> getLabels() {
+		return labels;
+	}
+	
+	public void setLabels(Map<String, String> labels) {
+		this.labels = labels;
+	}
 
 	@Override
 	public String toString() {
 		return "ApplicationContainer [id=" + id + ", image=" + image + ", created=" + created + ", status=" + status
-				+ ", ports=" + ports + ", names=" + names + ", size=" + size + ", uptime=" + uptime + "]";
+				+ ", ports=" + ports + ", names=" + names + ", size=" + size + ", uptime=" + uptime 
+				+ ", signature=" + signature 
+				+ ", owner=" + owner 
+				+ ", description=" + description 
+				+ "]";
 	}
 
 	

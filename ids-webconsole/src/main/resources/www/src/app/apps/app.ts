@@ -6,4 +6,7 @@ export class App {
 	names: string;
 	size: string;
 	uptime: string;
+	signature: string;
+	owner: string;
+	labels: string[][];
 }
