@@ -10,9 +10,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.UUID;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.camel.test.AvailablePortFinder;
 import org.junit.AfterClass;
@@ -42,12 +52,48 @@ public class RatRepositoryTest {
 	static String zero = "0000000000000000000000000000000000000000000000000000000000000000";
 	private static HttpURLConnection conn;
 	private static int port = AvailablePortFinder.getNextAvailable();
+	private static SSLContext sc;
+	private static HostnameVerifier hv;
 	private Logger LOG = LoggerFactory.getLogger(RatRepositoryTest.class);
+	private String sURL = "https://127.0.0.1:"+port+"/configurations/check"; 
 	
 	@BeforeClass
 	public static void initRepo() {
 		ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", port );
 		ratServer.start();
+		
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+        try {
+			sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		} catch (Exception e) {
+			System.out.println("Error" + e);
+		}
+        
+        hv = new HostnameVerifier() {
+            public boolean verify(String urlHostName, SSLSession session) {
+                System.out.println("Warning: URL Host: " + urlHostName + " vs. "
+                        + session.getPeerHost());
+                return true;
+            }
+        };
+        
 	}
 	
 	@AfterClass
@@ -57,7 +103,7 @@ public class RatRepositoryTest {
 
 	@Test
     public void testURL() throws MalformedURLException{
-        assertTrue(ratServer.getURI().toURL().toString().equals("http://127.0.0.1:"+port+"/configurations/check"));
+        assertTrue(ratServer.getURI().toURL().toString().equals(sURL));
     }
 	
 	@Test
@@ -100,8 +146,8 @@ public class RatRepositoryTest {
 		        ).build();    
         LOG.debug("-----------------------------------msg to repo:-------------------------------------");
         LOG.debug(msg.toString());
-        URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
-        HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection urlc = (HttpsURLConnection) new URL(sURL).openConnection();
+        urlc.setHostnameVerifier(hv);
         urlc.setDoInput(true);
         urlc.setDoOutput(true);
         urlc.setRequestMethod("POST");
@@ -148,8 +194,8 @@ public class RatRepositoryTest {
 		        ).build();
         LOG.debug("-----------------------------------msg to repo:-------------------------------------");
         LOG.debug(msg.toString());
-        URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
-        HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection urlc = (HttpsURLConnection) new URL(sURL).openConnection();
+        urlc.setHostnameVerifier(hv);
         urlc.setDoInput(true);
         urlc.setDoOutput(true);
         urlc.setRequestMethod("POST");
@@ -196,8 +242,8 @@ public class RatRepositoryTest {
 		        ).build();
         LOG.debug("-----------------------------------msg to repo:-------------------------------------");
         LOG.debug(msg.toString());
-        URL url = new URL("http://127.0.0.1:"+port+"/configurations/check");
-        HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection urlc = (HttpsURLConnection) new URL(sURL).openConnection();
+        urlc.setHostnameVerifier(hv);
         urlc.setDoInput(true);
         urlc.setDoOutput(true);
         urlc.setRequestMethod("POST");
