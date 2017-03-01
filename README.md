@@ -49,7 +49,7 @@ If everything goes fine, you will see a Karaf shell. Type `help` to get started 
 If you have omitted the `-Ddocker.skip` flag for the build, you now have three docker containers:
 
 - `registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest` is the Core Platform container
-- `registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest` is the TPM 2.0 simulator
+- `registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest` is a trusted third party which owns a database of trusted integrity states
 - `registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest` is the TPM 2.0 daemon which connects Core Platform to the TPM 2.0 simulator
 
 You can run these three containers with a simple
