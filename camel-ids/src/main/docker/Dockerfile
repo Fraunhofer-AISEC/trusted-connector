@@ -22,7 +22,7 @@ RUN set -x \
     && gosu nobody true \
     && apt-get purge -y --auto-remove ca-certificates wget
 # make some directories
-RUN mkdir /tpm2d/ && mkdir -p /data/cml/communication/
+RUN mkdir /tpm2d/ && mkdir -p /data/cml/communication/ && mkdir /data/cml/tpm2d/ && mkdir /data/tpm2_simulator/
 # copy data
 COPY bin/cml-tpm2d /tpm2d/
 COPY bin/tpm2_simulator /tpm2d/
