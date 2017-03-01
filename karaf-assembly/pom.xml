@@ -352,7 +352,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest</name>
+                            <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:cebit</name>
                             <build>
                                 <!-- Dockerfile to build -->
                                <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
