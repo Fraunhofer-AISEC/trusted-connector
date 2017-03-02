@@ -90,7 +90,7 @@ public class CertApi {
 		File keyStoreFile = getKeystoreFile(file + ".jks");
 		try (FileInputStream fis = new FileInputStream(keyStoreFile);){
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-	        String password = "password";
+			String password = KEYSTORE_PWD;
 	        keystore.load(fis, password.toCharArray());
 	        
 	        keystore.deleteEntry(alias);
@@ -100,6 +100,7 @@ public class CertApi {
 	        return new Gson().toJson(true);
 		} catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException
 				| IOException e) {
+			LOG.error(e.getMessage(), e);
 			return new Gson().toJson(e.getMessage());
 		}
 	}
