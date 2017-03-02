@@ -10,38 +10,32 @@
     </bean>
 
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
-      <!--<route id="opctorest">
+      <route id="opctorest">
         <from uri="milo-client:tcp://10.244.224.123:4840?node=RAW(ns=2;i=3)&amp;samplingInterval=10000"/>
         <log message="Triggered Route: opctorest, requesting node: Sensorreading body: ${body}"/>
         <setHeader headerName="CamelHttpMethod">
           <constant>POST</constant>
         </setHeader>
         <convertBodyTo type="java.lang.String"/>
-        <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
         <log message="Got ${body}"/>
+        <to uri="http://localhost:8080/sensordataapp/sensordataelements/addraw"/>
       </route>
       <route id="writetargetrpm">
         <from uri="timer://simpleTimer?period=10000"/>
         <to uri="http://localhost:8080/sensordataapp/targetrpm/valueHTML"/>
+        <convertBodyTo type="java.lang.String"/>
         <log message="Triggered Route: writetargetrpm, writing body: ${body}"/>
         <to uri="milo-client:tcp://10.244.224.123:4840?node=RAW(ns=2;i=2)"/>
       </route>
-<     <route id="opctorest-LED">
-        <from uri="milo-client:tcp://10.244.224.122:4840?node=RAW(ns=1;i=1002)&amp;samplingInterval=10000"/>
-        <log message="Triggered Route: opctorest, requesting node: Sensorreading body: ${body}"/>
-        <setHeader headerName="CamelHttpMethod">
-          <constant>POST</constant>
-        </setHeader>
+      <!--<route id="opctorestUntrusted">
+        <from uri="milo-client:tcp://untrusted-sensor.netsec.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=4)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: opctorestUntrusted, requesting node: Sensorreading body: ${body}"/>
         <convertBodyTo type="java.lang.String"/>
         <log message="Got ${body}"/>
-        <to uri="mock:fooOrders"/>
       </route>-->
-
       <route id="opctorestwrite-LED">
         <from uri="timer://simpleTimer?period=10000"/>
-        <to uri="http://localhost:8080/sensordataapp/targetscenario/valueHTML"/>
-        
-        <!--<to uri="milo-client:tcp://led-server.netsec.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1002)"/>  --> 
+        <to uri="http://data-processing-service:8080/sensordataapp/targetscenario/valueHTML"/>
         <convertBodyTo type="java.lang.String"/>  
         <log message="Triggered Route: opctorestwrite-LED, writing body: ${body}"/>  
         <to uri="milo-client:tcp://led-server.netsec.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1002)"/>
