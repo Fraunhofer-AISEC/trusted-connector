@@ -26,12 +26,13 @@ declare var componentHandler:any;
 		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" href="#"><i class="material-icons">open_in_browser</i></a>
 			</span>
 		    <span class="mdl-list__item-secondary-content">
-		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete()"><i class="material-icons">delete</i></a>
+		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete(certificate.alias, certificate.file)"><i class="material-icons">delete</i></a>
 		    </span>
 	    </li>
     </ul>
   `
 })
+
 export class CertificateCardComponent implements OnInit {
   @Input() certificates: Certificate[];
   @Input() trusts: Certificate[];
@@ -43,24 +44,16 @@ export class CertificateCardComponent implements OnInit {
     componentHandler.upgradeDom();
   }
 
-  //onDelete(alias: string, file: string): void {
-  onDelete(): void {
+  onDelete(alias: string, file: string): void {
     this.confirmService.activate("Are you sure that you want to delete this item?")
         .then(res => {
           if (res == true) {
-            console.log(`Confirmed: ${res}`)
-          /*this.certificateService.deleteEntry(alias, file).subscribe(result => {
+            this.certificateService.deleteEntry(alias, file).subscribe(result => {
              this.result = result;
-             console.log("result:" + this.result + "==");
-
-             if(result.toString() == 'true') {
+             if(result.toString() === "true") {
                 location.reload();
-              } else {
-                 console.log("ok: " + result);
               }
-           });*/
-       }});
-
+           });
+    }});
   }
-
 }

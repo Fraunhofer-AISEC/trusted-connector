@@ -31,6 +31,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
+
 /**
  * REST API interface for managing certificates in the connector.
  * 
@@ -85,22 +86,20 @@ public class CertApi {
 		if (!"client-keystore".equals(file) && !"client-truststore".equals(file)) {
 			return new Gson().toJson("Invalid file");
 		}
-
+		
 		File keyStoreFile = getKeystoreFile(file + ".jks");
-		try (FileInputStream fis = new FileInputStream(keyStoreFile);
-				FileOutputStream fos = new FileOutputStream(keyStoreFile);) {
-
+		try (FileInputStream fis = new FileInputStream(keyStoreFile);){
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-			String password = KEYSTORE_PWD;
-			keystore.load(fis, password.toCharArray());
-
-			keystore.deleteEntry(alias);
-
-			keystore.store(fos, password.toCharArray());
-			return new Gson().toJson(true);
+	        String password = "password";
+	        keystore.load(fis, password.toCharArray());
+	        
+	        keystore.deleteEntry(alias);
+	        
+	        FileOutputStream fos = new FileOutputStream(keyStoreFile);
+	        keystore.store(fos, password.toCharArray());
+	        return new Gson().toJson(true);
 		} catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException
 				| IOException e) {
-			LOG.error(e.getMessage(), e);
 			return new Gson().toJson(e.getMessage());
 		}
 	}
