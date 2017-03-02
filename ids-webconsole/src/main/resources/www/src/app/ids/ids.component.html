@@ -7,13 +7,8 @@
 			<form [formGroup]="myForm"
 				novalidate (ngSubmit)="save(myForm.value, myForm.valid)">
 				<div class="mdl-cell--12-col">
-					<div
-						class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
-						<label class="mdl-textfield__label" for="broker_url">Broker
-							URL</label> <input class="mdl-textfield__input" id="broker_url"
-							type="text" formControlName="broker_url"> <span
-							[hidden]="myForm.controls.broker_url.valid || (myForm.controls.broker_url.pristine && !submitted)"
-							class="mdl-textfield__error"> Broker URL is required. </span>
+					<div class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
+						<label class="mdl-textfield__label" for="broker_url">Broker	URL</label> <input class="mdl-textfield__input" id="broker_url"	type="text" formControlName="broker_url"> <span [hidden]="myForm.controls.broker_url.valid || (myForm.controls.broker_url.pristine && !submitted)" class="mdl-textfield__error"> Broker URL is required. </span>
 						<!--<pre class="margin-20">{{ myForm.controls.name.errors | json }}</pre>-->
 					</div>
 				</div>

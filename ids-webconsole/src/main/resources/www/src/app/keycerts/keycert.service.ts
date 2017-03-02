@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { Headers, Http, Response } from '@angular/http';
+import { URLSearchParams } from '@angular/http';
 
 import 'rxjs/add/operator/map';
 
@@ -8,13 +10,33 @@ import { environment } from '../../environments/environment';
 
 @Injectable()
 export class CertificateService {
-  local_certificates: Certificate[] = [
-    {id: "11", title: 'Certification one', description: "It's first certification"},
-    {id: "12", title: 'Certification two', description: "It's second certification"},
-    {id: "13", title: 'Certification three', description: "It's third certification"},
-  ];
 
-  getCertificates(): Certificate[] {
-    return this.local_certificates;
+  constructor(private http: Http) { }
+
+  getIdentities() {
+    return this.http.get(environment.apiURL + '/certs/list_identities')
+               .map(response => {
+                 return response.json() as Certificate[];
+               });
+  }
+
+  getCertificates() {
+    return this.http.get(environment.apiURL + '/certs/list_certs')
+               .map(response => {
+                 return response.json() as Certificate[];
+               });
+  }
+
+  // TODO Create identity
+
+  deleteEntry(alias: string, file: string) {
+    let params = new URLSearchParams();
+    params.set('alias', alias);
+    params.set('file', file)
+
+    return this.http.get(environment.apiURL + '/certs/delete/', { search: params })
+               .map(response => {
+                 return response.json() as string;
+               });
   }
 }

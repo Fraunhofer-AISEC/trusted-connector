@@ -25,10 +25,10 @@
 	    <route id="ids-sender">
 	      <from uri="timer://simpleTimer?period=10000"/>
 	      <setBody>
-	          <simple>Hello via IDS from IDS1!</simple> 
+	          <simple>Hello via IDS from IDS1-all!</simple> 
 	      </setBody>
 	      <log message="sending ${body}"/>
-	      <to uri="idsclient:10.1.2.20:9292/echo?sslContextParameters=#mySslContext&amp;attestation=2&amp;attestationMask=5" />
+	      <to uri="idsclient:10.1.2.20:9292/all?sslContextParameters=#mySslContext&amp;attestation=1" />
 	    </route>
     </camelContext>
 </blueprint>

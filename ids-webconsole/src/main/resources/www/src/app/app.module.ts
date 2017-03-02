@@ -23,7 +23,7 @@ import { IdsComponent } from './ids/ids.component';
 
 
 import { KeycertsComponent } from './keycerts/keycerts.component';
-import { CertificateCardComponent } from './keycerts/certificate-cart.component';
+import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
 
 import { AppService } from './apps/app.service';
@@ -33,13 +33,15 @@ import { ValuesPipe } from './values.pipe';
 
 import { routing } from './app.routing';
 
+import {PrettifyPipe} from './prettify-json.pipe';
+
 import 'material-design-lite';
 
 @NgModule({
   imports: [
     BrowserModule,
     routing,
-    HttpModule, 
+    HttpModule,
     ReactiveFormsModule  ],
   declarations: [
     AppComponent,
@@ -56,7 +58,8 @@ import 'material-design-lite';
     IdsComponent,
     KeycertsComponent,
     CertificateCardComponent,
-    ValuesPipe ],
+    ValuesPipe,
+    PrettifyPipe],
   providers: [
     AppService,
     RouteService,

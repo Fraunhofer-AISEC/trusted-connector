@@ -47,10 +47,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
 
         // subscribe to form changes  
         this.subcribeToFormChanges();
-        
-        // Update single value
-        (<FormControl>this.myForm.controls['broker_url']).patchValue('ids://localhost', { onlySelf: true });
-        
+                
         // This is how to update the whole form model
         // const people = {
         // 	name: 'Jane',
@@ -61,6 +58,11 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
         // };
         // (<FormGroup>this.myForm).setValue(people, { onlySelf: true });
 
+    }
+    
+    ngAfterViewInit() {
+        // Update single value
+        (<FormControl>this.myForm.controls['broker_url']).patchValue('ids://localhost', { onlySelf: true });
     }
 
     subcribeToFormChanges() {

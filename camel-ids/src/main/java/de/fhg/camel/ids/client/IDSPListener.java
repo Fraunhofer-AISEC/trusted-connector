@@ -32,14 +32,17 @@ public class IDSPListener extends DefaultWebSocketListener {
     private FSM fsm;
     private int attestationType = 0;
     private int attestationMask = 0;
+    private ProtocolMachine machine;
+    private boolean ratSuccess = false;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
     private final ConnectorMessage startMsg = Idscp.ConnectorMessage
-    		.newBuilder()
-    		.setType(ConnectorMessage.Type.RAT_START)
-    		.setId(new java.util.Random().nextLong())
-    		.build(); 
-
+										    		.newBuilder()
+										    		.setType(ConnectorMessage.Type.RAT_START)
+										    		.setId(new java.util.Random().nextLong())
+										    		.build();
+	;
+	
 	public IDSPListener(int attestationType, int attestationMask) {
 		this.attestationType = attestationType;
 		this.attestationMask = attestationMask;
@@ -63,15 +66,14 @@ public class IDSPListener extends DefaultWebSocketListener {
 	    		type = IdsAttestationType.ZERO;
 	    		break;
 	    	default:
-	    		type = IdsAttestationType.ZERO;
-	    		LOG.debug("error: unknown attestation type. attestation set to ZERO.");
+	    		type = IdsAttestationType.BASIC;
 	    		break;	    		
         }
         // create Finite State Machine for IDS protocol
-        fsm = new ProtocolMachine().initIDSConsumerProtocol(websocket, type, this.attestationMask);
+        machine = new ProtocolMachine();
+        fsm = machine.initIDSConsumerProtocol(websocket, type, this.attestationMask);
         // start the protocol with the first message
         fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
-        
     }
 
     @Override
@@ -100,10 +102,10 @@ public class IDSPListener extends DefaultWebSocketListener {
     		}
 
     		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+    			this.setSuccessful(machine.getIDSCPConsumerSuccess());;
 	    		isFinishedCond.signalAll();
 	    	}
-
-		} catch (InterruptedException e) {
+    	} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
 			lock.unlock();
@@ -122,4 +124,12 @@ public class IDSPListener extends DefaultWebSocketListener {
     public Condition isFinished() {
     	return isFinishedCond;
     }
+
+	public void setSuccessful(boolean s) {
+		this.ratSuccess = s;
+	}
+
+	public boolean ratSuccessful() {
+		return ratSuccess;
+	}
 }
