@@ -238,7 +238,8 @@
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
-			<feature>camel-http</feature>
+                        <feature>camel-core</feature>
+			            <feature>camel-http</feature>
                         <feature>camel-spring-dm</feature>
                         <feature>camel-stream</feature>
                         <feature>camel-sjms</feature>
