@@ -126,6 +126,9 @@
             <type>xml</type>
             <!-- <scope>runtime</scope> -->
         </dependency> 
+        <!-- https://mvnrepository.com/artifact/org.apache.camel/camel-servlet -->
+   
+
         <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.18.0/camel-extra-2.18.0-features.xml -->
         <!--<dependency>
             <groupId>org.apache-extras.camel-extra.karaf</groupId>
@@ -168,6 +171,7 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.servicemix.features</groupId>
             <artifactId>servicemix-kie</artifactId>
