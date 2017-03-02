@@ -2,7 +2,7 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 @Component({
-  templateUrl: 'dashboard.component.html',
+  templateUrl: './dashboard.component.html',
   providers: []
 })
 export class DashboardComponent implements OnInit {

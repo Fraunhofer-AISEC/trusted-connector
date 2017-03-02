@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import { AppCardComponent } from './app-card.component';
 
 @Component({
-  templateUrl: 'apps.component.html',
+  templateUrl: './apps.component.html',
   providers: []
 })
 export class AppsComponent {
