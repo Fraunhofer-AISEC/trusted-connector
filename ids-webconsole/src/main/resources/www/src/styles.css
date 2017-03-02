@@ -292,3 +292,12 @@ header.iot-connector-header.mdl-layout__header {
   background: rgb(145, 0, 0);
   color: white;
 }
+
+.bold {
+  font-weight: 800;	
+}
+
+.card-dark > .mdl-card__title {
+  color: #fff;
+  background: rgb(28, 43, 54);
+}
