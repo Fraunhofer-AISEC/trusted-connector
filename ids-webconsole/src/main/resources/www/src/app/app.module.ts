@@ -35,6 +35,9 @@ import { routing } from './app.routing';
 
 import {PrettifyPipe} from './prettify-json.pipe';
 
+import {ConfirmService} from "./confirm/confirm.service";
+import {ConfirmComponent} from "./confirm/confirm.component";
+
 import 'material-design-lite';
 
 @NgModule({
@@ -58,6 +61,7 @@ import 'material-design-lite';
     IdsComponent,
     KeycertsComponent,
     CertificateCardComponent,
+    ConfirmComponent,
     ValuesPipe,
     PrettifyPipe],
   providers: [
@@ -65,6 +69,7 @@ import 'material-design-lite';
     RouteService,
     IdsComponent,
     CertificateService,
+    ConfirmService,
     Title
   ],
   bootstrap: [
