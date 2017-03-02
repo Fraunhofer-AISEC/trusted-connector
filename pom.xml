@@ -5,14 +5,14 @@
   <artifactId>core-platform</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
- 
+
   <modules>
     <module>asynchttpclient</module>
     <module>jnr-unixsocket</module>
     <module>camel-ids</module>
     <module>ids-api</module>
     <module>ids-container-manager</module>
-    <module>ids-webconsole</module> 
+    <module>ids-webconsole</module>
     <module>karaf-feature-ids</module>
     <module>data-flow-policy</module>
     <module>karaf-assembly</module>
@@ -29,14 +29,18 @@
 			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases/</url>
 		</repository>
 	</distributionManagement>
-  
+
   <repositories>
   	<repository>
   		<id>netsec-release</id>
   		<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
   	</repository>
-  </repositories>  
-  
+    <repository>
+			<id>netsec-snapshots</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/snapshots/</url>
+		</repository>    
+  </repositories>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -46,7 +50,7 @@
 		      <version>0.7.7.201606060606</version>
         </plugin>
       </plugins>
-    </pluginManagement>      
+    </pluginManagement>
     <plugins>
 		  <plugin>
   		  <groupId>org.jacoco</groupId>
@@ -64,7 +68,7 @@
                 <goal>report</goal>
               </goals>
             </execution>
-        	</executions>          
+        	</executions>
 			</plugin>
     </plugins>
   </build>
