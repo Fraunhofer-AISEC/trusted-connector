@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>de.dentrassi.camel.milo</groupId>
+  <artifactId>camel-milo</artifactId>
+  <version>0.1.2-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <localCopy>true</localCopy>
+    </snapshot>
+    <lastUpdated>20170302095134</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>xml</extension>
+        <value>0.1.2-SNAPSHOT</value>
+        <updated>20170302095134</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
