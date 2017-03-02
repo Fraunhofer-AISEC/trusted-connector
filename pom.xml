@@ -31,14 +31,14 @@
 	</distributionManagement>
 
   <repositories>
-  	<repository>
+  	<!--<repository>
   		<id>netsec-release</id>
   		<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
-  	</repository>
+  	</repository>-->
     <repository>
 			<id>netsec-snapshots</id>
 			<url>http://repository.netsec.aisec.fraunhofer.de/repository/snapshots/</url>
-		</repository>    
+		</repository>
   </repositories>
 
   <build>
