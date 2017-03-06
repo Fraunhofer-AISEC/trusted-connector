@@ -33,6 +33,7 @@ public class Database {
 	private Statement statement;
 	private String sql;
 	private String zero = "0000000000000000000000000000000000000000000000000000000000000000";
+	private String all =  "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
  
 	public Database() {
 		makeJDBCConnection();
@@ -56,9 +57,12 @@ public class Database {
 		for (int i = 0; i < 10 ; i++) {
 			basic[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
 		}
-		for (int i = 0; i < 24 ; i++) {
+		for (int i = 0; i < 17 ; i++) {
 			advanced[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
 		}
+		for (int i = 17; i < 24 ; i++) {
+			advanced[i] = Pcr.newBuilder().setNumber(i).setValue(all).build();
+		}		
     	this.insertConfiguration("default_one", "BASIC", basic);
     	this.insertConfiguration("default_two", "ADVANCED", advanced);
 	}

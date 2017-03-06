@@ -47,19 +47,14 @@ public class RemoteAttestationServer {
 	        HttpConfiguration http_config = new HttpConfiguration();
 	        http_config.setSecureScheme("https");
 	        http_config.setSecurePort(this.PORT);
-	        http_config.setOutputBufferSize(32768);
-	        http_config.setRequestHeaderSize(8192);
-	        http_config.setResponseHeaderSize(8192);
-	        http_config.setSendServerVersion(true);
-	        http_config.setSendDateHeader(false);			
 			
 	        // === jetty-https.xml ===
 	        // SSL Context Factory
 	        SslContextFactory sslContextFactory = new SslContextFactory();
-	        sslContextFactory.setKeyStorePath("src/main/resources/repository-keystore.jks");
+	        sslContextFactory.setKeyStorePath(Thread.currentThread().getContextClassLoader().getResource("repository-keystore.jks").toString());
 	        sslContextFactory.setKeyStorePassword("OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v");
 	        sslContextFactory.setKeyManagerPassword("OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v");
-	        sslContextFactory.setTrustStorePath("src/main/resources/repository-truststore.jks");
+	        sslContextFactory.setTrustStorePath(Thread.currentThread().getContextClassLoader().getResource("repository-truststore.jks").toString());
 	        sslContextFactory.setTrustStorePassword("OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v");
 	        sslContextFactory.setExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA",
 	                "SSL_DHE_RSA_WITH_DES_CBC_SHA", "SSL_DHE_DSS_WITH_DES_CBC_SHA",
@@ -78,8 +73,6 @@ public class RemoteAttestationServer {
 	            new HttpConnectionFactory(https_config));
 	        sslConnector.setPort(this.PORT);
 	        server.addConnector(sslConnector);
-			
-
 		    ServletContextHandler handler = new ServletContextHandler();
 		    handler.setContextPath("");
 		    handler.addServlet(new ServletHolder(new ServletContainer(resourceConfig())), "/*");

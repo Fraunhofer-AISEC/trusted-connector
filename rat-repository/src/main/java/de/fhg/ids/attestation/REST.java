@@ -64,7 +64,7 @@ public class REST {
 				if(numPcrValues > 0) {
 					switch(type) {
 						case BASIC:
-							if(numPcrValues == 10) {
+							if(numPcrValues == 11) {
 								return this.checkMessage(msg);
 							}
 							else {
