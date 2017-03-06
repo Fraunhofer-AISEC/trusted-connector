@@ -4,6 +4,8 @@ import { Title } from '@angular/platform-browser';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 
+import { SensorService } from '../sensor/sensor.service';
+
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/observable/timer';
@@ -20,7 +22,8 @@ export class ActivityComponent implements OnInit {
 
   private chart: any;
 
-  constructor() {
+  constructor(private sensorService: SensorService) {
+
   }
 
   ngOnInit(): void {
@@ -49,7 +52,20 @@ export class ActivityComponent implements OnInit {
         }
     });
 
-    this.subscriptions.push(Observable
+    this.sensorService.getValueObservable().subscribe({
+       next: event => {
+         console.log(event);
+
+         this.chart.flow({
+           columns: [
+             ['data1', event.data],
+           ]
+         });
+       },
+       error: err => console.error('something wrong occurred: ' + err)
+   });
+
+    /*this.subscriptions.push(Observable
       .timer(0, 2000)
       .subscribe(() => {
         this.chart.flow({
@@ -57,7 +73,7 @@ export class ActivityComponent implements OnInit {
             ['data1', Math.random()* 400],
           ]
         });
-      }));
+      }));*/
   }
 
   ngOnDestroy(): void {

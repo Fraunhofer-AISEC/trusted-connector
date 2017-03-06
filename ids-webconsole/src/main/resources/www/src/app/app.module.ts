@@ -28,6 +28,7 @@ import { CertificateService } from './keycerts/keycert.service';
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
+import { SensorService } from './sensor/sensor.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -65,6 +66,7 @@ import 'material-design-lite';
     RouteService,
     IdsComponent,
     CertificateService,
+    SensorService,
     Title
   ],
   bootstrap: [
