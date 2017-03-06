@@ -29,38 +29,45 @@ export class ActivityComponent implements OnInit {
   ngOnInit(): void {
     this.chart = c3.generate({
         data: {
-            columns: [
-                ['data1', 300, 350, 300, 100, 50, 200],
+          columns: [
+              ['data', 0]
             ],
-            types: {
-                data1: 'area-spline'
-            },
+          type: 'gauge',
         },
         color: {
           pattern: ['#209e91']
         },
-        grid: {
-            y: {
-                lines: [{
-                  value: 300,
-                  text: 'Warning Threshold'
-                }]
-              }
+        gauge: {
+          label: {
+            format: function(value, perc) { return Math.round((perc * 170)) + ' rpm'; }
+          },
         },
         legend: {
           show: false
         }
     });
+    this.chart.internal.config.gauge_max = 170;
+
+    let values = [];
+    var avg = 0;
 
     this.sensorService.getValueObservable().subscribe({
        next: event => {
-         console.log(event);
+         values.push(event.data);
 
-         this.chart.flow({
+         if(values.length > 5) {
+           values.shift();
+         }
+         var newAvg = Math.round(values.reduce(function(p,c,i,a){return p + (c/a.length)},0));
+
+         if(newAvg != avg && !document.hidden) {
+           avg = newAvg;
+           this.chart.load({
            columns: [
-             ['data1', event.data],
+             ['data', avg],
            ]
-         });
+          });
+        }
        },
        error: err => console.error('something wrong occurred: ' + err)
    });
