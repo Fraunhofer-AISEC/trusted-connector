@@ -19,12 +19,12 @@
     <prerequisites>
         <maven>3.0.3</maven>
     </prerequisites>
-    
+
     <parent>
       <groupId>de.fhg.ids</groupId>
       <artifactId>core-platform</artifactId>
       <version>1.0.0</version>
-    </parent>    
+    </parent>
 
     <properties>
         <karaf.version>4.0.5</karaf.version>
@@ -81,7 +81,7 @@
             <version>${karaf.version}</version>
  			<!-- <scope>runtime</scope>  http://stackoverflow.com/questions/35433552/karaf-4-0-4-custom-distribution-karaf-maven-plugin -->
          </dependency>
-        
+
         <!--
             https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/4.0.1/enterprise-4.0.1-features.xml
         -->
@@ -93,7 +93,7 @@
             <version>${karaf.version}</version>
             <!-- <scope>runtime</scope> -->
         </dependency>
-        
+
         <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.5/spring-4.0.5-features.xml
              Needed for Camel feature dependency
         -->
@@ -125,7 +125,7 @@
             <classifier>features</classifier>
             <type>xml</type>
             <!-- <scope>runtime</scope> -->
-        </dependency> 
+        </dependency>
         <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.18.0/camel-extra-2.18.0-features.xml -->
         <!--<dependency>
             <groupId>org.apache-extras.camel-extra.karaf</groupId>
@@ -239,12 +239,14 @@
                         <feature>service</feature>
                         <feature>system</feature>
                         <feature>camel-core</feature>
-			            <feature>camel-http</feature>
+			                  <feature>camel-http</feature>
+                        <feature>camel-restlet</feature>
+                        <feature>camel-jetty</feature>
                         <feature>camel-spring-dm</feature>
                         <feature>camel-stream</feature>
                         <feature>camel-sjms</feature>
                         <!-- ActiveMQ with web console -->
-                        <feature>activemq-broker</feature>
+                        <!--<feature>activemq-broker</feature>-->
                         <!-- Use this in production instead (no web console)-->
                         <!-- <feature>activemq-broker-noweb</feature> -->
                         <feature>camel</feature>
@@ -255,7 +257,7 @@
                         <feature>camel-blueprint</feature>
                         <!--<feature>activemq-camel</feature> -->
                         <!--<feature>activemq-service</feature> -->
-                        <feature>camel-xstream</feature>                        
+                        <feature>camel-xstream</feature>
                         <!-- <feature>spring</feature>
                         <feature>spring-tx</feature> -->
                         <feature>war</feature>
@@ -359,7 +361,7 @@
                                <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
                                 <!-- Files to add to docker build context (can be added to docker image using ADD or COPY) -->
                                 <assembly>
-                                    <targetDir>/</targetDir>                      
+                                    <targetDir>/</targetDir>
                                     <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
                                         <id>karaf-assembly</id>
                                         <fileSets>
