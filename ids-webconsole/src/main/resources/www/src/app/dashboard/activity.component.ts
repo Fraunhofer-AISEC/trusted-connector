@@ -12,15 +12,22 @@ import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/observable/timer';
 
 import * as d3 from 'd3';
-import * as c3 from 'c3';
 
 @Component({
   selector: 'activity',
-  template: `<div id="chart" style='float: left'></div><div id="timeChart"></div>`
+  template: `
+  <div class="mdl-grid">
+    <div class="mdl-card mdl-cell mdl-cell--3-col">
+      <div class="chart-gauge"></div>
+      <div style="text-align: center; font-size: 15pt">{{avg}} rpm</div>
+    </div>
+    <div class="mdl-card mdl-cell mdl-cell--9-col">
+      <div id="timeChart"></div>
+    </div>
+  </div>`
 })
 export class ActivityComponent extends SubscriptionComponent implements OnInit {
-  private chart: any;
-  private timeChart: any = {};
+  private needle: any;
 
   values: any[] = [];
   avg: number = 0;
@@ -30,26 +37,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.chart = c3.generate({
-        data: {
-          columns: [
-              ['data', 0]
-            ],
-          type: 'gauge',
-        },
-        color: {
-          pattern: ['#209e91']
-        },
-        gauge: {
-          label: {
-            format: function(value, perc) { return Math.round((perc * 170)) + ' rpm'; }
-          },
-        },
-        legend: {
-          show: false
-        }
-    });
-    this.chart.internal.config.gauge_max = 170;
+    this.createNeedle();
 
     this.createTimeChart();
 
@@ -58,13 +46,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
       .subscribe(window => {
         this.avg = Math.round(this.values.reduce(function(p,c,i,a){return p + (c/a.length)},0));
 
-        this.chart.load({
-          columns: [
-            ['data', this.avg],
-          ]
-        });
-
-        //this.updateTimeChart();
+        this.needle.moveTo(this.avg / 170);
       });
 
     let sub = this.sensorService.getValueObservable().subscribe({
@@ -96,8 +78,10 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         duration:any = 750,
         now:any = new Date(Date.now() - duration)
 
-    var width = 1400,
-        height = 200
+    let el = d3.select('#timeChart');
+
+    var width = (el[0][0] as any).offsetWidth,
+        height = 160
 
     var groups = {
         current: {
@@ -117,14 +101,14 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         .domain([0, 170])
         .range([height, 0])
 
-    var line = d3.svg.line()
+    /*var line = d3.svg.line()
         .interpolate('basis')
         .x(function(d, i) {
             return x(now - (limit - 1 - i) * duration)
         })
         .y(function(d) {
             return y(d)
-        })
+        })*/
 
     var area = d3.svg.area()
       .interpolate('basis')
@@ -133,12 +117,10 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
       })
       .y0(height)
       .y1(function(d) {
-        console.log(d);
         return y(d);
-        //return d;
       })
 
-    var svg = d3.select('#timeChart').append('svg')
+    var svg = el.append('svg')
         .attr('class', 'chart')
         .attr('width', width)
         .attr('height', height + 50)
@@ -157,8 +139,6 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
             .attr('class', name + ' group')
             .style('stroke', group.color)
 
-            console.log(group.data);
-
         group.area = paths.append("path")
             .datum(group.data)
             .attr("class", "area")
@@ -173,7 +153,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
             var group = groups[name]
             //group.data.push(group.value) // Real values arrive at irregular intervals
             group.data.push(this.avg)
-            group.path.attr('d', line)
+            //group.path.attr('d', line)
             group.area.attr('d', area)
         }
 
@@ -202,5 +182,138 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         setTimeout(tick, 1000);
     };
     tick();
+  }
+
+  createNeedle() {
+
+  var barWidth, chart, chartInset, degToRad, repaintGauge,
+      height, margin, numSections, padRad, percToDeg, percToRad,
+      percent, radius, sectionIndx, svg, totalPercent, width;
+
+    numSections = 1;
+    let sectionPerc = 1 / numSections / 2;
+    padRad = 0.025;
+    chartInset = 10;
+
+    // Orientation of gauge:
+    totalPercent = .75;
+
+    let el = d3.select('.chart-gauge');
+
+    margin = {
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0
+    };
+
+    width = 300;
+    height = 300;
+    radius = Math.min(width, height) / 2;
+    barWidth = 40 * width / 300;
+
+    /*
+      Utility methods
+    */
+    percToDeg = function(perc) {
+      return perc * 360;
+    };
+
+    percToRad = function(perc) {
+      return degToRad(percToDeg(perc));
+    };
+
+    degToRad = function(deg) {
+      return deg * Math.PI / 180;
+    };
+
+    // Create SVG element
+    svg = el.append('svg').attr('width', 300).attr('height', 200);
+
+    // Add layer for the panel
+    //chart = svg.append('g').attr('transform', "translate(" + ((width + margin.left) / 2) + ", " + ((height + margin.top) / 2) + ")");
+    chart = svg.append('g').attr('transform', "translate(160, 150)");
+    chart.append('path').attr('class', "arc chart-filled");
+    chart.append('path').attr('class', "arc chart-empty");
+
+    let arc2 = d3.svg.arc().outerRadius(radius - chartInset).innerRadius(radius - chartInset - barWidth)
+    let arc1 = d3.svg.arc().outerRadius(radius - chartInset).innerRadius(radius - chartInset - barWidth)
+
+    repaintGauge = function (perc)
+    {
+      var next_start = totalPercent;
+      let arcStartRad = percToRad(next_start);
+      let arcEndRad = arcStartRad + percToRad(perc / 2);
+      next_start += perc / 2;
+
+      arc1.startAngle(arcStartRad).endAngle(arcEndRad);
+
+      arcStartRad = percToRad(next_start);
+      arcEndRad = arcStartRad + percToRad((1 - perc) / 2);
+
+      arc2.startAngle(arcStartRad + padRad).endAngle(arcEndRad);
+
+
+      chart.select(".chart-filled").attr('d', arc1);
+      chart.select(".chart-empty").attr('d', arc2);
+
+    }
+
+
+    var Needle = (function() {
+
+      /**
+        * Helper function that returns the `d` value
+        * for moving the needle
+      **/
+      var recalcPointerPos = function(perc) {
+        var centerX, centerY, leftX, leftY, rightX, rightY, thetaRad, topX, topY;
+        thetaRad = percToRad(perc / 2);
+        centerX = 0;
+        centerY = 0;
+        topX = centerX - this.len * Math.cos(thetaRad);
+        topY = centerY - this.len * Math.sin(thetaRad);
+        leftX = centerX - this.radius * Math.cos(thetaRad - Math.PI / 2);
+        leftY = centerY - this.radius * Math.sin(thetaRad - Math.PI / 2);
+        rightX = centerX - this.radius * Math.cos(thetaRad + Math.PI / 2);
+        rightY = centerY - this.radius * Math.sin(thetaRad + Math.PI / 2);
+        return "M " + leftX + " " + leftY + " L " + topX + " " + topY + " L " + rightX + " " + rightY;
+      };
+
+      function Needle(el) {
+        this.el = el;
+        this.len = width / 3;
+        this.radius = this.len / 6;
+      }
+
+      Needle.prototype.render = function() {
+        this.el.append('circle').attr('class', 'needle-center').attr('cx', 0).attr('cy', 0).attr('r', this.radius);
+        return this.el.append('path').attr('class', 'needle').attr('d', recalcPointerPos.call(this, 0));
+      };
+
+      Needle.prototype.moveTo = function(perc) {
+        var self,
+            oldValue = this.perc || 0;
+
+        this.perc = perc;
+        self = this;
+
+        this.el.transition().delay(0).ease('quad').duration(0).select('.needle').tween('progress', function() {
+          return function(percentOfPercent) {
+            var progress = percentOfPercent * perc;
+
+            repaintGauge(progress);
+            return d3.select(this).attr('d', recalcPointerPos.call(self, progress));
+          };
+        });
+
+      };
+
+      return Needle;
+
+    })();
+
+    this.needle = new Needle(chart);
+    this.needle.render();
   }
 }
