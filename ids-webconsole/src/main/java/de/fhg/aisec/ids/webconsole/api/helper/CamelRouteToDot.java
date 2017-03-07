@@ -65,7 +65,7 @@ public class CamelRouteToDot {
 	 * @throws IOException 
 	 */
 	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
-		writer.write("digraph { rankdir=LR; size=\"6,7\" \n\n");
+		writer.write("digraph { rankdir=LR; size=\"4.5,5.5\" \n\n");
 		writer.write("node [shape=\"box\", style = \"filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
 		List<FromDefinition> inputs = route.getInputs();
 		for (FromDefinition input : inputs) {
@@ -114,7 +114,7 @@ public class CamelRouteToDot {
 
 			String label = fromData.edgeLabel;
 			if (isNotEmpty(label)) {
-				writer.write("label = \"" + label + "\"\n");
+				writer.write("label = \"" +  label.substring(0,Math.min(5, label.length())) + (label.length()>5?"..":"") + "\"\n");
 			}
 			writer.write("];\n");
 		}
@@ -139,8 +139,8 @@ public class CamelRouteToDot {
 			writer.write("\n");
 			writer.write(data.id + "\n");
 			writer.write(" [\n");
-			writer.write("label = \"" + data.label + "\"\n");
-			writer.write("tooltip = \"" + data.tooltop + "\"\n");
+			writer.write("label = \"" + data.label.substring(0,Math.min(10, data.label.length())) + (data.label.length()>10?"..":"") + "\"\n");
+			writer.write("tooltip = \"" + data.tooltip + "\"\n");
 			if (data.url != null) {
 				writer.write("URL = \"" + data.url + "\"\n");
 			}
