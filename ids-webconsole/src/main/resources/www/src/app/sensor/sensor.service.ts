@@ -13,9 +13,10 @@ declare var EventSource: any;
 export class SensorService {
 
   private zone = new NgZone({ enableLongStackTrace: false });
-  private valueObservable;  
+  private valueObservable;
 
   constructor(private http: Http) {
+    console.log("constructor SensorService");
     this.valueObservable = this.createValueObservable();
   }
 

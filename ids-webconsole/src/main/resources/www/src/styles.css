@@ -294,10 +294,34 @@ header.iot-connector-header.mdl-layout__header {
 }
 
 .bold {
-  font-weight: 800;	
+  font-weight: 800;
 }
 
 .card-dark > .mdl-card__title {
   color: #fff;
   background: rgb(28, 43, 54);
+}
+
+.axis {
+    stroke-width: 1;
+}
+
+.axis .tick line {
+    stroke: black;
+}
+
+.axis .tick text {
+    fill: black;
+    font-size: 0.7em;
+}
+
+.axis .domain {
+    fill: none;
+    stroke: black;
+}
+
+.group {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5;
 }
