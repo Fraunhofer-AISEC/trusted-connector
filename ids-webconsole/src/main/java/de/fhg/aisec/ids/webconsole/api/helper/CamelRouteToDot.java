@@ -43,7 +43,7 @@ public class CamelRouteToDot {
 			writer.write("label = \"" + group + "\";\n");
 			writer.write("color = grey;\n");
 			writer.write("style = \"dashed\";\n");
-			writer.write("URL = \"" + group + ".html\";\n\n");
+			//writer.write("URL = \"" + group + ".html\";\n\n");
 		}
 		for (RouteDefinition route : routes) {
 			List<FromDefinition> inputs = route.getInputs();
@@ -66,7 +66,7 @@ public class CamelRouteToDot {
 	 */
 	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
 		writer.write("digraph { rankdir=LR; size=\"6,7\" \n\n");
-		writer.write("node [style = \"rounded,filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
+		writer.write("node [shape=\"box\", style = \"filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
 		List<FromDefinition> inputs = route.getInputs();
 		for (FromDefinition input : inputs) {
 			printRoute(writer, route, input);
