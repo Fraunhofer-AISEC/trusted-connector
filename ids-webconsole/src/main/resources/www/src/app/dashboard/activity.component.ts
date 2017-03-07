@@ -92,17 +92,17 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
 
   createTimeChart() {
 
-    var limit = 60 * 1,
+    var limit = 240 * 1,
         duration:any = 750,
         now:any = new Date(Date.now() - duration)
 
-    var width = 500,
+    var width = 1700,
         height = 200
 
     var groups = {
         current: {
             value: 0,
-            color: 'orange',
+            color: 'black',
             data: d3.range(limit).map(function() {
                 return 0
             })
@@ -114,7 +114,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         .range([0, width])
 
     var y:any = d3.scale.linear()
-        .domain([0, 100])
+        .domain([0, 170])
         .range([height, 0])
 
     var line = d3.svg.line()
@@ -126,17 +126,29 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
             return y(d)
         })
 
+    var area = d3.svg.area()
+      .interpolate('basis')
+      .x(function(d, i) {
+          return x(now - (limit - 1 - i) * duration)
+      })
+      .y0(height)
+      .y1(function(d) {
+        console.log(d);
+        return y(d);
+        //return d;
+      })
+
     var svg = d3.select('#timeChart').append('svg')
         .attr('class', 'chart')
         .attr('width', width)
         .attr('height', height + 50)
 
+    var paths = svg.append('g')
+
     var axis = svg.append('g')
         .attr('class', 'x axis')
         .attr('transform', 'translate(0,' + height + ')')
         .call(x.axis = d3.svg.axis().scale(x).orient('bottom'))
-
-    var paths = svg.append('g')
 
     for (var name in groups) {
         var group = groups[name]
@@ -144,6 +156,13 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
             .data([group.data])
             .attr('class', name + ' group')
             .style('stroke', group.color)
+
+            console.log(group.data);
+
+        group.area = paths.append("path")
+            .datum(group.data)
+            .attr("class", "area")
+            .attr("d", area);
     }
 
     let tick = () => {
@@ -155,6 +174,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
             //group.data.push(group.value) // Real values arrive at irregular intervals
             group.data.push(this.avg)
             group.path.attr('d', line)
+            group.area.attr('d', area)
         }
 
         // Shift domain

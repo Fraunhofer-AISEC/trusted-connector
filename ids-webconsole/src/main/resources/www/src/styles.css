@@ -311,8 +311,9 @@ header.iot-connector-header.mdl-layout__header {
 }
 
 .axis .tick text {
-    fill: black;
-    font-size: 0.7em;
+  fill: black;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.7em;
 }
 
 .axis .domain {
@@ -324,4 +325,9 @@ header.iot-connector-header.mdl-layout__header {
     fill: none;
     stroke: black;
     stroke-width: 1.5;
+}
+
+.area {
+    fill: rgb(32, 158, 145);
+    stroke-width: 0;
 }
