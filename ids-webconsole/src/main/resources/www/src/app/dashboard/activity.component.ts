@@ -96,7 +96,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         duration:any = 750,
         now:any = new Date(Date.now() - duration)
 
-    var width = 1700,
+    var width = 1200,
         height = 200
 
     var groups = {
