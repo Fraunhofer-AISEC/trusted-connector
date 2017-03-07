@@ -16,7 +16,7 @@ import * as c3 from 'c3';
 
 @Component({
   selector: 'activity',
-  template: `<div id="chart"></div><div id="timeChart"></div>`
+  template: `<div id="chart" style='float: left'></div><div id="timeChart"></div>`
 })
 export class ActivityComponent extends SubscriptionComponent implements OnInit {
   private chart: any;

@@ -50,7 +50,6 @@ import 'material-design-lite';
     AppComponent,
     DashboardComponent,
     ActivityComponent,
-    TimeChartComponent,
     NetworkGraphComponent,
     MetricCardComponent,
     AppsComponent,
