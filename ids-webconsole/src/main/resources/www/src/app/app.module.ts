@@ -26,8 +26,6 @@ import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
 
-import { TimeChartComponent } from './dashboard/time-chart.component';
-
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
