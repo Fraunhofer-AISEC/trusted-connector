@@ -18,25 +18,30 @@
 		  </li>
 	  </ul>
 	  <pre>
-	<i># Description of services</i>
-	<b>service</b> SERVICE:
-	     <b>property</b> PROPERTY
-	     <b>capability</b> CAPABILITY
-	
-	<i># transformation function (tainting)</i>
+	<i># Behavior: Data anonymization </i>
 	<b>service</b> Anonymizer:
-		<b>mark</b> free_for_public <b>if label</b> classified <b>and label</b> raw_data
+		<b>mark</b> free_for_public <b>if label</b> classified <b>or label</b> raw_data
 		<b>unmark</b> classified <b>if</b> 
 	
-	<i># transformation function (data source)</i>
-	<b>service</b> ANOTHER_SERVICE:
-		<b>mark</b> LABEL_4
+	<i># Source: Untrusted sensor </i>
+	<b>service</b> OPC-UA milo://untrusted-sensor :
+		<b>mark</b> raw_data
 	
-	<i># Rules</i>
-	<b>rule</b> RULE_NAME:
-		<b>on message</b> LABEL_1 <b>and</b> LABEL_2
-		<b>on service</b> PROPERTY_1 <b>and</b> PROPERTY_2
-		<b>require</b> CAPABILITY	  
+	<i># Source: Trusted sensor </i>
+	<b>service</b> OPC-UA milo://trusted-sensor :
+		<b>mark</b> raw_data, trusted
+	
+	<i># Rule: Raw data must not leak to public</i>
+	<b>rule</b> Data Leak Prevention:
+		<b>on message</b> raw_data
+		<b>on service</b> publish
+		<b>block</b>	  
+
+	<i># Rule: Raw data must be deleted after 30 days</i>
+	<b>rule</b> Time To Live (TTL):
+		<b>on message</b> raw_data
+		<b>on service</b> persist
+		<b>require</b> delete(X), X&lt;30	  
 	  </pre>
     </div>
   </div>
