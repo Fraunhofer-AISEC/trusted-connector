@@ -168,7 +168,7 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
         
         // Execute IDS protocol immediately after connect
-        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask());
+        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(), this.getSslContextParameters());
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
         
         // wait for IDS protocol to finish 

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.UUID;
 
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -69,6 +70,7 @@ public class DefaultWebsocket implements Serializable {
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
         IdsAttestationType type;
+        SSLContextParameters params = this.consumer.getSSLContextParameters();
         int attestationMask = 0;
         switch(this.consumer.getAttestationType()) {
 	    	case 0:            
@@ -90,7 +92,7 @@ public class DefaultWebsocket implements Serializable {
         }
 		// Integrate server-side of IDS protocol
         machine = new ProtocolMachine();
-        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
+        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask, params);
         sync.addSocket(this);
     }
 

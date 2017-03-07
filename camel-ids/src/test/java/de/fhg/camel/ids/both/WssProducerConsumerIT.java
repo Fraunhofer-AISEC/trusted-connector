@@ -82,11 +82,6 @@ public class WssProducerConsumerIT extends CamelTestSupport {
     
     @Override
     public void setUp() throws Exception {
-        ClassLoader classLoader = getClass().getClassLoader();
-        URL trustStoreURL = classLoader.getResource("jsse/client-truststore.jks");
-        System.setProperty("javax.net.ssl.trustStore", trustStoreURL.getFile());
-        System.setProperty("javax.net.ssl.trustStorePassword", "password");
-        //startTestServer();
         super.setUp();
     }
 

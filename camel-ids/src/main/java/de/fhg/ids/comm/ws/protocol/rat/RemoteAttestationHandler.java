@@ -1,18 +1,57 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.camel.util.jsse.ClientAuthentication;
+import org.apache.camel.util.jsse.KeyManagersParameters;
+import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.util.jsse.SSLContextServerParameters;
+import org.apache.camel.util.jsse.TrustManagersParameters;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.EntityUtils;
+
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,25 +74,11 @@ public class RemoteAttestationHandler {
 	protected static Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
 	protected static String lastError = "";
 	// used to count messages between ids connector and attestation repository
-	protected static long privateID = new java.util.Random().nextLong();
-	
-	/*
-	// fetch a public key from a uri and return the key as a byte array
-	protected static byte[] fetchPublicKey(String uri) throws Exception {
-		URL cert = new URL(uri);
-		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
-		String base64 = "";
-		String inputLine = "";
-        while ((inputLine = in.readLine()) != null) {
-        	base64 += inputLine;
-        }
-        in.close();
-        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
-	}
-	*/
-	
-	public static boolean checkRepository(IdsAttestationType basic, String nonce, AttestationResponse response, URI ttpUri) {
+	protected static long privateID = new java.util.Random().nextLong();  
+
+	public static boolean checkRepository(IdsAttestationType basic, AttestationResponse response, URI ttpUri, SSLContextParameters params) {
 		int numPcrValues = response.getPcrValuesCount();
+		String nonce = response.getQualifyingData();
 		Pcr[] values = response.getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		try {
 			ConnectorMessage msgRepo = RemoteAttestationHandler.readRepositoryResponse(
@@ -69,8 +94,15 @@ public class RemoteAttestationHandler {
 			        		.addAllPcrValues(Arrays.asList(values))
 			        		.build()
 							)
-					.build()
-					, ttpUri.toURL());
+					.build(), 
+					ttpUri.toURL(),
+					params);
+			
+			LOG.debug("//Q///////////////////////////////////////////////////////////////////////////");
+			LOG.debug(response.toString());
+			LOG.debug("//A///////////////////////////////////////////////////////////////////////////");
+			LOG.debug(msgRepo.toString());
+			LOG.debug("/////////////////////////////////////////////////////////////////////////////");
 			
 			return (
 					msgRepo.getAttestationRepositoryResponse().getResult() 
@@ -79,11 +111,11 @@ public class RemoteAttestationHandler {
 					&& (msgRepo.getAttestationRepositoryResponse().getQualifyingData().equals(nonce))
 					&& true); // TODO : signature check of repo answer ... !
 			
-		} catch (MalformedURLException e1) {
-			lastError = "MalformedURLException:" + e1.getMessage();
-			return false;
-		} catch (IOException e2) {
-			lastError = "IOException:" + e2.getMessage();
+		} catch (Exception ex) {
+			lastError = "Exception:" + ex.getMessage();
+			LOG.debug("//Exception///////////////////////////////////////////////////////////////////////////");
+			LOG.debug(lastError);
+			LOG.debug("//Exception///////////////////////////////////////////////////////////////////////////");			
 			return false;
 		}
 	}
@@ -162,13 +194,37 @@ public class RemoteAttestationHandler {
 				.build();
 	}
 	
-	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr) throws IOException {
-        HttpURLConnection urlc = (HttpURLConnection) adr.openConnection();
+	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr, SSLContextParameters params) throws IOException, NoSuchAlgorithmException, GeneralSecurityException, KeyManagementException {
+        
+		// Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+		
+		HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(params.getKeyManagers().createKeyManagers(), trustAllCerts, new SecureRandom());
+        urlc.setSSLSocketFactory(sslContext.getSocketFactory());
+		urlc.setUseCaches(false);
         urlc.setDoInput(true);
         urlc.setDoOutput(true);
         urlc.setRequestMethod("POST");
         urlc.setRequestProperty("Accept", "application/x-protobuf");
         urlc.setRequestProperty("Content-Type", "application/x-protobuf");
+        urlc.setRequestProperty("User-Agent","IDS-Connector");
+        urlc.setRequestProperty("Content-length",String.valueOf(msg.toByteArray().length));
         msg.writeTo(urlc.getOutputStream());
         return ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
 	}

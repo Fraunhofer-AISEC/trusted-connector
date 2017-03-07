@@ -337,7 +337,7 @@
 										<wait>
 											<http>
 												<url>
-													http://127.0.0.1:31337/json/configurations/
+													https://127.0.0.1:31337/json/configurations/
 												</url>
 												<method>
 													GET
@@ -345,6 +345,7 @@
 												<status>
 													200..399
 												</status>
+												<allowAllHosts>true</allowAllHosts>	
 											</http>
 											<time>30000</time>
 										</wait>

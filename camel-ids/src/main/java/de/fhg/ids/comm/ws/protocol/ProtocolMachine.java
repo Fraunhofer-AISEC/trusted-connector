@@ -7,6 +7,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 
+import javax.net.ssl.SSLContext;
+
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.ws.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
@@ -39,7 +42,7 @@ public class ProtocolMachine {
 	private Session sess;
 	private boolean ratConsumerSuccess = false;
 	private boolean ratProviderSuccess = false;
-	private String ttpURL = "http://10.1.2.19:31337/configurations/check";
+	private String ttpURL = "https://127.0.0.1:31337/configurations/check";
 	private String socket = "/var/run/tpm2d/control.sock";
 	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
 
@@ -54,14 +57,14 @@ public class ProtocolMachine {
 	 * 
 	 * @return a FSM implementing the IDSP protocol.
 	 */
-	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type, int attestationMask) {
+	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
 		this.ws = websocket;
 		FSM fsm = new FSM();
 		try {
 			// set trusted third party URL
 			URI ttp = new URI(ttpURL);
 			// all handler
-			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket);
+			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket, params);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();		
 			
@@ -136,7 +139,7 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask) {
+	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
 		this.sess = sess;
 		FSM fsm = new FSM();
 		try {
@@ -144,7 +147,7 @@ public class ProtocolMachine {
 			URI ttp = new URI(ttpURL);
 
 			// all handler
-			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket);
+			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket, params);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 			
