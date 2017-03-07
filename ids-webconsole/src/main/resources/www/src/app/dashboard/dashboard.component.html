@@ -67,9 +67,9 @@
     </div>
   </div>
 
-  <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="activity-card mdl-card mdl-cell mdl-cell--12-col" *ngIf="isRouteActive">
     <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Sensor Activity</h2>
+      <h2 class="mdl-card__title-text">Live Preview: <i>OPC-UA: Read Engine RPM (Trusted)</i></h2>
     </div>
     <div class="mdl-card__supporting-text">
       <activity></activity>
