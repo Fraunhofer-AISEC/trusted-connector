@@ -19,8 +19,6 @@ import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
   encapsulation: ViewEncapsulation.None   // Generate global CSS classes
 })
 export class NetworkGraphComponent implements OnInit, AfterViewInit {
-  private subscriptions: Subscription[] = [];
-
   private chart: any;
 
   constructor() {
@@ -118,10 +116,4 @@ export class NetworkGraphComponent implements OnInit, AfterViewInit {
 
   }
 
-  ngOnDestroy(): void {
-    console.log('Unsubscribing...');
-    for(let subscription of this.subscriptions) {
-      subscription.unsubscribe();
-    }
-  }
 }

@@ -18,6 +18,17 @@ export class RouteService {
                });
   }
 
+  getTotalMessages() {
+    return this.http.get(environment.apiURL + '/routes/list/')
+               .map(response => {
+                 let routes = response.json() as Route[];
+                 let messages = 0;
+                 routes.forEach((route) => messages += +route.messages);
+
+                 return messages;
+               });
+  }
+
   getRoutes() {
     return this.http.get(environment.apiURL + '/routes/list/')
                .map(response => {
@@ -35,7 +46,7 @@ export class RouteService {
                });
       }
       // -------------------------------------------------------------------------------
-      
+
       return this.http.get(environment.apiURL + '/routes/stoproute/' + routeId)
                  .map(response => {
                    return response.json() as string;
@@ -52,7 +63,7 @@ export class RouteService {
                });
       }
       // -------------------------------------------------------------------------------
-    
+
       //Start Camel route
       return this.http.get(environment.apiURL + '/routes/startroute/' + routeId)
                  .map(response => {

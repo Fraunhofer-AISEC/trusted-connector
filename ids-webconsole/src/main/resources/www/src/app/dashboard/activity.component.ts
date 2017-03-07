@@ -2,7 +2,8 @@ import { Component, OnInit, ViewContainerRef, EventEmitter, Output } from '@angu
 import { Title } from '@angular/platform-browser';
 
 import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
+
+import { SubscriptionComponent } from '../subscription.component';
 
 import { SensorService } from '../sensor/sensor.service';
 
@@ -17,13 +18,11 @@ import * as c3 from 'c3';
   selector: 'activity',
   template: `<div id="chart">`
 })
-export class ActivityComponent implements OnInit {
-  private subscriptions: Subscription[] = [];
-
+export class ActivityComponent extends SubscriptionComponent implements OnInit {
   private chart: any;
 
   constructor(private sensorService: SensorService) {
-
+    super();
   }
 
   ngOnInit(): void {
@@ -51,7 +50,7 @@ export class ActivityComponent implements OnInit {
     let values = [];
     var avg = 0;
 
-    this.sensorService.getValueObservable().subscribe({
+    let sub = this.sensorService.getValueObservable().subscribe({
        next: event => {
          values.push(event.data);
 
@@ -71,6 +70,7 @@ export class ActivityComponent implements OnInit {
        },
        error: err => console.error('something wrong occurred: ' + err)
    });
+   this.subscriptions.push(sub);
 
     /*this.subscriptions.push(Observable
       .timer(0, 2000)
@@ -81,12 +81,5 @@ export class ActivityComponent implements OnInit {
           ]
         });
       }));*/
-  }
-
-  ngOnDestroy(): void {
-    console.log('Unsubscribing...');
-    for(let subscription of this.subscriptions) {
-      subscription.unsubscribe();
-    }
   }
 }

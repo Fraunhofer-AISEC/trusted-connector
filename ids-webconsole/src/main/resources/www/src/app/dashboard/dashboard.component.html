@@ -1,10 +1,10 @@
 <!-- Status cards -->
-<div class="mdl-grid">
-  <div metricCard [text]="'System Connectors'" [value]="'5'" class="mdl-cell mdl-cell--3-col"></div>
+<div class="mdl-grid" *ngIf="apps">
+  <div metricCard [text]="'Sensors'" [value]="'2'" class="mdl-cell mdl-cell--3-col"></div>
 
-  <div metricCard [text]="'Data Apps'" [value]="'3'" class="mdl-cell mdl-cell--3-col"></div>
-  
-  <div metricCard [text]="'Messages'" [value]="'2000'" [value-url]="'https://www.random.org/integers/?num=1&min=3000&max=6000&col=1&base=10&format=plain&rnd=new'" class="mdl-cell mdl-cell--3-col"></div>
+  <div metricCard [text]="'Data Apps'" [value]="apps.length" class="mdl-cell mdl-cell--3-col"></div>
+
+  <div metricCard [text]="'Messages'" [value]="messages" class="mdl-cell mdl-cell--3-col"></div>
 
   <div metricCard [text]="'Connections'" [value]="'3'" class="mdl-cell mdl-cell--3-col"></div>
 
@@ -57,7 +57,7 @@
 	  </ul>
     </div>
   </div>
-  
+
   <div class="mdl-card mdl-cell mdl-cell--6-col">
     <div class="mdl-card__title">
       <h2 class="mdl-card__title-text">Active Connections</h2>
