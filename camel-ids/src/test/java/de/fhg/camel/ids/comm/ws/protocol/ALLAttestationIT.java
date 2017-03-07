@@ -57,8 +57,8 @@ public class ALLAttestationIT {
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
 		SSLContextParameters sslContextParameters = defineClientSSLContextParameters();
-		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/sim1/control.sock", sslContextParameters);
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/sim2/control.sock", sslContextParameters);
+		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
 	}
 	
 	
@@ -86,7 +86,7 @@ public class ALLAttestationIT {
     	assertTrue(msg3.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     	assertTrue(msg3.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg3.getAttestationResponse().getHalg().equals(hAlg.name()));
-    	assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 23);	
+    	assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 24);	
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ALLAttestationIT {
     	assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg4.getAttestationResponse().getHalg().equals(hAlg.name()));
-    	assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 23);
+    	assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 24);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class ALLAttestationIT {
     	assertTrue(msg5.getId() == id + 5);
     	assertTrue(msg5.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	//  commented out until tpm2d is fixed
-    	//assertTrue(msg5.getAttestationResult().getResult());
+    	assertTrue(msg5.getAttestationResult().getResult());
     	assertTrue(msg5.getAttestationResult().getAtype().equals(aType));
     	
     }
@@ -119,7 +119,7 @@ public class ALLAttestationIT {
     	assertTrue(msg6.getId() == id + 6);
     	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	//  commented out until tpm2d is fixed
-    	//assertTrue(msg6.getAttestationResult().getResult());
+    	assertTrue(msg6.getAttestationResult().getResult());
     	assertTrue(msg6.getAttestationResult().getAtype().equals(aType));
     }
 

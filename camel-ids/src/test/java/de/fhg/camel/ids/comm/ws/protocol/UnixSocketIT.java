@@ -21,7 +21,7 @@ public class UnixSocketIT {
     	
     	UnixSocketThread client;
     	Thread thread;
-    	String socket = "socket/sim1/control.sock";
+    	String socket = "socket/control.sock";
     	UnixSocketResponseHandler handler;
     	String quoted = NonceGenerator.generate(40);
     	IdsAttestationType type = IdsAttestationType.BASIC;
@@ -57,13 +57,12 @@ public class UnixSocketIT {
 		}
     }
 
-    @Ignore
     @Test
     public void testALL() throws Exception {
 
     	UnixSocketThread client;
     	Thread thread;
-    	String socket = "socket/sim1/control.sock";
+    	String socket = "socket/control.sock";
     	UnixSocketResponseHandler handler;
     	String quoted = NonceGenerator.generate(40);
     	IdsAttestationType type = IdsAttestationType.ALL;
@@ -99,13 +98,12 @@ public class UnixSocketIT {
 		}
     }
 
-    @Ignore
     @Test
     public void testADVANCED() throws Exception {
 
     	UnixSocketThread client;
     	Thread thread;
-    	String socket = "socket/sim1/control.sock";
+    	String socket = "socket/control.sock";
     	UnixSocketResponseHandler handler;
     	String quoted = NonceGenerator.generate(40);
     	IdsAttestationType type = IdsAttestationType.ADVANCED;

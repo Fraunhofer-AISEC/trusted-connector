@@ -44,7 +44,6 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
-@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 // BASIC test
 public class BASICAttestationIT {
@@ -72,8 +71,8 @@ public class BASICAttestationIT {
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
 		SSLContextParameters sslContextParameters = defineClientSSLContextParameters();
-        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/sim1/control.sock", sslContextParameters);
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/sim2/control.sock", sslContextParameters);
+        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
 	}
 	
     @Test

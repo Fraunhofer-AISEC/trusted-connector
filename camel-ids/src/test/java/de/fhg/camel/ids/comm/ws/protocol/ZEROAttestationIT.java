@@ -37,7 +37,6 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
-@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 // BASIC test
 public class ZEROAttestationIT {

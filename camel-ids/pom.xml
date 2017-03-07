@@ -290,25 +290,11 @@
 							<images>
 								<image>
 									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
-									<alias>tpm2d-sim1</alias>
+									<alias>tpm2dsim</alias>
 									<run>
 										<volumes>
 											<bind>
-												<volume>${project.basedir}/socket/sim1/:/data/cml/communication/tpm2d/</volume>
-											</bind>
-										</volumes>
-										<cmd>
-											/tpm2d/cml-tpm2d
-										</cmd>
-									</run>
-								</image>
-								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
-									<alias>tpm2d-sim2</alias>
-									<run>
-										<volumes>
-											<bind>
-												<volume>${project.basedir}/socket/sim2/:/data/cml/communication/tpm2d/</volume>
+												<volume>${project.basedir}/socket/:/data/cml/tpm2d/communication/</volume>
 											</bind>
 										</volumes>
 										<cmd>
@@ -329,7 +315,7 @@
 							<images>
 								<image>
 									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</name>
-									<alias>ttpsim-sim</alias>
+									<alias>ttp</alias>
 									<run>
 										<ports>
 											<port>31337:31337</port>
@@ -355,7 +341,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>remove-ttpsim</id>
+						<id>remove-tpm2dsim</id>
 						<phase>post-integration-test</phase>
 						<goals>
 							<goal>stop</goal>
@@ -364,16 +350,13 @@
 						<configuration>
 							<images>
 								<image>
-									<name>tpm2d-sim1</name>
-								</image>
-								<image>
-									<name>tpm2d-sim2</name>
+									<name>tpm2dsim</name>
 								</image>
 							</images>
 						</configuration>
 					</execution>
 					<execution>
-						<id>remove-tpm2d</id>
+						<id>remove-ttp</id>
 						<phase>post-integration-test</phase>
 						<goals>
 							<goal>stop</goal>
@@ -382,7 +365,7 @@
 						<configuration>
 							<images>
 								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
+									<name>ttp</name>
 								</image>
 							</images>
 						</configuration>

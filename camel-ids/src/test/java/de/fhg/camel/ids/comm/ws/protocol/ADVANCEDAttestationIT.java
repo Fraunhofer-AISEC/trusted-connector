@@ -38,7 +38,6 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
-@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 // ADVANCED test with PCRS 0-19 i.e. bitmask is 20
 public class ADVANCEDAttestationIT {
@@ -68,8 +67,8 @@ public class ADVANCEDAttestationIT {
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
 		SSLContextParameters sslContextParameters = defineClientSSLContextParameters();
-		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/sim1/control.sock", sslContextParameters);
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/sim2/control.sock", sslContextParameters);		
+		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);		
 	}
 	
     @Test
