@@ -20,7 +20,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
 
   messages: number = 0;
 
-  isRouteActive: boolean = true;
+  isRouteActive: boolean = false;
 
   private lastEvent: Date;
 
@@ -34,8 +34,18 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
     this.subscriptions.push(
       Observable
         .timer(0, 1000)
-        .flatMap(() => { return this.routeService.getTotalMessages(); })
-        .subscribe(messages => { this.messages += +messages; }));
+        .flatMap(() => { return this.routeService.getRoutes(); })
+        .subscribe(routes => {
+          this.isRouteActive = false;
+
+          routes.forEach((route) => {
+            this.messages += +route.messages;
+
+            if(route.id == "OPC-UA: Read Engine Power (Trusted)" && route.status == "Started") {
+              this.isRouteActive = true;
+            }
+          });
+        }));
   }
 
   ngOnInit(): void {

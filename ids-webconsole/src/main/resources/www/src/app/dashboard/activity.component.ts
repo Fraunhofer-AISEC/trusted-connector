@@ -57,7 +57,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
 
       let filled = d3.select('.chart-gauge2').select("svg").select("g").select(".chart-filled");
 
-      if(this.power > 80) {
+      if(this.power >= 60) {
         filled.attr("class", "chart-filled chart-filled-error");
       } else {
         filled.attr("class", "chart-filled");
