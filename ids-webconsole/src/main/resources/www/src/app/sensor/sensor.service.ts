@@ -12,33 +12,40 @@ declare var EventSource: any;
 @Injectable()
 export class SensorService {
 
-  private zone = new NgZone({ enableLongStackTrace: false });
-  private valueObservable;
+  private powerObservable;
+  private rpmObservable;
 
   constructor(private http: Http) {
     console.log("constructor SensorService");
-    this.valueObservable = this.createValueObservable();
+    this.powerObservable = Observable
+      .timer(0, 1000)
+      .flatMap(() => { return this.getCurrentPower(); });
+
+    this.rpmObservable = Observable
+      .timer(0, 1000)
+      .flatMap(() => { return this.getCurrentRPM(); });
   }
 
-  createValueObservable() {
-    return Observable.create(observer => {
-      // TODO: make URL configurable
-      let url = 'http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/sensordataelements/events';
-
-      console.log('Creating new EventSource from url: ' + url + '...');
-
-      const eventSource = new EventSource(url);
-      eventSource.onmessage = score => this.zone.run(() => observer.next(score));
-      eventSource.onerror = error => this.zone.run(() => observer.error(error));
-      return () => {
-        console.log('Closing EventSource...');
-        eventSource.close()
-      }
-    });
+  getCurrentPower() {
+    return this.http.get('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentpower/value/')
+        .map(response => {
+          return +response.json().currentPower as number;
+        });
   }
 
-  getValueObservable() {
-    return this.valueObservable;
+  getCurrentRPM() {
+    return this.http.get('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentrpm/value/')
+        .map(response => {
+          return +response.json().sensorReading as number;
+        });
+  }
+
+  getPowerObservable() {
+    return this.powerObservable;
+  }
+
+  getRPMObservable() {
+    return this.rpmObservable;
   }
 
 }

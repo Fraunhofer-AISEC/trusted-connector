@@ -18,62 +18,54 @@ import * as d3 from 'd3';
   template: `
   <div class="mdl-grid">
     <div class="mdl-card mdl-cell mdl-cell--3-col">
-      <div class="chart-gauge"></div>
-      <div style="text-align: center; font-size: 15pt">{{avg}} rpm</div>
+      <div class="chart-gauge2"></div>
+      <div style="text-align: center; font-size: 15pt">{{power | number: '1.2-2'}} % Power</div>
     </div>
-    <div class="mdl-card mdl-cell mdl-cell--9-col">
+    <div class="mdl-card mdl-cell mdl-cell--3-col">
+      <div class="chart-gauge"></div>
+      <div style="text-align: center; font-size: 15pt">{{rpm | number: '1.2-2'}} rpm</div>
+    </div>
+    <div class="mdl-card mdl-cell mdl-cell--6-col">
       <div id="timeChart"></div>
     </div>
   </div>`
 })
 export class ActivityComponent extends SubscriptionComponent implements OnInit {
   private needle: any;
+  private needle2: any;
 
-  values: any[] = [];
-  avg: number = 0;
+  power: number = 0;
+  rpm: number = 0;
 
   constructor(private sensorService: SensorService) {
     super();
   }
 
   ngOnInit(): void {
-    this.createNeedle();
+    this.needle = this.createNeedle(d3.select('.chart-gauge'));
+    this.needle2 = this.createNeedle(d3.select('.chart-gauge2'));
 
     this.createTimeChart();
 
-    Observable
-      .timer(0, 1000)
-      .subscribe(window => {
-        this.avg = Math.round(this.values.reduce(function(p,c,i,a){return p + (c/a.length)},0));
+    this.subscriptions.push(this.sensorService.getRPMObservable().subscribe(rpm => {
+      this.rpm = rpm;
+      this.needle.moveTo(this.rpm / 200);
+    }));
+    this.subscriptions.push(this.sensorService.getPowerObservable().subscribe(power => {
+      this.power = power;
+      this.needle2.moveTo(this.power / 100);
 
-        this.needle.moveTo(this.avg / 170);
-      });
+      let filled = d3.select('.chart-gauge2').select("svg").select("g").select(".chart-filled");
 
-    let sub = this.sensorService.getValueObservable().subscribe({
-       next: event => {
-         this.values.push(event.data);
-
-         if(this.values.length > 5) {
-           this.values.shift();
-         }
-      },
-       error: err => console.error('something wrong occurred: ' + err)
-   });
-   this.subscriptions.push(sub);
-
-    /*this.subscriptions.push(Observable
-      .timer(0, 2000)
-      .subscribe(() => {
-        this.chart.flow({
-          columns: [
-            ['data1', Math.random()* 400],
-          ]
-        });
-      }));*/
+      if(this.power > 80) {
+        filled.attr("class", "chart-filled chart-filled-error");
+      } else {
+        filled.attr("class", "chart-filled");
+      }
+    }));
   }
 
   createTimeChart() {
-
     var limit = 240 * 1,
         duration:any = 750,
         now:any = new Date(Date.now() - duration)
@@ -98,7 +90,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         .range([0, width])
 
     var y:any = d3.scale.linear()
-        .domain([0, 170])
+        .domain([0, 200])
         .range([height, 0])
 
     /*var line = d3.svg.line()
@@ -152,7 +144,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
         for (var name in groups) {
             var group = groups[name]
             //group.data.push(group.value) // Real values arrive at irregular intervals
-            group.data.push(this.avg)
+            group.data.push(this.rpm)
             //group.path.attr('d', line)
             group.area.attr('d', area)
         }
@@ -184,7 +176,7 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
     tick();
   }
 
-  createNeedle() {
+  createNeedle(el) {
 
   var barWidth, chart, chartInset, degToRad, repaintGauge,
       height, margin, numSections, padRad, percToDeg, percToRad,
@@ -197,8 +189,6 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
 
     // Orientation of gauge:
     totalPercent = .75;
-
-    let el = d3.select('.chart-gauge');
 
     margin = {
       top: 0,
@@ -313,7 +303,9 @@ export class ActivityComponent extends SubscriptionComponent implements OnInit {
 
     })();
 
-    this.needle = new Needle(chart);
-    this.needle.render();
+    let needle = new Needle(chart);
+    needle.render();
+
+    return needle;
   }
 }

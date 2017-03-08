@@ -336,6 +336,12 @@ header.iot-connector-header.mdl-layout__header {
 {
   fill: rgb(32, 158, 145);
 }
+
+.chart-filled-error
+{
+  fill: rgb(255, 0, 0) !important;
+}
+
 .chart-empty
 {
   fill: #dedede;
