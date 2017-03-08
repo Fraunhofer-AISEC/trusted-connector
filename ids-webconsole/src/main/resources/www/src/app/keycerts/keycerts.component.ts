@@ -8,7 +8,7 @@ import { CertificateService } from './keycert.service';
 
 @Component({
   selector: 'keycerts',
-  templateUrl: 'keycerts.component.html'
+  templateUrl: './keycerts.component.html'
 })
 export class KeycertsComponent implements OnInit{
   title = 'Current Certificates';

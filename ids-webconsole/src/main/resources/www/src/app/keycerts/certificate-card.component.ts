@@ -6,6 +6,10 @@ import { CertificateService } from './keycert.service';
 
 import {PrettifyPipe} from '../prettify-json.pipe';
 
+import {ConfirmService} from "../confirm/confirm.service";
+
+declare var componentHandler:any;
+
 @Component({
   selector: 'certificate-card',
   template: `
@@ -22,34 +26,34 @@ import {PrettifyPipe} from '../prettify-json.pipe';
 		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" href="#"><i class="material-icons">open_in_browser</i></a>
 			</span>
 		    <span class="mdl-list__item-secondary-content">
-		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" href="#"><i class="material-icons">delete</i></a>
+		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete(certificate.alias, certificate.file)"><i class="material-icons">delete</i></a>
 		    </span>
 	    </li>
     </ul>
   `
 })
+
 export class CertificateCardComponent implements OnInit {
   @Input() certificates: Certificate[];
   @Input() trusts: Certificate[];
   result: string;
 
-  constructor(private certificateService: CertificateService) {}
+  constructor(private certificateService: CertificateService, private confirmService:ConfirmService) {}
 
   ngOnInit(): void {
+    componentHandler.upgradeDom();
   }
 
   onDelete(alias: string, file: string): void {
-    this.certificateService.deleteEntry(alias, file).subscribe(result => {
-       this.result = result;
-       console.log("result:" + this.result + "==");
-
-       if(result.toString() == 'true') {
-          location.reload();
-        } else {
-           console.log("ok: " + result);
-        }
-     });
-
-
+    this.confirmService.activate("Are you sure that you want to delete this item?")
+        .then(res => {
+          if (res == true) {
+            this.certificateService.deleteEntry(alias, file).subscribe(result => {
+             this.result = result;
+             if(result.toString() === "true") {
+                location.reload();
+              }
+           });
+    }});
   }
 }
