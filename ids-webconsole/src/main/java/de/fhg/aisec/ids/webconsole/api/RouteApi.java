@@ -61,8 +61,8 @@ public class RouteApi {
 		// Create response
 		for (CamelContext cCtx : camelO) {
 			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
-				// ---- HACK FOR DEMO: REMOVE SPECIFIC NAMES FROM ROUTE LIST 
-				if (rd.getId().contains(" LED ")) {
+				// ---- HACK FOR DEMO: REMOVE SPECIFIC NAMES FROM ROUTE LIST
+				if (rd.getId().contains("LED")) {
 					continue;
 				}
 				// ---- END OF HACK
@@ -109,7 +109,7 @@ public class RouteApi {
 				route.put("messages", "0");
 			}
 		} else {
-			route.put("messages", "0");			
+			route.put("messages", "0");
 		}
 
 		return route;
