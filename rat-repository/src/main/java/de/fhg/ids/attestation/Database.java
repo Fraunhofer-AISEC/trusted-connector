@@ -10,8 +10,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +35,7 @@ public class Database {
 	private Statement statement;
 	private String sql;
 	private String zero = "0000000000000000000000000000000000000000000000000000000000000000";
-	private String all =  "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+	private String fff =  "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
  
 	public Database() {
 		makeJDBCConnection();
@@ -52,19 +54,31 @@ public class Database {
 	}
 
 	private void insertDefaultConfiguration() throws SQLException {
-		Pcr[] basic = new Pcr[10];
-		Pcr[] advanced = new Pcr[24];
-		for (int i = 0; i < 10 ; i++) {
+		int numBasic = 11;
+		int numAdvanced = 17;
+		int numAll = 24;
+		
+		Pcr[] basic = new Pcr[numBasic];
+		Pcr[] advanced = new Pcr[numAdvanced];
+		Pcr[] all = new Pcr[numAll];
+		
+		for (int i = 0; i < numBasic ; i++) {
 			basic[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
 		}
-		for (int i = 0; i < 17 ; i++) {
+		for (int i = 0; i < numAdvanced ; i++) {
 			advanced[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
 		}
-		for (int i = 17; i < 24 ; i++) {
-			advanced[i] = Pcr.newBuilder().setNumber(i).setValue(all).build();
+		for (int i = 0; i < numAll ; i++) {
+			if(i < numAdvanced || i == numAll - 1) {
+				all[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
+			}
+			else {
+				all[i] = Pcr.newBuilder().setNumber(i).setValue(fff).build();
+			}
 		}		
-    	this.insertConfiguration("default_one", "BASIC", basic);
-    	this.insertConfiguration("default_two", "ADVANCED", advanced);
+    	this.insertConfiguration("default_basic", "BASIC", basic);
+    	this.insertConfiguration("default_advanced", "ADVANCED", advanced);
+    	this.insertConfiguration("default_all", "ALL", all);
 	}
 
 	private void makeJDBCConnection() {
@@ -148,33 +162,39 @@ public class Database {
 		}
 	}
 	
-	private Configuration[] getConfigurationIdBy(Pcr value) throws SQLException {
-		Configuration c = null;
+	private Long[] getConfigurationIdSingle(Pcr value) throws SQLException {
 		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
 		pStatement = connection.prepareStatement(sql);
 		pStatement.setInt(1, value.getNumber());
 		pStatement.setString(2, value.getValue());
 		ResultSet rs = pStatement.executeQuery();
-		List<Configuration> ids = new LinkedList<Configuration>();
+		List<Long> result = new ArrayList<Long>();
 		while(rs.next()) {
-			ids.add(this.getConfiguration(rs.getLong("ID")));
+			result.add(rs.getLong("ID"));
 		}
  		pStatement.close();
  		rs.close();
- 		return ids.toArray(new Configuration[ids.size()]);
+ 		return result.toArray(new Long[result.size()]);
 	}
 	
-	public Configuration[] getConfigurationsIdBy(Pcr[] values) throws SQLException {
-		Configuration[] start = this.getConfigurationIdBy(values[0]);
+	public Long[] getConfigurationId(Pcr[] values) throws SQLException {
+		Long[] start = this.getConfigurationIdSingle(values[0]);
 		values = Arrays.copyOfRange(values, 1, values.length);
+		LOG.debug("\n#################################\nstart:" + Arrays.toString(start) + "\n#################################\n");
 		for(Pcr value: values){
-			Configuration[] current = this.getConfigurationIdBy(value);
-			Set<Configuration> s1 = new HashSet<Configuration>(Arrays.asList(current));
-			Set<Configuration> s2 = new HashSet<Configuration>(Arrays.asList(start));
-			s1.retainAll(s2);
-			start = s1.toArray(new Configuration[s1.size()]);
+			Long[] now =  this.getConfigurationIdSingle(value);
+			LOG.debug("\n#################################\nnow:" + Arrays.toString(now) +"\n#################################\n");
+			start = intersection(start, now);
 		}
+		LOG.debug("\n#################################\nfinal:" + Arrays.toString(start) +"\n#################################\n");
 		return start;
+	}
+	
+	private Long[] intersection(Long[] a, Long[] b){
+		Collection listOne = new ArrayList(Arrays.asList(a));
+		Collection listTwo = new ArrayList(Arrays.asList(b));
+		listOne.retainAll(listTwo);
+		return (Long[]) listOne.toArray(new Long[listOne.size()]);
 	}
 
 	public boolean deleteConfigurationById(long id) throws SQLException {
@@ -248,17 +268,14 @@ public class Database {
 	
 	public boolean checkMessage(ConnectorMessage message) {
 		try {
-			Set<Long> names = new HashSet<Long>();
-			Configuration[] validConfigs = this.getConfigurationIdBy(message.getAttestationRepositoryRequest().getPcrValues(0));
-			this.computeHashSet(validConfigs, names, true);
-			for(int i = 2; i < message.getAttestationRepositoryRequest().getPcrValuesCount(); i++) {
-				this.computeHashSet(this.getConfigurationIdBy(message.getAttestationRepositoryRequest().getPcrValues(i)), names, false);
-			}
-			if(names.size() == 1) {
+			List<Pcr> pcrList = message.getAttestationRepositoryRequest().getPcrValuesList();
+			Pcr[] values = pcrList.toArray(new Pcr[pcrList.size()]);
+			Long[] configIds = this.getConfigurationId(values);
+			if(configIds.length == 1) {
 				return true;
 			}
-			if(names.size() > 1) {
-				LOG.debug("found more than one matching configuration o.O this shouldn't happen !");
+			else if(configIds.length > 1) {
+				LOG.debug("found more than one matching configuration ("+configIds.toString()+") =( this shouldn't happen !");
 				return true;
 			}
 			else {
@@ -269,52 +286,4 @@ public class Database {
 			return false;
 		}
 	}
-	
-	private void computeHashSet(Configuration[] configs, Set<Long> ids, boolean initial) {
-		if(initial) {
-			for (Configuration c: configs) {
-				ids.add(c.getId());
-			}
-		}
-		else {
-			for (Configuration c: configs) {
-				if (ids.contains(c.getId())) {
-					continue;
-				} else {
-					ids.remove(c.getId());
-				}
-			}
-		}
-	}
-	
-	private static <T> List<T> intersectArrays(List<T> a, List<T> b) {
-	    Map<T, Long> intersectionCountMap = new HashMap<T, Long>((((Math.max(a.size(), b.size()))*4)/3)+1);
-	    List<T> returnList = new LinkedList<T>();
-	    for(T element : a) {
-	        Long count = intersectionCountMap.get(element);
-	        if (count != null) {
-	            intersectionCountMap.put(element, count+1);
-	        } else {
-	            intersectionCountMap.put(element, 1L);
-	        }
-	    }
-	    for (T element : b) {
-	        Long count = intersectionCountMap.get(element);
-	        if (count != null) {
-	            intersectionCountMap.put(element, count-1);
-	        } else {
-	            intersectionCountMap.put(element, -1L);
-	        }            
-	    }
-	    for(T key : intersectionCountMap.keySet()) {
-	        Long count = intersectionCountMap.get(key);
-	        if (count != null && count != 0) {
-	            for(long i = 0; i < count; i++) {
-	                returnList.add(key);
-	            }
-	        }
-	    }
-	    return returnList;
-	}
-	
 }
