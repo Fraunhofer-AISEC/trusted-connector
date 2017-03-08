@@ -39,10 +39,10 @@ export class RouteService {
   stopRoute(routeId: string) {
       // -------------------------------------------------------------------------------
       // Hardcoded just for demonstration
-      if(routeId == "OPC-UA: Read Engine RPM (Trusted)") {
+      if(routeId == "OPC-UA: Read Engine Current (Trusted)") {
         this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/1/power/false', {}).subscribe();
         this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/3/power/false', {}).subscribe();
-        this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/4/power/false', {}).subscribe();        
+        this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/4/power/false', {}).subscribe();
       } else if(routeId == "OPC-UA: Read Engine Current (Untrusted)") {
         this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/2/power/false', {}).subscribe();
       }
@@ -57,7 +57,7 @@ export class RouteService {
   startRoute(routeId: string) {
     // -------------------------------------------------------------------------------
     // Hardcoded just for demonstration
-    if(routeId == "OPC-UA: Read Engine RPM (Trusted)") {
+    if(routeId == "OPC-UA: Read Engine Current (Trusted)") {
       this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/1/power/true', {}).subscribe();
       this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/3/power/true', {}).subscribe();
       this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/4/power/true', {}).subscribe();
