@@ -29,22 +29,23 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   private svg;
   private locations;
   power: number = 0;
-  private isError : any;
+  private errorTimer : any;
   
   constructor(private sensorService: SensorService) {
     super();
   }
 
   ngOnInit(): void {
+      /*
       this.subscriptions.push(this.sensorService.getPowerObservable().subscribe(power => {
       this.power = power;
 
       if(this.power >= 60) {
-       this.errorOn(this);
+        this.errorOn(this);
       } else {
         this.errorOff(this);
       }
-    }));    
+    })); */    
   }
 
   loadMap(): Promise<any> {
@@ -139,23 +140,33 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   
   /* Show warning in map (Hannover blinking red) */
   errorOn(self : NetworkGraphComponent) : any {  
-    self.isError = setInterval(function() {
+    self.errorTimer = setInterval(function() {  // DAFUQ?? setInterval does not guarantee a time interval? Does anyone have the address of the JavaScript inventor, please?
       self.showErrorLocation(self, self.locations.slice(0,1));
       setTimeout(function(){
         self.hideErrorLocation();
-      },1000);
-    }, 2000);        
+      },800);
+    }, 1200);        
   }
   
   errorOff(self : NetworkGraphComponent) : any {
-    if (self.isError) {
-      self.isError.clearInterval();
+    // Stop interval timer
+    if (self.errorTimer) {
+      clearInterval(self.errorTimer);      
     }
+    
+    // Fade out
+    this.hideErrorLocation();    
   }
 
   /* Shows red warning dot */
   showErrorLocation(self, location :any) : any {
-    this.svg.append('g')
+    // Do not duplicate element
+    if (!this.svg.select('#warning_location').empty()) {
+      return;
+    }
+    
+    // Add element to SVG and fade in
+    let errLoc = this.svg.append('g')
         .attr('class', 'hexagons')
         .attr("id", "warning_location")
       .selectAll('path')
@@ -163,15 +174,24 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
       .enter().append('path')
         .attr('d', function(d: any) { return self.hexbin.hexagon(12); })
         .attr('transform', function(d: any) { return 'translate(' + d.x + ',' + d.y + ')'; })
-        .style('fill', '#f44336');
+        .style('fill', '#f44336');    
+    
+    errLoc.style("opacity", 0)
+           .transition().duration(400).style("opacity", 1)   
+    
     return;
   }
   
   /* Hide red warning dot */
   hideErrorLocation() : any {
-    let muh = this.svg.select('#warning_location');
-    console.log("deleteing " + muh);
-    muh.remove();
+    let errLoc = this.svg.select('#warning_location');
+    errLoc
+      .style("opacity", 1)
+      .transition().duration(400).style("opacity", 0)
+      .each("end", function() {
+         // Remove element from SVG
+        errLoc.remove();     
+      });
   }
   
 }
