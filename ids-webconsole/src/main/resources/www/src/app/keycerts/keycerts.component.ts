@@ -31,6 +31,27 @@ export class KeycertsComponent implements OnInit{
 
   ngOnInit(): void {
     this.changeTitle.emit('Certificates');
+    this.file = null;
   }
+
+  file: File;
+  onChange(event: EventTarget) {
+        let eventObj: MSInputMethodContext = <MSInputMethodContext> event;
+        let target: HTMLInputElement = <HTMLInputElement> eventObj.target;
+        let files: FileList = target.files;
+        if (this.file === null) {
+        this.file = files[0];
+        console.log(this.file);
+      }
+
+    }
+
+    onUpload() {
+      if (this.file !== null) {
+        this.certificateService.uploadCert(this.file);
+        this.file = null;
+          console.log("file is uploaded");
+      }
+    }
 
 }

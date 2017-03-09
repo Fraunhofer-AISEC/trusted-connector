@@ -1,5 +1,10 @@
 <div class="mdl-grid">
 
+	<div class="card-dark mdl-card mdl-cell mdl-cell--12-col  mdl-shadow--2dp">
+     <input type="file" class="form-control" name="documents" (change)="onChange($event)">
+      <button (click)="onUpload()">Upload</button>
+  </div>
+
  	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
 	  <div class="mdl-card__title">
         <h2 class="mdl-card__title-text">My Identities</h2>
