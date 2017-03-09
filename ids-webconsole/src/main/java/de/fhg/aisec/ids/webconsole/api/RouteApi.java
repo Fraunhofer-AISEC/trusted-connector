@@ -62,7 +62,7 @@ public class RouteApi {
 		for (CamelContext cCtx : camelO) {
 			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
 				// ---- HACK FOR DEMO: REMOVE SPECIFIC NAMES FROM ROUTE LIST
-				if (rd.getId().contains("LED")) {
+				if (!rd.getId().contains("Engine")) {
 					continue;
 				}
 				// ---- END OF HACK
