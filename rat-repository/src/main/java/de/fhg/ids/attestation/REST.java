@@ -133,7 +133,7 @@ public class REST {
 	public Response addConfiguration(Configuration config) {
 		this.setCORSHeader(response, corsEnabled);
 		try {
-			Configuration[] existing = this.db.getConfigurationsIdBy(config.getValues());
+			Long[] existing = this.db.getConfigurationId(config.getValues());
 			if(existing.length == 0) {
 				long key = this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
 				return Response.ok(key).build();

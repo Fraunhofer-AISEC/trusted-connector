@@ -290,7 +290,7 @@
 							<images>
 								<image>
 									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</name>
-									<alias>tpm2dsim</alias>
+									<alias>tpm2d</alias>
 									<run>
 										<volumes>
 											<bind>
@@ -341,7 +341,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>remove-tpm2dsim</id>
+						<id>remove-tpm2d</id>
 						<phase>post-integration-test</phase>
 						<goals>
 							<goal>stop</goal>
@@ -350,7 +350,7 @@
 						<configuration>
 							<images>
 								<image>
-									<name>tpm2dsim</name>
+									<name>tpm2d</name>
 								</image>
 							</images>
 						</configuration>
@@ -390,7 +390,7 @@
 					</execution>
 					<execution>
 						<id>tag-image</id>
-						<phase>deploy</phase>
+						<phase>install</phase>
 						<goals>
 							<goal>tag</goal>
 						</goals>
@@ -401,7 +401,7 @@
 					</execution>
 					<execution>
 						<id>push-image</id>
-						<phase>deploy</phase>
+						<phase>install</phase>
 						<goals>
 							<goal>push</goal>
 						</goals>
