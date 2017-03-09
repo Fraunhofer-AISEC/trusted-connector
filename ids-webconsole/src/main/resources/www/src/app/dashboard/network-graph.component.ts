@@ -8,6 +8,10 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/observable/timer';
 
+import { SensorService } from '../sensor/sensor.service';
+import { SubscriptionComponent } from '../subscription.component';
+
+
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
 import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
@@ -18,13 +22,29 @@ import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
   styleUrls:  ['./network-graph.component.css'],  // Include CSS classes for land and countries
   encapsulation: ViewEncapsulation.None   // Generate global CSS classes
 })
-export class NetworkGraphComponent implements OnInit, AfterViewInit {
+export class NetworkGraphComponent extends SubscriptionComponent implements OnInit, AfterViewInit {
   private chart: any;
-
-  constructor() {
+  private color;
+  private hexbin;
+  private svg;
+  private locations;
+  power: number = 0;
+  private isError : any;
+  
+  constructor(private sensorService: SensorService) {
+    super();
   }
 
   ngOnInit(): void {
+      this.subscriptions.push(this.sensorService.getPowerObservable().subscribe(power => {
+      this.power = power;
+
+      if(this.power >= 60) {
+       this.errorOn(this);
+      } else {
+        this.errorOff(this);
+      }
+    }));    
   }
 
   loadMap(): Promise<any> {
@@ -58,12 +78,14 @@ export class NetworkGraphComponent implements OnInit, AfterViewInit {
     let width = 960,
         height = 400;
 
-    let color = d3.time.scale<string>()
+    let self = this;
+    
+    this.color = d3.time.scale<string>()
         .domain([2000, 100000])
         .range(['#004D40', '#4DB6AC'])
         .interpolate(d3.interpolateLab);
-
-    let hexbin = d3_hexbin.default()
+    
+    this.hexbin = d3_hexbin.default()
         .size([width, height])
         .radius(10);
 
@@ -79,41 +101,77 @@ export class NetworkGraphComponent implements OnInit, AfterViewInit {
     let path = d3.geo.path()
         .projection(projection);
 
-    let svg = d3.select('#network-graph')
+    this.svg = d3.select('#network-graph')
         .append('svg')
         .attr('width', width)
         .attr('height', height);
 
     let map = await this.loadMap();
-    let locations = await this.loadLocations();
+    this.locations = await this.loadLocations();
 
-    locations.forEach(function(d) {
+    this.locations.forEach(function(d) {
       let p = projection(d);
       d[0] = p[0], d[1] = p[1];
     });
 
     // Draw Europe
-    svg.append('path')
+    this.svg.append('path')
         .datum(topojson.feature(map, map.objects.europe))
         .attr('class', 'land')
         .attr('d', path);
 
     // Draw countries
-    svg.append('path')
+    this.svg.append('path')
         .datum(topojson.mesh(map, map.objects.europe, function(a, b) { return a !== b; }))
         .attr('class', 'states')
         .attr('d', path);
 
     // Create hexagons of hexbins
-    svg.append('g')
+    this.svg.append('g')
         .attr('class', 'hexagons')
       .selectAll('path')
-        .data(hexbin(locations).sort(function(a, b) { return b.length - a.length; }))
+        .data(self.hexbin(self.locations).sort(function(a, b) { return b.length - a.length; }))
       .enter().append('path')
-        .attr('d', function(d: any) { return hexbin.hexagon(radius(d.length)); })
+        .attr('d', function(d: any) { return self.hexbin.hexagon(radius(d.length)); })
         .attr('transform', function(d: any) { return 'translate(' + d.x + ',' + d.y + ')'; })
-        .style('fill', function(d: any) { return (color as any)(d3.mean(d, (d: any) => { return +parseInt(d.date); })); });
-
+        .style('fill', function(d: any) { return (self.color as any)(d3.mean(d, (d: any) => { return +parseInt(d.date); })); });    
+  }
+  
+  /* Show warning in map (Hannover blinking red) */
+  errorOn(self : NetworkGraphComponent) : any {  
+    self.isError = setInterval(function() {
+      self.showErrorLocation(self, self.locations.slice(0,1));
+      setTimeout(function(){
+        self.hideErrorLocation();
+      },1000);
+    }, 2000);        
+  }
+  
+  errorOff(self : NetworkGraphComponent) : any {
+    if (self.isError) {
+      self.isError.clearInterval();
+    }
   }
 
+  /* Shows red warning dot */
+  showErrorLocation(self, location :any) : any {
+    this.svg.append('g')
+        .attr('class', 'hexagons')
+        .attr("id", "warning_location")
+      .selectAll('path')
+        .data(self.hexbin(location).sort(function(a, b) { return b.length - a.length; }))
+      .enter().append('path')
+        .attr('d', function(d: any) { return self.hexbin.hexagon(12); })
+        .attr('transform', function(d: any) { return 'translate(' + d.x + ',' + d.y + ')'; })
+        .style('fill', '#f44336');
+    return;
+  }
+  
+  /* Hide red warning dot */
+  hideErrorLocation() : any {
+    let muh = this.svg.select('#warning_location');
+    console.log("deleteing " + muh);
+    muh.remove();
+  }
+  
 }
