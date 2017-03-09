@@ -81,10 +81,37 @@ $ docker-compose --version
 
 ## Run a Local Instance of the Connector
 
-Download the compose definition:
+Paste the following contents into a file `docker-compose.yaml`. Please note that the docker registry used by that file requires you to log in before using `docker login ...` with your username and password.
 
-``` bash
-$ curl ... < URL of docker-compose file > ...
+``` yaml
+version: '2'
+services:
+
+  # Image for TPM simulator
+  ids-tpm2dsim:
+    image: app-store.isst.fraunhofer.de:5000/ids/tpm2dsim
+    volumes:
+      - ./camel-ids/socket/:/data/cml/tpm2d/communication/
+    command: /tpm2d/cml-tpm2d
+
+  # Image for TPM trusted third party (RAT repository)
+  ids-ttpsim:      
+    image: app-store.isst.fraunhofer.de:5000/ids/ttpsim
+    ports:
+      - "31337:31337"
+
+  # Image for core platform, gets docker control socket mounted into the image
+  ids-core:
+    image: app-store.isst.fraunhofer.de:5000/ids/core-platform
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./camel-ids/socket/:/var/run/tpm2d/
+    ports:
+      - "5005:5005"
+      - "9292:9292"
+      - "8181:8181"
+
 ```
 
 Start the connector:
