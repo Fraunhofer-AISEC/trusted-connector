@@ -26,6 +26,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
 
   constructor(private titleService: Title, private appService: AppService, private routeService: RouteService) {
     super();
+    this.titleService.setTitle('Overview');
 
     this.appService.getApps().subscribe(apps => {
       this.apps = apps;
