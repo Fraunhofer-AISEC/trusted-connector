@@ -27,7 +27,7 @@
     </parent>    
 
     <properties>
-        <karaf.version>4.0.5</karaf.version>
+        <karaf.version>4.0.6</karaf.version>
         <camel.version>2.18.0</camel.version>
         <activemq.version>5.13.3</activemq.version>
         <cxf.version>3.1.5</cxf.version>
@@ -71,7 +71,7 @@
                  and features will installed into the system directory.
 
                  This imports the standard Karaf features described at
-                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/4.0.5/standard-4.0.5-features.xml
+                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/4.0.6/standard-4.0.6-features.xml
                  These features are installed in the karaf-maven-plugin configuration
             -->
             <groupId>org.apache.karaf.features</groupId>
@@ -93,8 +93,8 @@
             <version>${karaf.version}</version>
             <!-- <scope>runtime</scope> -->
         </dependency>
-        
-        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.5/spring-4.0.5-features.xml
+
+        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.6/spring-4.0.6-features.xml
              Needed for Camel feature dependency
         -->
         <dependency>
@@ -397,7 +397,7 @@
         							<pluginExecutionFilter>
         								<groupId>org.apache.karaf.tooling</groupId>
         								<artifactId>karaf-maven-plugin</artifactId>
-        								<versionRange>[4.0.5,)</versionRange>
+        								<versionRange>[4.0.6,)</versionRange>
         								<goals>
         									<goal>assembly</goal>
         								</goals>
