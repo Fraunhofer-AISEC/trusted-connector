@@ -20,7 +20,7 @@ import org.apache.camel.model.ToDefinition;
 
 /**
  * Converts Camel route definition into a graphviz visualization.
- * 
+ *
  * Shameless plug from http://gitbucket.ms123.org/simpl4/simpl4-src/blob/cea07cf9be5abe751692965c291a2ac4b838dc89/bundles/camel/src/main/java/org/ms123/common/camel/view/RouteDotGenerator.java
  *
  */
@@ -59,10 +59,10 @@ public class CamelRouteToDot {
 
 	/**
 	 * Prints graphviz code of a single RouteDefinition to the provided PrintWriter.
-	 * 
+	 *
 	 * @param writer
 	 * @param route
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
 		writer.write("digraph { rankdir=LR; size=\"4.5,5.5\" \n\n");
@@ -71,10 +71,10 @@ public class CamelRouteToDot {
 		for (FromDefinition input : inputs) {
 			printRoute(writer, route, input);
 		}
-		
+
 		writer.write("\n}");
 	}
-	
+
 	protected void printRoute(Writer writer, final RouteDefinition route, FromDefinition input) throws IOException {
 		NodeData nodeData = getNodeData(input);
 
@@ -141,9 +141,9 @@ public class CamelRouteToDot {
 			writer.write(" [\n");
 			writer.write("label = \"" + data.label.substring(0,Math.min(10, data.label.length())) + (data.label.length()>10?"..":"") + "\"\n");
 			writer.write("tooltip = \"" + data.tooltip + "\"\n");
-			if (data.url != null) {
+			/*if (data.url != null) {
 				writer.write("URL = \"" + data.url + "\"\n");
-			}
+			}*/
 
 			String image = data.image;
 			if (image != null) {

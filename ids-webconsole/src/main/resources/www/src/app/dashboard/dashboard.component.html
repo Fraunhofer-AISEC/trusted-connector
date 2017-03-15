@@ -67,12 +67,15 @@
     </div>
   </div>
 
-  <div class="activity-card mdl-card mdl-cell mdl-cell--12-col" *ngIf="isRouteActive">
+  <div class="activity-card mdl-card mdl-cell mdl-cell--12-col">
     <div class="mdl-card__title">
       <h2 class="mdl-card__title-text">Live Preview: Trusted Sensor</h2>
     </div>
-    <div class="mdl-card__supporting-text">
+    <div class="mdl-card__supporting-text" *ngIf="isRouteActive">
       <activity></activity>
+    </div>
+    <div class="mdl-card__supporting-text" *ngIf="!isRouteActive">
+      Please activate trusted route for live preview.
     </div>
   </div>
 
