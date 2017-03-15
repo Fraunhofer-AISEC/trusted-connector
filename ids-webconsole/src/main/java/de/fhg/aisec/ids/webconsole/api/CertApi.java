@@ -38,6 +38,8 @@ import com.google.gson.GsonBuilder;
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+
 import javax.activation.DataHandler;
 import javax.servlet.http.HttpServletRequest;
 
@@ -117,47 +119,40 @@ public class CertApi {
 		}
 	}
 	
-	@POST
+	
+    
+    @POST
     @Path("/upload")
+    @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFile(List<Attachment> attachments,@Context HttpServletRequest request) {
-        for(Attachment attr : attachments) {
-            DataHandler handler = attr.getDataHandler();
-            try {
-                InputStream stream = handler.getInputStream();
-                MultivaluedMap map = attr.getHeaders();
-                OutputStream out = new FileOutputStream(new File("/tmp/temp/" + getFileName(map)));
- 
-                int read = 0;
-                byte[] bytes = new byte[1024];
-                while ((read = stream.read(bytes)) != -1) {
-                    out.write(bytes, 0, read);
-                }
-                stream.close();
-                out.flush();
-                out.close();
-            } catch(Exception e) {
-              e.printStackTrace();
-            }
-        }
- 
-        return Response.ok("file uploaded").build();
-    }
- 
-    private String getFileName(MultivaluedMap<String, String> header) {
- 
-        String[] contentDisposition = header.getFirst("Content-Disposition").split(";");
- 
-        for (String filename : contentDisposition) {
-            if ((filename.trim().startsWith("filename"))) {
- 
-                String[] name = filename.split("=");
- 
-                String finalFileName = name[1].trim().replaceAll("\"", "");
-                return finalFileName;
-            }
-        }
-        return "unknown";
+    public String uploadFile(@Multipart("keystoresFile") String keystoresFile, 
+     @Multipart("upfile") Attachment attachment) throws IOException {
+
+       String filename = attachment.getContentDisposition().getParameter("filename");
+
+       String tempPath = "/tmp/temp/" + filename;
+       OutputStream out = new FileOutputStream(new File(tempPath));
+        
+       InputStream in = attachment.getObject(InputStream.class);
+
+       int read = 0;
+       byte[] bytes = new byte[1024];
+       while ((read = in.read(bytes)) != -1) {
+           out.write(bytes, 0, read);
+       }
+       in.close();
+       out.flush();
+       out.close();
+       
+       if(addKey(keystoresFile, tempPath)) {
+    	   return "certification has been uploaded to " + keystoresFile;
+       }
+       
+       return "Error: certification has NOT been uploaded to " + keystoresFile;
+    }      
+    
+    private boolean addKey(String dest, String filePath) {
+    	return true;
     }
     
 	public class Cert {

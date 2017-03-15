@@ -1,10 +1,5 @@
 <div class="mdl-grid">
 
-	<div class="card-dark mdl-card mdl-cell mdl-cell--12-col  mdl-shadow--2dp">
-     <input type="file" class="form-control" name="documents" (change)="onChange($event)">
-      <button (click)="onUpload()">Upload</button>
-  </div>
-
  	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
 	  <div class="mdl-card__title">
         <h2 class="mdl-card__title-text">My Identities</h2>
@@ -13,7 +8,7 @@
 	 	<certificate-card [certificates]="identities"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" (click)="onUploadCertificate('client-keystore')">
       		<i class="material-icons">add</i>
     	</button>
       </div>
@@ -28,7 +23,7 @@
 	 	<certificate-card [certificates]="certificates"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" (click)="onUploadCertificate('client-truststore')" >
       		<i class="material-icons">add</i>
     	</button>
       </div>
