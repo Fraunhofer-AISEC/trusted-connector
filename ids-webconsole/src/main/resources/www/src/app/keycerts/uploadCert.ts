@@ -5,6 +5,7 @@ import { BSModalContext } from 'angular2-modal/plugins/bootstrap';
 
 import { CertificateService } from './keycert.service';
 
+
 export class CustomModalContext extends BSModalContext {
   public keystoreDestination: string;
 }

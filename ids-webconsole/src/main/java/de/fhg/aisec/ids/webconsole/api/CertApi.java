@@ -21,10 +21,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +35,7 @@ import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
-import javax.activation.DataHandler;
-import javax.servlet.http.HttpServletRequest;
-
 import java.io.*;
-import java.util.List;
  
 /**
  * REST API interface for managing certificates in the connector.
