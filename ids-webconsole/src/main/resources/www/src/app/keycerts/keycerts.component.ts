@@ -37,24 +37,14 @@ export class KeycertsComponent implements OnInit{
 
   ngOnInit(): void {
     this.changeTitle.emit('Certificates');
-    this.file = null;
   }
-
-  file: File;
-  onChange(event: EventTarget) {
-        let eventObj: MSInputMethodContext = <MSInputMethodContext> event;
-        let target: HTMLInputElement = <HTMLInputElement> eventObj.target;
-        let files: FileList = target.files;
-        if (this.file === null) {
-        this.file = files[0];
-        console.log(this.file);
-      }
-
-    }
 
   onUploadCertificate(fileName: string) {
     const dialog = this.modal.open(FileWindow,  overlayConfigFactory({ keystoreDestination: fileName }, BSModalContext));
-
-
+    dialog.then((resultPromise) => {
+        resultPromise.result.then((result) => {
+          location.reload();
+      }, () => console.log(' Error In uploading the file'));
+    });
   }
 }

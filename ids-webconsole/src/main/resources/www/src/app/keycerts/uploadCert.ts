@@ -9,10 +9,7 @@ export class CustomModalContext extends BSModalContext {
   public keystoreDestination: string;
 }
 
-/**
- * A Sample of how simple it is to create a new window, with its own injects.
- */
- @Component({
+@Component({
    selector: 'modal-content',
    styles: [`
          .custom-modal-container {
@@ -33,16 +30,15 @@ export class CustomModalContext extends BSModalContext {
            margin-top: 15px;
          }
      `],
-   //TODO: [ngClass] here on purpose, no real use, just to show how to workaround ng2 issue #4330.
-   // Remove when solved.
-   /* tslint:disable */ template: `
+
+  template: `
    <div class="container-fluid custom-modal-container">
        <div class="row custom-modal-header">
            <div class="col-sm-12">
                <h1>Please select a certification</h1>
            </div>
        </div>
-       <input type="file" class="form-control" name="documents" (change)="onChange($event)">
+       <input type="file" class="form-control" accept=".crt,.der,.cer" name="documents" (change)="onChange($event)">
 
        <div class=" custom-modal-button">
           <div class="btn-toolbar btn-block pull-right">
@@ -56,11 +52,9 @@ export class FileWindow implements ModalComponent<CustomModalContext> {
   context: CustomModalContext;
   file: File;
 
-
   constructor(public dialog: DialogRef<CustomModalContext>, private certificateService: CertificateService) {
     this.context = dialog.context;
     this.context.size = 'lg';
-
   }
 
   ngOnInit(): void {
@@ -93,5 +87,4 @@ export class FileWindow implements ModalComponent<CustomModalContext> {
         let files: FileList = target.files;
         this.file = files[0];
     }
-
 }

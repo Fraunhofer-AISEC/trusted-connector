@@ -1,16 +1,13 @@
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -130,7 +127,7 @@ public class CertApi {
 
        String filename = attachment.getContentDisposition().getParameter("filename");
 
-       String tempPath = "/tmp/temp/" + filename;
+       String tempPath = "/tmp/" + filename;
        OutputStream out = new FileOutputStream(new File(tempPath));
         
        InputStream in = attachment.getObject(InputStream.class);
@@ -152,7 +149,57 @@ public class CertApi {
     }      
     
     private boolean addKey(String dest, String filePath) {
-    	return true;
+    	
+    	boolean returnResult = false;
+    	CertificateFactory cf;
+    	InputStream certstream;
+    	String alias = filePath.substring(filePath.lastIndexOf("/")+1, filePath.length()).replaceFirst("[.][^.]+$", "");
+    	File keyStoreFile = getKeystoreFile(dest + ".jks");
+		try {
+			cf = CertificateFactory.getInstance("X.509");
+			certstream = fullStream(filePath);
+			Certificate certs =  cf.generateCertificate(certstream);
+			
+			FileInputStream fis = new FileInputStream(keyStoreFile);
+			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+			String password = KEYSTORE_PWD;
+		    keystore.load(fis, password.toCharArray());
+		    
+		    // Add the certificate
+		    keystore.setCertificateEntry(alias, certs);
+		    
+		    FileOutputStream fos = new FileOutputStream(keyStoreFile);
+	        keystore.store(fos, password.toCharArray());
+	        
+		    returnResult = true;
+		    
+		    try {
+		    	File file = new File(filePath);
+		    	file.delete();
+		    } catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		} catch ( CertificateException |
+				KeyStoreException | 
+				NoSuchAlgorithmException | 
+				IOException e) {
+			e.printStackTrace();
+			returnResult = false;
+		}
+		
+    
+    	return returnResult;
+    }
+    
+    private static InputStream fullStream ( String fname ) throws IOException {
+        FileInputStream fis = new FileInputStream(fname);
+        DataInputStream dis = new DataInputStream(fis);
+        byte[] bytes = new byte[dis.available()];
+        dis.readFully(bytes);
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        dis.close();
+        return bais;
     }
     
 	public class Cert {
