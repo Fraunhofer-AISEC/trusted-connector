@@ -43,7 +43,9 @@ export class KeycertsComponent implements OnInit{
     const dialog = this.modal.open(FileWindow,  overlayConfigFactory({ keystoreDestination: fileName }, BSModalContext));
     dialog.then((resultPromise) => {
         resultPromise.result.then((result) => {
-          location.reload();
+          if(result != null && result == true) {
+            location.reload();
+          }
       }, () => console.log(' Error In uploading the file'));
     });
   }

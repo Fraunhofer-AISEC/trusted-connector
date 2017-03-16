@@ -74,12 +74,12 @@ export class FileWindow implements ModalComponent<CustomModalContext> {
     if (this.file !== null) {
       this.certificateService.uploadCert(this.file, this.context.keystoreDestination);
       this.file = null;
-      this.dialog.close();
+      this.dialog.close(true);
     }
   }
 
   onCancel() {
-    this.dialog.close();
+    this.dialog.close(false);
   }
 
   onChange(event: EventTarget) {
