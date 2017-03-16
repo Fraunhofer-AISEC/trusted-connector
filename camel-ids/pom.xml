@@ -167,6 +167,15 @@
 			<artifactId>api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+
+		<!--  OSGi compendium services (e.g., Preferences) -->
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.compendium</artifactId>
+			<version>5.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- 
 		<dependency> 
 			<groupId>org.json</groupId> 
