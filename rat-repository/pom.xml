@@ -163,13 +163,12 @@
 					<mainClass>${start.class}</mainClass>
 				</configuration>
 			</plugin>
-			<!--
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.4.13</version>
 				<configuration>
-					<imageName>ids/ttpsim:latest</imageName>
+					<imageName>ids/ttpsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 					<resources>
 						<resource>
@@ -194,8 +193,8 @@
 							<goal>tag</goal>
 						</goals>
 						<configuration>
-							<image>ids/ttpsim:latest</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</newName>
+							<image>ids/ttpsim:develop</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</newName>
 						</configuration>
 					</execution>
 					<execution>
@@ -205,12 +204,11 @@
 							<goal>push</goal>
 						</goals>
 						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</imageName>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			-->
 		</plugins>
 	</build>
 </project>
