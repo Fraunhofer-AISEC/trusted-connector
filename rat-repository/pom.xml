@@ -163,6 +163,7 @@
 					<mainClass>${start.class}</mainClass>
 				</configuration>
 			</plugin>
+			<!--
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
@@ -209,7 +210,7 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			-->
 		</plugins>
 	</build>
 </project>
