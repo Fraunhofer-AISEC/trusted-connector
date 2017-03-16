@@ -1,6 +1,6 @@
 package de.fhg.camel.ids.server;
 
-public class WebsocketConstants {
+public interface WebsocketConstants {
 
 	public static final String CONNECTION_KEY = "websocket.connectionKey";
 	public static final String SEND_TO_ALL    = "websocket.sendToAll";

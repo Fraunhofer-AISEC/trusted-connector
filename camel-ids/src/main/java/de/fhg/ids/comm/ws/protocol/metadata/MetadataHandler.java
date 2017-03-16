@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//import org.json.JSONArray;
-//import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +11,6 @@ import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-//import de.fhg.ids.docker.Docker;
 
 public class MetadataHandler {
 	protected static Logger LOG = LoggerFactory.getLogger(MetadataHandler.class);

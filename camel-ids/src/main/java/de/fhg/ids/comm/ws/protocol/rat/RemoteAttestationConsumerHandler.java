@@ -78,8 +78,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			lastError = "could not write to/read from " + socket;
-			LOG.debug(lastError);
-			e.printStackTrace();
+			LOG.warn(lastError, e);
 		}
 	}
 	

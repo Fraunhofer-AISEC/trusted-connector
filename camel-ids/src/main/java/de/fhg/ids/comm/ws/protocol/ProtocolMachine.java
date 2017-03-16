@@ -131,9 +131,8 @@ public class ProtocolMachine {
 			/* Add listener to log state transitions*/
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState());});
 			
-		} catch (URISyntaxException e1) {
-			LOG.debug("TTP URI Syntax exception");
-			e1.printStackTrace();
+		} catch (URISyntaxException e) {
+			LOG.error("TTP URI Syntax exception", e);
 		}
 		
 		/* Run the FSM */
@@ -209,9 +208,8 @@ public class ProtocolMachine {
 			/* Add listener to log state transitions*/
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
 			
-		} catch (URISyntaxException e1) {
-			LOG.debug("TTP URI Syntax exception");
-			e1.printStackTrace();
+		} catch (URISyntaxException e) {
+			LOG.error("TTP URI Syntax exception", e);
 		}
 
 		/* Run the FSM */
@@ -240,11 +238,10 @@ public class ProtocolMachine {
 
 	private boolean replyProto(MessageLite message) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		//System.out.println("message to send: \n" + message.toString() + "\n");
 		try {
 			message.writeTo(bos);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		return reply(bos.toByteArray());
 	}
@@ -257,15 +254,15 @@ public class ProtocolMachine {
 	 */
 	private boolean reply(byte[] text) {
 		if (ws!=null) {
-			//System.out.println("Sending out " + text.length + " bytes");
+			LOG.trace("Sending out " + text.length + " bytes");
 			ws.sendMessage(text);
 		} else if (sess!=null) {
 			try {
 				ByteBuffer bb = ByteBuffer.wrap(text);
-				//System.out.println("Sending out ByteBuffer with " + bb.array().length + " bytes");
+				LOG.trace("Sending out ByteBuffer with " + bb.array().length + " bytes");
 				sess.getRemote().sendBytes(bb);
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 			}
 		}
 		return true;

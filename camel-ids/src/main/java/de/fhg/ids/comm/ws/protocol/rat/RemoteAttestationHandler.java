@@ -159,20 +159,17 @@ public class RemoteAttestationHandler {
 					}
 				} catch (Exception ex) {
 					lastError = "error: could not create a TPMT_SIGNATURE from bytes \""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\":" + ex.getMessage();
-					LOG.debug(lastError);
-					ex.printStackTrace();
+					LOG.warn(lastError, ex);
 					return false;
 				}
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
 				lastError = "error: could not convert from TPM2B_PUBLIC (\""+tpm2bPublickey+"\") to a PublicKey :" + ex.getMessage();
-				LOG.debug(lastError);
-				ex.printStackTrace();
+				LOG.warn(lastError, ex);
 				return false;
 			}
 		} catch (Exception ex) {
 			lastError = "error: could not create a TPM2B_PUBLIC (\""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\") :" + ex.getMessage();
-			LOG.debug(lastError);
-			ex.printStackTrace();
+			LOG.warn(lastError, ex);
 			return false;
 		}
 	}

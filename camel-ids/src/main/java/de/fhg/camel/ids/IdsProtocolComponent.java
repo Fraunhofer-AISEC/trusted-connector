@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class IdsProtocolComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(IdsProtocolComponent.class);
-	private static Optional<PreferencesService> prefService;
+	private static Optional<PreferencesService> prefService = Optional.empty();
 
 	@Reference(name = "camel-ids.config.service",
             service = PreferencesService.class,

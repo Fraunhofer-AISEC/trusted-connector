@@ -10,8 +10,7 @@ import java.util.Base64;
 import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
 
 public class PublicKeyConverter {
-	
-	private final String openSSLfixedHeader = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA";
+	private static final String openSslFixedHeader = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA";
 	private byte[] midHeader = new byte[2];
 	private byte[] exponent = new byte[3];
 	private PublicKey key = null;
@@ -37,7 +36,7 @@ public class PublicKeyConverter {
 	}
 	
 	private byte[] setFixedHeader() {
-		return Base64.getDecoder().decode(openSSLfixedHeader);
+		return Base64.getDecoder().decode(openSslFixedHeader);
 	}
 	
 	private byte[] setMidHeader(byte[] key) {
