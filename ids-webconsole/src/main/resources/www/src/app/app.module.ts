@@ -20,6 +20,7 @@ import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component
 import { RouteCardComponent } from './routes/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
+import { SettingsService } from './ids/settings.service';
 
 
 import { KeycertsComponent } from './keycerts/keycerts.component';
@@ -75,7 +76,7 @@ import 'material-design-lite';
   providers: [
     AppService,
     RouteService,
-    IdsComponent,
+    SettingsService,
     CertificateService,
     ConfirmService,
     Title
