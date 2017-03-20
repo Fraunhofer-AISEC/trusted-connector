@@ -13,41 +13,45 @@ export class CustomModalContext extends BSModalContext {
 @Component({
    selector: 'modal-content',
    styles: [`
-         .custom-modal-container {
-             padding: 15px;
-         }
-
-         .custom-modal-header {
-             background-color: #219161;
-             color: #fff;
-             -webkit-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-             -moz-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-             box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-             margin-top: -15px;
-             margin-bottom: 40px;
-         }
-
-         .custom-modal-button {
-           margin-top: 15px;
-         }
+	   .mdl-button--file input {
+		  cursor: pointer;
+		  height: 100%;
+		  right: 0;
+		  opacity: 0;
+		  position: absolute;
+		  top: 0;
+		  width: 300px;
+		  z-index: 4;
+		}
+		.mdl-textfield--file .mdl-textfield__input {
+		  box-sizing: border-box;
+		  width: calc(100% - 32px);
+		}
+		.mdl-textfield--file .mdl-button--file {
+		  right: 0;
+		}
      `],
 
   template: `
-   <div class="container-fluid custom-modal-container">
-       <div class="row custom-modal-header">
-           <div class="col-sm-12">
-               <h1>Please select a certification</h1>
-           </div>
-       </div>
-       <input type="file" class="form-control" accept=".crt,.der,.cer" name="documents" (change)="onChange($event)">
+   <dialog class="mdl-dialog">
+		<h4 class="mdl-dialog__title">Install Certificate</h4>
+		<div class="mdl-dialog__content">
+			<!-- <input type="file" accept=".crt,.der,.cer" name="documents" (change)="onChange($event)"> -->
 
-       <div class=" custom-modal-button">
-          <div class="btn-toolbar btn-block pull-right">
-          <button class="btn btn-primary pull-right" (click)="onUpload()">Upload</button>
-          <button class="btn btn-primary pull-right" (click)="onCancel()">Cancel</button>
-          </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--file">
+      <input class="mdl-textfield__input" placeholder="No file chosen" type="text" id="document.text" readonly />
+      <div class="mdl-button mdl-button--icon mdl-button--file">
+        <i class="material-icons">attach_file</i>
+        <input type="file"  accept=".crt,.der,.cer" name="documents" id="documents" (change)="onChange($event)" />
       </div>
-   </div>`
+    </div>
+
+			<div class="mdl-dialog__actions">
+      			<button class="mdl-button" (click)="onUpload()">Upload</button>
+      			<button class="mdl-button close" (click)="onCancel()">Cancel</button>
+			</div>
+      </div>
+   </dialog>`
  })
 export class FileWindow implements ModalComponent<CustomModalContext> {
   context: CustomModalContext;
@@ -87,5 +91,6 @@ export class FileWindow implements ModalComponent<CustomModalContext> {
         let target: HTMLInputElement = <HTMLInputElement> eventObj.target;
         let files: FileList = target.files;
         this.file = files[0];
+        (<HTMLInputElement>document.getElementById("document.text")).value=this.file.name;
     }
 }
