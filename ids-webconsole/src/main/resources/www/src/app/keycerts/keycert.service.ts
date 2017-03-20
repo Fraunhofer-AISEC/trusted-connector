@@ -42,7 +42,7 @@ export class CertificateService {
                });
   }
 
-  uploadCert(inFile: File) {
+  uploadCert(inFile: File, keystoresFile: string) {
   /*  let formData:FormData = new FormData();
         formData.append('degree_attachment', inFile, inFile.name);
         let headers = new Headers();
@@ -59,7 +59,10 @@ export class CertificateService {
         return new Promise((resolve, reject) => {
            var formData: any = new FormData();
            var xhr = new XMLHttpRequest();
-           formData.append("uploads", inFile, inFile.name);
+           //formData.append("uploads", inFile, inFile.name);
+
+           formData.append("upfile", inFile, inFile.name);
+           formData.append("keystoresFile", keystoresFile);
 
            xhr.onreadystatechange = function () {
                if (xhr.readyState == 4) {

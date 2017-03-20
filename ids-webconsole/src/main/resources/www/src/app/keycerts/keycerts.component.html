@@ -8,7 +8,7 @@
 	 	<certificate-card [certificates]="identities"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" (click)="onUploadCertificate('client-keystore')">
       		<i class="material-icons">add</i>
     	</button>
       </div>
@@ -23,7 +23,7 @@
 	 	<certificate-card [certificates]="certificates"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" (click)="onUploadCertificate('client-truststore')" >
       		<i class="material-icons">add</i>
     	</button>
       </div>
