@@ -21,6 +21,10 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.model.RouteDefinition;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +118,7 @@ public class RouteApi {
 				try {
 					cCtx.startRoute(id);
 				} catch(Exception e) {
+					LOG.warn(e.getMessage(), e);
 					return "{\"status\": \"bad\"}";
 				}
 			}
@@ -140,8 +145,9 @@ public class RouteApi {
 			if(rt != null)
 			{
 				try {
-					cCtx.suspendRoute(id);//stopRoute(id);
+					cCtx.suspendRoute(id);
 				} catch(Exception e) {
+					LOG.warn(e.getMessage(), e);
 					return "{\"status\": \"bad\"}";
 				}
 			}
@@ -212,13 +218,24 @@ public class RouteApi {
 	@GET
 	@Path("/list_components")
 	public String listComponents() {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
 		List<String> componentNames = new ArrayList<>();
-		
-		for (CamelContext cCtx : camelO) {
-			componentNames.addAll(cCtx.getComponentNames());
+		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
+		if (bCtx == null) {		
+			return new GsonBuilder().create().toJson(componentNames);			
 		}
-		
+
+		try {
+			ServiceReference<?>[] services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null);
+			for (ServiceReference<?> sr : services) {
+				String bundle = sr.getBundle().getHeaders().get("Bundle-Name");
+				if (bundle==null || "".equals(bundle)) {
+					bundle = sr.getBundle().getSymbolicName();
+				}
+				componentNames.add(bundle);
+			}
+		} catch (InvalidSyntaxException e) {
+			LOG.error(e.getMessage(), e);
+		}
 		return new GsonBuilder().create().toJson(componentNames);			
 	}
 
