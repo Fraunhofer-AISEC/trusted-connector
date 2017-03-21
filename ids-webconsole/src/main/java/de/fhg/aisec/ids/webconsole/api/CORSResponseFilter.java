@@ -23,8 +23,6 @@ public class CORSResponseFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         MultivaluedMap<String, Object> headers = responseContext.getHeaders();
-
-        System.out.println("Filtering");
         
         // allow AJAX from everywhere
         headers.add("Access-Control-Allow-Origin", "*");

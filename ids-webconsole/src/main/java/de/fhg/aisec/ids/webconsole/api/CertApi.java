@@ -74,7 +74,7 @@ public class CertApi {
 		try {
 			this.doGenKeyPair(UUID.randomUUID().toString(), spec, "RSA", 2048, "SHA1WITHRSA", getKeystoreFile("client-keystore.jks"));
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 		return "OK";
@@ -93,18 +93,17 @@ public class CertApi {
 		}
 		
 		File keyStoreFile = getKeystoreFile(file + ".jks");
-		try (FileInputStream fis = new FileInputStream(keyStoreFile);){
+		try (	FileInputStream fis = new FileInputStream(keyStoreFile);
+		        FileOutputStream fos = new FileOutputStream(keyStoreFile);	){
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 			String password = KEYSTORE_PWD;
 	        keystore.load(fis, password.toCharArray());
 	        
 	        keystore.deleteEntry(alias);
 	        
-	        FileOutputStream fos = new FileOutputStream(keyStoreFile);
 	        keystore.store(fos, password.toCharArray());
 	        return new Gson().toJson(true);
-		} catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException
-				| IOException e) {
+		} catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException	| IOException e) {
 			LOG.error(e.getMessage(), e);
 			return new Gson().toJson(e.getMessage());
 		}
@@ -126,7 +125,7 @@ public class CertApi {
         
        InputStream in = attachment.getObject(InputStream.class);
 
-       int read = 0;
+       int read;
        byte[] bytes = new byte[1024];
        while ((read = in.read(bytes)) != -1) {
            out.write(bytes, 0, read);
@@ -136,10 +135,10 @@ public class CertApi {
        out.close();
        
        if(addKey(keystoresFile, tempPath)) {
-    	   return "certification has been uploaded to " + keystoresFile;
+    	   return "Certificate has been uploaded to " + keystoresFile;
        }
        
-       return "Error: certification has NOT been uploaded to " + keystoresFile;
+       return "Error: certificate has NOT been uploaded to " + keystoresFile;
     }      
     
     private boolean addKey(String dest, String filePath) {
@@ -147,42 +146,33 @@ public class CertApi {
     	boolean returnResult = false;
     	CertificateFactory cf;
     	InputStream certstream;
-    	String alias = filePath.substring(filePath.lastIndexOf("/")+1, filePath.length()).replaceFirst("[.][^.]+$", "");
+    	String alias = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length()).replaceFirst("[.][^.]+$", "");
     	File keyStoreFile = getKeystoreFile(dest + ".jks");
 		try {
 			cf = CertificateFactory.getInstance("X.509");
 			certstream = fullStream(filePath);
 			Certificate certs =  cf.generateCertificate(certstream);
 			
-			FileInputStream fis = new FileInputStream(keyStoreFile);
-			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-			String password = KEYSTORE_PWD;
-		    keystore.load(fis, password.toCharArray());
+			try (	FileInputStream fis = new FileInputStream(keyStoreFile);
+				    FileOutputStream fos = new FileOutputStream(keyStoreFile);	) {
+				KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+				String password = KEYSTORE_PWD;
+			    keystore.load(fis, password.toCharArray());
 		    
-		    // Add the certificate
-		    keystore.setCertificateEntry(alias, certs);
-		    
-		    FileOutputStream fos = new FileOutputStream(keyStoreFile);
-	        keystore.store(fos, password.toCharArray());
+			    // Add the certificate
+			    keystore.setCertificateEntry(alias, certs);
+			    
+		        keystore.store(fos, password.toCharArray());
+			}
 	        
 		    returnResult = true;
 		    
-		    try {
-		    	File file = new File(filePath);
-		    	file.delete();
-		    } catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-		} catch ( CertificateException |
-				KeyStoreException | 
-				NoSuchAlgorithmException | 
-				IOException e) {
-			e.printStackTrace();
+	    	File file = new File(filePath);
+	    	returnResult &= file.delete();
+		} catch ( CertificateException | KeyStoreException | NoSuchAlgorithmException |	IOException e) {
+			LOG.error(e.getMessage(), e);
 			returnResult = false;
 		}
-		
-    
     	return returnResult;
     }
     
@@ -278,48 +268,49 @@ public class CertApi {
 				cert.alias = alias;
 				cert.file = keystoreFile.getName().replaceFirst("[.][^.]+$", "");
 				cert.certificate = certificate.toString();
-				if (certificate instanceof X509Certificate) {
-					X509Certificate c = (X509Certificate) certificate;
-					cert.subjectAltNames = c.getSubjectAlternativeNames();
-					// Get distinguished name
-					String dn = c.getSubjectX500Principal().getName();
-					for (String entry : dn.split(",")) {
-						String[] kv = entry.split("=");
-						switch (kv[0]) {
-						case "CN":
-							cert.subjectCN = kv[1];
-							break;
-						case "OU":
-							cert.subjectOU = kv[1];
-							break;
-						case "O":
-							cert.subjectO = kv[1];
-							break;
-						case "L":
-							cert.subjectL = kv[1];
-							break;
-						case "S":
-							cert.subjectS = kv[1];
-							break;
-						case "C":
-							cert.subjectC = kv[1];
-							break;
-						default:
-							break;
-						}
+				if (!(certificate instanceof X509Certificate)) {
+					continue;
+				}
+
+				X509Certificate c = (X509Certificate) certificate;
+				cert.subjectAltNames = c.getSubjectAlternativeNames();
+				// Get distinguished name
+				String dn = c.getSubjectX500Principal().getName();
+				for (String entry : dn.split(",")) {
+					String[] kv = entry.split("=");
+					switch (kv[0]) {
+					case "CN":
+						cert.subjectCN = kv[1];
+						break;
+					case "OU":
+						cert.subjectOU = kv[1];
+						break;
+					case "O":
+						cert.subjectO = kv[1];
+						break;
+					case "L":
+						cert.subjectL = kv[1];
+						break;
+					case "S":
+						cert.subjectS = kv[1];
+						break;
+					case "C":
+						cert.subjectC = kv[1];
+						break;
+					default:
+						break;
 					}
 				}
 
 				certs.add(cert);
 			}
-		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException
-				| IOException e) {
+		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
 		return certs;
 	}
 
-	private void doGenKeyPair(String alias, IdentitySpec spec, String keyAlgName, int keysize, String sigAlgName, File keyStoreFile) throws Exception {
+	private void doGenKeyPair(String alias, IdentitySpec spec, String keyAlgName, int keysize, String sigAlgName, File keyStoreFile) throws InterruptedException, IOException {
 		/* 
 		 * We call the keystore binary programmatically. This is portable, in contrast to creating key pairs and 
 		 * self-signed certificates programmatically, which depends on internal classes of the JVM, such as 
@@ -327,8 +318,10 @@ public class CertApi {
 		 */		
 		String[] keytoolCmd = new String[] {"keytool", 
 				"-genkey", 
-				"-alias",  "replserver", 
-				"-keyalg", "RSA", 
+				"-alias",  alias,
+				"-keyalg", keyAlgName,
+				"-keysize", Integer.toString(keysize),
+				"-sigalg", sigAlgName,
 				"-keystore", keyStoreFile.getAbsolutePath(), 
 				"-dname", "CN="+spec.cn+", OU="+spec.ou+", O="+spec.o+", L="+spec.l+", S="+ spec.s + ", C="+spec.c, 
 				"-storepass", KEYSTORE_PWD, 
