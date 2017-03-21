@@ -1,13 +1,13 @@
 package de.fhg.aisec.dfpolicy;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,11 @@ import org.slf4j.LoggerFactory;
  * Policy decision point for deciding data flow control policies.
  *
  */
+
+
+
 public class PDP {
+	
     private static final Logger LOG = LoggerFactory.getLogger(PDP.class);
 	private static PDP instance;
 	
@@ -23,19 +27,29 @@ public class PDP {
 	private List<AllowRule> allowRules = new ArrayList<>();
 	private List<LabelingRule> removeLabelRules = new ArrayList<>();
 	private RuleParser rp;
+	String rulefile;
 
 	/* Private C'tor, do not call */
 	private PDP() {
-    	//If we didn't load the rules yet, do it now
+    	
+		rp = new RuleParser();
+		// Look for the rulefile in the different directories
 		try {
-			rp = new RuleParser();
-			rp.loadRules(new File("deploy/rules"));
-			this.labelRules = rp.getLabelRules();
-			this.allowRules = rp.getAllowRules();
-			this.removeLabelRules = rp.getRemoveLabelRules();			
-		} catch (IOException e) {
-			LOG.error(e.getMessage(), e);
+			rulefile = System.getProperty("karaf.base") + "/deploy/de.fhg.dfcontrol.rules.cfg";
+			LOG.info("Loading rules from " + rulefile + "...");
+			rp.loadRules(new File(rulefile));
+		}catch (IOException e){
+			try {
+				rulefile = System.getProperty("karaf.etc") + "/de.fhg.dfcontrol.rules.cfg";
+				LOG.info("Couldn't load rules, trying to load from " + rulefile);
+				rp.loadRules(new File(rulefile));
+			} catch (IOException ex) {
+				LOG.error("Unable to load rulefile");
+			}
 		}
+		this.labelRules = rp.getLabelRules();
+		this.allowRules = rp.getAllowRules();
+		this.removeLabelRules = rp.getRemoveLabelRules();			
 	}
 	
 	/**
@@ -177,7 +191,7 @@ public class PDP {
 		}
 		
 		LOG.info("label_set: " + labelsToFind);
-		LOG.info("check_labels " + String.join(",",exchangeLabels));
+		LOG.info("check_labels: " + String.join(",",exchangeLabels));
 		
 		return exchangeLabels.parallelStream().anyMatch(exLabel -> labelsToFind.contains(exLabel));
 		
