@@ -17,12 +17,6 @@
 </bean>
 <bean id="hdfs2" class="org.apache.camel.component.hdfs2.HdfsComponent" depends-on="hdfsOsgiHelper" />
 
-
-<!-- Completely unrelated, but this is how the contents of META-INF/MANIFEST.MF within the bundle that is created from this file can be changed -->
-<manifest xmlns="http://karaf.apache.org/xmlns/deployer/blueprint/v1.0.0">
-    Import-Package=org.apache.hadoop.hdfs
-  </manifest>
-
 <!-- Class name refers to our Interceptor -->
   <bean id="dataFlowControl" class="de.fhg.aisec.dfpolicy.PEP"/>
     <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
@@ -33,17 +27,13 @@
                             <property name="password" value="karaf"/>
             </bean>
         </property>
-</bean>
+	</bean>
 
 
   <camelContext id="camel" xmlns="http://camel.apache.org/schema/blueprint">
       <route id="activemq-activemq-route">
               	<from uri="sjms:queue:input"/>
         	<to uri="sjms:queue:process" />
-      </route>
-      <route id="activemq-hdfs-route">
-              	<from uri="sjms:queue:process"/>
-        	<to uri="hdfs2://192.168.56.101/tmp/Outbox/test1.txt" />
       </route>
   </camelContext>
 

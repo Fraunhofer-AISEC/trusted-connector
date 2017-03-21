@@ -22,7 +22,7 @@ public class PDP {
 	
     private static final Logger LOG = LoggerFactory.getLogger(PDP.class);
 	private static PDP instance;
-	
+	private static final String RULE_FILE_NAME = "de.fhg.dfcontrol.rules.cfg";
 	private List<LabelingRule> labelRules = new ArrayList<>();
 	private List<AllowRule> allowRules = new ArrayList<>();
 	private List<LabelingRule> removeLabelRules = new ArrayList<>();
@@ -30,21 +30,21 @@ public class PDP {
 	String rulefile;
 
 	/* Private C'tor, do not call */
-	private PDP() {
-    	
+	private PDP() {    	
 		rp = new RuleParser();
-		// Look for the rulefile in the different directories
+		
+		// Look for the rulefile in different directories
 		try {
-			rulefile = System.getProperty("karaf.base") + "/deploy/de.fhg.dfcontrol.rules.cfg";
+			rulefile = System.getProperty("karaf.base") + "/deploy/" + RULE_FILE_NAME;
 			LOG.info("Loading rules from " + rulefile + "...");
 			rp.loadRules(new File(rulefile));
-		}catch (IOException e){
+		} catch (IOException e) {
 			try {
-				rulefile = System.getProperty("karaf.etc") + "/de.fhg.dfcontrol.rules.cfg";
+				rulefile = System.getProperty("karaf.etc") + "/" +  RULE_FILE_NAME;
 				LOG.info("Couldn't load rules, trying to load from " + rulefile);
 				rp.loadRules(new File(rulefile));
 			} catch (IOException ex) {
-				LOG.error("Unable to load rulefile");
+				LOG.error("Unable to load rulefile", ex);
 			}
 		}
 		this.labelRules = rp.getLabelRules();
