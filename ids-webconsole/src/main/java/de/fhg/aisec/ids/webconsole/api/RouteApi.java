@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
@@ -17,6 +18,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.model.RouteDefinition;
 import org.slf4j.Logger;
@@ -118,7 +120,6 @@ public class RouteApi {
 		}
 		
 		return "{\"status\": \"ok\"}";	
-		
 	}
 	
 	/**
@@ -203,5 +204,39 @@ public class RouteApi {
 			LOG.error(e.getMessage(), e);
 		}
 		return result;
+	}
+
+	/**
+	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
+	 */
+	@GET
+	@Path("/list_components")
+	public String listComponents() {
+		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+		List<String> componentNames = new ArrayList<>();
+		
+		for (CamelContext cCtx : camelO) {
+			componentNames.addAll(cCtx.getComponentNames());
+		}
+		
+		return new GsonBuilder().create().toJson(componentNames);			
+	}
+
+	/**
+	 * Retrieve list of currently installed endpoints (aka URIs to/from which routes exist)
+	 */
+	@GET
+	@Path("/list_endpoints")
+	public String listEndpoints() {
+		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+		Map<String,String> epURIs = new HashMap<>();
+		
+		for (CamelContext cCtx : camelO) {			
+			for (Entry<String, Endpoint> e:cCtx.getEndpointMap().entrySet()) {
+				epURIs.put(e.getKey(), e.getValue().getEndpointUri());
+			}
+		}
+		
+		return new GsonBuilder().create().toJson(epURIs);			
 	}
 }
