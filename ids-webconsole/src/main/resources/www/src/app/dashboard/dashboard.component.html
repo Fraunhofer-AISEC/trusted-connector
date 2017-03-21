@@ -10,9 +10,24 @@
 
   <div class="mdl-card mdl-cell mdl-cell--6-col">
     <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Trust Status</h2>
+      <h2 class="mdl-card__title-text">Supported Components</h2>
     </div>
     <div class="mdl-card__supporting-text">
+	  <ul class="mdl-list">
+	  	<li class="mdl-list__item mdl-list__item--two-line" *ngFor="let camelComponent of camelComponents">
+	  		<span class="mdl-list__item-primary-content">
+	  			<span>{{camelComponent.name}}</span>
+	  			<span class="mdl-list__item-sub-title">{{camelComponent.description}}</span>
+  			</span>
+	  	</li>
+	  </ul>
+	</div>
+  </div>
+
+  <div class="mdl-card mdl-cell mdl-cell--6-col">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">Trust Status</h2>
+    </div>
 	  <ul class="mdl-list">
 		  <li class="mdl-list__item mdl-list__item--two-line">
 		    <span class="mdl-list__item-primary-content">
@@ -40,7 +55,7 @@
 		      <span class="mdl-list__item-sub-title">Collects trusted evidence of the current software stack</span>
 		    </span>
 		    <span class="mdl-list__item-secondary-content">
-		      <span class="mdl-list__item-secondary-info">23 PCRs good</span>
+		      <span class="mdl-list__item-secondary-info">24 PCRs good</span>
 		      <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--teal">done</i></a>
 		    </span>
 		  </li>
@@ -57,23 +72,3 @@
 	  </ul>
     </div>
   </div>
-  
-  <div class="mdl-card mdl-cell mdl-cell--6-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Active Connections</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-      <network-graph></network-graph>
-    </div>
-  </div>
-
-  <div class="mdl-card mdl-cell mdl-cell--6-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Sensor Activity</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-      <activity></activity>
-    </div>
-  </div>
-
-</div>

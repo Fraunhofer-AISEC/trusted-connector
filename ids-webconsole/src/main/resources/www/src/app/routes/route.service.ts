@@ -38,4 +38,18 @@ export class RouteService {
                    return response.json() as string;
                  });
   }
+
+  listEndpoints() {
+      return this.http.get(environment.apiURL + '/routes/list_endpoints')
+                 .map(response => {
+                   return response.json() as string[];
+                 });
+  }
+
+  listComponents() {
+      return this.http.get(environment.apiURL + '/routes/list_components')
+                 .map(response => {
+                   return response.json() as string[];
+                 });
+  }
 }

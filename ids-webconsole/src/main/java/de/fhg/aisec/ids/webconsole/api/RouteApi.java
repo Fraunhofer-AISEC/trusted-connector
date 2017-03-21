@@ -218,7 +218,7 @@ public class RouteApi {
 	@GET
 	@Path("/list_components")
 	public String listComponents() {
-		List<String> componentNames = new ArrayList<>();
+		List<Map<String, String>> componentNames = new ArrayList<>();
 		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
 		if (bCtx == null) {		
 			return new GsonBuilder().create().toJson(componentNames);			
@@ -231,7 +231,14 @@ public class RouteApi {
 				if (bundle==null || "".equals(bundle)) {
 					bundle = sr.getBundle().getSymbolicName();
 				}
-				componentNames.add(bundle);
+				String description = sr.getBundle().getHeaders().get("Bundle-Description");
+				if (description==null) {
+					description = "";
+				}
+				Map<String, String> component = new HashMap<>();
+				component.put("name", bundle);
+				component.put("description", description);
+				componentNames.add(component);
 			}
 		} catch (InvalidSyntaxException e) {
 			LOG.error(e.getMessage(), e);

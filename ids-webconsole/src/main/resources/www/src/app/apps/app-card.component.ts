@@ -52,7 +52,7 @@ export class AppCardComponent implements OnInit {
   @Input() app: App;
   statusIcon: string;
 
-  constructor( private routeService: AppService) {}
+  constructor( private appService: AppService) {}
   ngOnInit(): void {
     if(this.app.status.indexOf("Up") >= 0) {
       this.statusIcon = "stop";
@@ -65,13 +65,13 @@ export class AppCardComponent implements OnInit {
   onToggle(containerId: string): void {
     if(this.statusIcon == "play_arrow") {
       this.statusIcon = "stop";
-      this.routeService.startApp(containerId).subscribe(result => {
+      this.appService.startApp(containerId).subscribe(result => {
       });
       this.app.status = 'Up 1 seconds ago';
 
     } else {
       this.statusIcon = "play_arrow";
-      this.routeService.stopApp(containerId).subscribe(result => {
+      this.appService.stopApp(containerId).subscribe(result => {
       });
        this.app.status = 'Exited(0) 1 seconds ago';
     }
