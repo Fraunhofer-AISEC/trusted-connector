@@ -282,7 +282,7 @@
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
-					<autoPull>always</autoPull>
+					<autoPull>once</autoPull>
 				</configuration>
 				<executions>
 					<execution>
@@ -381,7 +381,7 @@
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<configuration>
-					<imageName>ids/tpm2dsim:develop</imageName>
+					<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 				</configuration>
 				<version>0.4.13</version>
@@ -395,7 +395,7 @@
 					</execution>
 					<execution>
 						<id>tag-image</id>
-						<phase>install</phase>
+						<phase>deploy</phase>
 						<goals>
 							<goal>tag</goal>
 						</goals>
@@ -406,7 +406,7 @@
 					</execution>
 					<execution>
 						<id>push-image</id>
-						<phase>install</phase>
+						<phase>deploy</phase>
 						<goals>
 							<goal>push</goal>
 						</goals>
