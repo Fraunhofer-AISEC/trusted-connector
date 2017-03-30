@@ -168,7 +168,7 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.4.13</version>
 				<configuration>
-					<imageName>ids/ttpsim:develop</imageName>
+					<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 					<resources>
 						<resource>
@@ -188,7 +188,7 @@
 					</execution>
 					<execution>
 						<id>tag-image</id>
-						<phase>install</phase>
+						<phase>deploy</phase>
 						<goals>
 							<goal>tag</goal>
 						</goals>
@@ -199,7 +199,7 @@
 					</execution>
 					<execution>
 						<id>push-image</id>
-						<phase>install</phase>
+						<phase>deploy</phase>
 						<goals>
 							<goal>push</goal>
 						</goals>
