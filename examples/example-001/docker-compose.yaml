@@ -1,0 +1,32 @@
+version: '2'
+services:
+
+  # Image for TPM simulator
+  ids-tpm2dsim:
+    image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim
+    volumes:
+      - ./camel-ids/socket/:/data/cml/tpm2d/communication/
+    command: /tpm2d/cml-tpm2d
+
+  # Image for TPM trusted third party (RAT repository)
+  ids-ttpsim:      
+    image: registry.netsec.aisec.fraunhofer.de/ids/ttpsim
+    ports:
+      - "31337:31337"
+
+  # Image for core platform, gets docker control socket mounted into the image
+  ids-core:
+    image: registry.netsec.aisec.fraunhofer.de/ids/core-platform
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./camel-ids/socket/:/var/run/tpm2d/
+    ports:
+      - "5005:5005"
+      - "9292:9292"
+      - "8181:8181"
+
+  # Data App (MQTT consumer, publishes over REST)
+  ids-app:
+    image: ids-example-001-client
+

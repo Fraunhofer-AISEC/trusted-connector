@@ -1,0 +1,44 @@
+version: '2'
+services:
+
+  # Image for TPM simulator
+  consumer-tpm2dsim:
+    image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim
+    volumes:
+      - ./camel-ids/socket/:/data/cml/tpm2d/communication/
+    command: /tpm2d/cml-tpm2d
+
+  # Image for core platform, gets docker control socket and route definition mounted into the image
+  consumer-core:
+    image: registry.netsec.aisec.fraunhofer.de/ids/core-platform
+    hostname: consumer-core
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./camel-ids/consumersocket/:/var/run/tpm2d/
+      - ./consumer-server-keystore.jks:/root/etc/server-keystore.jks
+      - ./consumer-server-truststore.jks:/root/etc/server-truststore.jks
+      - ./ids-example-001-consumer.xml:/root/deploy/ids-example-001-consumer.xml
+    ports:
+      - "5005:5005"
+      - "9292:9292"
+      - "8181:8181"
+    environment:
+      - "HOST=consumer-core"
+    networks:
+      - ids-wide
+      - consumer-internal
+
+  # Data App (REST consumer, displays web page)
+  consumer-app:
+    image: ids-example-001-server
+    ports:
+      - "8081:8081"
+    networks:
+      - consumer-internal
+
+networks:
+  ids-wide:
+    driver: bridge
+  consumer-internal:
+    driver: bridge
