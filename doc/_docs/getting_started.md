@@ -7,7 +7,7 @@ permalink: /docs/getting_started/
 
 In this part you will learn how to download an instance of the Connector and start it on your computer.
 
-> Note that this tutorial will use the docker-based variant of the Connector. The alternative based on trustX comprises a whole OS stack, including the kernel.
+> Note that this tutorial will use the (less secure) docker-based variant of the Connector. The alternative based on trustm3 comprises a whole OS stack, including the kernel.
 
 
 ## Prerequisites
@@ -79,9 +79,9 @@ Confirm it works
 $ docker-compose --version
 ```
 
-## Run a Local Instance of the Connector
+## Run a Local Connector Instance
 
-Paste the following contents into a file `docker-compose.yaml`. Please note that the docker registry used by that file requires you to log in before using `docker login ...` with your username and password.
+Paste the following content into a file `docker-compose.yaml`. Please note that the docker registry used by that file requires you to log in before using `docker login ...` with your username and password.
 
 ``` yaml
 version: '2'
