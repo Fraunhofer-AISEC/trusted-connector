@@ -17,10 +17,10 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
     public saved: boolean;
     public events: any[] = [];
 
-    constructor(private _fb: FormBuilder, private _http: Http, private _settingsService: SettingsService) { 
+    constructor(private _fb: FormBuilder, private _http: Http, private _settingsService: SettingsService) {
     	this.saved = true;
     }
-    
+
     canDeactivate(target: IdsComponent){
     	return target.saved; // false stops navigation, true continue navigation
   	}
@@ -33,29 +33,29 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
             ttp_port: ['', [<any>Validators.required, <any>Validators.maxLength(5)]],
         });
 
-        // subscribe to form changes  
+        // subscribe to form changes
         this.subcribeToFormChanges();
-        
+
 		this._settingsService.getSettings().subscribe(
        		response => {
            		this.data = response;
            		(<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
-           		(<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
-           		(<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
+           		(<FormControl>this.myForm.controls['http_host']).setValue(this.data.http_host, { onlySelf: true });
+           		(<FormControl>this.myForm.controls['http_port']).setValue(this.data.http_port, { onlySelf: true });
        		}
-    	);        
-                        
+    	);
+
     }
-    
+
     ngAfterViewInit() {
         // Update single value
         (<FormControl>this.myForm.controls['broker_url']).patchValue('ids://localhost', { onlySelf: true });
     }
 
-    subcribeToFormChanges() {    
+    subcribeToFormChanges() {
         const myFormStatusChanges$ = this.myForm.statusChanges;
         const myFormValueChanges$ = this.myForm.valueChanges;
-        
+
         myFormStatusChanges$.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
         myFormValueChanges$.subscribe(x => { this.saved = false;
         									 this.events.push({ event: 'VALUE_CHANGED', object: x }) });
@@ -64,7 +64,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
     save(model: Settings, isValid: boolean) {
         this.submitted = true;
         console.log(model, isValid);
-        
+
          // Call REST POST to store settings
 		let storePromise = this._settingsService.store(model);
 		storePromise.subscribe(
@@ -74,6 +74,6 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
 			      },
 			      err => console.log("Did not save form " + err.json().message)
 			    );
-		
+
     }
 }
