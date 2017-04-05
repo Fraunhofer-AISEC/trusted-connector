@@ -7,14 +7,14 @@
 
 #####################
 # Site configs
-title: Trusted Connector 0.1
+title: Trusted IoT Connector
 owner:
-  name: Industrial Data Space
+  name: Industrial Data Space, Fraunhofer AISEC
   link: http://www.industrialdataspace.org
   email: info@industrialdataspace.org
 description: > # this means to ignore newlines until "baseurl:"
   Industrial Data Space
-baseurl: "/doc" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 
 # Specific social links, now we support following social account:
 # github, twitter, weibo, google-plus, instagram, facebook, stack-overflow

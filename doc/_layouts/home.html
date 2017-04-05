@@ -18,12 +18,9 @@ config:
           <div class="col valign hide-on-large-only">
             <a href="#" data-activates="nav-mobile" class="button-collapse top-nav full hide-on-large-only"><i class="mdi-navigation-menu"></i></a>
           </div>
-          <div class="col"><h1 class="header center-on-small-only">{{ site.title }}</h1></div>
+          <div class="col"><h1 class="header center-on-small-only">Documentation of Preview v0.1</h1></div>
         </div>
 
-        <div class="row center">
-          <h4 class="header col s12 light center">{{ page.subtitle }}</h4>
-        </div>
 
         <div class="row center">
           <a href="{{ doc_url | prepend: site.baseurl }}" id="download-button" class="btn-large waves-effect waves-light">Get started</a>
@@ -42,25 +39,20 @@ config:
   <div class="container">
     <div class="section">
 
-      <div class="row">
+      <div class="row center">
         <div class="col s12 m8 offset-m2">
-          <img class="responsive-img" src="{{ site.baseurl }}/assets/img/responsive.svg">
+          <img src="{{ site.baseurl }}/assets/img/logo.png">
         </div>
       </div>
 
       <div class="row">
-        <h3 class="col s12 light center primary-color">{{ page.slogan }}</h3>
+        <h3 class="col s12 light center primary-color">Trust in the Internet of Things</h3>
       </div>
-
-      {% include promo_panels.html %}
-
-      <div class="divider"></div>
 
       <div class="section">
         <div class="row center">
-          <h3 class="light primary-color">{{ page.motivation.title }}</h3>
-          <p class="col s12 m8 offset-m2 caption">{{ page.motivation.content }}</p>
-          <div class="col s12"><a href="{{ doc_url | prepend: site.baseurl }}" class="btn-large waves-effect waves-light">{{ page.strings.start }}</a></div>
+          <p class="col s12 m8 offset-m2 caption">An edge platform for privacy-preserving data processing and trusted execution.</p>
+          <div class="col s12"><a href="{{ doc_url | prepend: site.baseurl }}" class="btn-large waves-effect waves-light">Get started</a></div>
         </div>
       </div>
 

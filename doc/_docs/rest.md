@@ -1,6 +1,6 @@
 ---
 layout: doc
-title: Hosting Data Apps
+title: Connecting REST Apps
 permalink: /docs/rest/
 
 ---
@@ -26,38 +26,35 @@ An (example) sensor provides measurement data via MQTT messages. A data app runn
 
 So, the conversion is: _MQTT -->  REST (text/plain) --> IDSP (binary blob) --> REST (text/plain) --> HTML_
 
-## Download containers
+## Unzip Example Setup
 
-Download the `docker-compose` description for Trusted Connector, Attestation Repository, TPM 2.0 emulator, and TPM daemon:
+As member of the Industrial Data Space association, you have received a Zip file `trusted-connector-examples_0.1` containing all necessary files for this example. Unzip the file in some folder and go to the contained folder `example-001`.
+
+This folder contains docker-compose descriptions for three main entities: the _Provider Connector_, the _Consumer Connector_, and the _Trusted Third Party_. In a production setup, these three entities would be remotely connected and operated by different owners. For the sake of this example, we will run them on your local machine.
 
 
-``` bash
-$ curl -sS <some github URL>
-```
+## Start Trusted Third Party
 
-## Start Trusted Connector
-
-The following command will start the Core Platform container, a local attestation repository, a TPM 2.0 emulator, and a TPM daemon.
-
+Start the Trusted Third Party (TTP) which holds trusted PCR values for remote attestation.
 
 ``` bash
-$ docker-compose up
+$ docker-compose -f docker-compose-ttp.yaml up
 ```
 
-## Start Data Provider App
+## Start Provider
 
-Start consuming temperature events from a global MQTT broker:
+Start the __Provider Connector__. It includes a simple node app which subscribes to temperature values via MQTT and provides them as REST service. A message route will connect to this REST interface, receive the values and push them to the __Consumer Connector__ over the IDS protocol. The _Provider Connector_ also includes a TPM daemon and a TPM 2.0 simulator for remote attestation.
 
 ``` bash
-$ node data-provider.js
+$ docker-compose -f docker-compose-provider.yaml up
 ```
 
-## Start Data Consumer App
+## Start Consumer
 
-Start receiving sensor values via the IDS protocol and display them in a web page.
+Start the __Consumer Connector__. It receives sensor values over the secured and remotely attested IDS protocol and forwards it to a simple node app running in the __Consumer Connector__. The node app receives data via HTTP POST requests and displays it in a web page.
 
 ``` bash
-$ node data-consumer.js
+$ docker-compose -f docker-compose-consumer.yaml up
 ```
 
-Open the web page at `http://localhost:8081`. You should see temperature values which have been received over the IDS protocol.
+Open the web page at `http://example001_consumer-app_1:8081`. You should see temperature values which have been received over the IDS protocol.
