@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+  {% include head.html styles=page.config.styles %}
+
+  <body>
+
+    <header>
+      {% unless page.config.disable_top_bar %}
+        {% include top_bar.html %}
+      {% endunless %}
+      {% include navigation.html %}
+    </header>
+
+    <main>
+      {{ content }}
+    </main>
+
+    {% include footer.html %}
+    {% include delay_loads.html %}
+    {% include analytics.html %}
+
+  </body>
+
+</html>

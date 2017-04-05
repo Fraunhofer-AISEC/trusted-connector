@@ -1,0 +1,88 @@
+
+.home {
+  position: relative;
+}
+
+.section.no-pad-bot {
+  padding-bottom: 0;
+}
+
+.banner-container {
+  position: relative;
+}
+.banner-container a.button-collapse.top-nav {
+  @media #{$medium-only} {
+    position: relative;
+    margin-left: 0;
+  }
+}
+
+#index-banner {
+  background-color: $primary-color;
+}
+
+#index-banner .header {
+  color: #FFF;
+}
+
+#index-banner h4 {
+  margin-bottom: 40px;
+}
+
+#index-banner .version-text {
+  color: $colored-text-color;
+}
+
+.home .bottom-space {
+  position: absolute;
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  margin: 0;
+}
+
+#fork-button {
+  position: absolute;
+  top: -28px;
+  right: 5%;
+  z-index: 996;
+}
+
+#fork-button .btn-floating {
+  background-color: $highlight-color;
+}
+
+#fork-button .tooltip {
+  transition: all 300ms ease-out;
+  transform: translateY(-10px) translateX(0px);
+  opacity: 0;
+}
+
+#fork-button.active .tooltip {
+  transition: all 300ms ease-in;
+  transform: translateY(0px) translateX(0px);
+  opacity: 1;
+}
+
+.home .promo {
+  width: 100%;
+}
+
+.home .promo i {
+  margin: 40px 0 20px 0;
+  font-size: 7rem;
+}
+
+.home .promo-caption {
+  font-size: 1.7rem;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.home .caption {
+  font-size: 1.25rem;
+  font-weight: 300;
+  margin-bottom: 30px;
+}

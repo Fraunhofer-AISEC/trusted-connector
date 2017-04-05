@@ -1,0 +1,50 @@
+---
+---
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1280px" height="685px" viewBox="0 0 1280 685" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.0.4 (8054) - http://www.bohemiancoding.com/sketch -->
+    <title>responsive</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="responsive" sketch:type="MSLayerGroup">
+            <rect id="Rectangle-1" sketch:type="MSShapeGroup" x="0" y="0" width="1280" height="685"></rect>
+            <g id="PC" sketch:type="MSShapeGroup">
+                <rect id="Rectangle-2" fill="#3A3A3A" x="0" y="0" width="910" height="624" rx="24"></rect>
+                <rect id="Rectangle-6" fill="#FFFFFF" x="45" y="49" width="821" height="533"></rect>
+                <rect id="Rectangle-7" fill="{{ site.palette.primary }}" x="198" y="49" width="668" height="151"></rect>
+                <circle id="Oval-1" fill="#BDBDBD" cx="820" cy="200" r="18"></circle>
+                <rect id="Rectangle-8" fill="#BDBDBD" x="45" y="49" width="153" height="533"></rect>
+                <g id="container" transform="translate(198.000000, 200.000000)">
+                    <rect x="0" y="0" width="668" height="382"></rect>
+                    <rect id="Rectangle-10" fill="#BDBDBD" x="122" y="26" width="306.710938" height="48"></rect>
+                    <rect id="Rectangle-11" fill="#BDBDBD" x="122" y="97" width="420" height="285"></rect>
+                </g>
+            </g>
+            <g id="Tablat" transform="translate(647.000000, 243.000000)" sketch:type="MSShapeGroup">
+                <rect id="Rectangle-2" fill="#3A3A3A" x="0" y="0" width="572" height="414" rx="24"></rect>
+                <g id="content" transform="translate(66.000000, 32.000000)">
+                    <rect id="Rectangle-6" fill="#FFFFFF" x="0" y="0" width="449" height="349"></rect>
+                    <rect id="Rectangle-7" fill="{{ site.palette.primary }}" x="84" y="0" width="365" height="98.9978209"></rect>
+                    <circle id="Oval-1" fill="#BDBDBD" cx="411.978571" cy="98.9978209" r="16"></circle>
+                    <rect id="Rectangle-8" fill="#BDBDBD" x="0" y="0" width="84" height="349"></rect>
+                    <g id="container" transform="translate(84.000000, 98.997821)">
+                        <rect x="0" y="0" width="364.90068" height="250"></rect>
+                        <rect id="Rectangle-10" fill="#BDBDBD" x="60" y="16.9567989" width="168" height="23.0432011"></rect>
+                        <rect id="Rectangle-11" fill="#BDBDBD" x="60" y="56" width="236" height="194"></rect>
+                    </g>
+                </g>
+            </g>
+            <g id="Phone" transform="translate(1105.000000, 405.000000)" sketch:type="MSShapeGroup">
+                <rect id="Rectangle-2" fill="#3A3A3A" x="0" y="0" width="175" height="280" rx="12"></rect>
+                <g id="content" transform="translate(19.000000, 43.000000)">
+                    <rect id="Rectangle-6" fill="#FFFFFF" x="0" y="0" width="138" height="203"></rect>
+                    <rect id="Rectangle-7" fill="{{ site.palette.primary }}" x="0" y="0" width="138" height="50"></rect>
+                    <circle id="Oval-1" fill="#BDBDBD" cx="113.978571" cy="50" r="12"></circle>
+                    <rect id="Rectangle-10" fill="#BDBDBD" x="10" y="63.9546197" width="91.9785714" height="18.0453803"></rect>
+                    <rect id="Rectangle-11" fill="#BDBDBD" x="10" y="89.9978209" width="115.978571" height="113.002179"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

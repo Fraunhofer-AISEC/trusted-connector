@@ -18,16 +18,22 @@
 	<artifactId>api</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
+  
+  <parent>
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>core-platform</artifactId>
+    <version>1.0.0</version>
+  </parent>
 
 	<name>IDS Core Platform API</name>
 
 	<properties>
-		<camel-version>2.16.3</camel-version>
-		<jetty-version>8.1.19.v20160209</jetty-version>
+		<camel-version>2.18.0</camel-version>
 		<jetty-version>9.2.15.v20160210</jetty-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.12</ahc-version>
+		<ahc-version>2.0.15</ahc-version>
 		<protobuf-version>3.0.0</protobuf-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
 	</properties>
 
 	<dependencies>
@@ -36,10 +42,14 @@
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
 			<version>${protobuf-version}</version>
+			<scope>provided</scope>
 		</dependency>
-
-
-
+		<!-- Camel -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>${camel-version}</version>
+		</dependency>
 		<!-- logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -51,9 +61,6 @@
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>2.6.2</version>
 		</dependency>
-
-
-
 		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -80,8 +87,6 @@
 				<version>1.3.0.Final</version>
 			</extension>
 		</extensions>
-
-
 
 		<plugins>
 			<!-- Download protoc binary (Protobuf compiler) -->
@@ -143,21 +148,6 @@
 				</executions>
 			</plugin>
 
-			<!-- Protobuf compiler -->
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.5.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>test-compile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
@@ -179,6 +169,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>	
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

@@ -1,0 +1,33 @@
+<div class="mdl-grid">
+	<div class="mdl-card mdl-cell mdl-cell--12-col">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">Settings</h2>
+		</div>
+		<div class="mdl-card__supporting-text ">
+			<form [formGroup]="myForm"
+				novalidate (ngSubmit)="save(myForm.value, myForm.valid)">
+				<div class="mdl-cell--12-col">
+					<div class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
+						<label class="mdl-textfield__label" for="broker_url">Broker	URL</label> <input class="mdl-textfield__input" id="broker_url"	type="text" formControlName="broker_url"> <span [hidden]="myForm.controls.broker_url.valid || (myForm.controls.broker_url.pristine && !submitted)" class="mdl-textfield__error"> Broker URL is required. </span>
+						<!--<pre class="margin-20">{{ myForm.controls.name.errors | json }}</pre>-->
+					</div>
+				</div>
+				<div class="mdl-cell--12-col">
+					<div
+						class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
+						<label class="mdl-textfield__label" for="ttp_address">Attestation
+							Trusted Third Party URL</label> <input type="text"
+							class="mdl-textfield__input" id="ttp_address"
+							formControlName="ttp_address"> <span
+							[hidden]="myForm.controls.ttp_address.valid || (myForm.controls.ttp_address.pristine && !submitted)"
+							class="mdl-textfield__error"> URL required </span>
+					</div>
+				</div>
+				<button type="submit"
+					class="mdl-button mdl-js-button mdl-button--raised"
+					[ngClass]="{'mdl-button--colored': !saved }">Save
+					Settings</button>
+			</form>
+		</div>
+	</div>
+</div>

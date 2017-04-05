@@ -1,0 +1,16 @@
+src=src/main/java
+bin=target/classes
+testsrc=src/test/java
+testbin=target/test-classes
+target-dir=target
+-includeresource: src/main/resources
+Bundle-Version: 1.0.0
+Bundle-Name: rat-repository
+Bundle-Description: attestation repository for the IDS protocol
+Bundle-Copyright: Fraunhofer 2016
+Bundle-Vendor: Fraunhofer Gesellschaft
+Bundle-ContactAddress: georg.raess@aisec.fraunhofer.de
+Export-Package: de.fhg.ids.attestation
+Import-Package: \
+	de.fhg.aisec.ids.messages, \
+	*

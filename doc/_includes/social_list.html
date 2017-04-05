@@ -1,0 +1,10 @@
+<ul>
+  {% for social in site.socials %}
+    {% assign link = site.data.socials[social.name] %}
+    {% if link %}
+      <li>
+        {% include social_link.html name=social.name user=social.user link=link style="grey-text text-lighten-3" %}
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>

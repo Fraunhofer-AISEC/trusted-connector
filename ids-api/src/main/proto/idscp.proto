@@ -1,0 +1,182 @@
+syntax = "proto2";
+option java_package = "de.fhg.aisec.ids.messages";
+option java_outer_classname = "Idscp";
+import "attestation.proto";
+
+message ConnectorMessage {
+	enum Type {
+		REGISTRATION_REQUEST = 0;
+		REGISTRATION_RESPONSE = 1;
+		SERVICE_REQUEST = 2;          
+		SERVICE_RESPONSE = 3;
+		INTERNAL_PROPERTY_REQUEST = 4;
+		INTERNAL_PROPERTY_RESPONSE = 5;
+		RAT_START = 6;
+		RAT_REQUEST = 7;
+		RAT_RESPONSE = 8;
+		RAT_RESULT = 9;
+		RAT_LEAVE = 10;
+		RAT_REPO_REQUEST = 11;
+		RAT_REPO_RESPONSE = 12;
+		META_START = 13;
+		META_REQUEST = 14;
+		META_RESPONSE = 15;
+		META_LEAVE = 16;
+		ERROR = 17;
+	}
+	
+	// Identifies which field is filled in.
+	optional Type type = 1;
+	
+	// Identifier of the message.
+	optional int64 id = 2;
+	
+	// One of the following will be filled in.
+	oneof message {
+		//Service registrations
+		RegistrationRequest registrationRequest = 3;
+		RegistrationResponse registrationResponse = 4;
+		
+		//Requests to (external) services
+		ServiceRequest serviceRequest = 5;
+		ServiceResponse serviceResponse = 6;
+		
+		//Retrieval of properties from Core Platform
+		PropertyRequest propertyRequest = 7;
+		PropertyResponse propertyResponse = 8;
+		
+		// a remote attestation
+		AttestationRequest attestationRequest = 9;
+		AttestationResponse attestationResponse = 10;
+		AttestationResult attestationResult = 11;
+		AttestationLeave attestationLeave = 12;
+		
+		AttestationRepositoryRequest attestationRepositoryRequest = 13;
+		AttestationRepositoryResponse attestationRepositoryResponse = 14;
+		
+		// an error msg
+		Error error = 15;
+		//a metadata exchange
+		MedadataExchange metadataExchange= 16;
+	}
+}
+
+message Error {
+	optional string errorCode = 1;
+	required string errorMessage = 2;
+}
+
+message RegistrationRequest {
+	optional string endpointAddress = 1;
+	optional string description = 2;
+	optional bool externallyAvailable = 3;
+}
+
+message RegistrationResponse {
+	optional bool success = 1;
+	optional string errorCode = 2;
+	optional string errorMessage = 3;
+}
+
+message ServiceRequest {
+	optional string URI = 1;
+	optional bytes payload = 2;
+}
+
+message ServiceResponse {
+	optional bytes content = 1;
+	optional string errorCode = 2;
+	optional string errorMessage = 3;
+}
+
+message PropertyRequest {
+	optional string key = 1;
+}
+
+message PropertyResponse {
+	optional bool success = 1;
+	optional string value = 2;
+}
+
+message MedadataExchange {
+	repeated string key = 1;
+	repeated string value = 2;
+	// optional signature over values
+	optional string signature = 3;
+	// optional cert
+	optional string certificate_uri = 5;	
+}
+
+// -------------------------------
+// REMOTE ATTESTATION BEGIN
+// -------------------------------
+
+//External Attestation Repository Request, sent to Repository
+message AttestationRepositoryRequest {
+	required IdsAttestationType atype = 1;
+	//nonce for attestation request
+	required string qualifyingData = 2;
+	// the explicit PCR values
+	repeated Pcr pcr_values = 3;	
+}
+
+//External Attestation Repository Response, sent to Repository
+message AttestationRepositoryResponse {
+	required IdsAttestationType atype = 1;
+	//nonce for attestation request
+	required string qualifyingData = 2;
+	//boolean for result
+	required bool result = 3;
+	// optional signature
+	optional string signature = 4;
+	// optional cert
+	optional string certificate_uri = 5;
+}
+
+//External Attestation Request, sent to other connector
+message AttestationRequest {
+	required IdsAttestationType atype = 1;
+	//nonce for attestation request
+	required string qualifyingData = 2;
+}
+
+//External Attestation Response, coming from other connector
+//if Response is coming from second connector
+message AttestationResponse {
+
+	// type of attestation in the IDS context
+	required IdsAttestationType atype = 1;
+	
+	// nonce for the next attestation
+	required string qualifyingData = 2;	
+
+	// the hash algorith used to sign the quoted information
+	optional string halg = 3;
+
+	// the quoted information (a TPM2B_ATTEST data structure)
+	required string quoted = 4;
+
+	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
+	required string signature = 5;
+
+	// the explicit PCR values
+	repeated Pcr pcr_values = 6;
+  
+	// an URI to a certificate that includes the public key
+	required string certificate_uri = 7;
+
+}
+
+//External Attestation Request, sent to other connector
+message AttestationResult {
+	required IdsAttestationType atype = 1;
+	//boolean for 
+	required bool result = 2;
+}
+
+//External Attestation Leave Request, sent to other connector
+message AttestationLeave {
+	required IdsAttestationType atype = 1;
+}
+
+// REMOTE ATTESTATION END

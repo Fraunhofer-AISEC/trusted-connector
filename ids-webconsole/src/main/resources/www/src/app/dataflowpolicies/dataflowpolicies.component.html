@@ -1,0 +1,49 @@
+<!-- Status cards -->
+<div class="mdl-grid">
+  <div class="mdl-card mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">Usage Control</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+	  <ul class="mdl-list">
+		  <li class="mdl-list__item mdl-list__item--two-line">
+		    <span class="mdl-list__item-primary-content">
+		      <span>Data Flow Control</span>
+		      <span class="mdl-list__item-sub-title">Prevents data leakage and privacy violations</span>
+		    </span>
+		    <span class="mdl-list__item-secondary-content">
+		      <span class="mdl-list__item-secondary-info">Active</span>
+		      <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--teal">done</i></a>
+		    </span>
+		  </li>
+	  </ul>
+	  <pre>
+	<i># Behavior: Data anonymization </i>
+	<b>service</b> Anonymizer:
+		<b>mark</b> free_for_public <b>if label</b> classified <b>or label</b> raw_data
+		<b>unmark</b> classified <b>if</b> 
+	
+	<i># Source: Untrusted sensor </i>
+	<b>service</b> OPC-UA milo://untrusted-sensor :
+		<b>mark</b> raw_data
+	
+	<i># Source: Trusted sensor </i>
+	<b>service</b> OPC-UA milo://trusted-sensor :
+		<b>mark</b> raw_data, trusted
+	
+	<i># Rule: Raw data must not leak to public</i>
+	<b>rule</b> Data Leak Prevention:
+		<b>on message</b> raw_data
+		<b>on service</b> publish
+		<b>block</b>	  
+
+	<i># Rule: Raw data must be deleted after 30 days</i>
+	<b>rule</b> Time To Live (TTL):
+		<b>on message</b> raw_data
+		<b>on service</b> persist
+		<b>require</b> delete(X), X&lt;30	  
+	  </pre>
+    </div>
+  </div>
+  
+</div>

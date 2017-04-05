@@ -19,28 +19,43 @@
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
 
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.0.0</version>
+	</parent>
+
 	<name>Camel IDS Component</name>
 	<url>http://camel.apache.org</url>
 
 	<properties>
-		<camel-version>2.16.3</camel-version>
-		<jetty-version>8.1.19.v20160209</jetty-version>
+		<camel-version>2.18.0</camel-version>
 		<jetty-version>9.2.15.v20160210</jetty-version>
+		<jersey-version>2.25</jersey-version>
+		<protobuf-version>3.0.0</protobuf-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.12</ahc-version>
+		<ahc-version>2.0.2</ahc-version>
+		<docker.follow>false</docker.follow>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<skipITs>true</skipITs>
 	</properties>
-
 	<dependencies>
+		<!-- Protobuf -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${protobuf-version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Camel -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
 			<version>${camel-version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-websocket</artifactId> 
-			<version>${jetty-version}</version> </dependency> <dependency> <groupId>org.eclipse.jetty</groupId> 
-			<artifactId>jetty-servlet</artifactId> <version>${jetty-version}</version> 
-			</dependency> -->
 
+		<!-- Jetty Websockets -->
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-server</artifactId>
@@ -52,38 +67,69 @@
 			<artifactId>websocket-client</artifactId>
 			<version>${jetty-version}</version>
 		</dependency>
-		
-		  <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jmx</artifactId>
-            <version>${jetty-version}</version>
-</dependency>
 
-		<!-- logging -->
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-jetty-http</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-moxy</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>${jersey-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlets</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-jmx</artifactId>
+			<version>${jetty-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-ahc</artifactId>
+			<version>${camel-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.asynchttpclient</groupId>
+			<artifactId>async-http-client</artifactId>
+			<version>${ahc-version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.6.2</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<version>2.6.2</version>
-		</dependency>
-
-
-
-		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -102,17 +148,56 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
-       <dependency>
-            <groupId>org.asynchttpclient</groupId>
-            <artifactId>async-http-client</artifactId>
-            <version>${ahc-version}</version>
-            <scope>test</scope>
-		</dependency> 		
+		<!-- JNR-Unixsocket -->
+		<dependency>
+			<groupId>com.github.jnr</groupId>
+			<artifactId>jnr-unixsocket</artifactId>
+			<version>0.13</version>
+		</dependency>
+		<!-- tpm2j -->
+		<dependency>
+			<groupId>de.fraunhofer.aisec</groupId>
+			<artifactId>tpm2j</artifactId>
+			<version>1.0.4</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- IDS API -->
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>api</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!-- 
+		<dependency> 
+			<groupId>org.json</groupId> 
+			<artifactId>json</artifactId> 
+			<version>1.5-20090211</version> 
+			<scope>provided</scope> 
+		</dependency> 
+		<dependency> 
+			<groupId>com.github.docker-java</groupId> 
+			<artifactId>docker-java</artifactId> 
+			<version>3.0.7</version> 
+		</dependency> 
+		-->
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>docker-maven-plugin</artifactId>
+			<version>0.18.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-nop</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
-
 	<build>
 		<defaultGoal>install</defaultGoal>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -143,30 +228,86 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/WebsocketEndpointTest.java</exclude>
-                        <exclude>**/WebsocketComponentTest.java</exclude>
-                    </excludes>
-                </configuration>
-			</plugin>			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19</version>
+				<configuration>
+					<argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
+					<excludes>
+						<exclude>**/WebsocketEndpointTest.java</exclude>
+						<exclude>**/WebsocketComponentTest.java</exclude>
+					</excludes>
+				</configuration>
 
-			<!-- The following configuration is required because bnd-maven-plugin 
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
-				the manifest from this location, then the following config is not needed. -->
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.19.1</version>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<configuration>
+					<imageName>ids/tpm2dsim:latest</imageName>
+					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
+				</configuration>
+				<version>0.4.13</version>
+				<executions>
+					<execution>
+						<id>build-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>tag-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>ids/tpm2dsim:latest</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</imageName>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

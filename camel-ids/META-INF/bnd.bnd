@@ -1,0 +1,24 @@
+src=src/main/java
+bin=target/classes
+testsrc=src/test/java
+testbin=target/test-classes
+target-dir=target
+-includeresource: src/main/resources
+Bundle-Version: 1.0.0
+Bundle-Name: tpm2j
+Bundle-Description: tpm2j
+Bundle-Copyright: Fraunhofer 2016
+Bundle-Vendor: Fraunhofer Gesellschaft
+Export-Package: \
+	de.fraunhofer.aisec.tpm2j,\
+	de.fraunhofer.aisec.tpm2j.struct,\
+	de.fraunhofer.aisec.tpm2j.tools,\
+	de.fraunhofer.aisec.tpm2j.tpm,\
+	de.fraunhofer.aisec.tpm2j.tpm2b,\
+	de.fraunhofer.aisec.tpm2j.tpma,\
+	de.fraunhofer.aisec.tpm2j.tpmi,\
+	de.fraunhofer.aisec.tpm2j.tpml,\
+	de.fraunhofer.aisec.tpm2j.tpms,\
+	de.fraunhofer.aisec.tpm2j.tpmt,\
+	de.fraunhofer.aisec.tpm2j.tpmu
+Import-Package: *

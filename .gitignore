@@ -1,2 +1,8 @@
 .gradle/
 .metadata
+.project
+.settings
+rat-repository/src/main/docker/jar/*
+*.bin
+/.sonarlint/
+/dist-docker/

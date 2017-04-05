@@ -1,0 +1,8 @@
+- title: User documentation
+  docs:
+  - getting_started
+  - rest
+
+- title: Developer documentation
+  docs:
+  - dev_setup

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Export-Package: de.fhg.aisec.ids.policy.impl
+Bundle-SymbolicName: ids-core-platform-policy-manager;singleton:=true;
+ singleton:=true
+Bundle-Version: 0.2.0.qualifier
+Bundle-Name: IDS Core Platform Container Manager
+Bundle-ManifestVersion: 2
+Bnd-LastModified: 1469557813000
+Import-Package: com.google.protobuf,de.fhg.aisec.ids.api.configuration
+ ,de.fhg.aisec.ids.api.external,de.fhg.aisec.ids.api.internal,de.fhg.a
+ isec.ids.api.policy,de.fhg.aisec.ids.messages,jnr.enxio.channels,jnr.
+ unixsocket,org.osgi.framework;version="1.8.0",org.osgi.service.compon
+ ent;version="1.2.2",org.slf4j
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Created-By: 1.8.0_91 (Oracle Corporation)
+Tool: Bnd-2.4.0.201411031534
+Bundle-Localization: bundle
+Service-Component: OSGI-INF/*.xml
+

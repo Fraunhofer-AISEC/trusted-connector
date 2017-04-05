@@ -1,18 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.fhg.ids</groupId>
   <artifactId>core-platform</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
- 
+
   <modules>
+    <module>asynchttpclient</module>
+    <module>jnr-unixsocket</module>
     <module>camel-ids</module>
     <module>ids-api</module>
-    <module>ids-core-platform-container-manager</module>
+    <module>ids-container-manager</module>
+    <module>ids-webconsole</module>
     <module>karaf-feature-ids</module>
+    <module>data-flow-policy</module>
     <module>karaf-assembly</module>
+    <module>rat-repository</module>
   </modules>
-</project>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>netsec-snapshots</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>netsec-release</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases/</url>
+		</repository>
+	</distributionManagement>
+
+  <repositories>
+  	<repository>
+  		<id>netsec-release</id>
+  		<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>      
+  	</repository>
+    <repository>
+			<id>netsec-snapshots</id>
+			<url>http://repository.netsec.aisec.fraunhofer.de/repository/snapshots/</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+		</repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+		      <version>0.7.7.201606060606</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+		  <plugin>
+  		  <groupId>org.jacoco</groupId>
+  			  <artifactId>jacoco-maven-plugin</artifactId>
+        	<executions>
+        		<execution>
+        			<goals>
+        				<goal>prepare-agent</goal>
+        			</goals>
+        		</execution>
+            <execution>
+              <id>report</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+        	</executions>
+			</plugin>
+    </plugins>
+  </build>
 </project>

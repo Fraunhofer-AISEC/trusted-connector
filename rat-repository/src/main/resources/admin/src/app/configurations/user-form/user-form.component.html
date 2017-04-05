@@ -1,0 +1,58 @@
+<h5>{{ title }}</h5>
+<div class="row">
+  <form materialize class="col s12" [formGroup]="form" (ngSubmit)="save()">
+    <div class="row">
+      <div class="input-field col s12">
+        <i class="material-icons prefix">description</i>
+        <input id="name" type="text" class="validate"
+               [(ngModel)]="user.name" formControlName="name"
+               [class.invalid]="form.controls['name'].touched && !form.controls['name'].valid"
+        >
+        <label for="name"
+               [class.active]="user.name"
+               data-error="Name is required and needs to contain at least 3 chars">
+          Name ( id:{{user.id}})
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        <i class="material-icons prefix">dns</i>
+	<select id="propertySelector" name="propertySelector">
+	    <option *ngFor="let option of selectOptions" [value]="option.value" [selected]="option.value == user.type" name="option.value">{{option.value}}</option>
+	</select>
+        <label for="optionType"
+               [class.active]="user.type"
+               data-error="Invalid Configuration Type">
+          Type
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+	<div *ngFor="let value of user.values; let i = index">
+		<i class="material-icons prefix">list</i>
+		<div class="input-field col s1">
+			<input type="text" size="3" class="validate" name="number" [(ngModel)]="value.number_" formControlName="number"
+		       [class.invalid]="form.controls['number'].touched && !form.controls['number'].valid"
+			>
+		</div>
+		<div class="input-field col s11">
+			<input type="text" class="validate" name="value" [(ngModel)]="value.number_" formControlName="value"
+		       [class.invalid]="form.controls['value'].touched && !form.controls['value'].valid"
+			>
+		</div>
+		<label for="values"
+		       [class.active]="user.type"
+		       data-error="Invalid Type">
+		  Values
+		</label>
+	</div>
+      </div>
+    </div>
+    <button class="btn waves-effect waves-light" type="submit"
+            [disabled]="!form.valid">
+      Submit<i class="material-icons right">send</i>
+    </button>
+  </form>
+</div>

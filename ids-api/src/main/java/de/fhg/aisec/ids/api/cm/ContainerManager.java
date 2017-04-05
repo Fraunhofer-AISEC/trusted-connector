@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.api.cm;
 
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -12,6 +13,15 @@ import java.util.List;
  *
  */
 public interface ContainerManager {
+	
+	/**
+	 * Returns  the container management layer which is currently in use.
+	 * 
+	 * One of docker, trust-X, none.
+	 * 
+	 * @return
+	 */
+	public String getVersion();
 
 	/**
 	 * List currently installed containers.
@@ -28,17 +38,17 @@ public interface ContainerManager {
 	 * 
 	 * @param containerID Hash of the container.
 	 */
-	public void wipe(final String containerID);
+	public void wipe(final String containerID) throws NoContainerExistsException;
 	
 	/**
 	 * Starts a container.
 	 * 
 	 * If the container is already running, this method will do nothing. 
 	 * 
-	 * The container must already exist, otherwise an exception will be thrown. //TODO Create NoContainerExistsException
+	 * The container must already exist, otherwise an exception will be thrown.
 	 * @param containerID
 	 */
-	public void startContainer(final String containerID);
+	public void startContainer(final String containerID) throws NoContainerExistsException;
 	
 	/**
 	 * Stops a container.
@@ -52,15 +62,15 @@ public interface ContainerManager {
 	 * The container must already exist, otherwise an exception will be thrown.
 	 * @param containerID
 	 */
-	public void stopContainer(final String containerID);
+	public void stopContainer(final String containerID) throws NoContainerExistsException;
 		
 	/**
 	 * Restarts a container without stopping it first.
 	 * 
-	 * The container must already exist, otherwise an exception will be thrown. //TODO throw exception
+	 * The container must already exist, otherwise an exception will be thrown.
 	 * @param containerID
 	 */
-	public void restartContainer(final String containerID);
+	public void restartContainer(final String containerID) throws NoContainerExistsException;
 	
 	/**
 	 * Retrieves configuration data about a container.
@@ -72,10 +82,10 @@ public interface ContainerManager {
 	 * If meta data is stored in container labels, the result of <code>getMetaData</code> will also be 
 	 * contained in the result of this method.
 	 * 
-	 * @param containerID ID of the container. If does not exist, a NoContainerExistsException will be thrown. //TODO Throw NoContainerExistsException
+	 * @param containerID ID of the container. If does not exist, a NoContainerExistsException will be thrown.
 	 * @return
 	 */
-	public String inspectContainer(final String containerID);
+	public String inspectContainer(final String containerID) throws NoContainerExistsException;
 	
 	/**
 	 * Returns metadata associated with the service running in the container.
@@ -85,7 +95,7 @@ public interface ContainerManager {
 	 * @param containerID
 	 * @return
 	 */
-	public String getMetadata(final String containerID);
+	public Object getMetadata(final String containerID) throws NoContainerExistsException;
 
 	/**
 	 * Pulls an image from the online registry.
@@ -97,8 +107,9 @@ public interface ContainerManager {
 	 * As this is a long running operation, it should always be called in a separate thread.
 	 *  
 	 * @param image
+	 * @return 
 	 */
-	public void pullImage(final String imageID);
+	public Optional<String> pullImage(final String imageID) throws NoContainerExistsException;
 
 	/**
 	 * Configures an IP rule for a container.

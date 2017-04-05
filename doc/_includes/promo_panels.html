@@ -1,0 +1,21 @@
+{% for promo in page.promos %}
+  {% capture thecycle %}{% cycle 'first', 'second', 'third' %}{% endcapture %}
+  {% if thecycle == 'first' %}
+    {% assign complete = false %}
+    <div class="row">
+  {% endif %}
+    <div class="col s12 m4">
+      <div class="center promo">
+        <i class="material-icons primary-color">{{ promo.icon }}</i>
+        <p class="promo-caption center">{{ promo.caption }}</p>
+        <p class="light center">{{ promo.content }}</p>
+      </div>
+    </div>
+  {% if thecycle == 'third' %}
+    {% assign complete = true %}
+    </div>
+  {% endif %}
+{% endfor %}
+{% unless complete %}
+  </div>
+{% endunless %}

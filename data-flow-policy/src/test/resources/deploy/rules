@@ -1,0 +1,2 @@
+LABEL .*foo.* AS foo
+ALLOW foo TO .*result.*
