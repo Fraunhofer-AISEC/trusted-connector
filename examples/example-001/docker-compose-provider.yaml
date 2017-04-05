@@ -3,14 +3,14 @@ services:
 
   # Image for TPM simulator
   provider-tpm2dsim:
-    image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim
+    image: app-store.isst.fraunhofer.de:5000/ids/tpm2dsim:0.1
     volumes:
       - ./camel-ids/socket/:/data/cml/tpm2d/communication/
     command: /tpm2d/cml-tpm2d
 
   # Image for core platform, gets docker control socket mounted into the image
   provider-core:
-    image: registry.netsec.aisec.fraunhofer.de/ids/core-platform
+    image: app-store.isst.fraunhofer.de:5000/ids/core-platform:0.1
     volumes:
       - /tmp/ids-provider/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
@@ -28,7 +28,7 @@ services:
 
   # Data App (MQTT consumer, publishes over REST)
   provider-app:
-    image: ids-example-001-client
+    image: app-store.isst.fraunhofer.de:5000/ids/example-001/example-001-client:0.1
     networks:
       - provider-internal
   
@@ -40,7 +40,6 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./ids-example-001-provider.xml:/root/tmpl/ids-example-001-provider.xml
-
 
 networks:
   ids-wide:

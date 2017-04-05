@@ -3,7 +3,7 @@ services:
 
   # Image for TPM trusted third party (RAT repository)
   provider-ttpsim:      
-    image: registry.netsec.aisec.fraunhofer.de/ids/ttpsim
+    image: app-store.isst.fraunhofer.de:5000/ids/ttpsim:0.1
     ports:
       - "31337:31337"
     networks:
