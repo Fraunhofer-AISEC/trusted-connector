@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>api</artifactId>
+	<artifactId>ids-api</artifactId>
 	<packaging>jar</packaging>
   
   <parent>
