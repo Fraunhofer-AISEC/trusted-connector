@@ -31,7 +31,7 @@ services:
 
   # Data App (REST consumer, displays web page)
   consumer-app:
-    image:     image: app-store.isst.fraunhofer.de:5000/ids/example-001/example-001-server:0.1
+    image: app-store.isst.fraunhofer.de:5000/ids/example-001/example-001-server:0.1
     ports:
       - "8081:8081"
     networks:
