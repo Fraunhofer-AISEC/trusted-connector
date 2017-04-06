@@ -14,16 +14,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.fhg.ids</groupId>
 	<artifactId>ids-container-manager</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
-  
-  <parent>
-    <groupId>de.fhg.ids</groupId>
-    <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
-  </parent>  
+
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.0.0</version>
+	</parent>
 
 	<name>IDS Container Manager</name>
 
@@ -51,11 +49,8 @@
 			<version>5.0.0</version>
 			<scope>compile</scope>
 		</dependency>
-		<!--<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.annotation</artifactId>
-			<version>6.0.0</version>
-		</dependency> -->
+		<!--<dependency> <groupId>org.osgi</groupId> <artifactId>org.osgi.annotation</artifactId> 
+			<version>6.0.0</version> </dependency> -->
 
 		<!-- logging -->
 		<dependency>
@@ -69,7 +64,7 @@
 			<version>2.6.2</version>
 		</dependency>
 
-		<!--  JNR-Unixsocket -->	
+		<!-- JNR-Unixsocket -->
 		<dependency>
 			<groupId>com.github.jnr</groupId>
 			<artifactId>jnr-unixsocket</artifactId>
@@ -118,7 +113,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<!-- The following configuration is required because bnd-maven-plugin 
 				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
 				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
@@ -126,7 +121,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.0</version>	
+				<version>3.0.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

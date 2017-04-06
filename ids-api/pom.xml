@@ -14,10 +14,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.fhg.ids</groupId>
 	<artifactId>api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
   
   <parent>
     <groupId>de.fhg.ids</groupId>
