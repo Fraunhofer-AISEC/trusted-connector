@@ -23,12 +23,10 @@ import java.lang.reflect.Type;
 @Consumes(MediaTypeExt.APPLICATION_PROTOBUF)
 public class ProtobufProvider implements MessageBodyReader<Message>, MessageBodyWriter<Message> {
 
-    @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return isAssignableFrom(type);
     }
 
-    @Override
     public Message readFrom(Class<Message> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
         try {
             Method newBuilder = type.getMethod("newBuilder");
@@ -39,17 +37,14 @@ public class ProtobufProvider implements MessageBodyReader<Message>, MessageBody
         }
     }
 
-    @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return isAssignableFrom(type);
     }
 
-    @Override
     public long getSize(Message message, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return message.getSerializedSize();
     }
 
-    @Override
     public void writeTo(Message message, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         try {
             entityStream.write(message.toByteArray());

@@ -1,7 +1,5 @@
 package de.fhg.ids.attestation;
 
-import java.util.Objects;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 public class Configuration {

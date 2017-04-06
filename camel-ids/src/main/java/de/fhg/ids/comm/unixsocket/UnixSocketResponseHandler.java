@@ -1,15 +1,9 @@
 package de.fhg.ids.comm.unixsocket;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
-import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 
 public class UnixSocketResponseHandler {
 	private Logger LOG = LoggerFactory.getLogger(UnixSocketResponseHandler.class);
