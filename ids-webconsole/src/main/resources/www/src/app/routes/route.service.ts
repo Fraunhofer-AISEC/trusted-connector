@@ -40,13 +40,13 @@ export class RouteService {
       // -------------------------------------------------------------------------------
       // Hardcoded just for demonstration
       if(routeId == "OPC-UA: Read Engine Power (Trusted)") {
-        this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/1/power/false', {}).subscribe();
+        this.http.post(window.location.hostname + ':8282/led/1/power/false', {}).subscribe();
       } else if(routeId == "OPC-UA: Read Engine Power (Untrusted)") {
-        this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/2/power/false', {}).subscribe();
+        this.http.post(window.location.hostname + ':8282/led/2/power/false', {}).subscribe();
       } else if(routeId == "IDS-Protocol: Transmit Connector Data") {
-        this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/3/power/false', {}).subscribe();
+        this.http.post(window.location.hostname + ':8282/led/3/power/false', {}).subscribe();
       } else if(routeId == "HTTPS: Transmit Cloud Data") {
-        this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/4/power/false', {}).subscribe();
+        this.http.post(window.location.hostname + ':8282/led/4/power/false', {}).subscribe();
       }
       // -------------------------------------------------------------------------------
 
@@ -60,13 +60,13 @@ export class RouteService {
     // -------------------------------------------------------------------------------
     // Hardcoded just for demonstration
     if(routeId == "OPC-UA: Read Engine Power (Trusted)") {
-      this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/1/power/true', {}).subscribe();
+      this.http.post(window.location.hostname + ':8282/led/1/power/true', {}).subscribe();
     } else if(routeId == "OPC-UA: Read Engine Power (Untrusted)") {
-      this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/2/power/true', {}).subscribe();
+      this.http.post(window.location.hostname + ':8282/led/2/power/true', {}).subscribe();
     } else if(routeId == "IDS-Protocol: Transmit Connector Data") {
-      this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/3/power/true', {}).subscribe();
+      this.http.post(window.location.hostname + ':8282/led/3/power/true', {}).subscribe();
     } else if(routeId == "HTTPS: Transmit Cloud Data") {
-      this.http.post('http://iot-connector1.netsec.aisec.fraunhofer.de:8282/led/4/power/true', {}).subscribe();
+      this.http.post(window.location.hostname + ':8282/led/4/power/true', {}).subscribe();
     }
     // -------------------------------------------------------------------------------
 
