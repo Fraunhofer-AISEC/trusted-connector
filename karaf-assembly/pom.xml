@@ -168,6 +168,7 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.servicemix.features</groupId>
             <artifactId>servicemix-kie</artifactId>
@@ -212,14 +213,25 @@
                     </startupFeatures>
                     <!-- bootFeatures starts up these features when Karaf first boots up.
                          The feature names are obtained from the features.xml in the
-                         dependencies section
+                         dependencies section.
+
+                         CAUTION: The actual boot features are set by karaf-assembly/src/main/resources/etc/org.apache.karaf.features.cfg which overwrites anything defined herein.
+
+                         The purpose of the following list is to pull required bundles into the offline 
+                         repository so they are available at runtime and can be installed in Karaf. Either 
+                         as a boot feature or at a later time manually.
                      -->
                     <bootFeatures>
                         <!-- <feature>standard</feature> -->
                         <!-- The following features are the same like "standard".
                                 In a productive version we might want to exclude "management" and "ssh" -->
+                        
+                        <!-- Allow deployment of kar archives at runtime -->
                         <feature>kar</feature>
+
+                        <!-- Auto-wrap stuff into OSGi bundles (needed for picking up route XMLs and some non-OSGi libs) -->
                         <feature>wrap</feature>
+
                         <feature>aries-blueprint</feature>
                         <feature>shell</feature>
                         <feature>shell-compat</feature>
@@ -244,6 +256,8 @@
                         <feature>camel-jetty</feature>
                         <feature>camel-spring-dm</feature>
                         <feature>camel-stream</feature>
+                        <!-- camel-jms is needed to avoid infamous warning -->
+                        <feature>camel-jms</feature>
                         <feature>camel-sjms</feature>
                         <!-- ActiveMQ with web console -->
                         <!--<feature>activemq-broker</feature>-->
@@ -255,13 +269,14 @@
                         <feature>camel-cxf</feature>
                         <feature>camel-hdfs2</feature>
                         <feature>camel-blueprint</feature>
+                        <feature>camel-http</feature>
                         <!--<feature>activemq-camel</feature> -->
                         <!--<feature>activemq-service</feature> -->
                         <feature>camel-xstream</feature>
                         <!-- <feature>spring</feature>
                         <feature>spring-tx</feature> -->
                         <feature>war</feature>
-						            <feature>ids</feature>
+						<feature>ids</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>

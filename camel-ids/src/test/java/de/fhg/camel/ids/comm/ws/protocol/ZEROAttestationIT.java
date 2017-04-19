@@ -7,6 +7,12 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 
 import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.util.jsse.ClientAuthentication;
+import org.apache.camel.util.jsse.KeyManagersParameters;
+import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.util.jsse.SSLContextServerParameters;
+import org.apache.camel.util.jsse.TrustManagersParameters;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -53,10 +59,9 @@ public class ZEROAttestationIT {
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		fsm1 = new FSM();
-		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, aType, 0, new URI(""), "");
-		provider = new RemoteAttestationProviderHandler(fsm2, aType, 0, new URI(""), "");		
+		SSLContextParameters params = defineClientSSLContextParameters();
+        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(""), "", params);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(""), "", params);
 	}
 	
     @Test
@@ -75,4 +80,9 @@ public class ZEROAttestationIT {
     	assertTrue(msg2.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	
     }  
+    
+    public static SSLContextParameters defineClientSSLContextParameters() {
+    	SSLContextParameters scp = new SSLContextParameters(); 
+        return scp;
+    }
 }

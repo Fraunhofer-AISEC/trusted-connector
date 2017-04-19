@@ -127,4 +127,17 @@ public class AppApi {
 		}
 		return new Gson().toJson(true);
 	}
+
+	@GET
+	@Path("cml_version")
+	@Produces("application/json")
+	public String getCml() {
+		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
+
+		if (!cml.isPresent()) {
+			return new Gson().toJson(false);
+		}
+		
+		return new Gson().toJson(cml.get().getVersion());
+	}	
 }

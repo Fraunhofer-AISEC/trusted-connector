@@ -20,11 +20,13 @@ import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component
 import { RouteCardComponent } from './routes/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
+import { SettingsService } from './ids/settings.service';
 
 
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
+import { FileWindow } from './keycerts/uploadCert';
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
@@ -39,6 +41,10 @@ import {PrettifyPipe} from './prettify-json.pipe';
 import {ConfirmService} from "./confirm/confirm.service";
 import {ConfirmComponent} from "./confirm/confirm.component";
 
+import { ModalModule } from 'angular2-modal';
+import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
+
+
 import 'material-design-lite';
 
 @NgModule({
@@ -46,7 +52,9 @@ import 'material-design-lite';
     BrowserModule,
     routing,
     HttpModule,
-    ReactiveFormsModule  ],
+    ReactiveFormsModule,
+    ModalModule.forRoot(),
+    BootstrapModalModule  ],
   declarations: [
     AppComponent,
     DashboardComponent,
@@ -64,17 +72,20 @@ import 'material-design-lite';
     CertificateCardComponent,
     ConfirmComponent,
     ValuesPipe,
-    PrettifyPipe],
+    PrettifyPipe,
+    FileWindow],
   providers: [
     AppService,
     RouteService,
-    IdsComponent,
+    SettingsService,
     CertificateService,
     SensorService,
     ConfirmService,
     Title
   ],
   bootstrap: [
-    AppComponent ]
+    AppComponent ],
+    entryComponents: [
+      FileWindow]
 })
 export class AppModule { }

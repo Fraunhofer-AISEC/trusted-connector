@@ -64,7 +64,7 @@ public class REST {
 				if(numPcrValues > 0) {
 					switch(type) {
 						case BASIC:
-							if(numPcrValues == 10) {
+							if(numPcrValues == 11) {
 								return this.checkMessage(msg);
 							}
 							else {
@@ -133,7 +133,7 @@ public class REST {
 	public Response addConfiguration(Configuration config) {
 		this.setCORSHeader(response, corsEnabled);
 		try {
-			Configuration[] existing = this.db.getConfigurationsIdBy(config.getValues());
+			Long[] existing = this.db.getConfigurationId(config.getValues());
 			if(existing.length == 0) {
 				long key = this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
 				return Response.ok(key).build();
@@ -189,7 +189,6 @@ public class REST {
 		}
 	}
 	
-	
 	private ConnectorMessage checkMessage(ConnectorMessage msg) throws SQLException {
 		return ConnectorMessage
 				.newBuilder()
@@ -206,7 +205,6 @@ public class REST {
 		        		.build()
 						)
 				.build();
-
 	}
 	
 	private ConnectorMessage sendError(String error, long id) {
@@ -223,44 +221,4 @@ public class REST {
 						)
 				.build();
 	}
-	
-
-	/* SIMPLE FILE TRANSFER FROM HERE ON
-
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public String index() {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/index.html");
-	}
-
-	@GET
-	@Path("admin")
-	@Produces(MediaType.TEXT_HTML)
-	public String admin() {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/admin.html");
-	}	
-
-	@GET
-	@Path("/html/{filename}")
-	@Produces(MediaType.TEXT_HTML)
-	public String htmlFile(@PathParam("filename") String filename) {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/html/" + filename);
-	}
-	
-	@GET
-	@Path("/js/{filename}")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String jsFile(@PathParam("filename") String filename) {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/js/" + filename);
-	}
-	
-	private String getFile(String file) {
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		return new BufferedReader(new InputStreamReader(loader.getResourceAsStream(file))).lines().collect(Collectors.joining("\n"));
-	}
-	*/
 }

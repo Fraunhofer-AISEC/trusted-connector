@@ -79,14 +79,11 @@ public class MyProcessor implements AsyncProcessor {
 	
 	@Override
 	public boolean process(Exchange exchange, AsyncCallback ac) {
-		LOG.info("Start ...");
 		try {
 			process(exchange);
 		}catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 		}
-		
-		LOG.info("Stop ...");
 		return true;
 	}
 }

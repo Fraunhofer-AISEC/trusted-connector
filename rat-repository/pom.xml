@@ -163,41 +163,21 @@
 					<mainClass>${start.class}</mainClass>
 				</configuration>
 			</plugin>
-			<!-- Copy generated jar to Docker image base dir -->
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/src/main/docker/</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${basedir}/target/</directory>
-									<includes>
-										<include>**/${project.name}-${project.version}.jar</include>
-									</includes>
-								</resource>
-							</resources>
-							<encoding>UTF-8</encoding>
-							<useBuildFilters>false</useBuildFilters>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<configuration>
-					<imageName>ids/ttpsim:latest</imageName>
-					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
-				</configuration>
 				<version>0.4.13</version>
+				<configuration>
+					<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName>
+					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
 				<executions>
 					<execution>
 						<id>build-image</id>
@@ -213,8 +193,8 @@
 							<goal>tag</goal>
 						</goals>
 						<configuration>
-							<image>ids/ttpsim:latest</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</newName>
+							<image>ids/ttpsim:develop</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</newName>
 						</configuration>
 					</execution>
 					<execution>
@@ -224,12 +204,11 @@
 							<goal>push</goal>
 						</goals>
 						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:latest</imageName>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>

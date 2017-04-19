@@ -62,6 +62,8 @@ public class RuleParser {
     	LOG.debug("Start 'loadRules'...");
     	List<String> labelSet = new ArrayList<>();
     	String line;
+    	
+    	/* First look for a config file in karaf/etc */
  
 		try (	FileInputStream fis = new FileInputStream(rulefile);
     			BufferedReader bufferedreader = new BufferedReader(new InputStreamReader(new DataInputStream(fis)))) {

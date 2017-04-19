@@ -20,6 +20,7 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
+import org.apache.camel.util.jsse.SSLContextParameters;
 
 public class WebsocketConsumer extends DefaultConsumer implements WebsocketProducerConsumer {
 
@@ -79,5 +80,9 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
             }
         });
     }
+
+	public SSLContextParameters getSSLContextParameters() {
+		return endpoint.getSslContextParameters();
+	}
 
 }

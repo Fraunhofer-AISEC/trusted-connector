@@ -1,16 +1,13 @@
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +20,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.core.MediaType;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,11 @@ import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+
+import java.io.*;
+ 
 /**
  * REST API interface for managing certificates in the connector.
  * 
@@ -69,7 +74,7 @@ public class CertApi {
 		try {
 			this.doGenKeyPair(UUID.randomUUID().toString(), spec, "RSA", 2048, "SHA1WITHRSA", getKeystoreFile("client-keystore.jks"));
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 		return "OK";
@@ -88,23 +93,99 @@ public class CertApi {
 		}
 		
 		File keyStoreFile = getKeystoreFile(file + ".jks");
-		try (FileInputStream fis = new FileInputStream(keyStoreFile);){
+		try (	FileInputStream fis = new FileInputStream(keyStoreFile);
+		        FileOutputStream fos = new FileOutputStream(keyStoreFile);	){
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 			String password = KEYSTORE_PWD;
 	        keystore.load(fis, password.toCharArray());
 	        
 	        keystore.deleteEntry(alias);
 	        
-	        FileOutputStream fos = new FileOutputStream(keyStoreFile);
 	        keystore.store(fos, password.toCharArray());
 	        return new Gson().toJson(true);
-		} catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException
-				| IOException e) {
+		} catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException	| IOException e) {
 			LOG.error(e.getMessage(), e);
 			return new Gson().toJson(e.getMessage());
 		}
 	}
+	
+	
+    
+    @POST
+    @Path("/upload")
+    @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public String uploadFile(@Multipart("keystoresFile") String keystoresFile, 
+     @Multipart("upfile") Attachment attachment) throws IOException {
 
+       String filename = attachment.getContentDisposition().getParameter("filename");
+
+       String tempPath = "/tmp/" + filename;
+       OutputStream out = new FileOutputStream(new File(tempPath));
+        
+       InputStream in = attachment.getObject(InputStream.class);
+
+       int read;
+       byte[] bytes = new byte[1024];
+       while ((read = in.read(bytes)) != -1) {
+           out.write(bytes, 0, read);
+       }
+       in.close();
+       out.flush();
+       out.close();
+       
+       if(addKey(keystoresFile, tempPath)) {
+    	   return "Certificate has been uploaded to " + keystoresFile;
+       }
+       
+       return "Error: certificate has NOT been uploaded to " + keystoresFile;
+    }      
+    
+    private boolean addKey(String dest, String filePath) {
+    	
+    	boolean returnResult = false;
+    	CertificateFactory cf;
+    	InputStream certstream;
+    	String alias = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length()).replaceFirst("[.][^.]+$", "");
+    	File keyStoreFile = getKeystoreFile(dest + ".jks");
+		try {
+			cf = CertificateFactory.getInstance("X.509");
+			certstream = fullStream(filePath);
+			Certificate certs =  cf.generateCertificate(certstream);
+			
+			try (	FileInputStream fis = new FileInputStream(keyStoreFile);
+				    FileOutputStream fos = new FileOutputStream(keyStoreFile);	) {
+				KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+				String password = KEYSTORE_PWD;
+			    keystore.load(fis, password.toCharArray());
+		    
+			    // Add the certificate
+			    keystore.setCertificateEntry(alias, certs);
+			    
+		        keystore.store(fos, password.toCharArray());
+			}
+	        
+		    returnResult = true;
+		    
+	    	File file = new File(filePath);
+	    	returnResult &= file.delete();
+		} catch ( CertificateException | KeyStoreException | NoSuchAlgorithmException |	IOException e) {
+			LOG.error(e.getMessage(), e);
+			returnResult = false;
+		}
+    	return returnResult;
+    }
+    
+    private static InputStream fullStream ( String fname ) throws IOException {
+        FileInputStream fis = new FileInputStream(fname);
+        DataInputStream dis = new DataInputStream(fis);
+        byte[] bytes = new byte[dis.available()];
+        dis.readFully(bytes);
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        dis.close();
+        return bais;
+    }
+    
 	public class Cert {
 		public String subjectC;
 		public String subjectS;
@@ -187,48 +268,49 @@ public class CertApi {
 				cert.alias = alias;
 				cert.file = keystoreFile.getName().replaceFirst("[.][^.]+$", "");
 				cert.certificate = certificate.toString();
-				if (certificate instanceof X509Certificate) {
-					X509Certificate c = (X509Certificate) certificate;
-					cert.subjectAltNames = c.getSubjectAlternativeNames();
-					// Get distinguished name
-					String dn = c.getSubjectX500Principal().getName();
-					for (String entry : dn.split(",")) {
-						String[] kv = entry.split("=");
-						switch (kv[0]) {
-						case "CN":
-							cert.subjectCN = kv[1];
-							break;
-						case "OU":
-							cert.subjectOU = kv[1];
-							break;
-						case "O":
-							cert.subjectO = kv[1];
-							break;
-						case "L":
-							cert.subjectL = kv[1];
-							break;
-						case "S":
-							cert.subjectS = kv[1];
-							break;
-						case "C":
-							cert.subjectC = kv[1];
-							break;
-						default:
-							break;
-						}
+				if (!(certificate instanceof X509Certificate)) {
+					continue;
+				}
+
+				X509Certificate c = (X509Certificate) certificate;
+				cert.subjectAltNames = c.getSubjectAlternativeNames();
+				// Get distinguished name
+				String dn = c.getSubjectX500Principal().getName();
+				for (String entry : dn.split(",")) {
+					String[] kv = entry.split("=");
+					switch (kv[0]) {
+					case "CN":
+						cert.subjectCN = kv[1];
+						break;
+					case "OU":
+						cert.subjectOU = kv[1];
+						break;
+					case "O":
+						cert.subjectO = kv[1];
+						break;
+					case "L":
+						cert.subjectL = kv[1];
+						break;
+					case "S":
+						cert.subjectS = kv[1];
+						break;
+					case "C":
+						cert.subjectC = kv[1];
+						break;
+					default:
+						break;
 					}
 				}
 
 				certs.add(cert);
 			}
-		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException
-				| IOException e) {
+		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
 		return certs;
 	}
 
-	private void doGenKeyPair(String alias, IdentitySpec spec, String keyAlgName, int keysize, String sigAlgName, File keyStoreFile) throws Exception {
+	private void doGenKeyPair(String alias, IdentitySpec spec, String keyAlgName, int keysize, String sigAlgName, File keyStoreFile) throws InterruptedException, IOException {
 		/* 
 		 * We call the keystore binary programmatically. This is portable, in contrast to creating key pairs and 
 		 * self-signed certificates programmatically, which depends on internal classes of the JVM, such as 
@@ -236,8 +318,10 @@ public class CertApi {
 		 */		
 		String[] keytoolCmd = new String[] {"keytool", 
 				"-genkey", 
-				"-alias",  "replserver", 
-				"-keyalg", "RSA", 
+				"-alias",  alias,
+				"-keyalg", keyAlgName,
+				"-keysize", Integer.toString(keysize),
+				"-sigalg", sigAlgName,
 				"-keystore", keyStoreFile.getAbsolutePath(), 
 				"-dname", "CN="+spec.cn+", OU="+spec.ou+", O="+spec.o+", L="+spec.l+", S="+ spec.s + ", C="+spec.c, 
 				"-storepass", KEYSTORE_PWD, 

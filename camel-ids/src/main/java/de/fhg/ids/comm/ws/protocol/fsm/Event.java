@@ -2,6 +2,12 @@ package de.fhg.ids.comm.ws.protocol.fsm;
 
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
+/**
+ * An FSM event which may trigger a transition.
+ * 
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
+ *
+ */
 public class Event {
 	private Object key;
 	private String payload;

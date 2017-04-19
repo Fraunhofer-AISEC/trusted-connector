@@ -3,6 +3,7 @@ package de.fhg.camel.ids.client;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.ws.DefaultWebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     private int attestationMask = 0;
     private ProtocolMachine machine;
     private boolean ratSuccess = false;
+    private SSLContextParameters params;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
     private final ConnectorMessage startMsg = Idscp.ConnectorMessage
@@ -41,11 +43,13 @@ public class IDSPListener extends DefaultWebSocketListener {
 										    		.setType(ConnectorMessage.Type.RAT_START)
 										    		.setId(new java.util.Random().nextLong())
 										    		.build();
-	;
 	
-	public IDSPListener(int attestationType, int attestationMask) {
+
+	
+	public IDSPListener(int attestationType, int attestationMask, SSLContextParameters params) {
 		this.attestationType = attestationType;
 		this.attestationMask = attestationMask;
+		this.params = params;
 	}
 
 	@Override
@@ -71,7 +75,7 @@ public class IDSPListener extends DefaultWebSocketListener {
         }
         // create Finite State Machine for IDS protocol
         machine = new ProtocolMachine();
-        fsm = machine.initIDSConsumerProtocol(websocket, type, this.attestationMask);
+        fsm = machine.initIDSConsumerProtocol(websocket, type, this.attestationMask, this.params);
         // start the protocol with the first message
         fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
     }

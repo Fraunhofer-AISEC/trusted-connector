@@ -10,7 +10,7 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 /**
  * Implementation of a finite state machine (FSM).
  * 
- * @author Julian Schuette (julian@schuette.io)
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
  */
 public class FSM {
@@ -22,9 +22,9 @@ public class FSM {
 	private String initialState = null;
 
 	public FSM() {
-		this.states = new HashMap<String, State>();
-		this.successFullChangeListeners = new HashSet<ChangeListener>();
-		this.failedChangeListeners = new HashSet<ChangeListener>();
+		this.states = new HashMap<>();
+		this.successFullChangeListeners = new HashSet<>();
+		this.failedChangeListeners = new HashSet<>();
 	}
 
 	public String getState() {

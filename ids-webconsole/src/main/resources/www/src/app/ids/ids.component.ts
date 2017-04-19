@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 import { Headers, Http, Response, RequestOptions } from '@angular/http';
 import { CanDeactivate } from '@angular/router';
+import { SettingsService } from './settings.service';
 import { Settings } from './settings.interface';
 import { environment } from '../../environments/environment';
 
@@ -11,11 +12,12 @@ import { environment } from '../../environments/environment';
 })
 export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
     public myForm: FormGroup;
+	public data: Settings;
     public submitted: boolean;
     public saved: boolean;
     public events: any[] = [];
 
-    constructor(private _fb: FormBuilder, private _http: Http) { 
+    constructor(private _fb: FormBuilder, private _http: Http, private _settingsService: SettingsService) { 
     	this.saved = true;
     }
     
@@ -24,40 +26,25 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
   	}
 
     ngOnInit() {
-        // the long way
-        // this.myForm = new FormGroup({
-        //     name: new FormControl('', [<any>Validators.required, <any>Validators.minLength(5)]),
-        //     address: new FormGroup({
-        //         address1: new FormControl('', <any>Validators.required),
-        //         postcode: new FormControl('8000')
-        //     })
-        // });
-
         // the short way
         this.myForm = this._fb.group({
             broker_url: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
-            ttp_address: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
-            
-            // This is how to deal with form groups:
-            //ttp_address: this._fb.group({
-            //    street: ['', <any>Validators.required],
-            //    postcode: ['8000']
-            //})
+            ttp_host: ['', [<any>Validators.required, <any>Validators.minLength(3)]],
+            ttp_port: ['', [<any>Validators.required, <any>Validators.maxLength(5)]],
         });
 
         // subscribe to form changes  
         this.subcribeToFormChanges();
-                
-        // This is how to update the whole form model
-        // const people = {
-        // 	name: 'Jane',
-        // 	address: {
-        // 		street: 'High street',
-        // 		postcode: '94043'
-        // 	}
-        // };
-        // (<FormGroup>this.myForm).setValue(people, { onlySelf: true });
-
+        
+		this._settingsService.getSettings().subscribe(
+       		response => {
+           		this.data = response;
+           		(<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
+           		(<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
+           		(<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
+       		}
+    	);        
+                        
     }
     
     ngAfterViewInit() {
@@ -65,7 +52,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
         (<FormControl>this.myForm.controls['broker_url']).patchValue('ids://localhost', { onlySelf: true });
     }
 
-    subcribeToFormChanges() {
+    subcribeToFormChanges() {    
         const myFormStatusChanges$ = this.myForm.statusChanges;
         const myFormValueChanges$ = this.myForm.valueChanges;
         
@@ -78,17 +65,15 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
         this.submitted = true;
         console.log(model, isValid);
         
-    	let headers = new Headers({ 'Content-Type': 'application/json' });
-    	let options = new RequestOptions({ headers: headers });
-
          // Call REST POST to store settings
-         let result = this._http.post(environment.apiURL + '/config/set', model, options)
-               .subscribe(
+		let storePromise = this._settingsService.store(model);
+		storePromise.subscribe(
 			      () => {
 			        // If saved successfully, user may leave the route (=saved=true)
 			        this.saved = true;
 			      },
 			      err => console.log("Did not save form " + err.json().message)
 			    );
+		
     }
 }

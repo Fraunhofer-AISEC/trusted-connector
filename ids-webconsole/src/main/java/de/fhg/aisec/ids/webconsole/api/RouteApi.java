@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
@@ -17,9 +18,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.api.management.mbean.ManagedRouteMBean;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,13 +137,13 @@ public class RouteApi {
 				try {
 					cCtx.startRoute(id);
 				} catch(Exception e) {
+					LOG.warn(e.getMessage(), e);
 					return "{\"status\": \"bad\"}";
 				}
 			}
 		}
-
-		return "{\"status\": \"ok\"}";
-
+		
+		return "{\"status\": \"ok\"}";	
 	}
 
 	/**
@@ -159,8 +164,9 @@ public class RouteApi {
 			if(rt != null)
 			{
 				try {
-					cCtx.suspendRoute(id);//stopRoute(id);
+					cCtx.suspendRoute(id);
 				} catch(Exception e) {
+					LOG.warn(e.getMessage(), e);
 					return "{\"status\": \"bad\"}";
 				}
 			}
@@ -224,4 +230,55 @@ public class RouteApi {
 		}
 		return result;
 	}
-}
+
+	/**
+	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
+	 */
+	@GET
+	@Path("/list_components")
+	public String listComponents() {
+		List<Map<String, String>> componentNames = new ArrayList<>();
+		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
+		if (bCtx == null) {		
+			return new GsonBuilder().create().toJson(componentNames);			
+		}
+
+		try {
+			ServiceReference<?>[] services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null);
+			for (ServiceReference<?> sr : services) {
+				String bundle = sr.getBundle().getHeaders().get("Bundle-Name");
+				if (bundle==null || "".equals(bundle)) {
+					bundle = sr.getBundle().getSymbolicName();
+				}
+				String description = sr.getBundle().getHeaders().get("Bundle-Description");
+				if (description==null) {
+					description = "";
+				}
+				Map<String, String> component = new HashMap<>();
+				component.put("name", bundle);
+				component.put("description", description);
+				componentNames.add(component);
+			}
+		} catch (InvalidSyntaxException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return new GsonBuilder().create().toJson(componentNames);			
+	}
+
+	/**
+	 * Retrieve list of currently installed endpoints (aka URIs to/from which routes exist)
+	 */
+	@GET
+	@Path("/list_endpoints")
+	public String listEndpoints() {
+		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+		Map<String,String> epURIs = new HashMap<>();
+		
+		for (CamelContext cCtx : camelO) {			
+			for (Entry<String, Endpoint> e:cCtx.getEndpointMap().entrySet()) {
+				epURIs.put(e.getKey(), e.getValue().getEndpointUri());
+			}
+		}
+		
+		return new GsonBuilder().create().toJson(epURIs);			
+	}

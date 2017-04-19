@@ -4,9 +4,16 @@ import static org.junit.Assert.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.SQLException;
 
 import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.util.jsse.ClientAuthentication;
+import org.apache.camel.util.jsse.KeyManagersParameters;
+import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.util.jsse.SSLContextServerParameters;
+import org.apache.camel.util.jsse.TrustManagersParameters;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -32,7 +39,7 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-// ADVANCED test with PCRS 0-11 i.e. bitmask is 12
+// ADVANCED test with PCRS 0-19 i.e. bitmask is 20
 public class ADVANCEDAttestationIT {
 	
 	private static RemoteAttestationConsumerHandler consumer;
@@ -40,12 +47,12 @@ public class ADVANCEDAttestationIT {
 	private static Logger LOG = LoggerFactory.getLogger(ADVANCEDAttestationIT.class);
 	private long id = 87654321;
 	private static IdsAttestationType aType = IdsAttestationType.ADVANCED;
-	private static Integer bitmask = 12;
+	private static Integer bitmask = 20;
 	
 	private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
 	
 	private ConnectorMessage msg0 = Idscp.ConnectorMessage.newBuilder().setType(ConnectorMessage.Type.RAT_START).setId(id).build();
-	
+		
 	private static ConnectorMessage msg1;
 	private static ConnectorMessage msg2;
 	private static ConnectorMessage msg3;
@@ -54,20 +61,14 @@ public class ADVANCEDAttestationIT {
 	private static ConnectorMessage msg6;
 	private static ConnectorMessage msg7;
 	private static ConnectorMessage msg8;
-	private static URI ttpUri;
-	private static Server server;
-	private static FSM fsm1;
-	private static FSM fsm2;
-	private static final String socket1 = "socket/sim1/control.sock";
-	private static final String socket2 = "socket/sim2/control.sock";
-	private static String ratRepoUri = "http://127.0.0.1:31337/configurations/check";
+	private static String PWD = "password";
+	private static String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		fsm1 = new FSM();
-		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, aType, bitmask, new URI(ratRepoUri), socket1);
-		provider = new RemoteAttestationProviderHandler(fsm2, aType, bitmask, new URI(ratRepoUri), socket2);		
+		SSLContextParameters sslContextParameters = defineClientSSLContextParameters();
+		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);		
 	}
 	
     @Test
@@ -118,7 +119,7 @@ public class ADVANCEDAttestationIT {
     	LOG.debug(msg5.toString());
     	assertTrue(msg5.getId() == id + 5);
     	assertTrue(msg5.getType().equals(ConnectorMessage.Type.RAT_RESULT));
-    	assertTrue(msg5.getAttestationResult().getResult() == true);
+    	assertTrue(msg5.getAttestationResult().getResult());
     	assertTrue(msg5.getAttestationResult().getAtype().equals(aType));
     	
     }
@@ -129,7 +130,7 @@ public class ADVANCEDAttestationIT {
     	LOG.debug(msg6.toString());
     	assertTrue(msg6.getId() == id + 6);
     	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_RESULT));
-    	assertTrue(msg6.getAttestationResult().getResult() == true);
+    	assertTrue(msg6.getAttestationResult().getResult());
     	assertTrue(msg6.getAttestationResult().getAtype().equals(aType));
     }
 
@@ -149,5 +150,37 @@ public class ADVANCEDAttestationIT {
     	assertTrue(msg8.getId() == id + 8);
     	assertTrue(msg8.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     	assertTrue(msg8.getAttestationLeave().getAtype().equals(aType));
+    }
+    
+    public static SSLContextParameters defineClientSSLContextParameters() {
+		String PWD = "password";
+		String KEYSTORE = "jsse/client-keystore.jks";
+		String TRUSTSTORE = "jsse/client-truststore.jks";
+		
+        KeyStoreParameters ksp = new KeyStoreParameters();
+        ksp.setResource(Thread.currentThread().getContextClassLoader().getResource(KEYSTORE).toString());
+        ksp.setPassword(PWD);
+
+        KeyManagersParameters kmp = new KeyManagersParameters();
+        kmp.setKeyPassword(PWD);
+        kmp.setKeyStore(ksp);
+
+        KeyStoreParameters tsp = new KeyStoreParameters();
+        tsp.setResource(Thread.currentThread().getContextClassLoader().getResource(TRUSTSTORE).toString());
+        tsp.setPassword(PWD);
+        
+        TrustManagersParameters tmp = new TrustManagersParameters();
+        tmp.setKeyStore(tsp);
+
+        SSLContextServerParameters scsp = new SSLContextServerParameters();
+        //scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
+        scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+        sslContextParameters.setKeyManagers(kmp);
+        sslContextParameters.setTrustManagers(tmp);
+        sslContextParameters.setServerParameters(scsp);
+        
+        return sslContextParameters;
     }
 }

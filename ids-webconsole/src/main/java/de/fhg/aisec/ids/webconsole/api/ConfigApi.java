@@ -1,11 +1,9 @@
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -20,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 
+import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
@@ -36,7 +34,6 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 @Path("/config")
 public class ConfigApi {
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
-	private static final String IDS_CONFIG_SERVICE = "ids-webconsole";
 	
 	@GET()
 	@Path("list")
@@ -48,7 +45,7 @@ public class ConfigApi {
 			return new GsonBuilder().create().toJson(new HashMap<>());
 		}
 		
-		Preferences prefs = cO.get().getUserPreferences(IDS_CONFIG_SERVICE);
+		Preferences prefs = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
 		HashMap<String, String> pMap = new HashMap<>();
 		try {
 			for (String key : prefs.keys()) {
@@ -75,9 +72,9 @@ public class ConfigApi {
 		}
 		
 		// Store into preferences service
-		Preferences idsConfig = cO.get().getUserPreferences(IDS_CONFIG_SERVICE);
+		Preferences idsConfig = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
 		if (idsConfig==null) {
-			return "no preferences registered for pid " + IDS_CONFIG_SERVICE;
+			return "no preferences registered for pid " + Constants.PREFERENCES_ID;
 		}
 		
 		for (Iterator<String> iterator = result.keySet().iterator(); iterator.hasNext();) {

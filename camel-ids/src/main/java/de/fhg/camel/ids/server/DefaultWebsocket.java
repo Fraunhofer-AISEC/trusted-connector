@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.UUID;
 
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -59,16 +60,17 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketClose
     public void onClose(int closeCode, String message) {
-        //LOG.trace("onClose {} {}", closeCode, message);
+        LOG.trace("onClose {} {}", closeCode, message);
         sync.removeSocket(this);
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        //LOG.trace("onConnect {}", session);
+        LOG.trace("onConnect {}", session);
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
         IdsAttestationType type;
+        SSLContextParameters params = this.consumer.getSSLContextParameters();
         int attestationMask = 0;
         switch(this.consumer.getAttestationType()) {
 	    	case 0:            
@@ -86,11 +88,10 @@ public class DefaultWebsocket implements Serializable {
 	    		break;
 	    	default:
 	    		type = IdsAttestationType.BASIC;
-	    		break;
         }
 		// Integrate server-side of IDS protocol
         machine = new ProtocolMachine();
-        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
+        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask, params);
         sync.addSocket(this);
     }
 
@@ -102,7 +103,7 @@ public class DefaultWebsocket implements Serializable {
 	        if (this.consumer != null) {
 	            this.consumer.sendMessage(this.connectionKey, message);
 	        } else {
-	            //LOG.debug("No consumer to handle message received: {}", message);
+	            LOG.trace("No consumer to handle message received: {}", message);
 	        }
 	        return;
         }
@@ -110,12 +111,12 @@ public class DefaultWebsocket implements Serializable {
         // Otherwise, we are still in the process of running IDS protocol and hold back the original message. In this case, feed the message into the protocol FSM
         try {
         	ConnectorMessage msg = ConnectorMessage.parseFrom(message.getBytes());
-        	//LOG.debug("Feeding message into provider fsm: " + message);
+
         	//we de-protobuf and split messages into cmd and payload
         	idsFsm.feedEvent(new Event(msg.getType(), message, msg));
 		} catch (InvalidProtocolBufferException e) {
 			// An invalid message has been received during IDS protocol. close connection
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			this.session.close(new CloseStatus(403, "invalid protobuf"));
 		}
         
@@ -124,16 +125,15 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
-        //LOG.debug("server received onMessage " + new String(data));
+        LOG.trace("server received onMessage " + new String(data));
         if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
-        	System.out.println("Successfully finished IDSCP");
 	        if (this.consumer != null) {
 	        	if(machine.getIDSCPProviderSuccess()) {
 	        		this.consumer.sendMessage(this.connectionKey, data);
 	        	}
 	        	else {
 	        		LOG.debug("remote attestation was NOT successful ... ");
-	        		// do stuff when attestation was not successful here
+	        		// do stuff here when attestation was not successful
 	        	}
 	        } 
 	        else {
@@ -143,11 +143,10 @@ public class DefaultWebsocket implements Serializable {
         else {
 			try {
 				ConnectorMessage msg = ConnectorMessage.parseFrom(data);
-	        	//System.out.println("Feeding message into provider fsm: " + data);
 	        	idsFsm.feedEvent(new Event(msg.getType(), new String(data), msg));	//we need to de-protobuf here and split messages into cmd and payload
 			} catch (InvalidProtocolBufferException e) {
 				// An invalid message has been received during IDS protocol. close connection
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 				this.session.close(new CloseStatus(403, "invalid protobuf"));
 			}
         }

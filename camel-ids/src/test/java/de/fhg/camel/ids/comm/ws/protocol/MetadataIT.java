@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ import de.fhg.ids.comm.ws.protocol.metadata.MetadataConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataProviderHandler;
 
 //import de.fhg.ids.docker.Docker;
-
+@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MetadataIT {
 	

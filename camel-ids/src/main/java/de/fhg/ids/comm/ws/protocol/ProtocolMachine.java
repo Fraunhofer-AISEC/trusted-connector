@@ -6,21 +6,25 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Optional;
 
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.ws.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
+import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.camel.ids.IdsProtocolComponent;
 import de.fhg.ids.comm.ws.protocol.error.ErrorHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataConsumerHandler;
-import de.fhg.ids.comm.ws.protocol.metadata.MetadataHandler;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataProviderHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
@@ -34,15 +38,17 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
  *
  */
 public class ProtocolMachine {
+	private static final String TTP_URI_PROTOCOL = "https";
+	private static final String TTP_URI_ENDPOINT_CHECK = "/configurations/check";
+	private static final Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
+	
 	/** The session to send and receive messages */
 	private WebSocket ws;
 	private Session sess;
 	private boolean ratConsumerSuccess = false;
 	private boolean ratProviderSuccess = false;
-	private String ttpURL = "http://10.1.2.19:31337/configurations/check";
 	private String socket = "/var/run/tpm2d/control.sock";
-	private Logger LOG = LoggerFactory.getLogger(ProtocolMachine.class);
-
+	
 	/** C'tor */
 	public ProtocolMachine() { }
 	
@@ -54,14 +60,14 @@ public class ProtocolMachine {
 	 * 
 	 * @return a FSM implementing the IDSP protocol.
 	 */
-	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type, int attestationMask) {
+	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
 		this.ws = websocket;
 		FSM fsm = new FSM();
 		try {
 			// set trusted third party URL
-			URI ttp = new URI(ttpURL);
+			URI ttp = getTrustedThirdPartyURL();
 			// all handler
-			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket);
+			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket, params);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();		
 			
@@ -125,9 +131,8 @@ public class ProtocolMachine {
 			/* Add listener to log state transitions*/
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState());});
 			
-		} catch (URISyntaxException e1) {
-			LOG.debug("TTP URI Syntax exception");
-			e1.printStackTrace();
+		} catch (URISyntaxException e) {
+			LOG.error("TTP URI Syntax exception", e);
 		}
 		
 		/* Run the FSM */
@@ -136,15 +141,15 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask) {
+	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
 		this.sess = sess;
 		FSM fsm = new FSM();
 		try {
 			// set trusted third party URL
-			URI ttp = new URI(ttpURL);
+			URI ttp = getTrustedThirdPartyURL();
 
 			// all handler
-			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket);
+			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket, params);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 			
@@ -203,9 +208,8 @@ public class ProtocolMachine {
 			/* Add listener to log state transitions*/
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
 			
-		} catch (URISyntaxException e1) {
-			LOG.debug("TTP URI Syntax exception");
-			e1.printStackTrace();
+		} catch (URISyntaxException e) {
+			LOG.error("TTP URI Syntax exception", e);
 		}
 
 		/* Run the FSM */
@@ -231,22 +235,13 @@ public class ProtocolMachine {
 	public boolean getIDSCPConsumerSuccess() {
 		return this.ratConsumerSuccess;
 	}
-	
-	public void setUnixSocketPath(String path) {
-		this.socket = path;
-	}
-	
-	public void setTTPUrl(String url) {
-		this.ttpURL = url;
-	}
 
 	private boolean replyProto(MessageLite message) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		//System.out.println("message to send: \n" + message.toString() + "\n");
 		try {
 			message.writeTo(bos);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		return reply(bos.toByteArray());
 	}
@@ -259,17 +254,36 @@ public class ProtocolMachine {
 	 */
 	private boolean reply(byte[] text) {
 		if (ws!=null) {
-			//System.out.println("Sending out " + text.length + " bytes");
+			LOG.trace("Sending out " + text.length + " bytes");
 			ws.sendMessage(text);
 		} else if (sess!=null) {
 			try {
 				ByteBuffer bb = ByteBuffer.wrap(text);
-				//System.out.println("Sending out ByteBuffer with " + bb.array().length + " bytes");
+				LOG.trace("Sending out ByteBuffer with " + bb.array().length + " bytes");
 				sess.getRemote().sendBytes(bb);
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Return URI of trusted third party (ttp).
+	 * 
+	 * The URI is constructed from host and port settings in the OSGi preferences service.
+	 * 
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	private URI getTrustedThirdPartyURL() throws URISyntaxException {
+		Optional<PreferencesService> prefs = IdsProtocolComponent.getPreferencesService();
+		String ttpHost = "127.0.0.1";
+		String ttpPort = "31337";
+		if (prefs.isPresent() &&  prefs.get().getUserPreferences(Constants.PREFERENCES_ID)!=null) {
+			ttpHost = prefs.get().getUserPreferences(Constants.PREFERENCES_ID).get("ttp.host", "127.0.0.1");
+			ttpPort = prefs.get().getUserPreferences(Constants.PREFERENCES_ID).get("ttp.port", "31337");
+		}
+		return new URI(TTP_URI_PROTOCOL + "://" + ttpHost + ":" + ttpPort + TTP_URI_ENDPOINT_CHECK);
 	}
 }

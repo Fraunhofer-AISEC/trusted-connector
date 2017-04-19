@@ -167,6 +167,15 @@
 			<artifactId>api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+
+		<!--  OSGi compendium services (e.g., Preferences) -->
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.compendium</artifactId>
+			<version>5.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- 
 		<dependency> 
 			<groupId>org.json</groupId> 
@@ -233,6 +242,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.19</version>
 				<configuration>
+					<skip>true</skip>
 					<argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
 					<excludes>
 						<exclude>**/WebsocketEndpointTest.java</exclude>
@@ -250,11 +260,6 @@
 						<id>integration-test</id>
 						<goals>
 							<goal>integration-test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>verify</id>
-						<goals>
 							<goal>verify</goal>
 						</goals>
 					</execution>
@@ -271,10 +276,112 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.18.1</version>
+				<configuration>
+					<startParallel>true</startParallel>
+					<showLogs>true</showLogs>
+					<autoPull>once</autoPull>
+				</configuration>
+				<executions>
+					<execution>
+						<id>run-tpm2d</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</name>
+									<alias>tpm2d</alias>
+									<run>
+										<volumes>
+											<bind>
+												<volume>${project.basedir}/socket/:/data/cml/tpm2d/communication/</volume>
+											</bind>
+										</volumes>
+										<cmd>
+											/tpm2d/cml-tpm2d
+										</cmd>
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>run-ttpsim</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</name>
+									<alias>ttp</alias>
+									<run>
+										<ports>
+											<port>31337:31337</port>
+										</ports>
+										<wait>
+											<http>
+												<url>
+													https://127.0.0.1:31337/json/configurations/
+												</url>
+												<method>
+													GET
+												</method>
+												<status>
+													200..399
+												</status>
+												<allowAllHosts>true</allowAllHosts>	
+											</http>
+											<time>30000</time>
+										</wait>
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-tpm2d</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>tpm2d</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-ttp</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<name>ttp</name>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<configuration>
-					<imageName>ids/tpm2dsim:latest</imageName>
+					<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 				</configuration>
 				<version>0.4.13</version>
@@ -293,8 +400,8 @@
 							<goal>tag</goal>
 						</goals>
 						<configuration>
-							<image>ids/tpm2dsim:latest</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</newName>
+							<image>ids/tpm2dsim:develop</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</newName>
 						</configuration>
 					</execution>
 					<execution>
@@ -304,7 +411,7 @@
 							<goal>push</goal>
 						</goals>
 						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest</imageName>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
 						</configuration>
 					</execution>
 				</executions>

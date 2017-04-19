@@ -29,3 +29,5 @@ Import-Package: \
 	jnr.enxio.channels;version=0.9.0,\
 	!org.glassfish.jersey.*,\
 	*
+-noee=true
+-dsannotations: *

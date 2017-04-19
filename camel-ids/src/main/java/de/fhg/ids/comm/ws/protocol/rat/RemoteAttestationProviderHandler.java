@@ -1,16 +1,9 @@
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.util.Arrays;
-import java.util.Random;
 
-import javax.xml.bind.DatatypeConverter;
-
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,21 +13,15 @@ import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
-import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
-import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
@@ -50,10 +37,11 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private URI ttpUri;
 	private boolean yourSuccess = false;
 	private boolean mySuccess = false;
-	private AttestationResponse resp;
 	private int attestationMask = 0;
+	private SSLContextParameters sslParams;
+	private AttestationResponse resp;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket, SSLContextParameters params) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
@@ -61,6 +49,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
 		this.attestationMask = attestationMask;
+		this.sslParams = params;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
@@ -86,7 +75,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public MessageLite enterRatRequest(Event e) {
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData();
 		// generate a new software nonce on the client and send it to server
-		this.myNonce = NonceGenerator.generate();
+		this.myNonce = NonceGenerator.generate(40);
 		// get starting session id
 		this.sessionID = e.getMessage().getId();
 		return ConnectorMessage
@@ -174,7 +163,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public MessageLite sendResult(Event e) {
 		if(this.checkSignature(this.resp, this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), this.resp, ttpUri)) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri, this.sslParams)) {
 					this.mySuccess = true;					
 				}
 				return ConnectorMessage
