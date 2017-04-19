@@ -1,17 +1,11 @@
 package de.fhg.ids.attestation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.UUID;
@@ -20,27 +14,22 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.camel.test.AvailablePortFinder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.google.protobuf.MessageLite;
 
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.ids.attestation.RemoteAttestationServer;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
 /**
  * Unit test for ratRepositoryTest
@@ -51,7 +40,6 @@ public class RatRepositoryTest {
 	static Pcr[] values;
 	static String zero = "0000000000000000000000000000000000000000000000000000000000000000";
 	static String fff = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-	private static HttpURLConnection conn;
 	private static int port = AvailablePortFinder.getNextAvailable();
 	private static SSLContext sc;
 	private static HostnameVerifier hv;

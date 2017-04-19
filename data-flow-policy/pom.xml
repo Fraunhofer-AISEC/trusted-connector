@@ -14,16 +14,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.fhg.aisec</groupId>
 	<artifactId>data-flow-policy</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
-  
-  <parent>
-    <groupId>de.fhg.ids</groupId>
-    <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
-  </parent>
+
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.0.0</version>
+	</parent>
 
 	<name>Data Flow Policy</name>
 
@@ -43,7 +41,7 @@
 			<artifactId>camel-core</artifactId>
 			<version>${camel-version}</version>
 		</dependency>
-		
+
 
 		<!-- logging -->
 		<dependency>
@@ -61,7 +59,7 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>2.6.2</version>
-		</dependency>		
+		</dependency>
 
 
 		<!-- for testing -->
@@ -137,7 +135,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.0</version>	
+				<version>3.0.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

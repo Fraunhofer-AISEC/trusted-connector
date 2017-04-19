@@ -1,15 +1,10 @@
 package de.fhg.ids.attestation;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,12 +19,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 @Path("/")
 public class REST {

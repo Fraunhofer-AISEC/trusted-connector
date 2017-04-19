@@ -7,7 +7,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 public class ProtobufFeature implements Feature {
-    @Override
+    
     public boolean configure(final FeatureContext context) {
         final Configuration config = context.getConfiguration();
 

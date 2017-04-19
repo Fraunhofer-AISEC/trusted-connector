@@ -17,7 +17,6 @@
 package de.fhg.camel.ids.client;
 
 import java.net.URI;
-import java.net.URL;
 
 import org.apache.camel.component.ahc.AhcComponent;
 import org.apache.camel.component.ahc.AhcEndpoint;

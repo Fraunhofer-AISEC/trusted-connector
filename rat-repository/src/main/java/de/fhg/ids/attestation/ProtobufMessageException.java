@@ -4,7 +4,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 public class ProtobufMessageException extends WebApplicationException {
-    public ProtobufMessageException(Throwable cause) {
+
+	private static final long serialVersionUID = 5346755086120085544L;
+
+	public ProtobufMessageException(Throwable cause) {
         super(cause);
     }
 

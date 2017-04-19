@@ -1,29 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
-	license agreements. See the NOTICE file distributed with this work for additional
-	information regarding copyright ownership. The ASF licenses this file to
-	You under the Apache License, Version 2.0 (the "License"); you may not use
-	this file except in compliance with the License. You may obtain a copy of
-	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
-	by applicable law or agreed to in writing, software distributed under the
-	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
-	OF ANY KIND, either express or implied. See the License for the specific
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	You under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
 	language governing permissions and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.fhg.ids</groupId>
 	<artifactId>ids-webconsole</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
-  
-  <parent>
-    <groupId>de.fhg.ids</groupId>
-    <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
-  </parent>
+
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.0.0</version>
+	</parent>
 
 	<name>IDS Core Platform Webconsole</name>
 
@@ -51,21 +49,21 @@
 			<version>3.1.5</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.google.code.gson</groupId>
-		    <artifactId>gson</artifactId>
-		    <version>2.7</version>
-		    <scope>compile</scope>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.7</version>
+			<scope>compile</scope>
 		</dependency>
 
 
 		<!-- servlets -->
 		<dependency>
-		    <groupId>javax.servlet</groupId>
-		    <artifactId>javax.servlet-api</artifactId>
-		    <version>3.1.0</version>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
 		</dependency>
 
-		<!--  Camel -->
+		<!-- Camel -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
@@ -79,9 +77,9 @@
 
 		<!-- OSGi core framework and compendium services -->
 		<dependency>
-		    <groupId>org.apache.felix</groupId>
-		    <artifactId>org.apache.felix.framework</artifactId>
-		    <version>5.4.0</version>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.apache.felix.framework</artifactId>
+			<version>5.4.0</version>
 		</dependency>
 
 		<dependency>
@@ -128,15 +126,16 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 
-		<!-- Do not copy everything from src/main/resources, but rather only blueprint descriptor and compiled Angular stuff -->
+		<!-- Do not copy everything from src/main/resources, but rather only blueprint 
+			descriptor and compiled Angular stuff -->
 		<resources>
-		  <resource>
-		    <directory>src/main/resources/</directory>
-		    <includes>
-		      <include>www/dist</include>
-		      <include>OSGI-INF/**</include>
-		    </includes>
-		  </resource>
+			<resource>
+				<directory>src/main/resources/</directory>
+				<includes>
+					<include>www/dist</include>
+					<include>OSGI-INF/**</include>
+				</includes>
+			</resource>
 		</resources>
 
 		<plugins>
@@ -164,9 +163,9 @@
 				</executions>
 			</plugin>
 
-			<!-- The following configuration is required because bnd-maven-plugin
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up
+			<!-- The following configuration is required because bnd-maven-plugin 
+				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
+				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
 				the manifest from this location, then the following config is not needed. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -185,8 +184,8 @@
 				<version>1.3.2</version>
 
 				<executions>
-					<!-- Required: The following will ensure `npm install` is called
-					     before anything else during the 'Default Lifecycle' -->
+					<!-- Required: The following will ensure `npm install` is called before 
+						anything else during the 'Default Lifecycle' -->
 
 					<execution>
 						<id>npm install (initialize)</id>
@@ -203,8 +202,8 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: The following will ensure `npm install` is called
-					     before anything else during the 'Clean Lifecycle' -->
+					<!-- Required: The following will ensure `npm install` is called before 
+						anything else during the 'Clean Lifecycle' -->
 
 					<execution>
 						<id>npm install (clean)</id>
@@ -220,9 +219,8 @@
 						</configuration>
 					</execution>
 
-					<!-- Optional: The following will output the npm configuration.
-					     I do this so my CI logs will show the npm information used
-							 for the build -->
+					<!-- Optional: The following will output the npm configuration. I do 
+						this so my CI logs will show the npm information used for the build -->
 					<execution>
 						<id>npm config list (validate)</id>
 						<goals>
@@ -238,9 +236,8 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: This following calls `npm run build` where 'build' is
-					     the script name I used in my project, change this if yours is
-							 different -->
+					<!-- Required: This following calls `npm run build` where 'build' is 
+						the script name I used in my project, change this if yours is different -->
 					<execution>
 						<id>npm run build (compile)</id>
 						<goals>
@@ -256,22 +253,12 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: The following calls the npm script that cleans
-					     up the build. -->
-			<!--		<execution>
-						<id>npm run clean (clean)</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>clean</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>clean</argument>
-							</arguments>
-						</configuration>
-					</execution> -->
+					<!-- Required: The following calls the npm script that cleans up the 
+						build. -->
+					<!-- <execution> <id>npm run clean (clean)</id> <goals> <goal>exec</goal> 
+						</goals> <phase>clean</phase> <configuration> <executable>npm</executable> 
+						<arguments> <argument>run</argument> <argument>clean</argument> </arguments> 
+						</configuration> </execution> -->
 
 				</executions>
 
@@ -285,7 +272,7 @@
 						<NPM_CONFIG_TMP>${project.build.directory}/npmtmp</NPM_CONFIG_TMP>
 					</environmentVariables>
 					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
-			</configuration>
+				</configuration>
 			</plugin>
 
 
@@ -294,7 +281,8 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
