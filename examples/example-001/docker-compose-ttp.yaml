@@ -1,0 +1,14 @@
+version: '2'
+services:
+
+  # Image for TPM trusted third party (RAT repository)
+  provider-ttpsim:      
+    image: app-store.isst.fraunhofer.de:5000/ids/ttpsim:0.1
+    ports:
+      - "31337:31337"
+    networks:
+      - ids-wide
+
+networks:
+  ids-wide:
+    driver: bridge

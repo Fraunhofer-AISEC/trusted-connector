@@ -33,7 +33,7 @@ public class NodeData {
 	public String label;
 	public String shape;
 	public String edgeLabel;
-	public String tooltop;
+	public String tooltip;
 	public String nodeType;
 	public boolean nodeWritten;
 	public String url;
@@ -49,13 +49,13 @@ public class NodeData {
 		}
 		if (node instanceof FromDefinition) {
 			FromDefinition fromType = (FromDefinition) node;
-			this.tooltop = fromType.getLabel();
-			this.label = removeQueryString(this.tooltop);
+			this.tooltip = fromType.getLabel();
+			this.label = removeQueryString(this.tooltip);
 			this.url = "http://camel.apache.org/message-endpoint.html";
 		} else if (node instanceof ToDefinition) {
 			ToDefinition toType = (ToDefinition) node;
-			this.tooltop = toType.getLabel();
-			this.label = removeQueryString(this.tooltop);
+			this.tooltip = toType.getLabel();
+			this.label = removeQueryString(this.tooltip);
 			this.edgeLabel = "";
 			this.url = "http://camel.apache.org/message-endpoint.html";
 		} else if (node instanceof FilterDefinition) {
@@ -71,7 +71,7 @@ public class NodeData {
 			this.nodeType = "Otherwise";
 			this.edgeLabel = "";
 			this.url = "http://camel.apache.org/content-based-router.html";
-			this.tooltop = "Otherwise";
+			this.tooltip = "Otherwise";
 		} else if (node instanceof ChoiceDefinition) {
 			this.image = imagePrefix + "ContentBasedRouterIcon.png";
 			this.nodeType = "Content Based Router";
@@ -132,12 +132,12 @@ public class NodeData {
 				this.label = node.toString();
 			}
 		}
-		if (isEmpty(this.tooltop)) {
+		if (isEmpty(this.tooltip)) {
 			if (isNotEmpty(this.nodeType)) {
 				String description = isNotEmpty(this.edgeLabel) ? this.edgeLabel : this.label;
-				this.tooltop = this.nodeType + ": " + description;
+				this.tooltip = this.nodeType + ": " + description;
 			} else {
-				this.tooltop = this.label;
+				this.tooltip = this.label;
 			}
 		}
 		if (isEmpty(this.url) && isNotEmpty(this.nodeType)) {

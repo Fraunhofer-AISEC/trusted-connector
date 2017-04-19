@@ -20,7 +20,7 @@ import org.apache.camel.model.ToDefinition;
 
 /**
  * Converts Camel route definition into a graphviz visualization.
- * 
+ *
  * Shameless plug from http://gitbucket.ms123.org/simpl4/simpl4-src/blob/cea07cf9be5abe751692965c291a2ac4b838dc89/bundles/camel/src/main/java/org/ms123/common/camel/view/RouteDotGenerator.java
  *
  */
@@ -43,7 +43,7 @@ public class CamelRouteToDot {
 			writer.write("label = \"" + group + "\";\n");
 			writer.write("color = grey;\n");
 			writer.write("style = \"dashed\";\n");
-			writer.write("URL = \"" + group + ".html\";\n\n");
+			//writer.write("URL = \"" + group + ".html\";\n\n");
 		}
 		for (RouteDefinition route : routes) {
 			List<FromDefinition> inputs = route.getInputs();
@@ -59,22 +59,22 @@ public class CamelRouteToDot {
 
 	/**
 	 * Prints graphviz code of a single RouteDefinition to the provided PrintWriter.
-	 * 
+	 *
 	 * @param writer
 	 * @param route
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
-		writer.write("digraph { rankdir=LR; size=\"6,7\" \n\n");
-		writer.write("node [style = \"rounded,filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
+		writer.write("digraph { rankdir=LR; size=\"4.5,5.5\" \n\n");
+		writer.write("node [shape=\"box\", style = \"filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
 		List<FromDefinition> inputs = route.getInputs();
 		for (FromDefinition input : inputs) {
 			printRoute(writer, route, input);
 		}
-		
+
 		writer.write("\n}");
 	}
-	
+
 	protected void printRoute(Writer writer, final RouteDefinition route, FromDefinition input) throws IOException {
 		NodeData nodeData = getNodeData(input);
 
@@ -114,7 +114,7 @@ public class CamelRouteToDot {
 
 			String label = fromData.edgeLabel;
 			if (isNotEmpty(label)) {
-				writer.write("label = \"" + label + "\"\n");
+				writer.write("label = \"" +  label.substring(0,Math.min(5, label.length())) + (label.length()>5?"..":"") + "\"\n");
 			}
 			writer.write("];\n");
 		}
@@ -139,11 +139,11 @@ public class CamelRouteToDot {
 			writer.write("\n");
 			writer.write(data.id + "\n");
 			writer.write(" [\n");
-			writer.write("label = \"" + data.label + "\"\n");
-			writer.write("tooltip = \"" + data.tooltop + "\"\n");
-			if (data.url != null) {
+			writer.write("label = \"" + data.label.substring(0,Math.min(10, data.label.length())) + (data.label.length()>10?"..":"") + "\"\n");
+			writer.write("tooltip = \"" + data.tooltip + "\"\n");
+			/*if (data.url != null) {
 				writer.write("URL = \"" + data.url + "\"\n");
-			}
+			}*/
 
 			String image = data.image;
 			if (image != null) {

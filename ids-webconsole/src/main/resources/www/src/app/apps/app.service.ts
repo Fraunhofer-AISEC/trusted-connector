@@ -9,7 +9,9 @@ import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AppService {
-  constructor(private http: Http) { }
+  constructor(private http: Http) {
+    console.log("constructor AppService");
+  }
 
   getApps() {
     return this.http.get(environment.apiURL + '/apps/list/')

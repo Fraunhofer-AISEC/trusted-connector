@@ -30,6 +30,7 @@ import { FileWindow } from './keycerts/uploadCert';
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
+import { SensorService } from './sensor/sensor.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -78,6 +79,7 @@ import 'material-design-lite';
     RouteService,
     SettingsService,
     CertificateService,
+    SensorService,
     ConfirmService,
     Title
   ],

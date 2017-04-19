@@ -294,10 +294,64 @@ header.iot-connector-header.mdl-layout__header {
 }
 
 .bold {
-  font-weight: 800;	
+  font-weight: 800;
 }
 
 .card-dark > .mdl-card__title {
   color: #fff;
   background: rgb(28, 43, 54);
+}
+
+.axis {
+  stroke-width: 1;
+}
+
+.axis .tick line {
+  stroke: #c0c0c0;
+}
+
+.axis .tick text {
+  fill: #c0c0c0;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+}
+
+.axis .domain {
+  fill: none;
+  stroke: #c0c0c0;
+}
+
+.group {
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5;
+}
+
+.area {
+  fill: rgb(32, 158, 145);
+  stroke-width: 0;
+}
+
+.chart-filled
+{
+  fill: rgb(32, 158, 145);
+}
+
+.chart-filled-error
+{
+  fill: rgb(255, 0, 0) !important;
+}
+
+.chart-empty
+{
+  fill: #dedede;
+}
+
+.needle, .needle-center
+{
+  fill: #464A4F;
+}
+
+.activity-card .mdl-card__supporting-text {
+  width: 98%;
 }

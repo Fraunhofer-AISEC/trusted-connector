@@ -35,7 +35,7 @@ import { AppService } from './app.service';
         Status: {{app.status}}<br />
       </div>
       <div class="mdl-card__actions mdl-card--border">
-      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" (click)="onToggle(app.id)">
+      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
         <i class="material-icons">{{statusIcon}}</i>
       </button>
 
