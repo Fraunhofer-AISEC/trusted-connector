@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.webconsole.api.helper;
+package de.fhg.aisec.ids.rm.util;
 
 import java.util.ArrayList;
 import java.util.List;

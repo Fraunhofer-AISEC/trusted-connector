@@ -4,7 +4,7 @@ testsrc=src/test/java
 testbin=target/test-classes
 target-dir=target
 -includeresource: src/main/resources
-Bundle-Version: 1.0.0
+Bundle-Version: 1.1.0
 Bundle-Name: rat-repository
 Bundle-Description: attestation repository for the IDS protocol
 Bundle-Copyright: Fraunhofer 2016

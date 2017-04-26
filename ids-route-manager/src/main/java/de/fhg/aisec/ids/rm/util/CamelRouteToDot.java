@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.webconsole.api.helper;
+package de.fhg.aisec.ids.rm.util;
 
 import static org.apache.camel.util.ObjectHelper.isNotEmpty;
 

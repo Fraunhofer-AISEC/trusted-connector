@@ -1,6 +1,9 @@
 package de.fhg.aisec.ids.api.router;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Interface of internal routing manager inside the Core Platform.
@@ -13,6 +16,29 @@ import java.nio.ByteBuffer;
  */
 public interface RouteManager {
 
+
+	public List<RouteObject> getRoutes();
+	
+	/**
+	 * Starts a route.
+	 * 
+	 * @param routeId
+	 */
+	public void startRoute(String routeId) throws Exception;
+	
+	/**
+	 * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver pending exchanges.
+	 * 
+	 * @param routeId
+	 */
+	public void stopRoute(String routeId) throws Exception;
+	
+	public List<RouteComponent> listComponents();
+	
+	public Map<String, Collection<String>> getEndpoints();
+	
+	public Map<String,String> listEndpoints();
+	
 	/**
 	 * Adds a route from one endpoint to another. 
 	 * 

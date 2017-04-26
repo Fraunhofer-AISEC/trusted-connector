@@ -1,16 +1,10 @@
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,9 +12,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
-import org.apache.camel.Route;
-import org.apache.camel.api.management.mbean.ManagedRouteMBean;
 import org.apache.camel.model.RouteDefinition;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -31,8 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 
+import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.helper.CamelRouteToDot;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -61,67 +52,30 @@ public class RouteApi {
 	@Path("list")
 	@Produces("application/json")
 	public String list() {
-		List<HashMap<String, String>> result = new ArrayList<>();
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-
-		// Create response
-		for (CamelContext cCtx : camelO) {
-			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
-				// ---- HACK FOR DEMO: REMOVE SPECIFIC NAMES FROM ROUTE LIST
-				if ((!rd.getId().contains("Power") &&
-						!rd.getId().contains("IDS-Protocol") &&
-						!rd.getId().contains("Cloud")) || rd.getId().contains("LED")) {
-					continue;
-				}
-				// ---- END OF HACK
-				result.add(routeDefinitionToMap(cCtx, rd));
-			}
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
 		}
-
-		return new GsonBuilder().create().toJson(result);
+		
+		return new GsonBuilder().create().toJson(rm.get().getRoutes());
 	}
 
-	@GET
-	@Path("/get/{id}")
-	@Produces("application/json")
-	public String get(String id) {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		HashMap<String, String> result = new HashMap<>();
-		for (CamelContext cCtx : camelO) {
-			RouteDefinition def = cCtx.getRouteDefinition(id);
-			if (def != null) {
-				result = routeDefinitionToMap(cCtx, def);
-				break;
-			}
-
-		}
-		return new GsonBuilder().create().toJson(result);
-	}
-
-	private HashMap<String, String> routeDefinitionToMap(CamelContext cCtx, RouteDefinition rd) {
-		HashMap<String, String> route = new HashMap<>();
-		route.put("id", rd.getId());
-		route.put("description", (rd.getDescriptionText()!=null)?rd.getDescriptionText():"");
-		route.put("dot", routeToDot(rd)); // Visualize route in graphviz
-		route.put("shortName", rd.getShortName());
-		route.put("context", cCtx.getName());
-
-		route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
-		route.put("status", cCtx.getRouteStatus(rd.getId()).toString());
-
-		ManagedRouteMBean mr = cCtx.getManagedRoute(rd.getId(), ManagedRouteMBean.class);
-		if(mr != null) {
-			try {
-				route.put("messages", "" + mr.getExchangesTotal());
-			} catch(Exception ex) {
-				route.put("messages", "0");
-			}
-		} else {
-			route.put("messages", "0");
-		}
-
-		return route;
-	}
+//	@GET
+//	@Path("/get/{id}")
+//	@Produces("application/json")
+//	public String get(String id) {		
+//		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+//		HashMap<String, String> result = new HashMap<>();
+//		for (CamelContext cCtx : camelO) {
+//			RouteDefinition def = cCtx.getRouteDefinition(id);
+//			if (def != null) {
+//				result = routeDefinitionToMap(cCtx, def);
+//				break;
+//			}
+//
+//		}
+//		return new GsonBuilder().create().toJson(result);
+//	}
 
 	/**
 	 * Stop a route based on an id.
@@ -129,22 +83,16 @@ public class RouteApi {
 	@GET
 	@Path("/startroute/{id}")
 	public String startRoute(@PathParam("id") String id) {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-
-		for (CamelContext cCtx : camelO) {
-			Route rt = cCtx.getRoute(id);
-			if(rt != null)
-			{
-				try {
-					cCtx.startRoute(id);
-				} catch(Exception e) {
-					LOG.warn(e.getMessage(), e);
-					return "{\"status\": \"bad\"}";
-				}
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				rm.get().startRoute(id);
+			} catch (Exception e) {
+				return "{\"status:\": \"error\"}";
 			}
+			return "{\"status\": \"ok\"}";	
 		}
-		
-		return "{\"status\": \"ok\"}";	
+		return "{\"status:\": \"error\"}";
 	}
 
 	/**
@@ -158,23 +106,16 @@ public class RouteApi {
 	@GET
 	@Path("/stoproute/{id}")
 	public String stopRoute(@PathParam("id") String id) {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-
-		for (CamelContext cCtx : camelO) {
-			Route rt = cCtx.getRoute(id);
-			if(rt != null)
-			{
-				try {
-					cCtx.suspendRoute(id);
-				} catch(Exception e) {
-					LOG.warn(e.getMessage(), e);
-					return "{\"status\": \"bad\"}";
-				}
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				rm.get().stopRoute(id);
+			} catch (Exception e) {
+				return "{\"status:\": \"error\"}";
 			}
+			return "{\"status\": \"ok\"}";	
 		}
-
-		return "{\"status\": \"ok\"}";
-
+		return "{\"status:\": \"error\"}";
 	}
 
 	/**
@@ -190,9 +131,11 @@ public class RouteApi {
 	@Path("components")
 	@Produces("application/json")
 	public String getComponents() {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		Map<String, List<String>> components = camelO.stream().collect(Collectors.toMap(c -> c.getName(), c -> c.getComponentNames()));
-		return new GsonBuilder().create().toJson(components);
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
+		}
+		return new GsonBuilder().create().toJson(rm.get().listComponents());
 	}
 
 	/**
@@ -208,28 +151,11 @@ public class RouteApi {
 	@Path("endpoints")
 	@Produces("application/json")
 	public String getEndpoints() {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		Map<String, Collection<String>> endpoints = camelO.stream().collect(Collectors.toMap(ctx -> ctx.getName(), ctx -> ctx.getEndpoints()
-				.stream()
-				.map(ep -> ep.getEndpointUri())
-				.collect(Collectors.toList())));
-		return new GsonBuilder().create().toJson(endpoints);
-	}
-
-
-	private String routeToDot(RouteDefinition rd) {
-		String result="";
-		try {
-			CamelRouteToDot viz = new CamelRouteToDot();
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, "UTF-8"));
-			viz.printSingleRoute(writer, rd);
-			writer.flush();
-			result = bos.toString("UTF-8");
-		} catch (IOException e) {
-			LOG.error(e.getMessage(), e);
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
 		}
-		return result;
+		return new GsonBuilder().create().toJson(rm.get().getEndpoints());
 	}
 
 	/**
@@ -272,15 +198,10 @@ public class RouteApi {
 	@GET
 	@Path("/list_endpoints")
 	public String listEndpoints() {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		Map<String,String> epURIs = new HashMap<>();
-		
-		for (CamelContext cCtx : camelO) {			
-			for (Entry<String, Endpoint> e:cCtx.getEndpointMap().entrySet()) {
-				epURIs.put(e.getKey(), e.getValue().getEndpointUri());
-			}
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
 		}
-		
-		return new GsonBuilder().create().toJson(epURIs);			
+		return new GsonBuilder().create().toJson(rm.get().listEndpoints());
 	}
 }

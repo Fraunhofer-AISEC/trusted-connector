@@ -81,11 +81,12 @@
         <bundle dependency="true">mvn:com.codepoetics/protonpack/1.10</bundle>
 
         <!-- IDS specific bundles -->
-        <bundle start-level="80">mvn:de.fhg.ids/api/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.ids/ids-webconsole/1.0.0</bundle> 
-        <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.ids/ids-container-manager/1.0.0</bundle>
-        <bundle start-level="80">mvn:de.fhg.aisec/data-flow-policy/1.0.0</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/api/1.1.0-SNAPSHOT</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/ids-webconsole/1.1.0-SNAPSHOT</bundle> 
+        <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.1.0-SNAPSHOT</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/ids-container-manager/1.1.0-SNAPSHOT</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/ids-route-manager/1.1.0-SNAPSHOT</bundle>
+        <bundle start-level="80">mvn:de.fhg.aisec/data-flow-policy/1.1.0-SNAPSHOT</bundle>
 
     </feature>
 </features>

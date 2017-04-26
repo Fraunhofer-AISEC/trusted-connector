@@ -1,15 +1,8 @@
 package de.fhg.aisec.ids.webconsole;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
-import org.apache.camel.CamelContext;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -22,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.cm.ContainerManager;
+import de.fhg.aisec.ids.api.router.RouteManager;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -43,46 +37,11 @@ public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
 	private static Optional<PreferencesService> configService = Optional.empty();
 	private static Optional<ContainerManager> cml = Optional.empty();
+	private static Optional<RouteManager> rm = Optional.empty();
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) {
 		LOG.info("IDS webconsole activated");
-	}
-	
-	public static List<CamelContext> getCamelContexts() {
-		// Get OSGi bundle context
-		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
-		if (bCtx==null) {
-			LOG.warn("Component not activated. Cannot list camel contexts.");
-			return new ArrayList<>();
-		}
-
-		// List all camel contexts in current JVM
-		List<CamelContext> camelContexts = new ArrayList<>();
-		try {
-			ServiceReference<?>[] references = bCtx.getServiceReferences(CamelContext.class.getName(), null);
-			if (references == null) {
-				LOG.warn("No camel contexts.");
-				return new ArrayList<>();
-			}
-
-			for (ServiceReference<?> reference : references) {
-				if (reference == null) {
-					continue;
-				}
-
-				CamelContext camelCtx = (CamelContext) bCtx.getService(reference);
-				if (camelCtx != null) {
-					camelContexts.add(camelCtx);
-				}
-			}
-		} catch (Exception e) {
-			LOG.warn("Cannot retrieve list of Camel contexts.", e);
-		}
-
-		// sort the list
-		Collections.sort(camelContexts, (o1, o2) -> o1.getName().compareTo(o2.getName()));
-		return camelContexts;
 	}
 	
 	@Deactivate
@@ -124,5 +83,23 @@ public class WebConsoleComponent {
 
 	public static Optional<PreferencesService> getConfigService() {
 		return WebConsoleComponent.configService;
+	}
+	
+	@Reference(name = "rm.service",
+            service = RouteManager.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindRouteManagerService")
+	protected void bindRouteManagerService(RouteManager rm) {
+		LOG.info("Bound to route manager");
+		WebConsoleComponent.rm  = Optional.of(rm);
+	}
+
+	protected void unbindRouteManagerService(RouteManager rm) {
+		WebConsoleComponent.rm = Optional.empty();		
+	}
+	
+	public static Optional<RouteManager> getRouteManager() {
+		return WebConsoleComponent.rm;
 	}
 }

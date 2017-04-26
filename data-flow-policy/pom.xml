@@ -14,13 +14,15 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Different groupId is intended. This is not only IDS specific -->
+	<groupId>de.fhg.aisec</groupId>
 	<artifactId>data-flow-policy</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>de.fhg.ids</groupId>
 		<artifactId>core-platform</artifactId>
-		<version>1.0.0</version>
+		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
 	<name>Data Flow Policy</name>
