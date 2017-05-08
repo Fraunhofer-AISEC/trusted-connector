@@ -86,6 +86,7 @@
         <bundle start-level="80">mvn:de.fhg.ids/camel-ids/1.1.0-SNAPSHOT</bundle>
         <bundle start-level="80">mvn:de.fhg.ids/ids-container-manager/1.1.0-SNAPSHOT</bundle>
         <bundle start-level="80">mvn:de.fhg.ids/ids-route-manager/1.1.0-SNAPSHOT</bundle>
+        <bundle start-level="80">mvn:de.fhg.ids/ids-dataflow-control/1.1.0-SNAPSHOT</bundle>
         <bundle start-level="80">mvn:de.fhg.aisec/data-flow-policy/1.1.0-SNAPSHOT</bundle>
 
     </feature>

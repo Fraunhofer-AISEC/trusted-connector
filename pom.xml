@@ -14,6 +14,7 @@
     <module>ids-route-manager</module>
     <module>ids-container-manager</module>
     <module>ids-webconsole</module>
+    <module>ids-dataflow-control</module>
     <module>karaf-feature-ids</module>
     <module>data-flow-policy</module>
     <module>karaf-assembly</module>

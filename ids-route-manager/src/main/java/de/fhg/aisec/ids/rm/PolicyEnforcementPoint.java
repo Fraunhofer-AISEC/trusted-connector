@@ -1,4 +1,4 @@
-package de.fhg.aisec.dfpolicy;
+package de.fhg.aisec.ids.rm;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,18 +13,26 @@ import org.apache.camel.processor.SendProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MyProcessor implements AsyncProcessor {
-	
-    private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
+import de.fhg.aisec.ids.api.policy.DecisionRequest;
+import de.fhg.aisec.ids.api.policy.PDP;
+import de.fhg.aisec.ids.api.policy.PolicyDecision;
+
+/**
+ * 
+ * @author Mathias Morbitzer (mathias.morbitzer@aisec.fraunhofer.de)
+ *
+ */
+public class PolicyEnforcementPoint implements AsyncProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);  
     private Processor target;
-    private final PolicyDecisionPoint pdp;
+	private RouteManagerService rm;
     
-    
-    public MyProcessor(Processor target) {
+    public PolicyEnforcementPoint(Processor target, RouteManagerService rm) {
     	this.target = target;
-    	this.pdp = PolicyDecisionPoint.getInstance();
+    	this.rm = rm;
     }
-        
+    
+    @Override
     public void process(Exchange exchange) throws Exception {
     	// Check if environment is usable as expected
     	if (target==null || exchange==null || !(target instanceof InstrumentationProcessor)) {
@@ -37,51 +45,47 @@ public class MyProcessor implements AsyncProcessor {
 			LOG.warn("Not a SendProcessor. Skipping");
 			return;
 		}
-    	
-    	LOG.info("Start 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());		
 		
+		if (rm==null || rm.getPdp()==null) {
+			LOG.warn("No policy decision point registered. Leaving events uncontrolled");
+			return;
+		}
+
 		// get labels from Exchange property
 		String exchangeLabelsRaw = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
 		String[] labelArray = exchangeLabelsRaw.split(",");
-		Set<String> exchangeLabels = new HashSet<String>(Arrays.asList(labelArray));
-		
+		Set<String> exchangeLabels = new HashSet<>(Arrays.asList(labelArray));
+
 		//figure out where the message comes from and where it should go to
 		SendProcessor sendprocessor = (SendProcessor) ((InstrumentationProcessor) target).getProcessor();
 		String destination = sendprocessor.getEndpoint().getEndpointUri();
 		String source = exchange.getFromEndpoint().getEndpointUri();
 		
-		LOG.info("********************************************");
 		LOG.info("START: Check if label(s) exist in allow rules for destination " + destination);
 		
 		// Call PDP to transform labels and decide whether we may forward the Exchange
-		boolean isAllowed = pdp.decide(source, destination, exchangeLabels);
+		PDP pdp = rm.getPdp();
+		PolicyDecision decision = pdp.requestDecision(new DecisionRequest(source, destination, exchangeLabels));
 
-		LOG.info("STOP: Check if label(s) exist in allow rules.");
-		LOG.info("********************************************");
-
-		if (isAllowed) {
-			LOG.info("Message with labels  '" + exchangeLabelsRaw +"' has all required labels for destination '" + destination + "', forwarding...");
-
-			// store labels in message body
-			/* TODO COMMENTED OUT BY JULIAN. The rules should determine whether labels should be persisted in body
-			String body = exchange.getIn().getBody().toString();
-			if (body.startsWith("Labels: ") && body.contains("\n\n")) {
-				body = body.substring(body.indexOf("\n\n") + "\n\n".length(), body.length() - 1 );
-			}
-			exchange.getIn().setBody("Labels: " + exchangeLabelsRaw + "\n\n" + body); */
-					
+		switch (decision.getDecision()) {
+		case DON_T_CARE:
+		case ALLOW:
 			// forward the Exchange
 			target.process(exchange);
+			break;
+		case DENY:
+		default:
+			exchange.setException(new Exception("Exchange blocked by policy"));
 		}
-		
+
 		LOG.info("Stop 'process' with endpoint ..." + exchange.getFromEndpoint().getEndpointUri());
     }
-	
+
 	@Override
-	public boolean process(Exchange exchange, AsyncCallback ac) {
+	public boolean process(Exchange exchange, AsyncCallback callback) {
 		try {
 			process(exchange);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 		}
 		return true;

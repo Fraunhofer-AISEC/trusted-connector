@@ -1,7 +1,8 @@
 package de.fhg.aisec.ids.api.policy;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Data structure holding a decision request which is sent to the PDP.
@@ -13,9 +14,9 @@ import java.util.Map;
 public class DecisionRequest {
 	private String from;
 	private String to;
-	private Map<String, Object> ctx = new HashMap<String, Object>();
+	private Set<String> ctx = new HashSet<String>();
 	
-	public DecisionRequest(String from, String to, Map<String, Object> ctx) {
+	public DecisionRequest(String from, String to, Set<String> ctx) {
 		super();
 		this.from = from;
 		this.to = to;
@@ -63,7 +64,7 @@ public class DecisionRequest {
 	 * - etc.
 	 * @return
 	 */
-	public Map<String, Object> getCtx() {
+	public Set<String> getCtx() {
 		return ctx;
 	}
 }

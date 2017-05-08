@@ -18,10 +18,9 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class PDP {
-	
-    private static final Logger LOG = LoggerFactory.getLogger(PDP.class);
-	private static PDP instance;
+public class PolicyDecisionPoint {	
+    private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
+	private static PolicyDecisionPoint instance;
 	private static final String RULE_FILE_NAME = "de.fhg.dfcontrol.rules.cfg";
 	private List<LabelingRule> labelRules = new ArrayList<>();
 	private List<AllowRule> allowRules = new ArrayList<>();
@@ -30,7 +29,7 @@ public class PDP {
 	String rulefile;
 
 	/* Private C'tor, do not call */
-	private PDP() {    	
+	private PolicyDecisionPoint() {    	
 		rp = new RuleParser();
 		
 		// Look for the rulefile in different directories
@@ -57,9 +56,9 @@ public class PDP {
 	 * 
 	 * @return
 	 */
-	public static PDP getInstance() {
+	public static PolicyDecisionPoint getInstance() {
 		if (instance == null) {
-			instance = new PDP();
+			instance = new PolicyDecisionPoint();
 		}
 		return instance;
 	}

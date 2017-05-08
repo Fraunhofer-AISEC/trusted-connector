@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +19,21 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.spi.InterceptStrategy;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.router.RouteComponent;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
@@ -34,7 +42,61 @@ import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
 @Component(enabled=true, immediate=true, name="ids-routemanager")
 public class RouteManagerService implements RouteManager {
 	private static final Logger LOG = LoggerFactory.getLogger(RouteManagerService.class);
+	private PDP pdp;
+	private ComponentContext ctx;
 
+	@Activate
+	protected void activate(ComponentContext ctx) {
+		System.out.println("Route manager activated. Registering route event listener");
+		this.ctx = ctx;
+	}
+	
+	@Reference(name="routemanager-camelcontext", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.MULTIPLE)
+	public void bindCamelContext(CamelContext cCtx) {
+		System.out.println("Was bound to CamelContext " + cCtx + " !!!");
+		try {
+			cCtx.stop();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		CamelInterceptor interceptor = new CamelInterceptor(this);
+		cCtx.addInterceptStrategy(interceptor);		
+		cCtx.setDefaultTracer(interceptor);
+		for (Route r: cCtx.getRoutes()) {
+			try {
+				cCtx.stopRoute(r.getId());
+				cCtx.startRoute(r.getId());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		List<InterceptStrategy> interceptors = cCtx.getInterceptStrategies();		
+		try {
+			cCtx.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		for (InterceptStrategy i : interceptors) {
+			System.out.println("  Interceptor: " + i.getClass());			
+		}		
+	}
+	public void unbindCamelContext(CamelContext cCtx) {
+		System.out.println("unbound from CamelContext " + cCtx);		
+	}
+	
+	@Reference(name="routemanager-pdp", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
+	public void bindPdp(PDP pdp) {
+		System.out.println("Was bound to PDP " + pdp + " !!!");
+		this.pdp = pdp;
+	}
+	public void unbindPdp(PDP pdp) {
+		System.out.println("unbound from PDP " + pdp);
+		this.pdp = null;
+	}
+	public PDP getPdp() {
+		return pdp;
+	}
+	
 	@Override
 	public List<RouteObject> getRoutes() {
 		List<RouteObject> result = new ArrayList<>();
@@ -166,48 +228,56 @@ public class RouteManagerService implements RouteManager {
 		// TODO Auto-generated method stub
 
 	}
-	
-	private static List<CamelContext> getCamelContexts() {
-		// Get OSGi bundle context
-		BundleContext bCtx = FrameworkUtil.getBundle(RouteManagerService.class).getBundleContext();
-		if (bCtx==null) {
-			LOG.warn("Component not activated. Cannot list camel contexts.");
-			return new ArrayList<>();
-		}
-
-		// List all camel contexts in current JVM
+		
+	private List<CamelContext> getCamelContexts() {
 		List<CamelContext> camelContexts = new ArrayList<>();
-		try {
-			ServiceReference<?>[] references = bCtx.getServiceReferences(CamelContext.class.getName(), null);
-			if (references == null) {
-				LOG.warn("No camel contexts.");
-				return new ArrayList<>();
-			}
+		   List<Map<String, String>> answer = new ArrayList<Map<String, String>>();
 
-			for (ServiceReference<?> reference : references) {
-				if (reference == null) {
-					continue;
-				}
+	        try {
+	            ServiceReference<?>[] references = this.ctx.getBundleContext().getServiceReferences(CamelContext.class.getName(), null);
+	            if (references != null) {
+	                for (ServiceReference<?> reference : references) {
+	                    if (reference != null) {
+	                        CamelContext camelContext = (CamelContext) this.ctx.getBundleContext().getService(reference);
+	                        if (camelContext != null) {
+	                            camelContexts.add(camelContext);
+	                        }
+	                    }
+	                }
+	            }
+	        } catch (Exception e) {
+	            LOG.warn("Cannot retrieve the list of Camel contexts.", e);
+	        }
 
-				CamelContext camelCtx = (CamelContext) bCtx.getService(reference);
-				if (camelCtx != null) {
-					camelContexts.add(camelCtx);
-				}
-			}
-		} catch (Exception e) {
-			LOG.warn("Cannot retrieve list of Camel contexts.", e);
-		}
+	        // sort the list
+	        Collections.sort(camelContexts, new Comparator<CamelContext>() {
+	            @Override
+	            public int compare(CamelContext o1, CamelContext o2) {
+	                return o1.getName().compareTo(o2.getName());
+	            }
+	        });
 
-		// sort the list
-		Collections.sort(camelContexts, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+	    System.out.println("Returning " +  camelContexts.size() + " camel contexts");
 		return camelContexts;
 	}
 
+	/**
+	 * Wraps a RouteDefinition in a RouteObject for use over API.
+	 * 
+	 * @param cCtx
+	 * @param rd
+	 * @return
+	 */
 	private RouteObject routeDefinitionToObject(CamelContext cCtx, RouteDefinition rd) {
 		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
 	}
 	
-
+	/**
+	 * Creates a visualization of a Camel route in DOT (graphviz) format.
+	 *  
+	 * @param rd
+	 * @return
+	 */
 	private String routeToDot(RouteDefinition rd) {
 		String result="";
 		try {

@@ -2,9 +2,9 @@ src: src/main/java
 bin: target/classes
 testsrc: src/test/java
 testbin: target/test-classes
-Bundle-Name: ids-container-manager
-Bundle-Version: 1.0.0
-Export-Package: de.fhg.aisec.ids.cm
+Bundle-Name: ids-dataflow-control
+Bundle-Version: 1.1.0
+Export-Package: de.fhg.ids.dataflowcontrol
 -dsannotations: *
 Bundle-Vendor: Fraunhofer
 -noee=true

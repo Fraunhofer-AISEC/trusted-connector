@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>ids-container-manager</artifactId>
+	<artifactId>ids-dataflow-control</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>

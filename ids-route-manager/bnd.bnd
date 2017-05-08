@@ -16,4 +16,5 @@ Import-Package: \
 	*
 -noee=true
 -dsannotations: *
+-contract: !org.apache.camel.CamelContext,*
 Private-Package: de.fhg.aisec.ids.rm.util
