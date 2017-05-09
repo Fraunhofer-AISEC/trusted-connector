@@ -33,6 +33,5 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/core-3.1.33.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

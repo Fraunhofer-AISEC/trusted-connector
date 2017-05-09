@@ -1,5 +1,7 @@
 package de.fhg.aisec.ids.api.policy;
 
+import java.io.InputStream;
+
 /**
  * Policy Administration Point Interface.
  * 
@@ -8,9 +10,7 @@ package de.fhg.aisec.ids.api.policy;
  */
 public interface PAP {
 	
-	public void setPolicy();
+	public void loadPolicy(InputStream is);
 	
 	public String getPolicy();
-	
-	
 }

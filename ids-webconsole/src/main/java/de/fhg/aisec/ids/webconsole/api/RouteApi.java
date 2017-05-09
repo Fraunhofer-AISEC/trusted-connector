@@ -11,8 +11,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.model.RouteDefinition;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -23,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
@@ -60,22 +59,20 @@ public class RouteApi {
 		return new GsonBuilder().create().toJson(rm.get().getRoutes());
 	}
 
-//	@GET
-//	@Path("/get/{id}")
-//	@Produces("application/json")
-//	public String get(String id) {		
-//		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-//		HashMap<String, String> result = new HashMap<>();
-//		for (CamelContext cCtx : camelO) {
-//			RouteDefinition def = cCtx.getRouteDefinition(id);
-//			if (def != null) {
-//				result = routeDefinitionToMap(cCtx, def);
-//				break;
-//			}
-//
-//		}
-//		return new GsonBuilder().create().toJson(result);
-//	}
+	@GET
+	@Path("/get/{id}")
+	@Produces("application/json")
+	public String get(String id) {		
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
+		}
+		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getRouteId())).findAny();
+		if (!oRoute.isPresent()) {
+			return "{}";
+		}
+		return new GsonBuilder().create().toJson(oRoute.get());
+	}
 
 	/**
 	 * Stop a route based on an id.
@@ -88,6 +85,7 @@ public class RouteApi {
 			try {
 				rm.get().startRoute(id);
 			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
 				return "{\"status:\": \"error\"}";
 			}
 			return "{\"status\": \"ok\"}";	
@@ -96,12 +94,7 @@ public class RouteApi {
 	}
 
 	/**
-	 * Stop a route based on an id.
-	 *
-	 *
-	 *
-	 *
-	 *
+	 * Stop a route based on its id.
 	 */
 	@GET
 	@Path("/stoproute/{id}")
@@ -111,6 +104,7 @@ public class RouteApi {
 			try {
 				rm.get().stopRoute(id);
 			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
 				return "{\"status:\": \"error\"}";
 			}
 			return "{\"status\": \"ok\"}";	

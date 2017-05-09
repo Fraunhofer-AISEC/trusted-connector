@@ -14,10 +14,15 @@ public class PolicyDecisionPoint implements PDP {
 
 	@Override
 	public PolicyDecision requestDecision(DecisionRequest req) {
-		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo() + " : " + String.join(", ", req.getCtx()));
+		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo() + " : " + String.join(", ", req.getMessageCtx().get("labels")));
 		PolicyDecision dec = new PolicyDecision();
 		dec.setDecision(PolicyDecision.Decision.ALLOW);
 		dec.setReason("Dummy");
 		return dec;
+	}
+
+	@Override
+	public void clearAllCaches() {
+		// Nothing to do here at the moment		
 	}
 }

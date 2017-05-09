@@ -1,8 +1,7 @@
 package de.fhg.aisec.ids.rm;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
@@ -26,6 +25,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);  
     private Processor target;
 	private RouteManagerService rm;
+	private static final String LABELS = "labels";
     
     public PolicyEnforcementPoint(Processor target, RouteManagerService rm) {
     	this.target = target;
@@ -52,9 +52,9 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
 		}
 
 		// get labels from Exchange property
-		String exchangeLabelsRaw = (exchange.getProperty("labels") == null) ? "" : exchange.getProperty("labels").toString();
-		String[] labelArray = exchangeLabelsRaw.split(",");
-		Set<String> exchangeLabels = new HashSet<>(Arrays.asList(labelArray));
+		String exchangeLabelsRaw = (exchange.getProperty(LABELS) == null) ? "" : exchange.getProperty(LABELS).toString();
+		Map<String, String> msgCtx = new HashMap<>();
+		msgCtx.put(LABELS, exchangeLabelsRaw);
 
 		//figure out where the message comes from and where it should go to
 		SendProcessor sendprocessor = (SendProcessor) ((InstrumentationProcessor) target).getProcessor();
@@ -65,7 +65,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
 		
 		// Call PDP to transform labels and decide whether we may forward the Exchange
 		PDP pdp = rm.getPdp();
-		PolicyDecision decision = pdp.requestDecision(new DecisionRequest(source, destination, exchangeLabels));
+		PolicyDecision decision = pdp.requestDecision(new DecisionRequest(source, destination, msgCtx, null));
 
 		switch (decision.getDecision()) {
 		case DON_T_CARE:

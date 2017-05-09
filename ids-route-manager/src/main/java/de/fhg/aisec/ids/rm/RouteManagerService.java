@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
 import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.spi.InterceptStrategy;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -47,17 +45,15 @@ public class RouteManagerService implements RouteManager {
 
 	@Activate
 	protected void activate(ComponentContext ctx) {
-		System.out.println("Route manager activated. Registering route event listener");
 		this.ctx = ctx;
 	}
 	
 	@Reference(name="routemanager-camelcontext", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.MULTIPLE)
 	public void bindCamelContext(CamelContext cCtx) {
-		System.out.println("Was bound to CamelContext " + cCtx + " !!!");
 		try {
 			cCtx.stop();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		CamelInterceptor interceptor = new CamelInterceptor(this);
 		cCtx.addInterceptStrategy(interceptor);		
@@ -67,30 +63,26 @@ public class RouteManagerService implements RouteManager {
 				cCtx.stopRoute(r.getId());
 				cCtx.startRoute(r.getId());
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 			}
 		}
-		List<InterceptStrategy> interceptors = cCtx.getInterceptStrategies();		
 		try {
 			cCtx.start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
-		for (InterceptStrategy i : interceptors) {
-			System.out.println("  Interceptor: " + i.getClass());			
-		}		
 	}
 	public void unbindCamelContext(CamelContext cCtx) {
-		System.out.println("unbound from CamelContext " + cCtx);		
+		LOG.info("unbound from CamelContext " + cCtx);		
 	}
 	
 	@Reference(name="routemanager-pdp", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
 	public void bindPdp(PDP pdp) {
-		System.out.println("Was bound to PDP " + pdp + " !!!");
+		LOG.info("Bound to pdp " + pdp);
 		this.pdp = pdp;
 	}
 	public void unbindPdp(PDP pdp) {
-		System.out.println("unbound from PDP " + pdp);
+		LOG.info("unbound from PDP " + pdp);
 		this.pdp = null;
 	}
 	public PDP getPdp() {
@@ -157,7 +149,7 @@ public class RouteManagerService implements RouteManager {
 				componentNames.add(new RouteComponent(bundle, description));
 			}
 		} catch (InvalidSyntaxException e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		return componentNames;			
 	}
@@ -165,11 +157,10 @@ public class RouteManagerService implements RouteManager {
 	@Override
 	public Map<String, Collection<String>> getEndpoints() {
 		List<CamelContext> camelO = getCamelContexts();
-		Map<String, Collection<String>> endpoints = camelO.stream().collect(Collectors.toMap(ctx -> ctx.getName(), ctx -> ctx.getEndpoints()
+		return camelO.stream().collect(Collectors.toMap(ctx -> ctx.getName(), ctx -> ctx.getEndpoints()
 				.stream()
 				.map(ep -> ep.getEndpointUri())
 				.collect(Collectors.toList())));
-		return endpoints;
 	}
 	
 	@Override
@@ -231,33 +222,24 @@ public class RouteManagerService implements RouteManager {
 		
 	private List<CamelContext> getCamelContexts() {
 		List<CamelContext> camelContexts = new ArrayList<>();
-		   List<Map<String, String>> answer = new ArrayList<Map<String, String>>();
+        try {
+            ServiceReference<?>[] references = this.ctx.getBundleContext().getServiceReferences(CamelContext.class.getName(), null);
+            if (references != null) {
+                for (ServiceReference<?> reference : references) {
+                    if (reference != null) {
+                        CamelContext camelContext = (CamelContext) this.ctx.getBundleContext().getService(reference);
+                        if (camelContext != null) {
+                            camelContexts.add(camelContext);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Cannot retrieve the list of Camel contexts.", e);
+        }
 
-	        try {
-	            ServiceReference<?>[] references = this.ctx.getBundleContext().getServiceReferences(CamelContext.class.getName(), null);
-	            if (references != null) {
-	                for (ServiceReference<?> reference : references) {
-	                    if (reference != null) {
-	                        CamelContext camelContext = (CamelContext) this.ctx.getBundleContext().getService(reference);
-	                        if (camelContext != null) {
-	                            camelContexts.add(camelContext);
-	                        }
-	                    }
-	                }
-	            }
-	        } catch (Exception e) {
-	            LOG.warn("Cannot retrieve the list of Camel contexts.", e);
-	        }
-
-	        // sort the list
-	        Collections.sort(camelContexts, new Comparator<CamelContext>() {
-	            @Override
-	            public int compare(CamelContext o1, CamelContext o2) {
-	                return o1.getName().compareTo(o2.getName());
-	            }
-	        });
-
-	    System.out.println("Returning " +  camelContexts.size() + " camel contexts");
+        // sort the list
+        Collections.sort(camelContexts, (ctx1, ctx2) -> ctx1.getName().compareTo(ctx2.getName()));
 		return camelContexts;
 	}
 

@@ -1,8 +1,7 @@
 package de.fhg.aisec.ids.api.policy;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Data structure holding a decision request which is sent to the PDP.
@@ -14,13 +13,15 @@ import java.util.Set;
 public class DecisionRequest {
 	private String from;
 	private String to;
-	private Set<String> ctx = new HashSet<String>();
+	private Map<String, String> msgCtx = new HashMap<>();
+	private Map<String, String> envCtx = new HashMap<>();
 	
-	public DecisionRequest(String from, String to, Set<String> ctx) {
+	public DecisionRequest(String from, String to, Map<String, String> msgCtx, Map<String, String> envCtx) {
 		super();
 		this.from = from;
 		this.to = to;
-		this.ctx = ctx;
+		this.msgCtx = msgCtx;
+		this.envCtx = envCtx;
 	}
 	
 	/**
@@ -56,15 +57,32 @@ public class DecisionRequest {
 	}
 	
 	/**
-	 * A decision context may hold additional information which is passed at attributes to the PDP.
+	 * A decision context may hold additional information about the message/event.
+	 * It is passed as attributes to the PDP.
+	 * 
 	 * The context may include 
-	 * - a reference to previously taken decisions for the sake of caching
-	 * - a reason for the request
 	 * - timestamps
+	 * - route ids
 	 * - etc.
 	 * @return
 	 */
-	public Set<String> getCtx() {
-		return ctx;
+	public Map<String, String> getMessageCtx() {
+		return msgCtx;
+	}
+
+	/**
+	 * A decision context may hold additional information about the overall 
+	 * system environment of the PEP..
+	 * It is passed as attributes to the PDP.
+	 * 
+	 * The context may include 
+	 * - a reference to previously taken decisions for the sake of caching
+	 * - a reason for the request
+	 * - identifiers of available components
+	 * - etc.
+	 * @return
+	 */
+	public Map<String, String> getEnvironmentCtx() {
+		return envCtx;
 	}
 }

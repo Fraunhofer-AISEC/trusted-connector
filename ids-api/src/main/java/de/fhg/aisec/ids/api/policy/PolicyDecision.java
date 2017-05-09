@@ -4,6 +4,7 @@ public class PolicyDecision {
 	public enum Decision {
 		ALLOW, DENY, DON_T_CARE
 	}
+
 	private String reason;
 	private Decision decision;
 	
