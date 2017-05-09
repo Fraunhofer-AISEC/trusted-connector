@@ -16,16 +16,21 @@ import { RouteService } from '../routes/route.service';
 export class DashboardComponent extends SubscriptionComponent implements OnInit {
   @Output() changeTitle = new EventEmitter();
   private camelComponents: any;
+  apps: App[];
+  messages: number = 0;
 
-  constructor(private titleService: Title, private routeService: RouteService) {
+  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService) {
   	 super();
-     this.titleService.setTitle('Dashboard');
+     this.titleService.setTitle('Overview');
+
+    this.appService.getApps().subscribe(apps => {
+      this.apps = apps;
+    });
   }
 
   ngOnInit(): void {
     this.changeTitle.emit('Dashboard');
     this.routeService.listComponents().subscribe(result => {this.camelComponents = result});
-    console.log(this.camelComponents);
   }
 
 }
