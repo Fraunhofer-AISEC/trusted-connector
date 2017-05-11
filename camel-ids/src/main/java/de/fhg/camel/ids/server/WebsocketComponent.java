@@ -203,6 +203,7 @@ public class WebsocketComponent extends UriEndpointComponent {
 
             NodeSynchronization sync = new DefaultNodeSynchronization(connectorRef.memoryStore);
             WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
+           
             if (prodcon instanceof WebsocketConsumer) {
                 WebsocketConsumer consumer = WebsocketConsumer.class.cast(prodcon);
                 if (servlet.getConsumer() == null) {

@@ -8,6 +8,7 @@ Bundle-Vendor: Fraunhofer Gesellschaft
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
 -includeresource: src/main/resources
 Export-Package: de.fhg.camel.ids.server,\
+	de.fhg.cael.ids.connectionmanagement,\
 	de.fhg.camel.ids.client
 Import-Package: \
 	de.fhg.aisec.ids.messages, \
