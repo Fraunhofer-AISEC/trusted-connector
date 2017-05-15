@@ -1,8 +1,10 @@
 package de.fhg.camel.ids.connectionmanagement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -13,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPConnection;
+import de.fhg.camel.ids.server.WebsocketComponent;
+
 
 
 /**
@@ -43,11 +47,18 @@ public class ConnectionManagerService implements ConnectionManager {
 	@Override
 	public List<IDSCPConnection> listConnections() {
 		//TODO: Replace mock data with the real stuff
+		Set<String> keySet = WebsocketComponent.CONNECTORS.keySet();
 		List<IDSCPConnection> connections = new ArrayList<IDSCPConnection>();
-		connections.add(new IDSCPConnection("abc", "good"));
-		connections.add(new IDSCPConnection("cde", "bad"));
-		connections.add(new IDSCPConnection("hif", "ugly"));
+		for (String key : keySet) {
+			connections.add(new IDSCPConnection(key, "someConnection"));
+		}
+		
+
 		return connections;
 	}
+	
+//	public void setConnectors(HashMap<String, ConnectorRef> connectors) {
+//		
+//	}
 
 }

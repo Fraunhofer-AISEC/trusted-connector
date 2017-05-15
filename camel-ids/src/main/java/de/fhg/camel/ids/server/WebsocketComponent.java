@@ -24,6 +24,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import javax.servlet.DispatcherType;
 
 import org.apache.camel.Endpoint;
@@ -56,10 +58,14 @@ import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.camel.ids.IdsProtocolComponent;
+
 public class WebsocketComponent extends UriEndpointComponent {
 
     protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
-    protected static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<String, ConnectorRef>();
+    //TODO: Making this public is a bit of a hack. 
+    public static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<String, ConnectorRef>();
 
     protected SSLContextParameters sslContextParameters;
     protected MBeanContainer mbContainer;
@@ -84,34 +90,6 @@ public class WebsocketComponent extends UriEndpointComponent {
      */
     private Map<String, WebsocketComponentServlet> servlets = new HashMap<String, WebsocketComponentServlet>();
 
-    class ConnectorRef {
-        Server server;
-        ServerConnector connector;
-        WebsocketComponentServlet servlet;
-        MemoryWebsocketStore memoryStore;
-        int refCount;
-
-        ConnectorRef(Server server, ServerConnector connector, WebsocketComponentServlet servlet, MemoryWebsocketStore memoryStore) {
-            this.server = server;
-            this.connector = connector;
-            this.servlet = servlet;
-            this.memoryStore = memoryStore;
-            increment();
-        }
-
-        public int increment() {
-            return ++refCount;
-        }
-
-        public int decrement() {
-            return --refCount;
-        }
-
-        public int getRefCount() {
-            return refCount;
-        }
-    }
-
     public WebsocketComponent() {
         super(WebsocketEndpoint.class);
 
@@ -119,6 +97,11 @@ public class WebsocketComponent extends UriEndpointComponent {
             this.socketFactory = new HashMap<String, WebSocketFactory>();
             this.socketFactory.put("ids", new DefaultWebsocketFactory());
         }
+//		Optional<ConnectionManager> connectionManager = IdsProtocolComponent.getConnectionManager();
+//		if (connectionManager.isPresent()) {
+//			connectionManager.get().listConnections();
+//			
+//		}
     }
 
     /**
