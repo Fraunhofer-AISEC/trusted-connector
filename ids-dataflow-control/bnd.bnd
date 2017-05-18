@@ -6,6 +6,7 @@ Bundle-Name: ids-dataflow-control
 Bundle-Version: 1.1.0
 Export-Package: de.fhg.ids.dataflowcontrol
 -dsannotations: *
+-includeresource: META-INF/lib/tuprolog.jar=tuprolog-[0-9]*.jar;lib:=true
 Bundle-Vendor: Fraunhofer
 -noee=true
 Import-Package: \

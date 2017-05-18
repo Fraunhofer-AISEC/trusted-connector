@@ -34,6 +34,14 @@
 	</properties>
 
 	<dependencies>
+		<!--  tuprolog -->
+		<dependency>
+		    <groupId>it.unibo.alice.tuprolog</groupId>
+		    <artifactId>tuprolog</artifactId>
+		    <version>3.2.1</version>
+		    <scope>provided</scope>
+		</dependency>
+	
 		<!-- IDS components -->
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
