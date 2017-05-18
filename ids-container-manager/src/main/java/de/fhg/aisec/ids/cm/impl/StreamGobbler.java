@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StreamGobbler extends Thread {
+	private static final Logger LOG = LoggerFactory.getLogger(StreamGobbler.class);
     InputStream is;
     OutputStream out;
     
@@ -14,18 +18,20 @@ public class StreamGobbler extends Thread {
         this.out = out;
     }
 
+    @Override
     public void run() {
         try {
             copy(is, out);
         } catch (IOException ioe) {
-            ioe.printStackTrace();  
+            LOG.error(ioe.getMessage(), ioe);  
         }
     }
     
     private static void copy(InputStream in, OutputStream out) throws IOException {
         while (true) {
           int c = in.read();
-          if (c == -1) break;
+          if (c == -1)
+        	  break;
           out.write((char)c);
         }
       }
@@ -35,7 +41,7 @@ public class StreamGobbler extends Thread {
 			out.flush();
 			out.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
     	
     }

@@ -83,6 +83,7 @@ public class UnixSocketThread implements Runnable {
 	}	
 	
 	// thread run method
+	@Override
 	public void run() {
 		while (true) {
 			try {

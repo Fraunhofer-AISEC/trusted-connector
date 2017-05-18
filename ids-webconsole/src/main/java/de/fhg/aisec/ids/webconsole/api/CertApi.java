@@ -1,5 +1,14 @@
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -15,15 +24,16 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.core.MediaType;
 
-
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,11 +41,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-
-import java.io.*;
  
 /**
  * REST API interface for managing certificates in the connector.

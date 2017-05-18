@@ -17,12 +17,12 @@ public class MyProcessor implements AsyncProcessor {
 	
     private static final Logger LOG = LoggerFactory.getLogger(MyProcessor.class);  
     private Processor target;
-    private final PDP pdp;
+    private final PolicyDecisionPoint pdp;
     
     
     public MyProcessor(Processor target) {
     	this.target = target;
-    	this.pdp = PDP.getInstance();
+    	this.pdp = PolicyDecisionPoint.getInstance();
     }
         
     public void process(Exchange exchange) throws Exception {

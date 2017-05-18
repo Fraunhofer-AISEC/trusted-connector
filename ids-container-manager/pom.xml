@@ -20,7 +20,7 @@
 	<parent>
 		<groupId>de.fhg.ids</groupId>
 		<artifactId>core-platform</artifactId>
-		<version>1.0.0</version>
+		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
 	<name>IDS Container Manager</name>
@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
 			<artifactId>api</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 
@@ -107,7 +107,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<goals>
