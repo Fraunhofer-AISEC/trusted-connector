@@ -10,4 +10,5 @@ Export-Package: de.fhg.ids.dataflowcontrol
 Bundle-Vendor: Fraunhofer
 -noee=true
 Import-Package: \
+	!alice.tuprolog*,\
 	*
