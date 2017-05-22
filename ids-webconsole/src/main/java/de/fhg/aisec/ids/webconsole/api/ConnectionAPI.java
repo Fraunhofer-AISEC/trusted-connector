@@ -20,7 +20,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 /**
  * REST API interface for managing connections from and to the connector.
  * 
- * The API will be available at http://localhost:8181/cxf/api/v1/connections/<method>.
+ * The API will be available at st<method>.
  *                              
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *

@@ -1,11 +1,16 @@
 package de.fhg.camel.ids.connectionmanagement;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -15,7 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPConnection;
+import de.fhg.camel.ids.server.ConnectorRef;
+import de.fhg.camel.ids.server.DefaultWebsocket;
+import de.fhg.camel.ids.server.MemoryWebsocketStore;
 import de.fhg.camel.ids.server.WebsocketComponent;
+import de.fhg.camel.ids.server.WebsocketComponentServlet;
 
 
 
@@ -46,19 +55,35 @@ public class ConnectionManagerService implements ConnectionManager {
 
 	@Override
 	public List<IDSCPConnection> listConnections() {
-		//TODO: Replace mock data with the real stuff
-		Set<String> keySet = WebsocketComponent.CONNECTORS.keySet();
 		List<IDSCPConnection> connections = new ArrayList<IDSCPConnection>();
-		for (String key : keySet) {
-			connections.add(new IDSCPConnection(key, "someConnection"));
-		}
 		
+		Set<String> keySet = WebsocketComponent.CONNECTORS.keySet();
+		Iterator<Entry<String, ConnectorRef>> it =  WebsocketComponent.CONNECTORS.entrySet().iterator();
+	    while (it.hasNext()) {
+	    	IDSCPConnection idscpc = new IDSCPConnection();
+	    	
+	        Map.Entry<String, ConnectorRef> pair = (Map.Entry<String, ConnectorRef>)it.next();
+	        ConnectorRef connectorRef = pair.getValue();
+	        MemoryWebsocketStore memoryStore = connectorRef.getMemoryStore();
+	        Server server = connectorRef.getServer();
+	        WebsocketComponentServlet servlet = connectorRef.getServlet();
+	        idscpc.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
+	        String protocol = servlet.getConsumer().getEndpoint().getProtocol();
+	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
+	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
+	        String protocolState;
+	        //Assume only websocket per endpoint
+	        while(webSocketIterator.hasNext())  {
+	        	DefaultWebsocket dws = webSocketIterator.next();
+	        	String connectionKey = dws.getConnectionKey();
+	        	idscpc.setAttestationResult(dws.getCurrentProtocolState());
+	        	
+	        }
+	        connections.add(idscpc);
+	        it.remove(); // avoids a ConcurrentModificationException
+	    }
 
 		return connections;
 	}
 	
-//	public void setConnectors(HashMap<String, ConnectorRef> connectors) {
-//		
-//	}
-
 }

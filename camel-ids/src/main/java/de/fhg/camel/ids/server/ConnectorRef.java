@@ -3,7 +3,7 @@ package de.fhg.camel.ids.server;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 
-class ConnectorRef {
+public class ConnectorRef {
     Server server;
     ServerConnector connector;
     WebsocketComponentServlet servlet;
@@ -28,6 +28,22 @@ class ConnectorRef {
 
     public int getRefCount() {
         return refCount;
+    }
+    
+    public Server getServer(){
+    	return this.server;
+    }
+    
+    public ServerConnector getConnector() {
+    	return this.connector;
+    }
+    
+    public WebsocketComponentServlet getServlet() {
+    	return this.servlet;
+    }
+    
+    public MemoryWebsocketStore getMemoryStore() {
+    	return this.memoryStore;
     }
 }
 
