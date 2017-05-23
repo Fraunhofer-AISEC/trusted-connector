@@ -50,6 +50,8 @@ public class DefaultWebsocket implements Serializable {
     private String connectionKey;
 	private FSM idsFsm;
 
+	
+
     public DefaultWebsocket(NodeSynchronization sync, WebsocketConsumer consumer) {
         this.sync = sync;
         this.consumer = consumer;
@@ -164,4 +166,9 @@ public class DefaultWebsocket implements Serializable {
     public void setConnectionKey(String connectionKey) {
         this.connectionKey = connectionKey;
     }
+    
+    //get the current State of the FSM
+	public String getCurrentProtocolState() {
+		return idsFsm.getState();
+	}
 }

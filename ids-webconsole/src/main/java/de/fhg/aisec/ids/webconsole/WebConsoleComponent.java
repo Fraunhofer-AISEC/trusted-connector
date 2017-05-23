@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -30,14 +31,17 @@ import de.fhg.aisec.ids.api.router.RouteManager;
  * be deactivated and/or removed in productive use.
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
  */
+
 @Component(name="ids-webconsole")
 public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
 	private static Optional<PreferencesService> configService = Optional.empty();
 	private static Optional<ContainerManager> cml = Optional.empty();
 	private static Optional<RouteManager> rm = Optional.empty();
+	private static Optional<ConnectionManager> connectionManager = Optional.empty();
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) {
@@ -58,13 +62,32 @@ public class WebConsoleComponent {
 		LOG.info("Bound to container manager");
 		WebConsoleComponent.cml= Optional.of(cml);
 	}
-
+	
+	
 	protected void unbindContainerManagerService(ContainerManager http) {
 		WebConsoleComponent.cml = Optional.empty();		
 	}
 	
 	public static Optional<ContainerManager> getContainerManager() {
 		return WebConsoleComponent.cml;
+	}
+	
+    @Reference(name = "connections.service",
+            service = ConnectionManager.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindConnectionManager")
+    protected void bindConnectionManager(ConnectionManager conn) {
+        LOG.info("Bound to connection manager");
+        WebConsoleComponent.connectionManager= Optional.of(conn);
+    }
+
+    protected void unbindConnectionManager(ConnectionManager conn) {
+        WebConsoleComponent.connectionManager = Optional.empty();      
+    }
+
+	public static Optional<ConnectionManager> getConnectionManager() {
+		return WebConsoleComponent.connectionManager;
 	}
 
 	@Reference(name = "config.service",
