@@ -69,7 +69,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			}
 			
 			// If there is no matching rule, deny by default
-			if (solveInfo.size() == 0) {
+			if (solveInfo.isEmpty()) {
 				dec.setDecision(Decision.DENY);
 				return dec;
 			}
@@ -83,6 +83,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			}
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);
+			dec.setDecision(Decision.DENY);
 		}
 		return dec;
 	}

@@ -34,18 +34,17 @@ public class LuconEngine {
 		p = new Prolog();
 
 		// Add some listeners for logging/debugging
-		p.addTheoryListener(te -> LOG.debug("New Prolog theory loaded"));
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
-		p.addQueryListener(q -> LOG.debug("Prolog query " + q.getSolveInfo().getQuery().toString()));
+		p.addQueryListener(q -> LOG.trace("Prolog query " + q.getSolveInfo().getQuery().toString()));
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
 		p.addOutputListener(l -> { 
-			try {
-				if (out!=null) {
-					out.write(l.getMsg().getBytes());
+			if (out!=null) {
+				try {
+					out.write(l.getMsg().getBytes());					
+				} catch (Exception e) {
+					LOG.error(e.getMessage(), e);
 				}
-			} catch (Exception e) {
-				LOG.error(e.getMessage(), e);
-			} 
+			}
 		});
 	}
 
