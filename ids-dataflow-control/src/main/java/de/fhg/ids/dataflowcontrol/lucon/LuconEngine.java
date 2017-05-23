@@ -61,11 +61,12 @@ public class LuconEngine {
 	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException, NoSolutionException {
 		List<SolveInfo> result = new ArrayList<>();
 		SolveInfo solution = p.solve(query);
-		System.out.println(solution.getSolution());
-		while (findAll && solution.isSuccess()) {
+		while (solution.isSuccess()) {
 			result.add(solution);
-			if (p.hasOpenAlternatives()) {
+			if (findAll & p.hasOpenAlternatives()) {
 				solution = p.solveNext();
+			} else {
+				break;
 			}
 		}
 		p.solveEnd();
