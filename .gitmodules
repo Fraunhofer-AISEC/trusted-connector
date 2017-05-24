@@ -1,3 +1,3 @@
 [submodule "docs"]
 	path = docs
-	url = git@github.com:Fraunhofer-AISEC/trusted-iot-connector-documentation.git
+	url = https://github.com/Fraunhofer-AISEC/trusted-iot-connector-documentation.git
