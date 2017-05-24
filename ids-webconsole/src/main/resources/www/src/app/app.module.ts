@@ -81,6 +81,7 @@ import 'material-design-lite';
     CertificateService,
     SensorService,
     ConfirmService,
+    IdsComponent,
     Title
   ],
   bootstrap: [

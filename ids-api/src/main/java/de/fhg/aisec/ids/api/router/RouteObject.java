@@ -3,23 +3,25 @@ package de.fhg.aisec.ids.api.router;
 public class RouteObject {
 	private String status;
 	private long uptime;
-	private String ctxName;
+	private String context;
 	private String shortName;
-	private String dotGraph;
+	private String dot;
 	private String description;
-	private String routeId;
+	private String id;
+	private long messages;
 
 	@SuppressWarnings("unused")
 	private RouteObject() { /* Do not call me */ }
 	
-	public RouteObject(String routeId, String description, String dotGraph, String shortName, String ctxName, long uptime, String status) {
-		this.routeId = routeId;
+	public RouteObject(String id, String description, String dot, String shortName, String context, long uptime, String status, long messages) {
+		this.id = id;
 		this.description = description;
-		this.dotGraph = dotGraph;
+		this.dot = dot;
 		this.shortName = shortName;
-		this.ctxName = ctxName;
+		this.context = context;
 		this.uptime = uptime;
 		this.status = status;
+		this.messages = messages;
 	}
 
 	public String getStatus() {
@@ -30,23 +32,27 @@ public class RouteObject {
 		return uptime;
 	}
 
-	public String getCtxName() {
-		return ctxName;
+	public String getContext() {
+		return context;
 	}
 
 	public String getShortName() {
 		return shortName;
 	}
 
-	public String getDotGraph() {
-		return dotGraph;
+	public String getDot() {
+		return dot;
 	}
 
 	public String getDescription() {
 		return description;
 	}
 
-	public String getRouteId() {
-		return routeId;
+	public String getId() {
+		return id;
+	}
+	
+	public long getMessages() {
+		return messages;
 	}
 }

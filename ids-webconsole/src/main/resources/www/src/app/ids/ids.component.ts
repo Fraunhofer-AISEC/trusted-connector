@@ -40,8 +40,8 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
        		response => {
            		this.data = response;
            		(<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
-           		(<FormControl>this.myForm.controls['http_host']).setValue(this.data.http_host, { onlySelf: true });
-           		(<FormControl>this.myForm.controls['http_port']).setValue(this.data.http_port, { onlySelf: true });
+           		(<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
+           		(<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
        		}
     	);
 

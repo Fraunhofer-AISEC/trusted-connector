@@ -67,7 +67,7 @@ public class RouteApi {
 		if (!rm.isPresent()) {
 			return "{}";
 		}
-		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getRouteId())).findAny();
+		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
 		if (!oRoute.isPresent()) {
 			return "{}";
 		}

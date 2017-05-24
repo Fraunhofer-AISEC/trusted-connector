@@ -1,5 +1,5 @@
 export interface Settings {
   broker_url: string;
-  http_host: string;
-  http_port: number;
+  ttp_host: string;
+  ttp_port: number;
 }

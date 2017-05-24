@@ -251,7 +251,8 @@ public class RouteManagerService implements RouteManager {
 	 * @return
 	 */
 	private RouteObject routeDefinitionToObject(CamelContext cCtx, RouteDefinition rd) {
-		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
+		// TODO Message count expected in frontend but here we only pass 0
+		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString(), 0);
 	}
 	
 	/**
