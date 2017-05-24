@@ -236,25 +236,20 @@
                         <feature>shell</feature>
                         <feature>shell-compat</feature>
                         <feature>feature</feature>
-                        <feature>jaas</feature>
-                        <feature>ssh</feature>
-                        <feature>management</feature>
                         <feature>bundle</feature>
                         <feature>config</feature>
                         <feature>deployer</feature>
-                        <feature>diagnostic</feature>
                         <feature>feature</feature>
-                        <feature>instance</feature>
                         <feature>kar</feature>
                         <feature>log</feature>
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
                         <feature>camel-core</feature>
-			                  <feature>camel-http</feature>
+			            <feature>camel-http</feature>
                         <feature>camel-restlet</feature>
                         <feature>camel-jetty</feature>
-                        <feature>camel-spring-dm</feature>
+                        <feature>camel-spring</feature>
                         <feature>camel-stream</feature>
                         <!-- camel-jms is needed to avoid infamous warning -->
                         <feature>camel-jms</feature>
@@ -296,18 +291,18 @@
                                 <!-- Not all runtime library dependencies are listed in features.xml (bug?)
                                      We have to help offline Karaf by manually downloading the missing dependencies
                                  -->
-                                <artifactItem>
+                                <!--<artifactItem>
                                     <groupId>org.apache.karaf.diagnostic</groupId>
                                     <artifactId>org.apache.karaf.diagnostic.boot</artifactId>
                                     <version>${karaf.version}</version>
                                     <outputDirectory>target/assembly/system/org/apache/karaf/diagnostic/org.apache.karaf.diagnostic.boot/${karaf.version}</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
+                                </artifactItem>-->
+                                <!--<artifactItem>
                                     <groupId>org.apache.karaf.jaas</groupId>
                                     <artifactId>org.apache.karaf.jaas.boot</artifactId>
                                     <version>${karaf.version}</version>
                                     <outputDirectory>target/assembly/system/org/apache/karaf/jaas/org.apache.karaf.jaas.boot/${karaf.version}</outputDirectory>
-                                </artifactItem>
+                                </artifactItem> -->
                             </artifactItems>
                         </configuration>
                     </execution>
