@@ -9,6 +9,8 @@ import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 
+import { DataFlowComponent } from './dataFlow/dataFlow.component';
+
 const appRoutes: Routes = [{
     path: '',
     redirectTo: '/dashboard',
@@ -25,6 +27,9 @@ const appRoutes: Routes = [{
   }, {
     path: 'dataflowpolicies',
     component: DataflowpoliciesComponent
+  }, {
+    path: 'dataflow',
+    component: DataFlowComponent
   }, {
     path: 'routes',
     component: RoutesComponent,

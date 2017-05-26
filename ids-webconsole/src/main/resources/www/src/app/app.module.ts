@@ -44,6 +44,7 @@ import {ConfirmComponent} from "./confirm/confirm.component";
 import { ModalModule } from 'angular2-modal';
 import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
+import { DataFlowComponent } from './dataFlow/dataFlow.component';
 
 import 'material-design-lite';
 
@@ -73,7 +74,9 @@ import 'material-design-lite';
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    FileWindow],
+    FileWindow,
+    DataFlowComponent
+  ],
   providers: [
     AppService,
     RouteService,
