@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/interval';
 import {BehaviorSubject} from "rxjs/Rx";
 
+
 @Component({
   selector: 'connections',
   templateUrl: './connectionsReport.component.html',
@@ -14,24 +15,37 @@ import {BehaviorSubject} from "rxjs/Rx";
 
 export class ConnectionReportComponent implements OnInit {
 
-  i: number = 0;
+  inCounter: number = 0;
+  outCounter: number = 0;
 
-  private connections: BehaviorSubject<Array<Connection>> = new BehaviorSubject([]);
-  public _connections: Observable<Array<Connection>> = this.connections.asObservable();
+  private inConnections: BehaviorSubject<Array<Connection>> = new BehaviorSubject([]);
+  public _inConnections: Observable<Array<Connection>> = this.inConnections.asObservable();
+
+  private outConnections: BehaviorSubject<Array<Connection>> = new BehaviorSubject([]);
+  public _outConnections: Observable<Array<Connection>> = this.outConnections.asObservable();
 
   constructor(private titleService: Title, private element: ElementRef) {
      this.titleService.setTitle('Connections Statistics');
   }
 
- public ngOnInit(): void {
+  public ngOnInit(): void {
   }
 
-  conns = Observable.interval(1500)
+  inConns = Observable.interval(1500)
               .subscribe(() => {
-               let tim = new Date(new Date().getTime() + 10000);
-                this.i = this.i + 1;
-                let con = new Connection( this.i, "10.244.32.13", "aisec.fraunhofer.de", tim.toString());
-                this.connections.next(this.connections.getValue().concat(con));
+                let tim = new Date(new Date().getTime() + 10000);
+                this.inCounter = this.inCounter + 1;
+                let con = new Connection( this.inCounter, "10.244.32.13", "aisec.fraunhofer.de", tim.toString());
+                this.inConnections.next(this.inConnections.getValue().concat(con));
+          });
+
+
+  outConns = Observable.interval(2000)
+              .subscribe(() => {
+                let tim = new Date(new Date().getTime() + 10000);
+                this.outCounter = this.outCounter + 1;
+                let con = new Connection( this.outCounter, "10.244.32.10", "aisec.fraunhofer.de", tim.toString());
+                this.outConnections.next(this.outConnections.getValue().concat(con));
           });
 }
 
