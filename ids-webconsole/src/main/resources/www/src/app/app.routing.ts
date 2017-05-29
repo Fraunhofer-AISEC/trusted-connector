@@ -10,6 +10,7 @@ import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 
 import { DataFlowComponent } from './dataFlow/dataFlow.component';
+import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
 
 const appRoutes: Routes = [{
     path: '',
@@ -30,6 +31,9 @@ const appRoutes: Routes = [{
   }, {
     path: 'dataflow',
     component: DataFlowComponent
+  }, {
+    path: 'connections',
+    component: ConnectionReportComponent
   }, {
     path: 'routes',
     component: RoutesComponent,

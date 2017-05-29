@@ -45,6 +45,7 @@ import { ModalModule } from 'angular2-modal';
 import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
 import { DataFlowComponent } from './dataFlow/dataFlow.component';
+import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
 
 import 'material-design-lite';
 
@@ -75,7 +76,8 @@ import 'material-design-lite';
     ValuesPipe,
     PrettifyPipe,
     FileWindow,
-    DataFlowComponent
+    DataFlowComponent,
+    ConnectionReportComponent
   ],
   providers: [
     AppService,
