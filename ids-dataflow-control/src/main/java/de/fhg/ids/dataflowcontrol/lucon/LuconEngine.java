@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoMoreSolutionException;
-import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.SolveInfo;
 import alice.tuprolog.Theory;
@@ -57,7 +56,7 @@ public class LuconEngine {
 		p.setTheory(new Theory(is));
 	}
 	
-	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException, NoSolutionException {
+	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
 		List<SolveInfo> result = new ArrayList<>();
 		SolveInfo solution = p.solve(query);
 		while (solution.isSuccess()) {

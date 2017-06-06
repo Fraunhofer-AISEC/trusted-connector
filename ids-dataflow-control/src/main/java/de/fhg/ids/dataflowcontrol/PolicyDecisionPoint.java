@@ -16,7 +16,6 @@ import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.SolveInfo;
-import alice.tuprolog.Term;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
 import de.fhg.aisec.ids.api.policy.PAP;
