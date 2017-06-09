@@ -46,6 +46,7 @@ import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
 import { DataFlowComponent } from './dataFlow/dataFlow.component';
 import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
+import { ConnectionService } from './connectionsReport/connectionReport.service';
 
 import 'material-design-lite';
 
@@ -87,6 +88,7 @@ import 'material-design-lite';
     SensorService,
     ConfirmService,
     IdsComponent,
+    ConnectionService,
     Title
   ],
   bootstrap: [
