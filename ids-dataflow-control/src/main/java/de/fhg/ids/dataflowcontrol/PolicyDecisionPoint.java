@@ -2,6 +2,7 @@ package de.fhg.ids.dataflowcontrol;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
+import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
@@ -101,6 +103,20 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
+	}
+	
+	@Override
+	public List<String> listRules() {
+		ArrayList<String> result = new ArrayList<>();
+		try {
+			List<SolveInfo> rules = this.engine.query("rule(X).", true);
+			for (SolveInfo r : rules) {
+				result.add(r.getVarValue("X").toString());
+			}
+		} catch (PrologException e) {
+			LOG.error("Prolog error while retrieving rules " + e.getMessage(), e);
+		}
+		return result;
 	}
 
 	@Override

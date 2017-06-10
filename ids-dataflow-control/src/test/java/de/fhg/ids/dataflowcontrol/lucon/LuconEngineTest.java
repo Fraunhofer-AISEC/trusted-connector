@@ -1,5 +1,7 @@
 package de.fhg.ids.dataflowcontrol.lucon;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -112,4 +114,23 @@ public class LuconEngineTest {
 		pdp.requestDecision(new DecisionRequest("seda:test_source", "ids://some_endpoint", attributes, System.getenv()));
 	}
 
+	@Test
+	public void testListRules() {
+		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+		pdp.activate(null);
+		
+		// Without any policy, we expect an empty list of rules
+		List<String> emptyList = pdp.listRules();
+		assertNotNull(emptyList);
+		assertTrue(emptyList.isEmpty());
+				
+		// Load a policy
+		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+		
+		// We now expect 1 rule
+		List<String> oneList = pdp.listRules();
+		assertNotNull(oneList);
+		assertEquals(1, oneList.size());
+		assertEquals("deleteAfterOneMonth", oneList.get(0));
+	}
 }

@@ -15,8 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.router.RouteManager;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -42,6 +43,7 @@ public class WebConsoleComponent {
 	private static Optional<ContainerManager> cml = Optional.empty();
 	private static Optional<RouteManager> rm = Optional.empty();
 	private static Optional<ConnectionManager> connectionManager = Optional.empty();
+	private static Optional<PAP> pap;
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) {
@@ -125,4 +127,22 @@ public class WebConsoleComponent {
 	public static Optional<RouteManager> getRouteManager() {
 		return WebConsoleComponent.rm;
 	}
+
+	@Reference(name = "pap.service",
+            service = PAP.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindPolicyAdministrationPoint")
+	protected void bindPolicyAdministrationPoint(PAP pap) {
+		LOG.info("Bound to policy administration point");
+		WebConsoleComponent.pap  = Optional.of(pap);
+	}
+
+	protected void unbindPolicyAdministrationPoint(PAP pap) {
+		WebConsoleComponent.pap = Optional.empty();		
+	}
+	
+	public static Optional<PAP> getPolicyAdministrationPoint() {
+		return WebConsoleComponent.pap;
+	}	
 }
