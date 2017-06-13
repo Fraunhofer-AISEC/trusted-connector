@@ -1,43 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>de.fhg.ids</groupId>
-  <artifactId>core-platform</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.fhg.ids</groupId>
+	<artifactId>core-platform</artifactId>
+	<version>1.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <modules>
-    <module>tpm2j</module>
-    <module>asynchttpclient</module>
-    <module>jnr-unixsocket</module>
-    <module>ids-api</module>
-    <module>camel-ids</module>
-    <module>ids-route-manager</module>
-    <module>ids-container-manager</module>
-    <module>ids-webconsole</module>
-    <module>ids-dataflow-control</module>
-    <module>karaf-feature-ids</module>
-    <module>karaf-assembly</module>
-    <module>rat-repository</module>
-  </modules>
+	<modules>
+	    <module>tpm2j</module>
+		<module>asynchttpclient</module>
+		<module>jnr-unixsocket</module>
+		<module>ids-api</module>
+		<module>camel-ids</module>
+		<module>ids-route-manager</module>
+		<module>ids-container-manager</module>
+		<module>ids-webconsole</module>
+		<module>ids-dataflow-control</module>
+		<module>karaf-feature-ids</module>
+		<module>karaf-assembly</module>
+		<module>rat-repository</module>
+	</modules>
 
-  <properties>
-    <project.organization.name>Fraunhofer AISEC</project.organization.name>
-    <project.inceptionYear>2017</project.inceptionYear>
-    <license.licenseName>apache_v2</license.licenseName>
+	<properties>
+		<camel-version>2.19.0</camel-version>
+		<jetty-version>9.2.17.v20160517</jetty-version>
+		<jersey-version>2.25</jersey-version>
+		<protobuf-version>3.0.0</protobuf-version>
+		<mockito-version>1.10.19</mockito-version>
+		<ahc-version>2.0.24</ahc-version>
+		<log4j-version>2.6.2</log4j-version>
+		<docker-plugin-version>0.18.1</docker-plugin-version>
+		<karaf.version>4.0.9</karaf.version>
+		<project.organization.name>Fraunhofer AISEC</project.organization.name>
+        <project.inceptionYear>2017</project.inceptionYear>
+        <license.licenseName>apache_v2</license.licenseName>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!-- Dependency versions, should be unified across all submodules -->
-    <karaf.version>4.0.9</karaf.version>
-    <camel-version>2.19.0</camel-version>
-    <jetty-version>9.2.17.v20160517</jetty-version>
-    <mockito-version>1.10.19</mockito-version>
-    <protobuf-version>3.0.0</protobuf-version>
-    <jersey-version>2.25</jersey-version>
-    <ahc-version>2.0.24</ahc-version>
-  </properties>
-
+  
   <licenses>
     <license>
       <name>Apache License Version 2.0</name>
@@ -57,37 +57,267 @@
 		</repository>
 	</distributionManagement>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-		      <version>0.7.7.201606060606</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-		  <plugin>
-  		  <groupId>org.jacoco</groupId>
-  			  <artifactId>jacoco-maven-plugin</artifactId>
-        	<executions>
-        		<execution>
-        			<goals>
-        				<goal>prepare-agent</goal>
-        			</goals>
-        		</execution>
-            <execution>
-              <id>report</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>report</goal>
-              </goals>
-            </execution>
-        	</executions>
-			</plugin>
 
-      <!-- Add license headers and LICENSE.txt -->
+	<dependencyManagement>
+		<dependencies>
+
+			<!-- Protobuf -->
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>${protobuf-version}</version>
+			</dependency>
+
+			<!-- for REST API -->
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+				<version>3.1.5</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.7</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>3.1.0</version>
+			</dependency>
+
+
+			<!-- Jetty Websockets -->
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-server</artifactId>
+				<version>${jetty-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-client</artifactId>
+				<version>${jetty-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-servlet</artifactId>
+				<version>${jetty-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-servlets</artifactId>
+				<version>${jetty-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-jmx</artifactId>
+				<version>${jetty-version}</version>
+			</dependency>
+
+			<!-- Jersey -->
+			<dependency>
+				<groupId>org.glassfish.jersey.core</groupId>
+				<artifactId>jersey-server</artifactId>
+				<version>${jersey-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.containers</groupId>
+				<artifactId>jersey-container-servlet-core</artifactId>
+				<version>${jersey-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.containers</groupId>
+				<artifactId>jersey-container-jetty-http</artifactId>
+				<version>${jersey-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.media</groupId>
+				<artifactId>jersey-media-json-jackson</artifactId>
+				<version>${jersey-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.media</groupId>
+				<artifactId>jersey-media-moxy</artifactId>
+				<version>${jersey-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.core</groupId>
+				<artifactId>jersey-common</artifactId>
+				<version>${jersey-version}</version>
+			</dependency>
+
+			<!-- Camel -->
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-ahc</artifactId>
+				<version>${camel-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-core</artifactId>
+				<version>${camel-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-core-osgi</artifactId>
+				<version>${camel-version}</version>
+			</dependency>
+
+			<!-- AHC -->
+			<dependency>
+				<groupId>org.asynchttpclient</groupId>
+				<artifactId>async-http-client</artifactId>
+				<version>${ahc-version}</version>
+			</dependency>
+
+			<!-- Logging -->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>${log4j-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-slf4j-impl</artifactId>
+				<version>${log4j-version}</version>
+			</dependency>
+
+			<!-- Testing -->
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-test</artifactId>
+				<version>${camel-version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.12</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>${mockito-version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<!-- JNR-Unixsocket -->
+			<dependency>
+				<groupId>com.github.jnr</groupId>
+				<artifactId>jnr-unixsocket</artifactId>
+				<version>0.13</version>
+			</dependency>
+
+			<!-- tpm2j -->
+			<dependency>
+				<groupId>de.fraunhofer.aisec</groupId>
+				<artifactId>tpm2j</artifactId>
+				<version>1.0.4</version>
+			</dependency>
+
+			<!-- OSGi compendium services (e.g., Preferences) -->
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.compendium</artifactId>
+				<version>5.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.framework</artifactId>
+				<version>5.4.0</version>
+			</dependency>
+
+
+			<!-- Docker -->
+			<dependency>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker-plugin-version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-jdk14</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-nop</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.7.7.201606060606</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.5.1</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>bnd-maven-plugin</artifactId>
+					<version>3.3.0</version>
+				</plugin>
+				<plugin>
+					<groupId>com.github.os72</groupId>
+					<artifactId>protoc-jar-maven-plugin</artifactId>
+					<version>3.3.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.0.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.camel</groupId>
+					<artifactId>camel-maven-plugin</artifactId>
+					<version>${camel-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>io.fabric8</groupId>
+					<artifactId>docker-maven-plugin</artifactId>
+					<version>${docker-plugin-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>com.spotify</groupId>
+					<artifactId>docker-maven-plugin</artifactId>
+					<version>0.4.13</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Add license headers and LICENSE.txt -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
@@ -128,6 +358,9 @@
           </execution>          
         </executions>
       </plugin>
-    </plugins>
-  </build>
+
+		</plugins>
+	</build>
+
+
 </project>

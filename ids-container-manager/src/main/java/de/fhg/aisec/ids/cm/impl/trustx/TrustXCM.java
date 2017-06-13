@@ -19,9 +19,17 @@
  */
 package de.fhg.aisec.ids.cm.impl.trustx;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.fhg.aisec.ids.Control.ControllerToDaemon;
+import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
@@ -39,17 +47,20 @@ import de.fhg.aisec.ids.api.cm.Protocol;
  *
  */
 public class TrustXCM implements ContainerManager {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(TrustXCM.class);
 		
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
-		// TODO Auto-generated method stub
+		sendCommand(Command.LIST_CONTAINERS);
+		
+		// TODO 
 		return null;
 	}
 
 	@Override
 	public void wipe(String containerID) {
-		// TODO Auto-generated method stub
-
+        sendCommand(Command.CONTAINER_WIPE);
 	}
 
 	@Override
@@ -105,4 +116,39 @@ public class TrustXCM implements ContainerManager {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+    /**
+     * Used for sending control commands to a device. 
+     *  
+     * @param device The device the message is to be sent to.
+     * @param command The command to be sent.
+     * @return Success state. 
+     */
+    private boolean sendCommand(Command command){
+        ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+        ctdmsg.setCommand(command);
+        LOG.debug("sending message " + ctdmsg.getCommand());
+        
+        try{            
+            
+            //TODO Open Socket and get correct OutputStream
+            DataOutputStream outputStream = new DataOutputStream(new OutputStream() {
+				
+				@Override
+				public void write(int b) throws IOException {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+            byte[] encodedMessage = ctdmsg.build().toByteArray();
+            outputStream.writeInt(encodedMessage.length);
+            outputStream.write(encodedMessage);
+        } catch (IOException ioe) {
+            LOG.error("IOException occured:", ioe);
+            // some error with the socket occured, so we get rid of the handler
+        }
+       return true;
+
+    }
+	
 }
