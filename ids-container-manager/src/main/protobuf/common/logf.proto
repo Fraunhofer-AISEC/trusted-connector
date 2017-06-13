@@ -1,0 +1,16 @@
+option java_package = "de.fhg.aisec.ids";
+
+enum LogPriority {
+	TRACE = 1;
+	DEBUG = 2;
+	INFO = 3;
+	WARN = 4;
+	ERROR = 5;
+	FATAL = 6;
+	SILENT = 7;
+}
+
+message LogMessage {
+	required LogPriority prio = 1;
+	required string msg = 2;
+}

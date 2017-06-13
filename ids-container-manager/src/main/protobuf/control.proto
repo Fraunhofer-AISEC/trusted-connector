@@ -1,0 +1,186 @@
+option java_package = "de.fhg.aisec.ids";
+
+import "guestos.proto";
+import "container.proto";
+import "common/logf.proto";
+//import "update.proto";
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Incoming messages //////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+message ContainerStartParams {
+	// Note: This message may change in the future!
+	optional string key = 1 [ default = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" ];
+	optional bool no_switch = 2 [default = false];
+}
+
+/**
+ * Control message sent to and processed by the cml-daemon on the device.
+ */
+message ControllerToDaemon {
+	enum Command {
+		//////////////////////////////////////////////
+		// Commands (global) that query information //
+		//////////////////////////////////////////////
+
+		// Responds with [guestos_configs] which includes a list of all GuestOS configs
+		// installed on the device.
+		LIST_GUESTOS_CONFIGS = 1;	// -> [guestos_configs]
+
+		// Responds with [container_uuid] with the UUIDs of all containers
+		// available on the device.
+		LIST_CONTAINERS = 2;	// -> [container_uuid]
+
+		// Responds [container_status] with the ContainerStatus
+		// for each specified container in [container_uuid],
+		// or for all containers if [container_uuid] is empty.
+		GET_CONTAINER_STATUS = 3;	// [container_uuid] -> [container_status]
+
+		// Responds [container_config] with the ContainerStatus
+		// for each specified container in [container_uuid],
+		// or for all containers if [container_uuid] is empty.
+		// Also fills [container_uuids] with the corresponding container UUIDs.
+		GET_CONTAINER_CONFIG = 4;	// [container_uuid] -> [container_config]
+
+		//Returns /proc/last_kmsg and /dev/log/main (line by line).
+		//This is a debugging feature!
+		GET_LAST_LOG = 5;
+
+		// Starts or stops observing the status.
+		// TODO not implemented yet
+		OBSERVE_STATUS_START = 10;
+		OBSERVE_STATUS_STOP = 11;
+
+		// Starts or stops observing notifications.
+		// TODO not implemented yet
+		OBSERVE_NOTIFICATIONS_START = 12;
+		OBSERVE_NOTIFICATIONS_STOP = 13;
+
+		// Starts or stops observing log messages.
+		OBSERVE_LOG_START = 14;
+		OBSERVE_LOG_STOP = 15;
+
+
+		//////////////////////////////////////////////
+		// Commands (global) that modify the system //
+		//////////////////////////////////////////////
+
+		// Push new GuestOS config. Needs [guestos_config_*].
+		// Images will be updated later.
+		PUSH_GUESTOS_CONFIG = 20;
+
+		// TODO (optional) REMOVE_CONTAINER, REMOVE_GUESTOS
+		// How to remove? Send same package_info as during install and delete list of files?
+		// TODO: Are there other files/settings/configs to be managed remotely (install/update/remove)?
+
+		// Wipes the entire device (i.e. all containers)
+		// TODO: Only wipes containers, not e.g. GuestOSes and device.conf.
+		WIPE_DEVICE = 30;
+
+
+		///////////////////////////////////////////////////
+		// Commands that operate on a specific container //
+		///////////////////////////////////////////////////
+
+		// The UUID of the container must be in the container_uuids field.
+
+		// Starts a container. Also needs [start_params].
+		CONTAINER_START = 101;
+
+		// Stops a container.
+		CONTAINER_STOP = 102;
+
+		// Switches to a container.
+		CONTAINER_SWITCH = 103;
+
+		// Freezes a container.
+		CONTAINER_FREEZE = 104;
+
+		//Unfreezes a container.
+		CONTAINER_UNFREEZE = 105;
+
+		// Wipes a container.
+		CONTAINER_WIPE = 106;
+
+		// TODO
+		CONTAINER_SNAPSHOT = 107;
+
+		CONTAINER_ALLOWAUDIO = 108;
+		CONTAINER_DENYAUDIO = 109;
+	}
+	required Command command = 1;
+
+
+	/////////////////////////////
+	// Command-specific params //
+	/////////////////////////////
+
+	// Container
+	repeated string container_uuids = 10;		// container UUID(s) for GET_CONTAINER_* and CONTAINER_*
+	optional ContainerStartParams container_start_params = 11;	// start parameters for CONTAINER_START
+
+	// Daemon
+	optional bytes guestos_config_file = 20;	// new/updated GuestOS config for PUSH_GUESTOS_CONFIG
+	optional bytes guestos_config_signature = 21;	// signature of the GuestOS config file
+	optional bytes guestos_config_certificate = 22;	// sw signing certificate to verify the signature on the config file
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Outgoing messages //////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Control message sent from the cml-daemon on the device to the backend/cmdline tool/etc.
+ * TODO: Maybe (but only maybe) use separate messages for the different endpoints.
+ */
+message DaemonToController {
+	enum Code {
+		// Push info to other endpoint:
+
+		GUESTOS_CONFIGS_LIST = 1;	// -> [guestos_config]
+
+		CONTAINERS_LIST = 2;		// -> [container_uuid]
+
+		CONTAINER_STATUS = 3;		// -> [container_status]
+		CONTAINER_CONFIG = 4;		// -> [container_config], [container_uuids]
+
+		STATUS_CHANGED = 10;		// -> [log_message]
+		NOTIFICATION = 11;		// -> [log_message]
+		LOG_MESSAGE = 12;		// -> [log_message]
+
+		RESPONSE = 13;			// -> [response]
+
+		// Requests to other endpoint:
+
+		// Log-on the device onto the backend (not applicable for cmdline tool).
+		LOGON_DEVICE = 200;	// [device_uuid] ->
+	}
+	enum Response {
+		CONTAINER_START_OK = 1;
+		CONTAINER_START_LOCK_FAILED = 2;
+		CONTAINER_START_UNLOCK_FAILED = 3;
+		CONTAINER_START_PASSWD_WRONG = 4;
+		CONTAINER_START_LOCKED_TILL_REBOOT = 5;
+	}
+
+	required Code code = 1;
+
+	repeated GuestOSConfig guestos_configs = 5;			// GuestOS configs for LIST_GUESTOS_CONFIGS
+
+	repeated string container_uuids = 6;				// UUIDs for LIST_CONTAINERS
+	repeated ContainerStatus container_status = 7;		// ContainerStatus(es) for GET_CONTAINER_STATUS
+	repeated ContainerConfig container_configs = 8;		// ContainerConfig(s) for GET_CONTAINER_CONFIG
+
+	optional string notification_text = 11;
+	optional LogMessage log_message = 12;				// log message received because of OBSERVE_LOG_START
+
+	optional Response response = 13;
+
+	optional string device_uuid = 200;					// Device UUID for LOGON_DEVICE and LOG_MESSAGE
+	optional string logon_hardware_name = 201;			// Hardware name (e.g. "i9505", "hammerhead", ...) for LOGON_DEVICE
+	optional string logon_hardware_serial = 202;		// Hardware serial number for LOGON_DEVICE
+	optional string logon_imei = 203;					// IMEI for LOGON_DEVICE
+	optional string logon_mac_address = 204;			// MAC address for LOGON_DEVICE
+	optional string logon_phone_number = 205;			// Phone number for LOGON_DEVICE
+}
