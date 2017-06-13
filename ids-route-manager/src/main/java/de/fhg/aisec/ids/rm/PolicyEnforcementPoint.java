@@ -8,6 +8,7 @@ import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.management.InstrumentationProcessor;
+import org.apache.camel.processor.LogProcessor;
 import org.apache.camel.processor.SendProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,17 +41,23 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
 			return;
 		}
 		
-    	// We expect a SendProcessor to retrieve the endpoint URL from
-		if ( !(((InstrumentationProcessor) target).getProcessor() instanceof SendProcessor) ) {
-			LOG.warn("Not a SendProcessor. Skipping");
-			return;
-		}
-		
 		if (rm==null || rm.getPdp()==null) {
-			LOG.warn("No policy decision point registered. Leaving events uncontrolled");
+    		target.process(exchange);
 			return;
 		}
 
+		// Log statements may pass through immediately
+    	if (((InstrumentationProcessor) target).getProcessor() instanceof LogProcessor) {
+    		target.process(exchange);
+    		return;
+    	}
+    	
+    	// We expect a SendProcessor to retrieve the endpoint URL from
+		if (! (((InstrumentationProcessor) target).getProcessor() instanceof SendProcessor) ) {
+				LOG.warn("Not a SendProcessor or LogProcessor. Skipping. " + ((InstrumentationProcessor) target).getProcessor().getClass());
+				return;
+		}
+		
 		// get labels from Exchange property
 		String exchangeLabelsRaw = (exchange.getProperty(LABELS) == null) ? "" : exchange.getProperty(LABELS).toString();
 		Map<String, String> msgCtx = new HashMap<>();

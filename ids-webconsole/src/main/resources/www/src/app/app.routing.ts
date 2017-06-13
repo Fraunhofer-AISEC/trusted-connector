@@ -3,7 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppsComponent } from './apps/apps.component';
 
-import { DataflowpoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
+import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
+import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { IdsComponent } from './ids/ids.component';
@@ -24,7 +25,10 @@ const appRoutes: Routes = [{
     component: AppsComponent
   }, {
     path: 'dataflowpolicies',
-    component: DataflowpoliciesComponent
+    component: DataflowPoliciesComponent
+  }, {
+    path: 'dataflowpolicyynew',
+    component: NewDataflowPolicyComponent
   }, {
     path: 'routes',
     component: RoutesComponent,

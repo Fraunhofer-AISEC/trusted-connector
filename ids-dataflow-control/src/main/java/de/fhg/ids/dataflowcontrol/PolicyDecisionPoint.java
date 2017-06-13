@@ -57,7 +57,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			long startTime = System.nanoTime();
 			List<SolveInfo> solveInfo = this.engine.query(QUERY_GET_ALL_RULES, false);
 			long time = System.nanoTime() - startTime;
-			LOG.info("Policy decision took " + time/1000000 + " ms");
+			LOG.info("Policy decision took " + time + " nanos");
 						
 			// Just for debugging
 			if (LOG.isDebugEnabled()) {
@@ -71,6 +71,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			
 			// If there is no matching rule, deny by default
 			if (solveInfo.isEmpty()) {
+				// TODO increase metric: number of rejections 
 				dec.setDecision(Decision.DENY);
 				return dec;
 			}

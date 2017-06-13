@@ -14,7 +14,9 @@ import { MetricCardComponent }  from './dashboard/metric-card.component';
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
-import { DataflowpoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
+import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
+import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
+import { FileUploadComponent } from './dataflowpolicies/file-upload.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { RouteCardComponent } from './routes/route-card.component';
@@ -31,6 +33,7 @@ import { FileWindow } from './keycerts/uploadCert';
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
+import { PolicyService } from './dataflowpolicies/policy.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -56,6 +59,7 @@ import 'material-design-lite';
     ModalModule.forRoot(),
     BootstrapModalModule  ],
   declarations: [
+    FileUploadComponent,
     AppComponent,
     DashboardComponent,
     ActivityComponent,
@@ -63,7 +67,8 @@ import 'material-design-lite';
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
-    DataflowpoliciesComponent,
+    DataflowPoliciesComponent,
+    NewDataflowPolicyComponent,
     RoutesComponent,
     RouteeditorComponent,
     RouteCardComponent,
@@ -77,6 +82,7 @@ import 'material-design-lite';
   providers: [
     AppService,
     RouteService,
+    PolicyService,
     SettingsService,
     CertificateService,
     SensorService,

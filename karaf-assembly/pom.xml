@@ -272,6 +272,10 @@
                         <feature>spring-tx</feature> -->
                         <feature>war</feature>
 						<feature>ids</feature>
+
+                        <!-- Not needed, but nice to have in repository -->
+                        <feature>camel-amqp</feature>
+                        <feature>camel-paho</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>

@@ -189,7 +189,7 @@ public class DockerCM implements ContainerManager {
 	public static boolean isSupported() {
 		try {
 			//Attempt to invoke some docker command. If it fails, return false
-			Process p = new ProcessBuilder().inheritIO().command(Arrays.asList(DOCKER_CLI, "info")).start();
+			Process p = new ProcessBuilder().command(Arrays.asList(DOCKER_CLI, "info")).start();
 			p.waitFor(10, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);

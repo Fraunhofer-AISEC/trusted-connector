@@ -82,7 +82,7 @@ public class RouteManagerService implements RouteManager {
 		this.pdp = pdp;
 	}
 	public void unbindPdp(PDP pdp) {
-		LOG.info("unbound from PDP " + pdp);
+		LOG.warn("Policy decision point disappeared. All events will pass through uncontrolled.");
 		this.pdp = null;
 	}
 	public PDP getPdp() {
