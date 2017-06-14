@@ -35,18 +35,14 @@ import { AppService } from './app.service';
         Status: {{app.status}}<br />
       </div>
       <div class="mdl-card__actions mdl-card--border">
-      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+      <button class="mdl-button mdl-js-button mdl-js-ripple-effect">
         <i class="material-icons">{{statusIcon}}</i>
       </button>
 
-      <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+      <button class="mdl-button mdl-js-button mdl-js-ripple-effect">
         <i class="material-icons">delete</i>
       </button>
-
-        <!--  <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">start</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">pause</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a>-->
-      </div>`
+  </div>`
 })
 export class AppCardComponent implements OnInit {
   @Input() app: App;

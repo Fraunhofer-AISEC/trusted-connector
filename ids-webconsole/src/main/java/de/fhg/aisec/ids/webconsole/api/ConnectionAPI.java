@@ -27,7 +27,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  */
 @Path("/connections")
 public class ConnectionAPI {
-	private static final Logger LOG = LoggerFactory.getLogger(AppApi.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ConnectionAPI.class);
 	
 	@GET
 	@Path("list")

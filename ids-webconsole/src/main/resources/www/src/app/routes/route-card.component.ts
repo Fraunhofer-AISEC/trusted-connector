@@ -23,18 +23,15 @@ declare var Viz: any;
         </div>
       </div>
       <div class="mdl-card__actions mdl-card--border">
-          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" (click)="onToggle(route.id)">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)">
             <i class="material-icons">{{statusIcon}}</i>
           </button>
-          <!--<a class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)"><i class="material-icons" role="presentation">{{statusIcon}}</i></a>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons" role="presentation">delete</i></a> -->
-          <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" disabled>
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
             <i class="material-icons">delete</i>
           </button>
-          <a class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab" routerLink="/routeeditor">
+          <a class="mdl-button mdl-js-button mdl-js-ripple-effect" routerLink="/routeeditor">
             <i class="material-icons">edit</i>
           </a>
-
     </div>
    </div>`
 })
@@ -81,7 +78,7 @@ export class RouteCardComponent implements OnInit {
      this.statusColor = "card-dark";
   }
 
-  onToggle(routeId: string): void {
+  onToggle(routeId: string): boolean {
     if(this.statusIcon == "play_arrow") {
       this.statusIcon = "stop";
       this.routeService.startRoute(routeId).subscribe(result => {
@@ -90,8 +87,6 @@ export class RouteCardComponent implements OnInit {
        this.route.status = 'Started';
        this.statusColor = "";
        this.statusTextColor = "";
-       
-
     } else {
       this.statusIcon = "play_arrow";
       this.routeService.stopRoute(routeId).subscribe(result => {
@@ -101,5 +96,6 @@ export class RouteCardComponent implements OnInit {
        this.route.status = 'Stopped';
        this.statusColor = "card-dark";
     }
+    return true;
   }
 }

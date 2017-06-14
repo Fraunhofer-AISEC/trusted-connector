@@ -7,23 +7,19 @@ package de.fhg.aisec.ids.api.conm;
  *
  */
 public class IDSCPConnection {
-	String endpoint_identifier;
-	String lastProtocolState;
+	private String endpointIdentifier;
+	private String lastProtocolState;
 	
-	public IDSCPConnection(String endpoint_identifier, String lastProtocolState) {
-		this.endpoint_identifier = endpoint_identifier;
+	public IDSCPConnection(String endpointIdentifier, String lastProtocolState) {
+		this.endpointIdentifier = endpointIdentifier;
 		this.lastProtocolState = lastProtocolState;
 	}
 	
-	public IDSCPConnection() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public String getEndpointIdentifier() {
-		return endpoint_identifier;
+		return endpointIdentifier;
 	}
-	public void setEndpointIdentifier(String endpoint_identifier) {
-		this.endpoint_identifier = endpoint_identifier;
+	public void setEndpointIdentifier(String endpointIdentifier) {
+		this.endpointIdentifier = endpointIdentifier;
 	}
 	public String getAttestationResult() {
 		return lastProtocolState;
@@ -34,8 +30,6 @@ public class IDSCPConnection {
 	
 	@Override
 	public String toString() {
-		return "IDSCPConnection [endpoint_identifier=" + endpoint_identifier + ", lastProtocolState=" + lastProtocolState + "]";
+		return "IDSCPConnection [endpoint_identifier=" + endpointIdentifier + ", lastProtocolState=" + lastProtocolState + "]";
 	}
-	
-	
 }

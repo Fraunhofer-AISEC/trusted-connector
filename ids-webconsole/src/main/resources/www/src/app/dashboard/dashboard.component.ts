@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/Observable';
 import { App } from '../apps/app';
 import { AppService } from '../apps/app.service';
 import { RouteService } from '../routes/route.service';
+import { PolicyService } from '../dataflowpolicies/policy.service';
 
 @Component({
   templateUrl: './dashboard.component.html',
@@ -17,9 +18,10 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   @Output() changeTitle = new EventEmitter();
   private camelComponents: any;
   apps: App[];
-  messages: number = 0;
+  cmlVersion: string;
+  policies: number = 0;
 
-  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService) {
+  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService, private policyService: PolicyService) {
   	 super();
      this.titleService.setTitle('Overview');
 
@@ -31,6 +33,8 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   ngOnInit(): void {
     this.changeTitle.emit('Dashboard');
     this.routeService.listComponents().subscribe(result => {this.camelComponents = result});
+    this.appService.getCmlVersion().subscribe(result => {this.cmlVersion = result});
+    this.policyService.getPolicies().subscribe(result => {this.policies = result.length});
   }
 
 }
