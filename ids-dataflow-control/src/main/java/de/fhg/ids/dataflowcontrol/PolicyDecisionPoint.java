@@ -69,10 +69,9 @@ public class PolicyDecisionPoint implements PDP, PAP {
 				}
 			}
 			
-			// If there is no matching rule, deny by default
+			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
-				// TODO increase metric: number of rejections 
-				dec.setDecision(Decision.DENY);
+				dec.setDecision(Decision.ALLOW);
 				return dec;
 			}
 			
