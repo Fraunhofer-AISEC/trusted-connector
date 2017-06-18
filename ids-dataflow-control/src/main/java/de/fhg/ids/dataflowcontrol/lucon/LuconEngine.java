@@ -51,9 +51,19 @@ public class LuconEngine {
 		p.setSpy(spy);
 	}
 	
+	/**
+	 * Loads a policy in form of a prolog theory. 
+	 * 
+	 * Existing policies will be overwritten.
+	 * 
+	 * @param is
+	 * @throws InvalidTheoryException
+	 * @throws IOException
+	 */
 	public void loadPolicy(InputStream is) throws InvalidTheoryException, IOException {
-		// Load policy (= prolog "theory")
-		p.setTheory(new Theory(is));
+		Theory t = new Theory(is);
+		LOG.debug("Loading theory: " + t.toString());
+		p.setTheory(t);
 	}
 	
 	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {

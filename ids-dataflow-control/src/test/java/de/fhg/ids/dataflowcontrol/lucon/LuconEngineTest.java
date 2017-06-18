@@ -19,21 +19,14 @@ import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.SolveInfo;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
+import de.fhg.aisec.ids.api.policy.PolicyDecision;
+import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
 
 public class LuconEngineTest {
 	// Solving Towers of Hanoi in only two lines. Prolog FTW!
-	private final static String THEORY = 	"move(1,X,Y,_) :-  write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n" +
+	private final static String HANOI_THEORY = 	"move(1,X,Y,_) :-  write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n" +
 											"move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). ";
-
-//	":- discontiguous service/1.\n" + 
-//	":- discontiguous rule/1.\n" + 
-//	":- discontiguous has_capability/2.\n" + 
-//	":- discontiguous has_property/2.\n" + 
-//	":- discontiguous has_target/2.\n" + 
-//	":- discontiguous requires_prerequisites/2.\n" + 
-//	":- discontiguous has_obligation/2.\n" + 
-//	":- discontiguous receives_label/2.\n" + 
 
 	private final static String EXAMPLE_POLICY = 
 			"/* **********************************************************\n" + 
@@ -66,7 +59,7 @@ public class LuconEngineTest {
 	@Test
 	public void testLoadingTheoryGood() throws InvalidTheoryException, IOException {
 		LuconEngine e = new LuconEngine(null);
-		e.loadPolicy(new ByteArrayInputStream(THEORY.getBytes()));
+		e.loadPolicy(new ByteArrayInputStream(HANOI_THEORY.getBytes()));
 		String json = e.getTheoryAsJSON();
 		assertTrue(json.startsWith("{\"theory\":\"move(1,X,Y,"));
 		String prolog = e.getTheory();
@@ -85,11 +78,30 @@ public class LuconEngineTest {
 	}
 	
 	@Test
-	public void testSolve() throws InvalidTheoryException, IOException, NoMoreSolutionException {
+	public void testSolve1() throws InvalidTheoryException, IOException, NoMoreSolutionException {
 		LuconEngine e = new LuconEngine(System.out);
-		e.loadPolicy(new ByteArrayInputStream(THEORY.getBytes()));
+		e.loadPolicy(new ByteArrayInputStream(HANOI_THEORY.getBytes()));
 		try {
 			List<SolveInfo> solutions = e.query("move(3,left,right,center). ", true);
+			assertTrue(solutions.size()==1);
+			for (SolveInfo solution : solutions) {
+				System.out.println(solution.getSolution().toString());
+				System.out.println(solution.hasOpenAlternatives());
+				
+				System.out.println(solution.isSuccess());
+			}
+		} catch (MalformedGoalException | NoSolutionException e1) {
+			e1.printStackTrace();
+			fail(e1.getMessage());
+		}
+	}
+	
+	@Test
+	public void testSolve2() throws InvalidTheoryException, IOException, NoMoreSolutionException {
+		LuconEngine e = new LuconEngine(System.out);
+		e.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+		try {
+			List<SolveInfo> solutions = e.query("rule(X), has_target(X, T).", true);
 			assertTrue(solutions.size()==1);
 			for (SolveInfo solution : solutions) {
 				System.out.println(solution.getSolution().toString());
@@ -111,7 +123,8 @@ public class LuconEngineTest {
 		
 		Map<String, String> attributes = new HashMap<>();
 		attributes.put("some_message_key", "some_message_value");
-		pdp.requestDecision(new DecisionRequest("seda:test_source", "ids://some_endpoint", attributes, System.getenv()));
+		PolicyDecision dec = pdp.requestDecision(new DecisionRequest("seda:test_source", "ids://some_endpoint", attributes, System.getenv()));
+		assertEquals(Decision.ALLOW, dec.getDecision());
 	}
 
 	@Test
