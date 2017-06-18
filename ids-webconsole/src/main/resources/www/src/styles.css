@@ -384,3 +384,8 @@ header.iot-connector-header.mdl-layout__header {
     right: 0;
   }
 }
+
+
+label.input-custom-file input[type=file] {
+  display: none;
+}

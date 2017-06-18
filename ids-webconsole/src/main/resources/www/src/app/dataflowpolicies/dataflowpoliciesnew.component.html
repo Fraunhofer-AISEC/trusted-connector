@@ -6,7 +6,15 @@
 		</div>		
 		<div class="mdl-card__supporting-text">
 
-		<file-upload #fu (change)="fu.upload()" [multiple]="true"></file-upload>
+
+	    <!-- Accent-colored raised button with ripple -->
+	    <label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+	      Upload Policy File
+	      <!--  <input type="file"> -->
+ 			<file-upload #fu (change)="fu.upload()" [multiple]="true"></file-upload>
+	    </label>
+
+
       </div>			
 	</div>
 </div>

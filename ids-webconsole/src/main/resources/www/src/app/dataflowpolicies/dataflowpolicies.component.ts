@@ -1,15 +1,17 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, AfterViewInit, EventEmitter, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { Policy } from './policy';
 import { PolicyService } from './policy.service';
 
+declare var componentHandler: any;
+
 @Component({
   templateUrl: './dataflowpolicies.component.html'
 })
-export class DataflowPoliciesComponent implements OnInit {
+export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
   @Output() changeTitle = new EventEmitter();
-  policies: Policy[];
+  policies: string[];
     
   constructor(private titleService: Title, private policyService: PolicyService) {
      this.titleService.setTitle('Data Usage Control');
@@ -21,5 +23,9 @@ export class DataflowPoliciesComponent implements OnInit {
 
   ngOnInit(): void {
     this.changeTitle.emit('Data Usage Control');
+  }
+    
+  ngAfterViewInit(): void {
+    componentHandler.upgradeAllRegistered();
   }
 }
