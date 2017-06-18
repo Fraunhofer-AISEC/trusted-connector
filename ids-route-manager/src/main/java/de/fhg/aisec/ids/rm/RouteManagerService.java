@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,12 +13,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
+import org.apache.camel.management.DefaultManagementAgent;
+import org.apache.camel.model.ModelHelper;
 import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.spi.ManagementAgent;
+import org.apache.camel.util.RouteStatDump;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -252,6 +269,11 @@ public class RouteManagerService implements RouteManager {
 	 */
 	private RouteObject routeDefinitionToObject(CamelContext cCtx, RouteDefinition rd) {
 		// TODO Message count expected in frontend but here we only pass 0
+		try {
+			ModelHelper.dumpModelAsXml(cCtx, rd);
+		} catch (JAXBException e) {
+			LOG.error(e.getMessage(), e);
+		}
 		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString(), 0);
 	}
 	
@@ -274,5 +296,26 @@ public class RouteManagerService implements RouteManager {
 			LOG.error(e.getMessage(), e);
 		}
 		return result;
-	}	
+	}
+	
+	private RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
+		JAXBContext context = JAXBContext.newInstance(RouteStatDump.class);
+		 Unmarshaller unmarshaller = context.createUnmarshaller();
+		  ManagementAgent agent = cCtx.getManagementStrategy().getManagementAgent();
+          if (agent != null) {
+              MBeanServer mBeanServer = agent.getMBeanServer();
+              Set<ObjectName> set = mBeanServer.queryNames(new ObjectName(DefaultManagementAgent.DEFAULT_DOMAIN + ":type=routes,name=\"" + rd.getId() + "\",*"), null);
+              for (ObjectName routeMBean : set) {
+                  // the route must be part of the camel context
+                  String camelId = (String) mBeanServer.getAttribute(routeMBean, "CamelId");
+                  if (camelId != null && camelId.equals(cCtx.getName())) {
+  
+                      String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml", new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
+                      RouteStatDump route = (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
+                      return route;
+                  }
+              }
+          }
+          return null;
+	}
 }
