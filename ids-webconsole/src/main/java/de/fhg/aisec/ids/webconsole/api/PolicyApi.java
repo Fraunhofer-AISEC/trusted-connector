@@ -5,17 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,17 +53,18 @@ public class PolicyApi {
 	
 	@POST
 	@OPTIONS
+	@GET
 	@Path("install")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public String install(@Context HttpServletRequest request, @FormParam("policy_file") InputStream fileInputStream) {
+	public String install(@Multipart(value="policy_file", required=true) InputStream is) {
 		LOG.info("Received policy file");
-		Optional<PAP> cO = WebConsoleComponent.getPolicyAdministrationPoint();
+		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
 		
-		// if pap service is not available at runtime, return empty map
-		if (!cO.isPresent()) {
+		// if pap service is not available at runtime, return error TODO return proper HTTP error code
+		if (!pap.isPresent()) {
 			return "no PAP";
 		}
-		cO.get().loadPolicy(fileInputStream);
+		pap.get().loadPolicy(is);
 		return new GsonBuilder().create().toJson("OK");
 	}	
 }
