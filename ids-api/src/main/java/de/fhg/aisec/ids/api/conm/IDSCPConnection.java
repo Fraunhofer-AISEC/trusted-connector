@@ -10,6 +10,11 @@ public class IDSCPConnection {
 	private String endpointIdentifier;
 	private String lastProtocolState;
 	
+	public IDSCPConnection() {
+		
+	}
+	
+	// TODO JS: Never used. Remove?
 	public IDSCPConnection(String endpointIdentifier, String lastProtocolState) {
 		this.endpointIdentifier = endpointIdentifier;
 		this.lastProtocolState = lastProtocolState;
