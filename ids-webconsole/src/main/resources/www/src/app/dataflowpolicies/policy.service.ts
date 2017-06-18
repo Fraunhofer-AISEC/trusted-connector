@@ -13,9 +13,9 @@ export class PolicyService {
   constructor(private http: Http) { }
 
   getPolicies() {
-    return this.http.get(environment.apiURL + '/policies/list/')
+    return this.http.get(environment.apiURL + '/policies/list')
                .map(response => {
-                 return response.json() as Policy[];
+                 return response.json() as string[];
                });
   }
 
@@ -23,8 +23,7 @@ export class PolicyService {
         let headers = new Headers({ 'Content-Type': 'multipart/form-data' });
         let options = new RequestOptions({ headers: headers });
         
-        let result = this.http.post(environment.apiURL + '/policies/install', model)
-                         .map(res => console.log(res)) // ...and calling .json() on the response to return data
+        let result = this.http.post(environment.apiURL + '/policies/install', model, options)
                          .catch((error:any) => Observable.throw(error || 'Server error')) //...errors if
                          .subscribe();
         return result;
