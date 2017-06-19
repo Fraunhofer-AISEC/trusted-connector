@@ -193,6 +193,19 @@ public class RouteManagerService implements RouteManager {
 		
 		return epURIs;			
 	}
+	
+	public List<RouteStatDump> getRouteStats() throws MalformedObjectNameException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException, JAXBException {
+		List<RouteStatDump> rdump = new ArrayList<>();
+		List<CamelContext> cCtxs = getCamelContexts();
+		for (CamelContext cCtx: cCtxs) {
+			List<RouteDefinition> rds = cCtx.getRouteDefinitions();
+			for (RouteDefinition rd: rds) {
+				RouteStatDump x = this.getRouteStats(cCtx, rd);
+				rdump.add(x);
+			}
+		}
+		return rdump;
+	}
 
 	
 	@Override
@@ -298,7 +311,7 @@ public class RouteManagerService implements RouteManager {
 		return result;
 	}
 	
-	private RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
+	protected RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
 		JAXBContext context = JAXBContext.newInstance(RouteStatDump.class);
 		 Unmarshaller unmarshaller = context.createUnmarshaller();
 		  ManagementAgent agent = cCtx.getManagementStrategy().getManagementAgent();
@@ -309,7 +322,6 @@ public class RouteManagerService implements RouteManager {
                   // the route must be part of the camel context
                   String camelId = (String) mBeanServer.getAttribute(routeMBean, "CamelId");
                   if (camelId != null && camelId.equals(cCtx.getName())) {
-  
                       String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml", new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
                       RouteStatDump route = (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
                       return route;
