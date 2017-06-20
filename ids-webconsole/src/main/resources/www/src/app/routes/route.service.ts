@@ -18,14 +18,10 @@ export class RouteService {
                });
   }
 
-  getTotalMessages() {
-    return this.http.get(environment.apiURL + '/routes/list/')
+  getTotalMessages() : RouteMetrics {
+    return this.http.get(environment.apiURL + '/routes/metrics')
                .map(response => {
-                 let routes = response.json() as Route[];
-                 let messages = 0;
-                 routes.forEach((route) => messages += +route.messages);
-
-                 return messages;
+                 return response.json() as RouteMetrics;
                });
   }
 
@@ -64,7 +60,15 @@ export class RouteService {
                  });
   }
 
-  listEndpoints() {
+  getRouteMetrics(routeId: string) {
+      return this.http.get(environment.apiURL + '/routes/metrics/' + routeId)
+                 .map(response => {
+                   return response.json() as string;
+                 });
+  }
+
+
+ listEndpoints() {
       return this.http.get(environment.apiURL + '/routes/list_endpoints')
                  .map(response => {
                    return response.json() as string[];

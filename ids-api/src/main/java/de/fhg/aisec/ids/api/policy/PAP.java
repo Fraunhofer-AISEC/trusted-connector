@@ -27,5 +27,5 @@ public interface PAP {
 	 */
 	public String getPolicy();
 	
-	List<String> listRules();
+	public List<String> listRules();
 }

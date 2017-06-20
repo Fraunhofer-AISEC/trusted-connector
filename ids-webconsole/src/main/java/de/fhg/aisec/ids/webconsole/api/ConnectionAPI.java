@@ -42,5 +42,4 @@ public class ConnectionAPI {
 		
 		return new GsonBuilder().create().toJson(result);
 	}
-
 }

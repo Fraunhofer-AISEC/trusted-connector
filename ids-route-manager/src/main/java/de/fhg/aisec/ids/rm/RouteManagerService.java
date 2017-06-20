@@ -212,29 +212,36 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
+	public RouteMetrics getRouteMetrics(String routeId) {
+		List<CamelContext> cCtxs = getCamelContexts();
+		Optional<CamelContext> c = cCtxs.parallelStream().filter(ctx -> ctx.getRouteDefinition(routeId)!=null).findAny();
+		if (!c.isPresent()) {
+			return null;
+		}
+		
+		RouteDefinition rd = c.get().getRouteDefinition(routeId);
+		try {
+			return this.getRouteStats(c.get(), rd);
+		} catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException | JAXBException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return null;
+	}
+	
+	@Override
 	public Map<String,RouteMetrics> getRouteMetrics() {
 		Map<String,RouteMetrics> rdump = new HashMap<>();
 		List<CamelContext> cCtxs = getCamelContexts();
 		for (CamelContext cCtx: cCtxs) {
 			List<RouteDefinition> rds = cCtx.getRouteDefinitions();
 			for (RouteDefinition rd: rds) {
-				RouteStatDump stat;
 				try {
-					stat = this.getRouteStats(cCtx, rd);
+					RouteMetrics m = this.getRouteStats(cCtx, rd);
+					rdump.put(rd.getId(), m);
 				} catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException | JAXBException e) {
 					LOG.error(e.getMessage(), e);
 					continue;
 				}
-				RouteMetrics m = new RouteMetrics();
-				m.setCompleted(stat.getExchangesCompleted());
-				m.setRedeliveries(stat.getRedeliveries());
-				m.setFailed(stat.getExchangesFailed());
-				m.setFailuresHandled(stat.getFailuresHandled());
-				m.setInflight(stat.getExchangesInflight());
-				m.setMaxProcessingTime(stat.getMaxProcessingTime());
-				m.setMinProcessingTime(stat.getMinProcessingTime());
-				m.setMeanProcessingTime(stat.getMeanProcessingTime());
-				rdump.put(rd.getId(), m);
 			}
 		}
 		return rdump;
@@ -319,7 +326,7 @@ public class RouteManagerService implements RouteManager {
 		return result;
 	}
 	
-	protected RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
+	protected RouteMetrics getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
 		JAXBContext context = JAXBContext.newInstance(RouteStatDump.class);
 		 Unmarshaller unmarshaller = context.createUnmarshaller();
 		  ManagementAgent agent = cCtx.getManagementStrategy().getManagementAgent();
@@ -330,9 +337,18 @@ public class RouteManagerService implements RouteManager {
                   // the route must be part of the camel context
                   String camelId = (String) mBeanServer.getAttribute(routeMBean, "CamelId");
                   if (camelId != null && camelId.equals(cCtx.getName())) {
-                      String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml", new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
-                      RouteStatDump route = (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
-                      return route;
+                    String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml", new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
+                    RouteStatDump stat = (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
+					RouteMetrics m = new RouteMetrics();
+					m.setCompleted(stat.getExchangesCompleted());
+					m.setRedeliveries(stat.getRedeliveries());
+					m.setFailed(stat.getExchangesFailed());
+					m.setFailuresHandled(stat.getFailuresHandled());
+					m.setInflight(stat.getExchangesInflight());
+					m.setMaxProcessingTime(stat.getMaxProcessingTime());
+					m.setMinProcessingTime(stat.getMinProcessingTime());
+					m.setMeanProcessingTime(stat.getMeanProcessingTime());
+					return m;
                   }
               }
           }

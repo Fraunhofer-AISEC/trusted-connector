@@ -46,7 +46,7 @@
         <feature version="3.1.7" prerequisite="false" dependency="true">cxf-jaxrs</feature>
         
         <!-- Declarative OSGi Services -->
-        <feature version="4.0.6" prerequisite="false" dependency="true">scr</feature>
+        <feature version="4.1.1" prerequisite="false" dependency="true">scr</feature>
         
         <!-- Asynchronous HTTP requests, required for camel-ids -->
         <feature version="2.18.0" prerequisite="false" dependency="true">camel-ahc</feature>

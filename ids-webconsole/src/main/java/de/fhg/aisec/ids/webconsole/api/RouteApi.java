@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
@@ -150,6 +152,44 @@ public class RouteApi {
 			return "{}";
 		}
 		return new GsonBuilder().create().toJson(rm.get().getEndpoints());
+	}
+
+	@GET
+	@Path("metrics/{id}")
+	@Produces("application/json")
+	public String getRouteMetrics(@PathParam("id") String routeId) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
+		}
+		return new GsonBuilder().create().toJson(rm.get().getRouteMetrics(routeId));
+	}
+
+	@GET
+	@Path("metrics")
+	@Produces("application/json")
+	public String getRouteMetrics() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "{}";
+		}
+		
+		Map<String, RouteMetrics> metrics = rm.get().getRouteMetrics();
+		RouteMetrics aggregated = new RouteMetrics();
+		Iterator<RouteMetrics> it = metrics.values().iterator();
+		while (it.hasNext()) {
+			RouteMetrics m = it.next();
+			aggregated.setCompleted(aggregated.getCompleted() + m.getCompleted());
+			aggregated.setCompleted(aggregated.getFailed() + m.getFailed());
+			aggregated.setCompleted(aggregated.getFailuresHandled() + m.getFailuresHandled());
+			aggregated.setCompleted(aggregated.getInflight() + m.getInflight());
+			aggregated.setCompleted(aggregated.getMaxProcessingTime() + m.getMaxProcessingTime());
+			aggregated.setCompleted(aggregated.getMeanProcessingTime() + m.getMeanProcessingTime());
+			aggregated.setCompleted(aggregated.getMinProcessingTime() + m.getMinProcessingTime());
+			aggregated.setCompleted(aggregated.getRedeliveries() + m.getRedeliveries());
+		}
+		aggregated.setMeanProcessingTime(aggregated.getMeanProcessingTime()/metrics.values().size());
+		return new GsonBuilder().create().toJson(aggregated);
 	}
 
 	/**
