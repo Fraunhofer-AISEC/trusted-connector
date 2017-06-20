@@ -6,5 +6,4 @@ export class Route {
   context: string;
   uptime: string;
   status: string;
-  messages: Number;
 }

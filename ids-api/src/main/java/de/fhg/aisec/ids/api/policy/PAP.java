@@ -11,9 +11,21 @@ import java.util.List;
  */
 public interface PAP {
 	
+	/**
+	 * Loads a policy into the registered PDPs.
+	 * 
+	 * @param is
+	 */
 	public void loadPolicy(InputStream is);
 	
+	/**
+	 * Returns the currently active policy in its string representation.
+	 * 
+	 * The representation depends on the implementation and can be XML, JSON or any other serialization.
+	 * 
+	 * @return
+	 */
 	public String getPolicy();
-
+	
 	List<String> listRules();
 }

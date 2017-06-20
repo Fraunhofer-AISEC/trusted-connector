@@ -61,12 +61,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 						
 			// Just for debugging
 			if (LOG.isDebugEnabled()) {
-				for (SolveInfo i: solveInfo) {
-					if (i.isSuccess()) {
-						List<Var> vars = i.getBindingVars();
-						vars.stream().forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
-					}
-				}
+				debug(solveInfo);
 			}
 			
 			// If there is no matching rule, allow by default
@@ -87,6 +82,21 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			dec.setDecision(Decision.DENY);
 		}
 		return dec;
+	}
+
+	/**
+	 * Just for debugging: Print query solution to DEBUG out.
+	 * 
+	 * @param solveInfo
+	 * @throws NoSolutionException
+	 */
+	private void debug(List<SolveInfo> solveInfo) throws NoSolutionException {
+		for (SolveInfo i: solveInfo) {
+			if (i.isSuccess()) {
+				List<Var> vars = i.getBindingVars();
+				vars.stream().forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
+			}
+		}
 	}
 
 	@Override
