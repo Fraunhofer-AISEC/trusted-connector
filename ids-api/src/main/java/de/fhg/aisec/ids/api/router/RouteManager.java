@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.api.router;
 
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,11 @@ import java.util.Map;
  */
 public interface RouteManager {
 
-
+	/**
+	 * Returns a list of currently installed routes.
+	 * 
+	 * @return
+	 */
 	public List<RouteObject> getRoutes();
 	
 	/**
@@ -30,8 +33,9 @@ public interface RouteManager {
 	 * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver pending exchanges.
 	 * 
 	 * @param routeId
+	 * @throws Exception 
 	 */
-	public void stopRoute(String routeId) throws Exception;
+	public void stopRoute(String routeId) throws RouteException;
 	
 	public List<RouteComponent> listComponents();
 	
@@ -64,7 +68,6 @@ public interface RouteManager {
 	 */
 	void delRoute(String from, String to);
 
-
 	/**
 	 * Returns the current route configuration in its original representation of the implementing engine.
 	 * 
@@ -74,26 +77,14 @@ public interface RouteManager {
 	 * 
 	 * @return
 	 */
-	String getRouteConfigAsString();
+	String getRouteAsString(String routeId);
 	
 	void loadRoutes(String routeConfig);
-
+	
 	/**
-	 * Creates a new endpoint at which messages are returned <i>out of</i> the routing engine.
+	 * Returns aggregated runtime metrics of all installed routes.
 	 * 
-	 * Note the possible confusion: Producers retrieve messages from the outside and feed them into the engine.
-	 * Consumers receive messages at the end of a route and forward them to some external endpoint.
-	 * 
-	 * This terminology might be confusing, but it is in line with Apache Camel.
-	 * 
-	 * @param ep
-	 * @return true if a new endpoint has been successfully registered, false else (e.g., if that endpoint already exists).
+	 * @return map<k,v> where k is a string indicating the route id.
 	 */
-	boolean createConsumingEndpoint(String ep);
-
-	void removeConsumingEndpoint(String ep);
-
-
-	public void provide(String ep, ByteBuffer msg);
-
+	Map<String,RouteMetrics> getRouteMetrics() ;
 }

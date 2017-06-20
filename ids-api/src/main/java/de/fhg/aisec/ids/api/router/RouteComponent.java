@@ -11,9 +11,7 @@ public class RouteComponent {
 	private String bundle;
 	private String description;
 
-	private RouteComponent() {
-		/* Do not call me */
-	}
+	public RouteComponent() {	/* Bean std c'tor */	}
 
 	public RouteComponent(String bundleName, String description) {
 		this.bundle = bundleName;

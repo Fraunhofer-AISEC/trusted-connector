@@ -13,12 +13,10 @@ public class RouteObject {
 	private String dot;
 	private String description;
 	private String id;
-	private long messages;
 
-	@SuppressWarnings("unused")
-	private RouteObject() { /* Do not call me */ }
+	public RouteObject() { /* Bean std c'tor */	}
 	
-	public RouteObject(String id, String description, String dot, String shortName, String context, long uptime, String status, long messages) {
+	public RouteObject(String id, String description, String dot, String shortName, String context, long uptime, String status) {
 		this.id = id;
 		this.description = description;
 		this.dot = dot;
@@ -26,7 +24,6 @@ public class RouteObject {
 		this.context = context;
 		this.uptime = uptime;
 		this.status = status;
-		this.messages = messages;
 	}
 
 	public String getStatus() {
@@ -56,10 +53,6 @@ public class RouteObject {
 	public String getId() {
 		return id;
 	}
-	
-	public long getMessages() {
-		return messages;
-	}
 
 	public void setStatus(String status) {
 		this.status = status;
@@ -88,8 +81,4 @@ public class RouteObject {
 	public void setId(String id) {
 		this.id = id;
 	}
-
-	public void setMessages(long messages) {
-		this.messages = messages;
-	}	
 }

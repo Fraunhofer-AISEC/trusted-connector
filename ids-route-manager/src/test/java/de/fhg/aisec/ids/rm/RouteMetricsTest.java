@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RouteStatsTest extends CamelTestSupport {
+public class RouteMetricsTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
     protected List<Object> messages;
 
