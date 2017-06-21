@@ -16,7 +16,7 @@ public interface PAP {
 	 * 
 	 * @param is
 	 */
-	public void loadPolicy(InputStream is);
+	void loadPolicy(InputStream is);
 	
 	/**
 	 * Returns the currently active policy in its string representation.
@@ -25,7 +25,7 @@ public interface PAP {
 	 * 
 	 * @return
 	 */
-	public String getPolicy();
+	String getPolicy();
 	
-	public List<String> listRules();
+	List<String> listRules();
 }

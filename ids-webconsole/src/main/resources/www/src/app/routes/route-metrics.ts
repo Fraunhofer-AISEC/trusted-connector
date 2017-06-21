@@ -1,5 +1,10 @@
 export class RouteMetrics {
-	completed: Number;
-	failed: Number;
-	//TODO more
+    completed: number;
+    failed: number;
+    inflight: number;
+    failuresHandled: number;
+    redeliveries: number;
+    maxProcessingTime: number;
+    meanProcessingTime: number;
+    minProcessingTime: number;
 }

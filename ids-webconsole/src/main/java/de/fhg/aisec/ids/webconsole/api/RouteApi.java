@@ -1,8 +1,8 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -115,6 +115,66 @@ public class RouteApi {
 	}
 
 	/**
+	 * Get runtime metrics of a route
+	 */
+	@GET
+	@Path("/metrics/{id}")
+	public String getMetrics(@PathParam("id") String routeId) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				return new GsonBuilder().create().toJson(rm.get().getRouteMetrics().get(routeId));
+			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
+				return "{ }";
+			}
+		}
+		return "{ }";
+	}
+
+	/**
+	 * Get aggregated runtime metrics of all routes
+	 */
+	@GET
+	@Path("/metrics")
+	public String getMetrics() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				Map<String, RouteMetrics> currentMetrics = rm.get().getRouteMetrics();
+				RouteMetrics aggregated = aggregateMetrics(currentMetrics.values());
+				return new GsonBuilder().create().toJson(aggregated);
+			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
+				return "{ }";
+			}
+		}
+		return "{ }";
+	}
+
+	/**
+	 * Aggregates metrics of several rules
+	 * 
+	 * @param currentMetrics
+	 * @return
+	 */
+	private RouteMetrics aggregateMetrics(Collection<RouteMetrics> currentMetrics) {
+		RouteMetrics metrics = new RouteMetrics();
+		currentMetrics.parallelStream().forEach(m -> {
+			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
+			metrics.setFailed(metrics.getFailed() + m.getFailed());
+			metrics.setFailuresHandled(metrics.getFailuresHandled() + m.getFailuresHandled());
+			metrics.setInflight(metrics.getInflight() + m.getInflight());
+			metrics.setMaxProcessingTime(Math.max(metrics.getMaxProcessingTime(), m.getMaxProcessingTime()));
+			metrics.setMeanProcessingTime(metrics.getMeanProcessingTime() + m.getMeanProcessingTime());
+			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
+			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
+		});
+		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/currentMetrics.size());
+		return metrics;
+	}
+
+	/**
 	 * Returns map from camel contexts to list of camel components.
 	 *
 	 * Example:
@@ -152,44 +212,6 @@ public class RouteApi {
 			return "{}";
 		}
 		return new GsonBuilder().create().toJson(rm.get().getEndpoints());
-	}
-
-	@GET
-	@Path("metrics/{id}")
-	@Produces("application/json")
-	public String getRouteMetrics(@PathParam("id") String routeId) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return "{}";
-		}
-		return new GsonBuilder().create().toJson(rm.get().getRouteMetrics(routeId));
-	}
-
-	@GET
-	@Path("metrics")
-	@Produces("application/json")
-	public String getRouteMetrics() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return "{}";
-		}
-		
-		Map<String, RouteMetrics> metrics = rm.get().getRouteMetrics();
-		RouteMetrics aggregated = new RouteMetrics();
-		Iterator<RouteMetrics> it = metrics.values().iterator();
-		while (it.hasNext()) {
-			RouteMetrics m = it.next();
-			aggregated.setCompleted(aggregated.getCompleted() + m.getCompleted());
-			aggregated.setCompleted(aggregated.getFailed() + m.getFailed());
-			aggregated.setCompleted(aggregated.getFailuresHandled() + m.getFailuresHandled());
-			aggregated.setCompleted(aggregated.getInflight() + m.getInflight());
-			aggregated.setCompleted(aggregated.getMaxProcessingTime() + m.getMaxProcessingTime());
-			aggregated.setCompleted(aggregated.getMeanProcessingTime() + m.getMeanProcessingTime());
-			aggregated.setCompleted(aggregated.getMinProcessingTime() + m.getMinProcessingTime());
-			aggregated.setCompleted(aggregated.getRedeliveries() + m.getRedeliveries());
-		}
-		aggregated.setMeanProcessingTime(aggregated.getMeanProcessingTime()/metrics.values().size());
-		return new GsonBuilder().create().toJson(aggregated);
 	}
 
 	/**

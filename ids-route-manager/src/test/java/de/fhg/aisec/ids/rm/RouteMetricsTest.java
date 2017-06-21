@@ -11,8 +11,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RouteMetricsTest extends CamelTestSupport {
     protected static final String TEST_MESSAGE = "Hello World!";
@@ -43,12 +41,10 @@ public class RouteMetricsTest extends CamelTestSupport {
         mock.assertIsSatisfied();
         
         // Retrieve route statistics from RouteManager and make sure they match expectations
-        RouteMetrics after = rm.getRouteStats(template.getCamelContext(), template.getCamelContext().getRouteDefinition("foo"));
-        assertEquals(MSG_COUNT, (long) after.getCompleted());
-        assertEquals(0l, (long) after.getFailed());
+        RouteStatDump after = rm.getRouteStats(template.getCamelContext(), template.getCamelContext().getRouteDefinition("foo"));
+        assertEquals(MSG_COUNT, (long) after.getExchangesCompleted());
+        assertEquals(0l, (long) after.getExchangesFailed());
         assertEquals(0l, (long) after.getRedeliveries());
-        assertEquals(0l, (long) after.getFailuresHandled());
-        assertEquals(0l, (long) after.getInflight());
     }
     
     @Override

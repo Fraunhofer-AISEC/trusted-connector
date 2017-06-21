@@ -20,14 +20,14 @@ public interface RouteManager {
 	 * 
 	 * @return
 	 */
-	List<RouteObject> getRoutes();
+	public List<RouteObject> getRoutes();
 	
 	/**
 	 * Starts a route.
 	 * 
 	 * @param routeId
 	 */
-	void startRoute(String routeId) throws Exception;
+	public void startRoute(String routeId) throws Exception;
 	
 	/**
 	 * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver pending exchanges.
@@ -35,13 +35,13 @@ public interface RouteManager {
 	 * @param routeId
 	 * @throws Exception 
 	 */
-	void stopRoute(String routeId) throws RouteException;
+	public void stopRoute(String routeId) throws RouteException;
 	
-	List<RouteComponent> listComponents();
+	public List<RouteComponent> listComponents();
 	
-	Map<String, Collection<String>> getEndpoints();
+	public Map<String, Collection<String>> getEndpoints();
 	
-	Map<String,String> listEndpoints();
+	public Map<String,String> listEndpoints();
 	
 	/**
 	 * Adds a route from one endpoint to another. 
@@ -82,17 +82,9 @@ public interface RouteManager {
 	void loadRoutes(String routeConfig);
 	
 	/**
-	 * Returns runtime metrics of all installed routes.
+	 * Returns aggregated runtime metrics of all installed routes.
 	 * 
-	 * @return map<k,v> where k is a string indicating the route id. Never null.
+	 * @return map<k,v> where k is a string indicating the route id.
 	 */
 	Map<String,RouteMetrics> getRouteMetrics() ;
-
-	/**
-	 * Returns runtime metrics of a single route or null if route does not exist.
-	 * 
-	 * @param routeId
-	 * @return
-	 */
-	RouteMetrics getRouteMetrics(String routeId);
 }

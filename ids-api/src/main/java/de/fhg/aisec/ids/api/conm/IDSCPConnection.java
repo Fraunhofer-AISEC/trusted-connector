@@ -1,9 +1,7 @@
 package de.fhg.aisec.ids.api.conm;
 
 /**
- * Bean representing an "IDSCP Connection".
- * 
- * IDSCP is the IDS Communication Protocol, a TLS+WebSocket-based protocol including remote attestation for secure data transfers. 
+ * Bean representing an "IDSCP Connection" .
  * 
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
@@ -13,7 +11,7 @@ public class IDSCPConnection {
 	private String lastProtocolState;
 	
 	public IDSCPConnection() {
-		/* Bean std c'tor */
+		
 	}
 	
 	// TODO JS: Never used. Remove?

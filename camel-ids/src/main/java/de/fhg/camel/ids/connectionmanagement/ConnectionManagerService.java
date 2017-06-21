@@ -37,6 +37,7 @@ import de.fhg.camel.ids.server.WebsocketComponentServlet;
  *
  */
 @Component(enabled=true, immediate=true, name="ids-conm")
+
 public class ConnectionManagerService implements ConnectionManager {
 	private static final Logger LOG = LoggerFactory.getLogger(ConnectionManagerService.class);
 
@@ -61,7 +62,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	    while (it.hasNext()) {
 	    	IDSCPConnection idscpc = new IDSCPConnection();
 	    	
-	        Map.Entry<String, ConnectorRef> pair = it.next();
+	        Map.Entry<String, ConnectorRef> pair = (Map.Entry<String, ConnectorRef>)it.next();
 	        ConnectorRef connectorRef = pair.getValue();
 	        MemoryWebsocketStore memoryStore = connectorRef.getMemoryStore();
 	        Server server = connectorRef.getServer();

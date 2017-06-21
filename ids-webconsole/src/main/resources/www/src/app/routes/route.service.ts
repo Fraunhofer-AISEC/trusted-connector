@@ -4,6 +4,7 @@ import { Headers, Http, Response } from '@angular/http';
 import 'rxjs/add/operator/map';
 
 import { Route } from './route';
+import { RouteMetrics } from './route-metrics';
 
 import { environment } from '../../environments/environment';
 
@@ -18,8 +19,8 @@ export class RouteService {
                });
   }
 
-  getTotalMessages() : RouteMetrics {
-    return this.http.get(environment.apiURL + '/routes/metrics')
+  getTotalMessages() {
+    return this.http.get(environment.apiURL + '/metrics')
                .map(response => {
                  return response.json() as RouteMetrics;
                });
@@ -60,15 +61,7 @@ export class RouteService {
                  });
   }
 
-  getRouteMetrics(routeId: string) {
-      return this.http.get(environment.apiURL + '/routes/metrics/' + routeId)
-                 .map(response => {
-                   return response.json() as string;
-                 });
-  }
-
-
- listEndpoints() {
+  listEndpoints() {
       return this.http.get(environment.apiURL + '/routes/list_endpoints')
                  .map(response => {
                    return response.json() as string[];
