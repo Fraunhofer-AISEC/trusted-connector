@@ -175,7 +175,7 @@ public class WsEndpoint extends AhcEndpoint {
         try {
 	        idspListener.isFinished().await();
         } finally {
-        	ratSuccess = idspListener.ratSuccessful();
+        	ratSuccess = idspListener.isAttestationSuccessful();
         	idspListener.semaphore().unlock();
         }
         

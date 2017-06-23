@@ -25,6 +25,8 @@ import de.fhg.camel.ids.server.DefaultWebsocket;
 import de.fhg.camel.ids.server.MemoryWebsocketStore;
 import de.fhg.camel.ids.server.WebsocketComponent;
 import de.fhg.camel.ids.server.WebsocketComponentServlet;
+import de.fhg.camel.ids.server.WebsocketEndpoint;
+import de.fhg.ids.comm.ws.protocol.ProtocolState;
 
 
 
@@ -69,15 +71,21 @@ public class ConnectionManagerService implements ConnectionManager {
 	        WebsocketComponentServlet servlet = connectorRef.getServlet();
 	        idscpc.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
 	        String protocol = servlet.getConsumer().getEndpoint().getProtocol();
+	        
 	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
 	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
-	        String protocolState;
+	        
 	        //Assume only websocket per endpoint
 	        while(webSocketIterator.hasNext())  {
 	        	DefaultWebsocket dws = webSocketIterator.next();
 	        	String connectionKey = dws.getConnectionKey();
-	        	idscpc.setAttestationResult(dws.getCurrentProtocolState());
 	        	
+	        	// in order to check if the provider has done a successful remote attestation
+	        	// we have to check the state of the dsm (=END) and the result of the rat:
+	        	if(dws.getCurrentProtocolState().equals(ProtocolState.IDSCP_END.id()) && dws.isAttestationSuccessful()) {
+	        		// attestation is done and was successful
+	        		idscpc.setAttestationResult("true");
+	        	}
 	        }
 	        connections.add(idscpc);
 	        it.remove(); // avoids a ConcurrentModificationException

@@ -105,7 +105,6 @@ public class IDSPListener extends DefaultWebSocketListener {
     		}
 
     		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
-    			this.setSuccessful(machine.getIDSCPConsumerSuccess());;
 	    		isFinishedCond.signalAll();
 	    	}
     	} catch (InterruptedException e) {
@@ -127,12 +126,9 @@ public class IDSPListener extends DefaultWebSocketListener {
     public Condition isFinished() {
     	return isFinishedCond;
     }
-
-	public void setSuccessful(boolean s) {
-		this.ratSuccess = s;
-	}
-
-	public boolean ratSuccessful() {
-		return ratSuccess;
+	
+    //get the result of the remote attestation
+	public boolean isAttestationSuccessful() {
+		return machine.getIDSCPConsumerSuccess();
 	}
 }

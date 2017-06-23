@@ -42,15 +42,12 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 public class DefaultWebsocket implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);
-
     private final WebsocketConsumer consumer;
     private final NodeSynchronization sync;
     private ProtocolMachine machine;
     private Session session;
     private String connectionKey;
 	private FSM idsFsm;
-
-	
 
     public DefaultWebsocket(NodeSynchronization sync, WebsocketConsumer consumer) {
         this.sync = sync;
@@ -96,9 +93,8 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketMessage
     public void onMessage(String message) {
-        
         // Check if fsm is in its final state and successful. Only then, the message is forwarded to Camel consumer
-        if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+        if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id()) && machine.getIDSCPProviderSuccess()) {
 	        if (this.consumer != null) {
 	            this.consumer.sendMessage(this.connectionKey, message);
 	        } else {
@@ -106,11 +102,9 @@ public class DefaultWebsocket implements Serializable {
 	        }
 	        return;
         }
-
         // Otherwise, we are still in the process of running IDS protocol and hold back the original message. In this case, feed the message into the protocol FSM
         try {
         	ConnectorMessage msg = ConnectorMessage.parseFrom(message.getBytes());
-
         	//we de-protobuf and split messages into cmd and payload
         	idsFsm.feedEvent(new Event(msg.getType(), message, msg));
 		} catch (InvalidProtocolBufferException e) {
@@ -118,9 +112,7 @@ public class DefaultWebsocket implements Serializable {
 			LOG.error(e.getMessage(), e);
 			this.session.close(new CloseStatus(403, "invalid protobuf"));
 		}
-        
     }
-
 
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
@@ -170,5 +162,14 @@ public class DefaultWebsocket implements Serializable {
     //get the current State of the FSM
 	public String getCurrentProtocolState() {
 		return idsFsm.getState();
+	}
+	
+    //get the result of the remote attestation
+	public boolean isAttestationSuccessful() {
+		return machine.getIDSCPProviderSuccess();
+	}
+	
+	public SSLContextParameters getSSLContextParameters() {
+		return consumer.getSSLContextParameters();
 	}
 }
