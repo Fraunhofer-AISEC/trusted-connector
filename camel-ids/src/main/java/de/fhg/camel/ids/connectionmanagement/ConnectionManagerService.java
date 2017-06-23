@@ -46,13 +46,11 @@ public class ConnectionManagerService implements ConnectionManager {
 	@Activate
 	protected void activate() {
 		LOG.info("Activating Connection Manager");
-
-
 	}
 
 	@Deactivate
 	protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
-
+		LOG.info("Deactivating Connection Manager");
 	}
 
 	@Override
@@ -81,11 +79,18 @@ public class ConnectionManagerService implements ConnectionManager {
 	        	String connectionKey = dws.getConnectionKey();
 	        	
 	        	// in order to check if the provider has done a successful remote attestation
-	        	// we have to check the state of the dsm (=END) and the result of the rat:
+	        	// we have to check the state of the dsm (=IDSCP_END) and the result of the rat:
 	        	if(dws.getCurrentProtocolState().equals(ProtocolState.IDSCP_END.id()) && dws.isAttestationSuccessful()) {
 	        		// attestation is done and was successful
-	        		idscpc.setAttestationResult("true");
+	        		idscpc.setAttestationResult(true);
+	        		idscpc.setLastProtocolState(ProtocolState.IDSCP_END.id());
 	        	}
+	        	// in order to check the identity of the remote couterpart, we could use the SSLContextParameters of the dws:
+	        	// this is "NONE", "WANT" or "REQUIRE"
+	        	idscpc.setRemoteIdentity(dws.getRemoteHostname());
+	        	idscpc.setRemoteAuthentication(dws.getSSLContextParameters().getServerParameters().getClientAuthentication());
+	        	
+	        	
 	        }
 	        connections.add(idscpc);
 	        it.remove(); // avoids a ConcurrentModificationException

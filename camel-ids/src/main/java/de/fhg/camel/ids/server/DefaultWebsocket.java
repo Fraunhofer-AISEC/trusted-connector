@@ -172,4 +172,8 @@ public class DefaultWebsocket implements Serializable {
 	public SSLContextParameters getSSLContextParameters() {
 		return consumer.getSSLContextParameters();
 	}
+	
+	public String getRemoteHostname() {
+		return session.getRemoteAddress().getHostName();
+	}
 }
