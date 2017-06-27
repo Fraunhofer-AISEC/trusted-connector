@@ -17,5 +17,6 @@ public interface ConnectionManager {
 	 * 
 
 	 */
-	public List<IDSCPConnection> listConnections();
+	public List<IDSCPIncomingConnection> listIncomingConnections();
+	public List<IDSCPOutgoingConnection> listOutgoingConnections();
 }

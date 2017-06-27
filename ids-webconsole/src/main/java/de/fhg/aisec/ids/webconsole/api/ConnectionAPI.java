@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
@@ -25,22 +26,37 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
  */
-@Path("/connections")
+@Path("/incomingconnections")
 public class ConnectionAPI {
 	private static final Logger LOG = LoggerFactory.getLogger(ConnectionAPI.class);
 	
 	@GET
-	@Path("list")
+	@Path("listincoming")
 	@Produces("application/json")
-	public String list() {
-		List<IDSCPConnection> result = new ArrayList<>();
+	public String listincoming() {
+		List<IDSCPIncomingConnection> result = new ArrayList<>();
 		
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listConnections();
+			result = connectionManager.get().listIncomingConnections();
+		}
+		
+		return new GsonBuilder().create().toJson(result);
+	}
+	
+	@GET
+	@Path("listoutgoing")
+	@Produces("application/json")
+	public String listoutgoing() {
+		List<IDSCPOutgoingConnection> result = new ArrayList<>();
+		
+		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
+		if (connectionManager.isPresent()) {
+			result = connectionManager.get().listOutgoingConnections();
 		}
 		
 		return new GsonBuilder().create().toJson(result);
 	}
 
 }
+
