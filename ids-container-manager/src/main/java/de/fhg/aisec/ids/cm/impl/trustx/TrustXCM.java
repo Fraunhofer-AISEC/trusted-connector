@@ -132,6 +132,7 @@ public class TrustXCM implements ContainerManager {
         try{            
             
             //TODO Open Socket and get correct OutputStream
+        	//TODO use jnr-unixsockets
             DataOutputStream outputStream = new DataOutputStream(new OutputStream() {
 				
 				@Override
