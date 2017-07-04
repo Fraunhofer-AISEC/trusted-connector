@@ -9,6 +9,7 @@ import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
+import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
 
 const appRoutes: Routes = [{
     path: '',
@@ -39,6 +40,9 @@ const appRoutes: Routes = [{
     path: 'ids',
     component: IdsComponent,
     canDeactivate: [IdsComponent],
+  }, {
+    path: 'connections',
+    component: ConnectionReportComponent
   }, {
     path: 'certificates',
     component: KeycertsComponent
