@@ -11,12 +11,12 @@ import java.util.Map;
  *
  */
 public class DecisionRequest {
-	private String from;
-	private String to;
+	private ServiceNode from;
+	private ServiceNode to;
 	private Map<String, String> msgCtx = new HashMap<>();
 	private Map<String, String> envCtx = new HashMap<>();
 	
-	public DecisionRequest(String from, String to, Map<String, String> msgCtx, Map<String, String> envCtx) {
+	public DecisionRequest(ServiceNode from, ServiceNode to, Map<String, String> msgCtx, Map<String, String> envCtx) {
 		super();
 		this.from = from;
 		this.to = to;
@@ -28,7 +28,7 @@ public class DecisionRequest {
 	 * Returns the source, i.e. the origin of the communication for which a decision is requested.
 	 * @return
 	 */
-	public String getFrom() {
+	public ServiceNode getFrom() {
 		return from;
 	}
 	
@@ -36,7 +36,7 @@ public class DecisionRequest {
 	 * Sets the source, i.e. the origin of the communication for which a decision is requested.
 	 * @return
 	 */
-	public void setFrom(String from) {
+	public void setFrom(ServiceNode from) {
 		this.from = from;
 	}
 
@@ -44,7 +44,7 @@ public class DecisionRequest {
 	 * Returns the sink, i.e. the endpoint of the communication for which a decision is requested.
 	 * @return
 	 */
-	public String getTo() {
+	public ServiceNode getTo() {
 		return to;
 	}
 
@@ -52,7 +52,7 @@ public class DecisionRequest {
 	 * Sets the source, i.e. the origin of the communication for which a decision is requested.
 	 * @return
 	 */
-	public void setTo(String to) {
+	public void setTo(ServiceNode to) {
 		this.to = to;
 	}
 	
