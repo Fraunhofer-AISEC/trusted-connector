@@ -6,41 +6,73 @@
          <h2 class="mdl-card__title-text">incommig Connections</h2>
     </div>
 
-      <div #list class="list" [scrollTop]="list.scrollHeight">
-        <div  class="packet" *ngFor="let conn of incommingConnections ">
-
-         <table>
-            <tr>
-              <td width="20%">
-                 endpoint_identifier
-              </td>
-              <td width="80%">
-                {{ conn.endpoint_identifier }}
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
+    
+    <div  style="height:300px;overflow-y:scroll">
+        <table class="table table-striped">
+            <thead>
+               <tr>
+                <th width="72%">
+                  Endpoint Identifier
+                </th>
+                <th width="28%">
+                  Attestation Result
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr  *ngFor="let conn of incommingConnections" >
+                  <td width="72%">
+                      {{ conn.endpointIdentifier }}
+                  </td>
+                  <td width="28%">
+                    {{ conn.attestationResult }}
+                  </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
   </div>
 
   <div class="app-card mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp">
     <div class="mdl-card__title">
          <h2 class="mdl-card__title-text">Outgoing Connections</h2>
     </div>
-    <div #list class="list" [scrollTop]="list.scrollHeight">
-      <div  class="packet" *ngFor="let conn of outgoingConnections">
-
-      <table>
-            <tr>
-              <td width="20%">
-                 endpoint_identifier
-              </td>
-              <td width="80%">
-                {{ conn.endpoint_identifier }}
-              </td>
-            </tr>
+    <div style="height:300px;overflow-y:scroll">
+        <table class="table table-striped">
+            <thead>
+               <tr>
+                <th width="58%">
+                  Endpoint Identifier
+                </th>
+                <th width="14%">
+                  Last Protocol State 
+                </th>
+                <th width="14%">
+                  Remote Authentication 
+                </th>
+                <th width="14%">
+                  Remote Identity
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr  *ngFor="let conn of outgoingConnections" >
+                  <td width="58%">
+                    {{ conn.endpoint_identifier }}
+                  </td>
+                  <td width="14%">
+                    {{ conn.lastProtocolState }}
+                  </td>
+                  <td width="14%">
+                    {{ conn.remoteAuthentication }}
+                  </td>
+                  <td width="14%">
+                    {{ conn.remoteIdentity }}
+                  </td>
+                </tr>
+            </tbody>
         </table>
-      </div>
     </div>
+
   </div>
 </div>

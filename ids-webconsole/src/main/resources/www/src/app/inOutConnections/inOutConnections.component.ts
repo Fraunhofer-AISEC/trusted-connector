@@ -6,7 +6,8 @@ import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/interval';
 import {BehaviorSubject} from "rxjs/Rx";
 
-import { Connection } from './connection';
+import { IncommingConnection } from './connections';
+import { OutgoingConnection } from './connections';
 import { ConnectionService } from './inOutConnections.service';
 
 @Component({
@@ -17,21 +18,21 @@ import { ConnectionService } from './inOutConnections.service';
 
 export class ConnectionReportComponent implements OnInit {
 
-  incommingConnections: Connection[];
-  outgoingConnections: Connection[];
+  incommingConnections: IncommingConnection[];
+  outgoingConnections: OutgoingConnection[];
 
   constructor(private titleService: Title,  private connectionService: ConnectionService) {
      this.titleService.setTitle('Connections Statistics');
   }
 
   public ngOnInit(): void {
-    this.connectionService.getIncommingConnections().subscribe(connections => {
-       this.incommingConnections = connections;
+    this.connectionService.getIncommingConnections().subscribe(inConnections => {
+       this.incommingConnections = inConnections;
        console.log(this.incommingConnections)
      });
 
-     this.connectionService.getOutgoingConnections().subscribe(connections => {
-       this.outgoingConnections = connections;
+     this.connectionService.getOutgoingConnections().subscribe(outConnections => {
+       this.outgoingConnections = outConnections;
        console.log(this.outgoingConnections)
      });
   }
