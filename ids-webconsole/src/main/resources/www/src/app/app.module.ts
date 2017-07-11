@@ -47,6 +47,8 @@ import {ConfirmComponent} from "./confirm/confirm.component";
 import { ModalModule } from 'angular2-modal';
 import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
+import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
+import { ConnectionService } from './inOutConnections/inOutConnections.service';
 
 import 'material-design-lite';
 
@@ -78,7 +80,8 @@ import 'material-design-lite';
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    FileWindow],
+    FileWindow,
+    ConnectionReportComponent],
   providers: [
     AppService,
     RouteService,
@@ -88,6 +91,7 @@ import 'material-design-lite';
     SensorService,
     ConfirmService,
     IdsComponent,
+    ConnectionService,
     Title
   ],
   bootstrap: [
