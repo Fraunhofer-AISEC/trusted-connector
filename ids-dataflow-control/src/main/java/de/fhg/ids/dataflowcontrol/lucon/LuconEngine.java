@@ -36,6 +36,7 @@ public class LuconEngine {
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
 		p.addQueryListener(q -> LOG.trace("Prolog query " + q.getSolveInfo().getQuery().toString()));
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
+		p.addWarningListener(w -> LOG.warn(w.getMsg()));
 		p.addOutputListener(l -> { 
 			if (out!=null) {
 				try {

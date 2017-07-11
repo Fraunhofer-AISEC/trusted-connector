@@ -1,6 +1,6 @@
 src: src/main/java
 bin: target/classes
-testsrc: src/test/java
+testsrc: src/test/java,src/test/resources
 testbin: target/test-classes
 Bundle-Name: ids-dataflow-control
 Bundle-Version: 1.1.0
@@ -19,3 +19,4 @@ Import-Package: \
 	!ikvm.runtime,\
 	!alice.tuprolog*,\
 	*
+Private-Package: de.fhg.ids.dataflowcontrol.lucon

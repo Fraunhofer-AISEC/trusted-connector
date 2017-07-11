@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
 import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.policy.PolicyDecision;
+import de.fhg.aisec.ids.api.policy.ServiceNode;
 
 /**
  * 
@@ -72,7 +73,9 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
 		
 		// Call PDP to transform labels and decide whether we may forward the Exchange
 		PDP pdp = rm.getPdp();
-		PolicyDecision decision = pdp.requestDecision(new DecisionRequest(source, destination, msgCtx, null));
+		ServiceNode sourceNode = new ServiceNode(source, null, null);	//TODO set properties and optionally capabilities of node
+		ServiceNode destNode = new ServiceNode(destination, null, null);
+		PolicyDecision decision = pdp.requestDecision(new DecisionRequest(sourceNode, destNode, msgCtx, null));
 
 		switch (decision.getDecision()) {
 		case DON_T_CARE:
