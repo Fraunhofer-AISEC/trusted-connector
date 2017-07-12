@@ -22,11 +22,13 @@ import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
+import de.fhg.aisec.ids.api.policy.Obligation;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.policy.PolicyDecision;
-import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
+import de.fhg.aisec.ids.api.policy.ServiceNode;
+import de.fhg.aisec.ids.api.policy.TransformationDecision;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
@@ -50,7 +52,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 *	hiveMqttBroker	drop		Alt				A
 	 * @param msgLabels 
 	 */
-	private String createQuery(ServiceNode target, Set<String> msgLabels) {			
+	private String createDecisionQuery(ServiceNode target, Set<String> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
@@ -74,6 +76,13 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		return sb.toString();
 	}
 	
+	private String createTransformationQuery(ServiceNode target) {			
+		StringBuilder sb = new StringBuilder();
+		sb.append("service(T), ");
+		// FIXME Unfinished. Return set of additions and removals here!
+		return sb.toString();
+	}
+
 	@Activate
 	public void activate(ComponentContext ctx) {
 		if (this.engine == null) {
@@ -82,11 +91,28 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Override
+	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
+		// Query prolog for labels to remove or add from message
+		String query = this.createTransformationQuery(lastServiceNode);
+		LOG.info("QUERY: " + query);
+		try {
+			List<SolveInfo> solveInfo = this.engine.query(query, false);
+		} catch (NoMoreSolutionException | MalformedGoalException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new TransformationDecision();
+	}
+	
+	@Override
 	public PolicyDecision requestDecision(DecisionRequest req) {
+		// TODO move to own method, make this more efficient
 		Set<String> msgLabels = new HashSet<>();
 		if (req.getMessageCtx().get("labels")!=null) {
 			for (String label : req.getMessageCtx().get("labels").split(",")) {
-				msgLabels.add(label);
+				if (!"".equals(label)) {
+					msgLabels.add(label);
+				}
 			}
 		}
 		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
@@ -96,10 +122,9 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		try {
 			// Query Prolog engine for a policy decision
 			long startTime = System.nanoTime();
-			String query = this.createQuery(req.getTo(), msgLabels);
-			System.out.println("QUERY: " + query);
+			String query = this.createDecisionQuery(req.getTo(), msgLabels);
+			LOG.info("QUERY: " + query);
 			List<SolveInfo> solveInfo = this.engine.query(query, false);
-			System.out.println(solveInfo.isEmpty());
 			long time = System.nanoTime() - startTime;
 			LOG.info("Policy decision took " + time + " nanos");
 						
@@ -113,27 +138,23 @@ public class PolicyDecisionPoint implements PDP, PAP {
 				return dec;
 			}
 			
-			// Get some obligation, if any TODO merge obligations of all matching rules
+			// Get some obligation, if any TODO incorrect. Merge obligations of all matching rules. Currently we are just pulling out "any"
 			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Optional<Var> obl = vars.stream().filter(v -> "_O".equals(v.getName())).findAny();
-			if (obl.isPresent()) {
-				dec.setObligation(obl.get().getTerm().toString());
+			Optional<Var> alt = vars.stream().filter(v -> "Alt".equals(v.getName())).findAny();
+			Optional<Var> action = vars.stream().filter(v -> "A".equals(v.getName())).findAny();
+			if (action.isPresent()) {
+				Obligation o = new Obligation();				
+				o.setAction(action.get().getTerm().toString());
+				if (alt.isPresent() && "drop".equals(alt.get().getTerm().toString())) {
+					o.setAlternativeDecision(Decision.DENY);
+				}
+				dec.setObligation(o);
 				dec.setDecision(Decision.ALLOW);
 			}
 			
 			Optional<Var> decision = vars.stream().filter(v -> "D".equals(v.getName()) && v.isBound()).findAny();
 			if (decision.isPresent()) {
 				if ("drop".equals(decision.get().getTerm().toString())) {
-					dec.setDecision(Decision.DENY);
-				}
-			} else {
-				Optional<Var> alt = vars.stream().filter(v -> "Alt".equals(v.getName()) && v.isBound()).findAny();
-				if (!alt.isPresent()) {
-					LOG.warn("Broken policy. No Decision, no alternative.");
-					return dec;
-				}
-
-				if ("drop".equals(alt.get().getTerm().toString())) {
 					dec.setDecision(Decision.DENY);
 				}
 			}

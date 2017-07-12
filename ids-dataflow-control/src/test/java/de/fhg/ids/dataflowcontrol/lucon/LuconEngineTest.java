@@ -19,6 +19,7 @@ import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.SolveInfo;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
+import de.fhg.aisec.ids.api.policy.Obligation;
 import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
@@ -66,7 +67,7 @@ public class LuconEngineTest {
 			"has_endpoint(service78096644, \"hdfs.*\").\n" + 
 			"receives_label(deleteAfterOneMonth,private).\n" + 
 			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
-			"requires_prerequisite(obl1709554620, (delete_after_days(X),X<30)).\n" + 
+			"requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
 			"has_alternativedecision(obl1709554620, drop).\n" + 
 			"rule(anotherRule).\n" + 
 			"has_target(anotherRule, hiveMqttBroker). \n" + 
@@ -78,12 +79,12 @@ public class LuconEngineTest {
 			"has_endpoint(anonymizer, \".*anonymizer.*\").\n" + 
 			"has_property(anonymizer,myProp,anonymize('surname', 'name')).\n" + 
 			"service(hiveMqttBroker).\n" + 
-			"has_endpoint(hiveMqttBroker, regex(\"^paho:.*?tcp://broker.hivemq.com:1883.*\")).\n" + 
+			"has_endpoint(hiveMqttBroker, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" + 
 			"has_property(hiveMqttBroker,type,public).\n" + 
 			"service(testQueue).\n" + 
-			"has_endpoint(testQueue, regex(\"^amqp:.*?:test\")).\n" + 
+			"has_endpoint(testQueue, \"^amqp:.*?:test\").\n" + 
 			"service(hadoopClusters).\n" + 
-			"has_endpoint(hadoopClusters, regex(\"hdfs://.*\")).\n" + 
+			"has_endpoint(hadoopClusters, \"hdfs://.*\").\n" + 
 			"has_capability(hadoopClusters,deletion).\n" + 
 			"has_property(hadoopClusters,anonymizes,anonymize('surname', 'name')).\n";
 	
@@ -158,8 +159,9 @@ public class LuconEngineTest {
 		LuconEngine e = new LuconEngine(System.out);
 		e.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		try {
-			List<SolveInfo> solutions = e.query("rule(X), has_target(X, T).", true);
+			List<SolveInfo> solutions = e.query("has_endpoint(X,Y),regex(Y, \"hdfs://myendpoint\",C),C.", true);
 			assertNotNull(solutions);
+			System.out.println(solutions.size());
 			assertEquals(2,solutions.size());
 			for (SolveInfo solution : solutions) {
 				System.out.println(solution.getSolution().toString());
@@ -186,12 +188,16 @@ public class LuconEngineTest {
 		Map<String, String> attributes = new HashMap<>();
 		attributes.put("some_message_key", "some_message_value");
 		
-		// Simple source and dest nodess
+		// Simple source and dest nodes
 		ServiceNode source = new ServiceNode("seda:test_source", null, null);
 		ServiceNode dest= new ServiceNode("hdfs://some_url", null, null);
 		
 		PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, System.getenv()));
-		assertEquals(Decision.DENY, dec.getDecision());
+		assertEquals(Decision.ALLOW, dec.getDecision());
+		
+		// Check obligation
+		Obligation obl = dec.getObligation();
+		assertEquals("delete_after_days(30)", obl.getAction());
 	}
 
 	/**
