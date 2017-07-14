@@ -28,7 +28,8 @@ import { SettingsService } from './ids/settings.service';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
-import { FileWindow } from './keycerts/uploadCert';
+import { CertUploadComponent } from './keycerts/certUpload.component';
+
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
@@ -77,10 +78,10 @@ import 'material-design-lite';
     IdsComponent,
     KeycertsComponent,
     CertificateCardComponent,
+    CertUploadComponent,
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    FileWindow,
     ConnectionReportComponent],
   providers: [
     AppService,
@@ -97,6 +98,6 @@ import 'material-design-lite';
   bootstrap: [
     AppComponent ],
     entryComponents: [
-      FileWindow]
+      ]
 })
 export class AppModule { }

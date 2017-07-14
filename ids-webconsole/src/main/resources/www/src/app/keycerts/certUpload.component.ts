@@ -1,19 +1,18 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { Http, Headers } from '@angular/http';
-import { PolicyService } from './policy.service';
-
+import { CertificateService } from './keycert.service';
 
 @Component({
-    selector: 'file-upload',
-    template: '<input type="file" [multiple]="multiple" #fileInput>'
+    selector: 'file-uploading',
+    template: '<input accept=".crt,.der,.cer, .jks, .cert" type="file" [multiple]="multiple" #fileIn>'
 })
-export class FileUploadComponent {
+export class CertUploadComponent {
     @Input() multiple: boolean = false;
-    @ViewChild('fileInput') inputEl: ElementRef;
+    @ViewChild('fileIn') inputEl: ElementRef;
 
-    constructor(private http: Http, private policyService: PolicyService) {}
+    constructor(private http: Http,private certificateService: CertificateService) {}
 
-    upload() {
+    upload(keystoreDestination: string) {
         let inputEl: HTMLInputElement = this.inputEl.nativeElement;
         let fileCount: number = inputEl.files.length;
         let formData = new FormData();
@@ -21,11 +20,12 @@ export class FileUploadComponent {
         headers.append('Content-Type', 'multipart/form-data');
         
         if (fileCount > 0) { // a file was selected
+             
             for (let i = 0; i < fileCount; i++) {
-                formData.append('policy_file', inputEl.files.item(i));
+                this.certificateService.uploadCert(inputEl.files.item(i), keystoreDestination);
             }
-            console.log("Posting");
-            this.policyService.install(formData)
+           
+            location.reload();
         }
     }
 }
