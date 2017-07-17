@@ -18,14 +18,7 @@
 	</parent>
 
 	<properties>
-		<camel-version>2.18.0</camel-version>
-		<jetty-version>9.2.17.v20160517</jetty-version>
-		<jersey-version>2.25</jersey-version>
-		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.24</ahc-version>
-		<protobuf-version>3.0.0</protobuf-version>
 		<docker.follow>false</docker.follow>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start.class>de.fhg.ids.attestation.Start</start.class>
 	</properties>
 

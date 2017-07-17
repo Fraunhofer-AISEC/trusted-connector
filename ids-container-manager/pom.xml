@@ -25,14 +25,6 @@
 
 	<name>IDS Container Manager</name>
 
-	<properties>
-		<camel-version>2.18.0</camel-version>
-		<jetty-version>8.1.19.v20160209</jetty-version>
-		<jetty-version>9.2.17.v20160517</jetty-version>
-		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.15</ahc-version>
-	</properties>
-
 	<dependencies>
 		<!-- IDS components -->
 		<dependency>

@@ -23,26 +23,7 @@
 		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>IDS Container Manager</name>
-
-	<properties>
-		<camel-version>2.18.0</camel-version>
-		<jetty-version>8.1.19.v20160209</jetty-version>
-		<jetty-version>9.2.17.v20160517</jetty-version>
-		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.15</ahc-version>
-
-		<project.organization.name>Fraunhofer AISEC</project.organization.name>
-		<project.inceptionYear>2017</project.inceptionYear>
-	</properties>
-
-	<licenses>
-		<license>
-			<name>Apache License Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>	
+	<name>LUCON Data Flow Policy Engine</name>
 
 	<dependencies>
 		<!--  tuprolog -->
@@ -84,13 +65,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>2.6.2</version>
-		</dependency>
-
-		<!-- JNR-Unixsocket -->
-		<dependency>
-			<groupId>com.github.jnr</groupId>
-			<artifactId>jnr-unixsocket</artifactId>
-			<version>0.13</version>
 		</dependency>
 
 		<!-- for testing -->
@@ -150,38 +124,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-
-			<!-- Add Apache 2 license headers -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>1.13</version>
-				<executions>
-					<execution>
-						<id>first</id>
-						<goals>
-						  <goal>update-file-header</goal>
-						</goals>
-						<phase>process-sources</phase>
-						<configuration>
-						  <licenseName>apache_v2</licenseName>
-						<organizationName>${project.organization.name}</organizationName>
-						<inceptionYear>${project.inceptionYear}</inceptionYear>
-						<projectName>${project.name}</projectName>
-						  <roots>
-							<root>src/main/java</root>
-							<root>src/test</root>
-						  </roots>
-						</configuration>
-					</execution>
-					<execution>
-						<id>download-licenses</id>
-						<goals>
-							<goal>download-licenses</goal>
-						</goals>
-					</execution>				  
-				</executions>
-				</plugin>
 		</plugins>
 	</build>
 </project>

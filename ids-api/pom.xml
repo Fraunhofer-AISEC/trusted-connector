@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
 	license agreements. See the NOTICE file distributed with this work for additional 
@@ -25,15 +26,6 @@
   </parent>
 
 	<name>IDS Core Platform API</name>
-
-	<properties>
-		<camel-version>2.18.0</camel-version>
-		<jetty-version>9.2.17.v20160517</jetty-version>
-		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.15</ahc-version>
-		<protobuf-version>3.0.0</protobuf-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
-	</properties>
 
 	<dependencies>
 		<!-- Protobuf -->

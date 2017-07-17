@@ -7,3 +7,4 @@ rat-repository/src/main/docker/jar/*
 /.sonarlint/
 /dist-docker/
 *.log
+/target/
