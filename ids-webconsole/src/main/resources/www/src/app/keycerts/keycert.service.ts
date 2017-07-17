@@ -64,6 +64,7 @@ export class CertificateService {
            formData.append("upfile", inFile, inFile.name);
            formData.append("keystoresFile", keystoresFile);
 
+           console.log("----------------------------");
            xhr.onreadystatechange = function () {
                if (xhr.readyState == 4) {
                    if (xhr.status == 200) {

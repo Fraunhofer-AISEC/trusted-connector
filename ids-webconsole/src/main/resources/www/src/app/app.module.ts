@@ -28,7 +28,8 @@ import { SettingsService } from './ids/settings.service';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
-import { FileWindow } from './keycerts/uploadCert';
+import { CertUploadComponent } from './keycerts/certUpload.component';
+
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
@@ -47,6 +48,8 @@ import {ConfirmComponent} from "./confirm/confirm.component";
 import { ModalModule } from 'angular2-modal';
 import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
+import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
+import { ConnectionService } from './inOutConnections/inOutConnections.service';
 
 import 'material-design-lite';
 
@@ -75,10 +78,11 @@ import 'material-design-lite';
     IdsComponent,
     KeycertsComponent,
     CertificateCardComponent,
+    CertUploadComponent,
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    FileWindow],
+    ConnectionReportComponent],
   providers: [
     AppService,
     RouteService,
@@ -88,11 +92,12 @@ import 'material-design-lite';
     SensorService,
     ConfirmService,
     IdsComponent,
+    ConnectionService,
     Title
   ],
   bootstrap: [
     AppComponent ],
     entryComponents: [
-      FileWindow]
+      ]
 })
 export class AppModule { }

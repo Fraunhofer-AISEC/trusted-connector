@@ -3,8 +3,10 @@ package de.fhg.ids.dataflowcontrol;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -20,10 +22,13 @@ import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
+import de.fhg.aisec.ids.api.policy.Obligation;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
+import de.fhg.aisec.ids.api.policy.ServiceNode;
+import de.fhg.aisec.ids.api.policy.TransformationDecision;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
@@ -37,9 +42,47 @@ import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 @Component(enabled = true, immediate = true, name = "ids-dataflow-control", servicefactory = false)
 public class PolicyDecisionPoint implements PDP, PAP {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
-	private static final String QUERY_GET_ALL_RULES = "rule(R), has_target(R, Service), has_property(Service, Prop), has_obligation(R, Obl), requires_action(Obl, Act).";
 	private LuconEngine engine;
+		
+	/**
+	 * Result of query will be:
+	 *
+	 * Target			Decision	Alternative		Obligation
+	 * 	hadoopClusters	D			drop			(delete_after_days(_1354),_1354<30)	1
+	 *	hiveMqttBroker	drop		Alt				A
+	 * @param msgLabels 
+	 */
+	private String createDecisionQuery(ServiceNode target, Set<String> msgLabels) {			
+		StringBuilder sb = new StringBuilder();
+		sb.append("rule(_X), has_target(_X, T), ");
+		sb.append("has_endpoint(T, EP), ");
+		sb.append("regex(EP, \""+target.getEndpoint()+"\", true), ");
+		for (String label: msgLabels) {
+			sb.append("receives_label(T, "+label+"), ");
+		}
+		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
+			sb.append("(");
+		}
+		for (String cap: target.getCapabilties()) {
+			sb.append("(has_capability(T, \""+cap+"\"); ");
+		}
+		for (String prop: target.getProperties()) {
+			sb.append("has_property(T, \""+prop+"\"), ");
+		}
+		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
+			sb.append("), ");
+		}
+		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), requires_prerequisite(_O, A))).");
+		return sb.toString();
+	}
 	
+	private String createTransformationQuery(ServiceNode target) {			
+		StringBuilder sb = new StringBuilder();
+		sb.append("service(T), ");
+		// FIXME Unfinished. Return set of additions and removals here!
+		return sb.toString();
+	}
+
 	@Activate
 	public void activate(ComponentContext ctx) {
 		if (this.engine == null) {
@@ -48,14 +91,40 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Override
+	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
+		// Query prolog for labels to remove or add from message
+		String query = this.createTransformationQuery(lastServiceNode);
+		LOG.info("QUERY: " + query);
+		try {
+			List<SolveInfo> solveInfo = this.engine.query(query, false);
+		} catch (NoMoreSolutionException | MalformedGoalException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new TransformationDecision();
+	}
+	
+	@Override
 	public PolicyDecision requestDecision(DecisionRequest req) {
-		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo() + " : " + String.join(", ", req.getMessageCtx().get("labels")));
+		// TODO move to own method, make this more efficient
+		Set<String> msgLabels = new HashSet<>();
+		if (req.getMessageCtx().get("labels")!=null) {
+			for (String label : req.getMessageCtx().get("labels").split(",")) {
+				if (!"".equals(label)) {
+					msgLabels.add(label);
+				}
+			}
+		}
+		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
 		PolicyDecision dec = new PolicyDecision();
+		dec.setDecision(Decision.ALLOW); // Default value
 		dec.setReason("Not yet ready for productive use!");
 		try {
 			// Query Prolog engine for a policy decision
 			long startTime = System.nanoTime();
-			List<SolveInfo> solveInfo = this.engine.query(QUERY_GET_ALL_RULES, false);
+			String query = this.createDecisionQuery(req.getTo(), msgLabels);
+			LOG.info("QUERY: " + query);
+			List<SolveInfo> solveInfo = this.engine.query(query, false);
 			long time = System.nanoTime() - startTime;
 			LOG.info("Policy decision took " + time + " nanos");
 						
@@ -66,16 +135,28 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			
 			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
-				dec.setDecision(Decision.ALLOW);
 				return dec;
 			}
 			
-			// Get some obligation, if any TODO merge obligations of all matching rules
+			// Get some obligation, if any TODO incorrect. Merge obligations of all matching rules. Currently we are just pulling out "any"
 			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Optional<Var> obl = vars.stream().filter(v -> v.getName().equals("Obl")).findAny();
-			if (obl.isPresent()) {
-				dec.setObligation(obl.get().getTerm().toString());
+			Optional<Var> alt = vars.stream().filter(v -> "Alt".equals(v.getName())).findAny();
+			Optional<Var> action = vars.stream().filter(v -> "A".equals(v.getName())).findAny();
+			if (action.isPresent()) {
+				Obligation o = new Obligation();				
+				o.setAction(action.get().getTerm().toString());
+				if (alt.isPresent() && "drop".equals(alt.get().getTerm().toString())) {
+					o.setAlternativeDecision(Decision.DENY);
+				}
+				dec.setObligation(o);
 				dec.setDecision(Decision.ALLOW);
+			}
+			
+			Optional<Var> decision = vars.stream().filter(v -> "D".equals(v.getName()) && v.isBound()).findAny();
+			if (decision.isPresent()) {
+				if ("drop".equals(decision.get().getTerm().toString())) {
+					dec.setDecision(Decision.DENY);
+				}
 			}
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);

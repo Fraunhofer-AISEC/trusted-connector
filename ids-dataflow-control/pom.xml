@@ -31,15 +31,26 @@
 		<jetty-version>9.2.17.v20160517</jetty-version>
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.15</ahc-version>
+
+		<project.organization.name>Fraunhofer AISEC</project.organization.name>
+		<project.inceptionYear>2017</project.inceptionYear>
 	</properties>
+
+	<licenses>
+		<license>
+			<name>Apache License Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>	
 
 	<dependencies>
 		<!--  tuprolog -->
 		<dependency>
-		    <groupId>it.unibo.alice.tuprolog</groupId>
-		    <artifactId>tuprolog</artifactId>
-		    <version>3.2.1</version>
-		    <scope>provided</scope>
+			<groupId>it.unibo.alice.tuprolog</groupId>
+			<artifactId>tuprolog</artifactId>
+			<version>3.2.1</version>
+			<scope>provided</scope>
 		</dependency>
 	
 		<!-- IDS components -->
@@ -139,6 +150,38 @@
 					</archive>
 				</configuration>
 			</plugin>
+
+			<!-- Add Apache 2 license headers -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.13</version>
+				<executions>
+					<execution>
+						<id>first</id>
+						<goals>
+						  <goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+						  <licenseName>apache_v2</licenseName>
+						<organizationName>${project.organization.name}</organizationName>
+						<inceptionYear>${project.inceptionYear}</inceptionYear>
+						<projectName>${project.name}</projectName>
+						  <roots>
+							<root>src/main/java</root>
+							<root>src/test</root>
+						  </roots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>download-licenses</id>
+						<goals>
+							<goal>download-licenses</goal>
+						</goals>
+					</execution>				  
+				</executions>
+				</plugin>
 		</plugins>
 	</build>
 </project>

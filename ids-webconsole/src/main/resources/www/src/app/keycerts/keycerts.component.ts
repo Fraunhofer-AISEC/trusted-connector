@@ -9,8 +9,6 @@ import { CertificateService } from './keycert.service';
 import { Overlay, overlayConfigFactory } from 'angular2-modal';
 import { Modal, BSModalContext } from 'angular2-modal/plugins/bootstrap';
 
-import { FileWindow, CustomModalContext } from './uploadCert';
-
 @Component({
   selector: 'keycerts',
   templateUrl: './keycerts.component.html'
@@ -39,14 +37,4 @@ export class KeycertsComponent implements OnInit{
     this.changeTitle.emit('Certificates');
   }
 
-  onUploadCertificate(fileName: string) {
-    const dialog = this.modal.open(FileWindow,  overlayConfigFactory({ keystoreDestination: fileName }, BSModalContext));
-    dialog.then((resultPromise) => {
-        resultPromise.result.then((result) => {
-          if(result != null && result == true) {
-            location.reload();
-          }
-      }, () => console.log(' Error In uploading the file'));
-    });
-  }
 }

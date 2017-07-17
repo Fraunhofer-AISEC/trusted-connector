@@ -8,9 +8,11 @@
 	 	<certificate-card [certificates]="identities"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" (click)="onUploadCertificate('client-keystore')">
-      		<i class="material-icons">add</i>
-    	</button>
+		<label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+	     <i class="material-icons">add</i>
+	      <!--  <input type="file"> -->
+ 			 <file-uploading #cu1 (change)="cu1.upload('client-keystore')" [multiple]="true"></file-uploading>
+	   </label>
       </div>
 </div>
 
@@ -23,9 +25,11 @@
 	 	<certificate-card [certificates]="certificates"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" (click)="onUploadCertificate('client-truststore')" >
-      		<i class="material-icons">add</i>
-    	</button>
+		<label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+	     <i class="material-icons">add</i>
+	      <!--  <input type="file"> -->
+ 			 <file-uploading #cu2 (change)="cu2.upload('client-truststore')" [multiple]="true"></file-uploading>
+	   </label>
       </div>
 	</div>
 
