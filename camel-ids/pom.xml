@@ -275,6 +275,7 @@
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>
 					<autoPull>once</autoPull>
+  					<skip>${skipITs}</skip>
 				</configuration>
 				<executions>
 					<execution>
@@ -375,6 +376,7 @@
 				<configuration>
 					<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
+					<skip>${skipITs}</skip>
 				</configuration>
 				<version>0.4.13</version>
 				<executions>
