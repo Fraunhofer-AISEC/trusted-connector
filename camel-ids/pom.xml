@@ -29,7 +29,7 @@
 	<properties>
 		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- <skipITs>true</skipITs> -->
+		<skipITs>true</skipITs>
 	</properties>
 	<dependencies>
 		<!-- Protobuf -->
