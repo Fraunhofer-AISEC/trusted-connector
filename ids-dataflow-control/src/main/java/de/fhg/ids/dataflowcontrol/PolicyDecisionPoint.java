@@ -78,7 +78,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
-		sb.append("regex(EP, \""+target.getEndpoint()+"\", true), ");
+		sb.append("regex(EP, \""+target.getEndpoint()+"\", _D), _D, ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null)
