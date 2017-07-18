@@ -12,15 +12,6 @@
         
         <bundle start-level="70">mvn:org.asynchttpclient/org.asynchttpclient/2.0.15</bundle>
 
-        <!-- Our bundles which make up the IDS feature -->
-       <!--
-        <bundle start-level="70">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
-        <bundle start-level="70">mvn:com.github.jnr/jnr-enxio/0.13</bundle>
-        <bundle start-level="70">mvn:com.github.jnr/jnr-posix/3.0.30</bundle>
-        <bundle start-level="70">mvn:com.github.jnr/jnr-unixsocket/0.13</bundle>
-        <bundle start-level="70">mvn:com.github.jnr/jnr-ffi/2.1.0</bundle>
-        <bundle start-level="70">mvn:com.github.jnr/jffi/1.2.13</bundle>
-    -->
         <bundle start-level="70">mvn:com.google.protobuf/protobuf-java/3.0.0</bundle>
         <bundle start-level="70">mvn:com.github.jnr/jnr-unixsockets/0.9.0</bundle>
 
@@ -28,8 +19,7 @@
         <bundle start-level="70">mvn:org.apache.felix/org.apache.felix.prefs/1.1.0</bundle>
         <bundle start-level="70">mvn:com.google.code.gson/gson/2.7</bundle>
         <bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
-        <bundle start-level="70">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>
-        <!--<bundle start-level="70">mvn:org.eclipse.jetty/jetty-jmx/9.2.17.v20160517</bundle> -->
+        <bundle start-level="70">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>        
         <bundle start-level="70">mvn:org.eclipse.jetty/jetty-util/9.2.17.v20160517</bundle>
         <bundle start-level="70">mvn:org.eclipse.jetty/jetty-server/9.2.17.v20160517</bundle>
         <bundle start-level="70">mvn:org.eclipse.jetty/jetty-http/9.2.17.v20160517</bundle>
@@ -51,24 +41,23 @@
         <!-- Asynchronous HTTP requests, required for camel-ids -->
         <feature version="2.19.0" prerequisite="false" dependency="true">camel-ahc</feature>
         
-        <feature version="2.19.0" prerequisite="false" dependency="true">camel-blueprint</feature>
-
         <!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
         <bundle version="2.19.0" prerequisite="false" dependency="true">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
         
         <!-- This is how to add a custom config file which will be picked up by Config Admin-->
         <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
 
-        <!-- Camel Milo (OPC-UA) dependencies -->
-        <!-- <feature version="0.1.2-SNAPSHOT" prerequisite="false" dependency="true">camel-milo</feature> -->
-        
-        <!--<bundle>mvn:de.dentrassi.camel.milo/camel-milo/0.1.2-SNAPSHOT</bundle>
-        <bundle>mvn:org.eclipse.milo/stack-core/0.1.0</bundle>
-        <bundle>mvn:org.eclipse.milo/stack-client/0.1.0</bundle>
-        <bundle>mvn:org.eclipse.milo/stack-server/0.1.0</bundle>
-        <bundle>mvn:org.eclipse.milo/sdk-core/0.1.0</bundle>
-        <bundle>mvn:org.eclipse.milo/sdk-client/0.1.0</bundle>
-        <bundle>mvn:org.eclipse.milo/sdk-server/0.1.0</bundle> -->
+        <!-- OPC-UA support (not yet available as a feature in Karaf 4.0.9, thus as individual bundles) -->
+        <bundle>mvn:org.apache.camel/camel-milo/2.19.0</bundle>
+        <bundle dependency="true">mvn:org.eclipse.milo/stack-core/0.1.0</bundle>
+        <bundle dependency="true">mvn:org.eclipse.milo/stack-client/0.1.0</bundle>
+        <bundle dependency="true">mvn:org.eclipse.milo/stack-server/0.1.0</bundle>
+        <bundle dependency="true">mvn:org.eclipse.milo/sdk-core/0.1.0</bundle>
+        <bundle dependency="true">mvn:org.eclipse.milo/sdk-client/0.1.0</bundle>
+        <bundle dependency="true">mvn:org.eclipse.milo/sdk-server/0.1.0</bundle>
+        <bundle dependency="true">mvn:org.javassist/javassist/3.19.0-GA</bundle>
+        <bundle dependency="true">mvn:com.codepoetics/protonpack/1.10</bundle>
+        <bundle dependency="true">wrap:mvn:org.reflections/reflections/0.9.10</bundle>
         <bundle dependency="true">mvn:com.google.guava/guava/19.0</bundle>
         <bundle dependency="true">mvn:org.jooq/jool/0.9.10</bundle>
         <bundle dependency="true">mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
@@ -79,9 +68,7 @@
         <bundle dependency="true">mvn:io.netty/netty-buffer/4.1.9.Final</bundle>
         <bundle dependency="true">mvn:io.netty/netty-common/4.1.9.Final</bundle>
         <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
-        <bundle>wrap:mvn:org.reflections/reflections/0.9.10</bundle>
-        <bundle dependency="true">mvn:org.javassist/javassist/3.19.0-GA</bundle>
-        <bundle dependency="true">mvn:com.codepoetics/protonpack/1.10</bundle>
+
 
         <!-- IDS specific bundles -->
         <bundle start-level="80">mvn:de.fhg.ids/api/1.1.0-SNAPSHOT</bundle>
