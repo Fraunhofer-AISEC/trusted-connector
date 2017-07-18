@@ -7,6 +7,7 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>tpm2j</module>
     <module>asynchttpclient</module>
     <module>jnr-unixsocket</module>
     <module>ids-api</module>
@@ -16,7 +17,6 @@
     <module>ids-webconsole</module>
     <module>ids-dataflow-control</module>
     <module>karaf-feature-ids</module>
-    <module>data-flow-policy</module>
     <module>karaf-assembly</module>
     <module>rat-repository</module>
   </modules>
@@ -29,7 +29,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Dependency versions, should be unified across all submodules -->
-    <camel-version>2.18.0</camel-version>
+    <karaf.version>4.0.9</karaf.version>
+    <camel-version>2.19.0</camel-version>
     <jetty-version>9.2.17.v20160517</jetty-version>
     <mockito-version>1.10.19</mockito-version>
     <protobuf-version>3.0.0</protobuf-version>
@@ -55,21 +56,6 @@
 			<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases/</url>
 		</repository>
 	</distributionManagement>
-
-  <repositories>
-  	<repository>
-  		<id>netsec-release</id>
-  		<url>http://repository.netsec.aisec.fraunhofer.de/repository/releases</url>
-      <releases><enabled>true</enabled></releases>
-      <snapshots><enabled>false</enabled></snapshots>      
-  	</repository>
-    <repository>
-			<id>netsec-snapshots</id>
-			<url>http://repository.netsec.aisec.fraunhofer.de/repository/snapshots/</url>
-      <releases><enabled>false</enabled></releases>
-      <snapshots><enabled>true</enabled></snapshots>
-		</repository>
-  </repositories>
 
   <build>
     <pluginManagement>

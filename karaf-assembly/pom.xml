@@ -27,7 +27,6 @@
     </prerequisites>
 
     <properties>
-        <karaf.version>4.0.6</karaf.version>
         <activemq.version>5.13.3</activemq.version>
         <cxf.version>3.1.5</cxf.version>
         <!-- maven-compiler-plugin setting.
@@ -70,7 +69,7 @@
                  and features will installed into the system directory.
 
                  This imports the standard Karaf features described at
-                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/4.0.6/standard-4.0.6-features.xml
+                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml
                  These features are installed in the karaf-maven-plugin configuration
             -->
             <groupId>org.apache.karaf.features</groupId>
@@ -82,7 +81,7 @@
          </dependency>
 
         <!--
-            https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/4.0.1/enterprise-4.0.1-features.xml
+            https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/${karaf.version}/enterprise-${karaf.version}-features.xml
         -->
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
@@ -93,7 +92,7 @@
             <!-- <scope>runtime</scope> -->
         </dependency>
 
-        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.6/spring-4.0.6-features.xml
+        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/${karaf.version}/spring-${karaf.version}-features.xml
              Needed for Camel feature dependency
         -->
         <dependency>
@@ -116,7 +115,7 @@
             <!-- <scope>runtime</scope> -->
         </dependency>
 
-        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.18.0/apache-camel-2.18.0-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/${karaf.version}/apache-camel-${karaf.version}-features.xml -->
         <dependency>
             <groupId>org.apache.camel.karaf</groupId>
             <artifactId>apache-camel</artifactId>
@@ -125,7 +124,7 @@
             <type>xml</type>
             <!-- <scope>runtime</scope> -->
         </dependency>
-        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.18.0/camel-extra-2.18.0-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/${karaf.version}/camel-extra-${karaf.version}-features.xml -->
         <!--<dependency>
             <groupId>org.apache-extras.camel-extra.karaf</groupId>
             <artifactId>camel-extra</artifactId>
@@ -407,7 +406,7 @@
         							<pluginExecutionFilter>
         								<groupId>org.apache.karaf.tooling</groupId>
         								<artifactId>karaf-maven-plugin</artifactId>
-        								<versionRange>[4.0.6,)</versionRange>
+        								<versionRange>[${karaf.version},)</versionRange>
         								<goals>
         									<goal>assembly</goal>
         								</goals>
