@@ -106,7 +106,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                        	<protocVersion>3.3.0</protocVersion>
+                        	<protocVersion>${protobuf-version}</protocVersion>
                             <includeDirectories>
                                 <include>src/main/protobuf</include>
                                 <include>src/main/protobuf/common</include>
