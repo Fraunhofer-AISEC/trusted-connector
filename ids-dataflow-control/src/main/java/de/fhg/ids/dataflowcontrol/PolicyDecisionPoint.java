@@ -22,10 +22,11 @@ package de.fhg.ids.dataflowcontrol;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -60,10 +61,12 @@ import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
  */
 @Component(enabled = true, immediate = true, name = "ids-dataflow-control", servicefactory = false)
 public class PolicyDecisionPoint implements PDP, PAP {
-	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);	
 	private LuconEngine engine;
 		
 	/**
+	 * Creates a query to retrieve policy decision from Prolog knowledge base.
+	 * 
 	 * Result of query will be:
 	 *
 	 * Target			Decision	Alternative		Obligation
@@ -71,14 +74,17 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 *	hiveMqttBroker	drop		Alt				A
 	 * @param msgLabels 
 	 */
-	private String createDecisionQuery(ServiceNode target, Set<String> msgLabels) {			
+	private String createDecisionQuery(ServiceNode target, Map<String, Object> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
 		sb.append("regex(EP, \""+target.getEndpoint()+"\", true), ");
-		for (String label: msgLabels) {
-			sb.append("receives_label(T, "+label+"), ");
-		}
+		msgLabels.keySet()
+			.stream()
+			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null)
+			.forEach(k -> {
+					sb.append("receives_label(T, "+msgLabels.get(k).toString()+"), ");
+			});
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			sb.append("(");
 		}
@@ -95,10 +101,34 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		return sb.toString();
 	}
 	
+	/**
+	 * A transformation query retrieves the set of labels to add and to remove from the Prolog knowledge base.
+	 * 
+	 * This method returns the respective query for a specific target.
+	 * 
+	 * @param target
+	 * @return
+	 */
 	private String createTransformationQuery(ServiceNode target) {			
 		StringBuilder sb = new StringBuilder();
-		sb.append("service(T), ");
-		// FIXME Unfinished. Return set of additions and removals here!
+		sb.append("service(_T), ");
+		if (target.getEndpoint()!=null) {
+			sb.append("has_endpoint(_T, _EP), ");
+			sb.append("regex(_EP, \""+target.getEndpoint()+"\", _X), _X, ");
+		}
+		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
+			sb.append("(");
+		}
+		for (String cap: target.getCapabilties()) {
+			sb.append("(has_capability(_T, \""+cap+"\"); ");
+		}
+		for (String prop: target.getProperties()) {
+			sb.append("has_property(_T, \""+prop+"\"), ");
+		}
+		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
+			sb.append("), ");
+		}
+		sb.append("creates_label(_T, Creates), removes_label(_T, Removes).");
 		return sb.toString();
 	}
 
@@ -111,37 +141,41 @@ public class PolicyDecisionPoint implements PDP, PAP {
 
 	@Override
 	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
+		TransformationDecision result = new TransformationDecision();
+		
 		// Query prolog for labels to remove or add from message
 		String query = this.createTransformationQuery(lastServiceNode);
 		LOG.info("QUERY: " + query);
 		try {
 			List<SolveInfo> solveInfo = this.engine.query(query, false);
-		} catch (NoMoreSolutionException | MalformedGoalException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if (solveInfo.isEmpty()) {
+				return result;
+			}
+			
+			// Get solutions, convert label variables to string and collect in set
+			List<Var> vars = solveInfo.get(0).getBindingVars();
+			Set<String> labelsToRemove = vars.stream().filter(v -> "Removes".equals(v.getName())).map(var -> var.getTerm().toString()).collect(Collectors.toSet());
+			Set<String> labelsToAdd = vars.stream().filter(v -> "Creates".equals(v.getName())).map(var -> var.getTerm().toString()).collect(Collectors.toSet());
+			
+			result.getLabelsToRemove().addAll(labelsToRemove);
+			result.getLabelsToAdd().addAll(labelsToAdd);		
+		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
+			LOG.error(e.getMessage(), e);
 		}
-		return new TransformationDecision();
+		return result;
 	}
 	
 	@Override
 	public PolicyDecision requestDecision(DecisionRequest req) {
-		// TODO move to own method, make this more efficient
-		Set<String> msgLabels = new HashSet<>();
-		if (req.getMessageCtx().get("labels")!=null) {
-			for (String label : req.getMessageCtx().get("labels").split(",")) {
-				if (!"".equals(label)) {
-					msgLabels.add(label);
-				}
-			}
-		}
 		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
 		PolicyDecision dec = new PolicyDecision();
 		dec.setDecision(Decision.ALLOW); // Default value
 		dec.setReason("Not yet ready for productive use!");
+
 		try {
 			// Query Prolog engine for a policy decision
 			long startTime = System.nanoTime();
-			String query = this.createDecisionQuery(req.getTo(), msgLabels);
+			String query = this.createDecisionQuery(req.getTo(), req.getMessageCtx());
 			LOG.info("QUERY: " + query);
 			List<SolveInfo> solveInfo = this.engine.query(query, false);
 			long time = System.nanoTime() - startTime;
@@ -157,7 +191,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
 				return dec;
 			}
 			
-			// Get some obligation, if any TODO incorrect. Merge obligations of all matching rules. Currently we are just pulling out "any"
+			// Get some obligation, if any 
+			// TODO This is still incorrect because it only finds "any" obligation. Merge obligations of all matching rules.
 			List<Var> vars = solveInfo.get(0).getBindingVars();
 			Optional<Var> alt = vars.stream().filter(v -> "Alt".equals(v.getName())).findAny();
 			Optional<Var> action = vars.stream().filter(v -> "A".equals(v.getName())).findAny();
@@ -172,10 +207,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			}
 			
 			Optional<Var> decision = vars.stream().filter(v -> "D".equals(v.getName()) && v.isBound()).findAny();
-			if (decision.isPresent()) {
-				if ("drop".equals(decision.get().getTerm().toString())) {
-					dec.setDecision(Decision.DENY);
-				}
+			if (decision.isPresent() && "drop".equals(decision.get().getTerm().toString())) {
+					dec.setDecision(Decision.DENY);				
 			}
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);
@@ -207,6 +240,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	@Override
 	public void loadPolicy(InputStream is) {
 		try {
+			// Load policy into engine, possibly overwriting the existing one.
 			this.engine.loadPolicy(is);
 		} catch (InvalidTheoryException e) {
 			LOG.error("Error in " + e.line + " " + e.pos + ": " + e.clause + ": " + e.getMessage(), e);

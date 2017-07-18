@@ -30,12 +30,19 @@ import java.util.Map;
  *
  */
 public class DecisionRequest {
+	/** Node sending the message */
 	private ServiceNode from;
-	private ServiceNode to;
-	private Map<String, String> msgCtx = new HashMap<>();
-	private Map<String, String> envCtx = new HashMap<>();
 	
-	public DecisionRequest(ServiceNode from, ServiceNode to, Map<String, String> msgCtx, Map<String, String> envCtx) {
+	/** Node about to receive the message */ 
+	private ServiceNode to;
+	
+	/** Properties of the message (e.g., labels) */
+	private Map<String, Object> msgCtx = new HashMap<>();
+	
+	/** Properties of the environment */
+	private Map<String, Object> envCtx = new HashMap<>();
+	
+	public DecisionRequest(ServiceNode from, ServiceNode to, Map<String, Object> msgCtx, Map<String, Object> envCtx) {
 		super();
 		this.from = from;
 		this.to = to;
@@ -85,7 +92,7 @@ public class DecisionRequest {
 	 * - etc.
 	 * @return
 	 */
-	public Map<String, String> getMessageCtx() {
+	public Map<String, Object> getMessageCtx() {
 		return msgCtx;
 	}
 
@@ -101,7 +108,7 @@ public class DecisionRequest {
 	 * - etc.
 	 * @return
 	 */
-	public Map<String, String> getEnvironmentCtx() {
+	public Map<String, Object> getEnvironmentCtx() {
 		return envCtx;
 	}
 }

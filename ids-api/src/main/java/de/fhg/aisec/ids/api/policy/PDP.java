@@ -29,7 +29,8 @@ package de.fhg.aisec.ids.api.policy;
  *
  */
 public interface PDP {
-
+	public static final String LABEL_PREFIX = "LUCON_LABEL_";
+	
 	/**
 	 * Main method for requesting a policy decision.
 	 * 

@@ -42,6 +42,7 @@ import de.fhg.aisec.ids.api.policy.Obligation;
 import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
+import de.fhg.aisec.ids.api.policy.TransformationDecision;
 import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
 
 /**
@@ -98,6 +99,8 @@ public class LuconEngineTest {
 			"has_endpoint(anonymizer, \".*anonymizer.*\").\n" + 
 			"has_property(anonymizer,myProp,anonymize('surname', 'name')).\n" + 
 			"service(hiveMqttBroker).\n" + 
+			"creates_label(hiveMqttBroker, labelone).\n" + 
+			"removes_label(hiveMqttBroker, labeltwo).\n" + 
 			"has_endpoint(hiveMqttBroker, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" + 
 			"has_property(hiveMqttBroker,type,public).\n" + 
 			"service(testQueue).\n" + 
@@ -180,12 +183,10 @@ public class LuconEngineTest {
 		try {
 			List<SolveInfo> solutions = e.query("has_endpoint(X,Y),regex(Y, \"hdfs://myendpoint\",C),C.", true);
 			assertNotNull(solutions);
-			System.out.println(solutions.size());
 			assertEquals(2,solutions.size());
 			for (SolveInfo solution : solutions) {
 				System.out.println(solution.getSolution().toString());
-				System.out.println(solution.hasOpenAlternatives());
-				
+				System.out.println(solution.hasOpenAlternatives());				
 				System.out.println(solution.isSuccess());
 			}
 		} catch (MalformedGoalException | NoSolutionException e1) {
@@ -204,14 +205,14 @@ public class LuconEngineTest {
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		
 		// Simple message context with nonsense attributes
-		Map<String, String> attributes = new HashMap<>();
+		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("some_message_key", "some_message_value");
 		
 		// Simple source and dest nodes
 		ServiceNode source = new ServiceNode("seda:test_source", null, null);
 		ServiceNode dest= new ServiceNode("hdfs://some_url", null, null);
 		
-		PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, System.getenv()));
+		PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
 		assertEquals(Decision.ALLOW, dec.getDecision());
 		
 		// Check obligation
@@ -241,5 +242,24 @@ public class LuconEngineTest {
 		assertEquals(2, rules.size());
 		assertTrue(rules.contains("deleteAfterOneMonth"));
 		assertTrue(rules.contains("anotherRule"));
+	}
+	
+	@Test
+	public void testTransformations() {
+		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+		pdp.activate(null);
+		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+		ServiceNode node = new ServiceNode("paho:tcp://broker.hivemq.com:1883/blablubb", null, null);
+		TransformationDecision trans = pdp.requestTranformations(node);
+		
+		assertNotNull(trans);
+		assertNotNull(trans.getLabelsToAdd());
+		assertNotNull(trans.getLabelsToRemove());
+		
+		assertEquals(1, trans.getLabelsToAdd().size());
+		assertEquals(1, trans.getLabelsToRemove().size());
+
+		assertTrue(trans.getLabelsToAdd().contains("labelone"));
+		assertTrue(trans.getLabelsToRemove().contains("labeltwo"));
 	}
 }
