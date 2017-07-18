@@ -1,31 +1,61 @@
 package de.fhg.ids.cm.impl.trustx;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import de.fhg.aisec.ids.Control.ControllerToDaemon;
+import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
+import de.fhg.aisec.ids.api.cm.ApplicationContainer;
+import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
 
+@RunWith(MockitoJUnitRunner.class)
 public class TestUnixSocketIT {
 
+	private static final String socket = "src/test/socket/trustme.sock";
 	
+	@InjectMocks
+	private TrustXCM trustXmanager = new TrustXCM(socket);
+	
+	@Mock
+	private TrustmeUnixSocketThread mockSocket = mock(TrustmeUnixSocketThread.class);
+	
+	@Mock
+	private TrustmeUnixSocketResponseHandler mockHandler = mock(TrustmeUnixSocketResponseHandler.class);
 	
 	@Test
 	public void testServer() throws IOException, InterruptedException{
-		TrustmeUnixSocketThread client = new TrustmeUnixSocketThread("src/test/socket/trustme.sock");
+		TrustmeUnixSocketThread client = new TrustmeUnixSocketThread(socket);
 		Thread t = new Thread(client);
 		t.setDaemon(true);
 		t.start();
 
 		TrustmeUnixSocketResponseHandler handler = new TrustmeUnixSocketResponseHandler();
+		
 		String data = "An iterator over a collection. Iterator takes the place of Enumeration in the Java Collections Framework. Iterators differ from enumerations in two ways: Iterators allow the caller to remove elements from the underlying collection during the iteration with well-defined semantics. Method names have been improved. This interface is a member of the Java Collections Framework.";
 		client.send(data.getBytes(), handler);
 		
 		handler.waitForResponse();
+		System.out.println("probably got response");
 	}
 	
-    public void testBASIC() throws Exception {
+	@Test
+    public void testBASIC() throws Exception {    	
+    	List<ApplicationContainer> resultList = trustXmanager.list(true);
+    	ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+    ctdmsg.setCommand(Command.LIST_CONTAINERS).build().toByteArray();
+    byte[] encodedMessage = ctdmsg.build().toByteArray();
+    	verify(mockSocket).send(encodedMessage, mockHandler);
+    	
     	
 //    	UnixSocketThread client;
 //    	Thread thread;

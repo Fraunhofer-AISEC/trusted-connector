@@ -13,14 +13,15 @@ public class TrustmeUnixSocketResponseHandler {
 		return true;
 	}
 	
-	public synchronized void waitForResponse() {
+	public synchronized byte[] waitForResponse() {
 		while(this.rsp == null) {
 			try {
 				this.wait();
 			} catch (InterruptedException e) {
+				LOG.error(e.getMessage(),e);
 			}
 		}
-		System.out.println(new String(this.rsp));
+		return this.rsp;
 	}
 }
 

@@ -69,7 +69,7 @@ public class TrustXMock implements Runnable {
 	// thread run method
 	@Override
 	public void run() {
-		while (true) {
+		while (!Thread.interrupted()) {
 			try {
 				// Process any pending changes
 				synchronized (this.pendingChanges) {
@@ -146,7 +146,6 @@ public class TrustXMock implements Runnable {
 			key.cancel();
 			return;
 		}
-		System.out.println("I read something");
 		handler.handleResponse(this, channel, this.readBuffer.array(), numRead);
 	}
 
@@ -210,7 +209,7 @@ public class TrustXMock implements Runnable {
 		try {
 			TrustXMockHandler handler = new TrustXMockHandler();
 			new Thread(handler).start();
-			new Thread(new TrustXMock("src/test/socket/trustme", handler)).start();
+			new Thread(new TrustXMock("src/test/socket/trustme.sock", handler)).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

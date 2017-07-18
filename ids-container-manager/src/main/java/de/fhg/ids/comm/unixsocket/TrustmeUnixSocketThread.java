@@ -72,7 +72,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 	// thread run method
 	@Override
 	public void run() {
-		while (true) {
+		while (!Thread.interrupted()) {
 			try {
 				// Process any pending changes
 				synchronized (this.pendingChanges) {

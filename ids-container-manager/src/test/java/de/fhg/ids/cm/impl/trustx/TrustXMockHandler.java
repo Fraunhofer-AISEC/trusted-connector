@@ -29,7 +29,7 @@ public class TrustXMockHandler implements Runnable{
 	      }
 	      
 	      // Print
-	      System.out.println(dataEvent.data);
+	      System.out.println(new String(dataEvent.data));
 	      dataEvent.server.send(dataEvent.socket, dataEvent.data);
 	    }
 	  }
