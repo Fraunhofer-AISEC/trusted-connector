@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-	    <module>tpm2j</module>
+		<module>tpm2j</module>
 		<module>asynchttpclient</module>
 		<module>jnr-unixsocket</module>
 		<module>ids-api</module>
@@ -25,26 +25,26 @@
 		<camel-version>2.19.0</camel-version>
 		<jetty-version>9.2.17.v20160517</jetty-version>
 		<jersey-version>2.25</jersey-version>
-		<protobuf-version>3.0.0</protobuf-version>
+		<protobuf-version>3.3.0</protobuf-version>
 		<mockito-version>1.10.19</mockito-version>
 		<ahc-version>2.0.24</ahc-version>
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
 		<karaf.version>4.0.9</karaf.version>
 		<project.organization.name>Fraunhofer AISEC</project.organization.name>
-        <project.inceptionYear>2017</project.inceptionYear>
-        <license.licenseName>apache_v2</license.licenseName>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.inceptionYear>2017</project.inceptionYear>
+		<license.licenseName>apache_v2</license.licenseName>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-  
-  <licenses>
-    <license>
-      <name>Apache License Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses> 
+
+	<licenses>
+		<license>
+			<name>Apache License Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -318,49 +318,46 @@
 				</executions>
 			</plugin>
 			<!-- Add license headers and LICENSE.txt -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>1.13</version>
-        <configuration>
-          <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-          <processStartTag>========================LICENSE_START=================================</processStartTag>
-          <processEndTag>=========================LICENSE_END==================================</processEndTag>
-        </configuration>
-        <executions>
-          <execution>
-            <id>first</id>
-            <goals>
-              <goal>update-file-header</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <organizationName>${project.organization.name}</organizationName>
-              <inceptionYear>${project.inceptionYear}</inceptionYear>
-              <projectName>${project.name}</projectName>
-              <roots>
-                <root>src/main/java</root>
-                <root>src/test</root>
-              </roots>
-            </configuration>
-          </execution>
-          <execution>
-            <id>download-licenses</id>
-            <goals>
-              <goal>download-licenses</goal>
-            </goals>
-          </execution>          
-          <execution>
-            <id>main-license-file</id>
-            <goals>
-              <goal>update-project-license</goal>
-            </goals>
-          </execution>          
-        </executions>
-      </plugin>
-
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.13</version>
+				<configuration>
+					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+					<processStartTag>========================LICENSE_START=================================</processStartTag>
+					<processEndTag>=========================LICENSE_END==================================</processEndTag>
+				</configuration>
+				<executions>
+					<execution>
+						<id>first</id>
+						<goals>
+							<goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<organizationName>${project.organization.name}</organizationName>
+							<inceptionYear>${project.inceptionYear}</inceptionYear>
+							<projectName>${project.name}</projectName>
+							<roots>
+								<root>src/main/java</root>
+								<root>src/test</root>
+							</roots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>download-licenses</id>
+						<goals>
+							<goal>download-licenses</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>main-license-file</id>
+						<goals>
+							<goal>update-project-license</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-
-
 </project>

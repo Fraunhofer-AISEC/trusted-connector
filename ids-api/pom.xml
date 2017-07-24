@@ -86,7 +86,7 @@
 							<goal>test-compile</goal>
 						</goals>
 						<configuration>
-							<protocArtifact>com.google.protobuf:protoc:3.0.0:exe:${os.detected.classifier}</protocArtifact>
+							<protocArtifact>com.google.protobuf:protoc:${protobuf-version}:exe:${os.detected.classifier}</protocArtifact>
 						</configuration>
 					</execution>
 				</executions>
@@ -95,10 +95,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 
 			<!-- Copy downloaded protobuf.jar into directory "lib" so it can be wrapped 

@@ -110,8 +110,7 @@ public class TrustXCM implements ContainerManager {
 	}
 
 	public static boolean isSupported() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
@@ -150,7 +149,7 @@ public class TrustXCM implements ContainerManager {
         LOG.debug("sending message " + ctdmsg.getCommand());
         byte[] encodedMessage = ctdmsg.build().toByteArray();
     	try {
-			socketThread.send(encodedMessage, responseHandler);
+			socketThread.sendWithHeader(encodedMessage, responseHandler);
 		} catch (IOException | InterruptedException e) {
 			LOG.error(e.getMessage(),e);
 		}

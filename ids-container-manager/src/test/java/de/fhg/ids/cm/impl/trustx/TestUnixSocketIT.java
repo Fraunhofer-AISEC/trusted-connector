@@ -1,14 +1,39 @@
+/*-
+ * ========================LICENSE_START=================================
+ * IDS Container Manager
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.cm.impl.trustx;
 
-import java.io.IOException;
-import java.util.List;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import org.apache.camel.component.mock.MockEndpoint;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import de.fhg.aisec.ids.Control.ControllerToDaemon;
@@ -17,6 +42,7 @@ import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
+import jnr.unixsocket.UnixSocketChannel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestUnixSocketIT {
@@ -33,28 +59,44 @@ public class TestUnixSocketIT {
 	private TrustmeUnixSocketResponseHandler mockHandler = mock(TrustmeUnixSocketResponseHandler.class);
 	
 	@Test
-	public void testServer() throws IOException, InterruptedException{
-		TrustmeUnixSocketThread client = new TrustmeUnixSocketThread(socket);
-		Thread t = new Thread(client);
-		t.setDaemon(true);
-		t.start();
+	public void testServer() throws IOException, InterruptedException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException, InvocationTargetException, NoSuchMethodException{
 
-		TrustmeUnixSocketResponseHandler handler = new TrustmeUnixSocketResponseHandler();
+		// prepare access to internal state pendingData
+		Object cc = TrustmeUnixSocketThread.class.getConstructor(String.class).newInstance(socket);
+        Field f = cc.getClass().getDeclaredField("pendingData");
+        f.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		Map<UnixSocketChannel, List<ByteBuffer>> internalState = (Map<UnixSocketChannel, List<ByteBuffer>>)f.get(cc);
+
+		// prepare data to send
+		ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+		byte[] data = ctdmsg.setCommand(Command.CONTAINER_START).build().toByteArray();
+
+		// check that pendingData is empty
+        Assert.assertTrue(internalState.isEmpty());
 		
-		String data = "An iterator over a collection. Iterator takes the place of Enumeration in the Java Collections Framework. Iterators differ from enumerations in two ways: Iterators allow the caller to remove elements from the underlying collection during the iteration with well-defined semantics. Method names have been improved. This interface is a member of the Java Collections Framework.";
-		client.send(data.getBytes(), handler);
+        // now here's the test, we send our protobuf message
+        mockSocket.sendWithHeader(data, mockHandler);
 		
-		handler.waitForResponse();
+        // check that the message in pendingData has the length header
+        int count = 0;
+        for (List<ByteBuffer> list: internalState.values()) {
+        		ByteBuffer result = list.get(0);
+        		result.
+        		count++;
+        }
+        Assert.assertTrue("Unexpected number of items in Buffer", count == 1);
+         
 		System.out.println("probably got response");
 	}
 	
-	@Test
+	//@Test
     public void testBASIC() throws Exception {    	
     	List<ApplicationContainer> resultList = trustXmanager.list(true);
     	ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
     ctdmsg.setCommand(Command.LIST_CONTAINERS).build().toByteArray();
     byte[] encodedMessage = ctdmsg.build().toByteArray();
-    	verify(mockSocket).send(encodedMessage, mockHandler);
+    	verify(mockSocket).sendWithHeader(encodedMessage, mockHandler);
     	
     	
 //    	UnixSocketThread client;
