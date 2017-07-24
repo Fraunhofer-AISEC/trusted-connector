@@ -22,14 +22,18 @@ package de.fhg.ids.cm.impl.trustx;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -42,7 +46,10 @@ import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
+import jnr.unixsocket.UnixServerSocketChannel;
+import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestUnixSocketIT {
@@ -57,6 +64,18 @@ public class TestUnixSocketIT {
 	
 	@Mock
 	private TrustmeUnixSocketResponseHandler mockHandler = mock(TrustmeUnixSocketResponseHandler.class);
+
+	@BeforeClass
+	public static void setup() throws IOException {
+		File socketFile = new File(socket);
+		socketFile.delete();
+		socketFile.deleteOnExit();
+		
+		UnixSocketAddress address = new UnixSocketAddress(socketFile.getAbsoluteFile());	
+		UnixServerSocketChannel channel = UnixServerSocketChannel.open();
+		channel.configureBlocking(false);
+		channel.socket().bind(address);		
+	}
 	
 	@Test
 	public void testServer() throws IOException, InterruptedException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException, InvocationTargetException, NoSuchMethodException{
@@ -76,18 +95,23 @@ public class TestUnixSocketIT {
         Assert.assertTrue(internalState.isEmpty());
 		
         // now here's the test, we send our protobuf message
-        mockSocket.sendWithHeader(data, mockHandler);
+        ((TrustmeUnixSocketThread)cc).sendWithHeader(data, mockHandler);
 		
         // check that the message in pendingData has the length header
         int count = 0;
         for (List<ByteBuffer> list: internalState.values()) {
         		ByteBuffer result = list.get(0);
-        		result.
-        		count++;
+        		byte[] length = new byte[4];        		
+        		System.arraycopy(result.array(), 0, length, 0, 4);
+        		byte[] message = new byte[result.array().length - 4];
+        		System.arraycopy(result.array(), 4, message, 0, message.length);
+        		
+        		
+        		Assert.assertTrue("Length Header not correct", message.length == (new BigInteger(length)).intValue());
+        		Assert.assertTrue("Message not correct", Arrays.equals(data, message));
+        		count = count + 1;
         }
         Assert.assertTrue("Unexpected number of items in Buffer", count == 1);
-         
-		System.out.println("probably got response");
 	}
 	
 	//@Test
