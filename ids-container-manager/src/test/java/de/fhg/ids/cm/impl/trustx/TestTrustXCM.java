@@ -33,11 +33,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import de.fhg.aisec.ids.Control.ControllerToDaemon;
@@ -52,7 +54,7 @@ import jnr.unixsocket.UnixSocketChannel;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestUnixSocketIT {
+public class TestTrustXCM {
 
 	private static final String socket = "src/test/socket/trustme.sock";
 	
@@ -67,6 +69,7 @@ public class TestUnixSocketIT {
 
 	@BeforeClass
 	public static void setup() throws IOException {
+		//create (and delete) socket file
 		File socketFile = new File(socket);
 		socketFile.delete();
 		socketFile.deleteOnExit();
@@ -76,9 +79,22 @@ public class TestUnixSocketIT {
 		channel.configureBlocking(false);
 		channel.socket().bind(address);		
 	}
+
+	@Before
+	public void prepareMock() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		//wire the mocks into trustXmanager
+		Mockito.reset(mockSocket);
+		Field f = trustXmanager.getClass().getDeclaredField("socketThread");
+		f.setAccessible(true);
+		f.set(trustXmanager, mockSocket);
+		Mockito.reset(mockHandler);
+		Field f1 = trustXmanager.getClass().getDeclaredField("responseHandler");
+		f1.setAccessible(true);
+		f1.set(trustXmanager, mockHandler);
+	}
 	
 	@Test
-	public void testServer() throws IOException, InterruptedException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException, InvocationTargetException, NoSuchMethodException{
+	public void testSendWithHeader() throws IOException, InterruptedException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException, InvocationTargetException, NoSuchMethodException{
 
 		// prepare access to internal state pendingData
 		Object cc = TrustmeUnixSocketThread.class.getConstructor(String.class).newInstance(socket);
@@ -114,49 +130,23 @@ public class TestUnixSocketIT {
         Assert.assertTrue("Unexpected number of items in Buffer", count == 1);
 	}
 	
-	//@Test
-    public void testBASIC() throws Exception {    	
-    	List<ApplicationContainer> resultList = trustXmanager.list(true);
-    	ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
-    ctdmsg.setCommand(Command.LIST_CONTAINERS).build().toByteArray();
-    byte[] encodedMessage = ctdmsg.build().toByteArray();
-    	verify(mockSocket).sendWithHeader(encodedMessage, mockHandler);
-    	
-    	
-//    	UnixSocketThread client;
-//    	Thread thread;
-//    	String socket = "socket/control.sock";
-//    	UnixSocketResponseHandler handler;
-//    	try {
-//			// client will be used to send messages
-//			client = new UnixSocketThread(socket);
-//			thread = new Thread(client);
-//			thread.setDaemon(true);
-//			thread.start();
-//			// responseHandler will be used to wait for messages
-//			handler = new UnixSocketResponseHandler();
-//			
-//	    	// construct protobuf message to send to local tpm2d via unix socket
-//			ControllerToTpm msg = ControllerToTpm
-//					.newBuilder()
-//					.setAtype(type)
-//					.setQualifyingData(quoted)
-//					.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
-//					.build();
-//			client.send(msg.toByteArray(), handler, true);
-//			System.out.println("waiting for socket response ....");
-//			byte[] tpmData = handler.waitForResponse();
-//			System.out.println("tpmData length : " + tpmData.length);
-//			// and wait for response
-//			TpmToController response = TpmToController.parseFrom(tpmData);
-//			System.out.println(response.toString());
-//			assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-//			assertTrue(response.getAtype().equals(type));
-//			
-//		} catch (IOException e) {
-//			System.out.println("could not write to/read from " + socket);
-//			e.printStackTrace();
-//		}
+	@Test
+    public void testList() throws Exception {
+		// prepare the result from trustme and tell mockito to return it
+		String test = "yay";		
+    		Mockito.when(mockHandler.waitForResponse()).thenReturn(test.getBytes());
+    		
+    		// run the test
+	    	List<ApplicationContainer> resultList = trustXmanager.list(true);
+	    	
+	    	// check that the correct message was sent
+	    	ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+	    ctdmsg.setCommand(Command.LIST_CONTAINERS).build().toByteArray();
+	    byte[] encodedMessage = ctdmsg.build().toByteArray();
+	    	verify(mockSocket).sendWithHeader(encodedMessage, mockHandler);
+	    	
+	    	// check the result
+	    	//TODO
     }
 
 }
