@@ -65,15 +65,9 @@ docker-compose up
 When running, the following URLs will be available (note that `localhost` applies whenn runnning without docker. If you used `docker-compose up`, the hostname is the name of the Core Platform container):
 
 
-`http://localhost:8181/ids`
+`http://localhost:8181/`
 
 IDS connector dashboard. This is the main UI of the connector and used for configuring the connector by the user.
-
-
-`http://localhost:8181/activemqweb/`
-
-Management console for ActiveMQ. Use it during development to set up message queues and send test events. May be turned off for production.
-
 
 `http://localhost:8181/cxf/api/v1/apps/list`
 
@@ -103,13 +97,13 @@ Removes a container (the image remains).
 
 The Karaf shell is an adminstration environment for the Karaf platform. Try the following commands to check whether everything works:
 
-`feature:list`: Shows all available features and their status (uninstalled or installed). Those marked with a star have explicitly been asked to be installed, other installed features are necessary dependencies. Make sure the `ids`feature is installed.
+`feature:list`: Shows all available features and their status (uninstalled or installed). Those marked with a star have explicitly been asked to be installed, other installed features are necessary dependencies. Make sure the `ids` feature is installed.
 
 `bundle:list -t 0`: Lists all OSGi bundles. `-t 0` sets the start level threshold to 0 so you see all bundles. Otherwise you would only see bundles installed in addition the system bundles.
 
 `camel:route-list`: Lists all active Camel routes
 
-`log:tail`: Continuously displays the log. Press `Ctrl+c` to exit.
+`log:tail`: Continuously displays the log. Press `Ctrl+C` to exit.
 
 `log:display`: Display the log
 
