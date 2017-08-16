@@ -7,7 +7,7 @@
 	We thus define a simple feature.xml for the IDS Core Platform here. 
 -->
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="ids">
-    <feature name="ids" description="IDS Karaf Feature" version="1.0.0">
+    <feature name="ids" description="IDS Karaf Feature" version="1.1.0">
         <details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
         
         <!--<bundle start-level="70">mvn:org.asynchttpclient/org.asynchttpclient/2.0.15</bundle> -->
@@ -21,36 +21,40 @@
         <bundle start-level="70">mvn:com.google.code.gson/gson/2.7</bundle>
         <bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
         <bundle start-level="70">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>        
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-util/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-server/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-http/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-io/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlet/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlets/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-api/9.2.17.v20160517</bundle>
-        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-servlet/9.2.17.v20160517</bundle>
-        <!--<bundle start-level="70">mvn:org.eclipse.jetty/jetty-security/9.2.17.v20160517</bundle>-->
-        <feature prerequisite="true" dependency="true">wrap</feature>
-        <feature version="2.19.0" prerequisite="false" dependency="true">camel</feature>        
+        <!-- <bundle start-level="70">mvn:org.eclipse.jetty/jetty-util/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-server/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-http/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-io/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlet/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty/jetty-servlets/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-api/9.3.14.v20161028</bundle>
+        <bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-servlet/9.3.14.v20161028</bundle> -->
+
+        <feature dependency="true">wrap</feature>
+        <feature version="2.19.0" dependency="true">camel</feature>        
+
+        <feature version="9.3.14.v20161028">pax-jetty</feature>        
+        <feature version="6.0.6">pax-http-whiteboard</feature>        
 
         <!-- REST feature provided by CXF -->
-        <feature version="3.1.7" prerequisite="false" dependency="true">cxf-jaxrs</feature>
+        <feature version="3.1.5" dependency="true">cxf-jaxrs</feature>
         
         <!-- Declarative OSGi Services -->
-        <feature version="4.0.9" prerequisite="false" dependency="true">scr</feature>
+        <feature version="4.1.2" dependency="true">scr</feature>
         
         <!-- Asynchronous HTTP requests, required for camel-ids -->
-        <feature version="2.19.0" prerequisite="true" dependency="true">camel-ahc</feature>
+        <feature version="2.19.0" dependency="true">camel-ahc</feature>
         
         <!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
-        <bundle version="2.19.0" prerequisite="false" dependency="true">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
+        <bundle dependency="true">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
         
         <!-- This is how to add a custom config file which will be picked up by Config Admin-->
         <!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
 
-        <!-- OPC-UA support (not yet available as a feature in Karaf 4.0.9, thus as individual bundles) -->
-        <bundle>mvn:org.apache.camel/camel-milo/2.19.0</bundle>
-        <bundle dependency="true">mvn:org.eclipse.milo/stack-core/0.1.0</bundle>
+        <!-- OPC-UA support (not yet available as a feature in Karaf 4.1.2, thus as individual bundle) -->
+        <bundle dependency="true">mvn:org.apache.camel/camel-milo/2.19.0</bundle>
+        <!-- <bundle>mvn:org.apache.camel/camel-milo/2.19.0</bundle> -->
+        <!-- <bundle dependency="true">mvn:org.eclipse.milo/stack-core/0.1.0</bundle>
         <bundle dependency="true">mvn:org.eclipse.milo/stack-client/0.1.0</bundle>
         <bundle dependency="true">mvn:org.eclipse.milo/stack-server/0.1.0</bundle>
         <bundle dependency="true">mvn:org.eclipse.milo/sdk-core/0.1.0</bundle>
@@ -68,7 +72,7 @@
         <bundle dependency="true">mvn:io.netty/netty-handler/4.1.9.Final</bundle>
         <bundle dependency="true">mvn:io.netty/netty-buffer/4.1.9.Final</bundle>
         <bundle dependency="true">mvn:io.netty/netty-common/4.1.9.Final</bundle>
-        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
+        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle> -->
 
 
         <!-- IDS specific bundles -->

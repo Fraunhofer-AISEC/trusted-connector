@@ -230,6 +230,7 @@
                         <!-- Auto-wrap stuff into OSGi bundles (needed for picking up route XMLs and some non-OSGi libs) -->
                         <feature>wrap</feature>
 
+                        <feature>management</feature>
                         <feature>aries-blueprint</feature>
                         <feature>shell</feature>
                         <feature>shell-compat</feature>
