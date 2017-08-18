@@ -16,7 +16,6 @@ import { AppCardComponent } from './apps/app-card.component';
 
 import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
-import { FileUploadComponent } from './dataflowpolicies/file-upload.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { RouteCardComponent } from './routes/route-card.component';
@@ -62,7 +61,6 @@ import 'material-design-lite';
     ModalModule.forRoot(),
     BootstrapModalModule  ],
   declarations: [
-    FileUploadComponent,
     AppComponent,
     DashboardComponent,
     ActivityComponent,

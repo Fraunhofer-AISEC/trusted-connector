@@ -19,12 +19,16 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -75,14 +79,17 @@ public class PolicyApi {
 	@GET
 	@Path("install")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public String install(@Multipart(value="policy_file", required=true) InputStream is) {
-		LOG.info("Received policy file");
+	public String install(	@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName, 
+							@Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription, 
+							@Multipart(value = "policy_file") InputStream is) {
+		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
 		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
 		
 		// if pap service is not available at runtime, return error TODO return proper HTTP error code
 		if (!pap.isPresent()) {
 			return "no PAP";
 		}
+				
 		pap.get().loadPolicy(is);
 		return new GsonBuilder().create().toJson("OK");
 	}	
