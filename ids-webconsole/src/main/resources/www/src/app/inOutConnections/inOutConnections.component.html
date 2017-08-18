@@ -1,78 +1,73 @@
 <div class="mdl-grid">
 
 
-  <div class="app-card card-dark mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+  <div class="app-card card-dark mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp">
     <div class="mdl-card__title">
          <h2 class="mdl-card__title-text">Incoming Connections</h2>
     </div>
 
-    
-    <div  style="height:300px;overflow-y:scroll">
-        <table class="table table-striped">
-            <thead>
-               <tr>
-                <th width="72%">
-                  Endpoint
-                </th>
-                <th width="28%">
-                  Trust Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-                <tr  *ngFor="let conn of incommingConnections" >
-                  <td width="72%">
-                      {{ conn.endpointIdentifier }}
-                  </td>
-                  <td width="28%">
-                    {{ conn.attestationResult }}
-                  </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <table class="table table-striped">
+        <thead>
+           <tr>
+            <th width="72%" style="padding-left:16px;">
+              Endpoint
+            </th>
+            <th width="28%">
+              Trust Status
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr  *ngFor="let conn of incommingConnections" >
+              <td style="padding-left:16px;">
+                  {{ conn.endpointIdentifier }}
+              </td>
+              <td>
+                {{ conn.attestationResult }}
+              </td>
+            </tr>
+        </tbody>
+    </table>
   </div>
 
-  <div class="app-card card-dark mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+  <div class="app-card card-dark mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp">
     <div class="mdl-card__title">
          <h2 class="mdl-card__title-text">Outgoing Connections</h2>
     </div>
-    <div style="height:300px;overflow-y:scroll">
-        <table class="table table-striped">
-            <thead>
-               <tr>
-                <th width="58%">
-                  Endpoint
-                </th>
-                <th width="14%">
-                  Last Protocol State 
-                </th>
-                <th width="14%">
-                  TLS Client Authentication 
-                </th>
-                <th width="14%">
-                  Remote Hostname
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-                <tr  *ngFor="let conn of outgoingConnections" >
-                  <td width="58%">
-                    {{ conn.endpoint_identifier }}
-                  </td>
-                  <td width="14%">
-                    {{ conn.lastProtocolState }}
-                  </td>
-                  <td width="14%">
-                    {{ conn.remoteAuthentication }}
-                  </td>
-                  <td width="14%">
-                    {{ conn.remoteIdentity }}
-                  </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <table class="table table-striped">
+        <thead>
+           <tr>
+            <th width="50%" style="padding-left:16px;">
+              Endpoint
+            </th>
+            <th width="14%">
+              Protocol State 
+            </th>
+            <th width="17%">
+              TLS Client Auth 
+            </th>
+            <th width="17%">
+              Remote Hostname
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr  *ngFor="let conn of outgoingConnections" >
+              <td style="padding-left:16px;">
+                {{ conn.endpoint_identifier }}
+              </td>
+              <td>
+                {{ conn.lastProtocolState }}
+              </td>
+              <td>
+                {{ conn.remoteAuthentication }}
+              </td>
+              <td>
+                {{ conn.remoteIdentity }}
+              </td>
+            </tr>
+        </tbody>
+    </table>
 
   </div>
 </div>

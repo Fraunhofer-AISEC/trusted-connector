@@ -22,7 +22,7 @@ export class ConnectionReportComponent implements OnInit {
   outgoingConnections: OutgoingConnection[];
 
   constructor(private titleService: Title,  private connectionService: ConnectionService) {
-     this.titleService.setTitle('Connections Statistics');
+     this.titleService.setTitle('IDS Connections');
   }
 
   public ngOnInit(): void {

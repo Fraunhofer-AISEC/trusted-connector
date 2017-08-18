@@ -385,7 +385,12 @@ header.iot-connector-header.mdl-layout__header {
   }
 }
 
-
 label.input-custom-file input[type=file] {
   display: none;
+}
+
+table.table.table-striped thead tr th {
+	background-color: #cfd8dc;
+	color: #000000;
+	font-weight: normal;
 }
