@@ -37,7 +37,9 @@
         <feature version="6.0.6">pax-http-whiteboard</feature>        
 
         <!-- REST feature provided by CXF -->
-        <feature version="3.1.5" dependency="true">cxf-jaxrs</feature>
+        <feature version="3.1.11" dependency="true">cxf-jaxrs</feature>
+        <!-- JSON is no fun without Jackson -->
+        <feature version="3.1.11" dependency="true">cxf-jackson</feature>
         
         <!-- Declarative OSGi Services -->
         <feature version="4.1.2" dependency="true">scr</feature>

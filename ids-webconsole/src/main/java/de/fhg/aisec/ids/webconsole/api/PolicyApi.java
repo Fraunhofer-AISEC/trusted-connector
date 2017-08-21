@@ -19,10 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,12 +32,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
@@ -62,16 +58,16 @@ public class PolicyApi {
 	@GET
 	@Path("list")
 	@Produces("application/json")
-	public String list() {
+	public List<String> list() {
 		LOG.info("policy list");
 		List<String> result = new ArrayList<>();
 		
 		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
 		if (!pap.isPresent()) {
-			return "[]";
+			return result;
 		}		
 		result = pap.get().listRules();
-		return new GsonBuilder().create().toJson(result);
+		return result;
 	}
 	
 	@POST
@@ -79,7 +75,7 @@ public class PolicyApi {
 	@GET
 	@Path("install")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public String install(	@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName, 
+	public Response install(	@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName, 
 							@Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription, 
 							@Multipart(value = "policy_file") InputStream is) {
 		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
@@ -87,10 +83,10 @@ public class PolicyApi {
 		
 		// if pap service is not available at runtime, return error TODO return proper HTTP error code
 		if (!pap.isPresent()) {
-			return "no PAP";
+			return Response.serverError().entity("no PAP").build();
 		}
 				
 		pap.get().loadPolicy(is);
-		return new GsonBuilder().create().toJson("OK");
+		return Response.ok("OK").build();
 	}	
 }

@@ -1,29 +1,29 @@
 <div class="mdl-grid">
-	<div class="mdl-card mdl-cell mdl-cell--12-col">
+	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
 		<div class="mdl-card__title">
 			<h2 class="mdl-card__title-text">Settings</h2>
 		</div>
 		<div class="mdl-card__supporting-text mdl-cell--12-col mdl-grid">
 			<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, myForm.valid)" class="mdl-cell--12-col mdl-grid">
 				<div class="mdl-cell--12-col">
-					<div class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
-						<label class="mdl-textfield__label" for="broker_url">Broker	URL</label>
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col form-group is-dirty">
 						<input class="mdl-textfield__input" id="broker_url"	type="text" formControlName="broker_url">
+						<label class="mdl-textfield__label" for="broker_url">Broker	URL</label>
 						<span [hidden]="myForm.controls.broker_url.valid || (myForm.controls.broker_url.pristine && !submitted)" class="mdl-textfield__error"> Broker URL is required. </span>
 						<!--<pre class="margin-20">{{ myForm.controls.name.errors | json }}</pre>-->
 					</div>
 				</div>
 				<div class="mdl-cell--6-col">
-					<div class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-						<label class="mdl-textfield__label" for="ttp_host">Host of Remote Attestation Repository</label>
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-group is-dirty">
 						<input type="text" class="mdl-textfield__input" id="ttp.host" formControlName="ttp_host">
+						<label class="mdl-textfield__label" for="ttp_host">Host of Remote Attestation Repository</label>
 						<span [hidden]="myForm.controls.ttp_host.valid || (myForm.controls.ttp_host.pristine && !submitted)" class="mdl-textfield__error"> URL required </span>
 					</div>
 				</div>
 				<div class="mdl-cell--5-col">
-					<div class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-						<label class="mdl-textfield__label" for="ttp_port">Port of Remote Attestation Repository</label>
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-group is-dirty">
 						<input type="text" class="mdl-textfield__input" id="ttp.port" formControlName="ttp_port">
+						<label class="mdl-textfield__label" for="ttp_port">Port of Remote Attestation Repository</label>
 						<span [hidden]="myForm.controls.ttp_port.valid || (myForm.controls.ttp_port.pristine && !submitted)" class="mdl-textfield__error"> URL required </span>
 					</div>
 				</div>

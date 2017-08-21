@@ -31,6 +31,10 @@ i.connect-icons {
   background: rgb(0, 150, 136);
 }
 
+.mdl-card__supporting-text {
+	width:100% !important;	/* This is a fix for older mdl versions. Newer have 100% set anyway */ 	
+}
+
 .card-good > .mdl-card__title,
 .card-good > .mdl-card__actions {
   background: rgb(115, 191, 0);

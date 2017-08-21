@@ -19,7 +19,9 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,9 +33,6 @@ import javax.ws.rs.QueryParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
@@ -57,7 +56,7 @@ public class AppApi {
 	@GET
 	@Path("list")
 	@Produces("application/json")
-	public String list() {
+	public List<ApplicationContainer> list() {
 		List<ApplicationContainer> result = new ArrayList<>();
 		
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
@@ -65,17 +64,32 @@ public class AppApi {
 			result = cml.get().list(false);
 		}
 		
-		return new GsonBuilder().create().toJson(result);
+		result.sort((app1, app2) -> {
+			try {
+				SimpleDateFormat d = new SimpleDateFormat("dd-MM-yyyy HH:mm:s Z");
+				Date date1 = d.parse(app1.getCreated());
+				Date date2 = d.parse(app2.getCreated());
+				if (date1.getTime()<date2.getTime()) {
+					return 1;
+				} else {
+					return -1;
+				}
+			} catch (Throwable t) {
+				LOG.warn("Unexpected app creation date/time. Cannot sort. " + t.getMessage());
+			}
+			return 0;
+		});
+		return result;
 	}
 	
 	@POST
 	@Path("pull")
 	@Produces("application/json")
-	public String pull(@QueryParam("imageId") String imageId) {
+	public boolean pull(@QueryParam("imageId") String imageId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
-			return new Gson().toJson(false);
+			return false;
 		}
 
 		new Thread() {
@@ -90,17 +104,17 @@ public class AppApi {
 				}
 			}
 		}.start();			
-		return new Gson().toJson(true);
+		return true;
 	}
 	
 	@GET
 	@Path("start")
 	@Produces("application/json")
-	public String start(@QueryParam("containerId") String containerId) {
+	public boolean start(@QueryParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
-			return new Gson().toJson(false);
+			return false;
 		}
 
 		try {
@@ -108,17 +122,17 @@ public class AppApi {
 		} catch (NoContainerExistsException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new Gson().toJson(true);
+		return true;
 	}
 
 	@GET
 	@Path("stop")
 	@Produces("application/json")
-	public String stop(@QueryParam("containerId") String containerId) {
+	public boolean stop(@QueryParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
-			return new Gson().toJson(false);
+			return false;
 		}
 
 		try {
@@ -126,17 +140,17 @@ public class AppApi {
 		} catch (NoContainerExistsException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new Gson().toJson(true);
+		return true;
 	}
 
 	@GET
 	@Path("wipe")
 	@Produces("application/json")
-	public String wipe(@QueryParam("containerId") String containerId) {
+	public boolean wipe(@QueryParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
 		if (!cml.isPresent()) {
-			return new Gson().toJson(false);
+			return false;
 		}
 
 		try {
@@ -144,7 +158,7 @@ public class AppApi {
 		} catch (NoContainerExistsException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new Gson().toJson(true);
+		return false;
 	}
 
 	@GET
@@ -154,9 +168,9 @@ public class AppApi {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
 		if (!cml.isPresent()) {
-			return new Gson().toJson(false);
+			return "";
 		}
 		
-		return new Gson().toJson(cml.get().getVersion());
+		return cml.get().getVersion();
 	}	
 }

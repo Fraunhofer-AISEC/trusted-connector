@@ -28,6 +28,7 @@ import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
 import { CertUploadComponent } from './keycerts/certUpload.component';
+import { NewIdentityComponent } from './keycerts/identitynew.component';
 
 
 import { AppService } from './apps/app.service';
@@ -49,6 +50,8 @@ import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
 import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
 import { ConnectionService } from './inOutConnections/inOutConnections.service';
+
+import { MDLTextFieldDirective } from './mdl-textfield-directive';
 
 import 'material-design-lite';
 
@@ -77,10 +80,12 @@ import 'material-design-lite';
     KeycertsComponent,
     CertificateCardComponent,
     CertUploadComponent,
+    NewIdentityComponent,
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    ConnectionReportComponent],
+    ConnectionReportComponent,
+    MDLTextFieldDirective],
   providers: [
     AppService,
     RouteService,

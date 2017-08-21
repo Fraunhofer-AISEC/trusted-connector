@@ -1,4 +1,4 @@
-regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.		
+regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.
 rule(deleteAfterOneMonth).
 has_target(deleteAfterOneMonth, service1757980504).
 service(service1757980504).

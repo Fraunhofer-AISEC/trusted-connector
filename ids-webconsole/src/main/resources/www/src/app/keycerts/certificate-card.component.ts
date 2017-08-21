@@ -25,8 +25,8 @@ declare var componentHandler:any;
 		    <span class="mdl-list__item-secondary-content">
 		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" href="#"><i class="material-icons">open_in_browser</i></a>
 			</span>
-		    <span class="mdl-list__item-secondary-content">
-		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete(certificate.alias, certificate.file)"><i class="material-icons">delete</i></a>
+		    <span class="mdl-list__item-secondary-content" style="text-align:right">
+		      <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete(certificate.alias)"><i class="material-icons">delete</i></a>
 		    </span>
 	    </li>
     </ul>
@@ -35,6 +35,7 @@ declare var componentHandler:any;
 
 export class CertificateCardComponent implements OnInit {
   @Input() certificates: Certificate[];
+  @Input() ondelete: Function;
   @Input() trusts: Certificate[];
   result: string;
 
@@ -44,16 +45,17 @@ export class CertificateCardComponent implements OnInit {
     componentHandler.upgradeDom();
   }
 
-  onDelete(alias: string, file: string): void {
+  onDelete(alias: string): void {
     this.confirmService.activate("Are you sure that you want to delete this item?")
         .then(res => {
           if (res == true) {
-            this.certificateService.deleteEntry(alias, file).subscribe(result => {
-             this.result = result;
-             if(result.toString() === "true") {
-                location.reload();
-              }
-           });
+              this.ondelete(alias);
+            //this.certificateService.deleteEntry(alias, file).subscribe(result => {
+            // this.result = result;
+            // if(result.toString() === "true") {
+            //    location.reload();
+            //  }
+           //});
     }});
   }
 }
