@@ -166,7 +166,7 @@ public class WsEndpoint extends AhcEndpoint {
         	config = new DefaultAsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"TLSv1.2", "TLSv1.1", "TLSv1"}).build();
             client = new DefaultAsyncHttpClient(config);
         } else {
-            client = new DefaultAsyncHttpClient();
+            client = new DefaultAsyncHttpClient(config);
         }
         return client;
     }
