@@ -19,7 +19,7 @@
 		<!-- Dependencies which must be available at runtime. Can be features or bundles. -->
 		<bundle start-level="70">mvn:org.apache.felix/org.apache.felix.prefs/1.1.0</bundle>
 		<bundle start-level="70">mvn:com.google.code.gson/gson/2.7</bundle>
-		<bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
+		<bundle start-level="70">mvn:org.apache.camel/camel-core-osgi/2.19.2</bundle>
 		<bundle start-level="70">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>        
 		<!-- <bundle start-level="70">mvn:org.eclipse.jetty/jetty-util/9.3.14.v20161028</bundle>
 		<bundle start-level="70">mvn:org.eclipse.jetty/jetty-server/9.3.14.v20161028</bundle>
@@ -31,7 +31,7 @@
 		<bundle start-level="70">mvn:org.eclipse.jetty.websocket/websocket-servlet/9.3.14.v20161028</bundle> -->
 
 		<feature dependency="true">wrap</feature>
-		<feature version="2.19.0" dependency="true">camel</feature>        
+		<feature version="2.19.2" dependency="true">camel</feature>        
 
 		<feature version="9.3.14.v20161028">pax-jetty</feature>        
 		<feature version="6.0.6">pax-http-whiteboard</feature>        
@@ -45,16 +45,20 @@
 		<feature version="4.1.2" dependency="true">scr</feature>
 		
 		<!-- Asynchronous HTTP requests, required for camel-ids -->
-		<feature version="2.19.0" dependency="true">camel-ahc</feature>
+		<feature version="2.19.2" dependency="true">camel-ahc</feature>
 		
 		<!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
-		<bundle dependency="true">mvn:org.apache.camel/camel-core-osgi/2.19.0</bundle>
+		<bundle dependency="true">mvn:org.apache.camel/camel-core-osgi/2.19.2</bundle>
 		
 		<!-- This is how to add a custom config file which will be picked up by Config Admin-->
 		<!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
 
+		<bundle>wrap:mvn:org.reactivestreams/reactive-streams/1.0.0</bundle>
+	    <bundle>wrap:mvn:org.asynchttpclient/async-http-client/2.0.34$Export-Package=org.asynchttpclient.*;version=2.0.34&amp;DynamicImport-Package=*</bundle>
+
+
 		<!-- OPC-UA support (not yet available as a feature in Karaf 4.1.2, thus as individual bundles) -->
-		<bundle>mvn:org.apache.camel/camel-milo/2.19.0</bundle>
+		<bundle>mvn:org.apache.camel/camel-milo/2.19.2</bundle>
 		<bundle>mvn:org.eclipse.milo/stack-core/0.1.3</bundle>
 		<bundle>mvn:org.eclipse.milo/stack-client/0.1.3</bundle>
 		<bundle>mvn:org.eclipse.milo/stack-server/0.1.3</bundle>
@@ -68,11 +72,13 @@
 		<bundle>mvn:org.jooq/jool/0.9.10</bundle>
 		<bundle>mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
 		<bundle>mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
-		<bundle>mvn:io.netty/netty-codec/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-transport/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-handler/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-buffer/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-common/4.1.9.Final</bundle>
+		<bundle>mvn:io.netty/netty-codec/4.0.45.Final</bundle>
+		<bundle>mvn:io.netty/netty-transport/4.0.45.Final</bundle>
+		<bundle>mvn:io.netty/netty-handler/4.0.45.Final</bundle>
+		<bundle>mvn:io.netty/netty-buffer/4.0.45.Final</bundle>
+		<bundle>mvn:io.netty/netty-common/4.0.45.Final</bundle>
+		
+
 		<bundle>mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
 
 

@@ -4,8 +4,7 @@
            xmlns:camel="http://camel.apache.org/schema/blueprint"
            xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
            xsi:schemaLocation="
-               http://www.osgi.org/xmlns/blueprint/v1.0.0
-               http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+               ttp://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
                http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
                http://camel.apache.org/schema/blueprint
                http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
@@ -33,7 +32,7 @@
           <to uri="direct:writeLEDPower"/>
         </post>
       </rest>
-      
+
       <route rest="true" id="OPC-UA: Write LED Direction">
         <from uri="direct:writeLEDDirection"/>
         <setBody>
