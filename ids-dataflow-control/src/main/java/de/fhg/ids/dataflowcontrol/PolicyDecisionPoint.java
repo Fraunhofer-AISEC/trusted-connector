@@ -19,6 +19,8 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -61,7 +63,8 @@ import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
  */
 @Component(enabled = true, immediate = true, name = "ids-dataflow-control", servicefactory = false)
 public class PolicyDecisionPoint implements PDP, PAP {
-	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);	
+	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
+	private static final String LUCON_FILE_EXTENSION = ".pl";	
 	private LuconEngine engine;
 		
 	/**
@@ -133,10 +136,31 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Activate
-	public void activate(ComponentContext ctx) {
+	public void activate(ComponentContext ctx) throws IOException {
 		if (this.engine == null) {
 			this.engine = new LuconEngine(System.out);
 		}
+		
+		// Try to load existing policies from deploy dir at activation
+		File dir = new File(System.getProperty("karaf.base") + File.separator + "deploy");
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing==null || !dir.isDirectory()) {
+			LOG.warn("Unexpected: Not a directory: " + dir.getAbsolutePath());
+			return;
+		}
+		
+		boolean loaded = false;
+		for (File f : directoryListing) {
+	      if (f.getName().endsWith(LUCON_FILE_EXTENSION)) {
+	    	  if (!loaded) {
+	    		  LOG.info("Loading Lucon policy from " + f.getAbsolutePath());
+	    		  loadPolicy(new FileInputStream(f));
+		    	  loaded = true;
+	    	  } else {
+	    		  LOG.warn("Multiple policy files. Will load only one! " + f.getAbsolutePath());
+	    	  }
+	      }
+	    }
 	}
 
 	@Override
