@@ -57,9 +57,8 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private boolean yourSuccess = false;
 	private boolean mySuccess = false;
 	private int attestationMask = 0;
-	private SSLContextParameters sslParams;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket, SSLContextParameters params) {
+	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
@@ -67,7 +66,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
 		this.attestationMask = attestationMask;
-		this.sslParams = params;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d
 		try {
@@ -178,7 +176,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	public MessageLite sendResult(Event e) {
 		if(this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, e.getMessage().getAttestationResponse(), ttpUri, this.sslParams)) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, e.getMessage().getAttestationResponse(), ttpUri)) {
 					this.mySuccess = true;
 				}
 				return ConnectorMessage

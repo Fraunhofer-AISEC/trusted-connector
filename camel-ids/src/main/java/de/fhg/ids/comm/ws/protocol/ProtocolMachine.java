@@ -86,7 +86,7 @@ public class ProtocolMachine {
 			// set trusted third party URL
 			URI ttp = getTrustedThirdPartyURL();
 			// all handler
-			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket, params);
+			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();		
 			
@@ -160,7 +160,7 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
+	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask) {
 		this.sess = sess;
 		FSM fsm = new FSM();
 		try {
@@ -168,7 +168,7 @@ public class ProtocolMachine {
 			URI ttp = getTrustedThirdPartyURL();
 
 			// all handler
-			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket, params);
+			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 			

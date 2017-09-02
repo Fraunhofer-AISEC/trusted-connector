@@ -19,34 +19,23 @@
  */
 package de.fhg.camel.ids.comm.ws.protocol;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.sql.SQLException;
 
-import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.util.jsse.ClientAuthentication;
 import org.apache.camel.util.jsse.KeyManagersParameters;
 import org.apache.camel.util.jsse.KeyStoreParameters;
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.apache.camel.util.jsse.SSLContextServerParameters;
 import org.apache.camel.util.jsse.TrustManagersParameters;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.junit.Ignore;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
@@ -85,9 +74,8 @@ public class ADVANCEDAttestationIT {
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		SSLContextParameters sslContextParameters = defineClientSSLContextParameters();
-		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);		
+		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock");
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock");		
 	}
 	
     @Test

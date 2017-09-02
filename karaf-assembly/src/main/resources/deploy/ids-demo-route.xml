@@ -25,6 +25,7 @@
        <!-- Retrieve temperature value from IDS protocol, setting remote attestation to most relaxed config (for
        			demo only. Use 1 in production). Forward to Data App 2 -->
       	<route id="receiveData">
+          <!--<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=3" /> -->
       		<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=3" />
       		<log message="Received via IDS protocol: ${body}"/>
       	</route>
@@ -35,6 +36,7 @@
           </setBody>
           <convertBodyTo type="java.lang.String"/>
           <log message="Send ${body}"/>
+          <!-- <to uri="idsclient://localhost:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=3" /> -->
           <to uri="idsclient://localhost:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=3" />
         </route>
       </camelContext>

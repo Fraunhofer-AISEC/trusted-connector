@@ -22,7 +22,6 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.camel.util.jsse.SSLContextParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +56,9 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private boolean yourSuccess = false;
 	private boolean mySuccess = false;
 	private int attestationMask = 0;
-	private SSLContextParameters sslParams;
 	private AttestationResponse resp;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket, SSLContextParameters params) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
@@ -68,7 +66,6 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
 		this.attestationMask = attestationMask;
-		this.sslParams = params;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
@@ -182,7 +179,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public MessageLite sendResult(Event e) {
 		if(this.checkSignature(this.resp, this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri, this.sslParams)) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri)) {
 					this.mySuccess = true;					
 				}
 				return ConnectorMessage

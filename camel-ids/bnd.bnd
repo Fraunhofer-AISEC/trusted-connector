@@ -31,6 +31,9 @@ Import-Package: \
 	!org.glassfish.jersey.*,\
 	io.netty.handler.ssl;resolution:=optional,\
 	io.netty.channel,\
+	org.asynchttpclient.netty,\
+	org.asynchttpclient.netty.handler,\
+	org.asynchttpclient.netty.util,\
 	io.netty.resolver;resolution:=optional,\
 	io.netty.handler.codec,\
 	io.netty.handler.codec.http,\

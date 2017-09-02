@@ -165,7 +165,7 @@ public class FSM {
 			}
 		}
 	}
-	
+	 
 	public String toDot() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("digraph finite_state_machine {\n");

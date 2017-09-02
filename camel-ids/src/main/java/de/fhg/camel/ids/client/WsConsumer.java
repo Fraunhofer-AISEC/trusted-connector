@@ -98,13 +98,13 @@ public class WsConsumer extends DefaultConsumer {
     private void sendMessageInternal(Object message) {
         final Exchange exchange = getEndpoint().createExchange();
 
+        //TODO may set some headers with some meta info (e.g., socket info, unique-id for correlation purpose, etc0 
+        // set the body
+
         if (message instanceof Throwable) {
             exchange.setException((Throwable) message);
         } else {
             exchange.getIn().setBody(message);
-            //TODO may set some headers with some meta info (e.g., socket info, unique-id for correlation purpose, etc0 
-            // set the body
-
         }
 
         // send exchange using the async routing engine

@@ -35,16 +35,21 @@
  */
 package de.fhg.camel.ids.server;
 
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.apache.camel.CamelExchangeException;
+import org.apache.camel.Exchange;
 
 /**
- * Default websocket factory.
- * Used when no custom websocket is needed.
+ * Exception while sending to a websocket channel.
  */
-public class DefaultWebsocketFactory implements WebSocketFactory {
+public class WebsocketSendException extends CamelExchangeException {
 
-    @Override
-    public DefaultWebsocket newInstance(ServletUpgradeRequest request, String protocol, String pathSpec, NodeSynchronization sync, WebsocketConsumer consumer) {
-        return new DefaultWebsocket(sync, pathSpec, consumer);
+    private static final long serialVersionUID = 1L;
+
+    public WebsocketSendException(String message, Exchange exchange) {
+        super(message, exchange);
+    }
+
+    public WebsocketSendException(String message, Exchange exchange, Throwable cause) {
+        super(message, exchange, cause);
     }
 }

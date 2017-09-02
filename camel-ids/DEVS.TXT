@@ -1,0 +1,3 @@
+Based on (forked from) camel-ahc 9e756fefbb053926754108335e3ad78b586439ac https://github.com/apache/camel/commit/9e756fefbb053926754108335e3ad78b586439ac#diff-6909a29f433a9c32440e4b80ac06bf74
+
+Updated to 6cfdf4214288854d2f91a0fbf407ee1df99a8a01
