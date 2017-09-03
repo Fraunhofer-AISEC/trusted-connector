@@ -110,7 +110,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		// get nonce from server msg
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
 		if(++this.sessionID == e.getMessage().getId()) {
-			if(thread.isAlive()) {
+			if(thread!=null && thread.isAlive()) {
 				try {
 					ControllerToTpm msg;
 					if(this.aType.equals(IdsAttestationType.ADVANCED)) {

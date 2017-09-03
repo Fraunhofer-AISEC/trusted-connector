@@ -67,6 +67,10 @@ public class UnixSocketThread implements Runnable {
 	
 	// constructor setting another socket address
 	public UnixSocketThread(String socket) throws IOException {
+		File s = new File(socket);
+		if (!s.exists()) {
+			throw new IOException ("tpmd socket does not exist: " + s.getAbsolutePath());
+		}
 		this.socket = socket;
 		this.selector = this.initSelector();
 	}
@@ -126,6 +130,7 @@ public class UnixSocketThread implements Runnable {
 
 				// Wait for an event on one of the registered channels
 				this.selector.select();
+				LOG.debug("Reading from socket " + this.socket);
 
 				// Iterate over the set of keys for which events are available
 				Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
@@ -277,6 +282,9 @@ public class UnixSocketThread implements Runnable {
             if (retries < 10) {
             	LOG.debug(String.format("error: socket \"%s\" does not exist after %s retry.", socketFile.getAbsolutePath(), retries));
             }
+        }
+        if (!socketFile.getAbsoluteFile().exists()) {
+        	throw new IOException("Could not connect to Unix socket after 10 retries: " + socketFile.getAbsoluteFile());
         }
 		this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());	
 		this.channel = UnixSocketChannel.open(this.address);
