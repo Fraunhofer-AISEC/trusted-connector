@@ -92,8 +92,7 @@ public class CertApi {
 	@Produces("application/json")
 	public List<Cert> listIdentities() {
 		File keystoreFile = getKeystoreFile(KEYSTORE_FILE);
-		List<Cert> certs = getKeystoreEntries(keystoreFile);
-		return certs;
+		return getKeystoreEntries(keystoreFile);
 	}
 
 	@POST
@@ -336,7 +335,6 @@ public class CertApi {
 		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException
 				| IOException e) {
 			LOG.error(e.getMessage(), e);
-			e.printStackTrace();
 		}
 		return certs;
 	}
@@ -367,8 +365,6 @@ public class CertApi {
 				keystore.deleteEntry(alias);
 				try (FileOutputStream fos = new FileOutputStream(file)) {
 					keystore.store(fos, KEYSTORE_PWD.toCharArray());
-				} catch (IOException e) {
-					LOG.error(e.getMessage(), e);
 				}
 			} else {
 				LOG.warn("Alias not available. Cannot delete it: " + alias);

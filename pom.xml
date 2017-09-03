@@ -111,6 +111,7 @@
               <projectName>${project.name}</projectName>
               <roots>
                 <root>src/main/java</root>
+                <root>src/main/proto</root>
                 <root>src/test</root>
               </roots>
             </configuration>

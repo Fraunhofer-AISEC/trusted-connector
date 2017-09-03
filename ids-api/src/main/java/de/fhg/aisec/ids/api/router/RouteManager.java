@@ -46,7 +46,7 @@ public interface RouteManager {
 	 * 
 	 * @param routeId
 	 */
-	public void startRoute(String routeId) throws Exception;
+	public void startRoute(String routeId) throws RouteException;
 	
 	/**
 	 * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver pending exchanges.
@@ -56,8 +56,18 @@ public interface RouteManager {
 	 */
 	public void stopRoute(String routeId) throws RouteException;
 	
+	/**
+	 * List all supported components, i.e. supported endpoint protocols.
+	 * 
+	 * @return
+	 */
 	public List<RouteComponent> listComponents();
 	
+	/**
+	 * List all route endpoints, i.e. all URLs to which routes exist.
+	 * 
+	 * @return
+	 */
 	public Map<String, Collection<String>> getEndpoints();
 	
 	public Map<String,String> listEndpoints();
@@ -82,10 +92,9 @@ public interface RouteManager {
 	 * 
 	 * Endpoint declarations must be supported by the underlying implementation.
 	 * 
-	 * @param from
-	 * @param to
+	 * @param routeId
 	 */
-	void delRoute(String from, String to);
+	void delRoute(String routeId);
 
 	/**
 	 * Returns the current route configuration in its original representation of the implementing engine.

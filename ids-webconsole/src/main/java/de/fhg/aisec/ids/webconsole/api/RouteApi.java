@@ -162,11 +162,9 @@ public class RouteApi {
 		if (rm.isPresent()) {
 			try {
 				Map<String, RouteMetrics> currentMetrics = rm.get().getRouteMetrics();
-				RouteMetrics aggregated = aggregateMetrics(currentMetrics.values());
-				return aggregated;
+				return aggregateMetrics(currentMetrics.values());
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return null;
 			}
 		}
 		return null;

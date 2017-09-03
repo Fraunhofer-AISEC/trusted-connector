@@ -91,7 +91,7 @@ public class LuconEngine {
 		SolveInfo solution = p.solve(query);
 		while (solution.isSuccess()) {
 			result.add(solution);
-			if (findAll & p.hasOpenAlternatives()) {
+			if (findAll && p.hasOpenAlternatives()) {
 				solution = p.solveNext();
 			} else {
 				break;

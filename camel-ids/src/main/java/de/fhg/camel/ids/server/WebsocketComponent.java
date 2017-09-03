@@ -577,13 +577,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         try {
             Method method = instance.getClass().getMethod("checkConfig");
             return (Boolean) method.invoke(instance);
-        } catch (NoSuchMethodException ex) {
-            // ignore
-        } catch (IllegalArgumentException e) {
-            // ignore
-        } catch (IllegalAccessException e) {
-            // ignore
-        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalArgumentException | IllegalAccessException | InvocationTargetException ex) {
             // ignore
         }
         return false;

@@ -1,0 +1,71 @@
+syntax = "proto2";
+option java_package = "de.fhg.aisec.ids.messages";
+option java_outer_classname = "AttestationProtos";
+
+// type of attestation in the IDS context
+enum IdsAttestationType {
+  // kernel + core container (PCR 0 to 10)
+  BASIC = 0;
+
+  // everything (PCRs 0 to 23)
+  ALL = 1;
+
+  // PCRs must be specified manually
+  ADVANCED = 2;
+  
+  // no PCRs at all
+  ZERO = 3;  
+}
+
+message Pcr {
+  // the PCR number (usually between 0 and 23)
+  optional int32 number = 1;
+
+  // the value of PCR<number>
+  optional string value = 2;
+}
+
+message ControllerToTpm {
+	enum Code {
+		INTERNAL_ATTESTATION_REQ = 1;
+	}
+
+	required Code code = 1;
+
+	// type of attestation in the IDS context
+	optional IdsAttestationType atype = 2 [default = BASIC];
+
+	// qualifingData (i.e. external data provided by the caller, such as a nonce)
+	optional string qualifyingData = 3;
+
+	// pcr bitmask for AttestationType ADVANCED only
+	//  - for BASIC, the default PCRs are PCRs 0 to 10
+	//  - for ALL  , the default PCRs are PCRs 0 to 23
+	optional int32 pcrs = 4;
+}
+
+message TpmToController {
+	enum Code {
+		INTERNAL_ATTESTATION_RES = 1;
+	}
+
+	required Code code = 1;
+
+	// type of attestation in the IDS context
+	optional IdsAttestationType atype = 2 [default = BASIC];
+
+	// the hash algorith used to sign the quoted information
+	optional string halg = 3;
+
+	// the quoted information (a TPM2B_ATTEST data structure)
+	optional string quoted = 4;
+
+	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
+	optional string signature = 5;
+
+	// the explicit PCR values
+	repeated Pcr pcr_values = 6;
+
+	// an _optional_ URI to a certificate that includes the public key
+	optional string certificate_uri = 7;
+}

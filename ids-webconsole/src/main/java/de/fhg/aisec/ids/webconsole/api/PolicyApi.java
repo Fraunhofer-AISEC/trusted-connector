@@ -81,7 +81,7 @@ public class PolicyApi {
 		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
 		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
 		
-		// if pap service is not available at runtime, return error TODO return proper HTTP error code
+		// if pap service is not available at runtime, return error
 		if (!pap.isPresent()) {
 			return Response.serverError().entity("no PAP").build();
 		}

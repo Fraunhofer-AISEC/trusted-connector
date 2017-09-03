@@ -27,7 +27,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ProcessExecutor {
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessExecutor.class);
 	
 	public int execute(String[] cmd, OutputStream stdout, OutputStream stderr) throws InterruptedException, IOException {
 		Runtime rt = Runtime.getRuntime();
@@ -45,6 +49,7 @@ public class ProcessExecutor {
 }
 
 class StreamGobbler extends Thread {
+    private static final Logger LOG = LoggerFactory.getLogger(StreamGobbler.class);
 	InputStream is;
 	OutputStream out;
 
@@ -77,7 +82,7 @@ class StreamGobbler extends Thread {
 				bw.close();
 			}
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			LOG.error(ioe.getMessage(), ioe);
 		}
 	}
 }

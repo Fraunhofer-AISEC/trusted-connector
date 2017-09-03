@@ -160,9 +160,6 @@ public class CamelRouteToDot {
 			writer.write(" [\n");
 			writer.write("label = \"" + data.label.substring(0,Math.min(12, data.label.length())) + (data.label.length()>12?"..":"") + "\"\n");
 			writer.write("tooltip = \"" + data.tooltip + "\"\n");
-			/*if (data.url != null) {
-				writer.write("URL = \"" + data.url + "\"\n");
-			}*/
 
 			String image = data.image;
 			if (image != null) {
