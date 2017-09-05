@@ -2,8 +2,6 @@
 
 This project creates a custom Apaache Karaf assembly, including a custom feature "ids".
 
-The "ids" feature contains the following bundles and their dependencies:
-
 * `camel-ids`: An Apache Camel component implementing the "IDS Protocol" for remote attestation, meta data exchange, and message transfer between Trusted Connectors. The camel component supports the following protocol schemes: `idsserver://`, `idsclient://`, `idsclientplain://`
 * `ids-dataflow-policy`: The LUCON data flow policy framework
 * `ids-container-manager`: Container management service (cmld wrapper) for trustme and Docker containers
