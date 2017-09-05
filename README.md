@@ -1,11 +1,21 @@
-This project creates a custom Apaache Karaf configuration including a custom feature "camel-ids".
+[![Build Status](https://travis-ci.org/industrial-data-space/trusted-connector.svg?branch=develop)](https://travis-ci.org/industrial-data-space/trusted-connector)
 
-Apache Karaf is an OSGi runtime which has originally been the basis for the ServiceMix application service. Karaf has become independent from ServiceMix and is now a middleware which is commonly used in IoT platforms. Example projects using Karaf are the OpenHAB home automation server or the OpenDayLight SDN controller.
+This project creates a custom Apaache Karaf assembly, including a custom feature "ids".
 
-Karaf is merely a set of different "features". A feature is a deployment unit which provides a certain functionality. For example, the activemq message queue comes as an "activemq-broker" feature. This project defines a custom "assembly" of Karaf, i.e. instead of using the default features, we create our own configuration, which includes especially the ActiveMQ message queue and the Apache Camel routing engine.
+The "ids" feature contains the following bundles and their dependencies:
 
-In addition to standard Karaf features, we also create our own custom feature which is extends Camel with a new protocol endpoint "ids://". The actual code for this feature is in project "camel-ids" and the definition of the Karaf feature is in "ids-karaf-feature".
+* `camel-ids`: An Apache Camel component implementing the "IDS Protocol" for remote attestation, meta data exchange, and message transfer between Trusted Connectors. The camel component supports the following protocol schemes: `idsserver://`, `idsclient://`, `idsclientplain://`
+* `ids-dataflow-policy`: The LUCON data flow policy framework
+* `ids-container-manager`: Container management service (cmld wrapper) for trustme and Docker containers
+* `ids-route-manager`: Route management service for Apache Camel routes
+* `ids-webconsole`: REST API and Angular2-based management web frontend
+* `jnr-unixsocket`: Wrapper bundle for jnr-unixsockets and their dependencies. Allows Java to access UNIX domain sockets.
+* `karaf-assembly`: Definition of the overall Karaf assembly (= the ready-to-run configured karaf application server)
+* `karaf-feature-ids`: The "ids" feature including all bundles listed here.
 
+Further, there are two additional sub-projects:
+* `rat-repository`: A dummy remote attestation repository for testing purposes
+* `tpm2j`: Java wrapper for TPM 2.0 daemon (tpmd)
 
 
 # How to build
