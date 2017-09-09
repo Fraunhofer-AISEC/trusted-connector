@@ -35,7 +35,6 @@
  */
 package de.fhg.camel.ids.server;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
@@ -52,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
@@ -197,8 +197,16 @@ public class DefaultWebsocket implements Serializable {
 	}
 	
     //get the result of the remote attestation
-	public boolean isAttestationSuccessful() {
-		return machine.getIDSCPProviderSuccess();
+	public AttestationResult getAttestationResult() {
+		if (machine.getAttestationType()==IdsAttestationType.ZERO) {
+			return AttestationResult.SKIPPED;
+		} else {
+			if (machine.getIDSCPProviderSuccess()) {
+				return AttestationResult.SUCCESS;
+			} else {
+				return AttestationResult.FAILED;
+			}
+		}
 	}
 
 	public String getRemoteHostname() {

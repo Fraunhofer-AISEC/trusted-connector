@@ -64,12 +64,12 @@ public class IdsProtocolComponent {
             cardinality = ReferenceCardinality.OPTIONAL,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unbindConnectionManager")
-    protected void bindConnectionManager(ConnectionManager conn) {
+    public void bindConnectionManager(ConnectionManager conn) {
         LOG.info("Bound to connection manager");
         IdsProtocolComponent.connectionManager= Optional.of(conn);
     }
 
-    protected void unbindConnectionManager(ConnectionManager conn) {
+    public void unbindConnectionManager(ConnectionManager conn) {
     	IdsProtocolComponent.connectionManager = Optional.empty();      
     }
 

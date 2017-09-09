@@ -30,6 +30,7 @@ public class IDSCPOutgoingConnection {
 	private String lastProtocolState;
 	private String remoteAuthentication;
 	private String remoteIdentity;
+	private AttestationResult attestationResult;
 	
 	
 	public IDSCPOutgoingConnection(String endpoint_identifier, String lastProtocolState) {
@@ -60,11 +61,11 @@ public class IDSCPOutgoingConnection {
 	public void setEndpointIdentifier(String endpoint_identifier) {
 		this.endpoint_identifier = endpoint_identifier;
 	}
-	public String getAttestationResult() {
-		return lastProtocolState;
+	public AttestationResult getAttestationResult() {
+		return this.attestationResult;
 	}
-	public void setAttestationResult(String lastProtocolState) {
-		this.lastProtocolState = lastProtocolState;
+	public void setAttestationResult(AttestationResult attestationResult) {
+		this.attestationResult = attestationResult;
 	}
 	public String getLastProtocolState() {
 		return lastProtocolState;

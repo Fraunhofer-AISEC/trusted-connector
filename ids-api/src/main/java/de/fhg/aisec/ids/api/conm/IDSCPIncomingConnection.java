@@ -28,12 +28,9 @@ package de.fhg.aisec.ids.api.conm;
 	
 public class IDSCPIncomingConnection {
 	private String endpointIdentifier;
-
-	private String attestationResult;
-
+	private AttestationResult attestationResult;
 	
 	public IDSCPIncomingConnection() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public String getEndpointIdentifier() {
@@ -42,10 +39,10 @@ public class IDSCPIncomingConnection {
 	public void setEndpointIdentifier(String endpointIdentifier) {
 		this.endpointIdentifier = endpointIdentifier;
 	}
-	public String getAttestationResult() {
+	public AttestationResult getAttestationResult() {
 		return attestationResult;
 	}
-	public void setAttestationResult(String result) {
+	public void setAttestationResult(AttestationResult result) {
 		this.attestationResult = result;
 	}	
 	

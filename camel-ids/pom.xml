@@ -72,11 +72,12 @@
 			<version>${jersey-version}</version>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-jetty-http</artifactId>
 			<version>${jersey-version}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
@@ -234,7 +235,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.19</version>
 				<configuration>
-					<skip>true</skip>
+					<skip>false</skip>
 					<argLine>-Djavax.net.ssl.trustStore=${project.basedir}/src/test/resources/jsse/localhost.ks</argLine>
 					<excludes>
 						<exclude>**/WebsocketEndpointTest.java</exclude>

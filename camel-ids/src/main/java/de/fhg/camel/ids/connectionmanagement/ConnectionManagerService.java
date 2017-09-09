@@ -86,7 +86,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	        //Assume only websocket per endpoint
 	        while(webSocketIterator.hasNext())  {
 	        	DefaultWebsocket dws = webSocketIterator.next();
-	        	idscpc.setAttestationResult(dws.getCurrentProtocolState());
+	        	idscpc.setAttestationResult(dws.getAttestationResult());
 	        }
 	        connections.add(idscpc);
 	        it.remove(); // avoids a ConcurrentModificationException
@@ -118,11 +118,9 @@ public class ConnectionManagerService implements ConnectionManager {
 	        	
 	        	// in order to check if the provider has done a successful remote attestation
 	        	// we have to check the state of the dsm (=IDSCP_END) and the result of the rat:
-	        	if(dws.getCurrentProtocolState().equals(ProtocolState.IDSCP_END.id()) && dws.isAttestationSuccessful()) {
-	        		// attestation is done and was successful
-	        		idscpc.setAttestationResult("Success");
-	        		idscpc.setLastProtocolState(ProtocolState.IDSCP_END.id());
-	        	}
+	        	idscpc.setAttestationResult(dws.getAttestationResult());
+	        	idscpc.setLastProtocolState(dws.getCurrentProtocolState());
+
 	        	// in order to check the identity of the remote counterpart, we could use the SSLContextParameters of the dws:
 	        	// this is "NONE", "WANT" or "REQUIRE"
 	        	SSLContextParameters sslParams = connectorRef.getServlet().getConsumer().getEndpoint().getSslContextParameters();
