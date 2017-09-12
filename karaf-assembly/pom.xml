@@ -336,60 +336,54 @@
             </plugin>
 
             <!-- create a docker image for core platform -->
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.18.1</version>
-                <executions>
-                    <execution>
-                       <id>build</id>
-                       <!-- maven lifecycle phase to bind to -->
-                       <phase>package</phase>
-                       <goals>
-                        <!-- goal to bind (docker build) -->
-                         <goal>build</goal>
-                       </goals>
-                    </execution>
-                    <execution>
-                       <id>clean</id>
-                       <phase>clean</phase>
-                       <goals>
-                         <goal>remove</goal>
-                       </goals>
-                    </execution>
-                    <execution>
-                       <id>deploy</id>
-                       <phase>deploy</phase>
-                       <goals>
-                         <goal>push</goal>
-                       </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <images>
-                        <image>
-                            <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</name>
-                            <build>
-                                <!-- Dockerfile to build -->
-                               <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
-                                <!-- Files to add to docker build context (can be added to docker image using ADD or COPY) -->
-                                <assembly>
-                                    <targetDir>/</targetDir>
-                                    <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-                                        <id>karaf-assembly</id>
-                                        <fileSets>
-                                            <fileSet>
-                                                <directory>${basedir}/target/assembly</directory>
-                                                <outputDirectory>./</outputDirectory>
-                                            </fileSet>
-                                        </fileSets>
-                                    </inline>
-                                </assembly>
-                            </build>
-                        </image>
-                    </images>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.13</version>
+				<configuration>
+					<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
+					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/root</targetPath>
+							<directory>${project.build.directory}/assembly</directory>
+						</resource>
+					</resources>
+				</configuration>
+				<executions>
+					<execution>
+						<id>build-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<!-- <execution>
+						<id>tag-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>ids/ttpsim:develop</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</newName>
+						</configuration>
+					</execution> -->
+					<execution>
+						<id>push-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+
 
         </plugins>
 
