@@ -42,9 +42,8 @@ import static org.apache.camel.util.ObjectHelper.isEmpty;
 import static org.apache.camel.util.ObjectHelper.isNotEmpty;
 
 /**
- * Represents a node in the EIP diagram tree
+ * Represents a node in Graphviz representation of a route.
  *
- * @version
  */
 public class NodeData {
 	public String id;
