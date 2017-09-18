@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" enabled="true" immediate="true" name="ids-policy-pap">
-   <implementation class="de.fhg.aisec.ids.policy.impl.PAPService" policy="dynamic"/>
-   <service>
-      <provide interface="de.fhg.aisec.ids.api.policy.PAP"/>
-   </service>   
-</scr:component>

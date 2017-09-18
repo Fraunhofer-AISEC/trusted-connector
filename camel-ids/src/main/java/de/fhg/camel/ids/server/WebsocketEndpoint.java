@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +37,6 @@ package de.fhg.camel.ids.server;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +73,8 @@ public class WebsocketEndpoint extends DefaultEndpoint {
 
     @UriParam(label = "producer")
     private Boolean sendToAll;
+    @UriParam(label = "producer", defaultValue = "30000")
+    private Integer sendTimeout = 30000;
     @UriParam(label = "monitoring")
     private boolean enableJmx;
     @UriParam(label = "consumer")
@@ -191,6 +211,18 @@ public class WebsocketEndpoint extends DefaultEndpoint {
      */
     public void setSendToAll(Boolean sendToAll) {
         this.sendToAll = sendToAll;
+    }
+
+    public Integer getSendTimeout() {
+        return sendTimeout;
+    }
+
+    /**
+     * Timeout in millis when sending to a websocket channel.
+     * The default timeout is 30000 (30 seconds).
+     */
+    public void setSendTimeout(Integer sendTimeout) {
+        this.sendTimeout = sendTimeout;
     }
 
     public String getProtocol() {

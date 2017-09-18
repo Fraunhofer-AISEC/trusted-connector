@@ -21,9 +21,12 @@ export class MetricCardComponent implements OnInit {
 
   private interval;
 
-  constructor(private http: Http) {}
+  constructor(private http: Http) {
+    console.log("constructor MetricCardComponent");
+  }
 
   ngOnInit() {
+    console.log("on init metric card");
     // If remote date source is given, update value from there. Otherwise use static values
     if (this.valueUrl==null) {
       return;

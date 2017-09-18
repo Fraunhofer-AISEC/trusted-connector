@@ -20,7 +20,7 @@ export class RoutesComponent  implements OnInit{
   @Output() changeTitle = new EventEmitter();
 
   constructor(private titleService: Title, private routeService: RouteService) {
-    this.titleService.setTitle('Data Pipes');
+    this.titleService.setTitle('Message Routes');
 
     this.routeService.getRoutes().subscribe(routes => {
        this.routes = routes;

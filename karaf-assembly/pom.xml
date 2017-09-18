@@ -2,12 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.fhg.ids</groupId>
+    
     <artifactId>offline-karaf</artifactId>
-    <version>1.0.0</version>
+    <packaging>karaf-assembly</packaging>
+    
+    <parent>
+      <groupId>de.fhg.ids</groupId>
+      <artifactId>core-platform</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+    </parent>    
+    
     <name>IDS Karaf Platform</name>
     <description>Offline Karaf server</description>
-    <packaging>karaf-assembly</packaging>
     <scm>
         <connection>
             scm:git:https://github.com/juttayaya/karaf.git
@@ -20,15 +26,7 @@
         <maven>3.0.3</maven>
     </prerequisites>
 
-    <parent>
-      <groupId>de.fhg.ids</groupId>
-      <artifactId>core-platform</artifactId>
-      <version>1.0.0</version>
-    </parent>
-
     <properties>
-        <karaf.version>4.0.6</karaf.version>
-        <camel.version>2.18.0</camel.version>
         <activemq.version>5.13.3</activemq.version>
         <cxf.version>3.1.5</cxf.version>
         <!-- maven-compiler-plugin setting.
@@ -71,7 +69,7 @@
                  and features will installed into the system directory.
 
                  This imports the standard Karaf features described at
-                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/4.0.6/standard-4.0.6-features.xml
+                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml
                  These features are installed in the karaf-maven-plugin configuration
             -->
             <groupId>org.apache.karaf.features</groupId>
@@ -83,7 +81,7 @@
          </dependency>
 
         <!--
-            https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/4.0.1/enterprise-4.0.1-features.xml
+            https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/${karaf.version}/enterprise-${karaf.version}-features.xml
         -->
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
@@ -94,7 +92,7 @@
             <!-- <scope>runtime</scope> -->
         </dependency>
 
-        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/4.0.6/spring-4.0.6-features.xml
+        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/${karaf.version}/spring-${karaf.version}-features.xml
              Needed for Camel feature dependency
         -->
         <dependency>
@@ -117,20 +115,20 @@
             <!-- <scope>runtime</scope> -->
         </dependency>
 
-        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/2.18.0/apache-camel-2.18.0-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/${karaf.version}/apache-camel-${karaf.version}-features.xml -->
         <dependency>
             <groupId>org.apache.camel.karaf</groupId>
             <artifactId>apache-camel</artifactId>
-            <version>${camel.version}</version>
+            <version>${camel-version}</version>
             <classifier>features</classifier>
             <type>xml</type>
             <!-- <scope>runtime</scope> -->
         </dependency>
-        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/2.18.0/camel-extra-2.18.0-features.xml -->
+        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/${karaf.version}/camel-extra-${karaf.version}-features.xml -->
         <!--<dependency>
             <groupId>org.apache-extras.camel-extra.karaf</groupId>
             <artifactId>camel-extra</artifactId>
-            <version>${camel.version}</version>
+            <version>${camel-version}</version>
             <classifier>features</classifier>
             <type>xml</type>
             <scope>runtime</scope>
@@ -168,6 +166,7 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.servicemix.features</groupId>
             <artifactId>servicemix-kie</artifactId>
@@ -181,7 +180,7 @@
         <dependency>
             <groupId>de.fhg.ids</groupId>
             <artifactId>ids</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0-SNAPSHOT</version>
             <type>xml</type>
             <classifier>features</classifier>
             <scope>runtime</scope>
@@ -212,38 +211,47 @@
                     </startupFeatures>
                     <!-- bootFeatures starts up these features when Karaf first boots up.
                          The feature names are obtained from the features.xml in the
-                         dependencies section
+                         dependencies section.
+
+                         CAUTION: The actual boot features are set by karaf-assembly/src/main/resources/etc/org.apache.karaf.features.cfg which overwrites anything defined herein.
+
+                         The purpose of the following list is to pull required bundles into the offline 
+                         repository so they are available at runtime and can be installed in Karaf. Either 
+                         as a boot feature or at a later time manually.
                      -->
                     <bootFeatures>
                         <!-- <feature>standard</feature> -->
                         <!-- The following features are the same like "standard".
                                 In a productive version we might want to exclude "management" and "ssh" -->
+                        
+                        <!-- Allow deployment of kar archives at runtime -->
                         <feature>kar</feature>
+
+                        <!-- Auto-wrap stuff into OSGi bundles (needed for picking up route XMLs and some non-OSGi libs) -->
                         <feature>wrap</feature>
+
+                        <feature>management</feature>
                         <feature>aries-blueprint</feature>
                         <feature>shell</feature>
                         <feature>shell-compat</feature>
                         <feature>feature</feature>
-                        <feature>jaas</feature>
-                        <feature>ssh</feature>
-                        <feature>management</feature>
                         <feature>bundle</feature>
                         <feature>config</feature>
                         <feature>deployer</feature>
-                        <feature>diagnostic</feature>
                         <feature>feature</feature>
-                        <feature>instance</feature>
                         <feature>kar</feature>
                         <feature>log</feature>
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
                         <feature>camel-core</feature>
-			                  <feature>camel-http</feature>
+			            <feature>camel-http</feature>
                         <feature>camel-restlet</feature>
                         <feature>camel-jetty</feature>
-                        <feature>camel-spring-dm</feature>
+                        <feature>camel-spring</feature>
                         <feature>camel-stream</feature>
+                        <!-- camel-jms is needed to avoid infamous warning -->
+                        <feature>camel-jms</feature>
                         <feature>camel-sjms</feature>
                         <!-- ActiveMQ with web console -->
                         <!--<feature>activemq-broker</feature>-->
@@ -255,13 +263,18 @@
                         <feature>camel-cxf</feature>
                         <feature>camel-hdfs2</feature>
                         <feature>camel-blueprint</feature>
+                        <feature>camel-http</feature>
                         <!--<feature>activemq-camel</feature> -->
                         <!--<feature>activemq-service</feature> -->
                         <feature>camel-xstream</feature>
                         <!-- <feature>spring</feature>
                         <feature>spring-tx</feature> -->
                         <feature>war</feature>
-						            <feature>ids</feature>
+						<feature>ids</feature>
+
+                        <!-- Not needed, but nice to have in repository -->
+                        <feature>camel-amqp</feature>
+                        <feature>camel-paho</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>
@@ -281,18 +294,18 @@
                                 <!-- Not all runtime library dependencies are listed in features.xml (bug?)
                                      We have to help offline Karaf by manually downloading the missing dependencies
                                  -->
-                                <artifactItem>
+                                <!--<artifactItem>
                                     <groupId>org.apache.karaf.diagnostic</groupId>
                                     <artifactId>org.apache.karaf.diagnostic.boot</artifactId>
                                     <version>${karaf.version}</version>
                                     <outputDirectory>target/assembly/system/org/apache/karaf/diagnostic/org.apache.karaf.diagnostic.boot/${karaf.version}</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
+                                </artifactItem>-->
+                                <!--<artifactItem>
                                     <groupId>org.apache.karaf.jaas</groupId>
                                     <artifactId>org.apache.karaf.jaas.boot</artifactId>
                                     <version>${karaf.version}</version>
                                     <outputDirectory>target/assembly/system/org/apache/karaf/jaas/org.apache.karaf.jaas.boot/${karaf.version}</outputDirectory>
-                                </artifactItem>
+                                </artifactItem> -->
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -323,60 +336,54 @@
             </plugin>
 
             <!-- create a docker image for core platform -->
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.18.1</version>
-                <executions>
-                    <execution>
-                       <id>build</id>
-                       <!-- maven lifecycle phase to bind to -->
-                       <phase>package</phase>
-                       <goals>
-                        <!-- goal to bind (docker build) -->
-                         <goal>build</goal>
-                       </goals>
-                    </execution>
-                    <execution>
-                       <id>clean</id>
-                       <phase>clean</phase>
-                       <goals>
-                         <goal>remove</goal>
-                       </goals>
-                    </execution>
-                    <execution>
-                       <id>deploy</id>
-                       <phase>deploy</phase>
-                       <goals>
-                         <goal>push</goal>
-                       </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <images>
-                        <image>
-                            <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:cebit</name>
-                            <build>
-                                <!-- Dockerfile to build -->
-                               <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
-                                <!-- Files to add to docker build context (can be added to docker image using ADD or COPY) -->
-                                <assembly>
-                                    <targetDir>/</targetDir>
-                                    <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-                                        <id>karaf-assembly</id>
-                                        <fileSets>
-                                            <fileSet>
-                                                <directory>${basedir}/target/assembly</directory>
-                                                <outputDirectory>./</outputDirectory>
-                                            </fileSet>
-                                        </fileSets>
-                                    </inline>
-                                </assembly>
-                            </build>
-                        </image>
-                    </images>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.13</version>
+				<configuration>
+					<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
+					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/root</targetPath>
+							<directory>${project.build.directory}/assembly</directory>
+						</resource>
+					</resources>
+				</configuration>
+				<executions>
+					<execution>
+						<id>build-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<!-- <execution>
+						<id>tag-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>ids/ttpsim:develop</image>
+							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</newName>
+						</configuration>
+					</execution> -->
+					<execution>
+						<id>push-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+
 
         </plugins>
 
@@ -394,7 +401,7 @@
         							<pluginExecutionFilter>
         								<groupId>org.apache.karaf.tooling</groupId>
         								<artifactId>karaf-maven-plugin</artifactId>
-        								<versionRange>[4.0.6,)</versionRange>
+        								<versionRange>[${karaf.version},)</versionRange>
         								<goals>
         									<goal>assembly</goal>
         								</goals>

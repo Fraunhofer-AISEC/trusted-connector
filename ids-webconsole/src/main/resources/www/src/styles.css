@@ -31,6 +31,10 @@ i.connect-icons {
   background: rgb(0, 150, 136);
 }
 
+.mdl-card__supporting-text {
+	width:100% !important;	/* This is a fix for older mdl versions. Newer have 100% set anyway */ 	
+}
+
 .card-good > .mdl-card__title,
 .card-good > .mdl-card__actions {
   background: rgb(115, 191, 0);
@@ -212,10 +216,12 @@ header.iot-connector-header.mdl-layout__header {
   align-items: center;
   color: #ffffff;
   font-weight: 500;
+  text-decoration: none;
 }
 .iot-connector-layout .iot-connector-navigation .mdl-navigation__link:hover {
   background-color: #209e91;
   color: #fff;
+  text-decoration: none;
 }
 .iot-connector-navigation .mdl-navigation__link .material-icons {
   font-size: 24px;
@@ -302,6 +308,10 @@ header.iot-connector-header.mdl-layout__header {
   background: rgb(28, 43, 54);
 }
 
+.card-dark > .mdl-card__menu > button {
+  color: #fff;
+}
+
 .axis {
   stroke-width: 1;
 }
@@ -354,4 +364,37 @@ header.iot-connector-header.mdl-layout__header {
 
 .activity-card .mdl-card__supporting-text {
   width: 98%;
+}
+
+.mdl-button--file {
+  input {
+    cursor: pointer;
+    height: 100%;
+    right: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 300px;
+    z-index: 4;
+  }
+}
+
+.mdl-textfield--file {
+  .mdl-textfield__input {
+    box-sizing: border-box;
+    width: calc(100% - 32px);
+  }
+  .mdl-button--file {
+    right: 0;
+  }
+}
+
+label.input-custom-file input[type=file] {
+  display: none;
+}
+
+table.table.table-striped thead tr th {
+	background-color: #cfd8dc;
+	color: #000000;
+	font-weight: normal;
 }

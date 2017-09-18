@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * IDS Core Platform API
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.aisec.ids.api.policy;
 
 import java.util.HashMap;
@@ -11,22 +30,31 @@ import java.util.Map;
  *
  */
 public class DecisionRequest {
-	private String from;
-	private String to;
-	private Map<String, Object> ctx = new HashMap<String, Object>();
+	/** Node sending the message */
+	private ServiceNode from;
 	
-	public DecisionRequest(String from, String to, Map<String, Object> ctx) {
+	/** Node about to receive the message */ 
+	private ServiceNode to;
+	
+	/** Properties of the message (e.g., labels) */
+	private Map<String, Object> msgCtx = new HashMap<>();
+	
+	/** Properties of the environment */
+	private Map<String, Object> envCtx = new HashMap<>();
+	
+	public DecisionRequest(ServiceNode from, ServiceNode to, Map<String, Object> msgCtx, Map<String, Object> envCtx) {
 		super();
 		this.from = from;
 		this.to = to;
-		this.ctx = ctx;
+		this.msgCtx = msgCtx;
+		this.envCtx = envCtx;
 	}
 	
 	/**
 	 * Returns the source, i.e. the origin of the communication for which a decision is requested.
 	 * @return
 	 */
-	public String getFrom() {
+	public ServiceNode getFrom() {
 		return from;
 	}
 	
@@ -34,7 +62,7 @@ public class DecisionRequest {
 	 * Sets the source, i.e. the origin of the communication for which a decision is requested.
 	 * @return
 	 */
-	public void setFrom(String from) {
+	public void setFrom(ServiceNode from) {
 		this.from = from;
 	}
 
@@ -42,7 +70,7 @@ public class DecisionRequest {
 	 * Returns the sink, i.e. the endpoint of the communication for which a decision is requested.
 	 * @return
 	 */
-	public String getTo() {
+	public ServiceNode getTo() {
 		return to;
 	}
 
@@ -50,20 +78,37 @@ public class DecisionRequest {
 	 * Sets the source, i.e. the origin of the communication for which a decision is requested.
 	 * @return
 	 */
-	public void setTo(String to) {
+	public void setTo(ServiceNode to) {
 		this.to = to;
 	}
 	
 	/**
-	 * A decision context may hold additional information which is passed at attributes to the PDP.
+	 * A decision context may hold additional information about the message/event.
+	 * It is passed as attributes to the PDP.
+	 * 
 	 * The context may include 
-	 * - a reference to previously taken decisions for the sake of caching
-	 * - a reason for the request
 	 * - timestamps
+	 * - route ids
 	 * - etc.
 	 * @return
 	 */
-	public Map<String, Object> getCtx() {
-		return ctx;
+	public Map<String, Object> getMessageCtx() {
+		return msgCtx;
+	}
+
+	/**
+	 * A decision context may hold additional information about the overall 
+	 * system environment of the PEP..
+	 * It is passed as attributes to the PDP.
+	 * 
+	 * The context may include 
+	 * - a reference to previously taken decisions for the sake of caching
+	 * - a reason for the request
+	 * - identifiers of available components
+	 * - etc.
+	 * @return
+	 */
+	public Map<String, Object> getEnvironmentCtx() {
+		return envCtx;
 	}
 }

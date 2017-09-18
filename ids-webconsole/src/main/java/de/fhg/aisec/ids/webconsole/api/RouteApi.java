@@ -1,32 +1,50 @@
+/*-
+ * ========================LICENSE_START=================================
+ * IDS Core Platform Webconsole
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.Route;
-import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.api.management.mbean.ManagedRouteMBean;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.GsonBuilder;
-
+import de.fhg.aisec.ids.api.router.RouteComponent;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteMetrics;
+import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.helper.CamelRouteToDot;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -54,67 +72,28 @@ public class RouteApi {
 	@GET
 	@Path("list")
 	@Produces("application/json")
-	public String list() {
-		List<HashMap<String, String>> result = new ArrayList<>();
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-
-		// Create response
-		for (CamelContext cCtx : camelO) {
-			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
-				// ---- HACK FOR DEMO: REMOVE SPECIFIC NAMES FROM ROUTE LIST
-				if ((!rd.getId().contains("Power") &&
-						!rd.getId().contains("IDS-Protocol") &&
-						!rd.getId().contains("Cloud")) || rd.getId().contains("LED")) {
-					continue;
-				}
-				// ---- END OF HACK
-				result.add(routeDefinitionToMap(cCtx, rd));
-			}
+	public List<RouteObject> list() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return new ArrayList<>();
 		}
-
-		return new GsonBuilder().create().toJson(result);
+		
+		return rm.get().getRoutes();
 	}
 
 	@GET
 	@Path("/get/{id}")
 	@Produces("application/json")
-	public String get(String id) {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		HashMap<String, String> result = new HashMap<>();
-		for (CamelContext cCtx : camelO) {
-			RouteDefinition def = cCtx.getRouteDefinition(id);
-			if (def != null) {
-				result = routeDefinitionToMap(cCtx, def);
-				break;
-			}
-
+	public Response get(String id) {		
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return Response.serverError().entity("RouteManager not present").build();
 		}
-		return new GsonBuilder().create().toJson(result);
-	}
-
-	private HashMap<String, String> routeDefinitionToMap(CamelContext cCtx, RouteDefinition rd) {
-		HashMap<String, String> route = new HashMap<>();
-		route.put("id", rd.getId());
-		route.put("description", (rd.getDescriptionText()!=null)?rd.getDescriptionText():"");
-		route.put("dot", routeToDot(rd)); // Visualize route in graphviz
-		route.put("shortName", rd.getShortName());
-		route.put("context", cCtx.getName());
-
-		route.put("uptime", String.valueOf(cCtx.getUptimeMillis()));
-		route.put("status", cCtx.getRouteStatus(rd.getId()).toString());
-
-		ManagedRouteMBean mr = cCtx.getManagedRoute(rd.getId(), ManagedRouteMBean.class);
-		if(mr != null) {
-			try {
-				route.put("messages", "" + mr.getExchangesTotal());
-			} catch(Exception ex) {
-				route.put("messages", "0");
-			}
-		} else {
-			route.put("messages", "0");
+		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
+		if (!oRoute.isPresent()) {
+			return Response.serverError().entity("Routenot present").build();
 		}
-
-		return route;
+		return Response.ok(oRoute.get()).build();
 	}
 
 	/**
@@ -123,51 +102,94 @@ public class RouteApi {
 	@GET
 	@Path("/startroute/{id}")
 	public String startRoute(@PathParam("id") String id) {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-
-		for (CamelContext cCtx : camelO) {
-			Route rt = cCtx.getRoute(id);
-			if(rt != null)
-			{
-				try {
-					cCtx.startRoute(id);
-				} catch(Exception e) {
-					return "{\"status\": \"bad\"}";
-				}
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				rm.get().startRoute(id);
+			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
+				return "{\"status:\": \"error\"}";
 			}
+			return "{\"status\": \"ok\"}";	
 		}
-
-		return "{\"status\": \"ok\"}";
-
+		return "{\"status:\": \"error\"}";
 	}
 
 	/**
-	 * Stop a route based on an id.
-	 *
-	 *
-	 *
-	 *
-	 *
+	 * Stop a route based on its id.
 	 */
 	@GET
 	@Path("/stoproute/{id}")
-	public String stopRoute(@PathParam("id") String id) {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
+	public boolean stopRoute(@PathParam("id") String id) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				rm.get().stopRoute(id);
+			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
+				return false;
+			}
+			return true;	
+		}
+		return false;
+	}
 
-		for (CamelContext cCtx : camelO) {
-			Route rt = cCtx.getRoute(id);
-			if(rt != null)
-			{
-				try {
-					cCtx.suspendRoute(id);//stopRoute(id);
-				} catch(Exception e) {
-					return "{\"status\": \"bad\"}";
-				}
+	/**
+	 * Get runtime metrics of a route
+	 */
+	@GET
+	@Path("/metrics/{id}")
+	public RouteMetrics getMetrics(@PathParam("id") String routeId) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				return rm.get().getRouteMetrics().get(routeId);
+			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
+				return null;
 			}
 		}
+		return null;
+	}
 
-		return "{\"status\": \"ok\"}";
+	/**
+	 * Get aggregated runtime metrics of all routes
+	 */
+	@GET
+	@Path("/metrics")
+	public RouteMetrics getMetrics() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (rm.isPresent()) {
+			try {
+				Map<String, RouteMetrics> currentMetrics = rm.get().getRouteMetrics();
+				return aggregateMetrics(currentMetrics.values());
+			} catch (Exception e) {
+				LOG.debug(e.getMessage(), e);
+			}
+		}
+		return null;
+	}
 
+	/**
+	 * Aggregates metrics of several rules
+	 * 
+	 * @param currentMetrics
+	 * @return
+	 */
+	private RouteMetrics aggregateMetrics(Collection<RouteMetrics> currentMetrics) {
+		RouteMetrics metrics = new RouteMetrics();
+		currentMetrics.parallelStream().forEach(m -> {
+			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
+			metrics.setFailed(metrics.getFailed() + m.getFailed());
+			metrics.setFailuresHandled(metrics.getFailuresHandled() + m.getFailuresHandled());
+			metrics.setInflight(metrics.getInflight() + m.getInflight());
+			metrics.setMaxProcessingTime(Math.max(metrics.getMaxProcessingTime(), m.getMaxProcessingTime()));
+			metrics.setMeanProcessingTime(metrics.getMeanProcessingTime() + m.getMeanProcessingTime());
+			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
+			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
+		});
+		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/currentMetrics.size());
+		return metrics;
 	}
 
 	/**
@@ -182,10 +204,12 @@ public class RouteApi {
 	@GET
 	@Path("components")
 	@Produces("application/json")
-	public String getComponents() {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		Map<String, List<String>> components = camelO.stream().collect(Collectors.toMap(c -> c.getName(), c -> c.getComponentNames()));
-		return new GsonBuilder().create().toJson(components);
+	public List<RouteComponent> getComponents() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return new ArrayList<>();
+		}
+		return rm.get().listComponents();
 	}
 
 	/**
@@ -200,28 +224,58 @@ public class RouteApi {
 	@GET
 	@Path("endpoints")
 	@Produces("application/json")
-	public String getEndpoints() {
-		List<CamelContext> camelO = WebConsoleComponent.getCamelContexts();
-		Map<String, Collection<String>> endpoints = camelO.stream().collect(Collectors.toMap(ctx -> ctx.getName(), ctx -> ctx.getEndpoints()
-				.stream()
-				.map(ep -> ep.getEndpointUri())
-				.collect(Collectors.toList())));
-		return new GsonBuilder().create().toJson(endpoints);
+	public Map<String, Collection<String>> getEndpoints() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return new HashMap<>();
+		}
+		return rm.get().getEndpoints();
 	}
 
+	/**
+	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
+	 */
+	@GET
+	@Path("/list_components")
+	public List<Map<String, String>> listComponents() {
+		List<Map<String, String>> componentNames = new ArrayList<>();
+		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
+		if (bCtx == null) {		
+			return componentNames;			
+		}
 
-	private String routeToDot(RouteDefinition rd) {
-		String result="";
 		try {
-			CamelRouteToDot viz = new CamelRouteToDot();
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, "UTF-8"));
-			viz.printSingleRoute(writer, rd);
-			writer.flush();
-			result = bos.toString("UTF-8");
-		} catch (IOException e) {
+			ServiceReference<?>[] services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null);
+			for (ServiceReference<?> sr : services) {
+				String bundle = sr.getBundle().getHeaders().get("Bundle-Name");
+				if (bundle==null || "".equals(bundle)) {
+					bundle = sr.getBundle().getSymbolicName();
+				}
+				String description = sr.getBundle().getHeaders().get("Bundle-Description");
+				if (description==null) {
+					description = "";
+				}
+				Map<String, String> component = new HashMap<>();
+				component.put("name", bundle);
+				component.put("description", description);
+				componentNames.add(component);
+			}
+		} catch (InvalidSyntaxException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return result;
+		return componentNames;			
+	}
+
+	/**
+	 * Retrieve list of currently installed endpoints (aka URIs to/from which routes exist)
+	 */
+	@GET
+	@Path("/list_endpoints")
+	public Map<String, String> listEndpoints() {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return new HashMap<>();
+		}
+		return rm.get().listEndpoints();
 	}
 }

@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,7 +35,6 @@
  */
 package de.fhg.camel.ids.client;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,7 +44,6 @@ import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
-import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -34,7 +51,6 @@ import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.ws.DefaultWebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +64,7 @@ public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
     private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
-    private final WebSocketListener listener = new DefaultWebSocketListener();
+    private final WsListener listener = new WsListener();
     private transient WebSocket websocket;
     
     private boolean ratSuccess = false;
@@ -61,8 +77,8 @@ public class WsEndpoint extends AhcEndpoint {
     private Integer attestation = 0;
     @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
     private Integer attestationMask = 0;    
-    @UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
-    private SSLContextParameters sslContextParameters;
+    //@UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
+    //private SSLContextParameters sslContextParameters;
     
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
@@ -132,23 +148,16 @@ public class WsEndpoint extends AhcEndpoint {
      */
     public void setSendMessageOnError(boolean sendMessageOnError) {
         this.sendMessageOnError = sendMessageOnError;
-    }    
-    
-    /**
-     * To configure security using SSLContextParameters
-     */
-    public void setSslContextParameters(SSLContextParameters sslContextParameters) {
-        this.sslContextParameters = sslContextParameters;
     }
 
     @Override
     protected AsyncHttpClient createClient(AsyncHttpClientConfig config) {
-    	AsyncHttpClient client;
-        if (config == null) {            		
-        	config = new DefaultAsyncHttpClientConfig.Builder().setEnabledProtocols(new String[] {"TLSv1.2", "TLSv1.1", "TLSv1"}).build();
+        AsyncHttpClient client;
+        if (config == null) {
+            config = new DefaultAsyncHttpClientConfig.Builder().build();
             client = new DefaultAsyncHttpClient(config);
         } else {
-            client = new DefaultAsyncHttpClient();
+            client = new DefaultAsyncHttpClient(config);
         }
         return client;
     }
@@ -168,7 +177,7 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
         
         // Execute IDS protocol immediately after connect
-        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask());
+        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(), this.getSslContextParameters());
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
         
         // wait for IDS protocol to finish 
@@ -176,15 +185,15 @@ public class WsEndpoint extends AhcEndpoint {
         try {
 	        idspListener.isFinished().await();
         } finally {
-        	ratSuccess = idspListener.ratSuccessful();
+        	ratSuccess = idspListener.isAttestationSuccessful();
         	idspListener.semaphore().unlock();
         }
         
         LOG.debug("remote attestation was successful: " + ratSuccess);
         
         // When IDS protocol has finished, hand over to normal web socket listener
-        websocket.removeWebSocketListener(idspListener);
         websocket.addWebSocketListener(listener);
+        websocket.removeWebSocketListener(idspListener);
     }
 
     @Override
@@ -259,5 +268,7 @@ public class WsEndpoint extends AhcEndpoint {
                 consumer.sendMessage(message);
             }
         }
+
     }
+
 }

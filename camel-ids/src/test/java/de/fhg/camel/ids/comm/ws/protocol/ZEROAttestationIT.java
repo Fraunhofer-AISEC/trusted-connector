@@ -1,26 +1,37 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.camel.ids.comm.ws.protocol;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 
-import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.junit.Ignore;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
@@ -29,7 +40,6 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
-import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 // BASIC test
@@ -53,10 +63,8 @@ public class ZEROAttestationIT {
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		fsm1 = new FSM();
-		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, aType, 0, new URI(""), "");
-		provider = new RemoteAttestationProviderHandler(fsm2, aType, 0, new URI(""), "");		
+        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(""), "");
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(""), "");
 	}
 	
     @Test
@@ -75,4 +83,9 @@ public class ZEROAttestationIT {
     	assertTrue(msg2.getType().equals(ConnectorMessage.Type.RAT_RESULT));
     	
     }  
+    
+    public static SSLContextParameters defineClientSSLContextParameters() {
+    	SSLContextParameters scp = new SSLContextParameters(); 
+        return scp;
+    }
 }

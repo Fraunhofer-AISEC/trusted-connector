@@ -6,12 +6,12 @@
 
 	<groupId>org.asynchttpclient</groupId>
 	<artifactId>org.asynchttpclient</artifactId>
-	<version>2.0.15</version>
+	<version>2.0.32</version>
   
   <parent>
     <groupId>de.fhg.ids</groupId>
     <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-SNAPSHOT</version>
   </parent>
 
 	<name>asynchttpclient</name>

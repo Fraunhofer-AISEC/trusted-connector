@@ -1,18 +1,39 @@
+/*-
+ * ========================LICENSE_START=================================
+ * rat-repository
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.attestation;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-
+import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +53,40 @@ public class RemoteAttestationServer {
 		this.path = path;
 		this.PORT = port;
 		try {
-			this.uri = new URI(String.format("http://%s:%d/%s", this.host, this.PORT, this.path));
+			this.uri = new URI(String.format("https://%s:%d/%s", this.host, this.PORT, this.path));
 			LOG.debug("Remote Attestation Repository starting on : " + this.uri.toURL().toString());
-		    server = new Server(this.PORT);
+		    server = new Server();
+			
+	        // HTTP Configuration
+	        HttpConfiguration http_config = new HttpConfiguration();
+	        http_config.setSecureScheme("https");
+	        http_config.setSecurePort(this.PORT);
+			
+	        // === jetty-https.xml ===
+	        // SSL Context Factory
+	        SslContextFactory sslContextFactory = new SslContextFactory();
+	        sslContextFactory.setKeyStorePath(Thread.currentThread().getContextClassLoader().getResource("repository-keystore.jks").toString());
+	        sslContextFactory.setKeyStorePassword("OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v");
+	        sslContextFactory.setKeyManagerPassword("OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v");
+	        sslContextFactory.setTrustStorePath(Thread.currentThread().getContextClassLoader().getResource("repository-truststore.jks").toString());
+	        sslContextFactory.setTrustStorePassword("OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v");
+	        sslContextFactory.setExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA",
+	                "SSL_DHE_RSA_WITH_DES_CBC_SHA", "SSL_DHE_DSS_WITH_DES_CBC_SHA",
+	                "SSL_RSA_EXPORT_WITH_RC4_40_MD5",
+	                "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
+	                "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
+	                "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+			
+	        // SSL HTTP Configuration
+	        HttpConfiguration https_config = new HttpConfiguration(http_config);
+	        https_config.addCustomizer(new SecureRequestCustomizer());	        
+	        
+	        // SSL Connector
+	        ServerConnector sslConnector = new ServerConnector(server,
+	            new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
+	            new HttpConnectionFactory(https_config));
+	        sslConnector.setPort(this.PORT);
+	        server.addConnector(sslConnector);
 		    ServletContextHandler handler = new ServletContextHandler();
 		    handler.setContextPath("");
 		    handler.addServlet(new ServletHolder(new ServletContainer(resourceConfig())), "/*");

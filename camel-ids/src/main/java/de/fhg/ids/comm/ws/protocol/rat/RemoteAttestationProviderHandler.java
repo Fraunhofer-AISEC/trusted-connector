@@ -1,15 +1,26 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.util.Arrays;
-import java.util.Random;
-
-import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,29 +31,23 @@ import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
-import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
-import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
+	private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private final FSM fsm;
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
 	private Thread thread;
-	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private UnixSocketThread client;
 	private UnixSocketResponseHandler handler;
 	private ConnectorMessage msg;
@@ -50,8 +55,8 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private URI ttpUri;
 	private boolean yourSuccess = false;
 	private boolean mySuccess = false;
-	private AttestationResponse resp;
 	private int attestationMask = 0;
+	private AttestationResponse resp;
 	
 	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
@@ -72,8 +77,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
-			LOG.debug("could not write to/read from " + socket);
-			e.printStackTrace();
+			LOG.warn("could not write to/read from " + socket, e);
 		}		
 	}
 	
@@ -86,7 +90,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public MessageLite enterRatRequest(Event e) {
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData();
 		// generate a new software nonce on the client and send it to server
-		this.myNonce = NonceGenerator.generate();
+		this.myNonce = NonceGenerator.generate(40);
 		// get starting session id
 		this.sessionID = e.getMessage().getId();
 		return ConnectorMessage
@@ -103,14 +107,14 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendTPM2Ddata(Event e) {
-		// temporarly safe attestation response in order to check it in the result phase
+		// temporarily save attestation response in order to check it in the result phase
 		this.resp = e.getMessage().getAttestationResponse();
 		// get nonce from server msg
-		if(thread.isAlive()) {
+		if(thread!=null && thread.isAlive()) {
 			if(++this.sessionID == e.getMessage().getId()) {
 				try {
 					ControllerToTpm msg;
-					if(this.aType.equals(IdsAttestationType.ADVANCED)) {
+					if (this.aType.equals(IdsAttestationType.ADVANCED)) {
 						// send msg to local unix socket
 						// construct protobuf message to send to local tpm2d via unix socket
 						msg = ControllerToTpm
@@ -120,8 +124,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 								.setCode(Code.INTERNAL_ATTESTATION_REQ)
 								.setPcrs(this.attestationMask)
 								.build();	
-					}
-					else {
+					} else {
 						// send msg to local unix socket
 						// construct protobuf message to send to local tpm2d via unix socket
 						msg = ControllerToTpm
@@ -159,12 +162,10 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 				} catch (InterruptedException ex) {
 					lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
 				}
-			}
-			else {
+			} else {
 				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			}
-		}
-		else {
+		} else {
 			lastError = "error: RAT client thread is not alive !";
 		}
 		LOG.debug(lastError);
@@ -174,7 +175,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public MessageLite sendResult(Event e) {
 		if(this.checkSignature(this.resp, this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, NonceGenerator.generate(), this.resp, ttpUri)) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri)) {
 					this.mySuccess = true;					
 				}
 				return ConnectorMessage
@@ -188,12 +189,10 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 								.setResult(this.mySuccess)
 								.build())
 						.build();
-			}
-			else {
+			} else {
 				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			}
-		}
-		else {
+		} else {
 			lastError = "error: signature check not ok";
 		}
 		LOG.debug(lastError);

@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/Observable';
 import { App } from '../apps/app';
 import { AppService } from '../apps/app.service';
 import { RouteService } from '../routes/route.service';
+import { PolicyService } from '../dataflowpolicies/policy.service';
 
 @Component({
   templateUrl: './dashboard.component.html',
@@ -15,42 +16,25 @@ import { RouteService } from '../routes/route.service';
 })
 export class DashboardComponent extends SubscriptionComponent implements OnInit {
   @Output() changeTitle = new EventEmitter();
-
+  private camelComponents: any;
   apps: App[];
+  cmlVersion: string;
+  policies: number = 0;
 
-  messages: number = 0;
-
-  isRouteActive: boolean = false;
-
-  private lastEvent: Date;
-
-  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService) {
-    super();
-    this.titleService.setTitle('Overview');
+  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService, private policyService: PolicyService) {
+  	 super();
+     this.titleService.setTitle('Overview');
 
     this.appService.getApps().subscribe(apps => {
       this.apps = apps;
     });
-
-    this.subscriptions.push(
-      Observable
-        .timer(0, 1000)
-        .flatMap(() => { return this.routeService.getRoutes(); })
-        .subscribe(routes => {
-          this.isRouteActive = false;
-
-          routes.forEach((route) => {
-            this.messages += +route.messages;
-
-            if(route.id == "OPC-UA: Read Engine Power (Trusted)" && route.status == "Started") {
-              this.isRouteActive = true;
-            }
-          });
-        }));
   }
 
   ngOnInit(): void {
     this.changeTitle.emit('Dashboard');
+    this.routeService.listComponents().subscribe(result => {this.camelComponents = result});
+    this.appService.getCmlVersion().subscribe(result => {this.cmlVersion = result});
+    this.policyService.getPolicies().subscribe(result => {this.policies = result.length});
   }
 
 }

@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -34,13 +53,15 @@ public class WebsocketComponentServlet extends WebSocketServlet {
 
     private final NodeSynchronization sync;
     private WebsocketConsumer consumer;
+    private String pathSpec;
 
     private ConcurrentMap<String, WebsocketConsumer> consumers = new ConcurrentHashMap<String, WebsocketConsumer>();
     private Map<String, WebSocketFactory> socketFactory;
 
-    public WebsocketComponentServlet(NodeSynchronization sync, Map<String, WebSocketFactory> socketFactory) {
+    public WebsocketComponentServlet(NodeSynchronization sync, String pathSpec, Map<String, WebSocketFactory> socketFactory) {
         this.sync = sync;
         this.socketFactory = socketFactory;
+        this.pathSpec = pathSpec;
     }
 
     public WebsocketConsumer getConsumer() {
@@ -70,7 +91,9 @@ public class WebsocketComponentServlet extends WebSocketServlet {
         }
 
         WebSocketFactory factory = socketFactory.get(protocolKey);
-        return factory.newInstance(request, protocolKey, sync, consumer);
+        return factory.newInstance(request, protocolKey, 
+                (consumer != null && consumer.getEndpoint() != null) ? WebsocketComponent.createPathSpec(consumer.getEndpoint().getResourceUri()) : null,
+                sync, consumer);
     }
 
     public Map<String, WebSocketFactory> getSocketFactory() {
@@ -90,7 +113,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
             	if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
                     WebSocketFactory factory = socketFactory.get(protocolKey);
                     resp.setAcceptedSubProtocol(protocolKey);
-                    return factory.newInstance(req, protocolKey, sync, consumer);
+                    return factory.newInstance(req, protocolKey, pathSpec, sync, consumer);
                 } else {
                 	log.error("WS subprotocols not supported: " + String.join(",", req.getSubProtocols()));
                 	return null;
@@ -100,4 +123,3 @@ public class WebsocketComponentServlet extends WebSocketServlet {
         });
     }
 }
-

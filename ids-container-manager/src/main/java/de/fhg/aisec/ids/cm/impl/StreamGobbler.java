@@ -1,10 +1,33 @@
+/*-
+ * ========================LICENSE_START=================================
+ * IDS Container Manager
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.aisec.ids.cm.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StreamGobbler extends Thread {
+	private static final Logger LOG = LoggerFactory.getLogger(StreamGobbler.class);
     InputStream is;
     OutputStream out;
     
@@ -14,18 +37,20 @@ public class StreamGobbler extends Thread {
         this.out = out;
     }
 
+    @Override
     public void run() {
         try {
             copy(is, out);
         } catch (IOException ioe) {
-            ioe.printStackTrace();  
+            LOG.error(ioe.getMessage(), ioe);  
         }
     }
     
     private static void copy(InputStream in, OutputStream out) throws IOException {
         while (true) {
           int c = in.read();
-          if (c == -1) break;
+          if (c == -1)
+        	  break;
           out.write((char)c);
         }
       }
@@ -35,7 +60,7 @@ public class StreamGobbler extends Thread {
 			out.flush();
 			out.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
     	
     }

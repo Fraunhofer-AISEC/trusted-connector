@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.comm.unixsocket;
 
 
@@ -18,10 +37,10 @@ import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
 
 public class UnixSocketThread implements Runnable {
-	private Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
 	private UnixSocketAddress address;
 	private UnixSocketChannel channel;
-	private String SOCKET = "SOCKET";
+	private String socket = "SOCKET";
 
 	// The selector we'll be monitoring
 	private Selector selector;
@@ -33,10 +52,10 @@ public class UnixSocketThread implements Runnable {
 	private byte[] readBufferLength = new byte[4];	
 	
 	// A list of PendingChange instances
-	private List<ChangeRequest> pendingChanges = new LinkedList<ChangeRequest>();
+	private List<ChangeRequest> pendingChanges = new LinkedList<>();
 
 	// Maps a UnixSocketChannel to a list of ByteBuffer instances
-	private Map<UnixSocketChannel, List<ChangeRequest>> pendingData = new HashMap<UnixSocketChannel, List<ChangeRequest>>();
+	private Map<UnixSocketChannel, List<ChangeRequest>> pendingData = new HashMap<>();
 	
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
 	private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponseHandler>());
@@ -48,7 +67,11 @@ public class UnixSocketThread implements Runnable {
 	
 	// constructor setting another socket address
 	public UnixSocketThread(String socket) throws IOException {
-		this.SOCKET = socket;
+		File s = new File(socket);
+		if (!s.exists()) {
+			throw new IOException ("tpmd socket does not exist: " + s.getAbsolutePath());
+		}
+		this.socket = socket;
 		this.selector = this.initSelector();
 	}
 
@@ -83,6 +106,7 @@ public class UnixSocketThread implements Runnable {
 	}	
 	
 	// thread run method
+	@Override
 	public void run() {
 		while (true) {
 			try {
@@ -106,6 +130,7 @@ public class UnixSocketThread implements Runnable {
 
 				// Wait for an event on one of the registered channels
 				this.selector.select();
+				LOG.debug("Reading from socket " + this.socket);
 
 				// Iterate over the set of keys for which events are available
 				Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
@@ -156,20 +181,20 @@ public class UnixSocketThread implements Runnable {
 		}
 		// buffer length comes alone
 		else if (numRead == 4) {
-			//System.out.println("Message header with length arrived!");
+			LOG.trace("Message header with length arrived!");
 			System.arraycopy(Arrays.copyOfRange(this.readBuffer.array(), 0, 4), 0, this.readBufferLength, 0, 4);
 		}
 		// buffer length + protobuf message
 		else {
 			if(this.bufferLengthIsAppended(this.readBuffer, numRead)) {
 				int length = new BigInteger(this.readBufferLength).intValue();
-				System.out.println("Message (with header) of length " + length + " arrived!");
+				LOG.trace("Message (with header) of length " + length + " arrived!");
 				// Handle the read data
 				this.handleResponse(channel, Arrays.copyOfRange(this.readBuffer.array(), 4, numRead));	
 			}
 			else {
 				int length = new BigInteger(this.readBufferLength).intValue();
-				System.out.println("Message (without header) of length " + length + " arrived!");
+				LOG.trace("Message (without header) of length " + length + " arrived!");
 				// Handle the read data
 				this.handleResponse(channel, this.readBuffer.array());				
 			}
@@ -190,13 +215,15 @@ public class UnixSocketThread implements Runnable {
 	// function to handle the data read from unix socket
 	private void handleResponse(UnixSocketChannel channel, byte[] data) throws IOException {
 		int length = new BigInteger(this.readBufferLength).intValue();
-		//System.out.println("handleResponse:" + length);
+
 		// Make a correctly sized copy of the data before handing it to the client
 		byte[] rspData = new byte[length];
 		System.arraycopy(data, 0, rspData, 0, length);
+		
 		// Look up the handler for this channel
 		UnixSocketResponseHandler handler = (UnixSocketResponseHandler) this.rspHandlers.get(channel);
-		System.out.println("unixsocketthread recieved: " + rspData.length);
+		LOG.trace("Unixsocketthread received: " + rspData.length);
+
 		// And pass the response to it
 		if (handler.handleResponse(rspData)) {
 			// The handler has seen enough, close the connection
@@ -206,7 +233,7 @@ public class UnixSocketThread implements Runnable {
 	}
 
 	private void write(SelectionKey key) throws IOException {
-		UnixSocketChannel channel = this.getChannel(key);
+		final UnixSocketChannel channel = this.getChannel(key);
 		synchronized (this.pendingData) {
 			List queue = (List) this.pendingData.get(channel);
 			// Write until there's not more data
@@ -227,14 +254,14 @@ public class UnixSocketThread implements Runnable {
 	}
 
 	private void finishConnection(SelectionKey key) throws IOException {
-		UnixSocketChannel channel = this.getChannel(key);
+		final UnixSocketChannel channel = this.getChannel(key);
 	
 		// Finish the connection. If the connection operation failed this will raise an IOException.
 		try {
 			channel.finishConnect();
 		} catch (IOException e) {
 			// Cancel the channel's registration with our selector
-			System.out.println(e);
+			LOG.debug(e.getMessage(), e);
 			key.cancel();
 			return;
 		}
@@ -245,16 +272,19 @@ public class UnixSocketThread implements Runnable {
 
 	private UnixSocketChannel initiateConnection() throws IOException, InterruptedException {
 		// open the socket address
-		File socketFile = new File(SOCKET);
+		File socketFile = new File(socket);
 		// Try to open socket file 10 times
 		int retries = 0;
         while (!socketFile.getAbsoluteFile().exists() && retries < 10) {
         	++retries;
         	TimeUnit.MILLISECONDS.sleep(500L);
-			socketFile = new File(SOCKET);
+			socketFile = new File(socket);
             if (retries < 10) {
             	LOG.debug(String.format("error: socket \"%s\" does not exist after %s retry.", socketFile.getAbsolutePath(), retries));
             }
+        }
+        if (!socketFile.getAbsoluteFile().exists()) {
+        	throw new IOException("Could not connect to Unix socket after 10 retries: " + socketFile.getAbsoluteFile());
         }
 		this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());	
 		this.channel = UnixSocketChannel.open(this.address);

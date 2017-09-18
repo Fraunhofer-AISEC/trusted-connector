@@ -15,21 +15,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.fhg.ids</groupId>
 	<artifactId>ids</artifactId>
-	<version>1.0.0</version>
 	<packaging>feature</packaging>
-  
-  <parent>
-    <groupId>de.fhg.ids</groupId>
-    <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
-  </parent>
 
-	<properties>
-        <karaf.version>4.0.6</karaf.version>
-        <camel.version>2.18.0</camel.version>
-    </properties>
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.1.0-SNAPSHOT</version>
+	</parent>
 
 	<name>IDS Karaf Feature</name>
 	<description>Karaf feature for Industrial Data Space Core Platform</description>
@@ -40,10 +33,11 @@
 				<plugin>
 					<groupId>org.apache.karaf.tooling</groupId>
 					<artifactId>karaf-maven-plugin</artifactId>
-					<version>4.0.6</version>
+					<version>${karaf.version}</version>
 					<extensions>true</extensions>
 				</plugin>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -60,7 +54,7 @@
 											karaf-maven-plugin
 										</artifactId>
 										<versionRange>
-											[4.0.6,)
+											[${karaf.version},)
 										</versionRange>
 										<goals>
 											<goal>
@@ -93,34 +87,34 @@
 					<logDependencyChanges>true</logDependencyChanges>
 					<overwriteChangedDependencies>true</overwriteChangedDependencies>
 				</configuration>
-                <executions>
-                    <execution>
-                        <id>verify</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
-                                <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
-                                <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
-                            </descriptors>
-                            <features>
-                                <feature>camel</feature>
-                                <feature>camel-ahc</feature>
-                            </features>
-                            <distribution>org.apache.karaf.features:framework</distribution>
-                            <javase>1.8</javase>
-                            <framework>
-                                <feature>framework</feature>
-                            </framework>
-                        </configuration>
-                    </execution>
-                </executions>
+				<executions>
+					<execution>
+						<id>verify</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
+								<descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
+								<descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
+							</descriptors>
+							<features>
+								<feature>camel</feature>
+								<feature>camel-ahc</feature>
+							</features>
+							<distribution>org.apache.karaf.features:framework</distribution>
+							<javase>1.8</javase>
+							<framework>
+								<feature>framework</feature>
+							</framework>
+						</configuration>
+					</execution>
+				</executions>
 
 			</plugin>
 		</plugins>
 	</build>
 
- </project>
+</project>

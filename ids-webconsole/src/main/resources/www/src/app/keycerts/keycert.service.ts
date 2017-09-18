@@ -7,6 +7,7 @@ import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 
 import { Certificate } from './certificate';
+import { Identity } from './identity.interface';
 
 import { environment } from '../../environments/environment';
 
@@ -15,51 +16,38 @@ export class CertificateService {
 
   constructor(private http: Http) { }
 
-  getIdentities() {
-    return this.http.get(environment.apiURL + '/certs/list_identities')
-               .map(response => {
-                 return response.json() as Certificate[];
-               });
+  getIdentities(): Observable<Certificate[]> {
+    return this.http.get(environment.apiURL + '/certs/list_identities').map(response => { return response.json() as Certificate[]; });
   }
 
-  getCertificates() {
-    return this.http.get(environment.apiURL + '/certs/list_certs')
-               .map(response => {
-                 return response.json() as Certificate[];
-               });
+  getCertificates(): Observable<Certificate[]> {
+    return this.http.get(environment.apiURL + '/certs/list_certs').map(response => { return response.json() as Certificate[]; });
   }
 
-  // TODO Create identity
-
-  deleteEntry(alias: string, file: string) {
-    let params = new URLSearchParams();
-    params.set('alias', alias);
-    params.set('file', file)
-
-    return this.http.get(environment.apiURL + '/certs/delete/', { search: params })
-               .map(response => {
-                  return response.json() as string;
-               });
+  createIdentity(identity: Identity): Observable<string> {
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    let body = JSON.stringify(identity);
+    return this.http.post(environment.apiURL + '/certs/create_identity', body, options ).map((res: Response) => {return res.json() as string});
+  }
+   
+  deleteCert(alias: string): Observable<string> {
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    return this.http.post(environment.apiURL + '/certs/delete_cert', alias, options ).map((res: Response) => {return res.json() as string});
   }
 
+  deleteIdentity(alias: string) {
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    return this.http.post(environment.apiURL + '/certs/delete_identity', alias, options ).map((res: Response) => {return res.json() as string});
+  }
+    
   uploadCert(inFile: File) {
-  /*  let formData:FormData = new FormData();
-        formData.append('degree_attachment', inFile, inFile.name);
-        let headers = new Headers();
-        headers.append('Accept', 'application/json');
-        let options = new RequestOptions({ headers: headers });
-        this.http.post(environment.apiURL + '/certs/upload', formData,options)
-            .map(response => {
-              return response.json() as string;
-            })
-            .subscribe(
-                data => console.log('success'),
-                error => console.log(error)
-            )*/
         return new Promise((resolve, reject) => {
            var formData: any = new FormData();
            var xhr = new XMLHttpRequest();
-           formData.append("uploads", inFile, inFile.name);
+           formData.append("upfile", inFile, inFile.name);
 
            xhr.onreadystatechange = function () {
                if (xhr.readyState == 4) {
@@ -70,10 +58,8 @@ export class CertificateService {
                    }
                }
            }
-           xhr.open("POST", environment.apiURL + '/certs/upload', true);
+           xhr.open("POST", environment.apiURL + '/certs/install_trusted_cert', true);
            xhr.send(formData);
        });
   }
-
-
 }

@@ -1,26 +1,41 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.camel.ids.comm.ws.protocol;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 
-import org.apache.camel.test.AvailablePortFinder;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
-import org.junit.AfterClass;
+import org.apache.camel.util.jsse.ClientAuthentication;
+import org.apache.camel.util.jsse.KeyManagersParameters;
+import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.util.jsse.SSLContextServerParameters;
+import org.apache.camel.util.jsse.TrustManagersParameters;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.junit.Ignore;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
@@ -52,20 +67,13 @@ public class BASICAttestationIT {
 	private static ConnectorMessage msg6;
 	private static ConnectorMessage msg7;
 	private static ConnectorMessage msg8;
-	private static URI ttpUri;
-	private static Server server;
-	private static FSM fsm1;
-	private static FSM fsm2;
-	private static final String socket1 = "socket/sim1/control.sock";
-	private static final String socket2 = "socket/sim2/control.sock";
-	private static String ratRepoUri = "http://127.0.0.1:31337/configurations/check";
+	private static String PWD = "password";
+	private static String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		fsm1 = new FSM();
-		fsm2 = new FSM();
-        consumer = new RemoteAttestationConsumerHandler(fsm1, aType, 0, new URI(ratRepoUri), socket1);
-		provider = new RemoteAttestationProviderHandler(fsm2, aType, 0, new URI(ratRepoUri), socket2);		
+        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/control.sock");
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/control.sock");
 	}
 	
     @Test
@@ -83,7 +91,6 @@ public class BASICAttestationIT {
     	LOG.debug(msg2.toString());
     	assertTrue(msg2.getId() == id + 2);
     	assertTrue(msg2.getType().equals(ConnectorMessage.Type.RAT_REQUEST));
-    	
     }    
     
     @Test
@@ -95,7 +102,6 @@ public class BASICAttestationIT {
     	assertTrue(msg3.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg3.getAttestationResponse().getHalg().equals(hAlg.name()));
     	assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 11);
-    	
     }
 
     @Test
@@ -107,7 +113,6 @@ public class BASICAttestationIT {
     	assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
     	assertTrue(msg4.getAttestationResponse().getHalg().equals(hAlg.name()));
     	assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 11);
-    	
     }
 
     @Test
@@ -116,9 +121,8 @@ public class BASICAttestationIT {
     	LOG.debug(msg5.toString());
     	assertTrue(msg5.getId() == id + 5);
     	assertTrue(msg5.getType().equals(ConnectorMessage.Type.RAT_RESULT));
-    	assertTrue(msg5.getAttestationResult().getResult() == true);
+    	assertTrue(msg5.getAttestationResult().getResult());
     	assertTrue(msg5.getAttestationResult().getAtype().equals(aType));
-    	
     }
 
     @Test
@@ -127,7 +131,7 @@ public class BASICAttestationIT {
     	LOG.debug(msg6.toString());
     	assertTrue(msg6.getId() == id + 6);
     	assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_RESULT));
-    	assertTrue(msg6.getAttestationResult().getResult() == true);
+    	assertTrue(msg6.getAttestationResult().getResult());
     	assertTrue(msg6.getAttestationResult().getAtype().equals(aType));
     }
 
@@ -147,5 +151,40 @@ public class BASICAttestationIT {
     	assertTrue(msg8.getId() == id + 8);
     	assertTrue(msg8.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     	assertTrue(msg8.getAttestationLeave().getAtype().equals(aType));
+    }
+    
+    public static SSLContextParameters defineClientSSLContextParameters() {
+		String PWD = "password";
+		String KEYSTORE = "jsse/client-keystore.jks";
+		String TRUSTSTORE = "jsse/client-truststore.jks";
+		
+        KeyStoreParameters ksp = new KeyStoreParameters();
+        ksp.setResource(Thread.currentThread().getContextClassLoader().getResource(KEYSTORE).toString());
+        ksp.setPassword(PWD);
+
+        KeyManagersParameters kmp = new KeyManagersParameters();
+        kmp.setKeyPassword(PWD);
+        kmp.setKeyStore(ksp);
+
+        KeyStoreParameters tsp = new KeyStoreParameters();
+        tsp.setResource(Thread.currentThread().getContextClassLoader().getResource(TRUSTSTORE).toString());
+        tsp.setPassword(PWD);
+        LOG.debug("------------------------------------------------------------------------------");
+        LOG.debug(tsp.toString());
+        LOG.debug("------------------------------------------------------------------------------");
+        
+        TrustManagersParameters tmp = new TrustManagersParameters();
+        tmp.setKeyStore(tsp);
+
+        SSLContextServerParameters scsp = new SSLContextServerParameters();
+        //scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
+        scsp.setClientAuthentication(ClientAuthentication.NONE.name());
+
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+        sslContextParameters.setKeyManagers(kmp);
+        sslContextParameters.setTrustManagers(tmp);
+        sslContextParameters.setServerParameters(scsp);
+        
+        return sslContextParameters;
     }
 }

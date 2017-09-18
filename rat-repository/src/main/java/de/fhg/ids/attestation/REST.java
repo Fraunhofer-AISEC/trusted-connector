@@ -1,15 +1,29 @@
+/*-
+ * ========================LICENSE_START=================================
+ * rat-repository
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.attestation;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,12 +38,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 @Path("/")
 public class REST {
@@ -64,7 +77,7 @@ public class REST {
 				if(numPcrValues > 0) {
 					switch(type) {
 						case BASIC:
-							if(numPcrValues == 10) {
+							if(numPcrValues == 11) {
 								return this.checkMessage(msg);
 							}
 							else {
@@ -133,7 +146,7 @@ public class REST {
 	public Response addConfiguration(Configuration config) {
 		this.setCORSHeader(response, corsEnabled);
 		try {
-			Configuration[] existing = this.db.getConfigurationsIdBy(config.getValues());
+			Long[] existing = this.db.getConfigurationId(config.getValues());
 			if(existing.length == 0) {
 				long key = this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
 				return Response.ok(key).build();
@@ -189,7 +202,6 @@ public class REST {
 		}
 	}
 	
-	
 	private ConnectorMessage checkMessage(ConnectorMessage msg) throws SQLException {
 		return ConnectorMessage
 				.newBuilder()
@@ -206,7 +218,6 @@ public class REST {
 		        		.build()
 						)
 				.build();
-
 	}
 	
 	private ConnectorMessage sendError(String error, long id) {
@@ -223,44 +234,4 @@ public class REST {
 						)
 				.build();
 	}
-	
-
-	/* SIMPLE FILE TRANSFER FROM HERE ON
-
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public String index() {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/index.html");
-	}
-
-	@GET
-	@Path("admin")
-	@Produces(MediaType.TEXT_HTML)
-	public String admin() {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/admin.html");
-	}	
-
-	@GET
-	@Path("/html/{filename}")
-	@Produces(MediaType.TEXT_HTML)
-	public String htmlFile(@PathParam("filename") String filename) {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/html/" + filename);
-	}
-	
-	@GET
-	@Path("/js/{filename}")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String jsFile(@PathParam("filename") String filename) {
-		response.setCharacterEncoding("utf-8");
-		return this.getFile("webapp/js/" + filename);
-	}
-	
-	private String getFile(String file) {
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		return new BufferedReader(new InputStreamReader(loader.getResourceAsStream(file))).lines().collect(Collectors.joining("\n"));
-	}
-	*/
 }

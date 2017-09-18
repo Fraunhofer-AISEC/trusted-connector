@@ -5,7 +5,7 @@ services:
   ids-tpm2dsim:
     image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim
     volumes:
-      - ./camel-ids/socket/:/data/cml/communication/tpm2d/
+      - ./camel-ids/socket/:/data/cml/tpm2d/communication/
     command: /tpm2d/cml-tpm2d
 
   # Image for TPM trusted third party (RAT repository)

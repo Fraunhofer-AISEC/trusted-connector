@@ -1,8 +1,28 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.comm.ws.protocol.fsm;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
@@ -10,7 +30,7 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 /**
  * Implementation of a finite state machine (FSM).
  * 
- * @author Julian Schuette (julian@schuette.io)
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
  */
 public class FSM {
@@ -22,9 +42,9 @@ public class FSM {
 	private String initialState = null;
 
 	public FSM() {
-		this.states = new HashMap<String, State>();
-		this.successFullChangeListeners = new HashSet<ChangeListener>();
-		this.failedChangeListeners = new HashSet<ChangeListener>();
+		this.states = new HashMap<>();
+		this.successFullChangeListeners = new HashSet<>();
+		this.failedChangeListeners = new HashSet<>();
 	}
 
 	public String getState() {
@@ -146,17 +166,17 @@ public class FSM {
 			}
 		}
 	}
-	
+	 
 	public String toDot() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("digraph finite_state_machine {\n");
 		sb.append("	rankdir=LR;\n");
 		sb.append("	node [shape = ellipse];\n");
-		for (String from : states.keySet()) {
-			for (Object t : states.get(from).transitions.keySet()) {
-				String to = states.get(from).transitions.get(t).endState;
-				Object eventKey = states.get(from).transitions.get(t).evtName;
-				sb.append("    " + from.replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
+		for (Entry<String, State> from : states.entrySet()) {
+			for (Object t : from.getValue().transitions.keySet()) {
+				String to = from.getValue().transitions.get(t).endState;
+				Object eventKey = from.getValue().transitions.get(t).evtName;
+				sb.append("    " + from.getKey().replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
 			}
 		}
 		sb.append("			}");

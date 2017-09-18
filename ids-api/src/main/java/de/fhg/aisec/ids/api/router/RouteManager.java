@@ -1,6 +1,27 @@
+/*-
+ * ========================LICENSE_START=================================
+ * IDS Core Platform API
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.aisec.ids.api.router;
 
-import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Interface of internal routing manager inside the Core Platform.
@@ -13,6 +34,44 @@ import java.nio.ByteBuffer;
  */
 public interface RouteManager {
 
+	/**
+	 * Returns a list of currently installed routes.
+	 * 
+	 * @return
+	 */
+	public List<RouteObject> getRoutes();
+	
+	/**
+	 * Starts a route.
+	 * 
+	 * @param routeId
+	 */
+	public void startRoute(String routeId) throws RouteException;
+	
+	/**
+	 * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver pending exchanges.
+	 * 
+	 * @param routeId
+	 * @throws Exception 
+	 */
+	public void stopRoute(String routeId) throws RouteException;
+	
+	/**
+	 * List all supported components, i.e. supported endpoint protocols.
+	 * 
+	 * @return
+	 */
+	public List<RouteComponent> listComponents();
+	
+	/**
+	 * List all route endpoints, i.e. all URLs to which routes exist.
+	 * 
+	 * @return
+	 */
+	public Map<String, Collection<String>> getEndpoints();
+	
+	public Map<String,String> listEndpoints();
+	
 	/**
 	 * Adds a route from one endpoint to another. 
 	 * 
@@ -33,11 +92,9 @@ public interface RouteManager {
 	 * 
 	 * Endpoint declarations must be supported by the underlying implementation.
 	 * 
-	 * @param from
-	 * @param to
+	 * @param routeId
 	 */
-	void delRoute(String from, String to);
-
+	void delRoute(String routeId);
 
 	/**
 	 * Returns the current route configuration in its original representation of the implementing engine.
@@ -48,26 +105,14 @@ public interface RouteManager {
 	 * 
 	 * @return
 	 */
-	String getRouteConfigAsString();
+	String getRouteAsString(String routeId);
 	
 	void loadRoutes(String routeConfig);
-
+	
 	/**
-	 * Creates a new endpoint at which messages are returned <i>out of</i> the routing engine.
+	 * Returns aggregated runtime metrics of all installed routes.
 	 * 
-	 * Note the possible confusion: Producers retrieve messages from the outside and feed them into the engine.
-	 * Consumers receive messages at the end of a route and forward them to some external endpoint.
-	 * 
-	 * This terminology might be confusing, but it is in line with Apache Camel.
-	 * 
-	 * @param ep
-	 * @return true if a new endpoint has been successfully registered, false else (e.g., if that endpoint already exists).
+	 * @return map<k,v> where k is a string indicating the route id.
 	 */
-	boolean createConsumingEndpoint(String ep);
-
-	void removeConsumingEndpoint(String ep);
-
-
-	public void provide(String ep, ByteBuffer msg);
-
+	Map<String,RouteMetrics> getRouteMetrics() ;
 }

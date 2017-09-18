@@ -33,4 +33,12 @@ export class AppService {
                   return response.json() as string;
                  });
   }
+
+  getCmlVersion() {
+    return this.http.get(environment.apiURL + '/apps/cml_version')
+               .map(response => {
+                 return response.json() as string;
+               });
+  }
+
 }

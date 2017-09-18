@@ -1,16 +1,39 @@
+/*-
+ * ========================LICENSE_START=================================
+ * Camel IDS Component
+ * %%
+ * Copyright (C) 2017 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.comm.ws.protocol.rat;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
@@ -21,13 +44,11 @@ import com.google.protobuf.MessageLite;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
-import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationHandler {
@@ -35,25 +56,11 @@ public class RemoteAttestationHandler {
 	protected static Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
 	protected static String lastError = "";
 	// used to count messages between ids connector and attestation repository
-	protected static long privateID = new java.util.Random().nextLong();
-	
-	/*
-	// fetch a public key from a uri and return the key as a byte array
-	protected static byte[] fetchPublicKey(String uri) throws Exception {
-		URL cert = new URL(uri);
-		BufferedReader in = new BufferedReader(new InputStreamReader(cert.openStream()));
-		String base64 = "";
-		String inputLine = "";
-        while ((inputLine = in.readLine()) != null) {
-        	base64 += inputLine;
-        }
-        in.close();
-        return javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
-	}
-	*/
-	
-	public static boolean checkRepository(IdsAttestationType basic, String nonce, AttestationResponse response, URI ttpUri) {
+	protected static long privateID = new java.util.Random().nextLong();  
+
+	public static boolean checkRepository(IdsAttestationType basic, AttestationResponse response, URI ttpUri) {
 		int numPcrValues = response.getPcrValuesCount();
+		String nonce = response.getQualifyingData();
 		Pcr[] values = response.getPcrValuesList().toArray(new Pcr[numPcrValues]);
 		try {
 			ConnectorMessage msgRepo = RemoteAttestationHandler.readRepositoryResponse(
@@ -69,8 +76,14 @@ public class RemoteAttestationHandler {
 			        		.addAllPcrValues(Arrays.asList(values))
 			        		.build()
 							)
-					.build()
-					, ttpUri.toURL());
+					.build(), 
+					ttpUri.toURL());
+			
+			LOG.debug("//Q///////////////////////////////////////////////////////////////////////////");
+			LOG.debug(response.toString());
+			LOG.debug("//A///////////////////////////////////////////////////////////////////////////");
+			LOG.debug(msgRepo.toString());
+			LOG.debug("/////////////////////////////////////////////////////////////////////////////");
 			
 			return (
 					msgRepo.getAttestationRepositoryResponse().getResult() 
@@ -79,11 +92,11 @@ public class RemoteAttestationHandler {
 					&& (msgRepo.getAttestationRepositoryResponse().getQualifyingData().equals(nonce))
 					&& true); // TODO : signature check of repo answer ... !
 			
-		} catch (MalformedURLException e1) {
-			lastError = "MalformedURLException:" + e1.getMessage();
-			return false;
-		} catch (IOException e2) {
-			lastError = "IOException:" + e2.getMessage();
+		} catch (Exception ex) {
+			lastError = "Exception:" + ex.getMessage();
+			LOG.debug("//Exception///////////////////////////////////////////////////////////////////////////");
+			LOG.debug(lastError);
+			LOG.debug("//Exception///////////////////////////////////////////////////////////////////////////");			
 			return false;
 		}
 	}
@@ -127,20 +140,17 @@ public class RemoteAttestationHandler {
 					}
 				} catch (Exception ex) {
 					lastError = "error: could not create a TPMT_SIGNATURE from bytes \""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\":" + ex.getMessage();
-					LOG.debug(lastError);
-					ex.printStackTrace();
+					LOG.warn(lastError, ex);
 					return false;
 				}
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
 				lastError = "error: could not convert from TPM2B_PUBLIC (\""+tpm2bPublickey+"\") to a PublicKey :" + ex.getMessage();
-				LOG.debug(lastError);
-				ex.printStackTrace();
+				LOG.warn(lastError, ex);
 				return false;
 			}
 		} catch (Exception ex) {
 			lastError = "error: could not create a TPM2B_PUBLIC (\""+ByteArrayUtil.toPrintableHexString(byteSignature)+"\") :" + ex.getMessage();
-			LOG.debug(lastError);
-			ex.printStackTrace();
+			LOG.warn(lastError, ex);
 			return false;
 		}
 	}
@@ -162,13 +172,37 @@ public class RemoteAttestationHandler {
 				.build();
 	}
 	
-	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr) throws IOException {
-        HttpURLConnection urlc = (HttpURLConnection) adr.openConnection();
+	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr) throws IOException, NoSuchAlgorithmException, GeneralSecurityException, KeyManagementException {
+        
+		// Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+		
+		HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+//        sslContext.init(params.getKeyManagers().createKeyManagers(), trustAllCerts, new SecureRandom());
+        urlc.setSSLSocketFactory(sslContext.getSocketFactory());
+		urlc.setUseCaches(false);
         urlc.setDoInput(true);
         urlc.setDoOutput(true);
         urlc.setRequestMethod("POST");
         urlc.setRequestProperty("Accept", "application/x-protobuf");
         urlc.setRequestProperty("Content-Type", "application/x-protobuf");
+        urlc.setRequestProperty("User-Agent","IDS-Connector");
+        urlc.setRequestProperty("Content-length",String.valueOf(msg.toByteArray().length));
         msg.writeTo(urlc.getOutputStream());
         return ConnectorMessage.newBuilder().mergeFrom(urlc.getInputStream()).build();
 	}

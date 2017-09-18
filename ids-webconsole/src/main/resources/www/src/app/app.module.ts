@@ -14,21 +14,27 @@ import { MetricCardComponent }  from './dashboard/metric-card.component';
 import { AppsComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
 
-import { DataflowpoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
+import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
+import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { RouteCardComponent } from './routes/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
+import { SettingsService } from './ids/settings.service';
 
 
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
+import { CertUploadComponent } from './keycerts/certUpload.component';
+import { NewIdentityComponent } from './keycerts/identitynew.component';
+
 
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
+import { PolicyService } from './dataflowpolicies/policy.service';
 
 import { ValuesPipe } from './values.pipe';
 
@@ -39,6 +45,14 @@ import {PrettifyPipe} from './prettify-json.pipe';
 import {ConfirmService} from "./confirm/confirm.service";
 import {ConfirmComponent} from "./confirm/confirm.component";
 
+import { ModalModule } from 'angular2-modal';
+import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
+
+import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
+import { ConnectionService } from './inOutConnections/inOutConnections.service';
+
+import { MDLTextFieldDirective } from './mdl-textfield-directive';
+
 import 'material-design-lite';
 
 @NgModule({
@@ -46,7 +60,9 @@ import 'material-design-lite';
     BrowserModule,
     routing,
     HttpModule,
-    ReactiveFormsModule  ],
+    ReactiveFormsModule,
+    ModalModule.forRoot(),
+    BootstrapModalModule  ],
   declarations: [
     AppComponent,
     DashboardComponent,
@@ -55,26 +71,36 @@ import 'material-design-lite';
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
-    DataflowpoliciesComponent,
+    DataflowPoliciesComponent,
+    NewDataflowPolicyComponent,
     RoutesComponent,
     RouteeditorComponent,
     RouteCardComponent,
     IdsComponent,
     KeycertsComponent,
     CertificateCardComponent,
+    CertUploadComponent,
+    NewIdentityComponent,
     ConfirmComponent,
     ValuesPipe,
-    PrettifyPipe],
+    PrettifyPipe,
+    ConnectionReportComponent,
+    MDLTextFieldDirective],
   providers: [
     AppService,
     RouteService,
-    IdsComponent,
+    PolicyService,
+    SettingsService,
     CertificateService,
     SensorService,
     ConfirmService,
+    IdsComponent,
+    ConnectionService,
     Title
   ],
   bootstrap: [
-    AppComponent ]
+    AppComponent ],
+    entryComponents: [
+      ]
 })
 export class AppModule { }

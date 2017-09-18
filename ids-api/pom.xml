@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
 	license agreements. See the NOTICE file distributed with this work for additional 
@@ -17,24 +18,14 @@
 	<groupId>de.fhg.ids</groupId>
 	<artifactId>api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
   
   <parent>
     <groupId>de.fhg.ids</groupId>
     <artifactId>core-platform</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-SNAPSHOT</version>
   </parent>
 
 	<name>IDS Core Platform API</name>
-
-	<properties>
-		<camel-version>2.18.0</camel-version>
-		<jetty-version>9.2.15.v20160210</jetty-version>
-		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.15</ahc-version>
-		<protobuf-version>3.0.0</protobuf-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
-	</properties>
 
 	<dependencies>
 		<!-- Protobuf -->
@@ -152,7 +143,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<goals>
