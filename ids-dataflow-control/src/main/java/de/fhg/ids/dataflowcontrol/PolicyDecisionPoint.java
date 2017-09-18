@@ -84,7 +84,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		sb.append("regex(EP, \""+target.getEndpoint()+"\", _D), _D, ");
 		msgLabels.keySet()
 			.stream()
-			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null)
+			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
 			.forEach(k -> {
 					sb.append("receives_label(T, "+msgLabels.get(k).toString()+"), ");
 			});
