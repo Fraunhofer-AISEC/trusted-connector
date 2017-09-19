@@ -18,6 +18,7 @@ services:
   ids-core:
     image: registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop
     tty: true
+    stdin_open: true
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
