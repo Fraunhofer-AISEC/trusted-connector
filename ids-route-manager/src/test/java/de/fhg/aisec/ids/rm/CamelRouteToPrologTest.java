@@ -8,6 +8,7 @@ import org.apache.camel.model.language.ConstantExpression;
 import org.junit.Test;
 
 import de.fhg.aisec.ids.rm.util.CamelRouteToProlog;
+import de.fhg.aisec.ids.rm.util.PrologPrinter;
 
 public class CamelRouteToPrologTest {
 
@@ -23,12 +24,18 @@ public class CamelRouteToPrologTest {
 				.routeId("testId")
 				.setProperty("endpointUri", new ConstantExpression("ids-client://0.0.0.0"))
 	           .choice()
-	           .when(header("foo").isEqualTo("bar"))
-	               .to("direct:b")
-	           .when(header("foo").isEqualTo("cheese"))
-	               .to("direct:c")
-	           .otherwise()
-	               .to("direct:d")
+		           .when(header("mycond").isEqualTo("A"))
+		               .to("direct:A1")
+		               .to("direct:A2")
+		               .to("direct:A3")
+		           .when(header("mycond").isEqualTo("B"))
+		               .to("direct:B1")
+		               .to("direct:B2")
+		               .to("direct:B3")
+		           .otherwise()
+		               .to("direct:C1")
+		               .to("direct:C2")
+		               .to("direct:C3")
 	               .end()
 				.log("Endpoint ${property.endpointUri} received body: ${body}, headers: ${headers}");
 				
@@ -40,7 +47,8 @@ public class CamelRouteToPrologTest {
 		RouteDefinition mockRoute = rb.getRouteCollection().getRoutes().get(0);
 		
 		PrintWriter writer = new PrintWriter(System.out);
-		prol.printSingleRoute(writer, mockRoute);
+		//prol.printSingleRoute(writer, mockRoute);
+		new PrologPrinter().printSingleRoute(writer, mockRoute);
 		writer.flush();
 	}
 }

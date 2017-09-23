@@ -63,17 +63,21 @@ public class PrologNode {
 		}
 		if (node instanceof FromDefinition) {
 			FromDefinition fromType = (FromDefinition) node;
+			this.nodeType = "from";
 			this.predicate = "has_url";
 			this.value = fromType.getEndpointUri();
 		} else if (node instanceof ToDefinition) {
 			ToDefinition toType = (ToDefinition) node;
 			this.value = toType.getEndpointUri();
+			this.nodeType = "to";
 		} else if (node instanceof FilterDefinition) {
-			this.nodeType = "Message Filter";
+			this.nodeType = "message_filter";
 		} else if (node instanceof WhenDefinition) {
+			this.nodeType = "when";
 			this.value = ((WhenDefinition) node).getExpression().getExpression();
 		} else if (node instanceof OtherwiseDefinition) {
-			this.value = "http://camel.apache.org/content-based-router.html";
+			this.nodeType = "otherwise";
+			this.value = "";
 		} else if (node instanceof ChoiceDefinition) {
 			ChoiceDefinition choice = (ChoiceDefinition) node;
 			List<ProcessorDefinition<?>> outputs = new ArrayList<ProcessorDefinition<?>>(choice.getWhenClauses());
@@ -81,15 +85,18 @@ public class PrologNode {
 				outputs.add(choice.getOtherwise());
 			}
 			this.outputs = outputs;
+			this.nodeType = "choice";
 		} else if (node instanceof RecipientListDefinition) {
 			this.predicate = "recipient_list";
 			this.value = ((RecipientListDefinition) node).getLabel();
+			this.nodeType = "recipients";
 		} else if (node instanceof RoutingSlipDefinition) {
 			this.value = ((RoutingSlipDefinition) node).getLabel();
+			this.nodeType = "slip";
 		} else if (node instanceof SplitDefinition) {
-			this.nodeType = "Splitter";
+			this.nodeType = "splitter";
 		} else if (node instanceof AggregateDefinition) {
-			this.nodeType = "Aggregator";
+			this.nodeType = "aggregator";
 		} else if (node instanceof ResequenceDefinition) {
 			this.predicate = "resequence";
 			this.value = ((ResequenceDefinition) node).getLabel();
