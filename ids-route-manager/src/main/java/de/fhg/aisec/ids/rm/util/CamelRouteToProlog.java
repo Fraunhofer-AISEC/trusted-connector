@@ -20,18 +20,15 @@
 package de.fhg.aisec.ids.rm.util;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.FromDefinition;
 import org.apache.camel.model.MulticastDefinition;
 import org.apache.camel.model.OtherwiseDefinition;
-import org.apache.camel.model.PipelineDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.ToDefinition;

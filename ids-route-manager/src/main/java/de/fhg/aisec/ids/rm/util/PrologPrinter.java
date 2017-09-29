@@ -1,40 +1,49 @@
 package de.fhg.aisec.ids.rm.util;
 
-import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.FromDefinition;
+import org.apache.camel.model.OptionalIdentifiedDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.model.WhenDefinition;
 
 public class PrologPrinter {
 	
-	public void printSingleRoute(PrintWriter writer, RouteDefinition mockRoute) {
-		print(writer, mockRoute.getInputs(), mockRoute);
+	/**
+	 * Prints a single Camel route in Prolog representation.
+	 * 
+	 * @param writer
+	 * @param route
+	 * @throws IOException 
+	 */
+	public void printSingleRoute(Writer writer, RouteDefinition route) throws IOException {
+		// Print route entry points
+		printInputs(writer, route, route.getInputs());
 	}
 
-	private void print(PrintWriter writer, List<FromDefinition> inputs, RouteDefinition mockRoute) {
-		for (FromDefinition i : inputs) {
-			print(writer, i);
-		}
-		
-		
-		List<ProcessorDefinition<?>> preds = new ArrayList<>();
-		print(0, writer, mockRoute, preds);
-	}
-
-	private List<ProcessorDefinition<?>> print(int indent, PrintWriter writer, ProcessorDefinition<?> current, List<ProcessorDefinition<?>> preds) {
-		for (int i=0;i<indent;i++) {writer.write(" ");	}
-		
+	/**
+	 * Prints a single node of a Camel route in Prolog representation.
+	 * 
+	 * @param indent
+	 * @param writer
+	 * @param current
+	 * @param preds
+	 * @return
+	 * @throws IOException 
+	 */
+	private List<ProcessorDefinition<?>> printNode(Writer writer, ProcessorDefinition<?> current, List<OptionalIdentifiedDefinition<?>> preds) throws IOException {
 		writer.write("node(node"+current.getIndex() + ").\n");
 		writer.write("has_action(node"+current.getIndex() + ", \"" + current.getLabel() + "\").\n");
-		for (ProcessorDefinition<?> p : preds) {
-			//for (int i=0;i<indent;i++) {writer.write(" ");	}
-			writer.write("succ(node" + p.getIndex() +", node" + current.getIndex() + ").\n");
+		for (OptionalIdentifiedDefinition<?> p : preds) {
+			if (p instanceof FromDefinition) {
+				writer.write("succ(input" + ((FromDefinition) p).getId() +", node" + current.getIndex() + ").\n");				
+			} else if (p instanceof ProcessorDefinition) {
+				writer.write("succ(node" + ((ProcessorDefinition<?>) p).getIndex() +", node" + current.getIndex() + ").\n");				
+			}
 		}
 
 		// predecessor of next recursion is the current node 
@@ -43,7 +52,7 @@ public class PrologPrinter {
 		for (ProcessorDefinition<?> out : current.getOutputs()) {
 			
 			// if this is a ChoiceDefinition, there is no link between its WhereDefinitions.
-			ArrayList<ProcessorDefinition<?>> myPreds = new ArrayList<>();
+			ArrayList<OptionalIdentifiedDefinition<?>> myPreds = new ArrayList<>();
 			if (current instanceof ChoiceDefinition) {
 				myPreds.add(current);
 			} else {
@@ -51,7 +60,7 @@ public class PrologPrinter {
 			}
 			
 			// Recursion ...
-			List<ProcessorDefinition<?>> p = print(indent+1, writer, out, myPreds);
+			List<ProcessorDefinition<?>> p = printNode(writer, out, myPreds);
 			
 			// Predecessors of a ChoiceDefinition are all last stmts of its Where- and OtherwiseDefinitions
 			if (current instanceof ChoiceDefinition) {
@@ -61,20 +70,33 @@ public class PrologPrinter {
 			}
 		}
 		
-		if (current instanceof WhenDefinition) {
-			System.out.println("when returns " + String.join(", ", newPreds.stream().map(p -> String.valueOf(p.getIndex())).collect(Collectors.toList())));
-		}
-		
-		if (current instanceof ChoiceDefinition) {
-			newPreds.remove(current);
-			System.out.println("choice returns " + String.join(", ", newPreds.stream().map(p -> String.valueOf(p.getIndex())).collect(Collectors.toList())));
-		}
-		
 		return newPreds;
 	}
 
-	private void print(PrintWriter writer, FromDefinition i) {
-		writer.write("Input " + i.getLabel() + "\n");
-	}
+	/**
+	 * Prints a single FromDefinition (= a route entry point) in Prolog representation.
+	 * @throws IOException 
+	 */
+	private void printInputs(Writer writer, RouteDefinition route, List<FromDefinition> inputs) throws IOException {
+		int counter = 0;
+		for (FromDefinition i : inputs) {
+			// Make sure every input node has a unique id
+			if (i.getId()==null) {
+				i.setCustomId(true);
+				i.setId(String.valueOf(counter));
+			}			
+			String nodeName = "input"+i.getId();
+			writer.write("node("+nodeName+").\n");
+			writer.write("has_action("+nodeName+", \"" + i.getLabel() + "\").\n");
+			
+			ArrayList<OptionalIdentifiedDefinition<?>> preds = new ArrayList<>();
+			preds.add(i);
 
+			for (ProcessorDefinition<?> next : route.getOutputs()) {
+				printNode(writer, next, preds);
+				preds.clear();
+				preds.add(next);
+			}
+		}
+	}
 }
