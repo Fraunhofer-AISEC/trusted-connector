@@ -110,7 +110,12 @@ public class TrustXCM implements ContainerManager {
 	}
 
 	public static boolean isSupported() {
-		return true;
+		Path path = Paths.get(SOCKET);
+		boolean exists = false;
+		if (Files.exists(path)) {
+		  exists = true;
+		}
+		return exists;
 	}
 
 	@Override
