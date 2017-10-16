@@ -22,6 +22,7 @@ package de.fhg.ids.comm.ws.protocol.fsm;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
@@ -165,17 +166,17 @@ public class FSM {
 			}
 		}
 	}
-	
+	 
 	public String toDot() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("digraph finite_state_machine {\n");
 		sb.append("	rankdir=LR;\n");
 		sb.append("	node [shape = ellipse];\n");
-		for (String from : states.keySet()) {
-			for (Object t : states.get(from).transitions.keySet()) {
-				String to = states.get(from).transitions.get(t).endState;
-				Object eventKey = states.get(from).transitions.get(t).evtName;
-				sb.append("    " + from.replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
+		for (Entry<String, State> from : states.entrySet()) {
+			for (Object t : from.getValue().transitions.keySet()) {
+				String to = from.getValue().transitions.get(t).endState;
+				Object eventKey = from.getValue().transitions.get(t).evtName;
+				sb.append("    " + from.getKey().replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
 			}
 		}
 		sb.append("			}");

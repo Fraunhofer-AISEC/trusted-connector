@@ -75,6 +75,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
     	// We expect a SendProcessor to retrieve the endpoint URL from
 		if (! (((InstrumentationProcessor) target).getProcessor() instanceof SendProcessor) ) {
 				LOG.warn("Not a SendProcessor or LogProcessor. Skipping. " + ((InstrumentationProcessor) target).getProcessor().getClass());
+				target.process(exchange);
 				return;
 		}
 		
@@ -88,6 +89,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
 		// If no PDP is available at runtime -> skip
 		PDP pdp = rm.getPdp();
 		if (pdp == null) {
+			target.process(exchange);
 			return;
 		}
 		

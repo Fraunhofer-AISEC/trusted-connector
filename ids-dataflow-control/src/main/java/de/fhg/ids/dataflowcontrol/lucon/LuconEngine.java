@@ -55,7 +55,7 @@ public class LuconEngine {
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
 		p.addQueryListener(q -> LOG.trace("Prolog query " + q.getSolveInfo().getQuery().toString()));
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
-		p.addWarningListener(w -> LOG.warn(w.getMsg()));
+		p.addWarningListener(w -> {if (!w.getMsg().contains("The predicate false/0 is unknown")) LOG.warn(w.getMsg());});
 		p.addOutputListener(l -> { 
 			if (out!=null) {
 				try {
@@ -91,7 +91,7 @@ public class LuconEngine {
 		SolveInfo solution = p.solve(query);
 		while (solution.isSuccess()) {
 			result.add(solution);
-			if (findAll & p.hasOpenAlternatives()) {
+			if (findAll && p.hasOpenAlternatives()) {
 				solution = p.solveNext();
 			} else {
 				break;

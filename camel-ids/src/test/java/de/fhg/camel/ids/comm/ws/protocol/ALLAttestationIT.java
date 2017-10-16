@@ -75,9 +75,8 @@ public class ALLAttestationIT {
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		SSLContextParameters sslContextParameters = defineClientSSLContextParameters();
-		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock", sslContextParameters);
+		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock");
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock");
 	}
 	
 	

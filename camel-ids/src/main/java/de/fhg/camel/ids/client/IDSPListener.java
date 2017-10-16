@@ -120,14 +120,13 @@ public class IDSPListener extends DefaultWebSocketListener {
     			ConnectorMessage msg = ConnectorMessage.parseFrom(message);
     			fsm.feedEvent(new Event(msg.getType(), new String(message), msg));
     		} catch (InvalidProtocolBufferException e) {
-    			e.printStackTrace();
+    			LOG.error(e.getMessage(), e);
     		}
-
     		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
 	    		isFinishedCond.signalAll();
 	    	}
     	} catch (InterruptedException e) {
-			e.printStackTrace();
+			LOG.warn(e.getMessage());
 		} finally {
 			lock.unlock();
 		}

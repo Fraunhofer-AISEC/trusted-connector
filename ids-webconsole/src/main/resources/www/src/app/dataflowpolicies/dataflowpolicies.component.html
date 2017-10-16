@@ -2,7 +2,7 @@
 <div class="mdl-grid">
 	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
 		<div class="mdl-card__title">
-			<h2 class="mdl-card__title-text">Data Usage Control Policies</h2>
+			<h2 class="mdl-card__title-text">Data Usage Control Policy</h2>
 		</div>
 		<div class="mdl-card__menu">
 			<!-- Right aligned menu below button -->
@@ -11,10 +11,11 @@
 			</button>
 			
 			<ul for="demo-menu-lower-right" class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect">
-			  <li routerLink="/dataflowpolicyynew" class="mdl-menu__item">New Policy</li>
+			  <li routerLink="/dataflowpolicyynew" class="mdl-menu__item">Load another policy</li>
 			</ul>
 		</div>
 		<div class="mdl-card__supporting-text">
+			<span *ngIf=!isLoaded>No policy installed. All routes are allowed.</span>
 			<ul class="mdl-list" *ngFor="let rule of policies">
 				<li class="mdl-list__item mdl-list__item--two-line">
 					<span class="mdl-list__item-primary-content">

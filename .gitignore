@@ -8,3 +8,5 @@ rat-repository/src/main/docker/jar/*
 /dist-docker/
 *.log
 /target/
+/.recommenders/
+/RemoteSystemsTempFiles/

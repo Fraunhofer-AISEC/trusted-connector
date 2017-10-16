@@ -38,9 +38,9 @@ import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.ToDefinition;
 
 /**
- * Converts Camel route definition into a graphviz visualization.
- *
- * Shameless plug from http://gitbucket.ms123.org/simpl4/simpl4-src/blob/cea07cf9be5abe751692965c291a2ac4b838dc89/bundles/camel/src/main/java/org/ms123/common/camel/view/RouteDotGenerator.java
+ * Camel route definition to GraphViz converter.
+ * 
+ * The output can be turned into pictures using dot, neato, and others.
  *
  */
 public class CamelRouteToDot {
@@ -62,7 +62,6 @@ public class CamelRouteToDot {
 			writer.write("label = \"" + group + "\";\n");
 			writer.write("color = grey;\n");
 			writer.write("style = \"dashed\";\n");
-			//writer.write("URL = \"" + group + ".html\";\n\n");
 		}
 		for (RouteDefinition route : routes) {
 			List<FromDefinition> inputs = route.getInputs();
@@ -160,9 +159,6 @@ public class CamelRouteToDot {
 			writer.write(" [\n");
 			writer.write("label = \"" + data.label.substring(0,Math.min(12, data.label.length())) + (data.label.length()>12?"..":"") + "\"\n");
 			writer.write("tooltip = \"" + data.tooltip + "\"\n");
-			/*if (data.url != null) {
-				writer.write("URL = \"" + data.url + "\"\n");
-			}*/
 
 			String image = data.image;
 			if (image != null) {

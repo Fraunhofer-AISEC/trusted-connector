@@ -22,7 +22,6 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.camel.util.jsse.SSLContextParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +42,12 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
+	private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private final FSM fsm;
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
 	private Thread thread;
-	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
 	private UnixSocketThread client;
 	private UnixSocketResponseHandler handler;
 	private ConnectorMessage msg;
@@ -57,10 +56,9 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private boolean yourSuccess = false;
 	private boolean mySuccess = false;
 	private int attestationMask = 0;
-	private SSLContextParameters sslParams;
 	private AttestationResponse resp;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket, SSLContextParameters params) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set finite state machine
@@ -68,7 +66,6 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
 		this.attestationMask = attestationMask;
-		this.sslParams = params;
 		// try to start new Thread:
 		// UnixSocketThread will be used to communicate with local TPM2d		
 		try {
@@ -80,8 +77,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
-			LOG.debug("could not write to/read from " + socket);
-			e.printStackTrace();
+			LOG.warn("could not write to/read from " + socket, e);
 		}		
 	}
 	
@@ -111,14 +107,14 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 
 	public MessageLite sendTPM2Ddata(Event e) {
-		// temporarly safe attestation response in order to check it in the result phase
+		// temporarily save attestation response in order to check it in the result phase
 		this.resp = e.getMessage().getAttestationResponse();
 		// get nonce from server msg
-		if(thread.isAlive()) {
+		if(thread!=null && thread.isAlive()) {
 			if(++this.sessionID == e.getMessage().getId()) {
 				try {
 					ControllerToTpm msg;
-					if(this.aType.equals(IdsAttestationType.ADVANCED)) {
+					if (this.aType.equals(IdsAttestationType.ADVANCED)) {
 						// send msg to local unix socket
 						// construct protobuf message to send to local tpm2d via unix socket
 						msg = ControllerToTpm
@@ -128,8 +124,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 								.setCode(Code.INTERNAL_ATTESTATION_REQ)
 								.setPcrs(this.attestationMask)
 								.build();	
-					}
-					else {
+					} else {
 						// send msg to local unix socket
 						// construct protobuf message to send to local tpm2d via unix socket
 						msg = ControllerToTpm
@@ -167,12 +162,10 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 				} catch (InterruptedException ex) {
 					lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
 				}
-			}
-			else {
+			} else {
 				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			}
-		}
-		else {
+		} else {
 			lastError = "error: RAT client thread is not alive !";
 		}
 		LOG.debug(lastError);
@@ -182,7 +175,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public MessageLite sendResult(Event e) {
 		if(this.checkSignature(this.resp, this.myNonce)) {
 			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri, this.sslParams)) {
+				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri)) {
 					this.mySuccess = true;					
 				}
 				return ConnectorMessage
@@ -196,12 +189,10 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 								.setResult(this.mySuccess)
 								.build())
 						.build();
-			}
-			else {
+			} else {
 				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
 			}
-		}
-		else {
+		} else {
 			lastError = "error: signature check not ok";
 		}
 		LOG.debug(lastError);

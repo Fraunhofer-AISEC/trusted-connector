@@ -35,14 +35,15 @@
  */
 package de.fhg.camel.ids.server;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
-import org.apache.camel.util.jsse.SSLContextParameters;
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
@@ -61,16 +63,19 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 public class DefaultWebsocket implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);
+
     private final WebsocketConsumer consumer;
     private final NodeSynchronization sync;
     private ProtocolMachine machine;
     private Session session;
     private String connectionKey;
+    private String pathSpec;
 	private FSM idsFsm;
 
-    public DefaultWebsocket(NodeSynchronization sync, WebsocketConsumer consumer) {
+    public DefaultWebsocket(NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer) {
         this.sync = sync;
         this.consumer = consumer;
+        this.pathSpec = pathSpec;
     }
 
     @OnWebSocketClose
@@ -85,7 +90,7 @@ public class DefaultWebsocket implements Serializable {
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
         IdsAttestationType type;
-        SSLContextParameters params = this.consumer.getSSLContextParameters();
+//        SSLContextParameters params = this.consumer.getSSLContextParameters();
         int attestationMask = 0;
         switch(this.consumer.getAttestationType()) {
 	    	case 0:            
@@ -106,12 +111,13 @@ public class DefaultWebsocket implements Serializable {
         }
 		// Integrate server-side of IDS protocol
         machine = new ProtocolMachine();
-        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask, params);
+        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
         sync.addSocket(this);
     }
 
     @OnWebSocketMessage
     public void onMessage(String message) {
+        LOG.debug("onMessage: {}", message);    	
         // Check if fsm is in its final state and successful. Only then, the message is forwarded to Camel consumer
         if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id()) && machine.getIDSCPProviderSuccess()) {
 	        if (this.consumer != null) {
@@ -135,13 +141,12 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
-        LOG.trace("server received onMessage " + new String(data));
+        LOG.trace("server received "+length+" byte in onMessage " + new String(data));
         if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
 	        if (this.consumer != null) {
 	        	if(machine.getIDSCPProviderSuccess()) {
 	        		this.consumer.sendMessage(this.connectionKey, data);
-	        	}
-	        	else {
+	        	}	else {
 	        		LOG.debug("remote attestation was NOT successful ... ");
 	        		// do stuff here when attestation was not successful
 	        	}
@@ -149,12 +154,11 @@ public class DefaultWebsocket implements Serializable {
 	        else {
 	            LOG.debug("No consumer to handle message received: {}", data);
 	        }
-        } 
-        else {
+        } else {
 			try {
 				ConnectorMessage msg = ConnectorMessage.parseFrom(data);
 	        	idsFsm.feedEvent(new Event(msg.getType(), new String(data), msg));	//we need to de-protobuf here and split messages into cmd and payload
-			} catch (InvalidProtocolBufferException e) {
+			} catch (IOException e) {
 				// An invalid message has been received during IDS protocol. close connection
 				LOG.error(e.getMessage(), e);
 				this.session.close(new CloseStatus(403, "invalid protobuf"));
@@ -162,8 +166,17 @@ public class DefaultWebsocket implements Serializable {
         }
     }
 
+    @OnWebSocketError
+    public void onError(Session session, Throwable t) {
+    	LOG.error(t.getMessage() + " Host: " + session.getRemoteAddress().getHostName(), t);
+    }
+    
     public Session getSession() {
         return session;
+    }
+    
+    public String getPathSpec() {
+        return pathSpec;
     }
 
     public void setSession(Session session) {
@@ -184,14 +197,18 @@ public class DefaultWebsocket implements Serializable {
 	}
 	
     //get the result of the remote attestation
-	public boolean isAttestationSuccessful() {
-		return machine.getIDSCPProviderSuccess();
+	public AttestationResult getAttestationResult() {
+		if (machine.getAttestationType()==IdsAttestationType.ZERO) {
+			return AttestationResult.SKIPPED;
+		} else {
+			if (machine.getIDSCPProviderSuccess()) {
+				return AttestationResult.SUCCESS;
+			} else {
+				return AttestationResult.FAILED;
+			}
+		}
 	}
-	
-	public SSLContextParameters getSSLContextParameters() {
-		return consumer.getSSLContextParameters();
-	}
-	
+
 	public String getRemoteHostname() {
 		return session.getRemoteAddress().getHostName();
 	}

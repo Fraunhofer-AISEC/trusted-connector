@@ -92,7 +92,7 @@ public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
 			return result;
 		}
 
-		// TODO currently returns only the output of "docker inspect <id>". Must
+		// TODO currently returns only the output of "docker inspect <id>". Should
 		// be converted to some standardized meta data format
 		String containerLabels;
 		try {
@@ -105,10 +105,8 @@ public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
 				}
 			}
 		} catch (NoContainerExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		return result;
 	}
-
 }

@@ -9,6 +9,7 @@ import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
+import { NewIdentityComponent } from './keycerts/identitynew.component';
 import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
 
 const appRoutes: Routes = [{
@@ -30,6 +31,9 @@ const appRoutes: Routes = [{
   }, {
     path: 'dataflowpolicyynew',
     component: NewDataflowPolicyComponent
+  }, {
+    path: 'identitynew',
+    component: NewIdentityComponent
   }, {
     path: 'routes',
     component: RoutesComponent,

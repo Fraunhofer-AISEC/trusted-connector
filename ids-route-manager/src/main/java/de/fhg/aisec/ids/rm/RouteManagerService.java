@@ -267,9 +267,20 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
-	public void delRoute(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-
+	public void delRoute(String routeId) {
+		List<CamelContext> cCtxs = getCamelContexts();
+		for (CamelContext cCtx: cCtxs) {
+			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
+				if (rd.getId().equals(routeId)) {
+					try {
+						cCtx.removeRoute(rd.getId());
+					} catch (Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
+					return;
+				}
+			}
+		}
 	}
 
 	@Override

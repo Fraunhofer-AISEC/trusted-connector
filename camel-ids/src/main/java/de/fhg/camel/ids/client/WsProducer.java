@@ -43,8 +43,6 @@ import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
 import org.asynchttpclient.ws.WebSocket;
 
-
-
 /**
  *
  */

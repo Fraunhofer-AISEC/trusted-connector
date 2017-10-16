@@ -5,25 +5,26 @@ import { CanDeactivate } from '@angular/router';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings.interface';
 import { environment } from '../../environments/environment';
+import { MDLTextFieldDirective } from '../mdl-textfield-directive';
 
 @Component({
-  selector: 'my-app',
-  templateUrl: './ids.component.html',
+    selector: 'my-app',
+    templateUrl: './ids.component.html',
 })
 export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
     public myForm: FormGroup;
-	public data: Settings;
+    public data: Settings;
     public submitted: boolean;
     public saved: boolean;
     public events: any[] = [];
 
     constructor(private _fb: FormBuilder, private _http: Http, private _settingsService: SettingsService) {
-    	this.saved = true;
+        this.saved = true;
     }
 
-    canDeactivate(target: IdsComponent){
-    	return target.saved; // false stops navigation, true continue navigation
-  	}
+    canDeactivate(target: IdsComponent) {
+        return target.saved; // false stops navigation, true continue navigation
+    }
 
     ngOnInit() {
         // the short way
@@ -36,44 +37,41 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
         // subscribe to form changes
         this.subcribeToFormChanges();
 
-		this._settingsService.getSettings().subscribe(
-       		response => {
-           		this.data = response;
-           		(<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
-           		(<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
-           		(<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
-       		}
-    	);
+        this._settingsService.getSettings().subscribe(
+            response => {
+                this.data = response;
+                (<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
+                (<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
+                (<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
+            }
+        );
 
     }
-
-    ngAfterViewInit() {
-        // Update single value
-        (<FormControl>this.myForm.controls['broker_url']).patchValue('ids://localhost', { onlySelf: true });
-    }
-
+    
     subcribeToFormChanges() {
         const myFormStatusChanges$ = this.myForm.statusChanges;
         const myFormValueChanges$ = this.myForm.valueChanges;
 
         myFormStatusChanges$.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
-        myFormValueChanges$.subscribe(x => { this.saved = false;
-        									 this.events.push({ event: 'VALUE_CHANGED', object: x }) });
+        myFormValueChanges$.subscribe(x => {
+        this.saved = false;
+            this.events.push({ event: 'VALUE_CHANGED', object: x })
+        });
     }
 
     save(model: Settings, isValid: boolean) {
         this.submitted = true;
         console.log(model, isValid);
 
-         // Call REST POST to store settings
-		let storePromise = this._settingsService.store(model);
-		storePromise.subscribe(
-			      () => {
-			        // If saved successfully, user may leave the route (=saved=true)
-			        this.saved = true;
-			      },
-			      err => console.log("Did not save form " + err.json().message)
-			    );
+        // Call REST POST to store settings
+        let storePromise = this._settingsService.store(model);
+        storePromise.subscribe(
+            () => {
+                // If saved successfully, user may leave the route (=saved=true)
+                this.saved = true;
+            },
+            err => console.log("Did not save form " + err.json().message)
+        );
 
     }
 }

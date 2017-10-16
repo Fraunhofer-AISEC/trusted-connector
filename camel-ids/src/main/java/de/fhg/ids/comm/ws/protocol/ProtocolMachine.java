@@ -67,6 +67,7 @@ public class ProtocolMachine {
 	private boolean ratConsumerSuccess = false;
 	private boolean ratProviderSuccess = false;
 	private String socket = "/var/run/tpm2d/control.sock";
+	private IdsAttestationType attestationType;
 	
 	/** C'tor */
 	public ProtocolMachine() { }
@@ -81,12 +82,13 @@ public class ProtocolMachine {
 	 */
 	public FSM initIDSConsumerProtocol(WebSocket websocket, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
 		this.ws = websocket;
+		this.attestationType = type;
 		FSM fsm = new FSM();
 		try {
 			// set trusted third party URL
 			URI ttp = getTrustedThirdPartyURL();
 			// all handler
-			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket, params);
+			RemoteAttestationConsumerHandler ratConsumerHandler = new RemoteAttestationConsumerHandler(fsm, type, attestationMask, ttp, socket);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();		
 			
@@ -115,7 +117,7 @@ public class ProtocolMachine {
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, (e) -> {return replyProto(ratConsumerHandler.sendTPM2Ddata(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratConsumerHandler.sendResult(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(ratConsumerHandler.leaveRatRequest(e));} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return setConsumerSuccess(ratConsumerHandler.isSuccessful());} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return setIDSCPConsumerSuccess(ratConsumerHandler.isSuccessful());} ));
 					
 					/* Metadata Exchange Protocol */
 					//fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_REQUEST, (e) -> {return replyProto(metaHandler.request(e));} ));
@@ -138,7 +140,7 @@ public class ProtocolMachine {
 					
 					/* NO Remote Attestation Protocol at all */
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_START, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratConsumerHandler.sendNoAttestation(e));} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_END, (e) -> {return setConsumerSuccess(true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_END, (e) -> {return setIDSCPConsumerSuccess(true);} ));
 					break;
 				
 				default:
@@ -149,7 +151,8 @@ public class ProtocolMachine {
 			
 			/* Add listener to log state transitions*/
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState());});
-			
+//			String graph = fsm.toDot();
+//			System.out.println(graph);
 		} catch (URISyntaxException e) {
 			LOG.error("TTP URI Syntax exception", e);
 		}
@@ -160,15 +163,16 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask, SSLContextParameters params) {
+	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask) {
 		this.sess = sess;
+		this.attestationType = type;
 		FSM fsm = new FSM();
 		try {
 			// set trusted third party URL
 			URI ttp = getTrustedThirdPartyURL();
 
 			// all handler
-			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket, params);
+			RemoteAttestationProviderHandler ratProviderHandler = new RemoteAttestationProviderHandler(fsm, type, attestationMask, ttp, socket);
 			ErrorHandler errorHandler = new ErrorHandler();
 			MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 			
@@ -196,7 +200,7 @@ public class ProtocolMachine {
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, (e) -> {return replyProto(ratProviderHandler.enterRatRequest(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratProviderHandler.sendTPM2Ddata(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(ratProviderHandler.sendResult(e));} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return replyProto(ratProviderHandler.leaveRatRequest(e)) && setProviderSuccess(ratProviderHandler.isSuccessful());} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return replyProto(ratProviderHandler.leaveRatRequest(e)) && setIDSCPProviderSuccess(ratProviderHandler.isSuccessful());} ));
 					
 					/* Metadata Exchange Protocol */ 
 					//fsm.addTransition(new Transition(ConnectorMessage.Type.META_REQUEST, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_META_RESPONSE, (e) -> {return replyProto(metaHandler.request(e));} ));
@@ -215,7 +219,7 @@ public class ProtocolMachine {
 
 				case ZERO:
 					/* NO Remote Attestation Protocol at all */
-					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_START, ProtocolState.IDSCP_END, (e) -> {return replyProto(ratProviderHandler.sendNoAttestation(e)) && setProviderSuccess(true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_START, ProtocolState.IDSCP_END, (e) -> {return replyProto(ratProviderHandler.sendNoAttestation(e)) && setIDSCPProviderSuccess(true);} ));
 					break;
 				
 				default:
@@ -226,7 +230,9 @@ public class ProtocolMachine {
 			
 			/* Add listener to log state transitions*/
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
-			
+			String graph = fsm.toDot();
+			System.out.println(graph);
+
 		} catch (URISyntaxException e) {
 			LOG.error("TTP URI Syntax exception", e);
 		}
@@ -237,16 +243,19 @@ public class ProtocolMachine {
 		return fsm;
 	}
 
-	private boolean setProviderSuccess(boolean success) {
+	private boolean setIDSCPProviderSuccess(boolean success) {
 		this.ratProviderSuccess = success;
 		return true;
 	}
 
-	private boolean setConsumerSuccess(boolean success) {
+	private boolean setIDSCPConsumerSuccess(boolean success) {
 		this.ratConsumerSuccess = success;
 		return true;
 	}
 
+	public IdsAttestationType getAttestationType() {
+		return attestationType; 
+	}
 	public boolean getIDSCPProviderSuccess() {
 		return this.ratProviderSuccess;
 	}

@@ -4,7 +4,7 @@ import { CertificateService } from './keycert.service';
 
 @Component({
     selector: 'file-uploading',
-    template: '<input accept=".crt,.der,.cer, .jks, .cert" type="file" [multiple]="multiple" #fileIn>'
+    template: '<label class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black"><input accept=".crt,.der,.cer, .jks, .cert" type="file" [multiple]="multiple" #fileIn style="display:none">            <i class="material-icons">add</i></label>'
 })
 export class CertUploadComponent {
     @Input() multiple: boolean = false;
@@ -12,7 +12,7 @@ export class CertUploadComponent {
 
     constructor(private http: Http,private certificateService: CertificateService) {}
 
-    upload(keystoreDestination: string) {
+    upload() {
         let inputEl: HTMLInputElement = this.inputEl.nativeElement;
         let fileCount: number = inputEl.files.length;
         let formData = new FormData();
@@ -22,7 +22,7 @@ export class CertUploadComponent {
         if (fileCount > 0) { // a file was selected
              
             for (let i = 0; i < fileCount; i++) {
-                this.certificateService.uploadCert(inputEl.files.item(i), keystoreDestination);
+                this.certificateService.uploadCert(inputEl.files.item(i));
             }
            
             location.reload();

@@ -5,31 +5,25 @@
         <h2 class="mdl-card__title-text">My Identities</h2>
       </div>
       <div class="mdl-card__supporting-text">
-	 	<certificate-card [certificates]="identities"></certificate-card>
+	 	<certificate-card [certificates]="identities" [ondelete]="deleteIdentity"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-	     <i class="material-icons">add</i>
-	      <!--  <input type="file"> -->
- 			 <file-uploading #cu1 (change)="cu1.upload('client-keystore')" [multiple]="true"></file-uploading>
-	   </label>
+ 			 <button routerLink="/identitynew" class="mdl-button mdl-js-button mdl-button--icon">
+ 			 	<i class="material-icons">add</i>
+ 			 </button>
       </div>
 </div>
 
 
  	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
 	  <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Trusted Identities</h2>
+        <h2 class="mdl-card__title-text">Trusted Certificates</h2>
       </div>
       <div class="mdl-card__supporting-text">
-	 	<certificate-card [certificates]="certificates"></certificate-card>
+	 	<certificate-card [certificates]="certificates" [ondelete]="deleteCert"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
-		<label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-	     <i class="material-icons">add</i>
-	      <!--  <input type="file"> -->
- 			 <file-uploading #cu2 (change)="cu2.upload('client-truststore')" [multiple]="true"></file-uploading>
-	   </label>
+		 <file-uploading #cu2 (change)="cu2.upload()" [multiple]="true"></file-uploading>
       </div>
 	</div>
 

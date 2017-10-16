@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -38,8 +40,7 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.GsonBuilder;
-
+import de.fhg.aisec.ids.api.router.RouteComponent;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
@@ -71,28 +72,28 @@ public class RouteApi {
 	@GET
 	@Path("list")
 	@Produces("application/json")
-	public String list() {
+	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return "{}";
+			return new ArrayList<>();
 		}
 		
-		return new GsonBuilder().create().toJson(rm.get().getRoutes());
+		return rm.get().getRoutes();
 	}
 
 	@GET
 	@Path("/get/{id}")
 	@Produces("application/json")
-	public String get(String id) {		
+	public Response get(String id) {		
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return "{}";
+			return Response.serverError().entity("RouteManager not present").build();
 		}
 		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
 		if (!oRoute.isPresent()) {
-			return "{}";
+			return Response.serverError().entity("Routenot present").build();
 		}
-		return new GsonBuilder().create().toJson(oRoute.get());
+		return Response.ok(oRoute.get()).build();
 	}
 
 	/**
@@ -119,18 +120,18 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/stoproute/{id}")
-	public String stopRoute(@PathParam("id") String id) {
+	public boolean stopRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().stopRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return "{\"status:\": \"error\"}";
+				return false;
 			}
-			return "{\"status\": \"ok\"}";	
+			return true;	
 		}
-		return "{\"status:\": \"error\"}";
+		return false;
 	}
 
 	/**
@@ -138,17 +139,17 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/metrics/{id}")
-	public String getMetrics(@PathParam("id") String routeId) {
+	public RouteMetrics getMetrics(@PathParam("id") String routeId) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
-				return new GsonBuilder().create().toJson(rm.get().getRouteMetrics().get(routeId));
+				return rm.get().getRouteMetrics().get(routeId);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return "{ }";
+				return null;
 			}
 		}
-		return "{ }";
+		return null;
 	}
 
 	/**
@@ -156,19 +157,17 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/metrics")
-	public String getMetrics() {
+	public RouteMetrics getMetrics() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				Map<String, RouteMetrics> currentMetrics = rm.get().getRouteMetrics();
-				RouteMetrics aggregated = aggregateMetrics(currentMetrics.values());
-				return new GsonBuilder().create().toJson(aggregated);
+				return aggregateMetrics(currentMetrics.values());
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return "{ }";
 			}
 		}
-		return "{ }";
+		return null;
 	}
 
 	/**
@@ -205,12 +204,12 @@ public class RouteApi {
 	@GET
 	@Path("components")
 	@Produces("application/json")
-	public String getComponents() {
+	public List<RouteComponent> getComponents() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return "{}";
+			return new ArrayList<>();
 		}
-		return new GsonBuilder().create().toJson(rm.get().listComponents());
+		return rm.get().listComponents();
 	}
 
 	/**
@@ -225,12 +224,12 @@ public class RouteApi {
 	@GET
 	@Path("endpoints")
 	@Produces("application/json")
-	public String getEndpoints() {
+	public Map<String, Collection<String>> getEndpoints() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return "{}";
+			return new HashMap<>();
 		}
-		return new GsonBuilder().create().toJson(rm.get().getEndpoints());
+		return rm.get().getEndpoints();
 	}
 
 	/**
@@ -238,11 +237,11 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/list_components")
-	public String listComponents() {
+	public List<Map<String, String>> listComponents() {
 		List<Map<String, String>> componentNames = new ArrayList<>();
 		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
 		if (bCtx == null) {		
-			return new GsonBuilder().create().toJson(componentNames);			
+			return componentNames;			
 		}
 
 		try {
@@ -264,7 +263,7 @@ public class RouteApi {
 		} catch (InvalidSyntaxException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new GsonBuilder().create().toJson(componentNames);			
+		return componentNames;			
 	}
 
 	/**
@@ -272,11 +271,11 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/list_endpoints")
-	public String listEndpoints() {
+	public Map<String, String> listEndpoints() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return "{}";
+			return new HashMap<>();
 		}
-		return new GsonBuilder().create().toJson(rm.get().listEndpoints());
+		return rm.get().listEndpoints();
 	}
 }

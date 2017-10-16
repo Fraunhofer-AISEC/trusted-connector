@@ -2,7 +2,7 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
-import { Policy } from './policy';
+import { Policy } from './policy.interface';
 import { PolicyService } from './policy.service';
 
 @Component({
@@ -12,36 +12,41 @@ export class NewDataflowPolicyComponent implements OnInit {
     @Output() changeTitle = new EventEmitter();
     public myForm: FormGroup;
     public data: Policy;
-    public submitted: boolean;
-    public saved: boolean;
+    public policyFileName: string = "Select policy file ...";
     public events: any[] = [];
-
 
     constructor(private _fb: FormBuilder, private titleService: Title, private policyService: PolicyService) {
         this.titleService.setTitle('New Policy');
     }
 
     ngOnInit() {
-        // the short way
+        // the short way to create a FormGroup
         this.myForm = this._fb.group({
-            policy_file: ['', [<any>Validators.required, <any>Validators.required]],
+            policy_name: ['', <any>Validators.required],
+            policy_file: ['', <any>Validators.required],
+            policy_description: '',
         });
+        
+        //uploader: FileUploader = new FileUploader({ url: "http://localhost/upload.php" });
 
-        // subscribe to form changes
-        this.subcribeToFormChanges();
+
     }
 
-    ngAfterViewInit() {
+    ngAfterViewInit() {    }
+
+    save(policy: Policy, fileInputElement: any, isValid: boolean) {
+        console.log(policy, fileInputElement, isValid);
+        console.log(fileInputElement.files[0]);
+        
+         // Call REST POST to store settings
+        return this.policyService.install(policy, fileInputElement.files[0]).subscribe();
+    }
+    
+    // Update caption of upload button with file name when a file is selected    
+    fileChangeEvent(fileInput: any){
+        if (fileInput.target.files && fileInput.target.files[0]) {
+            this.policyFileName = fileInput.target.files[0].name;
+        }
     }
 
-    subcribeToFormChanges() {
-        const myFormStatusChanges$ = this.myForm.statusChanges;
-        const myFormValueChanges$ = this.myForm.valueChanges;
-
-        myFormStatusChanges$.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
-        myFormValueChanges$.subscribe(x => {
-        this.saved = false;
-            this.events.push({ event: 'VALUE_CHANGED', object: x })
-        });
-    }
 }

@@ -23,7 +23,10 @@ Import-Package: \
 	org.apache.cxf.jaxrs.provider.json,\
 	org.apache.cxf.jaxrs.provider.jsonp,\
 	com.google.gson,\
+	com.fasterxml.jackson.jaxrs.json,\
+	com.fasterxml.jackson.databind,\
 	!com.eclipsesource.json.*,\
+	org.codehaus.jettison.mapped,\
 	*
 -noee=true
 -dsannotations: *

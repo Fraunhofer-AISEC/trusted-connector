@@ -26,7 +26,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
@@ -37,7 +36,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.camel.util.jsse.SSLContextParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +58,7 @@ public class RemoteAttestationHandler {
 	// used to count messages between ids connector and attestation repository
 	protected static long privateID = new java.util.Random().nextLong();  
 
-	public static boolean checkRepository(IdsAttestationType basic, AttestationResponse response, URI ttpUri, SSLContextParameters params) {
+	public static boolean checkRepository(IdsAttestationType basic, AttestationResponse response, URI ttpUri) {
 		int numPcrValues = response.getPcrValuesCount();
 		String nonce = response.getQualifyingData();
 		Pcr[] values = response.getPcrValuesList().toArray(new Pcr[numPcrValues]);
@@ -79,8 +77,7 @@ public class RemoteAttestationHandler {
 			        		.build()
 							)
 					.build(), 
-					ttpUri.toURL(),
-					params);
+					ttpUri.toURL());
 			
 			LOG.debug("//Q///////////////////////////////////////////////////////////////////////////");
 			LOG.debug(response.toString());
@@ -175,7 +172,7 @@ public class RemoteAttestationHandler {
 				.build();
 	}
 	
-	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr, SSLContextParameters params) throws IOException, NoSuchAlgorithmException, GeneralSecurityException, KeyManagementException {
+	public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr) throws IOException, NoSuchAlgorithmException, GeneralSecurityException, KeyManagementException {
         
 		// Create a trust manager that does not validate certificate chains
         TrustManager[] trustAllCerts = new TrustManager[]{
@@ -196,7 +193,7 @@ public class RemoteAttestationHandler {
 		
 		HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
         SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(params.getKeyManagers().createKeyManagers(), trustAllCerts, new SecureRandom());
+//        sslContext.init(params.getKeyManagers().createKeyManagers(), trustAllCerts, new SecureRandom());
         urlc.setSSLSocketFactory(sslContext.getSocketFactory());
 		urlc.setUseCaches(false);
         urlc.setDoInput(true);

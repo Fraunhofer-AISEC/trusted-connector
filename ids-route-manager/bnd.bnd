@@ -13,8 +13,10 @@ Bundle-Vendor: Fraunhofer AISEC
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
 Import-Package: \
 	org.osgi.framework.*,\
+	org.apache.camel.component.milo.converter,\
 	*
 -noee=true
 -dsannotations: *
 -contract: !org.apache.camel.CamelContext,*
+DynamicImport-Package: org.apache.camel.*
 Private-Package: de.fhg.aisec.ids.rm.util

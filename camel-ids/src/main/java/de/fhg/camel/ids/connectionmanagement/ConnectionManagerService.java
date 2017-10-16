@@ -20,12 +20,14 @@
 package de.fhg.camel.ids.connectionmanagement;
 
 import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -36,10 +38,10 @@ import org.slf4j.LoggerFactory;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.camel.ids.server.ConnectorRef;
 import de.fhg.camel.ids.server.DefaultWebsocket;
 import de.fhg.camel.ids.server.MemoryWebsocketStore;
 import de.fhg.camel.ids.server.WebsocketComponent;
+import de.fhg.camel.ids.server.WebsocketComponent.ConnectorRef;
 import de.fhg.camel.ids.server.WebsocketComponentServlet;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 
@@ -69,7 +71,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	public List<IDSCPIncomingConnection> listIncomingConnections() {
 		List<IDSCPIncomingConnection> connections = new ArrayList<>();
 		
-		Iterator<Entry<String, ConnectorRef>> it =  WebsocketComponent.CONNECTORS.entrySet().iterator();
+		Iterator<Entry<String, ConnectorRef>> it = WebsocketComponent.getConnectors().entrySet().iterator();
 	    while (it.hasNext()) {
 	    	IDSCPIncomingConnection idscpc = new IDSCPIncomingConnection();
 	    	
@@ -84,7 +86,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	        //Assume only websocket per endpoint
 	        while(webSocketIterator.hasNext())  {
 	        	DefaultWebsocket dws = webSocketIterator.next();
-	        	idscpc.setAttestationResult(dws.getCurrentProtocolState());
+	        	idscpc.setAttestationResult(dws.getAttestationResult());
 	        }
 	        connections.add(idscpc);
 	        it.remove(); // avoids a ConcurrentModificationException
@@ -97,7 +99,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	public List<IDSCPOutgoingConnection> listOutgoingConnections() {
 		List<IDSCPOutgoingConnection> connections = new ArrayList<>();
 		
-		Iterator<Entry<String, ConnectorRef>> it =  WebsocketComponent.CONNECTORS.entrySet().iterator();
+		Iterator<Entry<String, ConnectorRef>> it =  WebsocketComponent.getConnectors().entrySet().iterator();
 	    while (it.hasNext()) {
 	    	IDSCPOutgoingConnection idscpc = new IDSCPOutgoingConnection();
 	    	
@@ -116,15 +118,14 @@ public class ConnectionManagerService implements ConnectionManager {
 	        	
 	        	// in order to check if the provider has done a successful remote attestation
 	        	// we have to check the state of the dsm (=IDSCP_END) and the result of the rat:
-	        	if(dws.getCurrentProtocolState().equals(ProtocolState.IDSCP_END.id()) && dws.isAttestationSuccessful()) {
-	        		// attestation is done and was successful
-	        		idscpc.setAttestationResult("Success");
-	        		idscpc.setLastProtocolState(ProtocolState.IDSCP_END.id());
-	        	}
-	        	// in order to check the identity of the remote couterpart, we could use the SSLContextParameters of the dws:
+	        	idscpc.setAttestationResult(dws.getAttestationResult());
+	        	idscpc.setLastProtocolState(dws.getCurrentProtocolState());
+
+	        	// in order to check the identity of the remote counterpart, we could use the SSLContextParameters of the dws:
 	        	// this is "NONE", "WANT" or "REQUIRE"
+	        	SSLContextParameters sslParams = connectorRef.getServlet().getConsumer().getEndpoint().getSslContextParameters();
 	        	idscpc.setRemoteIdentity(dws.getRemoteHostname());
-	        	idscpc.setRemoteAuthentication(dws.getSSLContextParameters().getServerParameters().getClientAuthentication());
+	        	idscpc.setRemoteAuthentication(sslParams.getServerParameters().getClientAuthentication());
 	        	
 	        	
 	        }

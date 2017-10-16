@@ -44,9 +44,7 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 public class DefaultWebsocketFactory implements WebSocketFactory {
 
     @Override
-    public DefaultWebsocket newInstance(ServletUpgradeRequest request, String protocol, NodeSynchronization sync, WebsocketConsumer consumer) {
-    	//TODO: Here is the place to connect our websocket with the underlying SSL information. The ServeletUpgradeRequest containes the SSL Certs
-    	DefaultWebsocket dws = new DefaultWebsocket(sync, consumer);
-    	return dws;
+    public DefaultWebsocket newInstance(ServletUpgradeRequest request, String protocol, String pathSpec, NodeSynchronization sync, WebsocketConsumer consumer) {
+        return new DefaultWebsocket(sync, pathSpec, consumer);
     }
 }

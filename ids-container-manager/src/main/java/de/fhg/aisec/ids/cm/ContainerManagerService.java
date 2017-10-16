@@ -37,6 +37,7 @@ import de.fhg.aisec.ids.api.cm.Direction;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.api.cm.Protocol;
 import de.fhg.aisec.ids.cm.impl.docker.DockerCM;
+import de.fhg.aisec.ids.cm.impl.dummy.DummyCM;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
 
 /**
@@ -48,7 +49,6 @@ import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
  *
  */
 @Component(enabled=true, immediate=true, name="ids-cml")
-
 public class ContainerManagerService implements ContainerManager {
 	private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 	private ContainerManager containerManager = null;
@@ -57,14 +57,9 @@ public class ContainerManagerService implements ContainerManager {
 	protected void activate() {
 		LOG.info("Activating Container Manager");
 		// When activated, try to set container management instance
-		Optional<ContainerManager> cm = getDefaultCM();
-		if (cm.isPresent()) {
-			LOG.info("Default container management is " + cm.get());
-			containerManager = cm.get();
-		} else {
-			LOG.info("There is no supported container management");
-		}
-		
+		containerManager = getDefaultCM();
+		assert containerManager != null;
+		LOG.info("Default container management is " + containerManager);
 	}
 	
 	@Deactivate
@@ -73,14 +68,15 @@ public class ContainerManagerService implements ContainerManager {
 	}
 	
 	
-	private Optional<ContainerManager> getDefaultCM() {
-		Optional<ContainerManager> result = Optional.<ContainerManager>empty();
+	private ContainerManager getDefaultCM() {
+		ContainerManager result;
 		if (TrustXCM.isSupported()) {
-			result = Optional.of(new TrustXCM());
+			result = new TrustXCM();
 		} else if (DockerCM.isSupported()) {
-			result = Optional.of(new DockerCM());
+			result = new DockerCM();
 		} else {
-			LOG.warn("No supported container management layer found");
+			LOG.warn("No supported container management layer found. Using dummy");
+			result = new DummyCM();
 		}
 		return result;
 	}

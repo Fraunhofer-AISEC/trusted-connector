@@ -5,9 +5,10 @@ import { App } from './app';
 import { AppService } from './app.service';
 
 @Component({
-  selector: 'app-card',
-  template: `
-      <div class="mdl-card__title mdl-card--expand">
+    selector: 'app-card',
+    template: `        
+  <div class="app-card  {{statusColor}} mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+    <div class="mdl-card__title mdl-card--expand">
         <h2 class="mdl-card__title-text">{{app.names}}</h2>
       </div>
       <div class="mdl-card__supporting-text">
@@ -35,41 +36,45 @@ import { AppService } from './app.service';
         Status: {{app.status}}<br />
       </div>
       <div class="mdl-card__actions mdl-card--border">
-      <button class="mdl-button mdl-js-button mdl-js-ripple-effect">
-        <i class="material-icons">{{statusIcon}}</i>
-      </button>
-
-      <button class="mdl-button mdl-js-button mdl-js-ripple-effect">
-        <i class="material-icons">delete</i>
-      </button>
-  </div>`
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(app.id)">
+            <i class="material-icons">{{statusIcon}}</i>
+          </button>
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect">
+            <i class="material-icons">delete</i>
+          </button>
+  </div>
+ </div>`
 })
 export class AppCardComponent implements OnInit {
-  @Input() app: App;
-  statusIcon: string;
+    @Input() app: App;
+    statusIcon: string;
+    statusColor: string;
 
-  constructor( private appService: AppService) {}
-  ngOnInit(): void {
-    if(this.app.status.indexOf("Up") >= 0) {
-      this.statusIcon = "stop";
-    } else {
-      this.statusIcon = "play_arrow";
-
+    constructor(private appService: AppService) { }
+    ngOnInit(): void {
+        if (this.app.status.indexOf("Up") >= 0) {
+            this.statusIcon = "stop";
+            this.statusColor = "";
+        } else {
+            this.statusIcon = "play_arrow";
+            this.statusColor = "card-dark";
+        }
     }
-  }
 
-  onToggle(containerId: string): void {
-    if(this.statusIcon == "play_arrow") {
-      this.statusIcon = "stop";
-      this.appService.startApp(containerId).subscribe(result => {
-      });
-      this.app.status = 'Up 1 seconds ago';
+    onToggle(containerId: string): void {
+        if (this.statusIcon == "play_arrow") {
+            this.statusIcon = "stop";
+            this.statusColor = "";
+            this.appService.startApp(containerId).subscribe(result => {
+            });
+            this.app.status = 'Up 1 seconds ago';
 
-    } else {
-      this.statusIcon = "play_arrow";
-      this.appService.stopApp(containerId).subscribe(result => {
-      });
-       this.app.status = 'Exited(0) 1 seconds ago';
+        } else {
+            this.statusIcon = "play_arrow";
+            this.statusColor = "card-dark";
+            this.appService.stopApp(containerId).subscribe(result => {
+            });
+            this.app.status = 'Exited(0) 1 seconds ago';
+        }
     }
-  }
 }

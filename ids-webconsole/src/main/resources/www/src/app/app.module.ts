@@ -16,7 +16,6 @@ import { AppCardComponent } from './apps/app-card.component';
 
 import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
-import { FileUploadComponent } from './dataflowpolicies/file-upload.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { RouteCardComponent } from './routes/route-card.component';
@@ -29,6 +28,7 @@ import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
 import { CertUploadComponent } from './keycerts/certUpload.component';
+import { NewIdentityComponent } from './keycerts/identitynew.component';
 
 
 import { AppService } from './apps/app.service';
@@ -51,6 +51,8 @@ import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
 import { ConnectionService } from './inOutConnections/inOutConnections.service';
 
+import { MDLTextFieldDirective } from './mdl-textfield-directive';
+
 import 'material-design-lite';
 
 @NgModule({
@@ -62,7 +64,6 @@ import 'material-design-lite';
     ModalModule.forRoot(),
     BootstrapModalModule  ],
   declarations: [
-    FileUploadComponent,
     AppComponent,
     DashboardComponent,
     ActivityComponent,
@@ -79,10 +80,12 @@ import 'material-design-lite';
     KeycertsComponent,
     CertificateCardComponent,
     CertUploadComponent,
+    NewIdentityComponent,
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    ConnectionReportComponent],
+    ConnectionReportComponent,
+    MDLTextFieldDirective],
   providers: [
     AppService,
     RouteService,

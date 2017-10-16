@@ -197,9 +197,10 @@ public class LuconEngineTest {
 	
 	/**
 	 * Test if the correct policy decisions are taken.
+	 * @throws IOException 
 	 */
 	@Test
-	public void testPolicyDecision() {
+	public void testPolicyDecision() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 		pdp.activate(null);
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
@@ -222,9 +223,10 @@ public class LuconEngineTest {
 
 	/**
 	 * List all rules of the currently loaded policy.
+	 * @throws IOException 
 	 */
 	@Test
-	public void testListRules() {
+	public void testListRules() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 		pdp.activate(null);
 		
@@ -245,7 +247,7 @@ public class LuconEngineTest {
 	}
 	
 	@Test
-	public void testTransformations() {
+	public void testTransformationsMatch() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 		pdp.activate(null);
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
@@ -261,5 +263,21 @@ public class LuconEngineTest {
 
 		assertTrue(trans.getLabelsToAdd().contains("labelone"));
 		assertTrue(trans.getLabelsToRemove().contains("labeltwo"));
+	}
+
+	@Test
+	public void testTransformationsNomatch() throws IOException {
+		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+		pdp.activate(null);
+		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+		ServiceNode node = new ServiceNode("someendpointwhichisnotmatchedbypolicy", null, null);
+		TransformationDecision trans = pdp.requestTranformations(node);
+		
+		assertNotNull(trans);
+		assertNotNull(trans.getLabelsToAdd());
+		assertNotNull(trans.getLabelsToRemove());
+		
+		assertEquals(0, trans.getLabelsToAdd().size());
+		assertEquals(0, trans.getLabelsToRemove().size());
 	}
 }

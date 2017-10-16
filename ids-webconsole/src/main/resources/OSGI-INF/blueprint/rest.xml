@@ -33,6 +33,10 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 		</jaxrs:extensionMappings>
 		<jaxrs:providers>
             <bean class="de.fhg.aisec.ids.webconsole.api.CORSResponseFilter"/>
+			<!-- Use Jackson JSON provider to support JSON representation of Java collections. Requires cxf-jackson feature. -->
+           <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
+				<property name="mapper" ref="jacksonMapper" />
+			</bean>
 		</jaxrs:providers>
  		<jaxrs:inInterceptors>
             <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpInInterceptor"/>
@@ -42,6 +46,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
             <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPostStreamInterceptor"/>
 		</jaxrs:outInterceptors>		
 	</jaxrs:server>
-
+	
+	<bean id="jacksonMapper" class="com.fasterxml.jackson.databind.ObjectMapper"></bean>
 
 </blueprint>
