@@ -20,6 +20,9 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,8 +78,7 @@ public class TrustXCM implements ContainerManager {
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
 		byte[] response = sendCommandAndWaitForResponse(Command.LIST_CONTAINERS);
-		
-		// TODO 
+		System.out.println(new String(response));
 		return null;
 	}
 
