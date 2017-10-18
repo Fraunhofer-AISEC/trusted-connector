@@ -36,30 +36,8 @@ public class MetadataConsumerHandler extends MetadataHandler {
 				.setMetadataExchange(
 						MedadataExchange
 						.newBuilder()
-						.addAllKey(myKeys)
 						.build())
 				.build();
 	}
-	
-	public MessageLite response(Event e) {
-		if(++this.sessionID == e.getMessage().getId()) {
-			this.yourKeys = e.getMessage().getMetadataExchange().getKeyList();
-			this.yourValues = e.getMessage().getMetadataExchange().getValueList();
-			this.myValues = this.generateMetaData(this.yourKeys);
-			return ConnectorMessage
-					.newBuilder()
-					.setId(++this.sessionID)
-					.setType(ConnectorMessage.Type.META_RESPONSE)
-					.setMetadataExchange(
-							MedadataExchange
-							.newBuilder()
-							.addAllValue(myValues)
-							.build())
-					.build();
-			
-		}
-		else {
-			return MetadataHandler.sendError("error: sessionID's do not match");
-		}
-	}
+
 }

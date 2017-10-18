@@ -117,12 +117,12 @@ public class ProtocolMachine {
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, (e) -> {return replyProto(ratConsumerHandler.sendTPM2Ddata(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratConsumerHandler.sendResult(e));} ));
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(ratConsumerHandler.leaveRatRequest(e));} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return setIDSCPConsumerSuccess(ratConsumerHandler.isSuccessful());} ));
+					//fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return setIDSCPConsumerSuccess(ratConsumerHandler.isSuccessful());} ));
 					
 					/* Metadata Exchange Protocol */
-					//fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_REQUEST, (e) -> {return replyProto(metaHandler.request(e));} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_REQUEST, (e) -> {return replyProto(metaHandler.request(e));} ));
 					//fsm.addTransition(new Transition(ConnectorMessage.Type.META_REQUEST, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_META_RESPONSE, (e) -> {return replyProto(metaHandler.response(e));} ));
-					//fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return true;} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {return true;} ));
 					
 					/* error protocol */
 					// in case of error go back to IDSC_START state
@@ -203,7 +203,7 @@ public class ProtocolMachine {
 					fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return replyProto(ratProviderHandler.leaveRatRequest(e)) && setIDSCPProviderSuccess(ratProviderHandler.isSuccessful());} ));
 					
 					/* Metadata Exchange Protocol */ 
-					//fsm.addTransition(new Transition(ConnectorMessage.Type.META_REQUEST, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_META_RESPONSE, (e) -> {return replyProto(metaHandler.request(e));} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.META_REQUEST, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {return replyProto(metaHandler.response(e));} ));
 					//fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return true;} ));
 					
 					/* error protocol */
