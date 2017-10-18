@@ -15,37 +15,60 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.github.jnr</groupId>
-	<artifactId>jnr-unixsockets</artifactId>
+	<artifactId>jnr-unixsocket-osgi-wrapper</artifactId>
 	<packaging>jar</packaging>
-	<version>0.9.0</version>
-  
-  <parent>
-    <groupId>de.fhg.ids</groupId>
-    <artifactId>core-platform</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
-  </parent>
+	<version>0.13.0</version>
+
+	<parent>
+		<groupId>de.fhg.ids</groupId>
+		<artifactId>core-platform</artifactId>
+		<version>1.1.0-SNAPSHOT</version>
+	</parent>
 
 	<name>JNR Unix Sockets</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.github.jnr</groupId>
+			<artifactId>jnr-unixsocket</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.jnr</groupId>
+			<artifactId>jnr-posix</artifactId>
+			<version>3.0.30</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
 
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.1.0</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+					<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
 				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -59,16 +82,15 @@
 				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
 				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
 				the manifest from this location, then the following config is not needed. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.0</version>	
-				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-jar-plugin</artifactId> -->
+			<!-- <configuration> -->
+			<!-- <archive> -->
+			<!-- <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile> -->
+			<!-- </archive> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
 
 		</plugins>
 	</build>

@@ -22,6 +22,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/ids-api"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

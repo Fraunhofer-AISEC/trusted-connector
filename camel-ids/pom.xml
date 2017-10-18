@@ -127,7 +127,9 @@
 		<!-- JNR-Unixsocket -->
 		<dependency>
 			<groupId>com.github.jnr</groupId>
-			<artifactId>jnr-unixsocket</artifactId>
+			<artifactId>jnr-unixsocket-osgi-wrapper</artifactId>
+			<version>0.13.0</version>
+			<classifier>jar-with-dependencies</classifier>
 		</dependency>
 		<!-- tpm2j -->
 		<dependency>
