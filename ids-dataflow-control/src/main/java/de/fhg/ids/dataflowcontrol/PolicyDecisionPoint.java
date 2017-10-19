@@ -20,6 +20,7 @@
 package de.fhg.ids.dataflowcontrol;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,9 @@ import java.util.stream.Collectors;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +55,7 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.TransformationDecision;
+import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
@@ -66,7 +71,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
 	private static final String LUCON_FILE_EXTENSION = ".pl";	
 	private LuconEngine engine;
-		
+	private RouteManager routeManager;
+	
 	/**
 	 * Creates a query to retrieve policy decision from Prolog knowledge base.
 	 * 
@@ -162,6 +168,18 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	      }
 	    }
 	}
+	
+	@Reference(name="pdp-routemanager", policy=ReferencePolicy.STATIC, cardinality=ReferenceCardinality.OPTIONAL)
+	public void bindRoutemanager(RouteManager routeManager) {
+		LOG.warn("RouteManager bound. Camel routes can be analyzed");
+		this.routeManager = routeManager;
+	}
+	public void unbindRoutemanager(RouteManager routeManager) {
+		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
+		this.routeManager = null;
+	}
+	
+
 
 	@Override
 	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
@@ -290,5 +308,23 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	@Override
 	public String getPolicy() {
 		return this.engine.getTheory();
+	}
+	
+	@Override
+	public String verifyRoute(String routeId) {
+		RouteManager rm = this.routeManager;
+		if (rm==null) {
+			LOG.warn("No RouteManager. Cannot verify Camel route " + routeId);
+			return "";
+		}
+		
+		String routePl = rm.getRouteAsProlog(routeId);
+		if (routePl==null) {
+			return null;
+		}
+		
+		// TODO Return a proper proof object instead JSON of Prolog solution
+		List<SolveInfo> proof = engine.proofInvalidRoute(routePl);
+		return proof.stream().map(SolveInfo::toJSON).reduce("", (a,b) -> a+b);
 	}
 }

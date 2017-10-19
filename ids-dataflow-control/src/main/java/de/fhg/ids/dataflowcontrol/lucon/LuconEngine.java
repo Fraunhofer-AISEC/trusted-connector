@@ -46,8 +46,16 @@ import alice.tuprolog.Theory;
  */
 public class LuconEngine {
 	private static final Logger LOG = LoggerFactory.getLogger(LuconEngine.class);
+	private static final String QUERY_ROUTE_VERIFICATION = "path(stmt_1, stmt_5).";
 	Prolog p;
-	
+
+	/**
+	 * Create a new LuconEngine which writes to a given output stream.
+	 * 
+	 * @param out
+	 *            OutputStream to write Prolog engine outputs to or null if
+	 *            output should not printed.
+	 */
 	public LuconEngine(OutputStream out) {
 		p = new Prolog();
 
@@ -55,11 +63,14 @@ public class LuconEngine {
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
 		p.addQueryListener(q -> LOG.trace("Prolog query " + q.getSolveInfo().getQuery().toString()));
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
-		p.addWarningListener(w -> {if (!w.getMsg().contains("The predicate false/0 is unknown")) LOG.warn(w.getMsg());});
-		p.addOutputListener(l -> { 
-			if (out!=null) {
+		p.addWarningListener(w -> {
+			if (!w.getMsg().contains("The predicate false/0 is unknown"))
+				LOG.warn(w.getMsg());
+		});
+		p.addOutputListener(l -> {
+			if (out != null) {
 				try {
-					out.write(l.getMsg().getBytes());					
+					out.write(l.getMsg().getBytes());
 				} catch (Exception e) {
 					LOG.error(e.getMessage(), e);
 				}
@@ -70,9 +81,9 @@ public class LuconEngine {
 	public void setSpy(boolean spy) {
 		p.setSpy(spy);
 	}
-	
+
 	/**
-	 * Loads a policy in form of a prolog theory. 
+	 * Loads a policy in form of a prolog theory.
 	 * 
 	 * Existing policies will be overwritten.
 	 * 
@@ -85,27 +96,54 @@ public class LuconEngine {
 		LOG.debug("Loading theory: " + t.toString());
 		p.setTheory(t);
 	}
-	
+
 	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
+		return query(p, query, findAll);
+	}
+
+	private List<SolveInfo> query(Prolog engine, String query, boolean findAll)
+			throws NoMoreSolutionException, MalformedGoalException {
 		List<SolveInfo> result = new ArrayList<>();
-		SolveInfo solution = p.solve(query);
+		SolveInfo solution = engine.solve(query);
 		while (solution.isSuccess()) {
 			result.add(solution);
-			if (findAll && p.hasOpenAlternatives()) {
-				solution = p.solveNext();
+			if (findAll && engine.hasOpenAlternatives()) {
+				solution = engine.solveNext();
 			} else {
 				break;
 			}
 		}
-		p.solveEnd();
+		engine.solveEnd();
 		return result;
 	}
-	
+
 	public String getTheory() {
 		return p.getTheory().toString();
 	}
 
 	public String getTheoryAsJSON() {
 		return p.getTheory().toJSON();
+	}
+
+	/**
+	 * Returns "true" if the given route is valid under all policies or returns
+	 * a set of counterexamples.
+	 * 
+	 * @param routePl
+	 *            The route, represented as Prolog clauses
+	 * @return A list of counterexamples which violate the rule or empty, if no
+	 *         route violates the policy.
+	 */
+	public List<SolveInfo> proofInvalidRoute(String routePl) {
+		try {
+			Theory t = p.getTheory();
+			t.append(new Theory(routePl));
+			Prolog newP = new Prolog();
+			newP.setTheory(t);
+			return query(newP, QUERY_ROUTE_VERIFICATION, true);
+		} catch (InvalidTheoryException | NoMoreSolutionException | MalformedGoalException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return new ArrayList<>();
 	}
 }

@@ -47,4 +47,6 @@ public interface PAP {
 	String getPolicy();
 	
 	List<String> listRules();
+	
+	String verifyRoute(String routeId);
 }

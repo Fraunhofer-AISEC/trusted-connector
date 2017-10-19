@@ -23,6 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,6 +46,7 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.TransformationDecision;
+import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
 
 /**
@@ -109,6 +113,90 @@ public class LuconEngineTest {
 			"has_endpoint(hadoopClusters, \"hdfs://.*\").\n" + 
 			"has_capability(hadoopClusters,deletion).\n" + 
 			"has_property(hadoopClusters,anonymizes,anonymize('surname', 'name')).\n";
+	
+	// Route from LUCON paper with path searching logic
+	public static final String VERIFIABLE_ROUTE = "%\n" + 
+			"% (C) Julian Schütte, Fraunhofer AISEC, 2017\n" + 
+			"%\n" + 
+			"% Demonstration of model checking a message route against a usage control policy\n" + 
+			"%\n" + 
+			"% Message Route definition\n" + 
+			"%\n" + 
+			"%       stmt_1       \n" + 
+			"%       /     \\     \n" + 
+			"%  stmt_2    stmt_3  \n" + 
+			"%       \\     /     \n" + 
+			"%       stmt_4       \n" + 
+			"%         |          \n" + 
+			"%       stmt_5       \n" + 
+			"stmt(stmt_1, call_service('A')).\n" + 
+			"stmt(stmt_2, call_service('B')).\n" + 
+			"stmt(stmt_3, call_service('C')).\n" + 
+			"stmt(stmt_4, log('intermediate')).\n" + 
+			"stmt(stmt_5, log('target')).\n" + 
+			"\n" + 
+			"succ(stmt_1, stmt_2).\n" + 
+			"succ(stmt_1, stmt_3).\n" + 
+			"succ(stmt_2, stmt_4).\n" + 
+			"succ(stmt_3, stmt_4).\n" + 
+			"succ(stmt_4, stmt_5).\n" + 
+			"\n" + 
+			"\n" + 
+			"% Labeling policy with some arbitrary labels\n" + 
+			"creates_label(stmt_1, ['label_A', 'from_entrypoint']).\n" + 
+			"creates_label(stmt_2, ['path_B']).\n" + 
+			"creates_label(stmt_3, ['path_C']).\n" + 
+			"creates_label(stmt_4, ['interm']).\n" + 
+			"\n" + 
+			"removes_label(stmt_1, []).\n" + 
+			"removes_label(stmt_2, ['from_entrypoint']).\n" + 
+			"removes_label(stmt_3, ['from_entrypoint']).\n" + 
+			"removes_label(stmt_4, ['from_entrypoint']).\n" + 
+			"\n" + 
+			"% Flow Control Policy\n" + 
+			"forbidden(stmt_5, ['path_B']).\n" + 
+			"\n" + 
+			"appendall([],LIST,LIST).\n" + 
+			"appendall([A|TAIL],LIST,[A|RESULT]) :- appendall(TAIL,LIST,RESULT).\n" + 
+			"\n" + 
+			"deletelist([], _, []).                  \n" + 
+			"deletelist([X|Xs], Y, Z) :- member(X, Y), deletelist(Xs, Y, Z), !.\n" + 
+			"deletelist([X|Xs], Y, [X|Zs]) :- deletelist(Xs, Y, Zs).\n" + 
+			"\n" + 
+			"% Query for a path between two nodes and print the labels along the possible paths like so:\n" + 
+			"%\n" + 
+			"%   path(stmt_1, stmt_5).\n" + 
+			"%\n" + 
+			"path(A,B) :-   			 		% two nodes are connected, if\n" + 
+			"  taint_walk(A,B,[],[]) % - if we can walk from one to the other,\n" + 
+			"  .            			 		% first seeding the visited list with the empty list\n" + 
+			"\n" + 
+			"taint_walk(A,B,V,C) :-       				    % we can walk from A to B, maintaining context taint marks in C\n" + 
+			"  succ(A,X) ,        		     				% - if A is connected to X, and\n" + 
+			"  creates_label(A, ADDED), 	   				% \n" + 
+			"  appendall(ADDED,C,C_ADDED),				    % add new taint flags to list\n" + 
+			"  removes_label(A, REMOVED_FLAGS),         	% remember removed taint flags\n" + 
+			"  deletelist(C_ADDED, REMOVED_FLAGS, C_NEW),   % remove removed taint flags from list\n" + 
+			"  print(X), print(': '), print(C_NEW),nl,\n" + 
+			" \n" + 
+			"  not(member(X,V)) , 								% - we haven't yet visited X, and\n" + 
+			"  (                  								% - either\n" + 
+			"    B = X,            																		% - X is the desired destination and\n" + 
+			"    forbidden(X,Forbidden), intersects(Forbidden,C_NEW),	% - taint policy forbids a flow to B\n" + 
+			"    print(['forbidden ', B, ' due to ', Forbidden]),nl		\n" + 
+			"  ;                  						%   OR\n" + 
+			"    taint_walk(X,B,[A|V],C_NEW)  													%   - we can get to it from X\n" + 
+			"  )                  						%  \n" + 
+			"  .                 						% Easy!\n" + 
+			"\n" + 
+			"% Helper function: intersection of lists\n" + 
+			"intersects([H|_],List) :-\n" + 
+			"    member(H,List),\n" + 
+			"    !.\n" + 
+			"intersects([_|T],List) :-\n" + 
+			"    intersects(T,List).\n" + 
+			"\n";
+	
 	
 	/**
 	 * Loading a valid Prolog theory should not fail.
@@ -279,5 +367,19 @@ public class LuconEngineTest {
 		
 		assertEquals(0, trans.getLabelsToAdd().size());
 		assertEquals(0, trans.getLabelsToRemove().size());
+	}
+	
+	@Test
+	public void testVerifyRoute() throws Exception {
+		RouteManager rm = mock(RouteManager.class);
+		when(rm.getRouteAsProlog(anyString())).thenReturn(VERIFIABLE_ROUTE);
+		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+		pdp.activate(null);
+		pdp.bindRoutemanager(rm);
+		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+		String proof = pdp.verifyRoute("mockId");
+		System.out.println("------ Proof follows ----------");
+		System.out.println(proof);
+		assertNotNull(proof);
 	}
 }
