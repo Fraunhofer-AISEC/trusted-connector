@@ -59,9 +59,7 @@
 		<!-- JNR-Unixsocket -->
 		<dependency>
 			<groupId>com.github.jnr</groupId>
-			<artifactId>jnr-unixsocket-osgi-wrapper</artifactId>
-			<version>0.13.0</version>
-			<classifier>jar-with-dependencies</classifier>
+			<artifactId>jnr-unixsocket</artifactId>
 		</dependency>
 
 		<!-- for testing -->

@@ -24,10 +24,10 @@ Import-Package: \
 	de.fraunhofer.aisec.tpm2j.tpms,\
 	de.fraunhofer.aisec.tpm2j.tpmt,\
 	de.fraunhofer.aisec.tpm2j.tpmu,\
-	jnr.unixsocket;version=0.13.0,\
-	jnr.posix;version=0.13.0,\
-	jnr.enxio;version=0.13.0,\
-	jnr.enxio.channels;version=0.13.0,\
+	jnr.unixsocket;version=0.13,\
+	jnr.posix;version=3.0.30,\
+	jnr.enxio;version=0.13,\
+	jnr.enxio.channels;version=0.13,\
 	!org.glassfish.jersey.*,\
 	io.netty.handler.ssl;resolution:=optional,\
 	io.netty.channel,\

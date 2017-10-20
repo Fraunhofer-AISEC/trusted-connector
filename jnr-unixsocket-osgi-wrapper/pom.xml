@@ -16,8 +16,7 @@
 
 	<groupId>com.github.jnr</groupId>
 	<artifactId>jnr-unixsocket-osgi-wrapper</artifactId>
-	<packaging>jar</packaging>
-	<version>0.13.0</version>
+	<packaging>bundle</packaging>
 
 	<parent>
 		<groupId>de.fhg.ids</groupId>
@@ -44,54 +43,17 @@
 
 		<plugins>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.0</version>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>3.3.0</version>
+				<extensions>true</extensions>
 				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<archive>
-					<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
+					<instructions>
+						<Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
+					</instructions>
 				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
-
-			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
-			<plugin>
-				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>bnd-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>bnd-process</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- The following configuration is required because bnd-maven-plugin 
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
-				the manifest from this location, then the following config is not needed. -->
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-jar-plugin</artifactId> -->
-			<!-- <configuration> -->
-			<!-- <archive> -->
-			<!-- <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile> -->
-			<!-- </archive> -->
-			<!-- </configuration> -->
-			<!-- </plugin> -->
-
 		</plugins>
 	</build>
 </project>
