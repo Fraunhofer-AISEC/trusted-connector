@@ -51,6 +51,7 @@
 					<instructions>
 						<Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
+						<_exportcontents>*</_exportcontents>
 					</instructions>
 				</configuration>
 			</plugin>
