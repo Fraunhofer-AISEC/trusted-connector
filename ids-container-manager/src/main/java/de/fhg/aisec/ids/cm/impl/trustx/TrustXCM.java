@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,9 +78,11 @@ public class TrustXCM implements ContainerManager {
 	
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
+		List<ApplicationContainer> result = new ArrayList<>();
 		byte[] response = sendCommandAndWaitForResponse(Command.LIST_CONTAINERS);
-		System.out.println(new String(response));
-		return null;
+		LOG.debug("Received response from cml: " + new String(response));
+		
+		return result;
 	}
 
 	@Override
