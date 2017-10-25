@@ -34,6 +34,8 @@ import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.SolveInfo;
 import alice.tuprolog.Theory;
+import de.fhg.aisec.ids.api.router.CounterExample;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 
 /**
  * LUCON (Logic based Usage Control) policy decision engine.
@@ -46,7 +48,7 @@ import alice.tuprolog.Theory;
  */
 public class LuconEngine {
 	private static final Logger LOG = LoggerFactory.getLogger(LuconEngine.class);
-	private static final String QUERY_ROUTE_VERIFICATION = "path(stmt_1, stmt_5).";
+	private static final String QUERY_ROUTE_VERIFICATION = "path(hiveMqttBroker, testQueue).";	//TODO Replace by start and endpoint of route
 	Prolog p;
 
 	/**
@@ -88,8 +90,8 @@ public class LuconEngine {
 	 * Existing policies will be overwritten.
 	 * 
 	 * @param is
-	 * @throws InvalidTheoryException
-	 * @throws IOException
+	 * @throws InvalidTheoryException  Syntax error in Prolog document
+	 * @throws IOException			   I/O error reading from stream
 	 */
 	public void loadPolicy(InputStream is) throws InvalidTheoryException, IOException {
 		Theory t = new Theory(is);
@@ -129,21 +131,120 @@ public class LuconEngine {
 	 * Returns "true" if the given route is valid under all policies or returns
 	 * a set of counterexamples.
 	 * 
+	 * @param id Route id
 	 * @param routePl
 	 *            The route, represented as Prolog clauses
 	 * @return A list of counterexamples which violate the rule or empty, if no
 	 *         route violates the policy.
 	 */
-	public List<SolveInfo> proofInvalidRoute(String routePl) {
+	public RouteVerificationProof proofInvalidRoute(String id, String routePl) {
+		RouteVerificationProof proof = new RouteVerificationProof(id);
+		proof.setQuery(QUERY_ROUTE_VERIFICATION);
 		try {
 			Theory t = p.getTheory();
 			t.append(new Theory(routePl));
 			Prolog newP = new Prolog();
+			List<CounterExample> ces = new ArrayList<>();
+			List<String> currentSteps = new ArrayList<>();
+
+			// Counterexamples are printed to out. Fetch them from there.
+			newP.addOutputListener(outEvent -> {
+				String msg = outEvent.getMsg();
+				if ("END TRACE".equals(msg.trim())) {
+					// Deep copy into counterexample
+					CounterExample ce = new CounterExample();
+					currentSteps.forEach(ce::addStep);
+					ces.add(ce);
+					currentSteps.clear();
+				} else if (msg.contains("reason: ")) {
+					proof.setExplanation(cleanupProofReason(msg));
+				} else {
+					if (msg!=null && !"".equals(msg.trim())) {
+						currentSteps.add(cleanupProofStep(msg));
+					}
+				}
+			});
 			newP.setTheory(t);
-			return query(newP, QUERY_ROUTE_VERIFICATION, true);
+			List<SolveInfo> result = query(newP, QUERY_ROUTE_VERIFICATION, true);
+			
+			if (!result.isEmpty() && result.get(0).isSuccess()) {
+				proof.setCounterexamples(ces);
+				proof.setValid(false);
+			}
 		} catch (InvalidTheoryException | NoMoreSolutionException | MalformedGoalException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new ArrayList<>();
+		return proof;
+	}
+
+	/**
+	 * Turns this <code>['reason: service ',stmt_5,' receives label(s) ',[path_B]]</code> into this <code>Service stmt_5 receives forbidden label(s) path_B</code>.
+	 * @param msg
+	 * @return
+	 */
+	private String cleanupProofReason(String msg) {
+		if (msg==null) {
+			return null;
+		}
+		
+		StringBuilder out = new StringBuilder();
+		
+		// Remove brackets
+		if (msg.charAt(0)=='[') {
+			int start = 1;
+			int end = msg.length()-1;
+			if (msg.endsWith("]]")) {
+				end--;
+			}
+			msg = msg.substring(start, end);
+		}
+				
+		// remove strings
+		try {
+			String[] parts = msg.split(",");
+			out.append("service ");
+			out.append(parts[1]);
+			out.append(" may receive label(s) ");
+			out.append(parts[3]);
+			out.append(". This is forbidden by rule ");
+			out.append(parts[5]);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			LOG.error("Unexpected: cannot parse proof explanation " + msg, e);
+		}
+		
+		return out.toString();
+	}
+
+	/**
+	 * Turns this <code>[stmt_2,[label_A,from_entrypoint]]</code> into this <code>stmt_2 : [label_A,from_entrypoint]</code>.
+	 * @param msg
+	 * @return
+	 */
+	private String cleanupProofStep(String msg) {
+		if (msg==null) {
+			return null;
+		}
+		
+		char[] in = msg.toCharArray();
+		StringBuilder out = new StringBuilder();
+		
+		boolean killedFirstBracket = false;
+		boolean killedComma = false;
+		boolean killedLastBracket = false;
+		
+		for (int i=0;i<in.length;i++) {
+			if (!killedFirstBracket && in[i]=='[') {
+				killedFirstBracket = true;
+			} else if (!killedComma && in[i]==',') {
+				killedComma = true;
+				out.append(" receives message labelled ");
+			} else if (!killedLastBracket && in[i]==']') {
+				killedLastBracket = true; 
+			} else {
+				out.append(in[i]);
+			}
+		}
+		
+		return out.toString();
 	}
 }

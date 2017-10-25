@@ -19,10 +19,7 @@
  */
 package de.fhg.ids.dataflowcontrol.lucon;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,6 +44,7 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.TransformationDecision;
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
 
 /**
@@ -84,35 +82,53 @@ public class LuconEngineTest {
 			"%:- discontiguous has_obligation/2.\n" + 
 			"%:- discontiguous receives_label/2.		\n" + 
 			"regex(A,B,C) :- class(\"java.util.regex.Pattern\") <- matches(A,B) returns C.\n" +
+			
 			"%%%%%%%% Rules %%%%%%%%%%%%\n" + 
-			"rule(deleteAfterOneMonth).\n" + 
-			"has_target(deleteAfterOneMonth, service78096644).\n" + 
-			"service(service78096644).\n" + 
-			"has_endpoint(service78096644, \"hdfs.*\").\n" + 
-			"receives_label(deleteAfterOneMonth,private).\n" + 
-			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
-			"requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
-			"has_alternativedecision(obl1709554620, drop).\n" + 
+			"%rule(deleteAfterOneMonth).\n" + 
+			"%has_target(deleteAfterOneMonth, service78096644).\n" + 
+			"%service(service78096644).\n" + 
+			"%has_endpoint(service78096644, \"hdfs.*\").\n" + 
+			"%receives_label(deleteAfterOneMonth,['private']).\n" + 
+			"%has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
+			"%requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
+			"%has_alternativedecision(obl1709554620, drop).\n" + 
+			
 			"rule(anotherRule).\n" + 
-			"has_target(anotherRule, hiveMqttBroker). \n" + 
-			"receives_label(anotherRule,private).\n" + 
+			"has_target(anotherRule, testQueue). \n" + 
+			"receives_label(anotherRule, ['private']).\n" + 
 			"has_decision(anotherRule, drop).\n" + 
 			"\n" + 
+			
 			"%%%%% Services %%%%%%%%%%%%\n" + 
+			"service(hiveMqttBroker).\n" + 
+			"creates_label(hiveMqttBroker, [labelone, private]).\n" + 
+			"removes_label(hiveMqttBroker, []).\n" + 
+			"has_endpoint(hiveMqttBroker, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" + 
+			"has_property(hiveMqttBroker,type,public).\n" + 
+
 			"service(anonymizer).\n" + 
 			"has_endpoint(anonymizer, \".*anonymizer.*\").\n" + 
 			"has_property(anonymizer,myProp,anonymize('surname', 'name')).\n" + 
-			"service(hiveMqttBroker).\n" + 
-			"creates_label(hiveMqttBroker, labelone).\n" + 
-			"removes_label(hiveMqttBroker, labeltwo).\n" + 
-			"has_endpoint(hiveMqttBroker, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" + 
-			"has_property(hiveMqttBroker,type,public).\n" + 
-			"service(testQueue).\n" + 
-			"has_endpoint(testQueue, \"^amqp:.*?:test\").\n" + 
+			"removes_label(anonymizer, []).\n" + 
+			"creates_label(anonymizer, []).\n" + 
+
+			"service(logger).\n" + 
+			"has_endpoint(anonymizer, \".*anonymizer.*\").\n" + 
+			"removes_label(logger, []).\n" + 
+			"creates_label(logger, []).\n" + 
+
 			"service(hadoopClusters).\n" + 
 			"has_endpoint(hadoopClusters, \"hdfs://.*\").\n" + 
 			"has_capability(hadoopClusters,deletion).\n" + 
-			"has_property(hadoopClusters,anonymizes,anonymize('surname', 'name')).\n";
+			"has_property(hadoopClusters,anonymizes,anonymize('surname', 'name')).\n" +
+			"removes_label(hadoopClusters, []).\n" + 
+			"creates_label(hadoopClusters, []).\n" + 
+			
+			"service(testQueue).\n" + 
+			"has_endpoint(testQueue, \"^amqp:.*?:test\").\n" +
+			"removes_label(testQueue, []).\n"  +
+			"creates_label(testQueue, []).\n"  
+			;
 	
 	// Route from LUCON paper with path searching logic
 	public static final String VERIFIABLE_ROUTE = "%\n" + 
@@ -122,39 +138,24 @@ public class LuconEngineTest {
 			"%\n" + 
 			"% Message Route definition\n" + 
 			"%\n" + 
-			"%       stmt_1       \n" + 
+			"%       hiveMqttBroker       \n" + 
 			"%       /     \\     \n" + 
-			"%  stmt_2    stmt_3  \n" + 
+			"%  logger    anonymizer  \n" + 
 			"%       \\     /     \n" + 
-			"%       stmt_4       \n" + 
+			"%       hadoopClusters       \n" + 
 			"%         |          \n" + 
-			"%       stmt_5       \n" + 
-			"stmt(stmt_1, call_service('A')).\n" + 
-			"stmt(stmt_2, call_service('B')).\n" + 
-			"stmt(stmt_3, call_service('C')).\n" + 
-			"stmt(stmt_4, log('intermediate')).\n" + 
-			"stmt(stmt_5, log('target')).\n" + 
+			"%       testQueue       \n" + 
+			"stmt(hiveMqttBroker, call_service('A')).\n" + 
+			"stmt(logger, call_service('B')).\n" + 
+			"stmt(anonymizer, call_service('C')).\n" + 
+			"stmt(hadoopClusters, log('intermediate')).\n" + 
+			"stmt(testQueue, log('target')).\n" + 
 			"\n" + 
-			"succ(stmt_1, stmt_2).\n" + 
-			"succ(stmt_1, stmt_3).\n" + 
-			"succ(stmt_2, stmt_4).\n" + 
-			"succ(stmt_3, stmt_4).\n" + 
-			"succ(stmt_4, stmt_5).\n" + 
-			"\n" + 
-			"\n" + 
-			"% Labeling policy with some arbitrary labels\n" + 
-			"creates_label(stmt_1, ['label_A', 'from_entrypoint']).\n" + 
-			"creates_label(stmt_2, ['path_B']).\n" + 
-			"creates_label(stmt_3, ['path_C']).\n" + 
-			"creates_label(stmt_4, ['interm']).\n" + 
-			"\n" + 
-			"removes_label(stmt_1, []).\n" + 
-			"removes_label(stmt_2, ['from_entrypoint']).\n" + 
-			"removes_label(stmt_3, ['from_entrypoint']).\n" + 
-			"removes_label(stmt_4, ['from_entrypoint']).\n" + 
-			"\n" + 
-			"% Flow Control Policy\n" + 
-			"forbidden(stmt_5, ['path_B']).\n" + 
+			"succ(hiveMqttBroker, logger).\n" + 
+			"succ(hiveMqttBroker, anonymizer).\n" + 
+			"succ(logger, hadoopClusters).\n" + 
+			"succ(anonymizer, hadoopClusters).\n" + 
+			"succ(hadoopClusters, testQueue).\n" + 
 			"\n" + 
 			"appendall([],LIST,LIST).\n" + 
 			"appendall([A|TAIL],LIST,[A|RESULT]) :- appendall(TAIL,LIST,RESULT).\n" + 
@@ -173,19 +174,20 @@ public class LuconEngineTest {
 			"\n" + 
 			"taint_walk(A,B,V,C) :-       				    % we can walk from A to B, maintaining context taint marks in C\n" + 
 			"  succ(A,X) ,        		     				% - if A is connected to X, and\n" + 
-			"  creates_label(A, ADDED), 	   				% \n" + 
+			"  creates_label(A, ADDED),	   				    % \n" + 
 			"  appendall(ADDED,C,C_ADDED),				    % add new taint flags to list\n" + 
 			"  removes_label(A, REMOVED_FLAGS),         	% remember removed taint flags\n" + 
 			"  deletelist(C_ADDED, REMOVED_FLAGS, C_NEW),   % remove removed taint flags from list\n" + 
-			"  print(X), print(': '), print(C_NEW),nl,\n" + 
+			"  print([X, C_NEW]),nl,\n" + 
 			" \n" + 
 			"  not(member(X,V)) , 								% - we haven't yet visited X, and\n" + 
 			"  (                  								% - either\n" + 
-			"    B = X,            																		% - X is the desired destination and\n" + 
-			"    forbidden(X,Forbidden), intersects(Forbidden,C_NEW),	% - taint policy forbids a flow to B\n" + 
-			"    print(['forbidden ', B, ' due to ', Forbidden]),nl		\n" + 
+			"    B = X,            								% - X is the desired destination and\n" + 
+			"    has_decision(R,drop), print(R), rule(R), receives_label(R, Forbidden), has_target(R,X), intersects(Forbidden,C_NEW),	% - taint policy forbids a flow to B\n" + 
+			"    print(['reason: service ', B, ' receives label(s) ', Forbidden, ' which is forbidden by ', R]),nl,		\n" + 
+			"  	 print('END TRACE'),nl \n" +
 			"  ;                  						%   OR\n" + 
-			"    taint_walk(X,B,[A|V],C_NEW)  													%   - we can get to it from X\n" + 
+			"  taint_walk(X,B,[A|V],C_NEW)  			%   - we can get to it from X\n" + 
 			"  )                  						%  \n" + 
 			"  .                 						% Easy!\n" + 
 			"\n" + 
@@ -284,7 +286,8 @@ public class LuconEngineTest {
 	}
 	
 	/**
-	 * Test if the correct policy decisions are taken.
+	 * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
+	 * 
 	 * @throws IOException 
 	 */
 	@Test
@@ -311,6 +314,7 @@ public class LuconEngineTest {
 
 	/**
 	 * List all rules of the currently loaded policy.
+	 * 
 	 * @throws IOException 
 	 */
 	@Test
@@ -369,17 +373,30 @@ public class LuconEngineTest {
 		assertEquals(0, trans.getLabelsToRemove().size());
 	}
 	
+	/**
+	 * Tests the generation of a proof that a route matches a policy.
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testVerifyRoute() throws Exception {
+		// Create RouteManager returning VERIFIABLE_ROUTE
 		RouteManager rm = mock(RouteManager.class);
 		when(rm.getRouteAsProlog(anyString())).thenReturn(VERIFIABLE_ROUTE);
+		
+		// Create policy decision point and attach to route manager
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 		pdp.activate(null);
 		pdp.bindRoutemanager(rm);
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
-		String proof = pdp.verifyRoute("mockId");
+		
+		// Verify VERIFIABLE_ROUTE against EXAMPLE_POLICY
+		RouteVerificationProof proof = pdp.verifyRoute("mockId");
 		System.out.println("------ Proof follows ----------");
-		System.out.println(proof);
+		System.out.println(proof.toString());
 		assertNotNull(proof);
+		assertFalse(proof.isValid());
+		assertTrue(proof.toString().contains("because service stmt_5 receives label(s) [path_B]"));
+		assertNotNull(proof.getCounterexamples());
 	}
 }

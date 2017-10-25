@@ -20,7 +20,6 @@
 package de.fhg.ids.dataflowcontrol;
 
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +55,7 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.TransformationDecision;
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
@@ -311,11 +311,11 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 	
 	@Override
-	public String verifyRoute(String routeId) {
+	public RouteVerificationProof verifyRoute(String routeId) {
 		RouteManager rm = this.routeManager;
 		if (rm==null) {
 			LOG.warn("No RouteManager. Cannot verify Camel route " + routeId);
-			return "";
+			return null;
 		}
 		
 		String routePl = rm.getRouteAsProlog(routeId);
@@ -323,8 +323,6 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			return null;
 		}
 		
-		// TODO Return a proper proof object instead JSON of Prolog solution
-		List<SolveInfo> proof = engine.proofInvalidRoute(routePl);
-		return proof.stream().map(SolveInfo::toJSON).reduce("", (a,b) -> a+b);
+		return engine.proofInvalidRoute(routeId, routePl);
 	}
 }

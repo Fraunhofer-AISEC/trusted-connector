@@ -22,6 +22,8 @@ package de.fhg.aisec.ids.api.policy;
 import java.io.InputStream;
 import java.util.List;
 
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+
 /**
  * Policy Administration Point Interface.
  * 
@@ -48,5 +50,5 @@ public interface PAP {
 	
 	List<String> listRules();
 	
-	String verifyRoute(String routeId);
+	RouteVerificationProof verifyRoute(String routeId);
 }
