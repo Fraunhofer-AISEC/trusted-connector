@@ -30,8 +30,12 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.fhg.aisec.ids.Container.ContainerStatus;
 import de.fhg.aisec.ids.Control.ControllerToDaemon;
 import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
+import de.fhg.aisec.ids.Control.DaemonToController;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
@@ -79,7 +83,19 @@ public class TrustXCM implements ContainerManager {
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
 		List<ApplicationContainer> result = new ArrayList<>();
-		byte[] response = sendCommandAndWaitForResponse(Command.LIST_CONTAINERS);
+		byte[] response = sendCommandAndWaitForResponse(Command.GET_CONTAINER_STATUS);
+		try {
+			DaemonToController dtc = DaemonToController.parseFrom(response);
+			List<ContainerStatus> containerStats = dtc.getContainerStatusList();
+			for (ContainerStatus cs : containerStats) {
+				ApplicationContainer container;
+				//TODO map uuid, name, foreground, state to applicationcontainer
+			}
+		
+		} catch (InvalidProtocolBufferException e) {
+			LOG.error("Response Length: " + response.length);
+			e.printStackTrace();
+		}
 		LOG.debug("Received response from cml: " + new String(response));
 		
 		return result;

@@ -141,7 +141,7 @@ public class TestTrustXCM {
 	    	
 	    	// check that the correct message was sent
 	    	ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
-	    ctdmsg.setCommand(Command.LIST_CONTAINERS).build().toByteArray();
+	    ctdmsg.setCommand(Command.GET_CONTAINER_STATUS).build().toByteArray();
 	    byte[] encodedMessage = ctdmsg.build().toByteArray();
 	    	verify(mockSocket).sendWithHeader(encodedMessage, mockHandler);
 	    	
