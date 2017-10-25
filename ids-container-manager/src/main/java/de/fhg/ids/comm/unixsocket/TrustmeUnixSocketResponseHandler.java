@@ -40,7 +40,9 @@ public class TrustmeUnixSocketResponseHandler {
 				LOG.error(e.getMessage(),e);
 			}
 		}
-		return this.rsp;
+		byte[] result = rsp;
+		this.rsp = null;
+		return result;
 	}
 }
 
