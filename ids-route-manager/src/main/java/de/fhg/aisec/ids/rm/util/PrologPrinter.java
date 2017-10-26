@@ -106,6 +106,7 @@ public class PrologPrinter {
 			}			
 			String nodeName = "input"+i.getId();
 			writer.write("node("+nodeName+").\n");
+			writer.write("entrynode("+nodeName+").\n");
 			writer.write("has_action("+nodeName+", \"" + i.getLabel() + "\").\n");
 			
 			ArrayList<OptionalIdentifiedDefinition<?>> preds = new ArrayList<>();

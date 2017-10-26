@@ -48,7 +48,7 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof;
  */
 public class LuconEngine {
 	private static final Logger LOG = LoggerFactory.getLogger(LuconEngine.class);
-	private static final String QUERY_ROUTE_VERIFICATION = "path(hiveMqttBroker, testQueue).";	//TODO Replace by start and endpoint of route
+	private static final String QUERY_ROUTE_VERIFICATION = "path(X, Y), entrynode(X), stmt(Y, _).";
 	Prolog p;
 
 	/**
@@ -165,6 +165,9 @@ public class LuconEngine {
 				}
 			});
 			newP.setTheory(t);
+			System.out.println("-------------------------");
+			System.out.println(t.toString());
+			System.out.println("-------------------------");
 			List<SolveInfo> result = query(newP, QUERY_ROUTE_VERIFICATION, true);
 			
 			if (!result.isEmpty() && result.get(0).isSuccess()) {

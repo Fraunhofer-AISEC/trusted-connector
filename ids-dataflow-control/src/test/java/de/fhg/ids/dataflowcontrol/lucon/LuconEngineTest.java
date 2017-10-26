@@ -145,6 +145,7 @@ public class LuconEngineTest {
 			"%       hadoopClusters       \n" + 
 			"%         |          \n" + 
 			"%       testQueue       \n" + 
+			"entrynode(hiveMqttBroker).\n" +
 			"stmt(hiveMqttBroker, call_service('A')).\n" + 
 			"stmt(logger, call_service('B')).\n" + 
 			"stmt(anonymizer, call_service('C')).\n" + 
@@ -396,7 +397,7 @@ public class LuconEngineTest {
 		System.out.println(proof.toString());
 		assertNotNull(proof);
 		assertFalse(proof.isValid());
-		assertTrue(proof.toString().contains("because service stmt_5 receives label(s) [path_B]"));
+		assertTrue(proof.toString().contains("because service testQueue may receive label(s) [private]"));
 		assertNotNull(proof.getCounterexamples());
 	}
 }

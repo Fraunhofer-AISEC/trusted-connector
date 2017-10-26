@@ -43,16 +43,16 @@ public class CamelRouteToProlog {
 	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
 		List<FromDefinition> inputs = route.getInputs();
 		for (FromDefinition input : inputs) {
-			printRoute(writer, route, input);
+			printRouteFromEntryNode(writer, route, input);
 		}
 
 		writer.write("\n}");
 	}
 
-	protected void printRoute(Writer writer, final RouteDefinition route, FromDefinition input) throws IOException {
+	protected void printRouteFromEntryNode(Writer writer, final RouteDefinition route, FromDefinition input) throws IOException {
 		PrologNode nodeData = getNodeData(input);
 
-		printNode(writer, nodeData);
+		printEntryNode(writer, nodeData, route.getId());
 
 		PrologNode from = nodeData;
 		for (ProcessorDefinition<?> output : route.getOutputs()) {
@@ -95,6 +95,13 @@ public class CamelRouteToProlog {
 		return toData;
 	}
 
+	protected void printEntryNode(Writer writer, PrologNode data, String routeId) throws IOException {
+		if (!data.nodeWritten) {
+			printNode(writer,data);
+			writer.write("entrynode("+routeId+","+data.id+").\n");
+		}		
+	}
+	
 	protected void printNode(Writer writer, PrologNode data) throws IOException {
 		if (!data.nodeWritten) {
 			data.nodeWritten = true;

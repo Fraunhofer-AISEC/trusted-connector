@@ -75,5 +75,6 @@ public class CamelRouteToPrologTest {
 		assertTrue(prolog.contains("when[{header{mycond} == A}]choice[when[{header{mycond} == B}]choice[]"));
 		assertTrue(prolog.contains("ids-server://0.0.0.0"));
 		assertTrue(prolog.contains("direct:A1"));
+		System.out.println(prolog);
 	}
 }
