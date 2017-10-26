@@ -23,8 +23,8 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,7 +75,7 @@ import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
-import de.fhg.aisec.ids.rm.util.CamelRouteToProlog;
+import de.fhg.aisec.ids.rm.util.PrologPrinter;
 
 /**
  * Manages Camel routes.
@@ -378,15 +378,14 @@ public class RouteManagerService implements RouteManager {
 				.findAny();
 			
 			if (c.isPresent()) {
-				RouteDefinition rd = c.get().getRouteDefinition(routeId);
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				PrintWriter w = new PrintWriter(bos);
 				try {
-					new CamelRouteToProlog().printSingleRoute(w, rd);
-					w.flush();
-					return bos.toString();
+					RouteDefinition rd = c.get().getRouteDefinition(routeId);
+					StringWriter writer = new StringWriter();
+					new PrologPrinter().printSingleRoute(writer, rd);
+					writer.flush();
+					return writer.getBuffer().toString();					
 				} catch (IOException e) {
-					LOG.error(e.getMessage(), e);
+					LOG.error("Error printing route to prolog " + routeId, e);
 				}
 			}
 

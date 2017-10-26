@@ -68,7 +68,6 @@ public class CamelRouteToPrologTest {
 		RouteDefinition mockRoute = rb.getRouteCollection().getRoutes().get(0);
 		
 		StringWriter writer = new StringWriter();
-		//prol.printSingleRoute(writer, mockRoute);
 		new PrologPrinter().printSingleRoute(writer, mockRoute);
 		writer.flush();
 		String prolog = writer.getBuffer().toString();
