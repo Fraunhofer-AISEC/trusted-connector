@@ -45,8 +45,8 @@ import {PrettifyPipe} from './prettify-json.pipe';
 import {ConfirmService} from "./confirm/confirm.service";
 import {ConfirmComponent} from "./confirm/confirm.component";
 
-import { ModalModule } from 'angular2-modal';
-import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
+//import { ModalModule } from 'angular2-modal';
+//import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
 import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
 import { ConnectionService } from './inOutConnections/inOutConnections.service';
@@ -61,8 +61,9 @@ import 'material-design-lite';
     routing,
     HttpModule,
     ReactiveFormsModule,
-    ModalModule.forRoot(),
-    BootstrapModalModule  ],
+//    ModalModule.forRoot(),
+//    BootstrapModalModule  
+    ],
   declarations: [
     AppComponent,
     DashboardComponent,
@@ -94,8 +95,8 @@ import 'material-design-lite';
     CertificateService,
     SensorService,
     ConfirmService,
-    IdsComponent,
     ConnectionService,
+    IdsComponent,
     Title
   ],
   bootstrap: [

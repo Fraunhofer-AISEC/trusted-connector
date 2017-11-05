@@ -10,6 +10,7 @@ import { MDLTextFieldDirective } from '../mdl-textfield-directive';
 @Component({
     selector: 'my-app',
     templateUrl: './ids.component.html',
+    providers: [SettingsService]
 })
 export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
     public myForm: FormGroup;
