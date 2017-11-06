@@ -335,56 +335,108 @@
                 </executions>
             </plugin>
 
-            <!-- create a docker image for core platform -->
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.13</version>
-				<configuration>
-					<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
-					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
-					<resources>
-						<resource>
-							<targetPath>/root</targetPath>
-							<directory>${project.build.directory}/assembly</directory>
-						</resource>
-					</resources>
-				</configuration>
-				<executions>
-					<execution>
-						<id>build-image</id>
-						<phase>install</phase>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<!-- <execution>
-						<id>tag-image</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>tag</goal>
-						</goals>
-						<configuration>
-							<image>ids/ttpsim:develop</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</newName>
-						</configuration>
-					</execution> -->
-					<execution>
-						<id>push-image</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>push</goal>
-						</goals>
-						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <!-- Build docker images for x86 and Raspberry Pi -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.23.0</version>
+                <configuration>
+                    <startParallel>false</startParallel>
+                    <showLogs>true</showLogs>
+                    <autoPull>once</autoPull>
+                    <skip>${skipDocker}</skip>
+                </configuration>
+                
+                <!-- Register qemu in binfmt_misc to support cross-platform docker containers-->
+                <executions>
+                    <execution>
+                        <id>run-qemu-binfmt</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>multiarch/qemu-user-static:register</name>
+                                    <alias>qemu-registration</alias>
+                                    <run>
+                                        <privileged>true</privileged>
+                                        <wait>
+                                            <time>1000</time>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-qemu-binfmt</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
 
+                    <!-- x86 -->
+                    <execution>
+                        <id>build-platform-x86</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</name>
+                                    <build>
+                                        <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
+                                        <assembly>
+                                            <mode>dir</mode>
+                                            <targetDir>/root/</targetDir>
+                                            <inline>
+                                                <fileSet>
+                                                    <directory>${project.build.directory}/assembly</directory>
+                                                    <outputDirectory>.</outputDirectory>
+                                                </fileSet>
+                                            </inline>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </execution>
 
-
-
+                    <!-- Raspberry -->
+                    <execution>
+                        <id>build-platform-raspi</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop-raspi</name>
+                                    <build>
+                                        <dockerFile>${basedir}/src/main/docker-raspi/Dockerfile</dockerFile>
+                                        <assembly>
+                                            <mode>dir</mode>
+                                            <targetDir>/root/</targetDir>
+                                            <inline>
+                                                <fileSet>
+                                                    <directory>${project.build.directory}/assembly</directory>
+                                                    <outputDirectory>.</outputDirectory>
+                                                </fileSet>
+                                            </inline>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
         <pluginManagement>

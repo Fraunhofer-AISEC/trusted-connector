@@ -1,8 +1,12 @@
 <!-- Status cards -->
 <div class="mdl-grid" *ngIf="apps">
-  <div metricCard [text]="'Apps'" [value]="apps.length" class="mdl-cell mdl-cell--6-col"></div>
+  <div metricCard [text]="'Apps'" [value]="apps.length" class="mdl-cell mdl-cell--3-col"></div>
 
-  <div metricCard [text]="'Usage Control Rules'" [value]="policies" class="mdl-cell mdl-cell--6-col"></div>
+  <div metricCard [text]="'Usage Control Rules'" [value]="policies" class="mdl-cell mdl-cell--3-col"></div>
+
+  <div metricCard [text]="'CPU'" [value]="metric['cpu.loadavg']" class="mdl-cell mdl-cell--3-col"></div>
+
+  <div metricCard [text]="'Mem'" [value]="metric['mem.total']/1024/1024 + ' MB'" class="mdl-cell mdl-cell--3-col"></div>
 
   <div class="card-dark mdl-card mdl-cell mdl-cell--6-col">
     <div class="mdl-card__title">
