@@ -54,6 +54,7 @@ import { ConnectionService } from './inOutConnections/inOutConnections.service';
 import { MDLTextFieldDirective } from './mdl-textfield-directive';
 
 import 'material-design-lite';
+import { MetricService } from './metric/metric.service';
 
 @NgModule({
   imports: [
@@ -97,7 +98,8 @@ import 'material-design-lite';
     ConfirmService,
     ConnectionService,
     IdsComponent,
-    Title
+    Title,
+    MetricService
   ],
   bootstrap: [
     AppComponent ],

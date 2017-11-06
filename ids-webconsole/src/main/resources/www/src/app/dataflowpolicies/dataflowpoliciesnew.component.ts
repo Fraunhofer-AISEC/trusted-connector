@@ -12,7 +12,7 @@ export class NewDataflowPolicyComponent implements OnInit {
     @Output() changeTitle = new EventEmitter();
     public myForm: FormGroup;
     public data: Policy;
-    public policyFileName: string = "Select policy file ...";
+    public policyFileName: string = "Select .lucon file ...";
     public events: any[] = [];
 
     constructor(private _fb: FormBuilder, private titleService: Title, private policyService: PolicyService) {
