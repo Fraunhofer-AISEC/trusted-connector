@@ -84,14 +84,14 @@ public class LuconEngineTest {
 			"regex(A,B,C) :- class(\"java.util.regex.Pattern\") <- matches(A,B) returns C.\n" +
 			
 			"%%%%%%%% Rules %%%%%%%%%%%%\n" + 
-			"%rule(deleteAfterOneMonth).\n" + 
-			"%has_target(deleteAfterOneMonth, service78096644).\n" + 
-			"%service(service78096644).\n" + 
-			"%has_endpoint(service78096644, \"hdfs.*\").\n" + 
-			"%receives_label(deleteAfterOneMonth,['private']).\n" + 
-			"%has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
-			"%requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
-			"%has_alternativedecision(obl1709554620, drop).\n" + 
+			"rule(deleteAfterOneMonth).\n" + 
+			"has_target(deleteAfterOneMonth, service78096644).\n" + 
+			"service(service78096644).\n" + 
+			"has_endpoint(service78096644, \"hdfs.*\").\n" + 
+			"receives_label(deleteAfterOneMonth,['private']).\n" + 
+			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
+			"requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
+			"has_alternativedecision(obl1709554620, drop).\n" + 
 			
 			"rule(anotherRule).\n" + 
 			"has_target(anotherRule, testQueue). \n" + 
@@ -102,7 +102,7 @@ public class LuconEngineTest {
 			"%%%%% Services %%%%%%%%%%%%\n" + 
 			"service(hiveMqttBroker).\n" + 
 			"creates_label(hiveMqttBroker, [labelone, private]).\n" + 
-			"removes_label(hiveMqttBroker, []).\n" + 
+			"removes_label(hiveMqttBroker, [labeltwo]).\n" + 
 			"has_endpoint(hiveMqttBroker, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" + 
 			"has_property(hiveMqttBroker,type,public).\n" + 
 
@@ -351,7 +351,7 @@ public class LuconEngineTest {
 		assertNotNull(trans.getLabelsToAdd());
 		assertNotNull(trans.getLabelsToRemove());
 		
-		assertEquals(1, trans.getLabelsToAdd().size());
+		assertEquals(2, trans.getLabelsToAdd().size());
 		assertEquals(1, trans.getLabelsToRemove().size());
 
 		assertTrue(trans.getLabelsToAdd().contains("labelone"));

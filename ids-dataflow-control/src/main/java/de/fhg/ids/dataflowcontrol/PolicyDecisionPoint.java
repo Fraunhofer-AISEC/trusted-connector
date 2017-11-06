@@ -24,11 +24,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -45,6 +45,8 @@ import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
+import alice.tuprolog.Struct;
+import alice.tuprolog.Term;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
 import de.fhg.aisec.ids.api.policy.Obligation;
@@ -194,10 +196,38 @@ public class PolicyDecisionPoint implements PDP, PAP {
 				return result;
 			}
 			
-			// Get solutions, convert label variables to string and collect in set
+			// Get solutions, convert label variables to string and collect in sets
+			
+			// Collect labels to remove			
 			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Set<String> labelsToRemove = vars.stream().filter(v -> "Removes".equals(v.getName())).map(var -> var.getTerm().toString()).collect(Collectors.toSet());
-			Set<String> labelsToAdd = vars.stream().filter(v -> "Creates".equals(v.getName())).map(var -> var.getTerm().toString()).collect(Collectors.toSet());
+			Set<String> labelsToRemove = new HashSet<>();
+			for (Var var : vars) {
+				if ("Removes".equals(var.getName()) && var.getLink() instanceof Struct) {
+					Struct labelStruct = ((Struct) var.getLink());
+					int labelCount = labelStruct.getArity();
+					for (int i=0;i<labelCount;i++) {
+						Term label = labelStruct.getTerm(i);
+						if (!label.isEmptyList()) {
+							labelsToRemove.add(label.toString());
+						}
+					}
+				}
+			}
+
+			// Collect labels to add
+			Set<String> labelsToAdd = new HashSet<>();
+			for (Var var : vars) {
+				if ("Creates".equals(var.getName()) && var.getLink() instanceof Struct) {
+					Struct labelStruct = ((Struct) var.getLink());
+					int labelCount = labelStruct.getArity();
+					for (int i=0;i<labelCount;i++) {
+						Term label = labelStruct.getTerm(i);
+						if (!label.isEmptyList()) {
+							labelsToAdd.add(label.toString());
+						}
+					}
+				}
+			}
 			
 			result.getLabelsToRemove().addAll(labelsToRemove);
 			result.getLabelsToAdd().addAll(labelsToAdd);		
