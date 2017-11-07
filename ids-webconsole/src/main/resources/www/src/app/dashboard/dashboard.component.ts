@@ -21,7 +21,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   apps: App[];
   cmlVersion: string;
   policies: number = 0;
-  metric: any;
+  metric: String[] = [];
 
   constructor(private titleService: Title, private appService: AppService, private routeService: RouteService, private policyService: PolicyService, private metricService: MetricService) {
   	 super();

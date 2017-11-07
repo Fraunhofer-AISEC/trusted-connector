@@ -19,8 +19,8 @@ export class RouteService {
                });
   }
 
-  getTotalMessages() {
-    return this.http.get(environment.apiURL + '/metrics')
+  getMetrics() {
+    return this.http.get(environment.apiURL + '/routes/metrics')
                .map(response => {
                  return response.json() as RouteMetrics;
                });

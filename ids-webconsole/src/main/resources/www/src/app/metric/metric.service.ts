@@ -27,5 +27,4 @@ export class MetricService {
     getMetricObservable() : Observable<any> {
         return this.metricObservable;
     }
-
 }
