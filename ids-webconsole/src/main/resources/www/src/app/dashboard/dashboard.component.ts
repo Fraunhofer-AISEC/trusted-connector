@@ -7,6 +7,7 @@ import { Observable } from 'rxjs/Observable';
 
 import { App } from '../apps/app';
 import { AppService } from '../apps/app.service';
+import { MetricService } from '../metric/metric.service';
 import { RouteService } from '../routes/route.service';
 import { PolicyService } from '../dataflowpolicies/policy.service';
 
@@ -20,8 +21,9 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   apps: App[];
   cmlVersion: string;
   policies: number = 0;
+  metric: String[] = [];
 
-  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService, private policyService: PolicyService) {
+  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService, private policyService: PolicyService, private metricService: MetricService) {
   	 super();
      this.titleService.setTitle('Overview');
 
@@ -35,6 +37,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
     this.routeService.listComponents().subscribe(result => {this.camelComponents = result});
     this.appService.getCmlVersion().subscribe(result => {this.cmlVersion = result});
     this.policyService.getPolicies().subscribe(result => {this.policies = result.length});
+    this.metricService.getMetricObservable().subscribe(result => {this.metric = result});
   }
 
 }

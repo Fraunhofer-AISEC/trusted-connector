@@ -163,7 +163,7 @@ public class AppApi {
 
 	@GET
 	@Path("cml_version")
-	@Produces("application/json")
+	@Produces("text/plain")
 	public String getCml() {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 

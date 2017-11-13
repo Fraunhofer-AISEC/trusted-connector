@@ -63,17 +63,24 @@ public class WebConsoleComponent {
 	private static Optional<RouteManager> rm = Optional.empty();
 	private static Optional<ConnectionManager> connectionManager = Optional.empty();
 	private static Optional<PAP> pap;
+	private static Optional<ComponentContext> componentCtx = Optional.empty();
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) {
 		LOG.info("IDS webconsole activated");
+		WebConsoleComponent.componentCtx = Optional.of(componentContext);
 	}
 	
 	@Deactivate
 	protected void deactivate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole deactivated");
+		WebConsoleComponent.componentCtx = Optional.empty();
 	}
 	
+	public static Optional<ComponentContext> getComponentContext() {
+		return WebConsoleComponent.componentCtx;
+	}
+		
 	@Reference(name = "cml.service",
             service = ContainerManager.class,
             cardinality = ReferenceCardinality.OPTIONAL,

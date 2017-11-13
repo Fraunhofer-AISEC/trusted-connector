@@ -150,6 +150,17 @@
 		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>docker-maven-plugin</artifactId>
+			<version>0.23.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-nop</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>
@@ -216,6 +227,7 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.23.0</version>
 				<configuration>
 					<startParallel>true</startParallel>
 					<showLogs>true</showLogs>

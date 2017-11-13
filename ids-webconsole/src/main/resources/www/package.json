@@ -11,15 +11,16 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/common": "^2.3.1",
-    "@angular/compiler": "^2.3.1",
-    "@angular/core": "^2.3.1",
-    "@angular/forms": "^2.3.1",
-    "@angular/http": "^2.3.1",
-    "@angular/platform-browser": "^2.3.1",
-    "@angular/platform-browser-dynamic": "^2.3.1",
-    "@angular/router": "^3.3.1",
-    "angular2-modal": "^2.0.3",
+    "@angular/animations": "^5.0.0",
+    "@angular/common": "^5.0.0",
+    "@angular/compiler": "^5.0.0",
+    "@angular/core": "^5.0.0",
+    "@angular/forms": "^5.0.0",
+    "@angular/http": "^5.0.0",
+    "@angular/platform-browser": "^5.0.0",
+    "@angular/platform-browser-dynamic": "^5.0.0",
+    "@angular/platform-server": "^5.0.0",
+    "@angular/router": "^5.0.0",
     "bootstrap": "^3.3.7",
     "c3": "^0.4.11",
     "core-js": "^2.4.1",
@@ -29,20 +30,20 @@
     "rxjs": "^5.0.1",
     "topojson": "^1.6.27",
     "ts-helpers": "^1.1.1",
-    "viz.js": "^1.6.0",
-    "zone.js": "^0.7.2"
+    "viz.js": "^1.8.0",
+    "zone.js": "^0.8.18"
   },
   "devDependencies": {
-    "@angular/cli": "^1.0.0-rc.2",
-    "@angular/compiler-cli": "^2.3.1",
+    "@angular/cli": "^1.5.0",
+    "@angular/compiler-cli": "^5.0.0",
     "@types/c3": "^0.4.37",
     "@types/d3": "^3.5.36",
     "@types/d3-queue": "^3.0.4",
     "@types/jasmine": "2.5.38",
     "@types/node": "^6.0.42",
-    "codelyzer": "~2.0.0-beta.1",
     "ts-node": "1.2.1",
     "tslint": "^4.0.2",
-    "typescript": "~2.0.3"
+    "typescript": "2.4.2",
+    "webpack-sources": "^1.0.2"
   }
 }

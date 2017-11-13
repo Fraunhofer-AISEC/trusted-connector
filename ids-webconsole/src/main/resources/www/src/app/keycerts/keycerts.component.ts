@@ -6,8 +6,8 @@ import { Title } from '@angular/platform-browser';
 import { Certificate } from './certificate';
 import { CertificateService } from './keycert.service';
 
-import { Overlay, overlayConfigFactory } from 'angular2-modal';
-import { Modal, BSModalContext } from 'angular2-modal/plugins/bootstrap';
+//import { Overlay, overlayConfigFactory } from 'angular2-modal';
+//import { Modal, BSModalContext } from 'angular2-modal/plugins/bootstrap';
 
 @Component({
     selector: 'keycerts',
@@ -17,11 +17,11 @@ export class KeycertsComponent implements OnInit {
     title = 'Current Certificates';
     identities: Certificate[];
     certificates: Certificate[];
-
+//
     @Output() changeTitle = new EventEmitter();
 
-    constructor(private titleService: Title, private certificateService: CertificateService, overlay: Overlay, vcRef: ViewContainerRef, public modal: Modal) {
-        overlay.defaultViewContainer = vcRef;
+//    constructor(private titleService: Title, private certificateService: CertificateService, overlay: Overlay, vcRef: ViewContainerRef, public modal: Modal) {
+    constructor(private titleService: Title, private certificateService: CertificateService, vcRef: ViewContainerRef) {
         this.titleService.setTitle('Identities');
 
         this.certificateService.getIdentities().subscribe(identities => {
@@ -53,4 +53,5 @@ export class KeycertsComponent implements OnInit {
             //                location.reload();
             //              }
         });
-    }}
+    }
+    }
