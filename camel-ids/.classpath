@@ -34,6 +34,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ids-api"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

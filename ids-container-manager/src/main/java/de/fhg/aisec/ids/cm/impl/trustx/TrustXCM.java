@@ -19,14 +19,30 @@
  */
 package de.fhg.aisec.ids.cm.impl.trustx;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.fhg.aisec.ids.Container.ContainerStatus;
+import de.fhg.aisec.ids.Control.ControllerToDaemon;
+import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
+import de.fhg.aisec.ids.Control.DaemonToController;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
 import de.fhg.aisec.ids.api.cm.Direction;
 import de.fhg.aisec.ids.api.cm.Protocol;
+import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
+import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
 
 /**
  * ContainerManager implementation for trust-x containers.
@@ -39,34 +55,72 @@ import de.fhg.aisec.ids.api.cm.Protocol;
  *
  */
 public class TrustXCM implements ContainerManager {
-		
+	
+	private static final Logger LOG = LoggerFactory.getLogger(TrustXCM.class);
+	
+	private static final String SOCKET = "/dev/socket/cml-control";
+	private TrustmeUnixSocketThread socketThread;
+	private TrustmeUnixSocketResponseHandler responseHandler;
+	
+	public TrustXCM() {
+		this(SOCKET);
+	}
+	
+	public TrustXCM(String socket) {
+		super();
+		try {
+			this.socketThread = new TrustmeUnixSocketThread(socket);
+			this.responseHandler = new TrustmeUnixSocketResponseHandler();
+			Thread t = new Thread(socketThread);
+			t.setDaemon(true);
+			t.start();
+		} catch (IOException e) {
+			LOG.error(e.getMessage(),e);
+		}
+	}
+	
+	
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
-		// TODO Auto-generated method stub
-		return null;
+		List<ApplicationContainer> result = new ArrayList<>();
+		byte[] response = sendCommandAndWaitForResponse(Command.GET_CONTAINER_STATUS);
+		try {
+			DaemonToController dtc = DaemonToController.parseFrom(response);
+			List<ContainerStatus> containerStats = dtc.getContainerStatusList();
+			for (ContainerStatus cs : containerStats) {
+				ApplicationContainer container;
+				//TODO map uuid, name, foreground, state to applicationcontainer
+			}
+		
+		} catch (InvalidProtocolBufferException e) {
+			LOG.error("Response Length: " + response.length);
+			e.printStackTrace();
+		}
+		LOG.debug("Received response from cml: " + new String(response));
+		
+		return result;
 	}
 
 	@Override
 	public void wipe(String containerID) {
-		// TODO Auto-generated method stub
-
+        sendCommand(Command.CONTAINER_WIPE);
 	}
 
 	@Override
 	public void startContainer(String containerID) {
-		// TODO Auto-generated method stub
+		sendCommand(Command.CONTAINER_START);
 	}
 
 	@Override
 	public void stopContainer(String containerID) {
-		// TODO Auto-generated method stub
+		sendCommand(Command.CONTAINER_STOP);
 	}
 
 
 	@Override
 	public void restartContainer(String containerID) {
-		// TODO Auto-generated method stub
-
+		sendCommand(Command.CONTAINER_STOP);
+		sendCommand(Command.CONTAINER_START);
 	}
 
 	@Override
@@ -77,8 +131,12 @@ public class TrustXCM implements ContainerManager {
 	}
 
 	public static boolean isSupported() {
-		// TODO Auto-generated method stub
-		return false;
+		Path path = Paths.get(SOCKET);
+		boolean exists = false;
+		if (Files.exists(path)) {
+		  exists = true;
+		}
+		return exists;
 	}
 
 	@Override
@@ -105,4 +163,34 @@ public class TrustXCM implements ContainerManager {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+    /**
+     * Used for sending control commands to a device. 
+     *  
+     * @param command The command to be sent.
+     */
+    private void sendCommand(Command command){
+        ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+        ctdmsg.setCommand(command).build().toByteArray();
+        LOG.debug("sending message " + ctdmsg.getCommand());
+        byte[] encodedMessage = ctdmsg.build().toByteArray();
+    	try {
+			socketThread.sendWithHeader(encodedMessage, responseHandler);
+		} catch (IOException | InterruptedException e) {
+			LOG.error(e.getMessage(),e);
+		}
+    }
+    
+    /**
+     * Used for sending control commands to a device. 
+     *  
+     * @param command The command to be sent.
+     * @return Success state. 
+     */
+    private byte[] sendCommandAndWaitForResponse(Command command){
+    		sendCommand(command);
+    		byte[] response = responseHandler.waitForResponse();
+    		return response;
+    }
+	
 }
