@@ -2,19 +2,21 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
 	xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws" xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
 	xmlns:cxf="http://cxf.apache.org/blueprint/core"
-	xsi:schemaLocation="
+ 	xmlns:authz="http://aries.apache.org/xmlns/authorization/v1.0.0"
+ 	xsi:schemaLocation="
 http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
 http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/schemas/blueprint/jaxws.xsd
 http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
 http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd">
-
+	
 	<cxf:bus id="bus">
 		<cxf:features>
 			<cxf:logging />
 		</cxf:features>
 	</cxf:bus>
-
+    
 	<jaxrs:server address="/api/v1" id="ids_rest_api">
+		
 		<!-- This is where API endpoints are registered for CXF -->
 		<jaxrs:serviceBeans>
 			<bean id="app" class="de.fhg.aisec.ids.webconsole.api.AppApi" />
@@ -32,22 +34,37 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 			<entry key="json" value="application/json" />
 			<entry key="jsonp" value="application/javascript" />
 		</jaxrs:extensionMappings>
+
 		<jaxrs:providers>
-            <bean class="de.fhg.aisec.ids.webconsole.api.CORSResponseFilter"/>
+			<bean class="de.fhg.aisec.ids.webconsole.api.CORSResponseFilter" />
 			<!-- Use Jackson JSON provider to support JSON representation of Java collections. Requires cxf-jackson feature. -->
-           <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
+			<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
 				<property name="mapper" ref="jacksonMapper" />
 			</bean>
+            <ref component-id="authenticationFilter"/>
 		</jaxrs:providers>
- 		<jaxrs:inInterceptors>
-            <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpInInterceptor"/>
-        </jaxrs:inInterceptors>
-        <jaxrs:outInterceptors>
-            <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPreStreamInterceptor"/>
-            <bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPostStreamInterceptor"/>
-		</jaxrs:outInterceptors>		
+		
+		<jaxrs:inInterceptors>
+            <ref component-id="authorizationInterceptor"/>
+			<bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpInInterceptor" />
+		</jaxrs:inInterceptors>
+		
+		<jaxrs:outInterceptors>
+			<bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPreStreamInterceptor" />
+			<bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpPostStreamInterceptor" />
+		</jaxrs:outInterceptors>
 	</jaxrs:server>
-	
+
 	<bean id="jacksonMapper" class="com.fasterxml.jackson.databind.ObjectMapper"></bean>
+
+
+	<bean id="authenticationFilter" class="org.apache.cxf.jaxrs.security.JAASAuthenticationFilter">
+		<property name="contextName" value="karaf" />
+		<property name="realmName" value="connector-api" />
+	</bean>
+
+	<bean id="authorizationInterceptor" class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
+	   <property name="globalRoles" value="api"/>
+	</bean>
 
 </blueprint>
