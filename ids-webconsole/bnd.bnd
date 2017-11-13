@@ -22,12 +22,15 @@ Import-Package: \
 	de.fhg.aisec.ids.webconsole.api,\
 	org.apache.cxf.jaxrs.provider.json,\
 	org.apache.cxf.jaxrs.provider.jsonp,\
+	org.apache.cxf.jaxrs.security,\
 	com.google.gson,\
 	com.fasterxml.jackson.jaxrs.json,\
 	com.fasterxml.jackson.databind,\
 	!com.eclipsesource.json.*,\
 	org.codehaus.jettison.mapped,\
 	*
+DynamicImport-Package: org.apache.*,\
+	org.eclipse.jetty.*
 -noee=true
 -dsannotations: *
 Private-Package: de.fhg.aisec.ids.webconsole.api.helper
