@@ -48,8 +48,10 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof;
  */
 public class LuconEngine {
 	private static final Logger LOG = LoggerFactory.getLogger(LuconEngine.class);
+	
+	// A Prolog query to compute a path from X to Y in a graph of statements (= a route)
 	private static final String QUERY_ROUTE_VERIFICATION = "path(X, Y), entrynode(X), stmt(Y, _).";
-	Prolog p;
+	private Prolog p;
 
 	/**
 	 * Create a new LuconEngine which writes to a given output stream.
@@ -103,8 +105,7 @@ public class LuconEngine {
 		return query(p, query, findAll);
 	}
 
-	private List<SolveInfo> query(Prolog engine, String query, boolean findAll)
-			throws NoMoreSolutionException, MalformedGoalException {
+	private List<SolveInfo> query(Prolog engine, String query, boolean findAll)	throws NoMoreSolutionException, MalformedGoalException {
 		List<SolveInfo> result = new ArrayList<>();
 		SolveInfo solution = engine.solve(query);
 		while (solution.isSuccess()) {
@@ -138,16 +139,24 @@ public class LuconEngine {
 	 *         route violates the policy.
 	 */
 	public RouteVerificationProof proofInvalidRoute(String id, String routePl) {
+		// JS->ML: Hier wird eine Camel-Route (in Prolog) gegen eine Policy (auch in Prolog) evaluiert. Es ist gut möglich, dass hier noch Fehler drin sin. 
+		// The proof object we will return
 		RouteVerificationProof proof = new RouteVerificationProof(id);
+		
+		// Just for information: save the query we used to generate the proof
 		proof.setQuery(QUERY_ROUTE_VERIFICATION);
+		
 		try {
+			// Get policy as prolog, add Camel route and init new Prolog engine with combined theory
 			Theory t = p.getTheory();
 			t.append(new Theory(routePl));
 			Prolog newP = new Prolog();
+			newP.setTheory(t);
+			
 			List<CounterExample> ces = new ArrayList<>();
 			List<String> currentSteps = new ArrayList<>();
 
-			// Counterexamples are printed to out. Fetch them from there.
+			// Counterexamples are printed to stdout. Fetch them from there.
 			newP.addOutputListener(outEvent -> {
 				String msg = outEvent.getMsg();
 				if ("END TRACE".equals(msg.trim())) {
@@ -164,12 +173,14 @@ public class LuconEngine {
 					}
 				}
 			});
-			newP.setTheory(t);
 			System.out.println("-------------------------");
 			System.out.println(t.toString());
 			System.out.println("-------------------------");
+
+			// Generate the proof (=run query)
 			List<SolveInfo> result = query(newP, QUERY_ROUTE_VERIFICATION, true);
 			
+			// If a result has been found, this means there is at least one counterexample of a path in a route that violates a policy
 			if (!result.isEmpty() && result.get(0).isSuccess()) {
 				proof.setCounterexamples(ces);
 				proof.setValid(false);
