@@ -19,13 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -33,6 +27,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.policy.PolicyDecision;
+import de.fhg.aisec.ids.api.router.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -40,10 +37,6 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
@@ -77,7 +70,6 @@ public class RouteApi {
 		if (!rm.isPresent()) {
 			return new ArrayList<>();
 		}
-		
 		return rm.get().getRoutes();
 	}
 
@@ -91,7 +83,7 @@ public class RouteApi {
 		}
 		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
 		if (!oRoute.isPresent()) {
-			return Response.serverError().entity("Routenot present").build();
+			return Response.serverError().entity("Route not present").build();
 		}
 		return Response.ok(oRoute.get()).build();
 	}
@@ -277,5 +269,20 @@ public class RouteApi {
 			return new HashMap<>();
 		}
 		return rm.get().listEndpoints();
-	}	
+	}
+
+	@GET
+	@Path("/validate/{routeId}")
+	public Response validate(@PathParam("routeId") String routeId) {
+		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
+		if (!pap.isPresent()) {
+			return Response.serverError().entity("PolicyAdministrationPoint not available").build();
+		}
+		RouteVerificationProof rvp = pap.get().verifyRoute(routeId);
+		if (rvp.isValid()) {
+			return Response.ok("valid").build();
+		} else {
+			return Response.serverError().entity(rvp.getCounterexamples()).build();
+		}
+	}
 }

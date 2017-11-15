@@ -171,7 +171,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	    }
 	}
 	
-	@Reference(name="pdp-routemanager", policy=ReferencePolicy.STATIC, cardinality=ReferenceCardinality.OPTIONAL)
+	@Reference(name="pdp-routemanager", policy=ReferencePolicy.STATIC, cardinality=ReferenceCardinality.MANDATORY)
 	public void bindRoutemanager(RouteManager routeManager) {
 		LOG.warn("RouteManager bound. Camel routes can be analyzed");
 		this.routeManager = routeManager;

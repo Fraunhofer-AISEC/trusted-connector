@@ -34,6 +34,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import de.fhg.aisec.ids.api.router.RouteManager;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +59,24 @@ public class PolicyApi {
 	@GET
 	@Path("list")
 	@Produces("application/json")
-	public List<String> list() { // TODO JS->ML: Hier sollte vlt. eher eine Liste von Policy-Objekten zurückgegeben werden.
+	public List<String> list() {
+		// TODO JS->ML: Hier sollte vlt. eher eine Liste von Policy-Objekten zurückgegeben werden.
 		LOG.info("policy list");
 		List<String> result = new ArrayList<>();
-		
-		WebConsoleComponent.getPolicyAdministrationPoint().ifPresent(pap -> result.addAll(pap.listRules()) );
+		WebConsoleComponent.getPolicyAdministrationPoint().ifPresent(pap -> result.addAll(pap.listRules()));
 		return result;
+	}
+
+	/**
+	 * Returns the Prolog theory of all policies. Could be removed in later version.
+	 * @return Policy Prolog
+	 */
+	@GET
+	@Path("rawPolicies")
+	@Produces("text/plain")
+	public Response getRawPolicies() {
+		return WebConsoleComponent.getPolicyAdministrationPoint().map(pap -> Response.ok(pap.getPolicy()))
+				.orElse(Response.serverError().entity("Could not retrieve policy")).build();
 	}
 	
 	@POST
@@ -71,7 +84,7 @@ public class PolicyApi {
 	@GET
 	@Path("install")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response install(	@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName, 
+	public Response install(@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
 							@Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription, 
 							@Multipart(value = "policy_file") InputStream is) {
 		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
@@ -86,9 +99,6 @@ public class PolicyApi {
 		return Response.ok("OK").build();
 	}	
 	
-	// TODO JS->ML: Endpoints für policy modification, ggf. weitere	
-	
-	// TODO JS->ML: Endpoint für Route-Validation. Holt die Route vom RouteManager: rm = WebConsoleComponent.getRouteManager(). Dann und PolicyDecisionPoint.verifyRoute() aufrufen.
-	
+	// TODO JS->ML: Endpoints für policy modification, ggf. weitere
 	
 }
