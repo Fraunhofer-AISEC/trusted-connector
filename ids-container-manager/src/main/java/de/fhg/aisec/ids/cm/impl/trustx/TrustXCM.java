@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import de.fhg.aisec.ids.Container.ContainerState;
 import de.fhg.aisec.ids.Container.ContainerStatus;
 import de.fhg.aisec.ids.Control.ControllerToDaemon;
 import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
@@ -58,6 +59,7 @@ public class TrustXCM implements ContainerManager {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TrustXCM.class);
 	
+	private static final String A0_CONTAINER = "a0";
 	private static final String SOCKET = "/dev/socket/cml-control";
 	private TrustmeUnixSocketThread socketThread;
 	private TrustmeUnixSocketResponseHandler responseHandler;
@@ -89,9 +91,22 @@ public class TrustXCM implements ContainerManager {
 			List<ContainerStatus> containerStats = dtc.getContainerStatusList();
 			for (ContainerStatus cs : containerStats) {
 				ApplicationContainer container;
-				//TODO map uuid, name, foreground, state to applicationcontainer
+				if (!onlyRunning || (onlyRunning && ContainerState.RUNNING.equals(cs.getState()))){
+					container = new ApplicationContainer(cs.getUuid(), 
+							null, 
+							null, 
+							cs.getState().name(), 
+							null, 
+							cs.getName(), 
+							null,
+							null,
+							null, 
+							null, 
+							null, 
+							null);
+					result.add(container);
+				}
 			}
-		
 		} catch (InvalidProtocolBufferException e) {
 			LOG.error("Response Length: " + response.length);
 			e.printStackTrace();
