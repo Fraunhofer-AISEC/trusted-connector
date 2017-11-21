@@ -10,3 +10,5 @@ rat-repository/src/main/docker/jar/*
 /target/
 /.recommenders/
 /RemoteSystemsTempFiles/
+*.iml
+/.idea
