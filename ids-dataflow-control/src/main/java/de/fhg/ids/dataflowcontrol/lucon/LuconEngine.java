@@ -150,6 +150,7 @@ public class LuconEngine {
 			// Get policy as prolog, add Camel route and init new Prolog engine with combined theory
 			Theory t = p.getTheory();
 			t.append(new Theory(routePl));
+			//FIXME Meta-Prolog-Statements "path", etc hinzufügen
 			Prolog newP = new Prolog();
 			newP.setTheory(t);
 			

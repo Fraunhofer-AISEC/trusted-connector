@@ -184,7 +184,7 @@ public class LuconEngineTest {
 			"  not(member(X,V)) , 								% - we haven't yet visited X, and\n" + 
 			"  (                  								% - either\n" + 
 			"    B = X,            								% - X is the desired destination and\n" + 
-			"    has_decision(R,drop), print(R), rule(R), receives_label(R, Forbidden), has_target(R,X), intersects(Forbidden,C_NEW),	% - taint policy forbids a flow to B\n" + 
+			"    rule(R), receives_label(R, Forbidden), has_target(R,X), has_decision(R,drop), intersects(Forbidden,C_NEW),	print(R), % - taint policy forbids a flow to B\n" + 
 			"    print(['reason: service ', B, ' receives label(s) ', Forbidden, ' which is forbidden by ', R]),nl,		\n" + 
 			"  	 print('END TRACE'),nl \n" +
 			"  ;                  						%   OR\n" + 

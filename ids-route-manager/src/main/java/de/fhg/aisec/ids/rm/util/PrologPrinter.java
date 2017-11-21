@@ -55,6 +55,7 @@ public class PrologPrinter {
 	 * @throws IOException 
 	 */
 	private List<ProcessorDefinition<?>> printNode(Writer writer, ProcessorDefinition<?> current, List<OptionalIdentifiedDefinition<?>> preds) throws IOException {
+		//FIXME node -> stmt
 		writer.write("node(node"+current.getIndex() + ").\n");
 		writer.write("has_action(node"+current.getIndex() + ", \"" + current.getLabel() + "\").\n");
 		for (OptionalIdentifiedDefinition<?> p : preds) {
