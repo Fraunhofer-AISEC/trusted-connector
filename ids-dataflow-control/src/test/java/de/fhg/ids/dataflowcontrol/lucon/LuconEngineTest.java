@@ -388,7 +388,7 @@ public class LuconEngineTest {
 		// Create policy decision point and attach to route manager
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 		pdp.activate(null);
-		pdp.bindRoutemanager(rm);
+		pdp.bindRouteManager(rm);
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		
 		// Verify VERIFIABLE_ROUTE against EXAMPLE_POLICY

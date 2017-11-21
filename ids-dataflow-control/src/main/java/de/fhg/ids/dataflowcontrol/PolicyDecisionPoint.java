@@ -89,21 +89,21 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
-		sb.append("regex(EP, \""+target.getEndpoint()+"\", _D), _D, ");
+		sb.append("regex(EP, \"").append(target.getEndpoint()).append("\", _D), _D, ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
 			.forEach(k -> {
-					sb.append("receives_label(T, "+msgLabels.get(k).toString()+"), ");
+					sb.append("receives_label(T, ").append(msgLabels.get(k).toString()).append("), ");
 			});
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			sb.append("(");
 		}
 		for (String cap: target.getCapabilties()) {
-			sb.append("(has_capability(T, \""+cap+"\"); ");
+			sb.append("(has_capability(T, \"").append(cap).append("\"); ");
 		}
 		for (String prop: target.getProperties()) {
-			sb.append("has_property(T, \""+prop+"\"), ");
+			sb.append("has_property(T, \"").append(prop).append("\"), ");
 		}
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			sb.append("), ");
@@ -125,16 +125,16 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		sb.append("service(_T), ");
 		if (target.getEndpoint()!=null) {
 			sb.append("has_endpoint(_T, _EP), ");
-			sb.append("regex(_EP, \""+target.getEndpoint()+"\", _X), _X, ");
+			sb.append("regex(_EP, \"").append(target.getEndpoint()).append("\", _X), _X, ");
 		}
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			sb.append("(");
 		}
 		for (String cap: target.getCapabilties()) {
-			sb.append("(has_capability(_T, \""+cap+"\"); ");
+			sb.append("(has_capability(_T, \"").append(cap).append("\"); ");
 		}
 		for (String prop: target.getProperties()) {
-			sb.append("has_property(_T, \""+prop+"\"), ");
+			sb.append("has_property(_T, \"").append(prop).append("\"), ");
 		}
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			sb.append("), ");
@@ -171,17 +171,15 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	    }
 	}
 	
-	@Reference(name="pdp-routemanager", policy=ReferencePolicy.STATIC, cardinality=ReferenceCardinality.MANDATORY)
-	public void bindRoutemanager(RouteManager routeManager) {
+	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
+	public void bindRouteManager(RouteManager routeManager) {
 		LOG.warn("RouteManager bound. Camel routes can be analyzed");
 		this.routeManager = routeManager;
 	}
-	public void unbindRoutemanager(RouteManager routeManager) {
+	public void unbindRouteManager(RouteManager routeManager) {
 		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
 		this.routeManager = null;
 	}
-	
-
 
 	@Override
 	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
@@ -299,7 +297,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		for (SolveInfo i: solveInfo) {
 			if (i.isSuccess()) {
 				List<Var> vars = i.getBindingVars();
-				vars.stream().forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
+				vars.forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
 			}
 		}
 	}

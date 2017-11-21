@@ -76,7 +76,7 @@ public class PolicyApi {
 	@Produces("text/plain")
 	public Response getRawPolicies() {
 		return WebConsoleComponent.getPolicyAdministrationPoint().map(pap -> Response.ok(pap.getPolicy()))
-				.orElse(Response.serverError().entity("Could not retrieve policy")).build();
+				.orElseGet(() -> Response.serverError().entity("Could not retrieve policy")).build();
 	}
 	
 	@POST
