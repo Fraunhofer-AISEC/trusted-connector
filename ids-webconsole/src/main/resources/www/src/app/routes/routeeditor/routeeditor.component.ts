@@ -18,38 +18,53 @@ export class RouteeditorComponent implements OnInit {
   vizResult: SafeHtml;
   statusIcon: string;
   result: string;
-  private id: any;  // Camel Route Id
+  private id: string = null;  // Camel Route Id
+  private camelRoutes: Route[] = null;
   
   constructor(private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {  }
 
   ngOnInit(): void {
     // Load route parameter. This is done by an observable because router may not recreate this component
-    console.log(this.navRoute.snapshot.params['id']);
-    this.routeService
-        .getRoutes()
-        .subscribe(camelRoute => {
-          console.log("Received a route " + camelRoute[0].id);
-          this.camelRoute = camelRoute[0];
-          let graph = this.camelRoute.dot;
-
-          if(this.camelRoute.status == "Started") {
-            this.statusIcon = "stop";
-          } else {
-            this.statusIcon = "play_arrow";
-
-          }
-
-          this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
-        });
+    this.navRoute.params.subscribe(params => {
+      this.id = params["id"];
+      this.updateRoute();
+    });
+    this.routeService.getRoutes().subscribe(camelRoutes => {
+      this.camelRoutes = camelRoutes;
+      this.updateRoute();
+    });
   }
-    
+   
+  updateRoute() {
+    // missing data
+    if (this.id == null || this.camelRoutes == null) {
+      return;
+    }
+
+    this.camelRoutes.forEach(r => {
+      if (r.id == this.id) {
+        this.camelRoute = r;
+      }
+    });
+
+    console.log("Route editor: Loaded route with id " + this.camelRoute.id);
+    let graph = this.camelRoute.dot;
+
+    if(this.camelRoute.status == "Started") {
+      this.statusIcon = "stop";
+    } else {
+      this.statusIcon = "play_arrow";
+    }
+
+    this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+  }
 
   onStart(routeId: string): void {
     this.routeService.startRoute(routeId).subscribe(result => {
-       this.result = result;
-     });
-     this.camelRoute.status = 'Started';
-       this.statusIcon = "play_arrow";
+      this.result = result;
+    });
+    this.camelRoute.status = 'Started';
+    this.statusIcon = "play_arrow";
   }
 
   onStop(routeId: string): void {
@@ -64,17 +79,17 @@ export class RouteeditorComponent implements OnInit {
     if(this.statusIcon == "play_arrow") {
       this.statusIcon = "stop";
       this.routeService.startRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
-       this.camelRoute.status = 'Started';
+        this.result = result;
+      });
+      this.camelRoute.status = 'Started';
 
     } else {
       this.statusIcon = "play_arrow";
       this.routeService.stopRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
+        this.result = result;
+      });
 
-       this.camelRoute.status = 'Stopped';
+      this.camelRoute.status = 'Stopped';
     }
   }
 }

@@ -29,7 +29,7 @@ declare var Viz: any;
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
             <i class="material-icons">delete</i>
           </button>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect" routerLink="/routeeditor">
+          <a class="mdl-button mdl-js-button mdl-js-ripple-effect" [routerLink]="['/routeeditor', route.id]">
             <i class="material-icons">edit</i>
           </a>
     </div>
