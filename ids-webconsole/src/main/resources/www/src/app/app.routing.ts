@@ -10,7 +10,10 @@ import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
-import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
+//import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
+
+//import { DataFlowComponent } from './dataFlow/dataFlow.component';
+import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
 
 const appRoutes: Routes = [{
     path: '',
@@ -34,6 +37,12 @@ const appRoutes: Routes = [{
   }, {
     path: 'identitynew',
     component: NewIdentityComponent
+  }, {
+//    path: 'dataflow',
+//    component: DataFlowComponent
+//  }, {
+    path: 'connections',
+    component: ConnectionReportComponent
   }, {
     path: 'routes',
     component: RoutesComponent,

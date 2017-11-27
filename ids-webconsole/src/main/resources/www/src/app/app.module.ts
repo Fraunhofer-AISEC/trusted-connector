@@ -48,10 +48,14 @@ import {ConfirmComponent} from "./confirm/confirm.component";
 //import { ModalModule } from 'angular2-modal';
 //import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
 
-import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
-import { ConnectionService } from './inOutConnections/inOutConnections.service';
+//import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
+//import { ConnectionService } from './inOutConnections/inOutConnections.service';
 
 import { MDLTextFieldDirective } from './mdl-textfield-directive';
+//import { DataFlowComponent } from './dataFlow/dataFlow.component';
+import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
+import { ConnectionService } from './connectionsReport/connectionReport.service';
+
 
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
@@ -63,7 +67,7 @@ import { MetricService } from './metric/metric.service';
     HttpModule,
     ReactiveFormsModule,
 //    ModalModule.forRoot(),
-//    BootstrapModalModule  
+//    BootstrapModalModule
     ],
   declarations: [
     AppComponent,
@@ -86,8 +90,12 @@ import { MetricService } from './metric/metric.service';
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    ConnectionReportComponent,
-    MDLTextFieldDirective],
+    MDLTextFieldDirective,
+    //FileWindow,
+    //DataFlowComponent,
+    ConnectionReportComponent
+  ],
+
   providers: [
     AppService,
     RouteService,
@@ -99,7 +107,8 @@ import { MetricService } from './metric/metric.service';
     ConnectionService,
     IdsComponent,
     Title,
-    MetricService
+    MetricService,
+    Title
   ],
   bootstrap: [
     AppComponent ],

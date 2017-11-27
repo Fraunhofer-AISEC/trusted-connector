@@ -24,16 +24,18 @@
         "../node_modules/c3/c3.css",
         "../node_modules/bootstrap/dist/css/bootstrap.min.css",
         "material.teal-pink.min.css",
-        "styles.css"
+        "styles.css",
+        "../node_modules/vis/dist/vis.css"
       ],
       "scripts": [
-        "../node_modules/viz.js/viz.js"
+        "../node_modules/viz.js/viz.js",
+        "../node_modules/vis/dist/vis.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {
-        "dev": "environments/environment.ts",
-        "prod": "environments/environment.prod.ts"
-      }
+          "dev": "environments/environment.ts",
+          "prod": "environments/environment.prod.ts"
+       }
     }
   ],
   "addons": [],
