@@ -27,19 +27,18 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 public class MetadataProviderHandler extends MetadataHandler {
 	
-	public MessageLite request(Event e) {
+	public MessageLite response(Event e) {
 		this.sessionID = e.getMessage().getId();
-		this.yourKeys = e.getMessage().getMetadataExchange().getKeyList();
-		this.myValues = this.generateMetaData(this.yourKeys);
+		this.connectorRDFSelfDescription = this.generateMetaDataRDF();
+		
 		return ConnectorMessage
 				.newBuilder()
 				.setId(++this.sessionID)
-				.setType(ConnectorMessage.Type.META_REQUEST)
+				.setType(ConnectorMessage.Type.META_RESPONSE)
 				.setMetadataExchange(
 						MedadataExchange
-						.newBuilder()
-						.addAllKey(myKeys)
-						.addAllValue(myValues)
+						.newBuilder() 
+						.setRdfdescription(connectorRDFSelfDescription)
 						.build())
 				.build();
 	}
