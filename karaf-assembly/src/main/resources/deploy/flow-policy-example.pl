@@ -1,9 +1,9 @@
-regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.
 rule(allowAll).
-has_target(allowAll, serviceAll).
+has_decision(allowAll,drop).
+receives_label(allowAll,[forbidden]).
+has_target(allowAll,serviceAll).
+
 service(serviceAll).
-has_endpoint(serviceAll,".*").
-creates_label(serviceAll, any).
-removes_label(_,none).
-receives_label(allowAll,_).
-has_decision(allowAll, allow).
+has_endpoint(serviceAll,'.*').
+creates_label(serviceAll,[]).
+removes_label(serviceAll,[]).

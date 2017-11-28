@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Representation of a proof that a route is valid under a policy, i.e. that the policy will never violate the policy.
  * 
- * If the route can violate the policy, a set of counterexamples is given.
+ * If the route can violate the policy, a set of counterExamples is given.
  * 
  * The set is not necessarily complete and contains message paths which are valid in term of the route, but violate the policy.
  * 
@@ -36,13 +36,12 @@ public class RouteVerificationProof {
 	private String routeId;
 	private long proofTimeNanos;
 	private boolean isValid = true;
-	private List<CounterExample> counterexamples = new ArrayList<>();
+	private List<CounterExample> counterExamples = new ArrayList<>();
 	private String query = "";
-	private String explanation = "";
 	
 	public RouteVerificationProof(String routeId) {
-		if (routeId==null) {
-			throw new NullPointerException("Null routeId");
+		if (routeId == null) {
+			throw new NullPointerException("routeId must not be null");
 		}
 		this.routeId = routeId;
 	}
@@ -71,13 +70,13 @@ public class RouteVerificationProof {
 	}
 
 
-	public List<CounterExample> getCounterexamples() {
-		return counterexamples;
+	public List<CounterExample> getCounterExamples() {
+		return counterExamples;
 	}
 
 
-	public void setCounterexamples(List<CounterExample> counterexamples) {
-		this.counterexamples = counterexamples;
+	public void setCounterExamples(List<CounterExample> counterExamples) {
+		this.counterExamples = counterExamples;
 	}
 
 	public void setQuery(String query) {
@@ -91,22 +90,13 @@ public class RouteVerificationProof {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Proof for " + this.query + "\n");
-		sb.append("returns " + this.isValid + "\n");
-		sb.append("because " + this.explanation + "\n");
+		sb.append("Proof for ").append(this.query).append("\n");
+		sb.append("returns ").append(this.isValid).append("\n");
 		sb.append("Example flows violating policy:\n");
-		for (CounterExample ce : this.counterexamples) {
-			sb.append("|-- " + ce.toString() + "\n\n");
+		for (CounterExample ce : this.counterExamples) {
+			sb.append("|-- ").append(ce.toString()).append("\n\n");
 		}
 		return sb.toString();		
-	}
-
-	public void setExplanation(String explanation) {
-		this.explanation = explanation;		
-	}
-	
-	public String getExplanation() {
-		return this.explanation;
 	}
 }
 

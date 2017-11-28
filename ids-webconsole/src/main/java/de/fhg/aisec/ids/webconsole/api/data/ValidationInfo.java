@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * IDS Core Platform Webconsole
  * %%
  * Copyright (C) 2017 Fraunhofer AISEC
  * %%
@@ -17,32 +17,13 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.router;
+package de.fhg.aisec.ids.webconsole.api.data;
+
+import de.fhg.aisec.ids.api.router.CounterExample;
 
 import java.util.List;
 
-public abstract class CounterExample {
-	private String explanation;
-	private List<String> steps;
-
-	public String getExplanation() {
-		return explanation;
-	}
-
-	public List<String> getSteps() {
-		return steps;
-	}
-	
-	@Override
-	public String toString() {
-		return "Explanation: " + explanation + "\n" + String.join("\n|-- ", steps);
-	}
-
-	protected void setExplanation(String explanation) {
-		this.explanation = explanation;
-	}
-
-	protected void setSteps(List<String> steps) {
-		this.steps = steps;
-	}
+public class ValidationInfo {
+    public boolean valid;
+    public List<CounterExample> counterExamples = null;
 }

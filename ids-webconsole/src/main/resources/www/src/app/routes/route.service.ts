@@ -5,17 +5,24 @@ import 'rxjs/add/operator/map';
 
 import { Route } from './route';
 import { RouteMetrics } from './route-metrics';
+import { ValidationInfo } from './validation';
 
 import { environment } from '../../environments/environment';
 
 @Injectable()
 export class RouteService {
   constructor(private http: Http) { }
-
-  getRoute(route: any) {
-    return this.http.get(environment.apiURL + '/routes/get/' + route)
+  getRoute(routeId: string) {
+    return this.http.get(environment.apiURL + '/routes/get/' + routeId)
                .map(response => {
                  return response.json() as Route;
+               });
+  }
+
+  getValidationInfo(routeId: string) {
+    return this.http.get(environment.apiURL + "/routes/validate/" + routeId)
+               .map(response => {
+                 return response.json() as ValidationInfo;
                });
   }
 

@@ -25,15 +25,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import alice.tuprolog.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import alice.tuprolog.InvalidTheoryException;
-import alice.tuprolog.MalformedGoalException;
-import alice.tuprolog.NoMoreSolutionException;
-import alice.tuprolog.Prolog;
-import alice.tuprolog.SolveInfo;
-import alice.tuprolog.Theory;
 import de.fhg.aisec.ids.api.router.CounterExample;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 
@@ -50,7 +45,7 @@ public class LuconEngine {
 	private static final Logger LOG = LoggerFactory.getLogger(LuconEngine.class);
 	
 	// A Prolog query to compute a path from X to Y in a graph of statements (= a route)
-	private static final String QUERY_ROUTE_VERIFICATION = "path(X, Y), entrynode(X), stmt(Y, _).";
+	private static final String QUERY_ROUTE_VERIFICATION = "entrynode(X), path(X, Y, T), stmt(Y).";
 	private Prolog p;
 
 	/**
@@ -62,6 +57,12 @@ public class LuconEngine {
 	 */
 	public LuconEngine(OutputStream out) {
 		p = new Prolog();
+		try {
+			p.loadLibrary(new LuconLibrary());
+		} catch (InvalidLibraryException e) {
+			// should never happen
+			throw new RuntimeException("Error loading " + LuconLibrary.class.getName(), e);
+		}
 
 		// Add some listeners for logging/debugging
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
@@ -133,13 +134,11 @@ public class LuconEngine {
 	 * a set of counterexamples.
 	 * 
 	 * @param id Route id
-	 * @param routePl
-	 *            The route, represented as Prolog clauses
+	 * @param routePl The route, represented as Prolog
 	 * @return A list of counterexamples which violate the rule or empty, if no
 	 *         route violates the policy.
 	 */
 	public RouteVerificationProof proofInvalidRoute(String id, String routePl) {
-		// JS->ML: Hier wird eine Camel-Route (in Prolog) gegen eine Policy (auch in Prolog) evaluiert. Es ist gut möglich, dass hier noch Fehler drin sin. 
 		// The proof object we will return
 		RouteVerificationProof proof = new RouteVerificationProof(id);
 		
@@ -150,116 +149,35 @@ public class LuconEngine {
 			// Get policy as prolog, add Camel route and init new Prolog engine with combined theory
 			Theory t = p.getTheory();
 			t.append(new Theory(routePl));
-			//FIXME Meta-Prolog-Statements "path", etc hinzufügen
 			Prolog newP = new Prolog();
+			newP.loadLibrary(new LuconLibrary());
 			newP.setTheory(t);
-			
-			List<CounterExample> ces = new ArrayList<>();
-			List<String> currentSteps = new ArrayList<>();
 
-			// Counterexamples are printed to stdout. Fetch them from there.
-			newP.addOutputListener(outEvent -> {
-				String msg = outEvent.getMsg();
-				if ("END TRACE".equals(msg.trim())) {
-					// Deep copy into counterexample
-					CounterExample ce = new CounterExample();
-					currentSteps.forEach(ce::addStep);
-					ces.add(ce);
-					currentSteps.clear();
-				} else if (msg.contains("reason: ")) {
-					proof.setExplanation(cleanupProofReason(msg));
-				} else {
-					if (msg!=null && !"".equals(msg.trim())) {
-						currentSteps.add(cleanupProofStep(msg));
-					}
-				}
-			});
-			System.out.println("-------------------------");
-			System.out.println(t.toString());
-			System.out.println("-------------------------");
+//			System.out.println("-------------------------");
+//			System.out.println(new LuconLibrary().getTheory() + "\n" + t.toString());
+//			System.out.println("-------------------------");
 
 			// Generate the proof (=run query)
 			List<SolveInfo> result = query(newP, QUERY_ROUTE_VERIFICATION, true);
 			
 			// If a result has been found, this means there is at least one counterexample of a path in a route that violates a policy
-			if (!result.isEmpty() && result.get(0).isSuccess()) {
-				proof.setCounterexamples(ces);
+			if (!result.isEmpty()) {
+				List<CounterExample> ces = new ArrayList<>(result.size());
+				result.forEach(s -> {
+					try {
+						ces.add(new CounterExampleImpl(s.getVarValue("T")));
+					} catch (NoSolutionException nse) {
+						// This cannot happen if our code wasn't badly screwed up!
+						throw new RuntimeException(nse);
+					}
+				});
+				proof.setCounterExamples(ces);
 				proof.setValid(false);
 			}
-		} catch (InvalidTheoryException | NoMoreSolutionException | MalformedGoalException e) {
+		} catch (InvalidTheoryException | InvalidLibraryException | NoMoreSolutionException | MalformedGoalException e) {
 			LOG.error(e.getMessage(), e);
 		}
 		return proof;
 	}
 
-	/**
-	 * Turns this <code>['reason: service ',stmt_5,' receives label(s) ',[path_B]]</code> into this <code>Service stmt_5 receives forbidden label(s) path_B</code>.
-	 * @param msg
-	 * @return
-	 */
-	private String cleanupProofReason(String msg) {
-		if (msg==null) {
-			return null;
-		}
-		
-		StringBuilder out = new StringBuilder();
-		
-		// Remove brackets
-		if (msg.charAt(0)=='[') {
-			int start = 1;
-			int end = msg.length()-1;
-			if (msg.endsWith("]]")) {
-				end--;
-			}
-			msg = msg.substring(start, end);
-		}
-				
-		// remove strings
-		try {
-			String[] parts = msg.split(",");
-			out.append("service ");
-			out.append(parts[1]);
-			out.append(" may receive label(s) ");
-			out.append(parts[3]);
-			out.append(". This is forbidden by rule ");
-			out.append(parts[5]);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			LOG.error("Unexpected: cannot parse proof explanation " + msg, e);
-		}
-		
-		return out.toString();
-	}
-
-	/**
-	 * Turns this <code>[stmt_2,[label_A,from_entrypoint]]</code> into this <code>stmt_2 : [label_A,from_entrypoint]</code>.
-	 * @param msg
-	 * @return
-	 */
-	private String cleanupProofStep(String msg) {
-		if (msg==null) {
-			return null;
-		}
-		
-		char[] in = msg.toCharArray();
-		StringBuilder out = new StringBuilder();
-		
-		boolean killedFirstBracket = false;
-		boolean killedComma = false;
-		boolean killedLastBracket = false;
-		
-		for (int i=0;i<in.length;i++) {
-			if (!killedFirstBracket && in[i]=='[') {
-				killedFirstBracket = true;
-			} else if (!killedComma && in[i]==',') {
-				killedComma = true;
-				out.append(" receives message labelled ");
-			} else if (!killedLastBracket && in[i]==']') {
-				killedLastBracket = true; 
-			} else {
-				out.append(in[i]);
-			}
-		}
-		
-		return out.toString();
-	}
 }

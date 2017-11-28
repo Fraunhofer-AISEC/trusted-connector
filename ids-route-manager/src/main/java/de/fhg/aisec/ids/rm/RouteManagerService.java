@@ -383,7 +383,7 @@ public class RouteManagerService implements RouteManager {
 					StringWriter writer = new StringWriter();
 					new PrologPrinter().printSingleRoute(writer, rd);
 					writer.flush();
-					return writer.getBuffer().toString();					
+					return writer.toString();
 				} catch (IOException e) {
 					LOG.error("Error printing route to prolog " + routeId, e);
 				}

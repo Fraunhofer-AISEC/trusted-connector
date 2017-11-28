@@ -20,16 +20,18 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.router.*;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -64,7 +66,7 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("list")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
@@ -75,8 +77,8 @@ public class RouteApi {
 
 	@GET
 	@Path("/get/{id}")
-	@Produces("application/json")
-	public Response get(String id) {		
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response get(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
 			return Response.serverError().entity("RouteManager not present").build();
@@ -273,16 +275,18 @@ public class RouteApi {
 
 	@GET
 	@Path("/validate/{routeId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response validate(@PathParam("routeId") String routeId) {
 		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
 		if (!pap.isPresent()) {
 			return Response.serverError().entity("PolicyAdministrationPoint not available").build();
 		}
 		RouteVerificationProof rvp = pap.get().verifyRoute(routeId);
-		if (rvp.isValid()) {
-			return Response.ok("valid").build();
-		} else {
-			return Response.serverError().entity(rvp.getCounterexamples()).build();
+		ValidationInfo vi = new ValidationInfo();
+		vi.valid = rvp.isValid();
+		if (!rvp.isValid()) {
+			vi.counterExamples = rvp.getCounterExamples();
 		}
+		return Response.ok(vi).build();
 	}
 }

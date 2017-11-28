@@ -341,13 +341,14 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	@Override
 	public RouteVerificationProof verifyRoute(String routeId) {
 		RouteManager rm = this.routeManager;
-		if (rm==null) {
+		if (rm == null) {
 			LOG.warn("No RouteManager. Cannot verify Camel route " + routeId);
 			return null;
 		}
 		
 		String routePl = rm.getRouteAsProlog(routeId);
-		if (routePl==null) {
+		if (routePl == null) {
+			LOG.warn("Could not obtain Prolog representation of route " + routeId);
 			return null;
 		}
 		

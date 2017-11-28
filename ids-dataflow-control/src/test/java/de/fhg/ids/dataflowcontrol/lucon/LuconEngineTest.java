@@ -82,7 +82,7 @@ public class LuconEngineTest {
 			"%:- discontiguous has_obligation/2.\n" + 
 			"%:- discontiguous receives_label/2.		\n" + 
 			"regex(A,B,C) :- class(\"java.util.regex.Pattern\") <- matches(A,B) returns C.\n" +
-			
+			"\n" +
 			"%%%%%%%% Rules %%%%%%%%%%%%\n" + 
 			"rule(deleteAfterOneMonth).\n" + 
 			"has_target(deleteAfterOneMonth, service78096644).\n" + 
@@ -91,43 +91,42 @@ public class LuconEngineTest {
 			"receives_label(deleteAfterOneMonth,['private']).\n" + 
 			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
 			"requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
-			"has_alternativedecision(obl1709554620, drop).\n" + 
-			
+			"has_alternativedecision(obl1709554620, drop).\n" +
+			"\n" +
 			"rule(anotherRule).\n" + 
-			"has_target(anotherRule, testQueue). \n" + 
+			"has_target(anotherRule, testQueueService). \n" +
 			"receives_label(anotherRule, ['private']).\n" + 
 			"has_decision(anotherRule, drop).\n" + 
-			"\n" + 
-			
+			"\n" +
 			"%%%%% Services %%%%%%%%%%%%\n" + 
-			"service(hiveMqttBroker).\n" + 
-			"creates_label(hiveMqttBroker, [labelone, private]).\n" + 
-			"removes_label(hiveMqttBroker, [labeltwo]).\n" + 
-			"has_endpoint(hiveMqttBroker, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" + 
-			"has_property(hiveMqttBroker,type,public).\n" + 
-
-			"service(anonymizer).\n" + 
-			"has_endpoint(anonymizer, \".*anonymizer.*\").\n" + 
-			"has_property(anonymizer,myProp,anonymize('surname', 'name')).\n" + 
-			"removes_label(anonymizer, []).\n" + 
-			"creates_label(anonymizer, []).\n" + 
-
-			"service(logger).\n" + 
-			"has_endpoint(anonymizer, \".*anonymizer.*\").\n" + 
-			"removes_label(logger, []).\n" + 
-			"creates_label(logger, []).\n" + 
-
-			"service(hadoopClusters).\n" + 
-			"has_endpoint(hadoopClusters, \"hdfs://.*\").\n" + 
-			"has_capability(hadoopClusters,deletion).\n" + 
-			"has_property(hadoopClusters,anonymizes,anonymize('surname', 'name')).\n" +
-			"removes_label(hadoopClusters, []).\n" + 
-			"creates_label(hadoopClusters, []).\n" + 
-			
-			"service(testQueue).\n" + 
-			"has_endpoint(testQueue, \"^amqp:.*?:test\").\n" +
-			"removes_label(testQueue, []).\n"  +
-			"creates_label(testQueue, []).\n"  
+			"service(hiveMqttBrokerService).\n" +
+			"creates_label(hiveMqttBrokerService, [labelone, private]).\n" +
+			"removes_label(hiveMqttBrokerService, [labeltwo]).\n" +
+			"has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" +
+			"has_property(hiveMqttBrokerService,type,public).\n" +
+			"\n" +
+			"service(anonymizerService).\n" +
+			"has_endpoint(anonymizerService, \".*anonymizer.*\").\n" +
+			"has_property(anonymizerService,myProp,anonymize('surname', 'name')).\n" +
+			"removes_label(anonymizerService, []).\n" +
+			"creates_label(anonymizerService, []).\n" +
+			"\n" +
+			"service(loggerService).\n" +
+			"has_endpoint(loggerService, \"^log.*\").\n" +
+			"removes_label(loggerService, []).\n" +
+			"creates_label(loggerService, []).\n" +
+			"\n" +
+			"service(hadoopClustersService).\n" +
+			"has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n" +
+			"has_capability(hadoopClustersService,deletion).\n" +
+			"has_property(hadoopClustersService,anonymizes,anonymize('surname', 'name')).\n" +
+			"removes_label(hadoopClustersService, []).\n" +
+			"creates_label(hadoopClustersService, []).\n" +
+			"\n" +
+			"service(testQueueService).\n" +
+			"has_endpoint(testQueueService, \"^amqp:.*?:test\").\n" +
+			"removes_label(testQueueService, []).\n"  +
+			"creates_label(testQueueService, []).\n"
 			;
 	
 	// Route from LUCON paper with path searching logic
@@ -146,58 +145,22 @@ public class LuconEngineTest {
 			"%         |          \n" + 
 			"%       testQueue       \n" + 
 			"entrynode(hiveMqttBroker).\n" +
-			"stmt(hiveMqttBroker, call_service('A')).\n" + 
-			"stmt(logger, call_service('B')).\n" + 
-			"stmt(anonymizer, call_service('C')).\n" + 
-			"stmt(hadoopClusters, log('intermediate')).\n" + 
-			"stmt(testQueue, log('target')).\n" + 
+			"stmt(hiveMqttBroker).\n" +
+			"has_action(hiveMqttBroker, \"paho:something:tcp://broker.hivemq.com:1883/anywhere\").\n" +
+			"stmt(logger).\n" +
+			"has_action(logger, \"log\").\n" +
+			"stmt(anonymizer).\n" +
+			"has_action(anonymizer, \"hello_anonymizer_world\").\n" +
+			"stmt(hadoopClusters).\n" +
+			"has_action(hadoopClusters, \"hdfs://myCluser\").\n" +
+			"stmt(testQueue).\n" +
+			"has_action(testQueue, \"amqp:testQueue:test\").\n" +
 			"\n" + 
 			"succ(hiveMqttBroker, logger).\n" + 
 			"succ(hiveMqttBroker, anonymizer).\n" + 
 			"succ(logger, hadoopClusters).\n" + 
 			"succ(anonymizer, hadoopClusters).\n" + 
-			"succ(hadoopClusters, testQueue).\n" + 
-			"\n" + 
-			"appendall([],LIST,LIST).\n" + 
-			"appendall([A|TAIL],LIST,[A|RESULT]) :- appendall(TAIL,LIST,RESULT).\n" + 
-			"\n" + 
-			"deletelist([], _, []).                  \n" + 
-			"deletelist([X|Xs], Y, Z) :- member(X, Y), deletelist(Xs, Y, Z), !.\n" + 
-			"deletelist([X|Xs], Y, [X|Zs]) :- deletelist(Xs, Y, Zs).\n" + 
-			"\n" + 
-			"% Query for a path between two nodes and print the labels along the possible paths like so:\n" + 
-			"%\n" + 
-			"%   path(stmt_1, stmt_5).\n" + 
-			"%\n" + 
-			"path(A,B) :-   			 		% two nodes are connected, if\n" + 
-			"  taint_walk(A,B,[],[]) % - if we can walk from one to the other,\n" + 
-			"  .            			 		% first seeding the visited list with the empty list\n" + 
-			"\n" + 
-			"taint_walk(A,B,V,C) :-       				    % we can walk from A to B, maintaining context taint marks in C\n" + 
-			"  succ(A,X) ,        		     				% - if A is connected to X, and\n" + 
-			"  creates_label(A, ADDED),	   				    % \n" + 
-			"  appendall(ADDED,C,C_ADDED),				    % add new taint flags to list\n" + 
-			"  removes_label(A, REMOVED_FLAGS),         	% remember removed taint flags\n" + 
-			"  deletelist(C_ADDED, REMOVED_FLAGS, C_NEW),   % remove removed taint flags from list\n" + 
-			"  print([X, C_NEW]),nl,\n" + 
-			" \n" + 
-			"  not(member(X,V)) , 								% - we haven't yet visited X, and\n" + 
-			"  (                  								% - either\n" + 
-			"    B = X,            								% - X is the desired destination and\n" + 
-			"    rule(R), receives_label(R, Forbidden), has_target(R,X), has_decision(R,drop), intersects(Forbidden,C_NEW),	print(R), % - taint policy forbids a flow to B\n" + 
-			"    print(['reason: service ', B, ' receives label(s) ', Forbidden, ' which is forbidden by ', R]),nl,		\n" + 
-			"  	 print('END TRACE'),nl \n" +
-			"  ;                  						%   OR\n" + 
-			"  taint_walk(X,B,[A|V],C_NEW)  			%   - we can get to it from X\n" + 
-			"  )                  						%  \n" + 
-			"  .                 						% Easy!\n" + 
-			"\n" + 
-			"% Helper function: intersection of lists\n" + 
-			"intersects([H|_],List) :-\n" + 
-			"    member(H,List),\n" + 
-			"    !.\n" + 
-			"intersects([_|T],List) :-\n" + 
-			"    intersects(T,List).\n" + 
+			"succ(hadoopClusters, testQueue).\n" +
 			"\n";
 	
 	
@@ -376,7 +339,7 @@ public class LuconEngineTest {
 	
 	/**
 	 * Tests the generation of a proof that a route matches a policy.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -397,7 +360,7 @@ public class LuconEngineTest {
 		System.out.println(proof.toString());
 		assertNotNull(proof);
 		assertFalse(proof.isValid());
-		assertTrue(proof.toString().contains("because service testQueue may receive label(s) [private]"));
-		assertNotNull(proof.getCounterexamples());
+		assertTrue(proof.toString().contains("Service testQueueService may receive label(s) [private]. This is forbidden by rule \"anotherRule\"."));
+		assertNotNull(proof.getCounterExamples());
 	}
 }
