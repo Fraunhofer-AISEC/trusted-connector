@@ -18,7 +18,7 @@
           </tr>
         </thead>
         <tbody>
-            <tr  *ngFor="let conn of incommingConnections" >
+            <tr  *ngFor="let conn of incomingConnections" >
               <td style="padding-left:16px;">
                   {{ conn.endpointIdentifier }}
               </td>
@@ -41,10 +41,10 @@
               Endpoint
             </th>
             <th width="14%">
-              State 
+              State
             </th>
             <th width="17%">
-              Client Auth 
+              Client Auth
             </th>
             <th width="20%">
               Remote Host
@@ -52,20 +52,20 @@
           </tr>
         </thead>
         <tbody>
-            <tr  *ngFor="let conn of outgoingConnections" >
-              <td style="padding-left:16px;">
-                {{ conn.endpoint_identifier }}
-              </td>
-              <td>
-                {{ conn.lastProtocolState }}
-              </td>
-              <td>
-                {{ conn.remoteAuthentication }}
-              </td>
-              <td>
-                {{ conn.remoteIdentity }}
-              </td>
-            </tr>
+          <tr  *ngFor="let connOut of outgoingConnections" >
+            <td style="padding-left:16px;">
+              {{ connOut.endpointIdentifier }}
+            </td>
+            <td>
+              {{ connOut.lastProtocolState }}
+            </td>
+            <td>
+              {{ connOut.remoteAuthentication }}
+            </td>
+            <td>
+              {{ connOut.remoteIdentity }}
+            </td>
+          </tr>
         </tbody>
     </table>
 

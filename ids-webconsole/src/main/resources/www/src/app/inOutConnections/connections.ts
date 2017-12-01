@@ -1,10 +1,10 @@
-export class IncommingConnection {
+export class IncomingConnection {
   endpointIdentifier: string;
   attestationResult: string;
 }
 
 export class OutgoingConnection {
-  endpoint_identifier: string;
+  endpointIdentifier: string;
   lastProtocolState: string;
   remoteAuthentication: string;
   remoteIdentity: string;

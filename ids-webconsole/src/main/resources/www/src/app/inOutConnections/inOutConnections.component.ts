@@ -6,9 +6,9 @@ import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/interval';
 import {BehaviorSubject} from "rxjs/Rx";
 
-import { IncommingConnection } from './connections';
+import { IncomingConnection } from './connections';
 import { OutgoingConnection } from './connections';
-import { ConnectionService } from './inOutConnections.service';
+import { ConnectionInOutService } from './inOutConnections.service';
 
 @Component({
   selector: 'connections',
@@ -16,23 +16,25 @@ import { ConnectionService } from './inOutConnections.service';
   styleUrls: ['./inOutConnections.component.css']
 })
 
-export class ConnectionReportComponent implements OnInit {
+export class ConnectionInOutComponent implements OnInit {
 
-  incommingConnections: IncommingConnection[];
+  incomingConnections: IncomingConnection[];
   outgoingConnections: OutgoingConnection[];
 
-  constructor(private titleService: Title,  private connectionService: ConnectionService) {
+  constructor(private titleService: Title,  private connectionService: ConnectionInOutService) {
      this.titleService.setTitle('IDS Connections');
   }
 
   public ngOnInit(): void {
-    this.connectionService.getIncommingConnections().subscribe(inConnections => {
-       this.incommingConnections = inConnections;
-       console.log(this.incommingConnections)
+    this.connectionService.getIncomingConnections().subscribe(inConnections => {
+       this.incomingConnections = inConnections;
+       console.log("incomingConnections");
+       console.log(this.incomingConnections)
      });
 
      this.connectionService.getOutgoingConnections().subscribe(outConnections => {
        this.outgoingConnections = outConnections;
+       console.log("outgoingConnections" + typeof this.outgoingConnections);
        console.log(this.outgoingConnections)
      });
   }

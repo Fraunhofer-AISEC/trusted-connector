@@ -27,6 +27,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
@@ -40,7 +41,7 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
  */
-@Path("/incomingconnections")
+@Path("/connections")
 public class ConnectionAPI {
 	
 	@GET
@@ -48,10 +49,14 @@ public class ConnectionAPI {
 	@Produces("application/json")
 	public List<IDSCPIncomingConnection> listincoming() {
 		List<IDSCPIncomingConnection> result = new ArrayList<>();
-		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listIncomingConnections();
-		}
+//		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
+//		if (connectionManager.isPresent()) {
+//			result = connectionManager.get().listIncomingConnections();
+//		}
+		IDSCPIncomingConnection idsc = new IDSCPIncomingConnection();
+		idsc.setAttestationResult(AttestationResult.SUCCESS);
+		idsc.setEndpointIdentifier("EndpointIdentifier");
+		result.add(idsc);
 		return result;
 	}
 	
@@ -60,10 +65,17 @@ public class ConnectionAPI {
 	@Produces("application/json")
 	public List<IDSCPOutgoingConnection> listoutgoing() {
 		List<IDSCPOutgoingConnection> result = new ArrayList<>();		
-		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listOutgoingConnections();
-		}
+//		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
+//		if (connectionManager.isPresent()) {
+//			result = connectionManager.get().listOutgoingConnections();
+//		}
+		IDSCPOutgoingConnection idsc = new IDSCPOutgoingConnection();
+		idsc.setEndpointIdentifier("EndpointID");
+		idsc.setAttestationResult(AttestationResult.SUCCESS);
+		idsc.setLastProtocolState("LastProtState");
+		idsc.setRemoteAuthentication("RemoteAuth");
+		idsc.setRemoteIdentity("RemoteIdentity");
+		result.add(idsc);
 		return result;
 	}
 }

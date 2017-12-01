@@ -35,7 +35,8 @@ import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
 import { PolicyService } from './dataflowpolicies/policy.service';
-
+//Do we need this declaration?
+import { ConnectionInOutService } from './inOutConnections/inOutConnections.service';
 import { ValuesPipe } from './values.pipe';
 
 import { routing } from './app.routing';
@@ -45,17 +46,9 @@ import {PrettifyPipe} from './prettify-json.pipe';
 import {ConfirmService} from "./confirm/confirm.service";
 import {ConfirmComponent} from "./confirm/confirm.component";
 
-//import { ModalModule } from 'angular2-modal';
-//import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
-
-//import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
-//import { ConnectionService } from './inOutConnections/inOutConnections.service';
+import { ConnectionInOutComponent } from './inOutConnections/inOutConnections.component'
 
 import { MDLTextFieldDirective } from './mdl-textfield-directive';
-//import { DataFlowComponent } from './dataFlow/dataFlow.component';
-import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
-import { ConnectionService } from './connectionsReport/connectionReport.service';
-
 
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
@@ -65,9 +58,8 @@ import { MetricService } from './metric/metric.service';
     BrowserModule,
     routing,
     HttpModule,
-    ReactiveFormsModule,
-//    ModalModule.forRoot(),
-//    BootstrapModalModule
+    FormsModule,
+    ReactiveFormsModule
     ],
   declarations: [
     AppComponent,
@@ -91,11 +83,8 @@ import { MetricService } from './metric/metric.service';
     ValuesPipe,
     PrettifyPipe,
     MDLTextFieldDirective,
-    //FileWindow,
-    //DataFlowComponent,
-    ConnectionReportComponent
+    ConnectionInOutComponent
   ],
-
   providers: [
     AppService,
     RouteService,
@@ -104,9 +93,8 @@ import { MetricService } from './metric/metric.service';
     CertificateService,
     SensorService,
     ConfirmService,
-    ConnectionService,
     IdsComponent,
-    Title,
+    ConnectionInOutService,
     MetricService,
     Title
   ],
