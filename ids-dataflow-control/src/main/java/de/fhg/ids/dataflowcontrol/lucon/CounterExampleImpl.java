@@ -34,9 +34,16 @@ public class CounterExampleImpl extends CounterExample {
         // process explanation
         Iterator<? extends Term> reasonIterator = ((Struct) traceIterator.next()).listIterator();
         StringBuilder sb = new StringBuilder().append("Service ").append(reasonIterator.next().toString())
-                .append(" may receive label(s) [");
-        appendCSList(sb, reasonIterator.next());
-        sb.append("]. This is forbidden by rule \"").append(reasonIterator.next().toString()).append("\".");
+                .append(" may receive ");
+        Term explanation = reasonIterator.next();
+        if (explanation.isList()) {
+            sb.append("label(s) [");
+            appendCSList(sb, explanation);
+            sb.append("]");
+        } else {
+            sb.append("any labels");
+        }
+        sb.append(", which is forbidden by rule \"").append(reasonIterator.next().toString()).append("\".");
         this.setExplanation(sb.toString());
         // process steps and prepend them to list (inverse trace to get the right order)
         traceIterator.forEachRemaining(t -> steps.addFirst(termToStep(t)));
@@ -56,7 +63,7 @@ public class CounterExampleImpl extends CounterExample {
             appendCSList(sb, labelList);
             return sb.toString();
         } else {
-            return sb.append(" receives message").toString();
+            return sb.append(" receives message without labels").toString();
         }
     }
 

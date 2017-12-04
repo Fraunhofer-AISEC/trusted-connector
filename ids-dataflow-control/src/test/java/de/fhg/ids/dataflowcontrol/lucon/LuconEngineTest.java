@@ -59,8 +59,8 @@ public class LuconEngineTest {
 											"move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). ";
 
 	// A random but syntactically correct policy.
-	private final static String EXAMPLE_POLICY = 
-			"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n" + 
+	private final static String EXAMPLE_POLICY =
+			"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n" +
 			"%   Prolog representation of a data flow policy\n" + 
 			"%   \n" + 
 			"%   Source: test2\n" + 
@@ -71,7 +71,7 @@ public class LuconEngineTest {
 			"%\n" + 
 			"% Only required for SWI-Prolog\n" + 
 			"% Allow the following predicates to be scattered around the prolog file.\n" + 
-			"% Otherwise Prolog will issue a warning if they are not stated in subsequent lines.		\n" + 
+			"% Otherwise Prolog will issue a warning if they are not stated in subsequent lines.\n" +
 			"%:- discontiguous service/1.\n" + 
 			"%:- discontiguous rule/1.\n" + 
 			"%:- discontiguous has_capability/2.\n" + 
@@ -83,31 +83,52 @@ public class LuconEngineTest {
 			"%:- discontiguous receives_label/2.		\n" + 
 			"regex(A,B,C) :- class(\"java.util.regex.Pattern\") <- matches(A,B) returns C.\n" +
 			"\n" +
-			"%%%%%%%% Rules %%%%%%%%%%%%\n" + 
-			"rule(deleteAfterOneMonth).\n" + 
-			"has_target(deleteAfterOneMonth, service78096644).\n" + 
-			"service(service78096644).\n" + 
-			"has_endpoint(service78096644, \"hdfs.*\").\n" + 
-			"receives_label(deleteAfterOneMonth,['private']).\n" + 
-			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" + 
-			"requires_prerequisite(obl1709554620, delete_after_days(30)).\n" + 
+			"%%%%%%%%%%%% Rules %%%%%%%%%%%%\n" +
+			"rule(allowAll).\n" +
+			"rule_priority(allowAll, 0).\n" +
+			"has_decision(allowAll, allow).\n" +
+			"receives_label(allowAll, any).\n" +
+			"has_target(allowAll, serviceAll).\n" +
+			"\n" +
+			"rule(allowRule).\n" +
+			"rule_priority(allowRule, 1).\n" +
+			"has_decision(allowRule, allow).\n" +
+			"receives_label(allowRule, any).\n" +
+			"has_target(allowRule, hiveMqttBrokerService).\n" +
+			"has_target(allowRule, hadoopClustersService).\n" +
+			"\n" +
+			"rule(deleteAfterOneMonth).\n" +
+			"rule_priority(deleteAfterOneMonth, 1).\n" +
+			"has_target(deleteAfterOneMonth, service78096644).\n" +
+			"service(service78096644).\n" +
+			"has_decision(service78096644, allow).\n" +
+			"has_endpoint(service78096644, \"hdfs.*\").\n" +
+			"receives_label(deleteAfterOneMonth,['private']).\n" +
+			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" +
+			"requires_prerequisite(obl1709554620, delete_after_days(30)).\n" +
 			"has_alternativedecision(obl1709554620, drop).\n" +
 			"\n" +
-			"rule(anotherRule).\n" + 
-			"has_target(anotherRule, testQueueService). \n" +
-			"receives_label(anotherRule, ['private']).\n" + 
-			"has_decision(anotherRule, drop).\n" + 
+			"rule(anotherRule).\n" +
+			"rule_priority(anotherRule, 1).\n" +
+			"has_target(anotherRule, testQueueService).\n" +
+			"receives_label(anotherRule, ['private']).\n" +
+			"has_decision(anotherRule, drop).\n" +
 			"\n" +
-			"%%%%% Services %%%%%%%%%%%%\n" + 
+			"%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
+			"service(serviceAll).\n" +
+			"has_endpoint(serviceAll,'.*').\n" +
+			"creates_label(serviceAll,[]).\n" +
+			"removes_label(serviceAll,[]).\n" +
 			"service(hiveMqttBrokerService).\n" +
+			"\n" +
 			"creates_label(hiveMqttBrokerService, [labelone, private]).\n" +
 			"removes_label(hiveMqttBrokerService, [labeltwo]).\n" +
 			"has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" +
-			"has_property(hiveMqttBrokerService,type,public).\n" +
+			"has_property(hiveMqttBrokerService, type, public).\n" +
 			"\n" +
 			"service(anonymizerService).\n" +
 			"has_endpoint(anonymizerService, \".*anonymizer.*\").\n" +
-			"has_property(anonymizerService,myProp,anonymize('surname', 'name')).\n" +
+			"has_property(anonymizerService, myProp, anonymize('surname', 'name')).\n" +
 			"removes_label(anonymizerService, []).\n" +
 			"creates_label(anonymizerService, []).\n" +
 			"\n" +
@@ -118,16 +139,15 @@ public class LuconEngineTest {
 			"\n" +
 			"service(hadoopClustersService).\n" +
 			"has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n" +
-			"has_capability(hadoopClustersService,deletion).\n" +
-			"has_property(hadoopClustersService,anonymizes,anonymize('surname', 'name')).\n" +
+			"has_capability(hadoopClustersService, deletion).\n" +
+			"has_property(hadoopClustersService, anonymizes, anonymize('surname', 'name')).\n" +
 			"removes_label(hadoopClustersService, []).\n" +
 			"creates_label(hadoopClustersService, []).\n" +
 			"\n" +
 			"service(testQueueService).\n" +
 			"has_endpoint(testQueueService, \"^amqp:.*?:test\").\n" +
-			"removes_label(testQueueService, []).\n"  +
-			"creates_label(testQueueService, []).\n"
-			;
+			"removes_label(testQueueService, []).\n" +
+			"creates_label(testQueueService, []).";
 	
 	// Route from LUCON paper with path searching logic
 	public static final String VERIFIABLE_ROUTE = "%\n" + 
@@ -235,9 +255,9 @@ public class LuconEngineTest {
 		LuconEngine e = new LuconEngine(System.out);
 		e.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		try {
-			List<SolveInfo> solutions = e.query("has_endpoint(X,Y),regex(Y, \"hdfs://myendpoint\",C),C.", true);
+			List<SolveInfo> solutions = e.query("has_endpoint(X,Y),regex_match(Y, \"hdfs://myendpoint\").", true);
 			assertNotNull(solutions);
-			assertEquals(2,solutions.size());
+			assertEquals(3,solutions.size());
 			for (SolveInfo solution : solutions) {
 				System.out.println(solution.getSolution().toString());
 				System.out.println(solution.hasOpenAlternatives());				
@@ -272,7 +292,8 @@ public class LuconEngineTest {
 		assertEquals(Decision.ALLOW, dec.getDecision());
 		
 		// Check obligation
-		Obligation obl = dec.getObligation();
+		assertEquals(1, dec.getObligations().size());
+		Obligation obl = dec.getObligations().get(0);
 		assertEquals("delete_after_days(30)", obl.getAction());
 	}
 
@@ -294,10 +315,10 @@ public class LuconEngineTest {
 		// Load a policy
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		
-		// We now expect 2 rules
+		// We now expect 3 rules
 		List<String> rules = pdp.listRules();
 		assertNotNull(rules);
-		assertEquals(2, rules.size());
+		assertEquals(4, rules.size());
 		assertTrue(rules.contains("deleteAfterOneMonth"));
 		assertTrue(rules.contains("anotherRule"));
 	}
@@ -360,7 +381,7 @@ public class LuconEngineTest {
 		System.out.println(proof.toString());
 		assertNotNull(proof);
 		assertFalse(proof.isValid());
-		assertTrue(proof.toString().contains("Service testQueueService may receive label(s) [private]. This is forbidden by rule \"anotherRule\"."));
+		assertTrue(proof.toString().contains("Service testQueueService may receive label(s) [private], which is forbidden by rule \"anotherRule\"."));
 		assertNotNull(proof.getCounterExamples());
 	}
 }

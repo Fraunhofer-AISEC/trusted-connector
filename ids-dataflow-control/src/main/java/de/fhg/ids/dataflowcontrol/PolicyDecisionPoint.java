@@ -23,13 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -60,6 +57,8 @@ import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+
 /**
  * servicefactory=false is the default and actually not required. But we want to make
  * clear that this is a singleton, i.e. there will only be one instance of
@@ -89,7 +88,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
-		sb.append("regex(EP, \"").append(target.getEndpoint()).append("\", _D), _D, ");
+		sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
@@ -97,18 +96,17 @@ public class PolicyDecisionPoint implements PDP, PAP {
 					sb.append("receives_label(T, ").append(msgLabels.get(k).toString()).append("), ");
 			});
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("(");
+			List<String> capProp = new LinkedList<>();
+			for (String cap: target.getCapabilties()) {
+				capProp.add("has_capability(T, " + escape(cap) + ")");
+			}
+			for (String prop: target.getProperties()) {
+				capProp.add("has_property(T, " + escape(prop) + ")");
+			}
+			sb.append("(").append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
-		for (String cap: target.getCapabilties()) {
-			sb.append("(has_capability(T, \"").append(cap).append("\"); ");
-		}
-		for (String prop: target.getProperties()) {
-			sb.append("has_property(T, \"").append(prop).append("\"), ");
-		}
-		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("), ");
-		}
-		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), requires_prerequisite(_O, A))).");
+		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), " +
+				"requires_prerequisite(_O, A))).");
 		return sb.toString();
 	}
 	
@@ -120,24 +118,22 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param target
 	 * @return
 	 */
-	private String createTransformationQuery(ServiceNode target) {			
+	private String createTransformationQuery(ServiceNode target) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("service(_T), ");
-		if (target.getEndpoint()!=null) {
-			sb.append("has_endpoint(_T, _EP), ");
-			sb.append("regex(_EP, \"").append(target.getEndpoint()).append("\", _X), _X, ");
+		if (target.getEndpoint() != null) {
+			sb.append("dominant_allow_rule(").append(escape(target.getEndpoint())).append(", _T, _), ");
+		} else {
+			throw new RuntimeException("No endpoint specified!");
 		}
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("(");
-		}
-		for (String cap: target.getCapabilties()) {
-			sb.append("(has_capability(_T, \"").append(cap).append("\"); ");
-		}
-		for (String prop: target.getProperties()) {
-			sb.append("has_property(_T, \"").append(prop).append("\"), ");
-		}
-		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("), ");
+			List<String> capProp = new LinkedList<>();
+			for (String cap: target.getCapabilties()) {
+				capProp.add("has_capability(_T, " + escape(cap) + ")");
+			}
+			for (String prop: target.getProperties()) {
+				capProp.add("has_property(_T, " + escape(prop) + ")");
+			}
+			sb.append('(').append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
 		sb.append("creates_label(_T, Creates), removes_label(_T, Removes).");
 		return sb.toString();
@@ -190,6 +186,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		LOG.info("QUERY: " + query);
 		try {
 			List<SolveInfo> solveInfo = this.engine.query(query, false);
+			System.out.println(solveInfo);
 			if (solveInfo.isEmpty()) {
 				return result;
 			}
@@ -239,7 +236,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	public PolicyDecision requestDecision(DecisionRequest req) {
 		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
 		PolicyDecision dec = new PolicyDecision();
-		dec.setDecision(Decision.ALLOW); // Default value
+		dec.setDecision(Decision.DENY); // Default value
 		dec.setReason("Not yet ready for productive use!");
 
 		try {
@@ -247,7 +244,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			long startTime = System.nanoTime();
 			String query = this.createDecisionQuery(req.getTo(), req.getMessageCtx());
 			LOG.info("QUERY: " + query);
-			List<SolveInfo> solveInfo = this.engine.query(query, false);
+			List<SolveInfo> solveInfo = this.engine.query(query, true);
 			long time = System.nanoTime() - startTime;
 			LOG.info("Policy decision took " + time + " nanos");
 						
@@ -261,25 +258,36 @@ public class PolicyDecisionPoint implements PDP, PAP {
 				return dec;
 			}
 			
-			// Get some obligation, if any 
-			// TODO This is still incorrect because it only finds "any" obligation. Merge obligations of all matching rules.
-			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Optional<Var> alt = vars.stream().filter(v -> "Alt".equals(v.getName())).findAny();
-			Optional<Var> action = vars.stream().filter(v -> "A".equals(v.getName())).findAny();
-			if (action.isPresent()) {
-				Obligation o = new Obligation();				
-				o.setAction(action.get().getTerm().toString());
-				if (alt.isPresent() && "drop".equals(alt.get().getTerm().toString())) {
-					o.setAlternativeDecision(Decision.DENY);
-				}
-				dec.setObligation(o);
-				dec.setDecision(Decision.ALLOW);
-			}
-			
-			Optional<Var> decision = vars.stream().filter(v -> "D".equals(v.getName()) && v.isBound()).findAny();
-			if (decision.isPresent() && "drop".equals(decision.get().getTerm().toString())) {
-					dec.setDecision(Decision.DENY);				
-			}
+			// Collect obligations
+			List<Obligation> obligations = new LinkedList<>();
+			solveInfo.forEach(s -> {
+				try {
+					Term decision = s.getVarValue("D");
+					if (!(decision instanceof Var)) {
+						String decString = decision.getTerm().toString();
+						if ("drop".equals(decString)) {
+							dec.setDecision(Decision.DENY);
+						} else if ("allow".equals(decString)) {
+							dec.setDecision(Decision.ALLOW);
+						}
+					}
+					Term action = s.getVarValue("A"), altDecision = s.getVarValue("Alt");
+					if (!(action instanceof Var)) {
+						Obligation o = new Obligation();
+						o.setAction(action.getTerm().toString());
+						if (!(altDecision instanceof Var)) {
+							String altDecString = altDecision.getTerm().toString();
+							if ("drop".equals(altDecString)) {
+								o.setAlternativeDecision(Decision.DENY);
+							} else if ("allow".equals(altDecString)) {
+								o.setAlternativeDecision(Decision.ALLOW);
+							}
+						}
+						obligations.add(o);
+					}
+				} catch (NoSolutionException ignored) {}
+			});
+			dec.setObligations(obligations);
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);
 			dec.setDecision(Decision.DENY);

@@ -45,7 +45,7 @@ public class LuconEngine {
 	private static final Logger LOG = LoggerFactory.getLogger(LuconEngine.class);
 	
 	// A Prolog query to compute a path from X to Y in a graph of statements (= a route)
-	private static final String QUERY_ROUTE_VERIFICATION = "entrynode(X), path(X, Y, T), stmt(Y).";
+	private static final String QUERY_ROUTE_VERIFICATION = "entrynode(X), stmt(Y), path(X, Y, T).";
 	private Prolog p;
 
 	/**
@@ -154,7 +154,7 @@ public class LuconEngine {
 			newP.setTheory(t);
 
 //			System.out.println("-------------------------");
-//			System.out.println(new LuconLibrary().getTheory() + "\n" + t.toString());
+//			System.out.println(new LuconLibrary().getTheory() + "\n" + p.getTheory() + "\n" + routePl);
 //			System.out.println("-------------------------");
 
 			// Generate the proof (=run query)

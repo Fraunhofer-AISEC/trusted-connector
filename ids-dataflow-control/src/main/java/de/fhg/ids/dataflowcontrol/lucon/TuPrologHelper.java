@@ -50,7 +50,7 @@ public final class TuPrologHelper {
         return sb.toString();
     }
 
-    public static String unescape(String s) {
+    public static String unquote(String s) {
         if (s.length() > 2 && s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\'') {
             return s.substring(1, s.length() - 1);
         } else if (s.length() == 2 && "''".equals(s)) {

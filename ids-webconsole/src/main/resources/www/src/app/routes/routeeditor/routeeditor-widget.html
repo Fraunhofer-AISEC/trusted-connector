@@ -19,6 +19,7 @@
 			<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
 				class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{validationInfo.valid ? 'Valid' : 'Invalid'}}</div>
 			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">This route violates usage control policies</div>
+			<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">This route does not violate any usage control policies</div>
 			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
 				<pre *ngFor="let ce of validationInfo.counterExamples">
 <em class="mdl-color-text--red-A700">{{ce.explanation}}</em>
