@@ -47,29 +47,60 @@ public class LuconLibrary extends Library {
         "intersects([H|_],List) :- member(H,List), !.\n" +
         "intersects([_|T],List) :- intersects(T,List).\n" +
         "\n" +
-        "update_labels(In, S, Out) :-                   % Updates labels according to spec. of service S\n" +
-        "  creates_label(S, A), union(In, A, I),        % adding new labels added by S\n" +
-        "  removes_label(S, R), deletelist(I, R, Out).  % and removing labels removed by S\n" +
+        "update_labels(In, S, Out) :-                                 % Updates labels according to spec. of service S\n" +
+        "  once(creates_label(S, A); A = []), union(In, A, I),        % adding new labels added by S\n" +
+        "  once(removes_label(S, R); R = []), deletelist(I, R, Out).  % and removing labels removed by S\n" +
         "\n" +
-        "action_service(Action, S) :-   % Finds services S matching endpoints of N  [ O(|Ep_S|) ]\n" +
-        "  has_endpoint(S, Regex),      % a service S exists such that  [ O(|Ep_S|) ]\n" +
-        "  regex_match(Regex, Action).  % the action of A matches the endpoint of S  [ assume O(1) ]\n" +
+        "all_ground([]).\n" +
+        "all_ground([Head|Tail]) :- ground(Head), all_ground(Tail).\n" +
         "\n" +
-        "dominant_rule(Act, Req, S, R) :-  % Find the dominant rule R for node A  [ O(|Ep_S|² x |S -- R|²) ]\n" +
-        "  action_service(Act, S),              % action of A is matched by a service S  [ O(|Ep_S|) ]\n" +
-        "  rule(R), has_target(R, S),           %   There is a rule R for service S  [ O(|S -- R|) ]\n" +
-        "  has_decision(R, Req),                %   with a decision that unifies with Require  [ O(1) ]\n" +
-        "  rule_priority(R, PR),                %   that has priority PR, then  [ O(1) ]\n" +
-        "  \\+(                                 %   there MUST NOT exist  [ O(|Ep_S| x |S -- R|) ]\n" +
-        "    action_service(Act, S2),           %     another service S2  [ O(|Ep_S|) ]\n" +
-        "    rule(R2), has_target(R2, S2),      %     targeted by a rule R2,  [ O(|S -- R|) ]\n" +
-        "    R \\= R2,                          %     that is not equal to R and  [ O(1) ]\n" +
-        "    rule_priority(R2, PR2),            %     has priority PR2, such that  [ O(1) ]\n" +
-        "    PR2 > PR                           %     the priority PR2 is greather than PR  [ O(1) ]\n" +
-        "  ).                                   %\n" +
+        "cache_put_all_unsafe(KL, []).\n" +
+        "cache_put_all_unsafe(KL, [V|T]) :- cache_put_unsafe(KL, V), cache_put_all_unsafe(KL, T).\n" +
+        "cache_put_unsafe(KL, V) :- \n" +
+        "  %print([\"CACHE PUT: \"|[KL, V]]), nl,\n" +
+        "  assertz(cache_entry(KL, V)).\n" +
         "\n" +
-        "dominant_drop_rule(Act, S, R) :- dominant_rule(Act, drop, S, R).\n" +
-        "dominant_allow_rule(Act, S, R) :- dominant_rule(Act, allow, S, R).\n" +
+        "cache_put_all(KL, VL) :- all_ground(KL), cache_put_all_unsafe(KL, VL).\n" +
+        "cache_put(KL, V) :- cache_put_check(KL, V); true.\n" +
+        "cache_put_check(KL, V) :- all_ground(KL), cache_put_unsafe(KL, V).\n" +
+        "\n" +
+        "cache_get(KL, V) :-\n" +
+        "  cache_entry(KL, V).\n" +
+        "  %-> print([\"CACHE HIT: \", KL, V]), nl\n" +
+        "  %; print([\"CACHE MISS: \", KL]), nl, fail.\n" +
+        "\n" +
+        "cache_clear(KL) :- retractall(cache_entry(KL, _)).\n" +
+        "\n" +
+        "action_service(Action, S) :-  % Finds services S matching endpoints of N  [ O(|Ep_S|) ]\n" +
+        "  has_endpoint(S, Regex),       % a service S exists such that  [ O(|Ep_S|) ]\n" +
+        "  regex_match(Regex, Action).   % the action of A matches the endpoint of S  [ assume O(1) ]\n" +
+        "\n" +
+        "dominant_rules(Act, Req, DC, S, R) :-  % Find the dominant rule R for action Act (from cache)\n" +
+        "  cache_get([dr, Act, Req, DC], V),      % CACHE GET entry\n" +
+        "  list(V), V = [S, R].                   % unpack result\n" +
+        "\n" +
+        "dominant_rules(Act, Req, DC, S, R) :-  % Find the dominant rule R for action Act  [ O(|Ep_S|² x |S -- R|²) ]\n" +
+        "  \\+(cache_get([dr, Act, Req, DC], V)),     % CACHE GET entry\n" +
+        "  (setof(DomRule, (\n" +
+        "    action_service(Act, Si),                  % Action Act is matched by a service S  [ O(|Ep_S|) ]\n" +
+        "    rule(Ri), has_target(Ri, Si),             % There is a rule R for service S  [ O(|S -- R|) ]\n" +
+        "    has_decision(Ri, Req),                    % with a decision that unifies with Require  [ O(1) ]\n" +
+        "    rule_priority(Ri, PR),                    % that has priority PR, then  [ O(1) ]\n" +
+        "    \\+(                                       % there MUST NOT exist  [ O(|Ep_S| x |S -- R|) ]\n" +
+        "      action_service(Act, S2),                  % a service S2  [ O(|Ep_S|) ]\n" +
+        "      rule(R2), Ri \\= R2, has_target(R2, S2),   % targeted by another rule R2  [ O(|S -- R|) ]\n" +
+        "      has_decision(R2, D2), D2 \\= Req,          % which enforces a different decision,  [ O(1) ]\n" +
+        "      rule_priority(R2, PR2),                   % and has priority PR2  [ O(1) ]\n" +
+        "      G =.. [DC, PR2, PR], call(G)              % such that 'DC'(PR, PR2) is fulfilled  [ O(1) ]\n" +
+        "    ), DomRule = [Si, Ri]                     % compose the result\n" +
+        "  ), RL)\n" +
+        "  -> cache_put_all([dr, Act, Req, DC], RL)  % IF successful, CACHE PUT ALL results\n" +
+        "  ; cache_put([dr, Act, Req, DC], none)     % ELSE CACHE PUT 'none'\n" +
+        "  ), !,                                  % don't backtrack into the caching logic\n" +
+        "  dominant_rules(Act, Req, DC, S, R).    % delegate to cache handler\n" +
+        "\n" +
+        "dominant_drop_rules(Act, S, R) :- dominant_rules(Act, drop, '>', S, R).\n" +
+        "dominant_allow_rules(Act, S, R) :- dominant_rules(Act, allow, '>=', S, R).\n" +
         "\n" +
         "% Query for a path between two nodes and print the labels along the possible paths like so:\n" +
         "%\n" +
@@ -81,7 +112,7 @@ public class LuconLibrary extends Library {
         "trace_walk(A, B, L, Log, T) :-             % We have walked from A to B and verify  [ O(|Ep_S|² x |S -- R|²) ]\n" +
         "  A = B,                                   %   A is the desired destination with  [ O(1) ]\n" +
         "  has_action(A, Act),                      %   an action Act and there is  [ O(1) ]\n" +
-        "  dominant_drop_rule(Act, S, R),           %   a dominant drop rule R and service S for Act [ O(|Ep_S|² x |S -- R|²) ]\n" +
+        "  dominant_drop_rules(Act, S, R),          %   a dominant drop rule R and service S for Act [ O(|Ep_S|² x |S -- R|²) ]\n" +
         "  (                                        %   AND\n" +
         "    receives_label(R, any),                %     R receives either any set of labels  [ O(1) ]\n" +
         "    T = [[S, any, R]|Log]                  %     [unify the recursion result with Out]  [ O(1) ]\n" +
@@ -95,8 +126,9 @@ public class LuconLibrary extends Library {
         "trace_walk(A, B, L, Log, T) :-             % We can walk from A to B if  [ O(|Ep_S|² x |S -- R|²) ]\n" +
         "  succ(A,X),                               %   A is connected to X and there is  [ O(|succ(A, _)|), assume O(1) ]\n" +
         "  has_action(A, Act),                      %   an action Action and there is  [ O(1) ]\n" +
-        "  dominant_allow_rule(Act, S, _),          %   a dominant allow rule and service S for Act  [ O(|Ep_S|² x |S -- R|²) ]\n" +
-        "  update_labels(L, S, LN),                 %   [update the labels for the next step]  [ O(|L|), assume O(1) ]\n" +
+        "  dominant_allow_rules(Act, S, _),         %   a dominant allow rule and service S for Act  [ O(|Ep_S|² x |S -- R|²) ]\n" +
+        "  update_labels(L, S, LN),                 %   [update the labels for the next step]  [ O(|L|), assume O(1) ],\n" +
+        "  %print([\"transition: \", A, X, S, LN]), nl,\n" +
         "  trace_walk(X, B, LN, [[X, LN]|Log], T).  %   we can get from X to B  [ Recursion! ]\n" +
         "  %, print(A),nl.\n";
     }

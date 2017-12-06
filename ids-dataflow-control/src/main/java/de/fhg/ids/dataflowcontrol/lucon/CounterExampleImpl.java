@@ -34,14 +34,12 @@ public class CounterExampleImpl extends CounterExample {
         // process explanation
         Iterator<? extends Term> reasonIterator = ((Struct) traceIterator.next()).listIterator();
         StringBuilder sb = new StringBuilder().append("Service ").append(reasonIterator.next().toString())
-                .append(" may receive ");
+                .append(" may receive messages");
         Term explanation = reasonIterator.next();
         if (explanation.isList()) {
-            sb.append("label(s) [");
+            sb.append(" labeled [");
             appendCSList(sb, explanation);
             sb.append("]");
-        } else {
-            sb.append("any labels");
         }
         sb.append(", which is forbidden by rule \"").append(reasonIterator.next().toString()).append("\".");
         this.setExplanation(sb.toString());

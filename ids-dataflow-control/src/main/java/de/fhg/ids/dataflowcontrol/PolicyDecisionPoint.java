@@ -121,7 +121,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	private String createTransformationQuery(ServiceNode target) {
 		StringBuilder sb = new StringBuilder();
 		if (target.getEndpoint() != null) {
-			sb.append("dominant_allow_rule(").append(escape(target.getEndpoint())).append(", _T, _), ");
+			sb.append("dominant_allow_rules(").append(escape(target.getEndpoint())).append(", _T, _), ");
 		} else {
 			throw new RuntimeException("No endpoint specified!");
 		}
@@ -186,7 +186,6 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		LOG.info("QUERY: " + query);
 		try {
 			List<SolveInfo> solveInfo = this.engine.query(query, false);
-			System.out.println(solveInfo);
 			if (solveInfo.isEmpty()) {
 				return result;
 			}
@@ -312,7 +311,13 @@ public class PolicyDecisionPoint implements PDP, PAP {
 
 	@Override
 	public void clearAllCaches() {
-		// Nothing to do here at the moment
+		// clear Prolog cache entries
+		try {
+			engine.query("cache_clear(_).", true);
+			LOG.info("Prolog cache_clear(_) successful");
+		} catch (PrologException pe) {
+			LOG.warn("Prolog cache_clear(_) failed", pe);
+		}
 	}
 
 	@Override
