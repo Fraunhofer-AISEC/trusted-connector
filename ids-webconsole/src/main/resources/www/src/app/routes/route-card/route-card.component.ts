@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-import { Route } from './route';
-import { RouteService } from './route.service';
+import { Route } from '../route';
+import { RouteService } from '../route.service';
 
 declare var Viz: any;
 
