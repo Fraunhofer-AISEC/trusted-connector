@@ -212,9 +212,9 @@ public class RouteManagerService implements RouteManager {
 	@Override
 	public Map<String, Collection<String>> getEndpoints() {
 		List<CamelContext> camelO = getCamelContexts();
-		return camelO.stream().collect(Collectors.toMap(c -> c.getName(), c -> c.getEndpoints()
+		return camelO.stream().collect(Collectors.toMap(CamelContext::getName, c -> c.getEndpoints()
 				.stream()
-				.map(ep -> ep.getEndpointUri())
+				.map(Endpoint::getEndpointUri)
 				.collect(Collectors.toList())));
 	}
 	

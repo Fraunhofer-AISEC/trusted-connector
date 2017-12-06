@@ -24,8 +24,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -58,6 +61,7 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
 
 /**
  * servicefactory=false is the default and actually not required. But we want to make
@@ -135,7 +139,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			}
 			sb.append('(').append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
-		sb.append("creates_label(_T, Creates), removes_label(_T, Removes).");
+		sb.append("creates_label(_T, Adds), removes_label(_T, Removes).");
 		return sb.toString();
 	}
 
@@ -177,60 +181,54 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		this.routeManager = null;
 	}
 
+	private Cache<ServiceNode, TransformationDecision> transformationCache = CacheBuilder.newBuilder()
+			.maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
+
 	@Override
 	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
-		TransformationDecision result = new TransformationDecision();
-		
+		TransformationDecision result;
+
+		result = transformationCache.getIfPresent(lastServiceNode);
+		if (result != null) {
+			return result;
+		}
+
 		// Query prolog for labels to remove or add from message
 		String query = this.createTransformationQuery(lastServiceNode);
 		LOG.info("QUERY: " + query);
+
 		try {
-			List<SolveInfo> solveInfo = this.engine.query(query, false);
+			result = new TransformationDecision();
+
+			List<SolveInfo> solveInfo = this.engine.query(query, true);
 			if (solveInfo.isEmpty()) {
+				transformationCache.put(lastServiceNode, result);
 				return result;
 			}
-			
-			// Get solutions, convert label variables to string and collect in sets
-			
-			// Collect labels to remove			
-			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Set<String> labelsToRemove = new HashSet<>();
-			for (Var var : vars) {
-				if ("Removes".equals(var.getName()) && var.getLink() instanceof Struct) {
-					Struct labelStruct = ((Struct) var.getLink());
-					int labelCount = labelStruct.getArity();
-					for (int i=0;i<labelCount;i++) {
-						Term label = labelStruct.getTerm(i);
-						if (!label.isEmptyList()) {
-							labelsToRemove.add(label.toString());
-						}
-					}
-				}
-			}
 
-			// Collect labels to add
-			Set<String> labelsToAdd = new HashSet<>();
-			for (Var var : vars) {
-				if ("Creates".equals(var.getName()) && var.getLink() instanceof Struct) {
-					Struct labelStruct = ((Struct) var.getLink());
-					int labelCount = labelStruct.getArity();
-					for (int i=0;i<labelCount;i++) {
-						Term label = labelStruct.getTerm(i);
-						if (!label.isEmptyList()) {
-							labelsToAdd.add(label.toString());
-						}
+			// Get solutions, convert label variables to string and collect in sets
+			Set<String> labelsToAdd = result.getLabelsToAdd();
+			Set<String> labelsToRemove = result.getLabelsToRemove();
+			solveInfo.forEach(s -> {
+				try {
+					Term adds = s.getVarValue("Adds").getTerm();
+					if (adds.isList()) {
+						listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
 					}
-				}
-			}
-			
-			result.getLabelsToRemove().addAll(labelsToRemove);
-			result.getLabelsToAdd().addAll(labelsToAdd);		
-		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
+					Term removes = s.getVarValue("Removes").getTerm();
+					if (removes.isList()) {
+						listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
+					}
+				} catch (NoSolutionException ignored) {}
+			});
+		} catch (NoMoreSolutionException | MalformedGoalException e) {
 			LOG.error(e.getMessage(), e);
 		}
+
+		transformationCache.put(lastServiceNode, result);
 		return result;
 	}
-	
+
 	@Override
 	public PolicyDecision requestDecision(DecisionRequest req) {
 		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
@@ -318,6 +316,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		} catch (PrologException pe) {
 			LOG.warn("Prolog cache_clear(_) failed", pe);
 		}
+		// clear transformation cache
+		transformationCache.invalidateAll();
 	}
 
 	@Override

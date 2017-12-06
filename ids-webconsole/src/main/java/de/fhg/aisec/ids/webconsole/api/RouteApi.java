@@ -289,4 +289,15 @@ public class RouteApi {
 		}
 		return Response.ok(vi).build();
 	}
+
+	@GET
+	@Path("/prolog/{routeId}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getRouteProlog(@PathParam("routeId") String routeId) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return Response.serverError().entity("RouteManager not available").build();
+		}
+		return Response.ok(rm.get().getRouteAsProlog(routeId)).build();
+	}
 }

@@ -20,10 +20,12 @@
 package de.fhg.ids.dataflowcontrol.lucon;
 
 import alice.tuprolog.Prolog;
+import alice.tuprolog.Struct;
+import alice.tuprolog.Term;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public final class TuPrologHelper {
 
@@ -48,6 +50,15 @@ public final class TuPrologHelper {
         }
         sb.append('\'');
         return sb.toString();
+    }
+
+    public static Stream<? extends Term> listStream(Term list) {
+        if (!list.isList()) {
+            throw new IllegalArgumentException("Not a tuProlog list");
+        }
+        Iterator<? extends Term> listIterator = ((Struct) list).listIterator();
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(listIterator, Spliterator.ORDERED),
+                false);
     }
 
     public static String unquote(String s) {

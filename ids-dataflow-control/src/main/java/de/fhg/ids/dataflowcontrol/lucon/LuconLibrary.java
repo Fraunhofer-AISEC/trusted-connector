@@ -20,7 +20,9 @@
 package de.fhg.ids.dataflowcontrol.lucon;
 
 import alice.tuprolog.Library;
+import alice.tuprolog.Number;
 import alice.tuprolog.Term;
+import alice.tuprolog.Var;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -134,17 +136,28 @@ public class LuconLibrary extends Library {
     }
 
     private LoadingCache<String, Pattern> regexCache = CacheBuilder.newBuilder()
-            .weakKeys()
-            .maximumSize(1000)
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .maximumWeight((long) 1.e6).weigher((k, v) -> ((String) k).length())
             .build(new CacheLoader<String, Pattern>() {
                 public Pattern load(@Nonnull String key) {
                     return Pattern.compile(key);
                 }
             });
 
+    private static boolean isComplex(Term t) {
+        if (t instanceof Var) {
+            t = t.getTerm();
+            t.isCompound();
+        }
+        return (!t.isAtom() || t.isList()) && !(t instanceof Number);
+    }
+
     @SuppressWarnings("unused")
     public boolean regex_match_2(Term regex, Term input) {
+        // Both regex and input string must be ground
+        if (isComplex(regex) || isComplex(input)) {
+            return false;
+        }
         try {
             return regexCache.get(TuPrologHelper.unquote(regex.getTerm().toString()))
                     .matcher(TuPrologHelper.unquote(input.getTerm().toString())).matches();

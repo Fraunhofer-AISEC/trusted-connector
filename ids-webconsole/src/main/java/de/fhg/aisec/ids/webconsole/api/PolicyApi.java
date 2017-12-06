@@ -72,9 +72,9 @@ public class PolicyApi {
 	 * @return Policy Prolog
 	 */
 	@GET
-	@Path("rawPolicies")
+	@Path("policyProlog")
 	@Produces("text/plain")
-	public Response getRawPolicies() {
+	public Response getPolicyProlog() {
 		return WebConsoleComponent.getPolicyAdministrationPoint().map(pap -> Response.ok(pap.getPolicy()))
 				.orElseGet(() -> Response.serverError().entity("Could not retrieve policy")).build();
 	}

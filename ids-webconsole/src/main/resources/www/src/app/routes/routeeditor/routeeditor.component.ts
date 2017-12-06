@@ -13,7 +13,8 @@ declare var Viz: any;
 
 @Component({
   selector: 'routeeditor',
-  templateUrl: './routeeditor-widget.html'
+  templateUrl: './routeeditor.component.html',
+  styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
   private route: Route = new Route();
@@ -33,13 +34,13 @@ export class RouteeditorComponent implements OnInit {
 
         console.log("Route editor: Loaded route with id " + this.route.id);
         let graph = this.route.dot;
-    
+
         if(this.route.status == "Started") {
           this.statusIcon = "stop";
         } else {
           this.statusIcon = "play_arrow";
         }
-    
+
         this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
       });
 
