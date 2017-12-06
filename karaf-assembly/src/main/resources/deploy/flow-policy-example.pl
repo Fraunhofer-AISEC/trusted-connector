@@ -5,7 +5,7 @@ receives_label(dropAll,any).
 has_target(dropAll,serviceAll).
 
 rule(allowAll).
-rule_priority(allowAll,0).
+rule_priority(allowAll,1).
 has_decision(allowAll,allow).
 receives_label(allowAll,any).
 has_target(allowAll,serviceURI).
