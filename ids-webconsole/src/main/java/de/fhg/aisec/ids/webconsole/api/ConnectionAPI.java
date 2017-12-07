@@ -49,14 +49,14 @@ public class ConnectionAPI {
 	@Produces("application/json")
 	public List<IDSCPIncomingConnection> listincoming() {
 		List<IDSCPIncomingConnection> result = new ArrayList<>();
-//		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-//		if (connectionManager.isPresent()) {
-//			result = connectionManager.get().listIncomingConnections();
-//		}
-		IDSCPIncomingConnection idsc = new IDSCPIncomingConnection();
-		idsc.setAttestationResult(AttestationResult.SUCCESS);
-		idsc.setEndpointIdentifier("EndpointIdentifier");
-		result.add(idsc);
+		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
+		if (connectionManager.isPresent()) {
+			result = connectionManager.get().listIncomingConnections();
+		}
+//		IDSCPIncomingConnection idsc = new IDSCPIncomingConnection();
+//		idsc.setAttestationResult(AttestationResult.SUCCESS);
+//		idsc.setEndpointIdentifier("EndpointIdentifier");
+//		result.add(idsc);
 		return result;
 	}
 	
@@ -65,17 +65,17 @@ public class ConnectionAPI {
 	@Produces("application/json")
 	public List<IDSCPOutgoingConnection> listoutgoing() {
 		List<IDSCPOutgoingConnection> result = new ArrayList<>();		
-//		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-//		if (connectionManager.isPresent()) {
-//			result = connectionManager.get().listOutgoingConnections();
-//		}
-		IDSCPOutgoingConnection idsc = new IDSCPOutgoingConnection();
-		idsc.setEndpointIdentifier("EndpointID");
-		idsc.setAttestationResult(AttestationResult.SUCCESS);
-		idsc.setLastProtocolState("LastProtState");
-		idsc.setRemoteAuthentication("RemoteAuth");
-		idsc.setRemoteIdentity("RemoteIdentity");
-		result.add(idsc);
+		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
+		if (connectionManager.isPresent()) {
+			result = connectionManager.get().listOutgoingConnections();
+		}
+//		IDSCPOutgoingConnection idsc = new IDSCPOutgoingConnection();
+//		idsc.setEndpointIdentifier("EndpointID");
+//		idsc.setAttestationResult(AttestationResult.SUCCESS);
+//		idsc.setLastProtocolState("LastProtState");
+//		idsc.setRemoteAuthentication("RemoteAuth");
+//		idsc.setRemoteIdentity("RemoteIdentity");
+//		result.add(idsc);
 		return result;
 	}
 }

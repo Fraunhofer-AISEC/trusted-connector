@@ -83,7 +83,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
 	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
 
-	        //Assume only websocket per endpoint
+	        //Assume only one websocket per endpoint
 	        while(webSocketIterator.hasNext())  {
 	        	DefaultWebsocket dws = webSocketIterator.next();
 	        	idscpc.setAttestationResult(dws.getAttestationResult());
@@ -112,7 +112,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
 	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
 	        
-	        //Assume only websocket per endpoint
+	        //Assume only one websocket per endpoint
 	        while(webSocketIterator.hasNext())  {
 	        	DefaultWebsocket dws = webSocketIterator.next();
 	        	
