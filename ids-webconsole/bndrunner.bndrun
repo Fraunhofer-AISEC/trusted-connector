@@ -10,11 +10,11 @@
 	com.fasterxml.jackson.core.jackson-annotations;version='[2.6.3,2.6.4)',\
 	com.fasterxml.jackson.core.jackson-core;version='[2.6.3,2.6.4)',\
 	com.fasterxml.jackson.core.jackson-databind;version='[2.6.3,2.6.4)',\
-	com.github.jnr.enxio;version='[0.13.0,0.13.1)',\
+	com.github.jnr.enxio;version=0.13,\
 	com.github.jnr.ffi;version='[2.1.0,2.1.1)',\
 	com.github.jnr.jffi;version='[1.2.13,1.2.14)',\
 	com.github.jnr.posix;version='[3.0.30,3.0.31)',\
-	com.github.jnr.unixsocket;version='[0.13.0,0.13.1)',\
+	com.github.jnr.unixsocket;version=0.13,\
 	com.google.gson;version='[2.7.0,2.7.1)',\
 	com.google.guava;version='[19.0.0,19.0.1)',\
 	com.google.protobuf;version='[2.5.0,2.5.1)',\

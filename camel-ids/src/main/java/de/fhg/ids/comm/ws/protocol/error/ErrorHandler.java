@@ -24,7 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
+@SuppressWarnings("unused")
 public class ErrorHandler {	
 	private static final Logger LOG = LoggerFactory.getLogger(ErrorHandler.class);
 

@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,6 +75,7 @@ import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
+import de.fhg.aisec.ids.rm.util.PrologPrinter;
 
 /**
  * Manages Camel routes.
@@ -210,9 +212,9 @@ public class RouteManagerService implements RouteManager {
 	@Override
 	public Map<String, Collection<String>> getEndpoints() {
 		List<CamelContext> camelO = getCamelContexts();
-		return camelO.stream().collect(Collectors.toMap(c -> c.getName(), c -> c.getEndpoints()
+		return camelO.stream().collect(Collectors.toMap(CamelContext::getName, c -> c.getEndpoints()
 				.stream()
-				.map(ep -> ep.getEndpointUri())
+				.map(Endpoint::getEndpointUri)
 				.collect(Collectors.toList())));
 	}
 	
@@ -361,14 +363,35 @@ public class RouteManagerService implements RouteManager {
                   String camelId = (String) mBeanServer.getAttribute(routeMBean, "CamelId");
                   if (camelId != null && camelId.equals(cCtx.getName())) {
                       String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml", new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
-                      RouteStatDump route = (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
-                      return route;
+                      return (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
                   }
               }
           }
           return null;
 	}
 
+	@Override
+	public String getRouteAsProlog(String routeId) {
+		Optional<CamelContext> c = getCamelContexts()
+				.parallelStream()
+				.filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
+				.findAny();
+			
+			if (c.isPresent()) {
+				try {
+					RouteDefinition rd = c.get().getRouteDefinition(routeId);
+					StringWriter writer = new StringWriter();
+					new PrologPrinter().printSingleRoute(writer, rd);
+					writer.flush();
+					return writer.toString();
+				} catch (IOException e) {
+					LOG.error("Error printing route to prolog " + routeId, e);
+				}
+			}
+
+			return "";
+	}
+	
 	@Override
 	public String getRouteAsString(String routeId) {
 		Optional<CamelContext> c = getCamelContexts()

@@ -18,7 +18,7 @@ import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.c
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
-import { RouteCardComponent } from './routes/route-card.component';
+import { RouteCardComponent } from './routes/route-card/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
 import { SettingsService } from './ids/settings.service';

@@ -97,7 +97,7 @@ public interface RouteManager {
 	void delRoute(String routeId);
 
 	/**
-	 * Returns the current route configuration in its original representation of the implementing engine.
+	 * Returns the given route in its original representation of the implementing engine.
 	 * 
 	 * Note that this method may return null if the implementing engine does not support a textual route configuration.
 	 * 
@@ -115,4 +115,12 @@ public interface RouteManager {
 	 * @return map<k,v> where k is a string indicating the route id.
 	 */
 	Map<String,RouteMetrics> getRouteMetrics() ;
+
+	/**
+	 * Returns the given route configuration in a Prolog representation.
+	 * 
+	 * @param routeId
+	 * @return
+	 */
+	String getRouteAsProlog(String routeId);
 }

@@ -1,0 +1,76 @@
+option java_package = "de.fhg.aisec.ids";
+
+message ContainerImageSize {
+	required string image_name = 1; // virtual name of the image file in guestos
+	required uint64 image_size = 2; // size (bytes) of the image file
+	optional string image_file = 3; // name of alternat image file which overwrites image_name of guestos config
+}
+
+message ContainerConfig {
+	// user configurable, non unique
+	required string name = 1;
+	// name of GuestOS, e.g. android
+	required string guest_os = 2;
+	// (minimal) version of GuestOS; will be updated if container is started with a more recent GuestOS version.
+	optional uint64 guestos_version = 3;
+
+	// complete image sizes from GuestOS for user partitions
+	repeated ContainerImageSize image_sizes = 4;
+
+	optional uint32 ram_limit = 5 [ default = 1024 ];      // unit = MBytes
+
+	required fixed32 color = 6;
+
+	// Flags indicating the allows for containers:
+	optional bool allow_internet = 10 [default = false];
+	// white/blacklist of allowed/disallowed ip connections
+	repeated string internet_rules = 11;
+	optional bool allow_sensor_gps = 12 [default = false];
+	optional bool allow_camera = 13 [default = false];
+	optional bool allow_audio_microphone = 14 [default = false];
+	optional bool allow_audio_speakers = 15 [default = false];
+	optional bool allow_container_switch = 16 [default = true]; // allow 'home-button switching' and 'notification switching'
+	optional bool allow_autostart = 17 [default = false];
+	// TODO: add further features as necessary
+
+	// a list of strings wich contain the features image prefix name without .img
+	repeated string feature_enabled = 20;
+
+	optional string dns_server = 21;
+}
+
+/**
+ * The various states that a container can be in.
+ * TODO must be kept in sync with definition in container.h!
+ */
+enum ContainerState {
+	STOPPED = 1;
+	STARTING = 2;
+	BOOTING = 3;
+	RUNNING = 4;
+	FREEZING = 5;
+	FROZEN = 6;
+	ZOMBIE = 7;
+	SHUTDOWN = 8;
+}
+
+/**
+ * Must be kept in sync with definition in container.h!
+ */
+enum ContainerConnectivity {
+	OFFLINE = 1;
+	MOBILE_ONLY = 2;
+	WIFI_ONLY = 3;
+	MOBILE_AND_WIFI = 4;
+}
+
+/**
+ * Represents the status of a single container.
+ */
+message ContainerStatus {
+	required string uuid = 1;
+	required string name = 2;
+	optional bool foreground = 3 [default = false];
+	required ContainerState state = 4;
+	/* TBD more state values */
+}

@@ -68,12 +68,12 @@ public class CamelRouteToPrologTest {
 		RouteDefinition mockRoute = rb.getRouteCollection().getRoutes().get(0);
 		
 		StringWriter writer = new StringWriter();
-		//prol.printSingleRoute(writer, mockRoute);
 		new PrologPrinter().printSingleRoute(writer, mockRoute);
 		writer.flush();
 		String prolog = writer.getBuffer().toString();
 		assertTrue(prolog.contains("when[{header{mycond} == A}]choice[when[{header{mycond} == B}]choice[]"));
 		assertTrue(prolog.contains("ids-server://0.0.0.0"));
 		assertTrue(prolog.contains("direct:A1"));
+		System.out.println(prolog);
 	}
 }

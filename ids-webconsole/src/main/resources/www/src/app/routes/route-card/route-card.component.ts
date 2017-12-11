@@ -1,39 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-import { Route } from './route';
-import { RouteService } from './route.service';
+import { Route } from '../route';
+import { RouteService } from '../route.service';
 
 declare var Viz: any;
 
 @Component({
   selector: 'route-card',
-  template: `
-    <div class="app-card mdl-card mdl-cell {{statusColor}} mdl-cell--12-col  mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand">
-        <h2 class="mdl-card__title-text">{{route.id}}</h2>
-      </div>
-      <div class="mdl-card__supporting-text">
-        {{route.description}}
-        <div class="mdl-grid">
-          <div class="mdl-cell mdl-cell--2-col">Uptime</div><div class="mdl-cell mdl-cell--10-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
-          <div class="mdl-cell mdl-cell--2-col">Context</div><div class="mdl-cell mdl-cell--10-col">{{route.context}}</div>
-          <div class="mdl-cell mdl-cell--2-col">Status</div><div class="mdl-cell mdl-cell--10-col">{{route.status}}</div>
-	      <div class="mdl-cell mdl-cell--12-col" style="padding-top:30px" [innerHTML]="vizResult"></div>
-        </div>
-      </div>
-      <div class="mdl-card__actions mdl-card--border">
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)">
-            <i class="material-icons">{{statusIcon}}</i>
-          </button>
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
-            <i class="material-icons">delete</i>
-          </button>
-          <a class="mdl-button mdl-js-button mdl-js-ripple-effect" routerLink="/routeeditor">
-            <i class="material-icons">edit</i>
-          </a>
-    </div>
-   </div>`
+  templateUrl: './route-card.component.html',
+  styleUrls: ['./route-card.component.css']
 })
 export class RouteCardComponent implements OnInit {
   @Input() route: Route;

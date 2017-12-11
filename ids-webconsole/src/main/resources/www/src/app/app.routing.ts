@@ -47,7 +47,7 @@ const appRoutes: Routes = [{
     path: 'routes',
     component: RoutesComponent,
   }, {
-    path: 'routeeditor',
+    path: 'routeeditor/:id',
     component: RouteeditorComponent
   }, {
     path: 'ids',
