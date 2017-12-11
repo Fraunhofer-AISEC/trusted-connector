@@ -130,23 +130,4 @@ public class TestTrustXCM {
         Assert.assertTrue("Unexpected number of items in Buffer", count == 1);
 	}
 	
-	@Test
-    public void testList() throws Exception {
-		// prepare the result from trustme and tell mockito to return it
-		String test = "yay";		
-    		Mockito.when(mockHandler.waitForResponse()).thenReturn(test.getBytes());
-    		
-    		// run the test
-	    	List<ApplicationContainer> resultList = trustXmanager.list(true);
-	    	
-	    	// check that the correct message was sent
-	    	ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
-	    ctdmsg.setCommand(Command.GET_CONTAINER_STATUS).build().toByteArray();
-	    byte[] encodedMessage = ctdmsg.build().toByteArray();
-	    	verify(mockSocket).sendWithHeader(encodedMessage, mockHandler);
-	    	
-	    	// check the result
-	    	//TODO
-    }
-
 }
