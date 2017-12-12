@@ -153,7 +153,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		File dir = new File(System.getProperty("karaf.base") + File.separator + "deploy");
 		File[] directoryListing = dir.listFiles();
 		if (directoryListing==null || !dir.isDirectory()) {
-			LOG.warn("Unexpected: Not a directory: " + dir.getAbsolutePath());
+			LOG.warn("Unexpected or not running in karaf: Not a directory: " + dir.getAbsolutePath());
 			return;
 		}
 		

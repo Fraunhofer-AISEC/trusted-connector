@@ -153,10 +153,6 @@ public class LuconEngine {
 			newP.loadLibrary(new LuconLibrary());
 			newP.setTheory(t);
 
-//			System.out.println("-------------------------");
-//			System.out.println(new LuconLibrary().getTheory() + "\n" + p.getTheory() + "\n" + routePl);
-//			System.out.println("-------------------------");
-
 			// Generate the proof (=run query)
 			List<SolveInfo> result = query(newP, QUERY_ROUTE_VERIFICATION, true);
 			
