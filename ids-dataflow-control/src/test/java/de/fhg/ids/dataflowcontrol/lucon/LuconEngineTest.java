@@ -19,7 +19,11 @@
  */
 package de.fhg.ids.dataflowcontrol.lucon;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import alice.tuprolog.InvalidTheoryException;
@@ -369,5 +374,101 @@ public class LuconEngineTest {
 		assertTrue(proof.toString().contains("Service testQueueService may receive messages labeled [private], " +
 				"which is forbidden by rule \"anotherRule\"."));
 		assertNotNull(proof.getCounterExamples());
+	}
+	
+	@Test
+	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	public void testPerformanceEvaluationScaleRules() throws Exception {
+		for (int i=10;i<=5000;i+=10) {
+			// Load n test rules into PDP 
+			String theory = generateRules(i, ".*");
+			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+			pdp.activate(null);
+			long start = System.nanoTime();
+			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+			long stop = System.nanoTime();
+			long loadTime = (stop-start);
+			
+			// Simple message context with nonsense attributes
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("some_message_key", "some_message_value");
+			
+			// Simple source and dest nodes
+			ServiceNode source = new ServiceNode("seda:test_source", null, null);
+			ServiceNode dest= new ServiceNode("hdfs://some_url", null, null);
+			
+			start = System.nanoTime();
+			PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
+			stop = System.nanoTime();
+			long queryTime = stop-start;
+			
+			System.out.println(i + "\t\t" + loadTime + "\t\t" + queryTime);
+			assertEquals(Decision.ALLOW, dec.getDecision());
+		}
+	}
+	
+	@Test
+	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	public void testPerformanceEvaluationScaleLabels() throws Exception {
+		for (int i=0;i<=5000;i+=10) {
+			// Load n test rules into PDP 
+			String theory = generateLabels(i, ".*");
+			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+			pdp.activate(null);
+			long start = System.nanoTime();
+			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+			long stop = System.nanoTime();
+			long loadTime = (stop-start);
+			
+			// Simple message context with nonsense attributes
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("some_message_key", "some_message_value");
+			
+			// Simple source and dest nodes
+			ServiceNode source = new ServiceNode("seda:test_source", null, null);
+			ServiceNode dest= new ServiceNode("hdfs://some_url", null, null);
+			
+			start = System.nanoTime();
+			PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
+			stop = System.nanoTime();
+			long queryTime = stop-start;
+			
+			System.out.println(i + "\t\t" + loadTime + "\t\t" + queryTime);
+			assertEquals(Decision.ALLOW, dec.getDecision());
+		}
+	}
+	/**
+	 * Generates n random rules matching a target endpoint (given as regex).
+	 * 
+	 * All rules will take an "allow" decision.
+	 * 
+	 * @param n
+	 * @return
+	 */
+	private String generateRules(int n, String targetEndpointRegex) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<n;i++) {
+			sb.append("rule(testRule"+i+").\n");
+			sb.append("has_decision(testRule"+i+", allow).\n");
+			sb.append("has_alternativedecision(testRule"+i+", allow).\n");
+			sb.append("receives_label(testRule"+i+", any).\n");
+			sb.append("has_target(testRule"+i+", testTarget"+i+").\n");
+			sb.append("has_obligation(testRule"+i+", testObligation"+i+").\n");
+			sb.append("service(testTarget"+i+").\n");
+			sb.append("has_endpoint(testTarget"+i+", \""+targetEndpointRegex+"\").\n");
+			sb.append("creates_label(testTarget"+i+", label"+i+").\n");
+			sb.append("removes_label(testTarget"+i+", label"+i+").\n");
+		}
+		return sb.toString();
+	}
+	
+	private String generateLabels(int n, String targetEndpointRegex) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(generateRules(50, targetEndpointRegex));
+		for (int i=0;i<n;i++) {
+			sb.append("creates_label(testTarget1, labelX"+i+").\n");
+			sb.append("removes_label(testTarget1, labelX"+i+").\n");
+		}
+		return sb.toString();
 	}
 }
