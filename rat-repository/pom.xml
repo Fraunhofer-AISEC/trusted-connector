@@ -162,7 +162,8 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.4.13</version>
 				<configuration>
-					<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName>
+					<!--<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName> -->
+					<imageName>fhgaisec/ttpsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 					<resources>
 						<resource>
@@ -198,7 +199,8 @@
 							<goal>push</goal>
 						</goals>
 						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName>
+							<!--<imageName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</imageName> -->
+							<imageName>fhgaisec/ttpsim:develop</imageName>
 						</configuration>
 					</execution>
 				</executions>

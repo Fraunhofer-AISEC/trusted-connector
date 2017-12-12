@@ -388,7 +388,8 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</name>
+                                    <!-- <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</name> -->
+                                    <name>fhgaisec/iot-connector:develop</name>
                                     <build>
                                         <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
                                         <assembly>
@@ -417,7 +418,8 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop-raspi</name>
+                                    <!-- <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop-raspi</name> -->
+                                    <name>fhgaisec/iot-connector:develop-raspi</name>
                                     <build>
                                         <dockerFile>${basedir}/src/main/docker-raspi/Dockerfile</dockerFile>
                                         <assembly>

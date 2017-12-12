@@ -244,7 +244,8 @@
 						<configuration>
 							<images>
 								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</name>
+									<!-- <name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</name> -->
+									<name>fhgaisec/tpm2dsim:develop</name>
 									<alias>tpm2d</alias>
 									<run>
 										<volumes>
@@ -269,7 +270,8 @@
 						<configuration>
 							<images>
 								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</name>
+									<!-- <name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</name> -->
+									<name>fhgaisec/ttpsim:develop</name>
 									<alias>ttp</alias>
 									<run>
 										<ports>
@@ -331,7 +333,8 @@
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<configuration>
-					<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
+					<!-- <imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName> -->
+					<imageName>fhgaisec/tpm2dsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
 					<skip>${skipITs}</skip>
 				</configuration>
@@ -351,7 +354,8 @@
 						</goals>
 						<configuration>
 							<image>ids/tpm2dsim:develop</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</newName>
+							<!-- <newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</newName> -->
+							<newName>fhgaisec/tpm2dsim:develop</newName>
 						</configuration>
 					</execution>
 					<execution>
@@ -361,7 +365,8 @@
 							<goal>push</goal>
 						</goals>
 						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
+							<!-- <imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName> -->
+							<imageName>fhgaisec/tpm2dsim:develop</imageName>
 						</configuration>
 					</execution>
 				</executions>
