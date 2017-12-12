@@ -11,6 +11,7 @@ import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
 import { ConnectionInOutComponent } from './inOutConnections/inOutConnections.component'
+import { ConnectionConfigurationComponent } from './connectionConfiguration/connectionConfiguration.component';
 
 
 const appRoutes: Routes = [{
@@ -38,6 +39,9 @@ const appRoutes: Routes = [{
   }, {
     path: 'connections',
     component: ConnectionInOutComponent
+  }, {
+    path: 'connectionconfiguration',
+    component: ConnectionConfigurationComponent
   }, {
     path: 'routes',
     component: RoutesComponent,

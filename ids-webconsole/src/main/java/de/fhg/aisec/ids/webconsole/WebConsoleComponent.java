@@ -29,14 +29,17 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.webconsole.api.Helper;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -126,6 +129,13 @@ public class WebConsoleComponent {
 	public void bindConfigurationService(PreferencesService conf) {
 		LOG.info("Bound to configuration service");
 		WebConsoleComponent.configService = Optional.of(conf);
+		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
+		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+		
+		if(prefs != null) {
+			prefs.put("General Configuration", Helper.createDefaultJsonConfig());
+		}
+
 	}
 
 	public void unbindConfigurationService(PreferencesService conf) {

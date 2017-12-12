@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * IDS Core Platform Webconsole
  * %%
  * Copyright (C) 2017 Fraunhofer AISEC
  * %%
@@ -17,26 +17,35 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.conm;
+package de.fhg.aisec.ids.webconsole.connectionsettings;
 
-import java.util.List;
-
-
-
-/**
- * List and interacts with open connections over the IDS communication protocol
- * 
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
- *
- */
-public interface ConnectionManager {
+public class ConnectionSetting {
 	
-	/**
-	 * List currently installed connections.
-	 * 
+	String connection;
+	Settings settings;
 
-	 */
-	public List<IDSCPIncomingConnection> listIncomingConnections();
-	public List<IDSCPOutgoingConnection> listOutgoingConnections();
-	public List<IDSCPEndpoint> listAvailableEndpoints();
+	public ConnectionSetting(String connection, Settings settings) {
+		super();
+		this.connection = connection;
+		this.settings = settings;
+	}
+	
+	public ConnectionSetting(String connection) {
+		super();
+		this.connection = connection;
+		this.settings = new Settings();
+	}
+	public String getConnection() {
+		return connection;
+	}
+	public void setConnection(String connection) {
+		this.connection = connection;
+	}
+	public Settings getSettings() {
+		return settings;
+	}
+	public void setSettings(Settings settings) {
+		this.settings = settings;
+	}
+	
 }

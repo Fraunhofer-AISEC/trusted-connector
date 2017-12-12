@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPEndpoint;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.camel.ids.server.DefaultWebsocket;
@@ -43,7 +44,6 @@ import de.fhg.camel.ids.server.MemoryWebsocketStore;
 import de.fhg.camel.ids.server.WebsocketComponent;
 import de.fhg.camel.ids.server.WebsocketComponent.ConnectorRef;
 import de.fhg.camel.ids.server.WebsocketComponentServlet;
-import de.fhg.ids.comm.ws.protocol.ProtocolState;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -67,6 +67,26 @@ public class ConnectionManagerService implements ConnectionManager {
 		LOG.info("Deactivating Connection Manager");
 	}
 
+	@Override
+	public List<IDSCPEndpoint> listAvailableEndpoints() {
+		List<IDSCPEndpoint> endpoints = new ArrayList<IDSCPEndpoint>();
+		
+		Iterator<Entry<String, ConnectorRef>> it = WebsocketComponent.getConnectors().entrySet().iterator();
+	    while (it.hasNext()) {
+	    	IDSCPEndpoint endpoint = new IDSCPEndpoint();	
+	        Map.Entry<String, ConnectorRef> mapEntry = it.next();
+	        ConnectorRef connectorRef = mapEntry.getValue();
+	        endpoint.setEndpointIdentifier(mapEntry.getValue().getServlet().getConsumer().getEndpoint().toString());
+	        endpoints.add(endpoint);
+	        
+	        //TODO: Check behaviour. This is removed since the underlying collection is modified and thus the connection is really removed
+	        //it.remove(); // avoids a ConcurrentModificationException
+	    }
+
+		return endpoints;
+	}
+
+	
 	@Override
 	public List<IDSCPIncomingConnection> listIncomingConnections() {
 		List<IDSCPIncomingConnection> connections = new ArrayList<>();

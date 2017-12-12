@@ -47,6 +47,9 @@ import {ConfirmService} from "./confirm/confirm.service";
 import {ConfirmComponent} from "./confirm/confirm.component";
 
 import { ConnectionInOutComponent } from './inOutConnections/inOutConnections.component'
+import { ConnectionConfigurationComponent } from './connectionConfiguration/connectionConfiguration.component';
+import { ConnectionConfigurationService } from './connectionConfiguration/connectionConfiguration.service';
+
 
 import { MDLTextFieldDirective } from './mdl-textfield-directive';
 
@@ -82,6 +85,7 @@ import { MetricService } from './metric/metric.service';
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
+    ConnectionConfigurationComponent,
     MDLTextFieldDirective,
     ConnectionInOutComponent
   ],
@@ -95,6 +99,7 @@ import { MetricService } from './metric/metric.service';
     ConfirmService,
     IdsComponent,
     ConnectionInOutService,
+    ConnectionConfigurationService,
     MetricService,
     Title
   ],

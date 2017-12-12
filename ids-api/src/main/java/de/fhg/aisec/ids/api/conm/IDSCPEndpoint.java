@@ -19,24 +19,27 @@
  */
 package de.fhg.aisec.ids.api.conm;
 
-import java.util.List;
-
-
-
 /**
- * List and interacts with open connections over the IDS communication protocol
+ * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle exposed endpoints of the IDSCP.
  * 
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
  */
-public interface ConnectionManager {
 	
-	/**
-	 * List currently installed connections.
-	 * 
-
-	 */
-	public List<IDSCPIncomingConnection> listIncomingConnections();
-	public List<IDSCPOutgoingConnection> listOutgoingConnections();
-	public List<IDSCPEndpoint> listAvailableEndpoints();
+public class IDSCPEndpoint {
+	private String endpointIdentifier;
+	
+	public IDSCPEndpoint() {
+	}
+	
+	public String getEndpointIdentifier() {
+		return endpointIdentifier;
+	}
+	public void setEndpointIdentifier(String endpointIdentifier) {
+		this.endpointIdentifier = endpointIdentifier;
+	}
+	@Override
+	public String toString() {
+		return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
+	}
 }

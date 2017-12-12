@@ -29,6 +29,7 @@ import javax.ws.rs.Produces;
 
 import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPEndpoint;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
@@ -53,10 +54,7 @@ public class ConnectionAPI {
 		if (connectionManager.isPresent()) {
 			result = connectionManager.get().listIncomingConnections();
 		}
-//		IDSCPIncomingConnection idsc = new IDSCPIncomingConnection();
-//		idsc.setAttestationResult(AttestationResult.SUCCESS);
-//		idsc.setEndpointIdentifier("EndpointIdentifier");
-//		result.add(idsc);
+
 		return result;
 	}
 	
@@ -69,14 +67,23 @@ public class ConnectionAPI {
 		if (connectionManager.isPresent()) {
 			result = connectionManager.get().listOutgoingConnections();
 		}
-//		IDSCPOutgoingConnection idsc = new IDSCPOutgoingConnection();
-//		idsc.setEndpointIdentifier("EndpointID");
-//		idsc.setAttestationResult(AttestationResult.SUCCESS);
-//		idsc.setLastProtocolState("LastProtState");
-//		idsc.setRemoteAuthentication("RemoteAuth");
-//		idsc.setRemoteIdentity("RemoteIdentity");
-//		result.add(idsc);
+
 		return result;
 	}
+	
+	@GET
+	@Path("listendpointsonly")
+	@Produces("application/json")
+	public List<IDSCPEndpoint> listAvailableEndpoints() {
+		List<IDSCPEndpoint> result = new ArrayList<>();
+		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
+		if (connectionManager.isPresent()) {
+			result = connectionManager.get().listAvailableEndpoints();
+		}
+
+		return result;
+	}
+	
+	
 }
 
