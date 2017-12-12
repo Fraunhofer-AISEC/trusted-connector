@@ -89,7 +89,8 @@ public class ConnectionManagerService implements ConnectionManager {
 	        	idscpc.setAttestationResult(dws.getAttestationResult());
 	        }
 	        connections.add(idscpc);
-	        it.remove(); // avoids a ConcurrentModificationException
+	        //TODO: Check behaviour. This is removed since the underlying collection is modified and thus the connection is really removed
+	        //it.remove(); // avoids a ConcurrentModificationException
 	    }
 
 		return connections;
@@ -130,7 +131,8 @@ public class ConnectionManagerService implements ConnectionManager {
 	        	
 	        }
 	        connections.add(idscpc);
-	        it.remove(); // avoids a ConcurrentModificationException
+	        //TODO: Check behaviour. This is removed since the underlying collection is modified and thus the connection is really removed
+	        //it.remove(); // avoids a ConcurrentModificationException
 	    }
 
 		return connections;
