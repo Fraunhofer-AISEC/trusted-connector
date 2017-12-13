@@ -437,6 +437,68 @@ public class LuconEngineTest {
 			assertEquals(Decision.ALLOW, dec.getDecision());
 		}
 	}
+
+	@Test
+	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	public void testmemoryEvaluationScaleRules() throws Exception {
+		for (int i=10;i<=5000;i+=10) {
+			// Load n test rules into PDP 
+			String theory = generateRules(i, ".*");
+			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+			pdp.activate(null);
+			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+			
+			// Simple message context with nonsense attributes
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("some_message_key", "some_message_value");
+			
+			// Simple source and dest nodes
+			ServiceNode source = new ServiceNode("seda:test_source", null, null);
+			ServiceNode dest= new ServiceNode("hdfs://some_url", null, null);
+			
+			System.gc(); System.gc(); System.gc(); // Empty level 1- & 2-LRUs.
+			long memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
+			long memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			System.gc(); System.gc(); System.gc(); // Empty level 1- & 2-LRUs.
+			long memoryAfterGC = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+			
+			System.out.println(i + "\t\t" + (memoryAfter-memoryBefore) + "\t\t" + (memoryAfterGC-memoryBefore));
+			assertEquals(Decision.ALLOW, dec.getDecision());
+		}
+	}
+	
+	@Test
+	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	public void testmemoryEvaluationScaleLabels() throws Exception {
+		for (int i=10;i<=5000;i+=10) {
+			// Load n test rules into PDP 
+			String theory = generateLabels(i, ".*");
+			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+			pdp.activate(null);
+			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+			
+			// Simple message context with nonsense attributes
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("some_message_key", "some_message_value");
+			
+			// Simple source and dest nodes
+			ServiceNode source = new ServiceNode("seda:test_source", null, null);
+			ServiceNode dest= new ServiceNode("hdfs://some_url", null, null);
+			
+			System.gc(); System.gc(); System.gc(); // Empty level 1- & 2-LRUs.
+			long memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
+			long memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			System.gc(); System.gc(); System.gc(); // Empty level 1- & 2-LRUs.
+			long memoryAfterGC = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+			
+			System.out.println(i + "\t\t" + (memoryAfter-memoryBefore) + "\t\t" + (memoryAfterGC-memoryBefore));
+			assertEquals(Decision.ALLOW, dec.getDecision());
+		}
+	}
 	/**
 	 * Generates n random rules matching a target endpoint (given as regex).
 	 * 
