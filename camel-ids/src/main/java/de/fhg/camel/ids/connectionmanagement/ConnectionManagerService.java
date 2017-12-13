@@ -44,6 +44,8 @@ import de.fhg.camel.ids.server.MemoryWebsocketStore;
 import de.fhg.camel.ids.server.WebsocketComponent;
 import de.fhg.camel.ids.server.WebsocketComponent.ConnectorRef;
 import de.fhg.camel.ids.server.WebsocketComponentServlet;
+import de.fhg.camel.ids.server.WebsocketConsumer;
+import de.fhg.camel.ids.server.WebsocketEndpoint;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -71,13 +73,17 @@ public class ConnectionManagerService implements ConnectionManager {
 	public List<IDSCPEndpoint> listAvailableEndpoints() {
 		List<IDSCPEndpoint> endpoints = new ArrayList<IDSCPEndpoint>();
 		
-		Iterator<Entry<String, ConnectorRef>> it = WebsocketComponent.getConnectors().entrySet().iterator();
-	    while (it.hasNext()) {
-	    	IDSCPEndpoint endpoint = new IDSCPEndpoint();	
-	        Map.Entry<String, ConnectorRef> mapEntry = it.next();
+		Iterator<Entry<String, ConnectorRef>> connectorIterator = WebsocketComponent.getConnectors().entrySet().iterator();
+	    while (connectorIterator.hasNext()) {
+	    	IDSCPEndpoint idscpendpoint = new IDSCPEndpoint();	
+	        Map.Entry<String, ConnectorRef> mapEntry = connectorIterator.next();
 	        ConnectorRef connectorRef = mapEntry.getValue();
-	        endpoint.setEndpointIdentifier(mapEntry.getValue().getServlet().getConsumer().getEndpoint().toString());
-	        endpoints.add(endpoint);
+
+	        idscpendpoint.setHost(connectorRef.getConnector().getHost());
+	        idscpendpoint.setPort(Integer.toString(connectorRef.getConnector().getPort()));
+	        idscpendpoint.setDefaultProtocol(connectorRef.getConnector().getDefaultProtocol());
+	        idscpendpoint.setEndpointIdentifier(connectorRef.getConnector().toString());
+	        endpoints.add(idscpendpoint);
 	        
 	        //TODO: Check behaviour. This is removed since the underlying collection is modified and thus the connection is really removed
 	        //it.remove(); // avoids a ConcurrentModificationException
@@ -91,24 +97,24 @@ public class ConnectionManagerService implements ConnectionManager {
 	public List<IDSCPIncomingConnection> listIncomingConnections() {
 		List<IDSCPIncomingConnection> connections = new ArrayList<>();
 		
-		Iterator<Entry<String, ConnectorRef>> it = WebsocketComponent.getConnectors().entrySet().iterator();
-	    while (it.hasNext()) {
-	    	IDSCPIncomingConnection idscpc = new IDSCPIncomingConnection();
+		Iterator<Entry<String, ConnectorRef>> connectorIterator = WebsocketComponent.getConnectors().entrySet().iterator();
+	    while (connectorIterator.hasNext()) {
+	    	IDSCPIncomingConnection incomingConnection = new IDSCPIncomingConnection();
 	    	
-	        Map.Entry<String, ConnectorRef> pair = it.next();
+	        Map.Entry<String, ConnectorRef> pair = connectorIterator.next();
 	        ConnectorRef connectorRef = pair.getValue();
 	        MemoryWebsocketStore memoryStore = connectorRef.getMemoryStore();
 	        WebsocketComponentServlet servlet = connectorRef.getServlet();
-	        idscpc.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
+	        incomingConnection.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
 	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
 	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
 
 	        //Assume only one websocket per endpoint
 	        while(webSocketIterator.hasNext())  {
 	        	DefaultWebsocket dws = webSocketIterator.next();
-	        	idscpc.setAttestationResult(dws.getAttestationResult());
+	        	incomingConnection.setAttestationResult(dws.getAttestationResult());
 	        }
-	        connections.add(idscpc);
+	        connections.add(incomingConnection);
 	        //TODO: Check behaviour. This is removed since the underlying collection is modified and thus the connection is really removed
 	        //it.remove(); // avoids a ConcurrentModificationException
 	    }

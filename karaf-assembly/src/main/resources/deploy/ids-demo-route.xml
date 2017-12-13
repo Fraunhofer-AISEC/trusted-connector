@@ -25,10 +25,18 @@
        <!-- Retrieve temperature value from IDS protocol, setting remote attestation to most relaxed config (for
        			demo only. Use 1 in production). Forward to Data App 2 -->
       	<route id="receiveData">
-          <!--<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=3" /> -->
       		<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=3" />
       		<log message="Received via IDS protocol: ${body}"/>
       	</route>
+        <route id="receiveData2">
+      		<from uri="idsserver://0.0.0.0:9393/zero?sslContextParameters=#serverSslContext&amp;attestation=3" />
+      		<log message="Received via IDS protocol: ${body}"/>
+      	</route>
+        <route id="receiveData3">
+      		<from uri="idsserver://0.0.0.0:9494/zero?sslContextParameters=#serverSslContext&amp;attestation=3" />
+      		<log message="Received via IDS protocol: ${body}"/>
+      	</route>
+
         <route id="sendData">
           <from uri="timer://tempPerSecond?fixedRate=true&amp;period=10000"/>
           <setBody>

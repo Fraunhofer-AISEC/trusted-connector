@@ -28,10 +28,24 @@ package de.fhg.aisec.ids.api.conm;
 	
 public class IDSCPEndpoint {
 	private String endpointIdentifier;
+	private String defaultProtocol;
+	private String port;
+	private String host;
 	
 	public IDSCPEndpoint() {
 	}
 	
+	public String getDefaultProtocol() {
+		return defaultProtocol;
+	}
+
+	public String getPort() {
+		return port;
+	}
+
+	public String getHost() {
+		return host;
+	}
 	public String getEndpointIdentifier() {
 		return endpointIdentifier;
 	}
@@ -41,5 +55,20 @@ public class IDSCPEndpoint {
 	@Override
 	public String toString() {
 		return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
+	}
+
+	public void setDefaultProtocol(String defaultProtocol) {
+		this.defaultProtocol = defaultProtocol;
+		
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+		
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+		
 	}
 }

@@ -9,3 +9,10 @@ export class OutgoingConnection {
   remoteAuthentication: string;
   remoteIdentity: string;
 }
+
+export class Endpoint {
+	endpointIdentifier: string;
+	defaultProtocol: string;
+	port: string;
+	host: string; 
+}

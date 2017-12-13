@@ -8,6 +8,7 @@ import 'rxjs/add/operator/map';
 
 import { IncomingConnection } from './connections';
 import { OutgoingConnection } from './connections';
+import { Endpoint } from './connections';
 import { environment } from '../../environments/environment';
 
 @Injectable()
@@ -15,6 +16,12 @@ export class ConnectionInOutService {
 
   constructor(private http: Http) { }
 
+  getEndpoints() {
+    return this.http.get(environment.apiURL + '/connections/listendpointsonly')
+               .map(response => {
+                 return response.json() as Endpoint[];
+               }); 
+  }
 
   getIncomingConnections() {
     return this.http.get(environment.apiURL + '/connections/listincoming')
