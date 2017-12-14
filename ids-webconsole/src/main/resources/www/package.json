@@ -5,7 +5,7 @@
   "angular-cli": {},
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --delete-output-path=false",
     "bundle": "ng build --env=prod --prod --sourcemap",
     "lint": "tslint \"src/**/*.ts\""
   },
