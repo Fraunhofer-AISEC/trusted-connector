@@ -56,6 +56,9 @@ import { MDLTextFieldDirective } from './mdl-textfield-directive';
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
 
+import { D3Service } from 'd3-ng2-service';
+import { D3Component } from './d3/d3.component';
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -87,7 +90,8 @@ import { MetricService } from './metric/metric.service';
     ValuesPipe,
     PrettifyPipe,
     ConnectionReportComponent,
-    MDLTextFieldDirective],
+    MDLTextFieldDirective,
+    D3Component],
   providers: [
     AppService,
     RouteService,
@@ -99,7 +103,8 @@ import { MetricService } from './metric/metric.service';
     ConnectionService,
     IdsComponent,
     Title,
-    MetricService
+    MetricService,
+    D3Service
   ],
   bootstrap: [
     AppComponent ],

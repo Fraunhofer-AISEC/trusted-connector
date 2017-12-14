@@ -5,15 +5,21 @@
 	<div class="mdl-card__supporting-text">
 		{{route.description}}
 		<div class="mdl-grid">
-			<div class="mdl-cell mdl-cell--2-col">Uptime</div>
-			<div class="mdl-cell mdl-cell--10-col">{{(route.uptime/1000/60).toFixed()}}
-				minutes</div>
-			<div class="mdl-cell mdl-cell--2-col">Context</div>
-			<div class="mdl-cell mdl-cell--10-col">{{route.context}}</div>
-			<div class="mdl-cell mdl-cell--2-col">Status</div>
-			<div class="mdl-cell mdl-cell--10-col">{{route.status}}</div>
+			<div class="mdl-cell--4-col">
+				<div class="mdl-grid">
+					<div class="mdl-cell mdl-cell--6-col">Uptime</div>
+					<div class="mdl-cell mdl-cell--6-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+					<div class="mdl-cell mdl-cell--6-col">Context</div>
+					<div class="mdl-cell mdl-cell--6-col">{{route.context}}</div>
+					<div class="mdl-cell mdl-cell--6-col">Status</div>
+					<div class="mdl-cell mdl-cell--6-col">{{route.status}}</div>
+				</div>
+			</div>
+			<div class="mdl-cell--8-col v-resize">
+				<app-d3 [routeSubject]="routeSubject"></app-d3>
+				<!-- <div class="viz" [innerHTML]="vizResult"></div> -->
+			</div>
 		</div>
-		<div class="viz" [innerHTML]="vizResult"></div>
 		<div class="mdl-grid">
 			<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
 			<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"

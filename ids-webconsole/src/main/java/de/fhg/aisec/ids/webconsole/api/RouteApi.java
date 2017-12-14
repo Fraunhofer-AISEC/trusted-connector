@@ -19,18 +19,9 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.*;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -39,7 +30,13 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -62,7 +59,7 @@ public class RouteApi {
 	 *
 	 * {"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]] -\u003e [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
 	 *
-	 * @return
+	 * @return The resulting route objects
 	 */
 	@GET
 	@Path("list")
@@ -70,7 +67,7 @@ public class RouteApi {
 	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 		return rm.get().getRoutes();
 	}
@@ -81,13 +78,13 @@ public class RouteApi {
 	public Response get(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not present").build();
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
 		}
-		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
-		if (!oRoute.isPresent()) {
-			return Response.serverError().entity("Route not present").build();
+		RouteObject oRoute = rm.get().getRoute(id);
+		if (oRoute == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
 		}
-		return Response.ok(oRoute.get()).build();
+		return Response.ok(oRoute).build();
 	}
 
 	/**
@@ -288,6 +285,17 @@ public class RouteApi {
 			vi.counterExamples = rvp.getCounterExamples();
 		}
 		return Response.ok(vi).build();
+	}
+
+	@GET
+	@Path("/graph/{routeId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getRouteGraph(@PathParam("routeId") String routeId) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return Response.serverError().entity("RouteManager not available").build();
+		}
+		return Response.ok(rm.get().getRoute(routeId).getGraph()).build();
 	}
 
 	@GET

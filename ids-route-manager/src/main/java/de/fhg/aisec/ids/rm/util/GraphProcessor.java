@@ -19,48 +19,51 @@
  */
 package de.fhg.aisec.ids.rm.util;
 
+
+import de.fhg.aisec.ids.api.router.graph.Edge;
+import de.fhg.aisec.ids.api.router.graph.GraphData;
+import de.fhg.aisec.ids.api.router.graph.Node;
 import org.apache.camel.model.*;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
-public class PrologPrinter {
+public class GraphProcessor {
 	
 	/**
 	 * Prints a single Camel route in Prolog representation.
-	 * 
-	 * @param writer
+	 *
 	 * @param route
 	 * @throws IOException 
 	 */
-	public void printSingleRoute(Writer writer, RouteDefinition route) throws IOException {
+	public static GraphData processRoute(RouteDefinition route) {
+		GraphData gd = new GraphData();
 		// Print route entry points
-		printInputs(writer, route, route.getInputs());
+		processInputs(gd, route, route.getInputs());
+		return gd;
 	}
 
 	/**
 	 * Prints a single node of a Camel route in Prolog representation.
 	 *
-	 * @param writer
+	 * @param graphData
 	 * @param current
 	 * @param preds
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	private List<ProcessorDefinition<?>> printNode(Writer writer, ProcessorDefinition<?> current,
-												   List<OptionalIdentifiedDefinition<?>> preds) throws IOException {
+	private static List<ProcessorDefinition<?>> processNode(GraphData graphData, ProcessorDefinition<?> current,
+													 List<OptionalIdentifiedDefinition<?>> preds) {
 		for (OptionalIdentifiedDefinition<?> p : preds) {
-			writer.write("succ(" + p.getId() + ", " + current.getId() + ").\n");
+			graphData.addEdge(new Edge(p.getId(), current.getId()));
 		}
-		writer.write("stmt(" + current.getId() + ").\n");
-		writer.write("has_action(" + current.getId() + ", \"" + current.getLabel() + "\").\n");
+		graphData.addNode(new Node(current.getId(), current.getLabel(),
+				(current instanceof ChoiceDefinition) ? Node.NodeType.ChoiceNode : Node.NodeType.Node));
 
-		// predecessor of next recursion is the current node 
+		// predecessor of next recursion is the current node
 		List<ProcessorDefinition<?>> newPreds = new ArrayList<>();
 		newPreds.add(current);
 		for (ProcessorDefinition<?> out : current.getOutputs()) {
@@ -72,10 +75,10 @@ public class PrologPrinter {
 				//@TODO: Looks somewhat strange... is this correct?
 				myPreds.addAll(newPreds);
 			}
-			
+
 			// Recursion ...
-			List<ProcessorDefinition<?>> p = printNode(writer, out, myPreds);
-			
+			List<ProcessorDefinition<?>> p = processNode(graphData, out, myPreds);
+
 			// Predecessors of a ChoiceDefinition are all last stmts of its Where- and OtherwiseDefinitions
 			if (current instanceof ChoiceDefinition) {
 				newPreds.addAll(p);
@@ -83,7 +86,7 @@ public class PrologPrinter {
 				newPreds.clear(); newPreds.addAll(p);
 			}
 		}
-		
+
 		return newPreds;
 	}
 
@@ -91,21 +94,19 @@ public class PrologPrinter {
 	 * Prints a single FromDefinition (= a route entry point) in Prolog representation.
 	 * @throws IOException 
 	 */
-	private void printInputs(Writer writer, RouteDefinition route, List<FromDefinition> inputs) throws IOException {
+	private static void processInputs(GraphData graphData, RouteDefinition route, List<FromDefinition> inputs) {
 		AtomicInteger counter = new AtomicInteger(0);
 		for (FromDefinition i : inputs) {
 			// Make sure every input node has a unique id
 			if (i.getId() == null) {
 				i.setCustomId(true);
-				i.setId("input" + counter.incrementAndGet());
+				i.setId("input" + counter);
 			}
-			writer.write("stmt(" + i.getId() + ").\n");
-			writer.write("entrynode(" + i.getId() + ").\n");
-			writer.write("has_action(" + i.getId() + ", \"" + i.getLabel() + "\").\n");
-			
+			graphData.addNode(new Node(i.getId(), i.getLabel(), Node.NodeType.EntryNode));
+
 			OptionalIdentifiedDefinition<?> prev = i;
 			for (ProcessorDefinition<?> next : route.getOutputs()) {
-				printNode(writer, next, Collections.singletonList(prev));
+				processNode(graphData, next, Collections.singletonList(prev));
 				prev = next;
 			}
 		}

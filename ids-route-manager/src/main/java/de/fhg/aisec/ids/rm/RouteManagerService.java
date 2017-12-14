@@ -47,6 +47,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import de.fhg.aisec.ids.api.router.graph.GraphData;
+import de.fhg.aisec.ids.rm.util.GraphProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
@@ -148,6 +150,21 @@ public class RouteManagerService implements RouteManager {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public RouteObject getRoute(String id) {
+		List<CamelContext> camelO = getCamelContexts();
+
+		// Create response
+		for (CamelContext cCtx : camelO) {
+			RouteDefinition rd = cCtx.getRouteDefinition(id);
+			if (rd != null) {
+				return routeDefinitionToObject(cCtx, rd);
+			}
+		}
+
+		return null;
 	}
 	
 	@Override
@@ -317,9 +334,9 @@ public class RouteManagerService implements RouteManager {
 	/**
 	 * Wraps a RouteDefinition in a RouteObject for use over API.
 	 * 
-	 * @param cCtx
-	 * @param rd
-	 * @return
+	 * @param cCtx Camel Context
+	 * @param rd The RouteDefinition to be transformed
+	 * @return The resulting RouteObject
 	 */
 	private RouteObject routeDefinitionToObject(CamelContext cCtx, RouteDefinition rd) {
 		try {
@@ -327,14 +344,25 @@ public class RouteManagerService implements RouteManager {
 		} catch (JAXBException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
+		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), routeToGraph(rd),
+				rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
+	}
+
+	/**
+	 * Creates a visualization of a Camel route in DOT (graphviz) format.
+	 *
+	 * @param rd The route definition to process
+	 * @return The string representation of the Camel route in DOT
+	 */
+	private GraphData routeToGraph(RouteDefinition rd) {
+		return GraphProcessor.processRoute(rd);
 	}
 	
 	/**
 	 * Creates a visualization of a Camel route in DOT (graphviz) format.
 	 *  
-	 * @param rd
-	 * @return
+	 * @param rd The route definition to process
+	 * @return The string representation of the Camel route in DOT
 	 */
 	private String routeToDot(RouteDefinition rd) {
 		String result="";

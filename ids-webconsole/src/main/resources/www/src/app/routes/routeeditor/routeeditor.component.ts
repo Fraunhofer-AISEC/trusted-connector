@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 import { Route } from '../route';
 import { RouteService } from '../route.service';
@@ -17,35 +18,48 @@ declare var Viz: any;
   styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
-  private route: Route = new Route();
-  private validationInfo: ValidationInfo = new ValidationInfo();
-  private vizResult: SafeHtml;
+  private _route: Route = new Route();
+  private _validationInfo: ValidationInfo = new ValidationInfo();
+  private _vizResult: SafeHtml;
   private statusIcon: string;
   private result: string;
+  public routeSubject: ReplaySubject<Route> = new ReplaySubject(1);
   
-  constructor(private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {  }
+  constructor(private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) { }
+
+  get route() {
+    return this._route;
+  }
+
+  get validationInfo() {
+    return this._validationInfo;
+  }
+
+  get vizResult() {
+    return this._vizResult;
+  }
 
   ngOnInit(): void {
     this.navRoute.params.subscribe(params => {
       let id = params.id;
 
       this.routeService.getRoute(id).subscribe(route => {
-        this.route = route;
+        this._route = route;
+        console.log("Send route...");
+        this.routeSubject.next(route);
+        console.log("Route editor: Loaded route with id " + this._route.id);
 
-        console.log("Route editor: Loaded route with id " + this.route.id);
-        let graph = this.route.dot;
-
-        if(this.route.status == "Started") {
+        if(this._route.status == "Started") {
           this.statusIcon = "stop";
         } else {
           this.statusIcon = "play_arrow";
         }
 
-        this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+        this._vizResult = this.dom.bypassSecurityTrustHtml(Viz(this._route.dot));
       });
 
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {
-        this.validationInfo = validationInfo;
+        this._validationInfo = validationInfo;
       })
     });
   }

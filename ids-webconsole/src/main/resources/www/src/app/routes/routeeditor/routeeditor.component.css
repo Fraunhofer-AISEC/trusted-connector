@@ -1,8 +1,16 @@
 .viz {
-    padding: 30px 5px;
+    min-height: 8em;
+    height: 100%;
+    border: 1px dashed black;
+    padding: .5em;
 }
 
 .viz >>> svg {
     height: auto;
     width: 100%;
+}
+
+.v-resize {
+    resize: vertical;
+    overflow: auto;
 }

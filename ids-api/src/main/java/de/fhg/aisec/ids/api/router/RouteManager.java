@@ -37,9 +37,16 @@ public interface RouteManager {
 	/**
 	 * Returns a list of currently installed routes.
 	 * 
-	 * @return
+	 * @return All installed rules
 	 */
 	public List<RouteObject> getRoutes();
+
+	/**
+	 * Returns a list of currently installed routes.
+	 *
+	 * @return The queried route or null
+	 */
+	public RouteObject getRoute(String id);
 	
 	/**
 	 * Starts a route.
