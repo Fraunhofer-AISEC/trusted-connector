@@ -327,7 +327,7 @@ public class RouteManagerService implements RouteManager {
 		} catch (JAXBException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
+		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString(), getRouteAsString(rd.getId()));
 	}
 	
 	/**
@@ -402,7 +402,7 @@ public class RouteManagerService implements RouteManager {
 		if (c.isPresent()) {
 			RouteDefinition rd = c.get().getRouteDefinition(routeId);
 			try {
-				ModelHelper.dumpModelAsXml(c.get(), rd);
+				return ModelHelper.dumpModelAsXml(c.get(), rd);
 			} catch (JAXBException e) {
 				LOG.error(e.getMessage(), e);
 			}
