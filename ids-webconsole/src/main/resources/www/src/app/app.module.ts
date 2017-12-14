@@ -1,6 +1,7 @@
 import { NgModule }      from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { HttpModule }     from '@angular/http';
+import { AceEditorModule } from 'ng2-ace-editor';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -62,6 +63,7 @@ import { MetricService } from './metric/metric.service';
 
 @NgModule({
   imports: [
+    AceEditorModule,
     BrowserModule,
     routing,
     HttpModule,
