@@ -25,6 +25,10 @@
 
 	<name>IDS Core Platform Webconsole</name>
 
+	<properties>
+		<skipAngular>false</skipAngular>
+	</properties>
+
 	<dependencies>
 		<!-- IDS interfaces -->
 		<dependency>
@@ -275,6 +279,7 @@
 						<NPM_CONFIG_TMP>${project.build.directory}/npmtmp</NPM_CONFIG_TMP>
 					</environmentVariables>
 					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
+					<skip>${skipAngular}</skip>
 				</configuration>
 			</plugin>
 
