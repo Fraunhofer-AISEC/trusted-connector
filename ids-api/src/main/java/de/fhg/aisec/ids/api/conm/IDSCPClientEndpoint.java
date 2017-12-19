@@ -20,21 +20,23 @@
 package de.fhg.aisec.ids.api.conm;
 
 /**
- * Bean representing an "IDSCP Connection" .
+ * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle exposed endpoints of the IDSCP.
  * 
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
  */
 	
-public class IDSCPIncomingConnection {
+public class IDSCPClientEndpoint {
 	private String endpointIdentifier;
 	private AttestationResult attestationResult;
-	private String connectionKey;
-	private String remoteHostName;
+	private String endpointKey;
+
+
 	
-	public IDSCPIncomingConnection() {
+	@Override
+	public String toString() {
+		return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
 	}
-	
 	public String getEndpointIdentifier() {
 		return endpointIdentifier;
 	}
@@ -44,31 +46,19 @@ public class IDSCPIncomingConnection {
 	public AttestationResult getAttestationResult() {
 		return attestationResult;
 	}
-	public void setAttestationResult(AttestationResult result) {
-		this.attestationResult = result;
-	}	
-	
-	@Override
-	public String toString() {
-		return "IDSCPConnection [endpoint_identifier=" + endpointIdentifier 
-				+ ", attestationResult=" + attestationResult + "]";
+	public void setAttestationResult(AttestationResult attestationResult) {
+		this.attestationResult = attestationResult;
 	}
-
-	public void setConnectionKey(String connectionKey) {
-		this.connectionKey = connectionKey;
+	public void setEndpointKey(String endpointKey) {
+		// TODO Auto-generated method stub
 		
 	}
-
-	public String getConnectionKey() {
-		return connectionKey;
+	public String getEndpointKey() {
+		return endpointKey;
 	}
 
-	public String getRemoteHostName() {
-		return remoteHostName;
+	public IDSCPClientEndpoint() {
 	}
 
-	public void setRemoteHostName(String remoteHostname) {
-		this.remoteHostName = remoteHostname;
-		
-	}
+
 }

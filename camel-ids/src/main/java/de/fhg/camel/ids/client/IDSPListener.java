@@ -19,20 +19,26 @@
  */
 package de.fhg.camel.ids.client;
 
+import java.util.Optional;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.ws.DefaultWebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
+import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import de.fhg.aisec.ids.api.conm.AttestationResult;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.camel.ids.IdsProtocolComponent;
+import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -61,7 +67,7 @@ public class IDSPListener extends DefaultWebSocketListener {
 										    		.setType(ConnectorMessage.Type.RAT_START)
 										    		.setId(new java.util.Random().nextLong())
 										    		.build();
-	
+
 
 	
 	public IDSPListener(int attestationType, int attestationMask, SSLContextParameters params) {
@@ -148,5 +154,18 @@ public class IDSPListener extends DefaultWebSocketListener {
     //get the result of the remote attestation
 	public boolean isAttestationSuccessful() {
 		return machine.getIDSCPConsumerSuccess();
+	}
+
+    //get the result of the remote attestation
+	public AttestationResult getAttestationResult() {
+		if (machine.getAttestationType()==IdsAttestationType.ZERO) {
+			return AttestationResult.SKIPPED;
+		} else {
+			if (machine.getIDSCPConsumerSuccess()) {
+				return AttestationResult.SUCCESS;
+			} else {
+				return AttestationResult.FAILED;
+			}
+		}
 	}
 }

@@ -35,7 +35,10 @@
  */
 package de.fhg.camel.ids.client;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.camel.Consumer;
@@ -55,6 +58,10 @@ import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPClientEndpoint;
+import de.fhg.camel.ids.IdsProtocolComponent;
+
 /**
  * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.
  */
@@ -63,22 +70,36 @@ import org.slf4j.LoggerFactory;
 public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
-    private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
+    private static List<IDSCPClientEndpoint> endpointList = new ArrayList<IDSCPClientEndpoint>();
+
+	private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
     private final WsListener listener = new WsListener();
     private transient WebSocket websocket;
     
     private boolean ratSuccess = false;
 
-    @UriParam(label = "producer")
+	@UriParam(label = "producer")
     private boolean useStreaming;
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
     @UriParam(label = "attestation", defaultValue = "0", description = "defines the remote attestation mode: 0=BASIC, 1=ALL, 2=ADVANCED, 3=ZERO. default value is 0=BASIC. (see api/attestation.proto for more details)")
     private Integer attestation = 0;
     @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
-    private Integer attestationMask = 0;    
+    private Integer attestationMask = 0; 
+	//private AttestationResult attestationResult;
+    
     //@UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
     //private SSLContextParameters sslContextParameters;
+    Optional<ConnectionManager> connectionManager = IdsProtocolComponent.getConnectionManager();
+ 
+//    public AttestationResult getAttestationResult() {
+//		return attestationResult;
+//	}
+//
+//	public void setAttestationResult(AttestationResult attestationResult) {
+//		this.attestationResult = attestationResult;
+//	}
+
     
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
@@ -98,6 +119,10 @@ public class WsEndpoint extends AhcEndpoint {
     public Consumer createConsumer(Processor processor) throws Exception {
         return new WsConsumer(this, processor);
     }
+    
+    public static List<IDSCPClientEndpoint> getEndpointList() {
+		return endpointList;
+	}
 
     WebSocket getWebSocket() throws Exception {
         synchronized (this) {
@@ -186,14 +211,25 @@ public class WsEndpoint extends AhcEndpoint {
 	        idspListener.isFinished().await();
         } finally {
         	ratSuccess = idspListener.isAttestationSuccessful();
+        	//attestationResult = idspListener.getAttestationResult();
         	idspListener.semaphore().unlock();
         }
         
         LOG.debug("remote attestation was successful: " + ratSuccess);
-        
+        //get remote address, get upgrade headers, instantinate connectionmanagersertvice to register websocket
         // When IDS protocol has finished, hand over to normal web socket listener
+        //This does not work! 
         websocket.addWebSocketListener(listener);
         websocket.removeWebSocketListener(idspListener);
+        
+        //Add Client Endpoint information to static List
+        IDSCPClientEndpoint ce = new IDSCPClientEndpoint();
+        //ce.setAttestationResult(this.getAttestationResult());
+        ce.setEndpointIdentifier(this.getEndpointUri());
+        ce.setEndpointKey(this.getEndpointKey());
+        endpointList.add(ce);
+
+        
     }
 
     @Override
@@ -206,6 +242,9 @@ public class WsEndpoint extends AhcEndpoint {
             websocket.close();
             websocket = null;
         }
+//        if(connectionManager.isPresent()) {
+//        	connectionManager.get().removeClientEndpoint(this.getEndpointKey());
+//        }
         super.doStop();
     }
 

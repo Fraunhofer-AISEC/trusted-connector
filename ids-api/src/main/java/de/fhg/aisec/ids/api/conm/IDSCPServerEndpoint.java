@@ -26,13 +26,13 @@ package de.fhg.aisec.ids.api.conm;
  *
  */
 	
-public class IDSCPEndpoint {
+public class IDSCPServerEndpoint {
 	private String endpointIdentifier;
 	private String defaultProtocol;
 	private String port;
 	private String host;
 	
-	public IDSCPEndpoint() {
+	public IDSCPServerEndpoint() {
 	}
 	
 	public String getDefaultProtocol() {
@@ -46,6 +46,7 @@ public class IDSCPEndpoint {
 	public String getHost() {
 		return host;
 	}
+	
 	public String getEndpointIdentifier() {
 		return endpointIdentifier;
 	}

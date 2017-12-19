@@ -29,7 +29,7 @@ import javax.ws.rs.Produces;
 
 import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPEndpoint;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
@@ -74,8 +74,8 @@ public class ConnectionAPI {
 	@GET
 	@Path("listendpointsonly")
 	@Produces("application/json")
-	public List<IDSCPEndpoint> listAvailableEndpoints() {
-		List<IDSCPEndpoint> result = new ArrayList<>();
+	public List<IDSCPServerEndpoint> listAvailableEndpoints() {
+		List<IDSCPServerEndpoint> result = new ArrayList<>();
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		if (connectionManager.isPresent()) {
 			result = connectionManager.get().listAvailableEndpoints();

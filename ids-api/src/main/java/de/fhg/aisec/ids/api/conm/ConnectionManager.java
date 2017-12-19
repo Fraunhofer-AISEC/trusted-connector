@@ -22,7 +22,6 @@ package de.fhg.aisec.ids.api.conm;
 import java.util.List;
 
 
-
 /**
  * List and interacts with open connections over the IDS communication protocol
  * 
@@ -38,5 +37,6 @@ public interface ConnectionManager {
 	 */
 	public List<IDSCPIncomingConnection> listIncomingConnections();
 	public List<IDSCPOutgoingConnection> listOutgoingConnections();
-	public List<IDSCPEndpoint> listAvailableEndpoints();
+	public List<IDSCPServerEndpoint> listAvailableEndpoints();
+
 }

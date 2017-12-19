@@ -27,7 +27,6 @@ package de.fhg.aisec.ids.api.conm;
  */
 public class IDSCPOutgoingConnection {
 	private String endpoint_identifier;
-	private String lastProtocolState;
 	private String remoteAuthentication;
 	private String remoteIdentity;
 	private AttestationResult attestationResult;
@@ -35,7 +34,6 @@ public class IDSCPOutgoingConnection {
 	
 	public IDSCPOutgoingConnection(String endpoint_identifier, String lastProtocolState) {
 		this.endpoint_identifier = endpoint_identifier;
-		this.lastProtocolState = lastProtocolState;
 	}
 	
 	public IDSCPOutgoingConnection() {
@@ -67,15 +65,10 @@ public class IDSCPOutgoingConnection {
 	public void setAttestationResult(AttestationResult attestationResult) {
 		this.attestationResult = attestationResult;
 	}
-	public String getLastProtocolState() {
-		return lastProtocolState;
-	}
-	public void setLastProtocolState(String lastProtocolState) {
-		this.lastProtocolState = lastProtocolState;
-	}	
+
 	@Override
 	public String toString() {
-		return "IDSCPOutgoingConnection [endpoint_identifier=" + endpoint_identifier + ", lastProtocolState=" + lastProtocolState + "]";
+		return "IDSCPOutgoingConnection [endpoint_identifier=" + endpoint_identifier + "]";
 	}
 	
 	
