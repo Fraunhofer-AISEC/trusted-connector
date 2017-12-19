@@ -21,13 +21,12 @@
       "styles": [
         "fonts/fonts.css",
         "../node_modules/material-design-lite/material.css",
-        "../node_modules/c3/c3.css",
         "../node_modules/bootstrap/dist/css/bootstrap.min.css",
         "material.teal-pink.min.css",
         "styles.css"
       ],
       "scripts": [
-        "../node_modules/viz.js/viz.js"
+        "../node_modules/viz.js/viz-lite.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {
