@@ -1,13 +1,15 @@
 export class IncomingConnection {
   endpointIdentifier: string;
   attestationResult: string;
+  connectionKey: string;
+  remoteHostName: string;
 }
 
 export class OutgoingConnection {
   endpointIdentifier: string;
-  lastProtocolState: string;
   remoteAuthentication: string;
   remoteIdentity: string;
+  attestationResult: string;
 }
 
 export class Endpoint {

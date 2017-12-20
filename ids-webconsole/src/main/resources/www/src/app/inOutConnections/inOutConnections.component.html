@@ -49,21 +49,27 @@
     <table class="table table-striped">
         <thead>
            <tr>
-            <th width="72%" style="padding-left:16px;">
+            <th width="60%" style="padding-left:16px;">
               Endpoint
             </th>
-            <th width="28%">
-              Trust Status
+            <th width="20%">
+              Attestation Result
+            </th>
+            <th width="20%">
+              Remote Host Name
             </th>
           </tr>
         </thead>
         <tbody>
             <tr  *ngFor="let conn of incomingConnections" >
               <td style="padding-left:16px;">
-                  {{ conn.endpointIdentifier }}
+                {{ conn.endpointIdentifier }}
               </td>
               <td>
                 {{ conn.attestationResult }}
+              </td>
+              <td>
+                {{ conn.remoteHostName }}
               </td>
             </tr>
         </tbody>
@@ -77,17 +83,11 @@
     <table class="table table-striped">
         <thead>
            <tr>
-            <th width="47%" style="padding-left:16px;">
+            <th width="80%" style="padding-left:16px;">
               Endpoint
             </th>
-            <th width="14%">
-              State
-            </th>
-            <th width="17%">
-              Client Auth
-            </th>
             <th width="20%">
-              Remote Host
+              Attestation Result
             </th>
           </tr>
         </thead>
@@ -97,17 +97,10 @@
               {{ connOut.endpointIdentifier }}
             </td>
             <td>
-              {{ connOut.lastProtocolState }}
-            </td>
-            <td>
-              {{ connOut.remoteAuthentication }}
-            </td>
-            <td>
-              {{ connOut.remoteIdentity }}
+              {{ connOut.attestationResult }}
             </td>
           </tr>
         </tbody>
     </table>
-
   </div>
 </div>
