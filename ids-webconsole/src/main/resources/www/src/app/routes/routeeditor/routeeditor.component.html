@@ -4,11 +4,11 @@
     
 	<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, myForm.valid)" class="mdl-cell--12-col mdl-grid">
 		<div class="mdl-grid mdl-cell mdl-cell--12-col">
-			<div class="mdl-cell mdl-cell--12-col">
+			<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
 				<h3 >{{route.id}}</h3>
 			</div>				
 		
-	    	<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp">
+	    	<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
 				<div class="mdl-card__title mdl-card--expand">
 					Route data
 				</div>
@@ -25,7 +25,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp">
+			<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
 				<div class="mdl-card__title mdl-card--expand">
 					Visualization
 				</div>
@@ -34,17 +34,19 @@
 				</div>
 			</div>
 
-			<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
-			<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
-				class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{validationInfo.valid ? 'Valid' : 'Invalid'}}</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">This route violates usage control policies</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">This route does not violate any usage control policies</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
-				<pre *ngFor="let ce of validationInfo.counterExamples">
-					<em class="mdl-color-text--red-A700">{{ce.explanation}}</em>
-					<span *ngFor="let step of ce.steps">{{step}}
-					</span>
-				</pre>
+			<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
+				<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
+				<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
+					class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{validationInfo.valid ? 'Valid' : 'Invalid'}}</div>
+				<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">This route violates usage control policies</div>
+				<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">This route does not violate any usage control policies</div>
+				<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
+					<pre *ngFor="let ce of validationInfo.counterExamples">
+						<em class="mdl-color-text--red-A700">{{ce.explanation}}</em>
+						<span *ngFor="let step of ce.steps">{{step}}
+						</span>
+					</pre>
+				</div>
 			</div>
 			<div class="mdl-cell mdl-cell--12-col">
 			    <div ace-editor
@@ -59,7 +61,7 @@
 			        style="min-height: 400px; width:100%; overflow: auto; font-size:16px; font-family: Consolas,Monaco,'Andale Mono',monospace;"></div>				
 			</div>
 			<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
-			  Apply
+			  <span>{{route.id ? 'Apply' : 'Save'}}</span>
 			</button>
 		</div>
 		

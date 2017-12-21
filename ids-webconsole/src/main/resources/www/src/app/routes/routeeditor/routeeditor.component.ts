@@ -94,7 +94,7 @@ export class RouteeditorComponent implements OnInit {
   }
     
   onRouteDefinitionChanged(newTxtRepresentation : string): void {
-      if (newTxtRepresentation.trim()!=this.route.txtRepresentation.trim()) {
+      if (!this.route.txtRepresentation || newTxtRepresentation.trim()!=this.route.txtRepresentation.trim()) {
             this.saved = false;
        } else {
             this.saved = true;

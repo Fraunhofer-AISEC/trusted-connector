@@ -50,6 +50,9 @@ const appRoutes: Routes = [{
     path: 'routeeditor/:id',
     component: RouteeditorComponent
   }, {
+    path: 'routeeditor',
+    component: RouteeditorComponent
+  }, {
     path: 'ids',
     component: IdsComponent,
     canDeactivate: [IdsComponent],
