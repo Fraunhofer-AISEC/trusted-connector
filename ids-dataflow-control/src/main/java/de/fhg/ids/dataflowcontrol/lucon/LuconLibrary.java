@@ -23,16 +23,23 @@ import alice.tuprolog.Library;
 import alice.tuprolog.Number;
 import alice.tuprolog.Term;
 import alice.tuprolog.Var;
+import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import javax.annotation.Nonnull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class LuconLibrary extends Library {
+	private static final Logger LOG = LoggerFactory.getLogger(LuconLibrary.class);
 
     @Override
     public String getTheory() {
@@ -139,7 +146,7 @@ public class LuconLibrary extends Library {
             .expireAfterAccess(1, TimeUnit.DAYS)
             .maximumWeight((long) 1.e6).weigher((k, v) -> ((String) k).length())
             .build(new CacheLoader<String, Pattern>() {
-                public Pattern load(@Nonnull String key) {
+                public Pattern load(String key) {
                     return Pattern.compile(key);
                 }
             });
@@ -159,10 +166,14 @@ public class LuconLibrary extends Library {
             return false;
         }
         try {
-            return regexCache.get(TuPrologHelper.unquote(regex.getTerm().toString()))
-                    .matcher(TuPrologHelper.unquote(input.getTerm().toString())).matches();
-        } catch (ExecutionException ee) {
-            ee.printStackTrace();
+        	String regexString = TuPrologHelper.unquote(regex.getTerm().toString());
+        	String inputString = TuPrologHelper.unquote(input.getTerm().toString());
+            boolean match = regexCache.get(regexString)
+                    .matcher(inputString).matches();
+            LOG.trace("regex_match_2: " + regexString + " , " + inputString + ": " + match);
+            return match;
+        } catch (ExecutionException e) {
+            LOG.warn(e.getMessage(), e);
             return false;
         }
     }
