@@ -373,8 +373,8 @@ public class LuconEngineTest {
 		System.out.println(proof.toString());
 		assertNotNull(proof);
 		assertFalse(proof.isValid());
-		assertTrue(proof.toString().contains("Service testQueueService may receive messages labeled [private], " +
-				"which is forbidden by rule \"anotherRule\"."));
+//		assertTrue(proof.toString().contains("Service testQueueService may receive messages labeled [private], " + "which is forbidden by rule \"anotherRule\"."));
+		assertTrue(proof.toString().contains("Service testQueueService may receive messages, which is forbidden by rule \"anotherRule\"."));
 		assertNotNull(proof.getCounterExamples());
 	}
 	

@@ -175,5 +175,4 @@ public class LuconEngine {
 		}
 		return proof;
 	}
-
 }

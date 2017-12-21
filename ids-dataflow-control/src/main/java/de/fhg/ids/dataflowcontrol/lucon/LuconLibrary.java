@@ -123,10 +123,12 @@ public class LuconLibrary extends Library {
         "  has_action(A, Act),                      %   an action Act and there is  [ O(1) ]\n" +
         "  dominant_drop_rules(Act, S, R),          %   a dominant drop rule R and service S for Act [ O(|Ep_S|² x |S -- R|²) ]\n" +
         "  (                                        %   AND\n" +
-        "    receives_label(R, any),                %     R receives either any set of labels  [ O(1) ]\n" +
+        //"    receives_label(R, any),                %     R receives either any set of labels  [ O(1) ]\n" +
+        "	 assert(any), " +
         "    T = [[S, any, R]|Log]                  %     [unify the recursion result with Out]  [ O(1) ]\n" +
         "    ;                                      %     or\n" +
-        "    receives_label(R, Forbidden),          %     R receives a set of labels with  [ O(1) ]\n" +
+        //"    receives_label(R, Forbidden),          %     R receives a set of labels with  [ O(1) ]\n" +
+        "	 assert(Forbidden), " +
         "    intersects(Forbidden, L),              %     non-empty intersection with C  [ O(|Forbidden|), assume O(1) ]\n" +
         "    T = [[S, Forbidden, R]|Log]            %     [unify the recursion result with Out]  [ O(1) ]\n" +
         "  ).                                       %\n" +
