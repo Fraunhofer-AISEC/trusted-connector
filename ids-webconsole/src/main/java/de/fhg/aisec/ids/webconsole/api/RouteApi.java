@@ -19,19 +19,23 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.router.*;
-import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -39,7 +43,14 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.router.RouteComponent;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteMetrics;
+import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -107,6 +118,19 @@ public class RouteApi {
 			return "{\"status\": \"ok\"}";	
 		}
 		return "{\"status:\": \"error\"}";
+	}
+	
+	@POST
+	@Path("save")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public String saveRoute(RouteObject route) {
+		System.out.println(route);
+		System.out.println(route.getId());
+		System.out.println(route.getStatus());
+		System.out.println(route.getTxtRepresentation());
+		System.out.println(route.getUptime());		
+		return "ok";
 	}
 
 	/**

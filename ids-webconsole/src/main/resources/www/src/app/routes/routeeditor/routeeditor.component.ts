@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { Route } from '../route';
@@ -17,13 +18,17 @@ declare var Viz: any;
   styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
+  public myForm: FormGroup;
   private route: Route = new Route();
   private validationInfo: ValidationInfo = new ValidationInfo();
   private vizResult: SafeHtml;
   private statusIcon: string;
   private result: string;
+  private saved: boolean;
   
-  constructor(private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {  }
+  constructor(private _fb: FormBuilder, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {  
+      this.saved = true;
+  }
 
   ngOnInit(): void {
     this.navRoute.params.subscribe(params => {
@@ -47,6 +52,10 @@ export class RouteeditorComponent implements OnInit {
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {
         this.validationInfo = validationInfo;
       })
+    });
+
+    this.myForm = this._fb.group({
+        route: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
     });
   }
 
@@ -83,4 +92,27 @@ export class RouteeditorComponent implements OnInit {
       this.route.status = 'Stopped';
     }
   }
+    
+  onRouteDefinitionChanged(newTxtRepresentation : string): void {
+      if (newTxtRepresentation.trim()!=this.route.txtRepresentation.trim()) {
+            this.saved = false;
+       } else {
+            this.saved = true;
+       }       
+  }
+    
+    save(model: Route, isValid: boolean) {
+        this.saved = true;
+        console.log(model, isValid);
+
+        // Call REST POST to store settings
+        let storePromise = this.routeService.save(this.route);
+        storePromise.subscribe(
+            () => {
+                // If saved successfully, user may leave the route (=saved=true)
+                this.saved = true;
+            },
+            err => console.log("Did not save form " + err.json().message)
+        );
+    }    
 }
