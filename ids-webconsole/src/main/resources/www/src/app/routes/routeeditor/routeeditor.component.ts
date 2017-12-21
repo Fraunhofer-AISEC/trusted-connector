@@ -55,9 +55,7 @@ export class RouteeditorComponent implements OnInit {
     });
 
     this.myForm = this._fb.group({
-        broker_url: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
-        ttp_host: ['', [<any>Validators.required, <any>Validators.minLength(3)]],
-        ttp_port: ['', [<any>Validators.required, <any>Validators.maxLength(5)]],
+        route: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
     });
   }
 
@@ -107,8 +105,8 @@ export class RouteeditorComponent implements OnInit {
         this.saved = true;
         console.log(model, isValid);
 
-        // TODO Call REST POST to store settings
-        let storePromise = this.routeService.save(model);
+        // Call REST POST to store settings
+        let storePromise = this.routeService.save(this.route);
         storePromise.subscribe(
             () => {
                 // If saved successfully, user may leave the route (=saved=true)

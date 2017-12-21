@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http, Response } from '@angular/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 import 'rxjs/add/operator/map';
 
@@ -11,7 +12,7 @@ import { environment } from '../../environments/environment';
 
 @Injectable()
 export class RouteService {
-  constructor(private http: Http) { }
+  constructor(private http: Http, private httpClient: HttpClient) { }
   getRoute(routeId: string) {
     return this.http.get(environment.apiURL + '/routes/get/' + routeId)
                .map(response => {
@@ -66,6 +67,12 @@ export class RouteService {
                  .map(response => {
                    return response.json() as string;
                  });
+  }
+
+  save(route: Route)  {
+      //Start Camel route
+            const headers = new HttpHeaders().set('Content-Type', 'application/json; charset=utf-8');
+            return this.httpClient.post(environment.apiURL + '/routes/save/', route,{headers: headers});
   }
 
   listEndpoints() {
