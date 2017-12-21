@@ -36,11 +36,11 @@ public class CounterExampleImpl extends CounterExample {
         StringBuilder sb = new StringBuilder().append("Service ").append(reasonIterator.next().toString())
                 .append(" may receive messages");
         Term explanation = reasonIterator.next();
-        if (explanation.isList()) {
-            sb.append(" labeled [");
-            appendCSList(sb, explanation);
-            sb.append("]");
-        }
+////        if (explanation.isList()) {
+//            sb.append(" labeled [");
+//            appendCSList(sb, explanation);
+//            sb.append("]");
+////        }
         sb.append(", which is forbidden by rule \"").append(reasonIterator.next().toString()).append("\".");
         this.setExplanation(sb.toString());
         // process steps and prepend them to list (inverse trace to get the right order)
