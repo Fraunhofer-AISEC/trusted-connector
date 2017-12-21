@@ -93,12 +93,16 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
 		sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
+		sb.append("assert(any), ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
 			.forEach(k -> {
-					sb.append("receives_label(T, ").append(msgLabels.get(k).toString()).append("), ");
+					// QUERY must be: has_endpoint(rule, bla), assert(a(x)), receives_label(rule).
+					sb.append("assert("+msgLabels.get(k).toString()+"), ");
 			});
+		sb.append("receives_label(_X), ");
+		sb.append("rule_priority(_X, P), ");
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			List<String> capProp = new LinkedList<>();
 			for (String cap: target.getCapabilties()) {
@@ -244,20 +248,45 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			List<SolveInfo> solveInfo = this.engine.query(query, true);
 			long time = System.nanoTime() - startTime;
 			LOG.info("Policy decision took " + time + " nanos");
-						
-			// Just for debugging
-			if (LOG.isDebugEnabled()) {
-				debug(solveInfo);
-			}
 			
 			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
 				return dec;
 			}
 			
+			// Include only solveInfos with highest priority
+			int maxPrio = Integer.MIN_VALUE;
+			for (SolveInfo si : solveInfo) {
+				try {
+					int priority = Integer.parseInt(si.getVarValue("P").getTerm().toString());
+					if (priority>maxPrio) {
+						maxPrio = priority;
+					}
+				} catch (NumberFormatException | NullPointerException e) {
+					LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e);
+				}
+			}
+			List<SolveInfo> applicableSolveInfos = new ArrayList<>();
+			for (SolveInfo si : solveInfo) {
+				try {
+					int priority = Integer.parseInt(si.getVarValue("P").getTerm().toString());
+					if (priority==maxPrio) {
+						applicableSolveInfos.add(si);
+					}
+				} catch (NumberFormatException | NullPointerException e) {
+					LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e);
+				}
+			}
+			
+			// Just for debugging
+			if (LOG.isDebugEnabled()) {
+				debug(applicableSolveInfos);
+			}
+
+			
 			// Collect obligations
 			List<Obligation> obligations = new LinkedList<>();
-			solveInfo.forEach(s -> {
+			applicableSolveInfos.forEach(s -> {
 				try {
 					Term decision = s.getVarValue("D");
 					if (!(decision instanceof Var)) {

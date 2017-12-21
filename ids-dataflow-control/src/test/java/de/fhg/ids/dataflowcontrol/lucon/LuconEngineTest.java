@@ -44,6 +44,7 @@ import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.SolveInfo;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
 import de.fhg.aisec.ids.api.policy.Obligation;
+import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
@@ -71,13 +72,13 @@ public class LuconEngineTest {
 			"rule(denyAll).\n" +
 			"rule_priority(denyAll, 0).\n" +
 			"has_decision(denyAll, drop).\n" +
-			"receives_label(denyAll, any).\n" +
+			"receives_label(denyAll) :- any.\n" +
 			"has_target(denyAll, serviceAll).\n" +
 			"\n" +
 			"rule(allowRule).\n" +
 			"rule_priority(allowRule, 1).\n" +
 			"has_decision(allowRule, allow).\n" +
-			"receives_label(allowRule, any).\n" +
+			"receives_label(allowRule) :- any.\n" +
 			"has_target(allowRule, hiveMqttBrokerService).\n" +
 			"has_target(allowRule, anonymizerService).\n" +
 			"has_target(allowRule, loggerService).\n" +
@@ -87,7 +88,7 @@ public class LuconEngineTest {
 			"rule(deleteAfterOneMonth).\n" +
 			"rule_priority(deleteAfterOneMonth, 1).\n" +
 			"has_decision(deleteAfterOneMonth, allow).\n" +
-			"receives_label(deleteAfterOneMonth, ['private']).\n" +
+			"receives_label(deleteAfterOneMonth) :- private.\n" +
 			"has_target(deleteAfterOneMonth, service78096644).\n" +
 			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" +
 			"% generated service\n" +
@@ -100,7 +101,7 @@ public class LuconEngineTest {
 			"rule(anotherRule).\n" +
 			"rule_priority(anotherRule, 1).\n" +
 			"has_target(anotherRule, testQueueService).\n" +
-			"receives_label(anotherRule, ['private']).\n" +
+			"receives_label(anotherRule) :- private.\n" +
 			"has_decision(anotherRule, drop).\n" +
 			"\n" +
 			"%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
@@ -273,6 +274,7 @@ public class LuconEngineTest {
 		// Simple message context with nonsense attributes
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("some_message_key", "some_message_value");
+		attributes.put(PDP.LABEL_PREFIX+"1", "private");
 		
 		// Simple source and dest nodes
 		ServiceNode source = new ServiceNode("seda:test_source", null, null);
@@ -282,7 +284,7 @@ public class LuconEngineTest {
 		assertEquals(Decision.ALLOW, dec.getDecision());
 		
 		// Check obligation
-		assertEquals(1, dec.getObligations().size());
+		assertEquals(3, dec.getObligations().size());
 		Obligation obl = dec.getObligations().get(0);
 		assertEquals("delete_after_days(30)", obl.getAction());
 	}
