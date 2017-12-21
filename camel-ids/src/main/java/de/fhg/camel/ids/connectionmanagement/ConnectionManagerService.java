@@ -110,7 +110,7 @@ public class ConnectionManagerService implements ConnectionManager {
 		        	DefaultWebsocket dws = webSocketIterator.next();
 			    	IDSCPIncomingConnection incomingConnection = new IDSCPIncomingConnection();
 			    	incomingConnection.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
-			    	incomingConnection.setConnectionKey(dws.getConnectionKey());
+			    	incomingConnection.setEndpointKey(dws.getConnectionKey());
 			    	incomingConnection.setRemoteHostName(dws.getRemoteHostname());
 		        	incomingConnection.setAttestationResult(dws.getAttestationResult());
 		        	connections.add(incomingConnection);
@@ -123,27 +123,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	
 	@Override
 	public List<IDSCPOutgoingConnection> listOutgoingConnections() {
-		List<IDSCPOutgoingConnection> connections = new ArrayList<>();
-		List<IDSCPClientEndpoint> clientEndpoints = WsEndpoint.getEndpointList();
-		
-        Iterator<IDSCPClientEndpoint> clientEndpointsIterator = clientEndpoints.iterator();
-        
-        //TODO: This is still buggy and runs forever.
-        //Iterate over the websockets. For every outgoing connection, a web socket is maintained. 
-        while(clientEndpointsIterator.hasNext())  {
-        	IDSCPClientEndpoint wse = clientEndpointsIterator.next();
-	    	IDSCPOutgoingConnection outgoingConnection = new IDSCPOutgoingConnection();
-	    	
-	    	outgoingConnection.setEndpointIdentifier(wse.getEndpointIdentifier());
-	    	outgoingConnection.setAttestationResult(wse.getAttestationResult());
-        	// in order to check if the provider has done a successful remote attestation
-        	// we have to check the state of the dsm (=IDSCP_END) and the result of the rat:
-        	
-        	connections.add(outgoingConnection);
-        	
-        }
-
-        return connections;
+        return WsEndpoint.getOutgoingConnections();
 	}	
 	
 

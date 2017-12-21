@@ -60,7 +60,11 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPClientEndpoint;
+import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.camel.ids.IdsProtocolComponent;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.
@@ -70,7 +74,7 @@ import de.fhg.camel.ids.IdsProtocolComponent;
 public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
-    private static List<IDSCPClientEndpoint> endpointList = new ArrayList<IDSCPClientEndpoint>();
+    private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<IDSCPOutgoingConnection>();
 
 	private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
     private final WsListener listener = new WsListener();
@@ -86,20 +90,11 @@ public class WsEndpoint extends AhcEndpoint {
     private Integer attestation = 0;
     @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
     private Integer attestationMask = 0; 
-	//private AttestationResult attestationResult;
     
     //@UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
     //private SSLContextParameters sslContextParameters;
     Optional<ConnectionManager> connectionManager = IdsProtocolComponent.getConnectionManager();
- 
-//    public AttestationResult getAttestationResult() {
-//		return attestationResult;
-//	}
-//
-//	public void setAttestationResult(AttestationResult attestationResult) {
-//		this.attestationResult = attestationResult;
-//	}
-
+    private IDSPListener idspListener;
     
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
@@ -120,8 +115,8 @@ public class WsEndpoint extends AhcEndpoint {
         return new WsConsumer(this, processor);
     }
     
-    public static List<IDSCPClientEndpoint> getEndpointList() {
-		return endpointList;
+    public static List<IDSCPOutgoingConnection> getOutgoingConnections() {
+		return outgoingConnections;
 	}
 
     WebSocket getWebSocket() throws Exception {
@@ -202,17 +197,16 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
         
         // Execute IDS protocol immediately after connect
-        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(), this.getSslContextParameters());
+        this.idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(), this.getSslContextParameters());
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
-        
         // wait for IDS protocol to finish 
-        idspListener.semaphore().lockInterruptibly();
+        this.idspListener.semaphore().lockInterruptibly();
         try {
-	        idspListener.isFinished().await();
+	        this.idspListener.isFinished().await();
         } finally {
-        	ratSuccess = idspListener.isAttestationSuccessful();
+        	ratSuccess = this.idspListener.isAttestationSuccessful();
         	//attestationResult = idspListener.getAttestationResult();
-        	idspListener.semaphore().unlock();
+        	this.idspListener.semaphore().unlock();
         }
         
         LOG.debug("remote attestation was successful: " + ratSuccess);
@@ -223,11 +217,12 @@ public class WsEndpoint extends AhcEndpoint {
         websocket.removeWebSocketListener(idspListener);
         
         //Add Client Endpoint information to static List
-        IDSCPClientEndpoint ce = new IDSCPClientEndpoint();
-        //ce.setAttestationResult(this.getAttestationResult());
+        IDSCPOutgoingConnection ce = new IDSCPOutgoingConnection();
+        ce.setAttestationResult(this.idspListener.getAttestationResult());
         ce.setEndpointIdentifier(this.getEndpointUri());
-        ce.setEndpointKey(this.getEndpointKey());
-        endpointList.add(ce);
+        ce.setEndpointKey(this.getEndpointKey().toString()); 
+        ce.setRemoteIdentity(websocket.getRemoteAddress().toString());
+        outgoingConnections.add(ce);
 
         
     }
@@ -242,9 +237,8 @@ public class WsEndpoint extends AhcEndpoint {
             websocket.close();
             websocket = null;
         }
-//        if(connectionManager.isPresent()) {
-//        	connectionManager.get().removeClientEndpoint(this.getEndpointKey());
-//        }
+
+        outgoingConnections.removeIf(ic-> ic.getEndpointKey().equals(this.getEndpointKey()));
         super.doStop();
     }
 

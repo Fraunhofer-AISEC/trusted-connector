@@ -84,11 +84,14 @@
     <table class="table table-striped">
         <thead>
            <tr>
-            <th width="80%" style="padding-left:16px;">
+            <th width="60%" style="padding-left:16px;">
               Endpoint
             </th>
             <th width="20%">
               Attestation Result
+            </th>
+            <th width="20%">
+              Remote Host Name
             </th>
           </tr>
         </thead>
@@ -99,6 +102,9 @@
             </td>
             <td>
               {{ connOut.attestationResult }}
+            </td>
+            <td>
+              {{ connOut.remoteIdentity }}
             </td>
           </tr>
         </tbody>
