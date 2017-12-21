@@ -129,7 +129,13 @@ public class RouteApi {
 		System.out.println(route.getId());
 		System.out.println(route.getStatus());
 		System.out.println(route.getTxtRepresentation());
-		System.out.println(route.getUptime());		
+		System.out.println(route.getUptime());	
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return "no route manager";
+		}
+		
+		rm.get().addRoute(route);
 		return "ok";
 	}
 

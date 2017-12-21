@@ -107,8 +107,6 @@ public interface RouteManager {
 	 */
 	String getRouteAsString(String routeId);
 	
-	void loadRoutes(String routeConfig);
-	
 	/**
 	 * Returns aggregated runtime metrics of all installed routes.
 	 * 
@@ -123,4 +121,6 @@ public interface RouteManager {
 	 * @return
 	 */
 	String getRouteAsProlog(String routeId);
+
+	public void addRoute(RouteObject route);
 }

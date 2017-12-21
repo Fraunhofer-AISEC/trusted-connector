@@ -62,7 +62,7 @@ export class RouteService {
     }
     // -------------------------------------------------------------------------------
 
-      //Start Camel route
+      // Start Camel route
       return this.http.get(environment.apiURL + '/routes/startroute/' + routeId)
                  .map(response => {
                    return response.json() as string;
@@ -70,9 +70,10 @@ export class RouteService {
   }
 
   save(route: Route)  {
-      //Start Camel route
+      // Save Camel route
             const headers = new HttpHeaders().set('Content-Type', 'application/json; charset=utf-8');
-            return this.httpClient.post(environment.apiURL + '/routes/save/', route,{headers: headers});
+            console.log('Sending ' + route.txtRepresentation);
+            return this.httpClient.post(environment.apiURL + '/routes/save', JSON.stringify(route), {headers: headers});
   }
 
   listEndpoints() {

@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.rm;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -50,9 +51,11 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
 import org.apache.camel.model.ModelHelper;
 import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.model.RoutesDefinition;
 import org.apache.camel.spi.ManagementAgent;
 import org.apache.camel.util.RouteStatDump;
 import org.osgi.framework.BundleContext;
@@ -285,12 +288,6 @@ public class RouteManagerService implements RouteManager {
 		}
 	}
 
-	@Override
-	public void loadRoutes(String arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
 	private List<CamelContext> getCamelContexts() {
 		List<CamelContext> camelContexts = new ArrayList<>();
         try {
@@ -408,5 +405,29 @@ public class RouteManagerService implements RouteManager {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public void addRoute(RouteObject route) {
+		if (route==null) {
+			return;
+		}
+		
+		LOG.debug("Adding new route: " + route.getTxtRepresentation());
+		List<CamelContext> ccs = getCamelContexts();
+		if (ccs.isEmpty()) {
+			LOG.warn("No camel context found");
+			return;
+		}
+		CamelContext cc = ccs.get(0);
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(route.getTxtRepresentation().getBytes())) {
+			RoutesDefinition rd = cc.loadRoutesDefinition(bis);
+			List<RouteDefinition> routes = rd.getRoutes();
+			cc.addRouteDefinitions(routes);
+			getCamelContexts().add(cc);
+			cc.start();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
 	}
 }

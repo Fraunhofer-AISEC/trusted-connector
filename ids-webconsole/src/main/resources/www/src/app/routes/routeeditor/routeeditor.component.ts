@@ -1,14 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import {Component, Input, OnInit} from '@angular/core';
+import {FormGroup, FormControl, FormBuilder, Validators} from '@angular/forms';
+import {DomSanitizer, SafeHtml, Title} from '@angular/platform-browser';
 
-import { Route } from '../route';
-import { RouteService } from '../route.service';
-import { ValidationInfo } from '../validation';
+import {Route} from '../route';
+import {RouteService} from '../route.service';
+import {ValidationInfo} from '../validation';
 
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
-import { validateConfig } from '@angular/router/src/config';
+import {validateConfig} from '@angular/router/src/config';
 
 declare var Viz: any;
 
@@ -25,9 +25,10 @@ export class RouteeditorComponent implements OnInit {
   private statusIcon: string;
   private result: string;
   private saved: boolean;
-  
-  constructor(private _fb: FormBuilder, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {  
-      this.saved = true;
+
+  constructor(private titleService: Title, private _fb: FormBuilder, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {
+    this.saved = true;
+    this.titleService.setTitle('Edit Message Route');
   }
 
   ngOnInit(): void {
@@ -37,13 +38,13 @@ export class RouteeditorComponent implements OnInit {
       this.routeService.getRoute(id).subscribe(route => {
         this.route = route;
 
-        console.log("Route editor: Loaded route with id " + this.route.id);
+        console.log('Route editor: Loaded route with id ' + this.route.id);
         let graph = this.route.dot;
 
-        if(this.route.status == "Started") {
-          this.statusIcon = "stop";
+        if (this.route.status === 'Started') {
+          this.statusIcon = 'stop';
         } else {
-          this.statusIcon = "play_arrow";
+          this.statusIcon = 'play_arrow';
         }
 
         this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
@@ -51,11 +52,11 @@ export class RouteeditorComponent implements OnInit {
 
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {
         this.validationInfo = validationInfo;
-      })
+      });
     });
 
     this.myForm = this._fb.group({
-        route: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
+      txtRepresentation: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
     });
   }
 
@@ -64,27 +65,27 @@ export class RouteeditorComponent implements OnInit {
       this.result = result;
     });
     this.route.status = 'Started';
-    this.statusIcon = "play_arrow";
+    this.statusIcon = 'play_arrow';
   }
 
   onStop(routeId: string): void {
     this.routeService.stopRoute(routeId).subscribe(result => {
-       this.result = result;
-     });
-     this.route.status = 'Stopped';
-     this.statusIcon = "stop";
+      this.result = result;
+    });
+    this.route.status = 'Stopped';
+    this.statusIcon = 'stop';
   }
 
   onToggle(routeId: string): void {
-    if(this.statusIcon == "play_arrow") {
-      this.statusIcon = "stop";
+    if (this.statusIcon === 'play_arrow') {
+      this.statusIcon = 'stop';
       this.routeService.startRoute(routeId).subscribe(result => {
         this.result = result;
       });
       this.route.status = 'Started';
 
     } else {
-      this.statusIcon = "play_arrow";
+      this.statusIcon = 'play_arrow';
       this.routeService.stopRoute(routeId).subscribe(result => {
         this.result = result;
       });
@@ -92,27 +93,27 @@ export class RouteeditorComponent implements OnInit {
       this.route.status = 'Stopped';
     }
   }
-    
-  onRouteDefinitionChanged(newTxtRepresentation : string): void {
-      if (!this.route.txtRepresentation || newTxtRepresentation.trim()!=this.route.txtRepresentation.trim()) {
-            this.saved = false;
-       } else {
-            this.saved = true;
-       }       
-  }
-    
-    save(model: Route, isValid: boolean) {
-        this.saved = true;
-        console.log(model, isValid);
 
-        // Call REST POST to store settings
-        let storePromise = this.routeService.save(this.route);
-        storePromise.subscribe(
-            () => {
-                // If saved successfully, user may leave the route (=saved=true)
-                this.saved = true;
-            },
-            err => console.log("Did not save form " + err.json().message)
-        );
-    }    
+  onRouteDefinitionChanged(newTxtRepresentation: string): void {
+    if (!this.route.txtRepresentation || newTxtRepresentation.trim() !== this.route.txtRepresentation.trim()) {
+      this.saved = false;
+      // Because ace-editor is a nested component, FormBuilder does not hook in properly and we need to save content here.
+      this.route.txtRepresentation = newTxtRepresentation;
+    } else {
+      this.saved = true;
+    }
+  }
+
+  save(model: any) {
+    this.saved = true;
+
+    // Call REST POST to store settings
+    let storePromise = this.routeService.save(this.route);
+    storePromise.subscribe(
+      () => {
+        // If saved successfully, user may leave the route (=saved=true)
+        this.saved = true;
+      },
+      error => console.log(error));
+  }
 }

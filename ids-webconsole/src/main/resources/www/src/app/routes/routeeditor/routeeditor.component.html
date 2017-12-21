@@ -2,14 +2,14 @@
       <div class="page-content"><!-- Your content goes here --></div>
     </section>
     
-	<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, myForm.valid)" class="mdl-cell--12-col mdl-grid">
+	<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
 		<div class="mdl-grid mdl-cell mdl-cell--12-col">
 			<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
 				<h3 >{{route.id}}</h3>
 			</div>				
 		
 	    	<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
-				<div class="mdl-card__title mdl-card--expand">
+				<div class="mdl-card__titles">
 					Route data
 				</div>
 				<div class="mdl-card__supporting-text">
@@ -53,7 +53,7 @@
 			        [text]="route.txtRepresentation"
 			        [mode]="'xml'"
 			        [theme]="'eclipse'"
-			        [options]="options"
+			        [options]="{maxLines: 1000, printMargin: false}"
 			        [readOnly]="false"
 			        [autoUpdateContent]="true"
 			        [durationBeforeCallback]="100"
