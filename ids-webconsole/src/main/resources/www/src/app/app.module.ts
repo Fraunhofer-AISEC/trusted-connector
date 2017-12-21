@@ -1,6 +1,7 @@
 import { NgModule }      from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { HttpModule }     from '@angular/http';
+import { HttpClientModule } from "@angular/common/http";
 import { AceEditorModule } from 'ng2-ace-editor';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -66,7 +67,8 @@ import { MetricService } from './metric/metric.service';
     AceEditorModule,
     BrowserModule,
     routing,
-    HttpModule,
+    HttpModule,             // deprecated. To be removed
+    HttpClientModule,       // new since Angular 5
     ReactiveFormsModule,
 //    ModalModule.forRoot(),
 //    BootstrapModalModule
