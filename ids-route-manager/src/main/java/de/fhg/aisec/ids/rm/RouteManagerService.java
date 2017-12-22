@@ -51,7 +51,6 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
-import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
 import org.apache.camel.model.ModelHelper;
 import org.apache.camel.model.RouteDefinition;
@@ -245,32 +244,25 @@ public class RouteManagerService implements RouteManager {
 				RouteStatDump stat;
 				try {
 					stat = this.getRouteStats(cCtx, rd);
+					RouteMetrics m = new RouteMetrics();
+					m.setCompleted(stat.getExchangesCompleted());
+					m.setRedeliveries(stat.getRedeliveries());
+					m.setFailed(stat.getExchangesFailed());
+					m.setFailuresHandled(stat.getFailuresHandled());
+					m.setInflight(stat.getExchangesInflight());
+					m.setMaxProcessingTime(stat.getMaxProcessingTime());
+					m.setMinProcessingTime(stat.getMinProcessingTime());
+					m.setMeanProcessingTime(stat.getMeanProcessingTime());
+					rdump.put(rd.getId(), m);
 				} catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException | JAXBException e) {
 					LOG.error(e.getMessage(), e);
 					continue;
 				}
-				RouteMetrics m = new RouteMetrics();
-				m.setCompleted(stat.getExchangesCompleted());
-				m.setRedeliveries(stat.getRedeliveries());
-				m.setFailed(stat.getExchangesFailed());
-				m.setFailuresHandled(stat.getFailuresHandled());
-				m.setInflight(stat.getExchangesInflight());
-				m.setMaxProcessingTime(stat.getMaxProcessingTime());
-				m.setMinProcessingTime(stat.getMinProcessingTime());
-				m.setMeanProcessingTime(stat.getMeanProcessingTime());
-				rdump.put(rd.getId(), m);
 			}
 		}
 		return rdump;
 	}
 
-	
-	@Override
-	public void addRoute(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-
-	}
-	
 	@Override
 	public void delRoute(String routeId) {
 		List<CamelContext> cCtxs = getCamelContexts();
@@ -408,7 +400,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
-	public void addRoute(RouteObject route) {
+	public void addRoute(RouteObject route) throws RouteException {
 		if (route==null) {
 			return;
 		}
@@ -419,15 +411,24 @@ public class RouteManagerService implements RouteManager {
 			LOG.warn("No camel context found");
 			return;
 		}
-		CamelContext cc = ccs.get(0);
+		List<RouteObject> existingRoutes = this.getRoutes();
+		CamelContext cCtx = ccs.get(0);
 		try (ByteArrayInputStream bis = new ByteArrayInputStream(route.getTxtRepresentation().getBytes())) {
-			RoutesDefinition rd = cc.loadRoutesDefinition(bis);
+			// Load route(s) from XML
+			RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
 			List<RouteDefinition> routes = rd.getRoutes();
-			cc.addRouteDefinitions(routes);
-			getCamelContexts().add(cc);
-			cc.start();
+			
+			// Check that intersection of existing and new routes is empty (=we do not allow overwriting existing route ids)
+			List<String> intersect = routes.stream().filter(r -> existingRoutes.stream().anyMatch(er -> er.getId().equals(r.getId()))).map(x -> x.getId()).collect(Collectors.toList());
+			if (!intersect.isEmpty()) {
+				throw new RouteException("Route id already exists. Will not overwrite it. " + String.join(",", intersect));
+			}
+			cCtx.addRouteDefinitions(routes);
+			getCamelContexts().add(cCtx);
+			cCtx.start();
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
+			throw new RouteException(e);
 		}
 	}
 }

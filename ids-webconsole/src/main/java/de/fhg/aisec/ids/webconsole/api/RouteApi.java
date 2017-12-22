@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -43,8 +42,10 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.Result;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteComponent;
+import de.fhg.aisec.ids.api.router.RouteException;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
@@ -106,37 +107,42 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/startroute/{id}")
-	public String startRoute(@PathParam("id") String id) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result startRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().startRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return "{\"status:\": \"error\"}";
+				return new Result(false, e.getMessage());
 			}
-			return "{\"status\": \"ok\"}";	
+			return new Result();	
 		}
-		return "{\"status:\": \"error\"}";
+		return new Result();
 	}
 	
 	@POST
 	@Path("save")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public String saveRoute(RouteObject route) {
-		System.out.println(route);
-		System.out.println(route.getId());
-		System.out.println(route.getStatus());
-		System.out.println(route.getTxtRepresentation());
-		System.out.println(route.getUptime());	
+	public Result saveRoute(RouteObject route) {
+		Result result = new Result();
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return "no route manager";
+			result.setMessage("no route manager");
+			result.setSuccessful(false);
+			return result;
 		}
 		
-		rm.get().addRoute(route);
-		return "ok";
+		try {
+			rm.get().addRoute(route);
+		} catch (RouteException e) {
+			LOG.warn(e.getMessage(), e);
+			result.setSuccessful(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 
 	/**

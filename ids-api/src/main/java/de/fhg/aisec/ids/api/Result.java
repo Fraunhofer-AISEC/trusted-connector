@@ -17,21 +17,37 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.router;
+package de.fhg.aisec.ids.api;
 
 /**
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
- *
+ * Generic result of an API call.
  */
-public class RouteException extends Exception {
-	private static final long serialVersionUID = 3684021422039489488L;
+public class Result {
+	private boolean successful = true;
+	private String message = "ok";
 	
-	public RouteException(Throwable cause) {
-		super(cause);
+	public Result() {
+		
 	}
 	
-	public RouteException(String msg) {
-		super(msg);
+	public Result(boolean success, String msg) {
+		this.setSuccessful(success);
+		this.setMessage(msg);
+	}
+
+	public boolean isSuccessful() {
+		return successful;
+	}
+
+	public void setSuccessful(boolean successful) {
+		this.successful = successful;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }

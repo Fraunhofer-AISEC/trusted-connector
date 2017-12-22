@@ -73,16 +73,18 @@ public interface RouteManager {
 	public Map<String,String> listEndpoints();
 	
 	/**
-	 * Adds a route from one endpoint to another. 
-	 * 
-	 * The route only becomes immediately effective.
+	 * Adds a route and starts it.
 	 * 
 	 * Endpoint declarations must be supported by the underlying implementation.
 	 * 
-	 * @param from
-	 * @param to
+	 * If the route id already exists, this method will throw a RouteException 
+	 * and not overwrite the existing route. 
+	 * 
+	 * @param route
+	 * @throws RouteException if a route with the same id already exists or if any 
+	 * Exception is thrown during loading and starting the route.
 	 */
-	void addRoute(String from, String to);
+	void addRoute(RouteObject route) throws RouteException;
 
 	
 	/**
@@ -121,6 +123,4 @@ public interface RouteManager {
 	 * @return
 	 */
 	String getRouteAsProlog(String routeId);
-
-	public void addRoute(RouteObject route);
 }
