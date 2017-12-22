@@ -218,7 +218,8 @@ public class RouteApi {
 			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
 			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
 		});
-		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/currentMetrics.size());
+		int metricsCount = currentMetrics.size();
+		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/(metricsCount!=0?metricsCount:1));
 		return metrics;
 	}
 
