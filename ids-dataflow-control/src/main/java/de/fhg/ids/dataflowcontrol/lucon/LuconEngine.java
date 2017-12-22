@@ -25,10 +25,19 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import alice.tuprolog.*;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import alice.tuprolog.InvalidLibraryException;
+import alice.tuprolog.InvalidTheoryException;
+import alice.tuprolog.MalformedGoalException;
+import alice.tuprolog.NoMoreSolutionException;
+import alice.tuprolog.NoSolutionException;
+import alice.tuprolog.Prolog;
+import alice.tuprolog.SolveInfo;
+import alice.tuprolog.Theory;
 import de.fhg.aisec.ids.api.router.CounterExample;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 
@@ -55,7 +64,7 @@ public class LuconEngine {
 	 *            OutputStream to write Prolog engine outputs to or null if
 	 *            output should not printed.
 	 */
-	public LuconEngine(OutputStream out) {
+	public LuconEngine(@Nullable OutputStream out) {
 		p = new Prolog();
 		try {
 			p.loadLibrary(new LuconLibrary());
@@ -96,18 +105,26 @@ public class LuconEngine {
 	 * @throws InvalidTheoryException  Syntax error in Prolog document
 	 * @throws IOException			   I/O error reading from stream
 	 */
-	public void loadPolicy(InputStream is) throws InvalidTheoryException, IOException {
+	public void loadPolicy(@Nullable InputStream is) throws InvalidTheoryException, IOException {
+		if (is == null) {
+			return;
+		}
 		Theory t = new Theory(is);
 		LOG.debug("Loading theory: " + t.toString());
 		p.setTheory(t);
 	}
 
-	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
+	@NonNull
+	public List<SolveInfo> query(@Nullable String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
 		return query(p, query, findAll);
 	}
 
-	private List<SolveInfo> query(Prolog engine, String query, boolean findAll)	throws NoMoreSolutionException, MalformedGoalException {
+	@NonNull
+	private List<SolveInfo> query(@NonNull Prolog engine, @Nullable String query, boolean findAll)	throws NoMoreSolutionException, MalformedGoalException {
 		List<SolveInfo> result = new ArrayList<>();
+		if (query==null) {
+			return result;
+		}
 		SolveInfo solution = engine.solve(query);
 		while (solution.isSuccess()) {
 			result.add(solution);
@@ -121,12 +138,16 @@ public class LuconEngine {
 		return result;
 	}
 
+	@NonNull
 	public String getTheory() {
-		return p.getTheory().toString();
+		String t = p.getTheory().toString();
+		return t!=null?t:"";
 	}
 
+	@NonNull
 	public String getTheoryAsJSON() {
-		return p.getTheory().toJSON();
+		String t = p.getTheory().toJSON();
+		return t!=null?t:"";
 	}
 
 	/**
@@ -138,7 +159,7 @@ public class LuconEngine {
 	 * @return A list of counterexamples which violate the rule or empty, if no
 	 *         route violates the policy.
 	 */
-	public RouteVerificationProof proofInvalidRoute(String id, String routePl) {
+	public RouteVerificationProof proofInvalidRoute(@Nullable String id, @Nullable String routePl) {
 		// The proof object we will return
 		RouteVerificationProof proof = new RouteVerificationProof(id);
 		

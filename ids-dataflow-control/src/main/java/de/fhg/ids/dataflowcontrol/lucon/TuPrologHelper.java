@@ -27,6 +27,9 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public final class TuPrologHelper {
 
     /**
@@ -40,7 +43,8 @@ public final class TuPrologHelper {
         return threadProlog.get();
     }
 
-    public static String escape(String s) {
+    @NonNull
+    public static String escape(@NonNull String s) {
         StringBuilder sb = new StringBuilder();
         sb.append('\'');
         int charLength = s.length();
@@ -52,8 +56,12 @@ public final class TuPrologHelper {
         return sb.toString();
     }
 
-    public static Stream<? extends Term> listStream(Term list) {
-        if (!list.isList()) {
+    @Nullable
+    public static Stream<? extends Term> listStream(@Nullable Term list) {
+        if (list == null) {
+        	return null;
+        }
+    	if (!list.isList()) {
             throw new IllegalArgumentException("Not a tuProlog list");
         }
         Iterator<? extends Term> listIterator = ((Struct) list).listIterator();
@@ -61,7 +69,11 @@ public final class TuPrologHelper {
                 false);
     }
 
-    public static String unquote(String s) {
+    @Nullable
+    public static String unquote(@Nullable String s) {
+    	if (s == null) {
+    		return s;
+    	}
         if (s.length() > 2 && s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\'') {
             return s.substring(1, s.length() - 1);
         } else if (s.length() == 2 && "''".equals(s)) {
@@ -70,5 +82,4 @@ public final class TuPrologHelper {
             return s;
         }
     }
-
 }

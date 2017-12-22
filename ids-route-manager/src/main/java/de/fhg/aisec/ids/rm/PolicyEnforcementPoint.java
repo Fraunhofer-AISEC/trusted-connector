@@ -29,6 +29,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.management.InstrumentationProcessor;
 import org.apache.camel.processor.LogProcessor;
 import org.apache.camel.processor.SendProcessor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
     private Processor target;
 	private RouteManagerService rm;
     
-    public PolicyEnforcementPoint(Processor target, RouteManagerService rm) {
+    public PolicyEnforcementPoint(@Nullable Processor target, @Nullable RouteManagerService rm) {
     	this.target = target;
     	this.rm = rm;
     }

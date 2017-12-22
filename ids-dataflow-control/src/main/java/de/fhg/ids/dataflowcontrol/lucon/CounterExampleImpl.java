@@ -26,9 +26,12 @@ import de.fhg.aisec.ids.api.router.CounterExample;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public class CounterExampleImpl extends CounterExample {
 
-    public CounterExampleImpl(Term term) {
+    public CounterExampleImpl(@NonNull Term term) {
         Iterator<? extends Term> traceIterator = ((Struct) term).listIterator();
         LinkedList<String> steps = new LinkedList<>();
         // process explanation
@@ -48,8 +51,12 @@ public class CounterExampleImpl extends CounterExample {
         this.setSteps(steps);
     }
 
-    public static String termToStep(Term t) {
-        Struct traceEntry = (Struct) t;
+    @Nullable
+    public static String termToStep(@Nullable Term t) {
+        if (t == null) {
+        	return null;
+        }
+    	Struct traceEntry = (Struct) t;
         StringBuilder sb = new StringBuilder();
         // node name is the head of the list
         String node = traceEntry.listHead().toString();
@@ -65,8 +72,12 @@ public class CounterExampleImpl extends CounterExample {
         }
     }
 
-    public static void appendCSList(StringBuilder sb, Term l) {
-        if (l.isList() && !l.isEmptyList()) {
+    public static void appendCSList(@Nullable StringBuilder sb, @Nullable Term l) {
+        if (sb==null || l==null) {
+        	return;
+        }
+        
+    	if (l.isList() && !l.isEmptyList()) {
             Iterator<? extends Term> listIterator = ((Struct) l).listIterator();
             // add first element
             sb.append(listIterator.next().toString());

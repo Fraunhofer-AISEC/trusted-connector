@@ -7,6 +7,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>checker-qual</module>
 		<module>tpm2j</module>
 		<module>asynchttpclient</module>
 		<module>jnr-unixsocket-osgi-wrapper</module>
@@ -62,7 +63,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-
 			<!-- Protobuf -->
 			<dependency>
 				<groupId>com.google.protobuf</groupId>

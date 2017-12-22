@@ -19,17 +19,23 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -39,13 +45,15 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
-import alice.tuprolog.Struct;
 import alice.tuprolog.Term;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
@@ -60,9 +68,6 @@ import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
-
 /**
  * servicefactory=false is the default and actually not required. But we want to make
  * clear that this is a singleton, i.e. there will only be one instance of
@@ -75,8 +80,13 @@ import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
 public class PolicyDecisionPoint implements PDP, PAP {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
 	private static final String LUCON_FILE_EXTENSION = ".pl";	
-	private LuconEngine engine;
+	
+	@NonNull
+	private LuconEngine engine = new LuconEngine(System.out);
+	@Nullable
 	private RouteManager routeManager;
+	private Cache<ServiceNode, TransformationDecision> transformationCache = CacheBuilder.newBuilder()
+			.maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
 	
 	/**
 	 * Creates a query to retrieve policy decision from Prolog knowledge base.
@@ -88,7 +98,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 *	hiveMqttBroker	drop		Alt				A
 	 * @param msgLabels 
 	 */
-	private String createDecisionQuery(ServiceNode target, Map<String, Object> msgLabels) {			
+	private String createDecisionQuery(@NonNull ServiceNode target, @NonNull Map<String, Object> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
@@ -126,7 +136,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param target
 	 * @return
 	 */
-	private String createTransformationQuery(ServiceNode target) {
+	private String createTransformationQuery(@NonNull ServiceNode target) {
 		StringBuilder sb = new StringBuilder();
 		if (target.getEndpoint() != null) {
 			sb.append("dominant_allow_rules(").append(escape(target.getEndpoint())).append(", _T, _), ");
@@ -148,11 +158,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Activate
-	public void activate(ComponentContext ctx) throws IOException {
-		if (this.engine == null) {
-			this.engine = new LuconEngine(System.out);
-		}
-		
+	public void activate(@NonNull ComponentContext ctx) throws IOException {
 		// Try to load existing policies from deploy dir at activation
 		File dir = new File(System.getProperty("karaf.base") + File.separator + "deploy");
 		File[] directoryListing = dir.listFiles();
@@ -176,20 +182,17 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 	
 	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
-	public void bindRouteManager(RouteManager routeManager) {
+	public void bindRouteManager(@NonNull RouteManager routeManager) {
 		LOG.warn("RouteManager bound. Camel routes can be analyzed");
 		this.routeManager = routeManager;
 	}
-	public void unbindRouteManager(RouteManager routeManager) {
+	public void unbindRouteManager(@NonNull RouteManager routeManager) {
 		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
 		this.routeManager = null;
 	}
 
-	private Cache<ServiceNode, TransformationDecision> transformationCache = CacheBuilder.newBuilder()
-			.maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
-
 	@Override
-	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
+	public TransformationDecision requestTranformations(@Nullable ServiceNode lastServiceNode) {
 		TransformationDecision result;
 
 		result = transformationCache.getIfPresent(lastServiceNode);
@@ -234,11 +237,14 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Override
-	public PolicyDecision requestDecision(DecisionRequest req) {
-		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
+	public PolicyDecision requestDecision(@Nullable DecisionRequest req) {
 		PolicyDecision dec = new PolicyDecision();
 		dec.setDecision(Decision.DENY); // Default value
-		dec.setReason("Not yet ready for productive use!");
+		if (req == null) {
+			dec.setReason("Null request");
+			return dec;
+		}
+		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
 
 		try {
 			// Query Prolog engine for a policy decision
@@ -327,7 +333,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param solveInfo
 	 * @throws NoSolutionException
 	 */
-	private void debug(List<SolveInfo> solveInfo) throws NoSolutionException {
+	private void debug(@NonNull List<SolveInfo> solveInfo) throws NoSolutionException {
 		for (SolveInfo i: solveInfo) {
 			if (i.isSuccess()) {
 				List<Var> vars = i.getBindingVars();
@@ -350,7 +356,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Override
-	public void loadPolicy(InputStream is) {
+	public void loadPolicy(@Nullable InputStream is) {
 		try {
 			// Load policy into engine, possibly overwriting the existing one.
 			this.engine.loadPolicy(is);

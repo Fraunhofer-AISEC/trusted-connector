@@ -19,27 +19,41 @@
  */
 package de.fhg.ids.dataflowcontrol.lucon;
 
-import alice.tuprolog.Library;
-import alice.tuprolog.Number;
-import alice.tuprolog.Term;
-import alice.tuprolog.Var;
-import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import javax.annotation.Nonnull;
+import alice.tuprolog.Library;
+import alice.tuprolog.Number;
+import alice.tuprolog.Term;
+import alice.tuprolog.Var;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-
+/**
+ * Plugins and default theories for tuProlog engine.
+ * 
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
+ *
+ */
 public class LuconLibrary extends Library {
+	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(LuconLibrary.class);
+
+    private LoadingCache<String, Pattern> regexCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .maximumWeight((long) 1.e6).weigher((k, v) -> ((String) k).length())
+            .build(new CacheLoader<String, Pattern>() {
+                public Pattern load(String key) {
+                    return Pattern.compile(key);
+                }
+            });
 
     @Override
     public String getTheory() {
@@ -144,16 +158,7 @@ public class LuconLibrary extends Library {
         "  %, print(A),nl.\n";
     }
 
-    private LoadingCache<String, Pattern> regexCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(1, TimeUnit.DAYS)
-            .maximumWeight((long) 1.e6).weigher((k, v) -> ((String) k).length())
-            .build(new CacheLoader<String, Pattern>() {
-                public Pattern load(String key) {
-                    return Pattern.compile(key);
-                }
-            });
-
-    private static boolean isComplex(Term t) {
+    private static boolean isComplex(@NonNull Term t) {
         if (t instanceof Var) {
             t = t.getTerm();
             t.isCompound();
@@ -161,8 +166,7 @@ public class LuconLibrary extends Library {
         return (!t.isAtom() || t.isList()) && !(t instanceof Number);
     }
 
-    @SuppressWarnings("unused")
-    public boolean regex_match_2(Term regex, Term input) {
+    public boolean regex_match_2(@NonNull Term regex, @NonNull Term input) {
         // Both regex and input string must be ground
         if (isComplex(regex) || isComplex(input)) {
             return false;
@@ -179,5 +183,4 @@ public class LuconLibrary extends Library {
             return false;
         }
     }
-
 }

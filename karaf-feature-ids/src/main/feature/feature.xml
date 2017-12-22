@@ -10,6 +10,7 @@
 	<feature name="ids" description="IDS Karaf Feature" version="1.1.0">
 		<details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
 		
+		<bundle start-level="70">mvn:de.fhg.ids/org.checkerframework.checker-qual/1.1.0-SNAPSHOT</bundle>
 		<bundle start-level="70">mvn:com.google.protobuf/protobuf-java/3.3.0</bundle>
 		<bundle start-level="70">mvn:com.github.jnr/jnr-unixsocket-osgi-wrapper/1.1.0-SNAPSHOT</bundle>
 

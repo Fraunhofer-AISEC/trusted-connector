@@ -57,6 +57,8 @@ import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
 import org.apache.camel.spi.ManagementAgent;
 import org.apache.camel.util.RouteStatDump;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -69,7 +71,6 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.router.RouteComponent;
 import de.fhg.aisec.ids.api.router.RouteException;
@@ -97,7 +98,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Reference(name="routemanager-camelcontext", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.MULTIPLE)
-	public void bindCamelContext(CamelContext cCtx) {
+	public void bindCamelContext(@NonNull CamelContext cCtx) {
 		try {
 			cCtx.stop();
 		} catch (Exception e) {
@@ -121,16 +122,16 @@ public class RouteManagerService implements RouteManager {
 		}
 	}
 	
-	public void unbindCamelContext(CamelContext cCtx) {
+	public void unbindCamelContext(@NonNull CamelContext cCtx) {
 		LOG.info("unbound from CamelContext " + cCtx);		
 	}
 	
 	@Reference(name="routemanager-pdp", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
-	public void bindPdp(PDP pdp) {
+	public void bindPdp(@NonNull PDP pdp) {
 		LOG.info("Bound to pdp " + pdp);
 		this.pdp = pdp;
 	}
-	public void unbindPdp(PDP pdp) {
+	public void unbindPdp(@NonNull PDP pdp) {
 		LOG.warn("Policy decision point disappeared. All events will pass through uncontrolled.");
 		this.pdp = null;
 	}
@@ -139,6 +140,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
+	@NonNull
 	public List<RouteObject> getRoutes() {
 		List<RouteObject> result = new ArrayList<>();
 		List<CamelContext> camelO = getCamelContexts();
@@ -153,7 +155,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
-	public void startRoute(String routeId) throws RouteException {
+	public void startRoute(@Nullable String routeId) throws RouteException {
 		List<CamelContext> camelC = getCamelContexts();
 
 		for (CamelContext cCtx : camelC) {
@@ -169,7 +171,7 @@ public class RouteManagerService implements RouteManager {
 	}
 
 	@Override
-	public void stopRoute(String routeId) throws RouteException {
+	public void stopRoute(@Nullable String routeId) throws RouteException {
 		List<CamelContext> camelC = getCamelContexts();
 
 		for (CamelContext cCtx : camelC) {
@@ -266,7 +268,7 @@ public class RouteManagerService implements RouteManager {
 	}
 
 	@Override
-	public void delRoute(String routeId) {
+	public void delRoute(@Nullable String routeId) {
 		List<CamelContext> cCtxs = getCamelContexts();
 		for (CamelContext cCtx: cCtxs) {
 			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
@@ -282,6 +284,7 @@ public class RouteManagerService implements RouteManager {
 		}
 	}
 
+	@NonNull
 	private List<CamelContext> getCamelContexts() {
 		List<CamelContext> camelContexts = new ArrayList<>();
         try {
@@ -312,7 +315,7 @@ public class RouteManagerService implements RouteManager {
 	 * @param rd
 	 * @return
 	 */
-	private RouteObject routeDefinitionToObject(CamelContext cCtx, RouteDefinition rd) {
+	private RouteObject routeDefinitionToObject(@NonNull CamelContext cCtx, @NonNull RouteDefinition rd) {
 		try {
 			ModelHelper.dumpModelAsXml(cCtx, rd);
 		} catch (JAXBException e) {
@@ -327,7 +330,8 @@ public class RouteManagerService implements RouteManager {
 	 * @param rd
 	 * @return
 	 */
-	private String routeToDot(RouteDefinition rd) {
+	@NonNull
+	private String routeToDot(@NonNull RouteDefinition rd) {
 		String result="";
 		try {
 			CamelRouteToDot viz = new CamelRouteToDot();
@@ -384,7 +388,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
-	public String getRouteAsString(String routeId) {
+	public String getRouteAsString(@NonNull String routeId) {
 		Optional<CamelContext> c = getCamelContexts()
 			.parallelStream()
 			.filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
@@ -402,7 +406,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
-	public void addRoute(RouteObject route) throws RouteException {
+	public void addRoute(@Nullable RouteObject route) throws RouteException {
 		if (route==null) {
 			return;
 		}

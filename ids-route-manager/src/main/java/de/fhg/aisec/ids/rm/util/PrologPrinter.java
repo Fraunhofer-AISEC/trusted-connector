@@ -29,6 +29,7 @@ import org.apache.camel.model.FromDefinition;
 import org.apache.camel.model.OptionalIdentifiedDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PrologPrinter {
 	
@@ -39,7 +40,11 @@ public class PrologPrinter {
 	 * @param route
 	 * @throws IOException 
 	 */
-	public void printSingleRoute(Writer writer, RouteDefinition route) throws IOException {
+	public void printSingleRoute(@Nullable Writer writer, @Nullable RouteDefinition route) throws IOException {
+		if (writer==null || route==null) {
+			return;
+		}
+		
 		// Print route entry points
 		printInputs(writer, route, route.getInputs());
 	}

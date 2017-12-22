@@ -36,6 +36,8 @@ import org.apache.camel.model.PipelineDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.ToDefinition;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Camel route definition to GraphViz converter.
@@ -82,7 +84,10 @@ public class CamelRouteToDot {
 	 * @param route
 	 * @throws IOException
 	 */
-	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
+	public void printSingleRoute(@Nullable Writer writer, @Nullable final RouteDefinition route) throws IOException {
+		if (writer==null || route==null) {
+			return;
+		}
 		writer.write("digraph { rankdir=LR; size=\"4.5,5.5\" \n\n");
 		writer.write("node [shape=\"box\", style = \"filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
 		List<FromDefinition> inputs = route.getInputs();
@@ -176,7 +181,10 @@ public class CamelRouteToDot {
 		}
 	}
 
-	public void generateFile(PrintWriter writer, Map<String, List<RouteDefinition>> map) throws IOException {
+	public void generateFile(@Nullable PrintWriter writer, @Nullable Map<String, List<RouteDefinition>> map) throws IOException {
+		if (writer == null || map==null) {
+			return;
+		}
 		writer.println("digraph CamelRoutes {");
 		writer.println();
 
@@ -187,7 +195,7 @@ public class CamelRouteToDot {
 		writer.println("}");
 	}
 
-	protected NodeData getNodeData(Object node) {
+	protected NodeData getNodeData(@NonNull Object node) {
 		Object key = node;
 		if (node instanceof FromDefinition) {
 			FromDefinition fromType = (FromDefinition) node;
