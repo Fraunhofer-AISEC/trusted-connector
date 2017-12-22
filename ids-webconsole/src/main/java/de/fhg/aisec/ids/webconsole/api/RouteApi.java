@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import de.fhg.aisec.ids.api.Result;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteException;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
@@ -137,7 +136,7 @@ public class RouteApi {
 		
 		try {
 			rm.get().addRoute(route);
-		} catch (RouteException e) {
+		} catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
 			result.setSuccessful(false);
 			result.setMessage(e.getMessage());
@@ -150,18 +149,19 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/stoproute/{id}")
-	public boolean stopRoute(@PathParam("id") String id) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result stopRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().stopRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return false;
+				return new Result(false, e.getMessage());
 			}
-			return true;	
+			return new Result();	
 		}
-		return false;
+		return new Result(false, "No route manager");
 	}
 
 	/**

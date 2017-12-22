@@ -244,16 +244,18 @@ public class RouteManagerService implements RouteManager {
 				RouteStatDump stat;
 				try {
 					stat = this.getRouteStats(cCtx, rd);
-					RouteMetrics m = new RouteMetrics();
-					m.setCompleted(stat.getExchangesCompleted());
-					m.setRedeliveries(stat.getRedeliveries());
-					m.setFailed(stat.getExchangesFailed());
-					m.setFailuresHandled(stat.getFailuresHandled());
-					m.setInflight(stat.getExchangesInflight());
-					m.setMaxProcessingTime(stat.getMaxProcessingTime());
-					m.setMinProcessingTime(stat.getMinProcessingTime());
-					m.setMeanProcessingTime(stat.getMeanProcessingTime());
-					rdump.put(rd.getId(), m);
+					if (stat != null) {
+						RouteMetrics m = new RouteMetrics();
+						m.setCompleted(stat.getExchangesCompleted());
+						m.setRedeliveries(stat.getRedeliveries());
+						m.setFailed(stat.getExchangesFailed());
+						m.setFailuresHandled(stat.getFailuresHandled());
+						m.setInflight(stat.getExchangesInflight());
+						m.setMaxProcessingTime(stat.getMaxProcessingTime());
+						m.setMinProcessingTime(stat.getMinProcessingTime());
+						m.setMeanProcessingTime(stat.getMeanProcessingTime());
+						rdump.put(rd.getId(), m);
+					}
 				} catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException | JAXBException e) {
 					LOG.error(e.getMessage(), e);
 					continue;
