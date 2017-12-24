@@ -2,11 +2,12 @@ import {Component, Input, OnInit} from '@angular/core';
 import {FormGroup, FormControl, FormBuilder, Validators} from '@angular/forms';
 import {DomSanitizer, SafeHtml, Title} from '@angular/platform-browser';
 
+import {Result} from '../../result';
 import {Route} from '../route';
 import {RouteService} from '../route.service';
 import {ValidationInfo} from '../validation';
 
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {validateConfig} from '@angular/router/src/config';
 
@@ -23,10 +24,10 @@ export class RouteeditorComponent implements OnInit {
   private validationInfo: ValidationInfo = new ValidationInfo();
   private vizResult: SafeHtml;
   private statusIcon: string;
-  private result: string;
+  private result: Result = new Result();
   private saved: boolean;
 
-  constructor(private titleService: Title, private _fb: FormBuilder, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {
+  constructor(private titleService: Title, private _fb: FormBuilder, private router: Router, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {
     this.saved = true;
     this.titleService.setTitle('Edit Message Route');
   }
@@ -35,10 +36,14 @@ export class RouteeditorComponent implements OnInit {
     this.navRoute.params.subscribe(params => {
       let id = params.id;
 
+      if (!id) {
+        return;
+      }
+
       this.routeService.getRoute(id).subscribe(route => {
         this.route = route;
 
-        console.log('Route editor: Loaded route with id ' + this.route.id);
+        console.log('Route editor: Load route with id ' + this.route.id);
         let graph = this.route.dot;
 
         if (this.route.status === 'Started') {
@@ -46,7 +51,6 @@ export class RouteeditorComponent implements OnInit {
         } else {
           this.statusIcon = 'play_arrow';
         }
-
         this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
       });
 
@@ -110,10 +114,16 @@ export class RouteeditorComponent implements OnInit {
     // Call REST POST to store settings
     let storePromise = this.routeService.save(this.route);
     storePromise.subscribe(
-      () => {
+      (result) => {
         // If saved successfully, user may leave the route (=saved=true)
+        this.result = result;
         this.saved = true;
+        if (result.successful) {
+          this.router.navigate(['routes']);
+        }
       },
-      error => console.log(error));
+      error => {
+       console.log(error);
+      });
   }
 }

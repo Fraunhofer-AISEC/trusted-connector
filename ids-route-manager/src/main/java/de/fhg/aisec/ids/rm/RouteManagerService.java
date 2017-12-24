@@ -388,7 +388,10 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
-	public String getRouteAsString(@NonNull String routeId) {
+	public String getRouteAsString(@Nullable String routeId) {
+		if (routeId==null) {
+			return "";
+		}
 		Optional<CamelContext> c = getCamelContexts()
 			.parallelStream()
 			.filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
@@ -402,7 +405,7 @@ public class RouteManagerService implements RouteManager {
 				LOG.error(e.getMessage(), e);
 			}
 		}
-		return null;
+		return "";
 	}
 	
 	@Override

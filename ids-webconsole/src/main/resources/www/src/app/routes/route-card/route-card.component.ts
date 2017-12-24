@@ -1,6 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 
+import {Result} from '../../result';
 import {Route} from '../route';
 import {RouteService} from '../route.service';
 
@@ -14,7 +15,7 @@ declare var Viz: any;
 export class RouteCardComponent implements OnInit {
   @Input() route: Route;
   vizResult: SafeHtml;
-  result: string;
+  result: Result;
   statusIcon: string;
   statusColor: string;
   statusTextColor: string;

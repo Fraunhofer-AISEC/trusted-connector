@@ -89,16 +89,16 @@ public class RouteApi {
 	@GET
 	@Path("/get/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@PathParam("id") String id) {
+	public RouteObject get(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not present").build();
+			return new RouteObject();
 		}
 		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
 		if (!oRoute.isPresent()) {
-			return Response.serverError().entity("Route not present").build();
+			return new RouteObject();
 		}
-		return Response.ok(oRoute.get()).build();
+		return oRoute.get();
 	}
 
 	/**

@@ -48,6 +48,7 @@
 					</pre>
 				</div>
 			</div>
+			<div class="mdl-textfield__error" style="visibility: visible;position:relative;margin-left:8px" *ngIf="!result.successful">{{result.message}}</div>
 			<div class="mdl-cell mdl-cell--12-col">
 			    <div ace-editor
 			        [text]="route.txtRepresentation"
