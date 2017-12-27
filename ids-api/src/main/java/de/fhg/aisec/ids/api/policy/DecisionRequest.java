@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.api.policy;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Data structure holding a decision request which is sent to the PDP.
@@ -37,10 +38,10 @@ public class DecisionRequest {
 	private ServiceNode to;
 	
 	/** Properties of the message (e.g., labels) */
-	private Map<String, Object> msgCtx = new HashMap<>();
+	private Map<String, Object> msgCtx;
 	
 	/** Properties of the environment */
-	private Map<String, Object> envCtx = new HashMap<>();
+	private Map<String, Object> envCtx;
 	
 	public DecisionRequest(ServiceNode from, ServiceNode to, Map<String, Object> msgCtx, Map<String, Object> envCtx) {
 		super();
@@ -110,5 +111,21 @@ public class DecisionRequest {
 	 */
 	public Map<String, Object> getEnvironmentCtx() {
 		return envCtx;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		DecisionRequest that = (DecisionRequest) o;
+		return Objects.equals(from, that.from) &&
+				Objects.equals(to, that.to) &&
+				Objects.equals(msgCtx, that.msgCtx) &&
+				Objects.equals(envCtx, that.envCtx);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(from, to, msgCtx, envCtx);
 	}
 }

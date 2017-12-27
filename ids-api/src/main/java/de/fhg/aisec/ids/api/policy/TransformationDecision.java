@@ -43,10 +43,10 @@ public class TransformationDecision {
 	
 	public TransformationDecision(Set<String> labelsToAdd, Set<String> labelsToRemove) {
 		super();
-		if (labelsToAdd==null) {
+		if (labelsToAdd == null) {
 			labelsToAdd = new HashSet<>();
 		}
-		if (labelsToRemove==null) {
+		if (labelsToRemove == null) {
 			labelsToRemove = new HashSet<>();
 		}
 		this.labelsToAdd = labelsToAdd;

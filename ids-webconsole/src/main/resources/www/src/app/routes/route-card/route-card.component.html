@@ -1,0 +1,28 @@
+<div class="app-card mdl-card mdl-cell {{statusColor}} mdl-cell--12-col">
+    <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">{{route.id}}</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+        {{route.description}}
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col">Uptime</div>
+            <div class="mdl-cell mdl-cell--10-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+            <div class="mdl-cell mdl-cell--2-col">Context</div>
+            <div class="mdl-cell mdl-cell--10-col">{{route.context}}</div>
+            <div class="mdl-cell mdl-cell--2-col">Status</div>
+            <div class="mdl-cell mdl-cell--10-col">{{route.status}}</div>
+            <div class="viz mdl-cell mdl-cell--12-col" [innerHTML]="vizResult"></div>
+        </div>
+    </div>
+    <div class="mdl-card__actions mdl-card--border">
+        <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)">
+            <i class="material-icons">{{statusIcon}}</i>
+        </button>
+        <button class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
+            <i class="material-icons">delete</i>
+        </button>
+        <a class="mdl-button mdl-js-button mdl-js-ripple-effect" [routerLink]="['/routeeditor', route.id]">
+            <i class="material-icons">edit</i>
+        </a>
+    </div>
+</div>

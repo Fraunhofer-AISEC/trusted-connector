@@ -30,5 +30,8 @@ public class RouteException extends Exception {
 	public RouteException(Throwable cause) {
 		super(cause);
 	}
-
+	
+	public RouteException(String msg) {
+		super(msg);
+	}
 }

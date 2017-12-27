@@ -19,22 +19,34 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
@@ -42,6 +54,7 @@ import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
+import alice.tuprolog.Term;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
 import de.fhg.aisec.ids.api.policy.Obligation;
@@ -51,6 +64,8 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.TransformationDecision;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
@@ -65,8 +80,14 @@ import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 public class PolicyDecisionPoint implements PDP, PAP {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
 	private static final String LUCON_FILE_EXTENSION = ".pl";	
-	private LuconEngine engine;
-		
+	
+	@NonNull
+	private LuconEngine engine = new LuconEngine(System.out);
+	@Nullable
+	private RouteManager routeManager;
+	private Cache<ServiceNode, TransformationDecision> transformationCache = CacheBuilder.newBuilder()
+			.maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
+	
 	/**
 	 * Creates a query to retrieve policy decision from Prolog knowledge base.
 	 * 
@@ -77,30 +98,33 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 *	hiveMqttBroker	drop		Alt				A
 	 * @param msgLabels 
 	 */
-	private String createDecisionQuery(ServiceNode target, Map<String, Object> msgLabels) {			
+	private String createDecisionQuery(@NonNull ServiceNode target, @NonNull Map<String, Object> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(_X), has_target(_X, T), ");
 		sb.append("has_endpoint(T, EP), ");
-		sb.append("regex(EP, \""+target.getEndpoint()+"\", _D), _D, ");
+		sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
+		sb.append("assert(any), ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
 			.forEach(k -> {
-					sb.append("receives_label(T, "+msgLabels.get(k).toString()+"), ");
+					// QUERY must be: has_endpoint(rule, bla), assert(a(x)), receives_label(rule).
+					sb.append("assert("+msgLabels.get(k).toString()+"), ");
 			});
+		sb.append("receives_label(_X), ");
+		sb.append("rule_priority(_X, P), ");
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("(");
+			List<String> capProp = new LinkedList<>();
+			for (String cap: target.getCapabilties()) {
+				capProp.add("has_capability(T, " + escape(cap) + ")");
+			}
+			for (String prop: target.getProperties()) {
+				capProp.add("has_property(T, " + escape(prop) + ")");
+			}
+			sb.append("(").append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
-		for (String cap: target.getCapabilties()) {
-			sb.append("(has_capability(T, \""+cap+"\"); ");
-		}
-		for (String prop: target.getProperties()) {
-			sb.append("has_property(T, \""+prop+"\"), ");
-		}
-		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("), ");
-		}
-		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), requires_prerequisite(_O, A))).");
+		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), " +
+				"requires_prerequisite(_O, A))).");
 		return sb.toString();
 	}
 	
@@ -112,40 +136,34 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param target
 	 * @return
 	 */
-	private String createTransformationQuery(ServiceNode target) {			
+	private String createTransformationQuery(@NonNull ServiceNode target) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("service(_T), ");
-		if (target.getEndpoint()!=null) {
-			sb.append("has_endpoint(_T, _EP), ");
-			sb.append("regex(_EP, \""+target.getEndpoint()+"\", _X), _X, ");
+		if (target.getEndpoint() != null) {
+			sb.append("dominant_allow_rules(").append(escape(target.getEndpoint())).append(", _T, _), ");
+		} else {
+			throw new RuntimeException("No endpoint specified!");
 		}
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("(");
+			List<String> capProp = new LinkedList<>();
+			for (String cap: target.getCapabilties()) {
+				capProp.add("has_capability(_T, " + escape(cap) + ")");
+			}
+			for (String prop: target.getProperties()) {
+				capProp.add("has_property(_T, " + escape(prop) + ")");
+			}
+			sb.append('(').append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
-		for (String cap: target.getCapabilties()) {
-			sb.append("(has_capability(_T, \""+cap+"\"); ");
-		}
-		for (String prop: target.getProperties()) {
-			sb.append("has_property(_T, \""+prop+"\"), ");
-		}
-		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-			sb.append("), ");
-		}
-		sb.append("creates_label(_T, Creates), removes_label(_T, Removes).");
+		sb.append("creates_label(_T, Adds), removes_label(_T, Removes).");
 		return sb.toString();
 	}
 
 	@Activate
-	public void activate(ComponentContext ctx) throws IOException {
-		if (this.engine == null) {
-			this.engine = new LuconEngine(System.out);
-		}
-		
+	public void activate(@NonNull ComponentContext ctx) throws IOException {
 		// Try to load existing policies from deploy dir at activation
 		File dir = new File(System.getProperty("karaf.base") + File.separator + "deploy");
 		File[] directoryListing = dir.listFiles();
 		if (directoryListing==null || !dir.isDirectory()) {
-			LOG.warn("Unexpected: Not a directory: " + dir.getAbsolutePath());
+			LOG.warn("Unexpected or not running in karaf: Not a directory: " + dir.getAbsolutePath());
 			return;
 		}
 		
@@ -162,78 +180,146 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	      }
 	    }
 	}
+	
+	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
+	public void bindRouteManager(@NonNull RouteManager routeManager) {
+		LOG.warn("RouteManager bound. Camel routes can be analyzed");
+		this.routeManager = routeManager;
+	}
+	public void unbindRouteManager(@NonNull RouteManager routeManager) {
+		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
+		this.routeManager = null;
+	}
 
 	@Override
-	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
-		TransformationDecision result = new TransformationDecision();
-		
+	public TransformationDecision requestTranformations(@Nullable ServiceNode lastServiceNode) {
+		TransformationDecision result;
+
+		result = transformationCache.getIfPresent(lastServiceNode);
+		if (result != null) {
+			return result;
+		}
+
 		// Query prolog for labels to remove or add from message
 		String query = this.createTransformationQuery(lastServiceNode);
 		LOG.info("QUERY: " + query);
+
 		try {
-			List<SolveInfo> solveInfo = this.engine.query(query, false);
+			result = new TransformationDecision();
+
+			List<SolveInfo> solveInfo = this.engine.query(query, true);
 			if (solveInfo.isEmpty()) {
+				transformationCache.put(lastServiceNode, result);
 				return result;
 			}
-			
-			// Get solutions, convert label variables to string and collect in set
-			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Set<String> labelsToRemove = vars.stream().filter(v -> "Removes".equals(v.getName())).map(var -> var.getTerm().toString()).collect(Collectors.toSet());
-			Set<String> labelsToAdd = vars.stream().filter(v -> "Creates".equals(v.getName())).map(var -> var.getTerm().toString()).collect(Collectors.toSet());
-			
-			result.getLabelsToRemove().addAll(labelsToRemove);
-			result.getLabelsToAdd().addAll(labelsToAdd);		
-		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
+
+			// Get solutions, convert label variables to string and collect in sets
+			Set<String> labelsToAdd = result.getLabelsToAdd();
+			Set<String> labelsToRemove = result.getLabelsToRemove();
+			solveInfo.forEach(s -> {
+				try {
+					Term adds = s.getVarValue("Adds").getTerm();
+					if (adds.isList()) {
+						listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
+					}
+					Term removes = s.getVarValue("Removes").getTerm();
+					if (removes.isList()) {
+						listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
+					}
+				} catch (NoSolutionException ignored) {}
+			});
+		} catch (NoMoreSolutionException | MalformedGoalException e) {
 			LOG.error(e.getMessage(), e);
 		}
+
+		transformationCache.put(lastServiceNode, result);
 		return result;
 	}
-	
+
 	@Override
-	public PolicyDecision requestDecision(DecisionRequest req) {
-		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
+	public PolicyDecision requestDecision(@Nullable DecisionRequest req) {
 		PolicyDecision dec = new PolicyDecision();
-		dec.setDecision(Decision.ALLOW); // Default value
-		dec.setReason("Not yet ready for productive use!");
+		dec.setDecision(Decision.DENY); // Default value
+		if (req == null) {
+			dec.setReason("Null request");
+			return dec;
+		}
+		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
 
 		try {
 			// Query Prolog engine for a policy decision
 			long startTime = System.nanoTime();
 			String query = this.createDecisionQuery(req.getTo(), req.getMessageCtx());
 			LOG.info("QUERY: " + query);
-			List<SolveInfo> solveInfo = this.engine.query(query, false);
+			List<SolveInfo> solveInfo = this.engine.query(query, true);
 			long time = System.nanoTime() - startTime;
 			LOG.info("Policy decision took " + time + " nanos");
-						
-			// Just for debugging
-			if (LOG.isDebugEnabled()) {
-				debug(solveInfo);
-			}
 			
 			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
 				return dec;
 			}
 			
-			// Get some obligation, if any 
-			// TODO This is still incorrect because it only finds "any" obligation. Merge obligations of all matching rules.
-			List<Var> vars = solveInfo.get(0).getBindingVars();
-			Optional<Var> alt = vars.stream().filter(v -> "Alt".equals(v.getName())).findAny();
-			Optional<Var> action = vars.stream().filter(v -> "A".equals(v.getName())).findAny();
-			if (action.isPresent()) {
-				Obligation o = new Obligation();				
-				o.setAction(action.get().getTerm().toString());
-				if (alt.isPresent() && "drop".equals(alt.get().getTerm().toString())) {
-					o.setAlternativeDecision(Decision.DENY);
+			// Include only solveInfos with highest priority
+			int maxPrio = Integer.MIN_VALUE;
+			for (SolveInfo si : solveInfo) {
+				try {
+					int priority = Integer.parseInt(si.getVarValue("P").getTerm().toString());
+					if (priority>maxPrio) {
+						maxPrio = priority;
+					}
+				} catch (NumberFormatException | NullPointerException e) {
+					LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e);
 				}
-				dec.setObligation(o);
-				dec.setDecision(Decision.ALLOW);
+			}
+			List<SolveInfo> applicableSolveInfos = new ArrayList<>();
+			for (SolveInfo si : solveInfo) {
+				try {
+					int priority = Integer.parseInt(si.getVarValue("P").getTerm().toString());
+					if (priority==maxPrio) {
+						applicableSolveInfos.add(si);
+					}
+				} catch (NumberFormatException | NullPointerException e) {
+					LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e);
+				}
 			}
 			
-			Optional<Var> decision = vars.stream().filter(v -> "D".equals(v.getName()) && v.isBound()).findAny();
-			if (decision.isPresent() && "drop".equals(decision.get().getTerm().toString())) {
-					dec.setDecision(Decision.DENY);				
+			// Just for debugging
+			if (LOG.isDebugEnabled()) {
+				debug(applicableSolveInfos);
 			}
+
+			
+			// Collect obligations
+			List<Obligation> obligations = new LinkedList<>();
+			applicableSolveInfos.forEach(s -> {
+				try {
+					Term decision = s.getVarValue("D");
+					if (!(decision instanceof Var)) {
+						String decString = decision.getTerm().toString();
+						if ("drop".equals(decString)) {
+							dec.setDecision(Decision.DENY);
+						} else if ("allow".equals(decString)) {
+							dec.setDecision(Decision.ALLOW);
+						}
+					}
+					Term action = s.getVarValue("A"), altDecision = s.getVarValue("Alt");
+					if (!(action instanceof Var)) {
+						Obligation o = new Obligation();
+						o.setAction(action.getTerm().toString());
+						if (!(altDecision instanceof Var)) {
+							String altDecString = altDecision.getTerm().toString();
+							if ("drop".equals(altDecString)) {
+								o.setAlternativeDecision(Decision.DENY);
+							} else if ("allow".equals(altDecString)) {
+								o.setAlternativeDecision(Decision.ALLOW);
+							}
+						}
+						obligations.add(o);
+					}
+				} catch (NoSolutionException ignored) {}
+			});
+			dec.setObligations(obligations);
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);
 			dec.setDecision(Decision.DENY);
@@ -247,22 +333,30 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param solveInfo
 	 * @throws NoSolutionException
 	 */
-	private void debug(List<SolveInfo> solveInfo) throws NoSolutionException {
+	private void debug(@NonNull List<SolveInfo> solveInfo) throws NoSolutionException {
 		for (SolveInfo i: solveInfo) {
 			if (i.isSuccess()) {
 				List<Var> vars = i.getBindingVars();
-				vars.stream().forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
+				vars.forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
 			}
 		}
 	}
 
 	@Override
 	public void clearAllCaches() {
-		// Nothing to do here at the moment
+		// clear Prolog cache entries
+		try {
+			engine.query("cache_clear(_).", true);
+			LOG.info("Prolog cache_clear(_) successful");
+		} catch (PrologException pe) {
+			LOG.warn("Prolog cache_clear(_) failed", pe);
+		}
+		// clear transformation cache
+		transformationCache.invalidateAll();
 	}
 
 	@Override
-	public void loadPolicy(InputStream is) {
+	public void loadPolicy(@Nullable InputStream is) {
 		try {
 			// Load policy into engine, possibly overwriting the existing one.
 			this.engine.loadPolicy(is);
@@ -290,5 +384,22 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	@Override
 	public String getPolicy() {
 		return this.engine.getTheory();
+	}
+	
+	@Override
+	public RouteVerificationProof verifyRoute(String routeId) {
+		RouteManager rm = this.routeManager;
+		if (rm == null) {
+			LOG.warn("No RouteManager. Cannot verify Camel route " + routeId);
+			return null;
+		}
+		
+		String routePl = rm.getRouteAsProlog(routeId);
+		if (routePl == null) {
+			LOG.warn("Could not obtain Prolog representation of route " + routeId);
+			return null;
+		}
+		
+		return engine.proofInvalidRoute(routeId, routePl);
 	}
 }

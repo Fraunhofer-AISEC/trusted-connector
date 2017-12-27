@@ -1,6 +1,8 @@
 import { NgModule }      from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { HttpModule }     from '@angular/http';
+import { HttpClientModule } from "@angular/common/http";
+import { AceEditorModule } from 'ng2-ace-editor';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -18,7 +20,7 @@ import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.c
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
 import { RoutesComponent } from './routes/routes.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
-import { RouteCardComponent } from './routes/route-card.component';
+import { RouteCardComponent } from './routes/route-card/route-card.component';
 
 import { IdsComponent } from './ids/ids.component';
 import { SettingsService } from './ids/settings.service';
@@ -58,11 +60,14 @@ import { MetricService } from './metric/metric.service';
 
 @NgModule({
   imports: [
+    AceEditorModule,
     BrowserModule,
     routing,
-    HttpModule,
-    FormsModule,
-    ReactiveFormsModule
+    HttpModule,             // deprecated. To be removed
+    HttpClientModule,       // new since Angular 5
+    ReactiveFormsModule,
+//    ModalModule.forRoot(),
+//    BootstrapModalModule
     ],
   declarations: [
     AppComponent,

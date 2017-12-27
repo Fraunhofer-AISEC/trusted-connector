@@ -55,6 +55,19 @@
 			<version>6.0.0</version>
 		</dependency>
 
+		<!-- Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>23.4-jre</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>org.checkerframework.checker-qual</artifactId>
+			<version>1.1.0-SNAPSHOT</version>
+		</dependency>		
+
 		<!-- logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>

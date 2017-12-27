@@ -29,6 +29,7 @@ import org.apache.camel.model.FromDefinition;
 import org.apache.camel.model.OptionalIdentifiedDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PrologPrinter {
 	
@@ -39,15 +40,18 @@ public class PrologPrinter {
 	 * @param route
 	 * @throws IOException 
 	 */
-	public void printSingleRoute(Writer writer, RouteDefinition route) throws IOException {
+	public void printSingleRoute(@Nullable Writer writer, @Nullable RouteDefinition route) throws IOException {
+		if (writer==null || route==null) {
+			return;
+		}
+		
 		// Print route entry points
 		printInputs(writer, route, route.getInputs());
 	}
 
 	/**
 	 * Prints a single node of a Camel route in Prolog representation.
-	 * 
-	 * @param indent
+	 *
 	 * @param writer
 	 * @param current
 	 * @param preds
@@ -55,11 +59,11 @@ public class PrologPrinter {
 	 * @throws IOException 
 	 */
 	private List<ProcessorDefinition<?>> printNode(Writer writer, ProcessorDefinition<?> current, List<OptionalIdentifiedDefinition<?>> preds) throws IOException {
-		writer.write("node(node"+current.getIndex() + ").\n");
+		writer.write("stmt(node"+current.getIndex() + ").\n");
 		writer.write("has_action(node"+current.getIndex() + ", \"" + current.getLabel() + "\").\n");
 		for (OptionalIdentifiedDefinition<?> p : preds) {
 			if (p instanceof FromDefinition) {
-				writer.write("succ(input" + ((FromDefinition) p).getId() +", node" + current.getIndex() + ").\n");				
+				writer.write("succ(input" + p.getId() +", node" + current.getIndex() + ").\n");
 			} else if (p instanceof ProcessorDefinition) {
 				writer.write("succ(node" + ((ProcessorDefinition<?>) p).getIndex() +", node" + current.getIndex() + ").\n");				
 			}
@@ -105,7 +109,8 @@ public class PrologPrinter {
 				i.setId(String.valueOf(counter));
 			}			
 			String nodeName = "input"+i.getId();
-			writer.write("node("+nodeName+").\n");
+			writer.write("stmt("+nodeName+").\n");
+			writer.write("entrynode("+nodeName+").\n");
 			writer.write("has_action("+nodeName+", \"" + i.getLabel() + "\").\n");
 			
 			ArrayList<OptionalIdentifiedDefinition<?>> preds = new ArrayList<>();

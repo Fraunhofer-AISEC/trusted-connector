@@ -36,7 +36,7 @@ export class RoutesComponent implements OnInit {
         Observable
             .timer(0, 1000)
             .subscribe(() => {
-                this.routeService.getMetrics().subscribe(result => this.routemetrics = result);
+                this.routeService.getMetrics().subscribe(m => this.routemetrics = m);
             });
     }
 

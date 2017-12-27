@@ -1,80 +1,129 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import {Component, Input, OnInit} from '@angular/core';
+import {FormGroup, FormControl, FormBuilder, Validators} from '@angular/forms';
+import {DomSanitizer, SafeHtml, Title} from '@angular/platform-browser';
 
-import { Route } from '../route';
-import { RouteService } from '../route.service';
+import {Result} from '../../result';
+import {Route} from '../route';
+import {RouteService} from '../route.service';
+import {ValidationInfo} from '../validation';
 
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
+import {validateConfig} from '@angular/router/src/config';
 
 declare var Viz: any;
 
 @Component({
   selector: 'routeeditor',
-  templateUrl: './routeeditor-widget.html'
+  templateUrl: './routeeditor.component.html',
+  styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
-  private camelRoute: Route = new Route();
-  vizResult: SafeHtml;
-  statusIcon: string;
-  result: string;
-  private id: any;  // Camel Route Id
-  
-  constructor(private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {  }
+  public myForm: FormGroup;
+  private route: Route = new Route();
+  private validationInfo: ValidationInfo = new ValidationInfo();
+  private vizResult: SafeHtml;
+  private statusIcon: string;
+  private result: Result = new Result();
+  private saved: boolean;
+
+  constructor(private titleService: Title, private _fb: FormBuilder, private router: Router, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {
+    this.saved = true;
+    this.titleService.setTitle('Edit Message Route');
+  }
 
   ngOnInit(): void {
-    // Load route parameter. This is done by an observable because router may not recreate this component
-    console.log(this.navRoute.snapshot.params['id']);
-    this.routeService
-        .getRoutes()
-        .subscribe(camelRoute => {
-          console.log("Received a route " + camelRoute[0].id);
-          this.camelRoute = camelRoute[0];
-          let graph = this.camelRoute.dot;
+    this.navRoute.params.subscribe(params => {
+      let id = params.id;
 
-          if(this.camelRoute.status == "Started") {
-            this.statusIcon = "stop";
-          } else {
-            this.statusIcon = "play_arrow";
+      if (!id) {
+        return;
+      }
 
-          }
+      this.routeService.getRoute(id).subscribe(route => {
+        this.route = route;
 
-          this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
-        });
+        console.log('Route editor: Load route with id ' + this.route.id);
+        let graph = this.route.dot;
+
+        if (this.route.status === 'Started') {
+          this.statusIcon = 'stop';
+        } else {
+          this.statusIcon = 'play_arrow';
+        }
+        this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+      });
+
+      this.routeService.getValidationInfo(id).subscribe(validationInfo => {
+        this.validationInfo = validationInfo;
+      });
+    });
+
+    this.myForm = this._fb.group({
+      txtRepresentation: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
+    });
   }
-    
 
   onStart(routeId: string): void {
     this.routeService.startRoute(routeId).subscribe(result => {
-       this.result = result;
-     });
-     this.camelRoute.status = 'Started';
-       this.statusIcon = "play_arrow";
+      this.result = result;
+    });
+    this.route.status = 'Started';
+    this.statusIcon = 'play_arrow';
   }
 
   onStop(routeId: string): void {
     this.routeService.stopRoute(routeId).subscribe(result => {
-       this.result = result;
-     });
-     this.camelRoute.status = 'Stopped';
-     this.statusIcon = "stop";
+      this.result = result;
+    });
+    this.route.status = 'Stopped';
+    this.statusIcon = 'stop';
   }
 
   onToggle(routeId: string): void {
-    if(this.statusIcon == "play_arrow") {
-      this.statusIcon = "stop";
+    if (this.statusIcon === 'play_arrow') {
+      this.statusIcon = 'stop';
       this.routeService.startRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
-       this.camelRoute.status = 'Started';
+        this.result = result;
+      });
+      this.route.status = 'Started';
 
     } else {
-      this.statusIcon = "play_arrow";
+      this.statusIcon = 'play_arrow';
       this.routeService.stopRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
+        this.result = result;
+      });
 
-       this.camelRoute.status = 'Stopped';
+      this.route.status = 'Stopped';
     }
+  }
+
+  onRouteDefinitionChanged(newTxtRepresentation: string): void {
+    if (!this.route.txtRepresentation || newTxtRepresentation.trim() !== this.route.txtRepresentation.trim()) {
+      this.saved = false;
+      // Because ace-editor is a nested component, FormBuilder does not hook in properly and we need to save content here.
+      this.route.txtRepresentation = newTxtRepresentation;
+    } else {
+      this.saved = true;
+    }
+  }
+
+  save(model: any) {
+    this.saved = true;
+
+    // Call REST POST to store settings
+    let storePromise = this.routeService.save(this.route);
+    storePromise.subscribe(
+      (result) => {
+        // If saved successfully, user may leave the route (=saved=true)
+        this.result = result;
+        this.saved = true;
+        if (result.successful) {
+          this.router.navigate(['routes']);
+        }
+      },
+      error => {
+       console.log(error);
+      });
   }
 }

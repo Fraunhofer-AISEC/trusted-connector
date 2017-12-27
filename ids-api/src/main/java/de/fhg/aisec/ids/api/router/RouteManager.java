@@ -73,16 +73,18 @@ public interface RouteManager {
 	public Map<String,String> listEndpoints();
 	
 	/**
-	 * Adds a route from one endpoint to another. 
-	 * 
-	 * The route only becomes immediately effective.
+	 * Adds a route and starts it.
 	 * 
 	 * Endpoint declarations must be supported by the underlying implementation.
 	 * 
-	 * @param from
-	 * @param to
+	 * If the route id already exists, this method will throw a RouteException 
+	 * and not overwrite the existing route. 
+	 * 
+	 * @param route
+	 * @throws RouteException if a route with the same id already exists or if any 
+	 * Exception is thrown during loading and starting the route.
 	 */
-	void addRoute(String from, String to);
+	void addRoute(RouteObject route) throws RouteException;
 
 	
 	/**
@@ -97,7 +99,7 @@ public interface RouteManager {
 	void delRoute(String routeId);
 
 	/**
-	 * Returns the current route configuration in its original representation of the implementing engine.
+	 * Returns the given route in its original representation of the implementing engine.
 	 * 
 	 * Note that this method may return null if the implementing engine does not support a textual route configuration.
 	 * 
@@ -107,12 +109,18 @@ public interface RouteManager {
 	 */
 	String getRouteAsString(String routeId);
 	
-	void loadRoutes(String routeConfig);
-	
 	/**
 	 * Returns aggregated runtime metrics of all installed routes.
 	 * 
 	 * @return map<k,v> where k is a string indicating the route id.
 	 */
 	Map<String,RouteMetrics> getRouteMetrics() ;
+
+	/**
+	 * Returns the given route configuration in a Prolog representation.
+	 * 
+	 * @param routeId
+	 * @return
+	 */
+	String getRouteAsProlog(String routeId);
 }

@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
+import java.util.List;
+
 /**
  * Bean representing the decision of a Policy Decision Point (PDP).
  * 
@@ -32,18 +34,18 @@ public class PolicyDecision {
 
 	private String reason;
 	private Decision decision;
-	private Obligation obligation;
+	private List<Obligation> obligations;
 	
 	public String getReason() {
 		return reason;
 	}
 	
-	public Obligation getObligation() {
-		return obligation;
+	public List<Obligation> getObligations() {
+		return obligations;
 	}
 	
-	public void setObligation(Obligation obligation) {
-		this.obligation = obligation;
+	public void setObligations(List<Obligation> obligation) {
+		this.obligations = obligation;
 	}
 	
 	public void setReason(String reason) {

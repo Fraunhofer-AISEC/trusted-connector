@@ -11,7 +11,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 	
 	<cxf:bus id="bus">
 		<cxf:features>
-			<cxf:logging />
+			<!-- <cxf:logging /> -->
 		</cxf:features>
 	</cxf:bus>
     
@@ -41,11 +41,11 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 			<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
 				<property name="mapper" ref="jacksonMapper" />
 			</bean>
-            <ref component-id="authenticationFilter"/>
+            <!-- <ref component-id="authenticationFilter"/> -->
 		</jaxrs:providers>
 		
 		<jaxrs:inInterceptors>
-            <ref component-id="authorizationInterceptor"/>
+            <!-- <ref component-id="authorizationInterceptor"/> -->
 			<bean class="org.apache.cxf.jaxrs.provider.jsonp.JsonpInInterceptor" />
 		</jaxrs:inInterceptors>
 		

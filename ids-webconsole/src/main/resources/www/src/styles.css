@@ -225,7 +225,7 @@ header.iot-connector-header.mdl-layout__header {
 }
 .iot-connector-navigation .mdl-navigation__link .material-icons {
   font-size: 24px;
-  margin-right: 32px;
+  margin-right: 22px;
 }
 
 .workflow-fsm {
@@ -397,4 +397,10 @@ table.table.table-striped thead tr th {
 	background-color: #cfd8dc;
 	color: #000000;
 	font-weight: normal;
+}
+
+.ace_text-input {
+  font-family: "Helvetica","Arial",sans-serif!important;
+  font-size:16px!important; 
+  color: rgb(51, 51, 51);
 }

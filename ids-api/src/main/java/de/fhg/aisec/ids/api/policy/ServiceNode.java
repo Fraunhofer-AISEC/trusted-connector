@@ -19,7 +19,8 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 public class ServiceNode {
@@ -30,8 +31,8 @@ public class ServiceNode {
 	public ServiceNode(String endpoint, Set<String> properties, Set<String> capabilities) {
 		super();
 		this.endpoint = endpoint;
-		this.properties = properties!=null?properties:new HashSet<>();
-		this.capabilities = capabilities!=null?capabilities:new HashSet<>();
+		this.properties = properties != null ? properties : Collections.emptySet();
+		this.capabilities = capabilities != null ? capabilities : Collections.emptySet();
 	}
 	
 	public String getEndpoint() {
@@ -49,7 +50,22 @@ public class ServiceNode {
 	public Set<String> getCapabilties() {
 		return capabilities;
 	}
-	public void setCapabilties(Set<String> capabilities) {
+	public void setCapabilities(Set<String> capabilities) {
 		this.capabilities = capabilities;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ServiceNode that = (ServiceNode) o;
+		return Objects.equals(endpoint, that.endpoint) &&
+				Objects.equals(properties, that.properties) &&
+				Objects.equals(capabilities, that.capabilities);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(endpoint, properties, capabilities);
 	}
 }

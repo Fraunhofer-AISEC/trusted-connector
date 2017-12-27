@@ -20,17 +20,19 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.ArrayList;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.osgi.framework.BundleContext;
@@ -40,11 +42,15 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.Result;
+import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteComponent;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteMetrics;
 import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -71,29 +77,28 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("list")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
 			return new ArrayList<>();
 		}
-		
 		return rm.get().getRoutes();
 	}
 
 	@GET
 	@Path("/get/{id}")
-	@Produces("application/json")
-	public Response get(String id) {		
+	@Produces(MediaType.APPLICATION_JSON)
+	public RouteObject get(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not present").build();
+			return new RouteObject();
 		}
 		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
 		if (!oRoute.isPresent()) {
-			return Response.serverError().entity("Routenot present").build();
+			return new RouteObject();
 		}
-		return Response.ok(oRoute.get()).build();
+		return oRoute.get();
 	}
 
 	/**
@@ -101,18 +106,42 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/startroute/{id}")
-	public String startRoute(@PathParam("id") String id) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result startRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().startRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return "{\"status:\": \"error\"}";
+				return new Result(false, e.getMessage());
 			}
-			return "{\"status\": \"ok\"}";	
+			return new Result();	
 		}
-		return "{\"status:\": \"error\"}";
+		return new Result();
+	}
+	
+	@POST
+	@Path("save")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result saveRoute(RouteObject route) {
+		Result result = new Result();
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			result.setMessage("no route manager");
+			result.setSuccessful(false);
+			return result;
+		}
+		
+		try {
+			rm.get().addRoute(route);
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			result.setSuccessful(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 
 	/**
@@ -120,18 +149,19 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/stoproute/{id}")
-	public boolean stopRoute(@PathParam("id") String id) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result stopRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().stopRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return false;
+				return new Result(false, e.getMessage());
 			}
-			return true;	
+			return new Result();	
 		}
-		return false;
+		return new Result(false, "No route manager");
 	}
 
 	/**
@@ -188,7 +218,8 @@ public class RouteApi {
 			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
 			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
 		});
-		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/currentMetrics.size());
+		int metricsCount = currentMetrics.size();
+		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/(metricsCount!=0?metricsCount:1));
 		return metrics;
 	}
 
@@ -277,5 +308,33 @@ public class RouteApi {
 			return new HashMap<>();
 		}
 		return rm.get().listEndpoints();
+	}
+
+	@GET
+	@Path("/validate/{routeId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response validate(@PathParam("routeId") String routeId) {
+		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
+		if (!pap.isPresent()) {
+			return Response.serverError().entity("PolicyAdministrationPoint not available").build();
+		}
+		RouteVerificationProof rvp = pap.get().verifyRoute(routeId);
+		ValidationInfo vi = new ValidationInfo();
+		vi.valid = rvp.isValid();
+		if (!rvp.isValid()) {
+			vi.counterExamples = rvp.getCounterExamples();
+		}
+		return Response.ok(vi).build();
+	}
+
+	@GET
+	@Path("/prolog/{routeId}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getRouteProlog(@PathParam("routeId") String routeId) {
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			return Response.serverError().entity("RouteManager not available").build();
+		}
+		return Response.ok(rm.get().getRouteAsProlog(routeId)).build();
 	}
 }

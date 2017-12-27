@@ -39,6 +39,7 @@ import org.apache.camel.model.SplitDefinition;
 import org.apache.camel.model.ToDefinition;
 import org.apache.camel.model.TransformDefinition;
 import org.apache.camel.model.WhenDefinition;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Represents a node in the EIP diagram tree
@@ -53,7 +54,7 @@ public class PrologNode {
 	public String predicate = "has_url";
 	public List<ProcessorDefinition<?>> outputs;
 	
-	public PrologNode(String id, Object node) {
+	public PrologNode(@NonNull String id, @NonNull Object node) {
 		this.id = id;
 
 		if (node instanceof ProcessorDefinition) {
