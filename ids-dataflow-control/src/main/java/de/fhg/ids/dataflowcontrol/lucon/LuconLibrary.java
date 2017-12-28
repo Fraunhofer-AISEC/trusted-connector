@@ -33,6 +33,7 @@ import com.google.common.cache.LoadingCache;
 
 import alice.tuprolog.Library;
 import alice.tuprolog.Number;
+import alice.tuprolog.PrologError;
 import alice.tuprolog.Term;
 import alice.tuprolog.Var;
 
@@ -166,8 +167,9 @@ public class LuconLibrary extends Library {
         return (!t.isAtom() || t.isList()) && !(t instanceof Number);
     }
 
-    public boolean regex_match_2(@NonNull Term regex, @NonNull Term input) {
-        // Both regex and input string must be ground
+    public boolean regex_match_2(Term regex, Term input) throws PrologError {
+    	LOG.trace("regex_match/2 called with " + regex + " " + input);
+    	// Both regex and input string must be ground
         if (isComplex(regex) || isComplex(input)) {
             return false;
         }
@@ -176,7 +178,7 @@ public class LuconLibrary extends Library {
         	String inputString = TuPrologHelper.unquote(input.getTerm().toString());
             boolean match = regexCache.get(regexString)
                     .matcher(inputString).matches();
-            LOG.trace("regex_match_2: " + regexString + " , " + inputString + ": " + match);
+            LOG.trace("regex_match: " + regexString + " , " + inputString + ": " + match);
             return match;
         } catch (ExecutionException e) {
             LOG.warn(e.getMessage(), e);

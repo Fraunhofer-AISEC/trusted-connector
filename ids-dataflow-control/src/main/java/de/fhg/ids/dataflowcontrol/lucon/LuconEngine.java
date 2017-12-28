@@ -23,7 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -35,9 +38,13 @@ import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
+import alice.tuprolog.Operator;
+import alice.tuprolog.PrimitiveInfo;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.SolveInfo;
 import alice.tuprolog.Theory;
+import alice.tuprolog.event.LibraryEvent;
+import alice.tuprolog.event.LibraryListener;
 import de.fhg.aisec.ids.api.router.CounterExample;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 
@@ -66,16 +73,19 @@ public class LuconEngine {
 	 */
 	public LuconEngine(@Nullable OutputStream out) {
 		p = new Prolog();
-		try {
-			p.loadLibrary(new LuconLibrary());
-		} catch (InvalidLibraryException e) {
-			// should never happen
-			throw new RuntimeException("Error loading " + LuconLibrary.class.getName(), e);
-		}
-
+		
 		// Add some listeners for logging/debugging
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
 		p.addQueryListener(q -> LOG.trace("Prolog query " + q.getSolveInfo().getQuery().toString()));
+		p.addLibraryListener(new LibraryListener() {
+			@Override
+			public void libraryLoaded(LibraryEvent e) {
+				LOG.debug("Prolog library loaded " + e.getLibraryName());
+			}
+			@Override
+			public void libraryUnloaded(LibraryEvent e) {
+				LOG.debug("Prolog library unloaded " + e.getLibraryName());
+			}});
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
 		p.addWarningListener(w -> {
 			if (!w.getMsg().contains("The predicate false/0 is unknown"))
@@ -90,6 +100,20 @@ public class LuconEngine {
 				}
 			}
 		});
+		try {
+			LOG.debug("Loading library");
+			p.loadLibrary(new LuconLibrary());
+			for (String l : p.getCurrentLibraries()) {
+				LOG.debug(l);
+			}
+			for (Operator op : p.getOperatorManager().getOperators()) {
+				LOG.debug("Operator: " + op.name);
+			}
+		} catch (InvalidLibraryException e) {
+			// should never happen
+			throw new RuntimeException("Error loading " + LuconLibrary.class.getName(), e);
+		}
+		
 	}
 
 	public void setSpy(boolean spy) {
@@ -108,7 +132,7 @@ public class LuconEngine {
 	public void loadPolicy(@Nullable InputStream is) throws InvalidTheoryException, IOException {
 		if (is == null) {
 			return;
-		}
+		}		
 		Theory t = new Theory(is);
 		LOG.debug("Loading theory: " + t.toString());
 		p.setTheory(t);
@@ -116,7 +140,17 @@ public class LuconEngine {
 
 	@NonNull
 	public List<SolveInfo> query(@Nullable String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
-		return query(p, query, findAll);
+		LOG.debug("Running Prolog query: " + query);
+		@NonNull
+		List<SolveInfo> result = query(p, query, findAll);
+		try {
+			for (SolveInfo i: result) {
+				LOG.debug("Result is " + i.getSolution().toString());
+			}
+		} catch (NoSolutionException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@NonNull
