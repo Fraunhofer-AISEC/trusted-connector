@@ -48,8 +48,11 @@ import com.google.gson.JsonParser;
 
 import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.connectionsettings.*;
+
 
 /**
  * REST API interface for configurations in the connector.
@@ -209,6 +212,7 @@ public class ConfigApi {
 		JsonObject config = new JsonObject();
 		
 		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
+		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
 		
 		if(prefs == null) {
@@ -234,7 +238,38 @@ public class ConfigApi {
 		List<ConnectionSetting> allSettings = new ArrayList<>();
 		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
 		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		
+		
+		List<IDSCPServerEndpoint> endpoints = connectionManager.get().listAvailableEndpoints();
+		Iterator<IDSCPServerEndpoint> endpointIterator = endpoints.iterator();
+		boolean found = false;
+		
+		
+		while(endpointIterator.hasNext()) {
+			IDSCPServerEndpoint endpoint = endpointIterator.next();
+			try {
+				//For every currently available endpoint, go through all preferences and check if the id is already there. If not, create emtpy config
+				String[] connections = prefs.keys();
+				String endpointId = endpoint.getHost() + "_" + endpoint.getPort();
+				for (int i = 0; i < connections.length; i++) {
+					if(connections[i].equals(endpointId)) {
+						found = true;
+					}
+				}
+				//if not already present, create
+				if(!found) {
+					prefs.put(endpointId, Helper.createDefaultJsonConfig());
+				}
+				
+			} catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		//After synch, get complet set of prefs. 
+		prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
 		try {
 			String[] connections = prefs.keys();
 			for (int i = 0; i < connections.length; i++) {
