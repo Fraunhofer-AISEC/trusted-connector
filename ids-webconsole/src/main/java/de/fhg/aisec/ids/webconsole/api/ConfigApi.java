@@ -35,6 +35,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import org.apache.camel.model.FromDefinition;
+import org.apache.camel.model.RouteDefinition;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;
@@ -50,6 +52,8 @@ import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.connectionsettings.*;
 
@@ -239,27 +243,37 @@ public class ConfigApi {
 		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
 		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		
+		Optional<RouteManager> routeManager = WebConsoleComponent.getRouteManager();
 		
 		List<IDSCPServerEndpoint> endpoints = connectionManager.get().listAvailableEndpoints();
 		Iterator<IDSCPServerEndpoint> endpointIterator = endpoints.iterator();
 		boolean found = false;
 		
+		List<RouteObject> routeObjects = routeManager.get().getRoutes();
 		
 		while(endpointIterator.hasNext()) {
 			IDSCPServerEndpoint endpoint = endpointIterator.next();
-			try {
+			try {					
 				//For every currently available endpoint, go through all preferences and check if the id is already there. If not, create emtpy config
 				String[] connections = prefs.keys();
-				String endpointId = endpoint.getHost() + "_" + endpoint.getPort();
+				String hostIdentifier = endpoint.getHost() + ":" + endpoint.getPort();
+				String endpointIdentifier = "noRouteFound" + "-" + hostIdentifier;
+    			for(RouteObject route: routeObjects) {
+					String label = route.getTxtRepresentation();
+					if(label != null  && label.contains("idsserver") && label.contains(hostIdentifier)) {
+						endpointIdentifier = route.getId() + "-"+ hostIdentifier;
+					} 
+
+    			}
+    			
 				for (int i = 0; i < connections.length; i++) {
-					if(connections[i].equals(endpointId)) {
+					if(connections[i].equals(endpointIdentifier)) {
 						found = true;
 					}
 				}
 				//if not already present, create
 				if(!found) {
-					prefs.put(endpointId, Helper.createDefaultJsonConfig());
+					prefs.put(endpointIdentifier, Helper.createDefaultJsonConfig());
 				}
 				
 			} catch (BackingStoreException e) {
