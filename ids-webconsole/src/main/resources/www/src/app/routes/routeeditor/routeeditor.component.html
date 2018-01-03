@@ -8,31 +8,24 @@
 			<h3 >{{route.id}}</h3>
 		</div>
 
-		<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
+		<div class="app-card mdl-card mdl-cell mdl-cell--4-col mdl-shadow--2dp" *ngIf="route.id">
 			<div class="mdl-card__title">
 				Route data
 			</div>
 			<div class="mdl-card__supporting-text">
 				{{route.description}}
 				<div class="mdl-grid">
-					<div class="mdl-cell--4-col">
-						<div class="mdl-grid">
-							<div class="mdl-cell mdl-cell--6-col">Uptime</div>
-							<div class="mdl-cell mdl-cell--6-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
-							<div class="mdl-cell mdl-cell--6-col">Context</div>
-							<div class="mdl-cell mdl-cell--6-col">{{route.context}}</div>
-							<div class="mdl-cell mdl-cell--6-col">Status</div>
-							<div class="mdl-cell mdl-cell--6-col">{{route.status}}</div>
-						</div>
-					</div>
-					<div class="mdl-cell--8-col">
-						<zoom-viz [dotPromise]="dotPromise"></zoom-viz>
-					</div>
+					<div class="mdl-cell mdl-cell--6-col">Uptime</div>
+					<div class="mdl-cell mdl-cell--6-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+					<div class="mdl-cell mdl-cell--6-col">Context</div>
+					<div class="mdl-cell mdl-cell--6-col">{{route.context}}</div>
+					<div class="mdl-cell mdl-cell--6-col">Status</div>
+					<div class="mdl-cell mdl-cell--6-col">{{route.status}}</div>
 				</div>
 			</div>
 		</div>
-		<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
-			<div class="mdl-card__title mdl-card--expand">
+		<div class="app-card mdl-card mdl-cell mdl-cell--8-col mdl-shadow--2dp" *ngIf="route.id">
+			<div class="mdl-card__title">
 				Visualization
 			</div>
 			<div class="mdl-card__supporting-text">
