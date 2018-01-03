@@ -62,6 +62,11 @@ import { ConnectionService } from './connectionsReport/connectionReport.service'
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
 
+import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
+
+// import { D3Service } from 'd3-ng2-service';
+// import { D3Component } from './d3/d3.component';
+
 @NgModule({
   imports: [
     AceEditorModule,
@@ -97,9 +102,10 @@ import { MetricService } from './metric/metric.service';
     MDLTextFieldDirective,
     //FileWindow,
     //DataFlowComponent,
-    ConnectionReportComponent
+    ConnectionReportComponent,
+    ZoomVizComponent,
+    //D3Component,
   ],
-
   providers: [
     AppService,
     RouteService,
@@ -113,10 +119,11 @@ import { MetricService } from './metric/metric.service';
     Title,
     MetricService,
     Title
+    //D3Service,
   ],
   bootstrap: [
-    AppComponent ],
-    entryComponents: [
-      ]
+    AppComponent
+  ],
+  entryComponents: []
 })
 export class AppModule { }

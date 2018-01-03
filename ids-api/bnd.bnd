@@ -11,7 +11,8 @@ Export-Package: \
 	de.fhg.aisec.ids.api.internal,\
 	de.fhg.aisec.ids.api.policy,\
 	de.fhg.aisec.ids.api.router,\
-	de.fhg.aisec.ids.api.conm, \
+	de.fhg.aisec.ids.api.router.graph,\
+	de.fhg.aisec.ids.api.conm,\
 	de.fhg.aisec.ids.messages
 Bundle-Version: 1.1.0
 Bundle-Vendor: Fraunhofer

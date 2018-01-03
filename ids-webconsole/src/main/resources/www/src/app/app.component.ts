@@ -10,9 +10,7 @@ declare var componentHandler: any;
 })
 export class AppComponent implements AfterViewInit {
 
-  constructor(private titleService: Title) {
-
-  }
+  constructor(public titleService: Title) {}
 
   ngAfterViewInit() {
     componentHandler.upgradeAllRegistered();

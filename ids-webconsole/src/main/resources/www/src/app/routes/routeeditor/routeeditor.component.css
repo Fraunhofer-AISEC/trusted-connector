@@ -1,8 +1,0 @@
-.viz {
-    padding: 30px 5px;
-}
-
-.viz >>> svg {
-    height: auto;
-    width: 100%;
-}

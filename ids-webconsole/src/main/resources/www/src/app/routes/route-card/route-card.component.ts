@@ -17,61 +17,55 @@ export class RouteCardComponent implements OnInit {
   vizResult: SafeHtml;
   result: Result;
   statusIcon: string;
-  statusColor: string;
-  statusTextColor: string;
+  dotPromise: Promise<string>;
+  private dotResolver: (dot: string) => void;
 
-  constructor(private dom: DomSanitizer, private routeService: RouteService) {}
+  constructor(private sanitizer: DomSanitizer, private routeService: RouteService) {
+    this.dotPromise = new Promise ((resolve, reject) => this.dotResolver = resolve);
+  }
+
+  get started() {
+    return this.route.status == 'Started';
+  }
 
   ngOnInit(): void {
-    let graph = this.route.dot;
-    if (this.route.status === 'Started') {
+    if(this.route.status == 'Started') {
       this.statusIcon = 'stop';
-      this.statusColor = '';
-      this.statusTextColor = '';
     } else {
       this.statusIcon = 'play_arrow';
-      this.statusColor = 'card-dark';
     }
-
-    this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph, {engine: 'dot'}));
+ 	  this.dotResolver(this.route.dot);
   }
 
   onStart(routeId: string): void {
-    this.routeService.startRoute(routeId).subscribe(result => {
-      this.result = result;
-    });
-    this.route.status = 'Started';
     this.statusIcon = 'play_arrow';
-    this.statusColor = '';
-    this.statusTextColor = '';
+    this.routeService.startRoute(routeId).subscribe(result => {
+       this.result = result;
+       this.route.status = 'Started';
+     });
   }
 
   onStop(routeId: string): void {
-    this.routeService.stopRoute(routeId).subscribe(result => {
-      this.result = result;
-    });
-    this.route.status = 'Stopped';
     this.statusIcon = 'stop';
-    this.statusColor = 'card-dark';
+    this.routeService.stopRoute(routeId).subscribe(result => {
+       this.result = result;
+       this.route.status = 'Stopped';
+     });
   }
 
   onToggle(routeId: string): boolean {
     if (this.statusIcon === 'play_arrow') {
       this.statusIcon = 'stop';
       this.routeService.startRoute(routeId).subscribe(result => {
-        this.result = result;
-      });
-      this.route.status = 'Started';
-      this.statusColor = '';
-      this.statusTextColor = '';
+         this.result = result;
+         this.route.status = 'Started';
+       });
     } else {
       this.statusIcon = 'play_arrow';
       this.routeService.stopRoute(routeId).subscribe(result => {
-        this.result = result;
-      });
-
-      this.route.status = 'Stopped';
-      this.statusColor = 'card-dark';
+         this.result = result;
+         this.route.status = 'Stopped';
+       });
     }
     return true;
   }

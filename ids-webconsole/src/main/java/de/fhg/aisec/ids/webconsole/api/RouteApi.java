@@ -19,12 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -73,7 +68,7 @@ public class RouteApi {
 	 *
 	 * {"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]] -\u003e [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
 	 *
-	 * @return
+	 * @return The resulting route objects
 	 */
 	@GET
 	@Path("list")
@@ -81,7 +76,7 @@ public class RouteApi {
 	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 		return rm.get().getRoutes();
 	}
@@ -89,16 +84,16 @@ public class RouteApi {
 	@GET
 	@Path("/get/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public RouteObject get(@PathParam("id") String id) {
+	public Response get(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return new RouteObject();
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
 		}
-		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
-		if (!oRoute.isPresent()) {
-			return new RouteObject();
+		RouteObject oRoute = rm.get().getRoute(id);
+		if (oRoute == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
 		}
-		return oRoute.get();
+		return Response.ok(oRoute).build();
 	}
 
 	/**
@@ -116,11 +111,11 @@ public class RouteApi {
 				LOG.debug(e.getMessage(), e);
 				return new Result(false, e.getMessage());
 			}
-			return new Result();	
+			return new Result();
 		}
 		return new Result();
 	}
-	
+
 	@POST
 	@Path("save")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -133,7 +128,7 @@ public class RouteApi {
 			result.setSuccessful(false);
 			return result;
 		}
-		
+
 		try {
 			rm.get().addRoute(route);
 		} catch (Exception e) {
@@ -159,7 +154,7 @@ public class RouteApi {
 				LOG.debug(e.getMessage(), e);
 				return new Result(false, e.getMessage());
 			}
-			return new Result();	
+			return new Result();
 		}
 		return new Result(false, "No route manager");
 	}

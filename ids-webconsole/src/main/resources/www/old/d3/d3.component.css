@@ -1,0 +1,18 @@
+.d3pane {
+    height: 300px;
+    width: 100%;
+}
+
+.d3pane >>> .links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+.d3pane >>> .nodes circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+.d3pane >>> .nodes text {
+    font-size: .7em;
+}

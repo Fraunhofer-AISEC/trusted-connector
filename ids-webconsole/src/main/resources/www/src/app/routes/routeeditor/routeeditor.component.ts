@@ -1,13 +1,13 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {FormGroup, FormControl, FormBuilder, Validators} from '@angular/forms';
+import {Component, Input, OnInit, ElementRef, HostListener, ViewChild, Renderer2} from '@angular/core';
 import {DomSanitizer, SafeHtml, Title} from '@angular/platform-browser';
+import {ActivatedRoute, Router} from '@angular/router';
+import {FormGroup, FormControl, FormBuilder, Validators} from '@angular/forms';
 
 import {Result} from '../../result';
 import {Route} from '../route';
 import {RouteService} from '../route.service';
 import {ValidationInfo} from '../validation';
 
-import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {validateConfig} from '@angular/router/src/config';
 
@@ -19,17 +19,39 @@ declare var Viz: any;
   styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
+  private _route: Route = new Route();
+  private _validationInfo: ValidationInfo = new ValidationInfo();
   public myForm: FormGroup;
-  private route: Route = new Route();
-  private validationInfo: ValidationInfo = new ValidationInfo();
-  private vizResult: SafeHtml;
+  private _result: Result = new Result();
+  private _saved = true;
   private statusIcon: string;
-  private result: Result = new Result();
-  private saved: boolean;
+  @ViewChild('vizCanvas')
+  private vizCanvas: ElementRef;
+  private svgElement: HTMLElement;
 
-  constructor(private titleService: Title, private _fb: FormBuilder, private router: Router, private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) {
-    this.saved = true;
+  public readonly dotPromise: Promise<string>;
+  private dotResolver: (dot: string) => void;
+
+  constructor(private titleService: Title, private _fb: FormBuilder, private router: Router,
+    private navRoute: ActivatedRoute, private renderer: Renderer2, private routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
+    this.dotPromise = new Promise((resolve, reject) => this.dotResolver = resolve);
+  }
+
+  get route() {
+    return this._route;
+  }
+
+  get validationInfo() {
+    return this._validationInfo;
+  }
+  
+  get result() {
+    return this._result;
+  }
+
+  get saved() {
+    return this._saved;
   }
 
   ngOnInit(): void {
@@ -41,21 +63,20 @@ export class RouteeditorComponent implements OnInit {
       }
 
       this.routeService.getRoute(id).subscribe(route => {
-        this.route = route;
+        this._route = route;
+        console.log('Route editor: Loaded route with id ' + this._route.id);
 
-        console.log('Route editor: Load route with id ' + this.route.id);
-        let graph = this.route.dot;
+        this.dotResolver(route.dot);
 
-        if (this.route.status === 'Started') {
-          this.statusIcon = 'stop';
+        if(this._route.status == "Started") {
+          this.statusIcon = "stop";
         } else {
           this.statusIcon = 'play_arrow';
         }
-        this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
       });
 
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {
-        this.validationInfo = validationInfo;
+        this._validationInfo = validationInfo;
       });
     });
 
@@ -66,7 +87,7 @@ export class RouteeditorComponent implements OnInit {
 
   onStart(routeId: string): void {
     this.routeService.startRoute(routeId).subscribe(result => {
-      this.result = result;
+      this._result = result;
     });
     this.route.status = 'Started';
     this.statusIcon = 'play_arrow';
@@ -74,7 +95,7 @@ export class RouteeditorComponent implements OnInit {
 
   onStop(routeId: string): void {
     this.routeService.stopRoute(routeId).subscribe(result => {
-      this.result = result;
+      this._result = result;
     });
     this.route.status = 'Stopped';
     this.statusIcon = 'stop';
@@ -84,14 +105,14 @@ export class RouteeditorComponent implements OnInit {
     if (this.statusIcon === 'play_arrow') {
       this.statusIcon = 'stop';
       this.routeService.startRoute(routeId).subscribe(result => {
-        this.result = result;
+        this._result = result;
       });
       this.route.status = 'Started';
 
     } else {
       this.statusIcon = 'play_arrow';
       this.routeService.stopRoute(routeId).subscribe(result => {
-        this.result = result;
+        this._result = result;
       });
 
       this.route.status = 'Stopped';
@@ -100,24 +121,24 @@ export class RouteeditorComponent implements OnInit {
 
   onRouteDefinitionChanged(newTxtRepresentation: string): void {
     if (!this.route.txtRepresentation || newTxtRepresentation.trim() !== this.route.txtRepresentation.trim()) {
-      this.saved = false;
+      this._saved = false;
       // Because ace-editor is a nested component, FormBuilder does not hook in properly and we need to save content here.
       this.route.txtRepresentation = newTxtRepresentation;
     } else {
-      this.saved = true;
+      this._saved = true;
     }
   }
 
   save(model: any) {
-    this.saved = true;
+    this._saved = true;
 
     // Call REST POST to store settings
     let storePromise = this.routeService.save(this.route);
     storePromise.subscribe(
       (result) => {
         // If saved successfully, user may leave the route (=saved=true)
-        this.result = result;
-        this.saved = true;
+        this._result = result;
+        this._saved = true;
         if (result.successful) {
           this.router.navigate(['routes']);
         }

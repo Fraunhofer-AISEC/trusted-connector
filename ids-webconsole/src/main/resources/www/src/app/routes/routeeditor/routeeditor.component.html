@@ -1,69 +1,76 @@
-    <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
-      <div class="page-content"><!-- Your content goes here --></div>
-    </section>
-    
-	<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
-		<div class="mdl-grid mdl-cell mdl-cell--12-col">
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
-				<h3 >{{route.id}}</h3>
-			</div>				
-		
-	    	<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
-				<div class="mdl-card__title">
-					Route data
-				</div>
-				<div class="mdl-card__supporting-text">
-					{{route.description}}
-					<div class="mdl-grid">
-						<div class="mdl-cell mdl-cell--2-col">Uptime</div>
-						<div class="mdl-cell mdl-cell--10-col">{{(route.uptime/1000/60).toFixed()}}
-							minutes</div>
-						<div class="mdl-cell mdl-cell--2-col">Context</div>
-						<div class="mdl-cell mdl-cell--10-col">{{route.context}}</div>
-						<div class="mdl-cell mdl-cell--2-col">Status</div>
-						<div class="mdl-cell mdl-cell--10-col">{{route.status}}</div>
+<section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
+	<div class="page-content"><!-- Your content goes here --></div>
+</section>
+
+<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
+	<div class="mdl-grid mdl-cell mdl-cell--12-col">
+		<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
+			<h3 >{{route.id}}</h3>
+		</div>
+
+		<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
+			<div class="mdl-card__title">
+				Route data
+			</div>
+			<div class="mdl-card__supporting-text">
+				{{route.description}}
+				<div class="mdl-grid">
+					<div class="mdl-cell--4-col">
+						<div class="mdl-grid">
+							<div class="mdl-cell mdl-cell--6-col">Uptime</div>
+							<div class="mdl-cell mdl-cell--6-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+							<div class="mdl-cell mdl-cell--6-col">Context</div>
+							<div class="mdl-cell mdl-cell--6-col">{{route.context}}</div>
+							<div class="mdl-cell mdl-cell--6-col">Status</div>
+							<div class="mdl-cell mdl-cell--6-col">{{route.status}}</div>
+						</div>
+					</div>
+					<div class="mdl-cell--8-col">
+						<zoom-viz [dotPromise]="dotPromise"></zoom-viz>
 					</div>
 				</div>
 			</div>
-			<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
-				<div class="mdl-card__title mdl-card--expand">
-					Visualization
-				</div>
-				<div class="mdl-card__supporting-text">
-					<div class="viz" [innerHTML]="vizResult"></div>
-				</div>
-			</div>
-
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
-				<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
-				<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
-					class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{validationInfo.valid ? 'Valid' : 'Invalid'}}</div>
-				<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">This route violates usage control policies</div>
-				<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">This route does not violate any usage control policies</div>
-				<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
-					<pre *ngFor="let ce of validationInfo.counterExamples">
-						<em class="mdl-color-text--red-A700">{{ce.explanation}}</em>
-						<span *ngFor="let step of ce.steps">{{step}}
-						</span>
-					</pre>
-				</div>
-			</div>
-			<div class="mdl-textfield__error" style="visibility: visible;position:relative;margin-left:8px" *ngIf="!result.successful">{{result.message}}</div>
-			<div class="mdl-cell mdl-cell--12-col">
-			    <div ace-editor
-			        [text]="route.txtRepresentation"
-			        [mode]="'xml'"
-			        [theme]="'eclipse'"
-			        [options]="{maxLines: 1000, printMargin: false}"
-			        [readOnly]="false"
-			        [autoUpdateContent]="true"
-			        [durationBeforeCallback]="100"
-			        (textChanged)="onRouteDefinitionChanged($event)"
-			        style="min-height: 400px; width:100%; overflow: auto; font-size:16px; font-family: Consolas,Monaco,'Andale Mono',monospace;"></div>				
-			</div>
-			<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
-			  <span>{{route.id ? 'Apply' : 'Save'}}</span>
-			</button>
 		</div>
-		
-	</form>
+		<div class="app-card mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp" *ngIf="route.id">
+			<div class="mdl-card__title mdl-card--expand">
+				Visualization
+			</div>
+			<div class="mdl-card__supporting-text">
+				<zoom-viz [dotPromise]="dotPromise"></zoom-viz>
+			</div>
+		</div>
+
+		<div class="mdl-cell mdl-cell--12-col" *ngIf="route.id">
+			<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
+			<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
+				class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{validationInfo.valid ? 'Valid' : 'Invalid'}}</div>
+			<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">
+				<p>This route does not violate any usage control policies</p>
+			</div>
+			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
+				<p>This route violates usage control policies</p>
+				<pre *ngFor="let ce of validationInfo.counterExamples">
+<em class="mdl-color-text--red-A700">{{ce.explanation}}</em>
+<span *ngFor="let step of ce.steps">{{step}}
+</span></pre>
+			</div>
+		</div>
+		<div class="mdl-textfield__error" style="visibility: visible;position:relative;margin-left:8px" *ngIf="!result.successful">{{result.message}}</div>
+		<div class="mdl-cell mdl-cell--12-col">
+			<div ace-editor
+				[text]="route.txtRepresentation"
+				[mode]="'xml'"
+				[theme]="'eclipse'"
+				[options]="{maxLines: 1000, printMargin: false}"
+				[readOnly]="false"
+				[autoUpdateContent]="true"
+				[durationBeforeCallback]="100"
+				(textChanged)="onRouteDefinitionChanged($event)"
+				style="min-height: 400px; width:100%; overflow: auto; font-size:16px; font-family: Consolas,Monaco,'Andale Mono',monospace;"></div>
+		</div>
+		<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
+			<span>{{route.id ? 'Apply' : 'Save'}}</span>
+		</button>
+	</div>
+
+</form>

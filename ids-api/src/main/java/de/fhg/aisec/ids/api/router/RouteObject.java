@@ -36,7 +36,8 @@ public class RouteObject {
 
 	public RouteObject() { /* Bean std c'tor */	}
 	
-	public RouteObject(String id, String description, String dot, String shortName, String context, long uptime, String status, String txtRepresentation) {
+	public RouteObject(String id, String description, String dot, String shortName, String context,
+                       long uptime, String status, String txtRepresentation) {
 		this.id = id;
 		this.description = description;
 		this.dot = dot;
@@ -44,7 +45,7 @@ public class RouteObject {
 		this.context = context;
 		this.uptime = uptime;
 		this.status = status;
-		this.setTxtRepresentation(txtRepresentation!=null?txtRepresentation:"");
+		this.setTxtRepresentation(txtRepresentation != null ? txtRepresentation : "");
 	}
 
 	public String getStatus() {
