@@ -26,7 +26,8 @@
         "styles.css"
       ],
       "scripts": [
-        "../node_modules/viz.js/viz-lite.js"
+        "../node_modules/viz.js/viz-lite.js",
+        "../node_modules/svg-pan-zoom/dist/svg-pan-zoom.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {

@@ -15,18 +15,19 @@
 					<div class="mdl-cell mdl-cell--6-col">{{route.status}}</div>
 				</div>
 			</div>
-			<div class="mdl-cell--8-col v-resize">
-				<app-d3 [routeSubject]="routeSubject"></app-d3>
-				<!-- <div class="viz" [innerHTML]="vizResult"></div> -->
+			<div class="mdl-cell--8-col">
+				<zoom-viz [dotPromise]="dotPromise"></zoom-viz>
 			</div>
 		</div>
 		<div class="mdl-grid">
 			<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
 			<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
 				class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{validationInfo.valid ? 'Valid' : 'Invalid'}}</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">This route violates usage control policies</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">This route does not violate any usage control policies</div>
+			<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">
+				<p>This route does not violate any usage control policies</p>
+			</div>
 			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
+				<p>This route violates usage control policies</p>
 				<pre *ngFor="let ce of validationInfo.counterExamples">
 <em class="mdl-color-text--red-A700">{{ce.explanation}}</em>
 <span *ngFor="let step of ce.steps">{{step}}

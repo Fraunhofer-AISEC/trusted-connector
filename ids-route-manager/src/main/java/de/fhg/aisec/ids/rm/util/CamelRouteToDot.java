@@ -97,8 +97,7 @@ public class CamelRouteToDot {
 
 		NodeData from = nodeData;
 		for (ProcessorDefinition<?> output : route.getOutputs()) {
-			NodeData newData = printNode(writer, from, output);
-			from = newData;
+			from = printNode(writer, from, output);
 		}
 	}
 
@@ -129,8 +128,7 @@ public class CamelRouteToDot {
 
 			String label = fromData.edgeLabel;
 			if (isNotEmpty(label)) {
-				writer.write("label = \"" +  label.substring(0,Math.min(8, label.length()))
-						+ (label.length()>8?"..":"") + "\"\n");
+				writer.write("label = \"" +  label + "\"\n");
 			}
 			writer.write("];\n");
 		}
@@ -155,8 +153,7 @@ public class CamelRouteToDot {
 			writer.write("\n");
 			writer.write(data.id + "\n");
 			writer.write(" [\n");
-			writer.write("label = \"" + data.label.substring(0,Math.min(12, data.label.length()))
-					+ (data.label.length()>12?"..":"") + "\"\n");
+			writer.write("label = \"" + data.label + "\"\n");
 			writer.write("tooltip = \"" + data.tooltip + "\"\n");
 
 			String image = data.image;

@@ -15,8 +15,12 @@ export class RouteCardComponent implements OnInit {
   @Input() route: Route;
   result: string;
   statusIcon: string;
+  dotPromise: Promise<string>;
+  private dotResolver: (dot: string) => void;
 
-  constructor(private dom: DomSanitizer, private routeService: RouteService) {}
+  constructor(private sanitizer: DomSanitizer, private routeService: RouteService) {
+    this.dotPromise = new Promise ((resolve, reject) => this.dotResolver = resolve);
+  }
 
   get started() {
     return this.route.status == "Started";
@@ -28,7 +32,7 @@ export class RouteCardComponent implements OnInit {
     } else {
       this.statusIcon = "play_arrow";
     }
- 	  //this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph));
+ 	  this.dotResolver(this.route.dot);
   }
 
   onStart(routeId: string): void {

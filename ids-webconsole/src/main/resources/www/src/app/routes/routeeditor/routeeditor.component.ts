@@ -1,14 +1,12 @@
-import { Component, Input, OnInit, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, ElementRef, HostListener, ViewChild, Renderer2 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { ActivatedRoute } from '@angular/router';
 
 import { Route } from '../route';
 import { RouteService } from '../route.service';
 import { ValidationInfo } from '../validation';
 
-import { ActivatedRoute } from '@angular/router';
 import 'rxjs/add/operator/switchMap';
-import { validateConfig } from '@angular/router/src/config';
 
 declare var Viz: any;
 
@@ -20,12 +18,18 @@ declare var Viz: any;
 export class RouteeditorComponent implements OnInit {
   private _route: Route = new Route();
   private _validationInfo: ValidationInfo = new ValidationInfo();
-  private _vizResult: SafeHtml;
   private statusIcon: string;
   private result: string;
-  public routeSubject: ReplaySubject<Route> = new ReplaySubject(1);
+  @ViewChild('vizCanvas')
+  private vizCanvas: ElementRef;
+  private svgElement: HTMLElement;
+
+  public readonly dotPromise: Promise<string>;
+  private dotResolver: (dot: string) => void;
   
-  constructor(private navRoute: ActivatedRoute, private dom: DomSanitizer, private routeService: RouteService) { }
+  constructor(private navRoute: ActivatedRoute, private renderer: Renderer2, private routeService: RouteService) {
+    this.dotPromise = new Promise((resolve, reject) => this.dotResolver = resolve);
+  }
 
   get route() {
     return this._route;
@@ -35,27 +39,21 @@ export class RouteeditorComponent implements OnInit {
     return this._validationInfo;
   }
 
-  get vizResult() {
-    return this._vizResult;
-  }
-
   ngOnInit(): void {
     this.navRoute.params.subscribe(params => {
       let id = params.id;
 
       this.routeService.getRoute(id).subscribe(route => {
         this._route = route;
-        console.log("Send route...");
-        this.routeSubject.next(route);
         console.log("Route editor: Loaded route with id " + this._route.id);
+
+        this.dotResolver(route.dot);
 
         if(this._route.status == "Started") {
           this.statusIcon = "stop";
         } else {
           this.statusIcon = "play_arrow";
         }
-
-        this._vizResult = this.dom.bypassSecurityTrustHtml(Viz(this._route.dot));
       });
 
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {

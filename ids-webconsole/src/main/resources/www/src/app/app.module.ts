@@ -56,8 +56,10 @@ import { MDLTextFieldDirective } from './mdl-textfield-directive';
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
 
-import { D3Service } from 'd3-ng2-service';
-import { D3Component } from './d3/d3.component';
+import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
+
+// import { D3Service } from 'd3-ng2-service';
+// import { D3Component } from './d3/d3.component';
 
 @NgModule({
   imports: [
@@ -67,7 +69,7 @@ import { D3Component } from './d3/d3.component';
     ReactiveFormsModule,
 //    ModalModule.forRoot(),
 //    BootstrapModalModule  
-    ],
+  ],
   declarations: [
     AppComponent,
     DashboardComponent,
@@ -91,7 +93,9 @@ import { D3Component } from './d3/d3.component';
     PrettifyPipe,
     ConnectionReportComponent,
     MDLTextFieldDirective,
-    D3Component],
+    ZoomVizComponent,
+    //D3Component,
+  ],
   providers: [
     AppService,
     RouteService,
@@ -104,11 +108,13 @@ import { D3Component } from './d3/d3.component';
     IdsComponent,
     Title,
     MetricService,
-    D3Service
+    //D3Service,
   ],
   bootstrap: [
-    AppComponent ],
-    entryComponents: [
-      ]
+    AppComponent
+  ],
+  entryComponents: [
+
+  ]
 })
 export class AppModule { }
