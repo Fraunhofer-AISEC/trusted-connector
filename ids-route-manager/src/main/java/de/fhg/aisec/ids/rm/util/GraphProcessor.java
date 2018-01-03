@@ -36,8 +36,7 @@ public class GraphProcessor {
 	/**
 	 * Prints a single Camel route in Prolog representation.
 	 *
-	 * @param route
-	 * @throws IOException 
+	 * @param route The route to be transformed
 	 */
 	public static GraphData processRoute(RouteDefinition route) {
 		GraphData gd = new GraphData();

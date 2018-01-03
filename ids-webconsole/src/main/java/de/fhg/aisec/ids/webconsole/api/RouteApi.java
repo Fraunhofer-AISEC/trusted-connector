@@ -288,17 +288,6 @@ public class RouteApi {
 	}
 
 	@GET
-	@Path("/graph/{routeId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getRouteGraph(@PathParam("routeId") String routeId) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not available").build();
-		}
-		return Response.ok(rm.get().getRoute(routeId).getGraph()).build();
-	}
-
-	@GET
 	@Path("/prolog/{routeId}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getRouteProlog(@PathParam("routeId") String routeId) {

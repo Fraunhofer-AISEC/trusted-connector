@@ -19,8 +19,6 @@
  */
 package de.fhg.aisec.ids.api.router;
 
-import de.fhg.aisec.ids.api.router.graph.GraphData;
-
 /**
  * Bean representing a "route" (e.g., an Apache Camel route)
  * 
@@ -32,18 +30,16 @@ public class RouteObject {
 	private String context;
 	private String shortName;
 	private String dot;
-	private GraphData graph;
 	private String description;
 	private String id;
 
 	public RouteObject() { /* Bean std c'tor */	}
 	
-	public RouteObject(String id, String description, String dot, GraphData graph, String shortName, String context,
+	public RouteObject(String id, String description, String dot, String shortName, String context,
 					   long uptime, String status) {
 		this.id = id;
 		this.description = description;
 		this.dot = dot;
-		this.graph = graph;
 		this.shortName = shortName;
 		this.context = context;
 		this.uptime = uptime;
@@ -68,10 +64,6 @@ public class RouteObject {
 
 	public String getDot() {
 		return dot;
-	}
-
-	public GraphData getGraph() {
-		return graph;
 	}
 
 	public String getDescription() {
@@ -100,10 +92,6 @@ public class RouteObject {
 
 	public void setDot(String dot) {
 		this.dot = dot;
-	}
-
-	public void setGraph(GraphData graph) {
-		this.graph = graph;
 	}
 
 	public void setDescription(String description) {

@@ -344,7 +344,7 @@ public class RouteManagerService implements RouteManager {
 		} catch (JAXBException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), routeToGraph(rd),
+		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd),
 				rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
 	}
 
