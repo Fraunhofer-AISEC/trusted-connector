@@ -27,7 +27,7 @@
         "../node_modules/vis/dist/vis.css"
       ],
       "scripts": [
-        "../node_modules/viz.js/viz-lite.js",
+        "../node_modules/viz.js/viz.js",
         "../node_modules/svg-pan-zoom/dist/svg-pan-zoom.js",
         "../node_modules/vis/dist/vis.js",
         "../node_modules/ace-builds/src-min/ace.js"        ,
