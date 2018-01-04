@@ -66,6 +66,7 @@ import { MetricService } from './metric/metric.service';
     HttpModule,             // deprecated. To be removed
     HttpClientModule,       // new since Angular 5
     ReactiveFormsModule,
+    FormsModule
 //    ModalModule.forRoot(),
 //    BootstrapModalModule
     ],
