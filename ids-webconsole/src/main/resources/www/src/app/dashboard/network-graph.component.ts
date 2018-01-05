@@ -1,11 +1,12 @@
 import { Component, OnInit, ViewContainerRef, EventEmitter, Output,  AfterViewInit, ViewEncapsulation } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import { Observable } from 'rxjs/Rx';
+import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/take';
 
 import { SensorService } from '../sensor/sensor.service';
 import { SubscriptionComponent } from '../subscription.component';

@@ -6,7 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --delete-output-path=false",
-    "bundle": "ng build --env=prod --prod --sourcemap",
+    "bundle": "ng build --env=prod",
     "lint": "tslint \"src/**/*.ts\""
   },
   "private": true,
@@ -53,7 +53,7 @@
     "codelyzer": "~4.0.0",
     "ts-node": "1.2.1",
     "tslint": "^5.0.0",
-    "typescript": "2.4.2",
+    "typescript": "2.6.1",
     "webpack-sources": "^1.0.2"
   }
 }

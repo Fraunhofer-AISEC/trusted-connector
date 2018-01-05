@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/interval';
-import {BehaviorSubject} from "rxjs/Rx";
+import {BehaviorSubject} from "rxjs/BehaviorSubject";
 
 import { IncomingConnection } from './connections';
 import { OutgoingConnection } from './connections';

@@ -3,7 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription'
 
 import { Route } from './route';
 import { RouteService } from './route.service';
