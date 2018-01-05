@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 
 import { Policy } from './policy.interface';
 import { PolicyService } from './policy.service';
+import { AbstractControl } from '@angular/forms/src/model';
 
 @Component({
     templateUrl: './dataflowpoliciesnew.component.html'
@@ -12,8 +13,10 @@ export class NewDataflowPolicyComponent implements OnInit {
     @Output() changeTitle = new EventEmitter();
     public myForm: FormGroup;
     public data: Policy;
-    public policyFileName: string = "Select .lucon file ...";
+    public policyFileLabel: string = "Select lucon file ...";
     public events: any[] = [];
+    public multiple: false;
+    public fileUpload: AbstractControl;
 
     constructor(private _fb: FormBuilder, private titleService: Title, private policyService: PolicyService) {
         this.titleService.setTitle('New Policy');
@@ -22,14 +25,12 @@ export class NewDataflowPolicyComponent implements OnInit {
     ngOnInit() {
         // the short way to create a FormGroup
         this.myForm = this._fb.group({
-            policy_name: ['', <any>Validators.required],
+            //policy_name: ['', <any>Validators.required],
             policy_file: ['', <any>Validators.required],
-            policy_description: '',
+            //policy_description: '',
         });
         
-        //uploader: FileUploader = new FileUploader({ url: "http://localhost/upload.php" });
-
-
+        this.fileUpload = this.myForm.get('policy_file');
     }
 
     ngAfterViewInit() {    }
@@ -45,7 +46,7 @@ export class NewDataflowPolicyComponent implements OnInit {
     // Update caption of upload button with file name when a file is selected    
     fileChangeEvent(fileInput: any){
         if (fileInput.target.files && fileInput.target.files[0]) {
-            this.policyFileName = fileInput.target.files[0].name;
+            this.policyFileLabel = fileInput.target.files[0].name;
         }
     }
 

@@ -17,7 +17,7 @@ import { PolicyService } from '../dataflowpolicies/policy.service';
 })
 export class DashboardComponent extends SubscriptionComponent implements OnInit {
   @Output() changeTitle = new EventEmitter();
-  private camelComponents: any;
+  camelComponents: any;
   apps: App[];
   cmlVersion: string;
   policies: number = 0;

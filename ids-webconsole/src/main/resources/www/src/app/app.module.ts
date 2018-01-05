@@ -37,7 +37,7 @@ import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
 import { PolicyService } from './dataflowpolicies/policy.service';
-//Do we need this declaration?
+
 import { ConnectionInOutService } from './inOutConnections/inOutConnections.service';
 import { ValuesPipe } from './values.pipe';
 
@@ -57,6 +57,11 @@ import { MDLTextFieldDirective } from './mdl-textfield-directive';
 
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
+
+import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
+
+// import { D3Service } from 'd3-ng2-service';
+// import { D3Component } from './d3/d3.component';
 
 @NgModule({
   imports: [
@@ -94,7 +99,12 @@ import { MetricService } from './metric/metric.service';
     PrettifyPipe,
     ConnectionConfigurationComponent,
     MDLTextFieldDirective,
-    ConnectionInOutComponent
+    //FileWindow,
+    //DataFlowComponent,
+    ConnectionReportComponent,
+    ZoomVizComponent,
+    ConnectionInOutComponent,
+    //D3Component,
   ],
   providers: [
     AppService,
@@ -109,10 +119,11 @@ import { MetricService } from './metric/metric.service';
     ConnectionConfigurationService,
     MetricService,
     Title
+    //D3Service,
   ],
   bootstrap: [
-    AppComponent ],
-    entryComponents: [
-      ]
+    AppComponent
+  ],
+  entryComponents: []
 })
 export class AppModule { }

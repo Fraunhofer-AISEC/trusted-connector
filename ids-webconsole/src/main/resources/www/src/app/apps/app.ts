@@ -9,4 +9,5 @@ export class App {
 	signature: string;
 	owner: string;
 	labels: string[][];
+	ports: string;
 }

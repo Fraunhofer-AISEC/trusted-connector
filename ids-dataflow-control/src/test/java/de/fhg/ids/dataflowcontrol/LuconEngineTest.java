@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.ids.dataflowcontrol.lucon;
+package de.fhg.ids.dataflowcontrol;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,8 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -51,7 +50,7 @@ import de.fhg.aisec.ids.api.policy.ServiceNode;
 import de.fhg.aisec.ids.api.policy.TransformationDecision;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.ids.dataflowcontrol.PolicyDecisionPoint;
+import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -268,7 +267,7 @@ public class LuconEngineTest {
 	@Test
 	public void testPolicyDecision() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-		pdp.activate(null);
+		pdp.loadPolicies();
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		
 		// Simple message context with nonsense attributes
@@ -297,7 +296,7 @@ public class LuconEngineTest {
 	@Test
 	public void testListRules() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-		pdp.activate(null);
+		pdp.loadPolicies();
 		
 		// Without any policy, we expect an empty list of rules
 		List<String> emptyList = pdp.listRules();
@@ -318,7 +317,7 @@ public class LuconEngineTest {
 	@Test
 	public void testTransformationsMatch() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-		pdp.activate(null);
+		pdp.loadPolicies();
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		ServiceNode node = new ServiceNode("paho:tcp://broker.hivemq.com:1883/blablubb", null, null);
 		TransformationDecision trans = pdp.requestTranformations(node);
@@ -337,7 +336,7 @@ public class LuconEngineTest {
 	@Test
 	public void testTransformationsNomatch() throws IOException {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-		pdp.activate(null);
+		pdp.loadPolicies();
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		ServiceNode node = new ServiceNode("someendpointwhichisnotmatchedbypolicy", null, null);
 		TransformationDecision trans = pdp.requestTranformations(node);
@@ -363,7 +362,7 @@ public class LuconEngineTest {
 		
 		// Create policy decision point and attach to route manager
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-		pdp.activate(null);
+		pdp.loadPolicies();
 		pdp.bindRouteManager(rm);
 		pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 		
@@ -385,7 +384,7 @@ public class LuconEngineTest {
 			// Load n test rules into PDP 
 			String theory = generateRules(i, ".*");
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-			pdp.activate(null);
+			pdp.loadPolicies();
 			long start = System.nanoTime();
 			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
 			long stop = System.nanoTime();
@@ -416,7 +415,7 @@ public class LuconEngineTest {
 			// Load n test rules into PDP 
 			String theory = generateLabels(i, ".*");
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-			pdp.activate(null);
+			pdp.loadPolicies();
 			long start = System.nanoTime();
 			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
 			long stop = System.nanoTime();
@@ -447,7 +446,7 @@ public class LuconEngineTest {
 			// Load n test rules into PDP 
 			String theory = generateRules(i, ".*");
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-			pdp.activate(null);
+			pdp.loadPolicies();
 			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
 			
 			// Simple message context with nonsense attributes
@@ -478,7 +477,7 @@ public class LuconEngineTest {
 			// Load n test rules into PDP 
 			String theory = generateLabels(i, ".*");
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
-			pdp.activate(null);
+			pdp.loadPolicies();
 			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
 			
 			// Simple message context with nonsense attributes

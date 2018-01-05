@@ -24,6 +24,7 @@ import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 */
 	private String createDecisionQuery(@NonNull ServiceNode target, @NonNull Map<String, Object> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
-		sb.append("rule(_X), has_target(_X, T), ");
+		sb.append("rule(X), has_target(X, T), ");
 		sb.append("has_endpoint(T, EP), ");
 		sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
 		sb.append("assert(any), ");
@@ -111,8 +112,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
 					// QUERY must be: has_endpoint(rule, bla), assert(a(x)), receives_label(rule).
 					sb.append("assert("+msgLabels.get(k).toString()+"), ");
 			});
-		sb.append("receives_label(_X), ");
-		sb.append("rule_priority(_X, P), ");
+		sb.append("receives_label(X), ");
+		sb.append("rule_priority(X, P), ");
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			List<String> capProp = new LinkedList<>();
 			for (String cap: target.getCapabilties()) {
@@ -123,7 +124,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			}
 			sb.append("(").append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
-		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), " +
+		sb.append("(has_decision(X, D); (has_obligation(X, _O), has_alternativedecision(_O, Alt), " +
 				"requires_prerequisite(_O, A))).");
 		return sb.toString();
 	}
@@ -158,7 +159,21 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Activate
-	public void activate(@NonNull ComponentContext ctx) throws IOException {
+	protected void activate(@NonNull ComponentContext ctx) throws IOException {
+		loadPolicies();
+	}
+	
+	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
+	protected void bindRouteManager(@NonNull RouteManager routeManager) {
+		LOG.warn("RouteManager bound. Camel routes can be analyzed");
+		this.routeManager = routeManager;
+	}
+	protected void unbindRouteManager(@NonNull RouteManager routeManager) {
+		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
+		this.routeManager = null;
+	}
+
+	protected void loadPolicies() throws FileNotFoundException {
 		// Try to load existing policies from deploy dir at activation
 		File dir = new File(System.getProperty("karaf.base") + File.separator + "deploy");
 		File[] directoryListing = dir.listFiles();
@@ -181,23 +196,14 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	    }
 	}
 	
-	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
-	public void bindRouteManager(@NonNull RouteManager routeManager) {
-		LOG.warn("RouteManager bound. Camel routes can be analyzed");
-		this.routeManager = routeManager;
-	}
-	public void unbindRouteManager(@NonNull RouteManager routeManager) {
-		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
-		this.routeManager = null;
-	}
-
 	@Override
 	public TransformationDecision requestTranformations(@Nullable ServiceNode lastServiceNode) {
-		TransformationDecision result;
-
-		result = transformationCache.getIfPresent(lastServiceNode);
+		TransformationDecision result = transformationCache.getIfPresent(lastServiceNode);
 		if (result != null) {
 			return result;
+		}
+		if (lastServiceNode==null) {
+			return new TransformationDecision();
 		}
 
 		// Query prolog for labels to remove or add from message
@@ -244,7 +250,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			dec.setReason("Null request");
 			return dec;
 		}
-		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
+		LOG.debug("Decision requested " + req.getFrom().getEndpoint() + " -> " + req.getTo().getEndpoint());
 
 		try {
 			// Query Prolog engine for a policy decision
@@ -257,6 +263,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			
 			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
+				LOG.trace("No policy decision found. Returning " + dec.getDecision().toString());
 				return dec;
 			}
 			

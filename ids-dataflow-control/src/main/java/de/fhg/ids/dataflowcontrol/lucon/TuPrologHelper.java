@@ -56,10 +56,11 @@ public final class TuPrologHelper {
         return sb.toString();
     }
 
-    @Nullable
+    @SuppressWarnings("null")
+	@NonNull
     public static Stream<? extends Term> listStream(@Nullable Term list) {
         if (list == null) {
-        	return null;
+        	return Stream.empty();
         }
     	if (!list.isList()) {
             throw new IllegalArgumentException("Not a tuProlog list");
