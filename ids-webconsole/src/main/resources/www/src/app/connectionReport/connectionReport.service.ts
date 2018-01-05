@@ -12,7 +12,7 @@ import { Endpoint } from './connections';
 import { environment } from '../../environments/environment';
 
 @Injectable()
-export class ConnectionInOutService {
+export class ConnectionReportService {
 
   constructor(private http: Http) { }
 

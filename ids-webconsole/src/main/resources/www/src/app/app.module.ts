@@ -38,7 +38,7 @@ import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
 import { PolicyService } from './dataflowpolicies/policy.service';
 
-import { ConnectionInOutService } from './inOutConnections/inOutConnections.service';
+import { ConnectionReportService } from './connectionReport/connectionReport.service';
 import { ValuesPipe } from './values.pipe';
 
 import { routing } from './app.routing';
@@ -48,7 +48,7 @@ import {PrettifyPipe} from './prettify-json.pipe';
 import {ConfirmService} from "./confirm/confirm.service";
 import {ConfirmComponent} from "./confirm/confirm.component";
 
-import { ConnectionInOutComponent } from './inOutConnections/inOutConnections.component'
+import { ConnectionReportComponent } from './connectionReport/connectionReport.component'
 import { ConnectionConfigurationComponent } from './connectionConfiguration/connectionConfiguration.component';
 import { ConnectionConfigurationService } from './connectionConfiguration/connectionConfiguration.service';
 
@@ -103,7 +103,7 @@ import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
     //DataFlowComponent,
     ConnectionReportComponent,
     ZoomVizComponent,
-    ConnectionInOutComponent,
+    ConnectionReportComponent,
     //D3Component,
   ],
   providers: [
@@ -115,7 +115,7 @@ import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
     SensorService,
     ConfirmService,
     IdsComponent,
-    ConnectionInOutService,
+    ConnectionReportService,
     ConnectionConfigurationService,
     MetricService,
     Title

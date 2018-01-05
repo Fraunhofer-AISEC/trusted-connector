@@ -6,8 +6,8 @@ import {RequestOptions, Request, RequestMethod} from '@angular/http';
 import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 
-import { IncomingConnection } from '../inOutConnections/connections';
-import { OutgoingConnection } from '../inOutConnections/connections';
+import { IncomingConnection } from '../connectionReport/connections';
+import { OutgoingConnection } from '../connectionReport/connections';
 import { environment } from '../../environments/environment';
 
 import { Configuration } from './configuration.interface';

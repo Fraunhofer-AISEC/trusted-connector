@@ -26,7 +26,7 @@
                                            name="integrityProtectionandVerification" 
                                            [value]='"1"'  
                                            [checked]="model.settings.integrityProtectionandVerification === '1'" />
-                                    <label for="switch_1_left">None</label>
+                                    <label class="labelSmall" for="switch_1_left">None Test</label>
                                     <input class="switch-button" 
                                            type="radio" 
                                            id="switch_1_center" 
@@ -34,7 +34,7 @@
                                            name="integrityProtectionandVerification" 
                                            [value]='"2"' 
                                            [checked]="model.settings.integrityProtectionandVerification === '2'"/>
-                                    <label for="switch_1_center">Local Integrity Protection</label>
+                                    <label class="labelWide" for="switch_1_center">Local Integrity Protection</label>
                                     <input class="switch-button" 
                                            type="radio" 
                                            id="switch_1_right" 
@@ -42,7 +42,7 @@
                                            name="integrityProtectionandVerification" 
                                            [value]='"3"' 
                                            [checked]="model.settings.integrityProtectionandVerification === '3'"/>
-                                    <label for="switch_1_right">Remote integrity verification</label>
+                                    <label class="labelWide" for="switch_1_right">Remote integrity verification</label>
                                 </div>
                             </form>
                         </td>
@@ -58,21 +58,21 @@
                                            name="authentication" 
                                            [value]='"1"'  
                                            [checked]="model.settings.authentication === '1'" />
-                                    <label for="switch_2_left">None</label>
+                                    <label class="labelSmall" for="switch_2_left">None</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_2_center" 
                                            [(ngModel)]="model.settings.authentication" 
                                            name="authentication" 
                                            [value]='"2"'  
                                            [checked]="model.settings.authentication === '2'"  />
-                                    <label for="switch_2_center">Server side only authentication</label>
+                                    <label class="labelWide" for="switch_2_center">Server side only authentication</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_2_right" 
                                            [(ngModel)]="model.settings.authentication" 
                                            name="authentication" 
                                            [value]='"3"'  
                                            [checked]="model.settings.authentication === '3'"  />
-                                    <label for="switch_2_right">Mutual Authentication</label>
+                                    <label class="labelWide" for="switch_2_right">Mutual Authentication</label>
                                 </div>
                             </form>
                         </td>
@@ -88,21 +88,21 @@
                                            name="serviceIsolation" 
                                            [value]='"1"'  
                                            [checked]="model.settings.serviceIsolation === '1'"/>
-                                    <label for="switch_3_left">None</label>
+                                    <label class="labelSmall" for="switch_3_left">None</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_3_center" 
                                            [(ngModel)]="model.settings.serviceIsolation" 
                                            name="serviceIsolation" 
                                            [value]='"2"'  
                                            [checked]="model.settings.serviceIsolation === '2'" />
-                                    <label for="switch_3_center">Process group isolation</label>
+                                    <label class="labelWide" for="switch_3_center">Process group isolation</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_3_right" 
                                            [(ngModel)]="model.settings.serviceIsolation" 
                                            name="serviceIsolation" 
                                            [value]='"3"'  
                                            [checked]="model.settings.serviceIsolation === '3'" />
-                                    <label for="switch_3_right">Least privilege based isolation</label>
+                                    <label class="labelWide" for="switch_3_right">Least privilege based isolation</label>
                                 </div>
                             </form>
                         </td>
@@ -118,21 +118,21 @@
                                            name="integrityProtectionVerificationScope" 
                                            [value]='"1"'  
                                            [checked]="model.settings.integrityProtectionVerificationScope === '1'"/>
-                                    <label for="switch_4_left">None</label>
+                                    <label class="labelSmall" for="switch_4_left">None</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_4_center" 
                                            [(ngModel)]="model.settings.integrityProtectionVerificationScope" 
                                            name="integrityProtectionVerificationScope"  
                                            [value]='"2"' 
                                            [checked]="model.settings.integrityProtectionVerificationScope === '2'" />
-                                    <label for="switch_4_center">Kernel & core containers</label>
+                                    <label class="labelWide" for="switch_4_center">Kernel & core containers</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_4_right" 
                                            [(ngModel)]="model.settings.integrityProtectionVerificationScope" 
                                            name="integrityProtectionVerificationScope" 
                                            [value]='"3"'  
                                            [checked]="model.settings.integrityProtectionVerificationScope === '3'" />
-                                    <label for="switch_4_right">Kernel & core & Application containers</label>
+                                    <label class="labelWide" for="switch_4_right">Kernel & core & Application containers</label>
                                 </div>
                             </form>
                         </td>
@@ -148,21 +148,21 @@
                                            name="appExecutionResources" 
                                            [value]='"1"'  
                                            [checked]="model.settings.appExecutionResources === '1'"/>
-                                    <label for="switch_5_left">None</label>
+                                    <label class="labelSmall" for="switch_5_left">None</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_5_center" 
                                            [(ngModel)]="model.settings.appExecutionResources"  
                                            name="appExecutionResources" 
                                            [value]='"2"'  
                                            [checked]="model.settings.appExecutionResources === '2'" />
-                                    <label for="switch_5_center">Local enforcement</label>
+                                    <label class="labelWide" for="switch_5_center">Local enforcement</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_5_right" 
                                            [(ngModel)]="model.settings.appExecutionResources" 
                                            name="appExecutionResources" 
                                            [value]='"3"'  
                                            [checked]="model.settings.appExecutionResources === '3'" />
-                                    <label for="switch_5_right">Remote verification</label>
+                                    <label class="labelWide" for="switch_5_right">Remote verification</label>
                                 </div>
                             </form>
                         </td>
@@ -178,21 +178,21 @@
                                            name="dataUsageControlSupport" 
                                            [value]='"1"'  
                                            [checked]="model.settings.dataUsageControlSupport === '1'"/>
-                                    <label for="switch_6_left">None</label>
+                                    <label class="labelSmall" for="switch_6_left">None</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_6_center" 
                                            [(ngModel)]="model.settings.dataUsageControlSupport"  
                                            name="dataUsageControlSupport" 
                                            [value]='"2"'  
                                            [checked]="model.settings.dataUsageControlSupport === '2'" />
-                                    <label for="switch_6_center">Usage control policy enforcement</label>
+                                    <label class="labelWide" for="switch_6_center">Usage control policy enforcement</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_6_right" 
                                            [(ngModel)]="model.settings.dataUsageControlSupport" 
                                            name="dataUsageControlSupport" 
                                            [value]='"3"'  
                                            [checked]="model.settings.dataUsageControlSupport === '3'" />
-                                    <label for="switch_6_right">Remote policy compliance verification</label>
+                                    <label class="labelWide" for="switch_6_right">Remote policy compliance verification</label>
                                 </div>
                             </form>
                         </td>
@@ -208,20 +208,20 @@
                                            name="auditLogging" 
                                            [value]='"1"'  
                                            [checked]="model.settings.auditLogging === '1'"/>
-                                    <label for="switch_7_left">None</label>
+                                    <label class="labelSmall" for="switch_7_left">None</label>
                                     <input class="switch-button" type="radio" id="switch_7_center" 
                                            [(ngModel)]="model.settings.auditLogging" 
                                            name="auditLogging" 
                                            [value]='"2"'  
                                            [checked]="model.settings.auditLogging === '2'" />
-                                    <label for="switch_7_center">Local logging capabilities & integrity protection</label>
+                                    <label class="labelWide" for="switch_7_center">Local logging & integrity protection</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_7_right" 
                                            [(ngModel)]="model.settings.auditLogging" 
                                            name="auditLogging" 
                                            [value]='"3"'  
                                            [checked]="model.settings.auditLogging === '3'" />
-                                    <label for="switch_7_right">Remote audit log tracing</label>
+                                    <label class="labelWide" for="switch_7_right">Remote audit log tracing</label>
                                 </div>
                             </form>
                         </td>
@@ -237,21 +237,21 @@
                                            name="localDataConfidentiality" 
                                            [value]='"1"'  
                                            [checked]="model.settings.localDataConfidentiality === '1'"/>
-                                    <label for="switch_8_left">None</label>
+                                    <label class="labelSmall" for="switch_8_left">None</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_8_center" 
                                            [(ngModel)]="model.settings.localDataConfidentiality" 
                                            name="localDataConfidentiality" 
                                            [value]='"2"'  
                                            [checked]="model.settings.localDataConfidentiality === '2'" />
-                                    <label for="switch_8_center">Secure data erasure</label>
+                                    <label class="labelWide" for="switch_8_center">Secure data erasure</label>
                                     <input class="switch-button" 
                                            type="radio" id="switch_8_right" 
                                            [(ngModel)]="model.settings.localDataConfidentiality" 
                                            name="localDataConfidentiality" 
                                            [value]='"3"'  
                                            [checked]="model.settings.localDataConfidentiality === '3'"/>
-                                    <label for="switch_8_right">Local full data enryption</label>
+                                    <label class="labelWide" for="switch_8_right">Local full data enryption</label>
                                 </div>
                             </form>
                         </td>

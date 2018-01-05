@@ -9,21 +9,21 @@ import {BehaviorSubject} from "rxjs/Rx";
 import { IncomingConnection } from './connections';
 import { OutgoingConnection } from './connections';
 import { Endpoint } from './connections';
-import { ConnectionInOutService } from './inOutConnections.service';
+import { ConnectionReportService } from './connectionReport.service';
 
 @Component({
   selector: 'connections',
-  templateUrl: './inOutConnections.component.html',
-  styleUrls: ['./inOutConnections.component.css']
+  templateUrl: './connectionReport.component.html',
+  styleUrls: ['./connectionReport.component.css']
 })
 
-export class ConnectionInOutComponent implements OnInit {
+export class ConnectionReportComponent implements OnInit {
 
   incomingConnections: IncomingConnection[];
   outgoingConnections: OutgoingConnection[];
   endpoints: Endpoint[];
   
-  constructor(private titleService: Title,  private connectionService: ConnectionInOutService) {
+  constructor(private titleService: Title,  private connectionService: ConnectionReportService) {
      this.titleService.setTitle('IDS Connections');
   }
 

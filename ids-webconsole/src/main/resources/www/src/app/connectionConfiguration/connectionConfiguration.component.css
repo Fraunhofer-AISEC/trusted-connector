@@ -44,13 +44,11 @@ td{
     overflow: hidden;
 }
 
-.switch-field label {
-  float: left;
-}
+
 
 .switch-field label {
   display: inline-block;
-  width: 33%;
+  float: left;
   background-color: #e4e4e4;
   color: rgba(0, 0, 0, 0.6);
   font-size: 14px;
@@ -66,6 +64,14 @@ td{
   -ms-transition:     all 0.1s ease-in-out;
   -o-transition:      all 0.1s ease-in-out;
   transition:         all 0.1s ease-in-out;
+}
+
+.labelSmall {
+     width: 20%;
+}
+
+.labelWide {
+     width: 40%;
 }
 
 .switch-field label:hover {
