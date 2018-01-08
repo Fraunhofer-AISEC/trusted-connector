@@ -48,7 +48,7 @@
     "codelyzer": "~4.0.0",
     "ts-node": "1.2.1",
     "tslint": "^5.0.0",
-    "typescript": "^2.5.3",
+    "typescript": "~2.5",
     "vis": "^4.20.0",
     "webpack-sources": "^1.1.0",
     "zone.js": "^0.8.19"
