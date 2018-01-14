@@ -510,6 +510,7 @@ public class LuconEngineTest {
 		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 		// Load test policy w/ two rules
 		InputStream policy = this.getClass().getClassLoader().getResourceAsStream("policy-example.pl");
+		assertNotNull(policy);
 		pdp.loadPolicy(policy);		
 		assertEquals(2, pdp.listRules().size());
 		
