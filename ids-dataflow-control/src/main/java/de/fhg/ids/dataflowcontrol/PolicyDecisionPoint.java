@@ -264,6 +264,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
 				LOG.trace("No policy decision found. Returning " + dec.getDecision().toString());
+				dec.setReason("No matching rule");
 				return dec;
 			}
 			
@@ -301,12 +302,15 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			List<Obligation> obligations = new LinkedList<>();
 			applicableSolveInfos.forEach(s -> {
 				try {
+					Term rule = s.getVarValue("X");
 					Term decision = s.getVarValue("D");
 					if (!(decision instanceof Var)) {
 						String decString = decision.getTerm().toString();
 						if ("drop".equals(decString)) {
+							dec.setReason(rule.getTerm().toString());
 							dec.setDecision(Decision.DENY);
 						} else if ("allow".equals(decString)) {
+							dec.setReason(rule.getTerm().toString());
 							dec.setDecision(Decision.ALLOW);
 						}
 					}
@@ -324,11 +328,15 @@ public class PolicyDecisionPoint implements PDP, PAP {
 						}
 						obligations.add(o);
 					}
-				} catch (NoSolutionException ignored) {}
+				} catch (NoSolutionException e) {
+					LOG.warn("Unexpected: solution variable not present: " + e.getMessage());
+					dec.setReason("Solution variable not present");
+				}
 			});
 			dec.setObligations(obligations);
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);
+			dec.setReason("Error " + e.getMessage());
 			dec.setDecision(Decision.DENY);
 		}
 		return dec;

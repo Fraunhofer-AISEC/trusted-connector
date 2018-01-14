@@ -22,13 +22,17 @@ package de.fhg.ids.dataflowcontrol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -214,7 +218,7 @@ public class LuconEngineTest {
 	 * @throws NoMoreSolutionException
 	 */
 	@Test
-	public void testSolve1() throws InvalidTheoryException, IOException, NoMoreSolutionException {
+	public void testSimplePrologQuery() throws InvalidTheoryException, IOException, NoMoreSolutionException {
 		LuconEngine e = new LuconEngine(System.out);
 		e.loadPolicy(new ByteArrayInputStream(HANOI_THEORY.getBytes()));
 		try {
@@ -500,6 +504,92 @@ public class LuconEngineTest {
 			assertEquals(Decision.ALLOW, dec.getDecision());
 		}
 	}
+	
+	@Test
+	public void testRulePriorities() {
+		PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+		// Load test policy w/ two rules
+		InputStream policy = this.getClass().getClassLoader().getResourceAsStream("policy-example.pl");
+		pdp.loadPolicy(policy);		
+		assertEquals(2, pdp.listRules().size());
+		
+		// Test order of specification in rule file
+		String ruleThree = pdp.listRules().get(0);
+		assertEquals("testRulePrioThree", ruleThree);		
+		String ruleTwo = pdp.listRules().get(1);
+		assertEquals("testRulePrioTwo", ruleTwo);
+		
+		// FALL-THROUGH: Test fall-through decision (no msg label matches)
+		ServiceNode from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
+		ServiceNode to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
+		Map<String, Object> msgCtx = new HashMap<>();
+		Map<String, Object> envCtx = new HashMap<>();
+		DecisionRequest req = new DecisionRequest(from, to, msgCtx, envCtx);
+		PolicyDecision dec = pdp.requestDecision(req);
+		assertNotNull(dec);
+		Decision d = dec.getDecision();
+		assertEquals(Decision.DENY, d);
+		assertEquals("No matching rule", dec.getReason());
+
+		// FALL-THROUGH: presence of a label "public" (w/o any specific value) does not yet trigger testRulePrioTwo, because label "filtered" is required in addition.
+		from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
+		to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
+		msgCtx = new HashMap<>();
+		msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
+		envCtx = new HashMap<>();
+		req = new DecisionRequest(from, to, msgCtx, envCtx);
+		dec = pdp.requestDecision(req);
+		assertNotNull(dec);
+		d = dec.getDecision();
+		assertEquals(Decision.DENY, d);
+		assertEquals("No matching rule", dec.getReason());
+
+		// testRulePrioTwo: now we have labels "public" AND "filtered" set, which makes testRulePrioTwo match
+		from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
+		to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
+		msgCtx = new HashMap<>();
+		msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
+		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "filtered");
+		envCtx = new HashMap<>();
+		req = new DecisionRequest(from, to, msgCtx, envCtx);
+		dec = pdp.requestDecision(req);
+		assertNotNull(dec);
+		d = dec.getDecision();		
+		assertEquals(Decision.ALLOW, d);
+		assertEquals("testRulePrioTwo", dec.getReason());
+
+		// testRulePrioTwo: "public" AND "filtered" makes testRulePrioTwo match. Additional labels do not harm
+		from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
+		to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
+		msgCtx = new HashMap<>();
+		msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
+		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "filtered");
+		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "unusedlabel");
+		envCtx = new HashMap<>();
+		req = new DecisionRequest(from, to, msgCtx, envCtx);
+		dec = pdp.requestDecision(req);
+		assertNotNull(dec);
+		d = dec.getDecision();		
+		assertEquals(Decision.ALLOW, d);
+		assertEquals("testRulePrioTwo", dec.getReason());
+
+		// testRulePrioTwo: labels "public", "filtered", "private" will trigger testRulePrioOne and testRulePrioTwo. Rule with higher prio wins.
+		from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
+		to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
+		msgCtx = new HashMap<>();
+		msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
+		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "filtered");
+		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "unusedlabel");
+		msgCtx.put(PDP.LABEL_PREFIX + "anotherlabel", "private");
+		envCtx = new HashMap<>();
+		req = new DecisionRequest(from, to, msgCtx, envCtx);
+		dec = pdp.requestDecision(req);
+		assertNotNull(dec);
+		d = dec.getDecision();		
+		assertEquals(Decision.DENY, d);
+		assertEquals("testRulePrioThree", dec.getReason());
+	}
+	
 	/**
 	 * Generates n random rules matching a target endpoint (given as regex).
 	 * 
