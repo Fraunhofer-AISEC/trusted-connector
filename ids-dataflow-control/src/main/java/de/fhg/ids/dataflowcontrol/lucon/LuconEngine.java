@@ -134,7 +134,7 @@ public class LuconEngine {
 			return;
 		}		
 		Theory t = new Theory(is);
-		LOG.debug("Loading theory: " + t.toString());
+		LOG.debug("Loading theory:\n" + t.toString());
 		p.setTheory(t);
 	}
 

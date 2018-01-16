@@ -75,13 +75,13 @@ public class LuconEngineTest {
 			"rule(denyAll).\n" +
 			"rule_priority(denyAll, 0).\n" +
 			"has_decision(denyAll, drop).\n" +
-			"receives_label(denyAll) :- any.\n" +
+			"receives_label(denyAll).\n" +
 			"has_target(denyAll, serviceAll).\n" +
 			"\n" +
 			"rule(allowRule).\n" +
 			"rule_priority(allowRule, 1).\n" +
 			"has_decision(allowRule, allow).\n" +
-			"receives_label(allowRule) :- any.\n" +
+			"receives_label(allowRule).\n" +
 			"has_target(allowRule, hiveMqttBrokerService).\n" +
 			"has_target(allowRule, anonymizerService).\n" +
 			"has_target(allowRule, loggerService).\n" +
@@ -91,7 +91,7 @@ public class LuconEngineTest {
 			"rule(deleteAfterOneMonth).\n" +
 			"rule_priority(deleteAfterOneMonth, 1).\n" +
 			"has_decision(deleteAfterOneMonth, allow).\n" +
-			"receives_label(deleteAfterOneMonth) :- private.\n" +
+			"receives_label(deleteAfterOneMonth) :- label(private).\n" +
 			"has_target(deleteAfterOneMonth, service78096644).\n" +
 			"has_obligation(deleteAfterOneMonth, obl1709554620).\n" +
 			"% generated service\n" +
@@ -104,7 +104,7 @@ public class LuconEngineTest {
 			"rule(anotherRule).\n" +
 			"rule_priority(anotherRule, 1).\n" +
 			"has_target(anotherRule, testQueueService).\n" +
-			"receives_label(anotherRule) :- private.\n" +
+			"receives_label(anotherRule) :- label(private).\n" +
 			"has_decision(anotherRule, drop).\n" +
 			"\n" +
 			"%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
@@ -362,6 +362,8 @@ public class LuconEngineTest {
 	public void testVerifyRoute() throws Exception {
 		// Create RouteManager returning VERIFIABLE_ROUTE
 		RouteManager rm = mock(RouteManager.class);
+		System.out.println("------ ROUTE ----------");
+		System.out.println(VERIFIABLE_ROUTE);
 		when(rm.getRouteAsProlog(anyString())).thenReturn(VERIFIABLE_ROUTE);
 		
 		// Create policy decision point and attach to route manager
@@ -605,7 +607,7 @@ public class LuconEngineTest {
 			sb.append("rule(testRule"+i+").\n");
 			sb.append("has_decision(testRule"+i+", allow).\n");
 			sb.append("has_alternativedecision(testRule"+i+", allow).\n");
-			sb.append("receives_label(testRule"+i+", any).\n");
+			sb.append("receives_label(testRule"+i+").\n");
 			sb.append("has_target(testRule"+i+", testTarget"+i+").\n");
 			sb.append("has_obligation(testRule"+i+", testObligation"+i+").\n");
 			sb.append("service(testTarget"+i+").\n");

@@ -18,7 +18,7 @@
 %:- discontiguous requires_prerequisites/2.
 %:- discontiguous has_alternativedecision/2.
 %:- discontiguous has_obligation/2.
-%:- discontiguous receives_label/2.
+%:- discontiguous receives_label/1.
 regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.		
 %%%%%%%% Rules %%%%%%%%%%%%
 % I am a test rule of prio 3
@@ -28,7 +28,7 @@ has_target(testRulePrioThree, service1831859244).
 service(service1831859244).
 has_endpoint(service1831859244,".*").
 
-receives_label(testRulePrioThree) :- private ; unfiltered.
+receives_label(testRulePrioThree) :- label(private) ; label(unfiltered).
 has_obligation(testRulePrioThree, obl1).
 
 has_decision(testRulePrioThree, drop).
@@ -38,7 +38,7 @@ rule(testRulePrioTwo).
 rule_priority(testRulePrioTwo, 2).
 has_target(testRulePrioTwo, allHadoops).
 
-receives_label(testRulePrioTwo) :- public, filtered.
+receives_label(testRulePrioTwo) :- label(public), label(filtered).
 has_obligation(testRulePrioTwo, obl2).
 has_decision(testRulePrioTwo, allow).
 

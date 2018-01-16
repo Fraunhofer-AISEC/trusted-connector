@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.ComponentContext;
@@ -97,20 +98,21 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * Target			Decision	Alternative		Obligation
 	 * 	hadoopClusters	D			drop			(delete_after_days(_1354),_1354<30)	1
 	 *	hiveMqttBroker	drop		Alt				A
-	 * @param msgLabels 
+	 *
+	 * @param target The target node of the transformation
+	 * @param msgLabels The dynamically assigned message labels
 	 */
 	private String createDecisionQuery(@NonNull ServiceNode target, @NonNull Map<String, Object> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
 		sb.append("rule(X), has_target(X, T), ");
 		sb.append("has_endpoint(T, EP), ");
 		sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
-		sb.append("assert(any), ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
 			.forEach(k -> {
-					// QUERY must be: has_endpoint(rule, bla), assert(a(x)), receives_label(rule).
-					sb.append("assert("+msgLabels.get(k).toString()+"), ");
+				// QUERY structure must be: has_endpoint(rule, bla), assert(label(x)), receives_label(rule).
+				sb.append("assert(label(").append(TuPrologHelper.escape(msgLabels.get(k).toString())).append(")), ");
 			});
 		sb.append("receives_label(X), ");
 		sb.append("rule_priority(X, P), ");

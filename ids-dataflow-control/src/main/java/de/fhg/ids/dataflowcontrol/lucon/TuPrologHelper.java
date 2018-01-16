@@ -56,7 +56,6 @@ public final class TuPrologHelper {
         return sb.toString();
     }
 
-    @SuppressWarnings("null")
 	@NonNull
     public static Stream<? extends Term> listStream(@Nullable Term list) {
         if (list == null) {
@@ -73,7 +72,7 @@ public final class TuPrologHelper {
     @Nullable
     public static String unquote(@Nullable String s) {
     	if (s == null) {
-    		return s;
+    		return null;
     	}
         if (s.length() > 2 && s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\'') {
             return s.substring(1, s.length() - 1);

@@ -71,16 +71,30 @@ public class LuconLibrary extends Library {
         "intersects([H|_],List) :- member(H,List), !.\n" +
         "intersects([_|T],List) :- intersects(T,List).\n" +
         "\n" +
-        "update_labels(In, S, Out) :-                                 % Updates labels according to spec. of service S\n" +
-        "  once(creates_label(S, A); A = []), union(In, A, I),        % adding new labels added by S\n" +
-        "  once(removes_label(S, R); R = []), deletelist(I, R, Out).  % and removing labels removed by S\n" +
+        "get_labels(Out) :-\n" +
+        "  once(setof(L, label(L), Out) ; Out = []).              % collect and return labels\n" +
+        "  \n" +
+        "assert_labels(L, A) :- assert_labels(L, A, []).\n" +
+        "assert_labels([], A, A).\n" +
+        "assert_labels([L|Tail], Ar, A) :- label(L), assert_labels(Tail, Ar, A), !.\n" +
+        "assert_labels([L|Tail], Ar, A) :- assert(label(L)), assert_labels(Tail, Ar, [L|A]).\n" +
+        "\n" +
+        "retract_labels(L, R) :- retract_labels(L, R, []).\n" +
+        "retract_labels([], R, R).\n" +
+        "retract_labels([L|Tail], Rr, R) :- retract(label(L)), retract_labels(Tail, Rr, [L|R]), !.\n" +
+        "retract_labels([L|Tail], Rr, R) :- retract_labels(Tail, Rr, R).\n" +
+        "\n" +
+        "update_labels(In, S, Out, Aout, Rout) :-                       % Updates labels according to spec. of service S\n" +
+        "  once(creates_label(S, A); A = []), assert_labels(A, Aout),   % assert new labels added by S\n" +
+        "  once(removes_label(S, R); R = []), retract_labels(R, Rout),  % retract labels removed by S\n" +
+        "  get_labels(Out).                                             % collect and return labels\n" +
         "\n" +
         "all_ground([]).\n" +
         "all_ground([Head|Tail]) :- ground(Head), all_ground(Tail).\n" +
         "\n" +
         "cache_put_all_unsafe(KL, []).\n" +
         "cache_put_all_unsafe(KL, [V|T]) :- cache_put_unsafe(KL, V), cache_put_all_unsafe(KL, T).\n" +
-        "cache_put_unsafe(KL, V) :- \n" +
+        "cache_put_unsafe(KL, V) :-\n" +
         "  %print([\"CACHE PUT: \"|[KL, V]]), nl,\n" +
         "  assertz(cache_entry(KL, V)).\n" +
         "\n" +
@@ -103,7 +117,7 @@ public class LuconLibrary extends Library {
         "  cache_get([dr, Act, Req, DC], V),      % CACHE GET entry\n" +
         "  list(V), V = [S, R].                   % unpack result\n" +
         "\n" +
-        "dominant_rules(Act, Req, DC, S, R) :-  % Find the dominant rule R for action Act  [ O(|Ep_S|² x |S -- R|²) ]\n" +
+        "dominant_rules(Act, Req, DC, S, R) :-  % Find the dominant rule R for action Act  [ O(|Ep_S| x |S -- R|) ]\n" +
         "  \\+(cache_get([dr, Act, Req, DC], V)),     % CACHE GET entry\n" +
         "  (setof(DomRule, (\n" +
         "    action_service(Act, Si),                  % Action Act is matched by a service S  [ O(|Ep_S|) ]\n" +
@@ -130,33 +144,35 @@ public class LuconLibrary extends Library {
         "%\n" +
         "%   path(stmt_1, stmt_5, Trace).\n" +
         "%\n" +
-        "path(A,B,T) :-                    % Two nodes are connected if we can walk from A to B,\n" +
-        "  trace_walk(A,B,[],[[A,[]]],T).  % starting with empty label list\n" +
+        "path(A,B,T) :-                              % Two nodes are connected if we can walk from A to B,\n" +
+        "  trace_walk(A, B, [], [[A, []]], T).       % starting with empty label list\n" +
         "\n" +
-        "trace_walk(A, B, L, Log, T) :-             % We have walked from A to B and verify  [ O(|Ep_S|² x |S -- R|²) ]\n" +
-        "  A = B,                                   %   A is the desired destination with  [ O(1) ]\n" +
-        "  has_action(A, Act),                      %   an action Act and there is  [ O(1) ]\n" +
-        "  dominant_drop_rules(Act, S, R),          %   a dominant drop rule R and service S for Act [ O(|Ep_S|² x |S -- R|²) ]\n" +
-        "  (                                        %   AND\n" +
-        //"    receives_label(R, any),                %     R receives either any set of labels  [ O(1) ]\n" +
-        "	 assert(any), " +
-        "    T = [[S, any, R]|Log]                  %     [unify the recursion result with Out]  [ O(1) ]\n" +
-        "    ;                                      %     or\n" +
-        //"    receives_label(R, Forbidden),          %     R receives a set of labels with  [ O(1) ]\n" +
-        "	 assert(Forbidden), " +
-        "    intersects(Forbidden, L),              %     non-empty intersection with C  [ O(|Forbidden|), assume O(1) ]\n" +
-        "    T = [[S, Forbidden, R]|Log]            %     [unify the recursion result with Out]  [ O(1) ]\n" +
-        "  ).                                       %\n" +
-        "  %, print(A),nl.\n" +
+        "trace_walk(A, B, L, Log, T) :-              % We have walked from A to B and verify  [ O(|Ep_S| x |S -- R|) ]\n" +
+        "  A = B,                                    %   A is the desired destination with  [ O(1) ]\n" +
+        "  has_action(A, Act),                       %   an action Act and there is  [ O(1) ]\n" +
+        "  dominant_drop_rules(Act, S, R),           %   a dominant drop rule R and service S for Act [ O(|Ep_S| x |S -- R|) ]\n" +
+        "  (                                         %   AND\n" +
+        "    receives_label(R),                      %     R receives a set of labels with  [ assume O(1) ]\n" +
+        "    get_labels(LC),                         %     get asserted labels  [ O(L_a), assume O(1) ]\n" +
+        "    T = [[S, LC, R]|Log]                    %     [unify the recursion result with Out]  [ O(1) ]\n" +
+        "  ).                                        %\n" +
+        "  %print(\"finished (END): \"), print(A), nl.\n" +
         "\n" +
-        "trace_walk(A, B, L, Log, T) :-             % We can walk from A to B if  [ O(|Ep_S|² x |S -- R|²) ]\n" +
-        "  succ(A,X),                               %   A is connected to X and there is  [ O(|succ(A, _)|), assume O(1) ]\n" +
-        "  has_action(A, Act),                      %   an action Action and there is  [ O(1) ]\n" +
-        "  dominant_allow_rules(Act, S, _),         %   a dominant allow rule and service S for Act  [ O(|Ep_S|² x |S -- R|²) ]\n" +
-        "  update_labels(L, S, LN),                 %   [update the labels for the next step]  [ O(|L|), assume O(1) ],\n" +
-        "  %print([\"transition: \", A, X, S, LN]), nl,\n" +
-        "  trace_walk(X, B, LN, [[X, LN]|Log], T).  %   we can get from X to B  [ Recursion! ]\n" +
-        "  %, print(A),nl.\n";
+        "trace_walk(A, B, L, Log, T) :-              % We can walk from A to B if  [ O(|Ep_S| x |S -- R|) ]\n" +
+        "  succ(A, X),                               %   A is connected to X and there is  [ O(|succ(A, _)|), assume O(1) ]\n" +
+        "  has_action(A, Act),                       %   an action Action and there is  [ O(1) ]\n" +
+        "  dominant_allow_rules(Act, S, _),          %   a dominant allow rule and service S for Act  [ O(|Ep_S| x |S -- R|) ]\n" +
+        "  update_labels(L, S, LN, Aout, Rout),      %   [update the labels for the next step]  [ O(|L|), assume O(1) ],\n" +
+        "  %print([Aout, Rout]), nl,\n" +
+        "  %print(\"transition: \"), print([A, X, S, LN]), nl,\n" +
+        "  (\n" +
+        "    trace_walk(X, B, LN, [[X, LN]|Log], T)  %   we can get from X to B  [ Recursion! ]\n" +
+        "    ; true                                  %   or otherwise, make sure that the cleanup stuff below gets called!\n" +
+        "  ),\n" +
+        "  retract_labels(Aout, _),                  %   retract labels asserted before recursion\n" +
+        "  assert_labels(Rout, _),                   %   assert labels retracted before recursion\n" +
+        "  %print(\"finished: \"), print(A), nl,\n" +
+        "  ground(T).                                %   If T is bound, recursion returned successfully, no result otherwise!\n";
     }
 
     private static boolean isComplex(@NonNull Term t) {

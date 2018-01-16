@@ -1,7 +1,7 @@
 rule(allowAll).
 rule_priority(allowAll,1).
 has_decision(allowAll,allow).
-receives_label(allowAll) :- any.
+receives_label(allowAll).
 has_target(allowAll,serviceAll).
 
 service(serviceURI).
