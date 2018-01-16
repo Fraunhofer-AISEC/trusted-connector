@@ -59,18 +59,6 @@ public class LuconLibrary extends Library {
     @Override
     public String getTheory() {
         return
-        "union(LIST,[],LIST).\n" +
-        "union(LIST,[A|TAIL],RESULT) :- member(A, LIST), union(LIST,TAIL,RESULT), !.\n" +
-        "union(LIST,[A|TAIL],[A|RESULT]) :- union(LIST,TAIL,RESULT).\n" +
-        "\n" +
-        "deletelist([], _, []).\n" +
-        "deletelist([X|Xs], Y, Z) :- member(X, Y), deletelist(Xs, Y, Z), !.\n" +
-        "deletelist([X|Xs], Y, [X|Zs]) :- deletelist(Xs, Y, Zs).\n" +
-        "\n" +
-        "% Helper function: Is intersection of lists non-empty?\n" +
-        "intersects([H|_],List) :- member(H,List), !.\n" +
-        "intersects([_|T],List) :- intersects(T,List).\n" +
-        "\n" +
         "get_labels(Out) :-\n" +
         "  once(setof(L, label(L), Out) ; Out = []).              % collect and return labels\n" +
         "  \n" +
