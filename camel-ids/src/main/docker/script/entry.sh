@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 USER_ID=$(stat -c "%u" /data/cml/tpm2d/communication/)
 echo "Starting with UID : $USER_ID"
-useradd --shell /bin/bash -u $USER_ID -o -c "" -m tpm2d
+useradd --shell /bin/sh -u $USER_ID -o -c "" -m tpm2d
 export HOME=/tpm2d
 chown -R tpm2d /tpm2d/
 chown -R tpm2d /data/
-nohup runuser -l tpm2d -c /tpm2d/tpm2_simulator &
+nohup su -l tpm2d -c /tpm2d/tpm2_simulator &
 sleep 2
-exec /usr/local/bin/gosu tpm2d "$@"
+exec /sbin/su-exec tpm2d "$@"
