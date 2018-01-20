@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/cor
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 import { Title } from '@angular/platform-browser';
+import { IntervalObservable } from "rxjs/observable/IntervalObservable";
+import 'rxjs/add/operator/takeWhile';
 
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription'
@@ -9,6 +11,7 @@ import { Subscription } from 'rxjs/Subscription'
 import { Route } from './route';
 import { RouteService } from './route.service';
 import { RouteMetrics } from './route-metrics';
+
 
 @Component({
     selector: 'route-list',
@@ -20,7 +23,7 @@ export class RoutesComponent implements OnInit, OnDestroy {
     routes: Route[];
     selectedRoute: Route;
     routemetrics: RouteMetrics = new RouteMetrics();
-    private timerSubscription: Subscription;
+    private alive: boolean;
 
     @Output() changeTitle = new EventEmitter();
 
@@ -35,13 +38,21 @@ export class RoutesComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.changeTitle.emit('Camel Routes');
         // Update route metrics every 1s
-        this.timerSubscription = Observable.timer(0, 1000).subscribe(() => {
-            this.routeService.getMetrics().subscribe(result => this.routemetrics = result);
-        });
+        IntervalObservable.create(2000)
+            .takeWhile(() => this.alive )
+            .flatMap(() => { 
+                return this.routeService.getMetrics();
+               })
+            .subscribe(res => this.routemetrics = res);
+        this.alive = true;
+//        
+//        this.timerSubscription = Observable.timer(0, 1000).subscribe(() => {
+//            this.routeService.getMetrics().subscribe(result => this.routemetrics = result);
+//        });
     }
 
     ngOnDestroy() {
-        this.timerSubscription.unsubscribe();
+        this.alive = false;
     }
 
     onSelect(route: Route): void {

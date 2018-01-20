@@ -16,7 +16,8 @@
 				<div class="mdl-cell--6-col">
 					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-group is-dirty">
 						<input type="text" class="mdl-textfield__input" id="ttp.host" formControlName="ttp_host">
-						<label class="mdl-textfield__label" for="ttp_host">Host of Remote Attestation Repository</label>
+						<label class="mdl-textfield__label" for="ttp_host">Host of Remote
+							Attestation Repository</label>
 						<span [hidden]="myForm.controls.ttp_host.valid || (myForm.controls.ttp_host.pristine && !submitted)" class="mdl-textfield__error"> URL required </span>
 					</div>
 				</div>
@@ -26,6 +27,19 @@
 						<label class="mdl-textfield__label" for="ttp_port">Port of Remote Attestation Repository</label>
 						<span [hidden]="myForm.controls.ttp_port.valid || (myForm.controls.ttp_port.pristine && !submitted)" class="mdl-textfield__error"> URL required </span>
 					</div>
+				</div>
+				<div class="mdl-cell--12-col">
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col form-group is-dirty">
+						<input class="mdl-textfield__input" id="acme_url" type="text" formControlName="acme_url">
+						<label class="mdl-textfield__label" for="acme_url">ACME Server URL</label>
+						<span [hidden]="myForm.controls.acme_url.valid || (myForm.controls.acme_url.pristine && !submitted)" class="mdl-textfield__error">ACME URL is required </span>
+					</div>
+				</div>
+				<div class="mdl-cell--12-col">
+					<label class="mdl-checkbox mdl-js-checkbox" for="announce_by_gossip">
+	                  <input type="checkbox" id="announce_by_gossip" class="mdl-checkbox__input" formControlName="announce_by_gossip" checked="{{myForm.controls.announce_by_gossip.value}}">
+	                  <span class="mdl-checkbox__label">Announce Connector Globally</span>
+	               	</label>
 				</div>
 				<div class=" mdl-cell--10-col">
 					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">Save	Settings</button>

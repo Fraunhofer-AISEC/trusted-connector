@@ -33,6 +33,8 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
             broker_url: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
             ttp_host: ['', [<any>Validators.required, <any>Validators.minLength(3)]],
             ttp_port: ['', [<any>Validators.required, <any>Validators.maxLength(5)]],
+            announce_by_gossip: [],
+            acme_url: ['', [<any>Validators.required, <any>Validators.maxLength(5)]],
         });
 
         // subscribe to form changes
@@ -44,6 +46,8 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
                 (<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
                 (<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
                 (<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
+                (<FormControl>this.myForm.controls['acme_url']).setValue(this.data.acme_url, { onlySelf: true });
+                (<FormControl>this.myForm.controls['announce_by_gossip']).setValue(this.data.announce_by_gossip, { onlySelf: true });
             }
         );
 

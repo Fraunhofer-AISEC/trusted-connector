@@ -26,10 +26,16 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+
+import org.osgi.service.prefs.PreferencesService;
+
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
  * REST API interface for platform metrics.
@@ -50,7 +56,7 @@ public class MetricAPI {
 	@GET
 	@Path("get")
 	@Produces("application/json")
-	public Map<String, String> list() {
+	public Map<String, String> getMetrics() {
 		HashMap<String, String> result = new HashMap<>();
 		
 		OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
