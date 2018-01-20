@@ -22,7 +22,9 @@ package de.fhg.aisec.ids.webconsole.api;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.ws.rs.GET;
@@ -164,13 +166,15 @@ public class AppApi {
 	@GET
 	@Path("cml_version")
 	@Produces("application/json")
-	public String getCml() {
+	public Map<String,String> getCml() {
+		Map<String,String> result = new HashMap<>();
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
 		if (!cml.isPresent()) {
-			return "";
+			return result;
 		}
 		
-		return cml.get().getVersion();
+		result.put("cml_version", cml.get().getVersion());
+		return result;
 	}	
 }

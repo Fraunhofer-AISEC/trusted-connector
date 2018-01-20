@@ -1,30 +1,34 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http, Response } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import 'rxjs/add/operator/map';
-import { environment } from '../../environments/environment';
-
+import {  environment } from '../../environments/environment';
+import { Observable } from "rxjs";
+import { IntervalObservable } from "rxjs/observable/IntervalObservable";
+import 'rxjs/add/operator/takeWhile';
 
 @Injectable()
 export class MetricService {
     private metricObservable;
+    private alive = false;
 
-    constructor(private http: Http) {
-        this.metricObservable = Observable
-            .timer(0, 2000)
-            .flatMap(() => { return this.getMetric(); });
+    constructor( private http: HttpClient ) {
+        this.metricObservable = IntervalObservable.create( 5000 )
+            .takeWhile(() => this.alive )
+            .flatMap(() => {
+                return this.http.get( environment.apiURL + "/metric/get" );
+            } );
+        this.alive = true;
+    }
+    
+    ngOnDestroy() {
+        this.alive = false; // switches your IntervalObservable off
     }
 
     getMetric() {
-        return this.http.get(environment.apiURL + "/metric/get")
-            .map(response => {
-                var result = response.json();
-                console.log(result);
-                return result;
-            });
+        return this.http.get( environment.apiURL + "/metric/get" );
     }
-    
-    getMetricObservable() : Observable<any> {
+
+    getMetricObservable(): Observable<any> {
         return this.metricObservable;
     }
 }

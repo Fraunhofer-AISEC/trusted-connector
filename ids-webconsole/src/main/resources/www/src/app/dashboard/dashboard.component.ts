@@ -35,7 +35,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   ngOnInit(): void {
     this.changeTitle.emit('Dashboard');
     this.routeService.listComponents().subscribe(result => {this.camelComponents = result});
-    this.appService.getCmlVersion().subscribe(result => {this.cmlVersion = result});
+    this.appService.getCmlVersion().subscribe(result => {this.cmlVersion = result.cml_version});
     this.policyService.getPolicies().subscribe(result => {this.policies = result.length});
     this.metricService.getMetricObservable().subscribe(result => {this.metric = result});
   }

@@ -1,39 +1,36 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http, Response, ResponseContentType } from '@angular/http';
+//import { Headers, Http, Response } from '@angular/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { Observable } from "rxjs";
 
 import 'rxjs/add/operator/map';
 
 import { App } from './app';
+import { Cml } from './cml';
+import {Result} from '../result';
 
 import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AppService {
-  constructor(private http: Http) { }
-
-  getApps() {
-    return this.http.get(environment.apiURL + '/apps/list/')
-      .map(response => {
-        return response.json() as App[];
-      });
+  constructor(private http: HttpClient) {
+    console.log("constructor AppService");
   }
 
-  stopApp(appId: string) {
-    return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId)
-      .map(response => {
-        return response.json() as string;
-      });
+  getApps(): Observable<App[]> {
+    return this.http.get(environment.apiURL + '/apps/list/') as Observable<App[]>;
   }
 
-  startApp(appId: string) {
-    return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId)
-      .map(response => {
-        return response.json() as string;
-      });
+  stopApp(appId: string): Observable<Result> {
+      return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId) as Observable<Result>;
   }
 
-  getCmlVersion() {
-    return this.http.get(environment.apiURL + '/apps/cml_version').map(res => res.text());
+  startApp(appId: string): Observable<Result> {
+      return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId) as Observable<Result>;
+  }
+
+  getCmlVersion(): Observable<Cml> {
+    return this.http.get(environment.apiURL + '/apps/cml_version') as Observable<Cml>;
   }
 
 }
