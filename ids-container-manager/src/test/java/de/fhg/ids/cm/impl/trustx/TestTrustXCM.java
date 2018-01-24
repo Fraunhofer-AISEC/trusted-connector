@@ -20,7 +20,6 @@
 package de.fhg.ids.cm.impl.trustx;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,10 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -69,6 +65,8 @@ public class TestTrustXCM {
 
 	@BeforeClass
 	public static void setup() throws IOException {
+		Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows"));
+
 		//create (and delete) socket file
 		File socketFile = new File(socket);
 		socketFile.delete();
