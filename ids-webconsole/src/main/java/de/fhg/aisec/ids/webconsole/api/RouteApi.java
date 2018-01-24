@@ -96,6 +96,21 @@ public class RouteApi {
 		return Response.ok(oRoute).build();
 	}
 
+	@GET
+	@Path("/getAsString/{id}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAsString(@PathParam("id") String id) {
+		Optional<RouteManager> rmOpt = WebConsoleComponent.getRouteManager();
+		if (!rmOpt.isPresent()) {
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
+		}
+		String routeAsString = rmOpt.get().getRouteAsString(id);
+		if (routeAsString == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
+		}
+		return Response.ok(routeAsString).build();
+	}
+
 	/**
 	 * Stop a route based on an id.
 	 */
@@ -118,9 +133,9 @@ public class RouteApi {
 
 	@POST
 	@Path("save")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Result saveRoute(RouteObject route) {
+	public Result saveRoute(String routeDefinition) {
 		Result result = new Result();
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
@@ -130,7 +145,7 @@ public class RouteApi {
 		}
 
 		try {
-			rm.get().addRoute(route);
+			rm.get().addRoute(routeDefinition);
 		} catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
 			result.setSuccessful(false);

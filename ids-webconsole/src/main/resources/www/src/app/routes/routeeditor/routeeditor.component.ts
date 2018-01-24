@@ -20,6 +20,7 @@ declare var Viz: any;
 })
 export class RouteeditorComponent implements OnInit {
   private _route: Route = new Route();
+  private _textRepresentation: string = null;
   private _validationInfo: ValidationInfo = new ValidationInfo();
   public myForm: FormGroup;
   private _result: Result = new Result();
@@ -42,10 +43,23 @@ export class RouteeditorComponent implements OnInit {
     return this._route;
   }
 
+  get textRepresentation() {
+    return this._textRepresentation;
+  }
+
+  set textRepresentation(textRepresentation: string) {
+    let trimmedTextRep = textRepresentation.trim();
+    this._saved = this._saved && (this._textRepresentation === trimmedTextRep);
+    if (!this._saved) {
+      console.log('Need to save text: ' + trimmedTextRep);
+    }
+    this._textRepresentation = trimmedTextRep;
+  }
+
   get validationInfo() {
     return this._validationInfo;
   }
-  
+
   get result() {
     return this._result;
   }
@@ -68,12 +82,16 @@ export class RouteeditorComponent implements OnInit {
 
         this.dotResolver(route.dot);
 
-        if(this._route.status == "Started") {
-          this.statusIcon = "stop";
+        if (this._route.status === 'Started') {
+          this.statusIcon = 'stop';
         } else {
           this.statusIcon = 'play_arrow';
         }
       });
+
+      this.routeService.getRouteAsString(id).subscribe(routeString => {
+        this._textRepresentation = routeString.trim();
+      })
 
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {
         this._validationInfo = validationInfo;
@@ -119,21 +137,11 @@ export class RouteeditorComponent implements OnInit {
     }
   }
 
-  onRouteDefinitionChanged(newTxtRepresentation: string): void {
-    if (!this.route.txtRepresentation || newTxtRepresentation.trim() !== this.route.txtRepresentation.trim()) {
-      this._saved = false;
-      // Because ace-editor is a nested component, FormBuilder does not hook in properly and we need to save content here.
-      this.route.txtRepresentation = newTxtRepresentation;
-    } else {
-      this._saved = true;
-    }
-  }
-
   save(model: any) {
     this._saved = true;
 
     // Call REST POST to store settings
-    let storePromise = this.routeService.save(this.route);
+    let storePromise = this.routeService.save(this._textRepresentation);
     storePromise.subscribe(
       (result) => {
         // If saved successfully, user may leave the route (=saved=true)

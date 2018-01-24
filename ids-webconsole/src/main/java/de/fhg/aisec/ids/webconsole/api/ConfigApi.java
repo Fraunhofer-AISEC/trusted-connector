@@ -259,7 +259,7 @@ public class ConfigApi {
 				String hostIdentifier = endpoint.getHost() + ":" + endpoint.getPort();
 				String endpointIdentifier = "noRouteFound" + "-" + hostIdentifier;
     			for(RouteObject route: routeObjects) {
-					String label = route.getTxtRepresentation();
+					String label = routeManager.get().getRouteAsString(route.getId());
 					if(label != null  && label.contains("idsserver") && label.contains(hostIdentifier)) {
 						endpointIdentifier = route.getId() + "-"+ hostIdentifier;
 					} 

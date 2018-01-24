@@ -87,11 +87,11 @@ public interface RouteManager {
 	 * If the route id already exists, this method will throw a RouteException 
 	 * and not overwrite the existing route. 
 	 * 
-	 * @param route
+	 * @param routeDefinition
 	 * @throws RouteException if a route with the same id already exists or if any 
 	 * Exception is thrown during loading and starting the route.
 	 */
-	void addRoute(RouteObject route) throws RouteException;
+	void addRoute(String routeDefinition) throws RouteException;
 
 	
 	/**
