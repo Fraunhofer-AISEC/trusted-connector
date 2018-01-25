@@ -46,8 +46,10 @@ import de.fhg.aisec.ids.rm.util.GraphProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
 import org.apache.camel.model.ModelHelper;
+import org.apache.camel.model.OptionalIdentifiedDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
 import org.apache.camel.spi.ManagementAgent;
@@ -271,7 +273,6 @@ public class RouteManagerService implements RouteManager {
 					}
 				} catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException | JAXBException e) {
 					LOG.error(e.getMessage(), e);
-					continue;
 				}
 			}
 		}
@@ -299,16 +300,11 @@ public class RouteManagerService implements RouteManager {
 	private List<CamelContext> getCamelContexts() {
 		List<CamelContext> camelContexts = new ArrayList<>();
         try {
-            ServiceReference<?>[] references = this.ctx.getBundleContext().getServiceReferences(CamelContext.class.getName(), null);
+            ServiceReference<?>[] references = this.ctx.getBundleContext()
+					.getServiceReferences(CamelContext.class.getName(), null);
             if (references != null) {
-                for (ServiceReference<?> reference : references) {
-                    if (reference != null) {
-                        CamelContext camelContext = (CamelContext) this.ctx.getBundleContext().getService(reference);
-                        if (camelContext != null) {
-                            camelContexts.add(camelContext);
-                        }
-                    }
-                }
+				Arrays.stream(references).map(this.ctx.getBundleContext()::getService).filter(Objects::nonNull)
+						.map(CamelContext.class::cast).forEach(camelContexts::add);
             }
         } catch (Exception e) {
             LOG.warn("Cannot retrieve the list of Camel contexts.", e);
@@ -421,32 +417,30 @@ public class RouteManagerService implements RouteManager {
 		return null;
 	}
 
+	/**
+	 * Create a new route in a fresh context from text
+	 * @param routeRepresentation The textual representation of the route to be inserted
+	 * @throws RouteException If a route with that name already exists
+	 */
 	@Override
-	public void addRoute(@Nullable String routeRepresentation) throws RouteException {
-		if (routeRepresentation==null) {
-			return;
-		}
-
+	public void addRoute(@NonNull String routeRepresentation) throws RouteException {
 		LOG.debug("Adding new route: " + routeRepresentation);
-		List<CamelContext> ccs = getCamelContexts();
-		if (ccs.isEmpty()) {
-			LOG.warn("No camel context found");
-			return;
-		}
 		List<RouteObject> existingRoutes = this.getRoutes();
-		CamelContext cCtx = ccs.get(0);
-		try (ByteArrayInputStream bis = new ByteArrayInputStream(routeRepresentation.getBytes())) {
+		//@todo: Need to verify that this or the call to CamelContext.start() below actually registers the route properly
+		CamelContext cCtx = new DefaultCamelContext();
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(routeRepresentation.getBytes("UTF-8"))) {
 			// Load route(s) from XML
 			RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
 			List<RouteDefinition> routes = rd.getRoutes();
-
 			// Check that intersection of existing and new routes is empty (=we do not allow overwriting existing route ids)
-			List<String> intersect = routes.stream().filter(r -> existingRoutes.stream().anyMatch(er -> er.getId().equals(r.getId()))).map(x -> x.getId()).collect(Collectors.toList());
+			List<String> intersect = routes.stream()
+					.filter(r -> existingRoutes.stream().anyMatch(er -> er.getId().equals(r.getId())))
+					.map(OptionalIdentifiedDefinition::getId).collect(Collectors.toList());
 			if (!intersect.isEmpty()) {
-				throw new RouteException("Route id already exists. Will not overwrite it. " + String.join(",", intersect));
+				throw new RouteException("Route id already exists. Will not overwrite it. "
+						+ String.join(", ", intersect));
 			}
 			cCtx.addRouteDefinitions(routes);
-			getCamelContexts().add(cCtx);
 			cCtx.start();
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
