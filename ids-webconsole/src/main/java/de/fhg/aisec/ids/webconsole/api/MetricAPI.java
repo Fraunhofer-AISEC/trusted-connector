@@ -45,7 +45,7 @@ public class MetricAPI {
 	/**
 	 * Returns map of metrics.
 	 *
-	 * @return
+	 * @return Map with system metrics
 	 */
 	@GET
 	@Path("get")
@@ -56,10 +56,12 @@ public class MetricAPI {
 		OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
 		MemoryMXBean mem = ManagementFactory.getMemoryMXBean();
 		ThreadMXBean threads = ManagementFactory.getThreadMXBean();
-		ClassLoadingMXBean cl = ManagementFactory.getClassLoadingMXBean();		
+		ClassLoadingMXBean cl = ManagementFactory.getClassLoadingMXBean();
+
+		double loadAvg = os.getSystemLoadAverage();
 		
 		result.put("cpu.availableprocessors", String.valueOf(Runtime.getRuntime().availableProcessors()));
-		result.put("cpu.loadavg", String.valueOf(os.getSystemLoadAverage()));
+		result.put("cpu.loadavg", loadAvg >= 0 ? String.valueOf(loadAvg) : "N/A");
 		result.put("mem.free", String.valueOf(Runtime.getRuntime().freeMemory()));
 		result.put("mem.max", String.valueOf(Runtime.getRuntime().maxMemory()));
 		result.put("mem.total", String.valueOf(Runtime.getRuntime().totalMemory()));
