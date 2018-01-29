@@ -16,7 +16,6 @@ Import-Package: \
 	!javax.script,\
 	!cli.System.Reflection,\
 	!com.google.gson,\
-	!com.google.common.cache,\
 	!ikvm.runtime,\
 	!alice.tuprolog*,\
 	*

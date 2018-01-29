@@ -54,7 +54,13 @@
 			<artifactId>org.osgi.annotation</artifactId>
 			<version>6.0.0</version>
 		</dependency>
-		
+
+		<!-- Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+				
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
 			<artifactId>org.checkerframework.checker-qual</artifactId>
