@@ -15,8 +15,8 @@
 			<div class="mdl-card__supporting-text">
 				{{route.description}}
 				<div class="mdl-grid">
-					<div class="mdl-cell mdl-cell--6-col">Uptime</div>
-					<div class="mdl-cell mdl-cell--6-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+					<div class="mdl-cell mdl-cell--6-col">Ctx Uptime</div>
+					<div class="mdl-cell mdl-cell--6-col">{{(route.uptime / 1000 / 60).toFixed()}} minutes</div>
 					<div class="mdl-cell mdl-cell--6-col">Context</div>
 					<div class="mdl-cell mdl-cell--6-col">{{route.context}}</div>
 					<div class="mdl-cell mdl-cell--6-col">Status</div>
@@ -29,7 +29,7 @@
 				Visualization
 			</div>
 			<div class="mdl-card__supporting-text">
-				<zoom-viz [dotPromise]="dotPromise"></zoom-viz>
+				<zoom-viz [dotSubject]="dotSubject"></zoom-viz>
 			</div>
 		</div>
 

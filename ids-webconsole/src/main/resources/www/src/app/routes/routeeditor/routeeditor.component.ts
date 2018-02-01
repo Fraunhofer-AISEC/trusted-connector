@@ -1,15 +1,17 @@
-import {Component, Input, OnInit, ElementRef, HostListener, ViewChild, Renderer2} from '@angular/core';
-import {DomSanitizer, SafeHtml, Title} from '@angular/platform-browser';
-import {ActivatedRoute, Router} from '@angular/router';
-import {FormGroup, FormControl, FormBuilder, Validators} from '@angular/forms';
+import { Component, Input, OnInit, ElementRef, HostListener, ViewChild, Renderer2 } from '@angular/core';
+import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 
-import {Result} from '../../result';
-import {Route} from '../route';
-import {RouteService} from '../route.service';
-import {ValidationInfo} from '../validation';
+import { Result, RouteResult } from '../../result';
+import { Route } from '../route';
+import { RouteService } from '../route.service';
+import { ValidationInfo } from '../validation';
 
 import 'rxjs/add/operator/switchMap';
-import {validateConfig} from '@angular/router/src/config';
+import { ReplaySubject } from 'rxjs';
+import { validateConfig } from '@angular/router/src/config';
+import { Observable } from 'rxjs/Observable';
 
 declare var Viz: any;
 
@@ -29,18 +31,29 @@ export class RouteeditorComponent implements OnInit {
   @ViewChild('vizCanvas')
   private vizCanvas: ElementRef;
   private svgElement: HTMLElement;
-
-  public readonly dotPromise: Promise<string>;
-  private dotResolver: (dot: string) => void;
+  private _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
   constructor(private titleService: Title, private _fb: FormBuilder, private router: Router,
     private navRoute: ActivatedRoute, private renderer: Renderer2, private routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
-    this.dotPromise = new Promise((resolve, reject) => this.dotResolver = resolve);
   }
 
   get route() {
     return this._route;
+  }
+
+  set route(route: Route) {
+    this._route = route;
+
+    // Update viz graph
+    this._dotSubject.next(route.dot);
+
+    // Update icon
+    if (this._route.status === 'Started') {
+      this.statusIcon = 'stop';
+    } else {
+      this.statusIcon = 'play_arrow';
+    }
   }
 
   get textRepresentation() {
@@ -50,9 +63,6 @@ export class RouteeditorComponent implements OnInit {
   set textRepresentation(textRepresentation: string) {
     let trimmedTextRep = textRepresentation.trim();
     this._saved = this._saved && (this._textRepresentation === trimmedTextRep);
-    if (!this._saved) {
-      console.log('Need to save text: ' + trimmedTextRep);
-    }
     this._textRepresentation = trimmedTextRep;
   }
 
@@ -68,6 +78,10 @@ export class RouteeditorComponent implements OnInit {
     return this._saved;
   }
 
+  get dotSubject() {
+    return this._dotSubject;
+  }
+
   ngOnInit(): void {
     this.navRoute.params.subscribe(params => {
       let id = params.id;
@@ -77,16 +91,8 @@ export class RouteeditorComponent implements OnInit {
       }
 
       this.routeService.getRoute(id).subscribe(route => {
-        this._route = route;
+        this.route = route;
         console.log('Route editor: Loaded route with id ' + this._route.id);
-
-        this.dotResolver(route.dot);
-
-        if (this._route.status === 'Started') {
-          this.statusIcon = 'stop';
-        } else {
-          this.statusIcon = 'play_arrow';
-        }
       });
 
       this.routeService.getRouteAsString(id).subscribe(routeString => {
@@ -139,20 +145,42 @@ export class RouteeditorComponent implements OnInit {
 
   save(model: any) {
     this._saved = true;
+    let id = this._route.id;
 
-    // Call REST POST to store settings
-    let storePromise = this.routeService.save(this._textRepresentation);
-    storePromise.subscribe(
-      (result) => {
-        // If saved successfully, user may leave the route (=saved=true)
-        this._result = result;
-        this._saved = true;
-        if (result.successful) {
-          this.router.navigate(['routes']);
+    // Call REST POST/PUT to store route
+    if (id) {
+      this.routeService.saveRoute(id, this._textRepresentation).subscribe(
+        result => {
+          // If saved successfully, user may leave the route editor
+          this._result = result;
+          this._saved = true;
+          if (result.successful) {
+            console.log('Route editor: Updated route with id ' + id);
+            this.route = result.route;
+            this.routeService.getValidationInfo(id).subscribe(validationInfo => {
+              this._validationInfo = validationInfo;
+            });
+          }
+        },
+        error => {
+          console.log(error);
         }
-      },
-      error => {
-       console.log(error);
-      });
+      );
+    } else {
+      this.routeService.addRoute(this._textRepresentation).subscribe(
+        result => {
+          // If created successfully, redirect user to routes overview
+          this._result = result;
+          this._saved = true;
+          if (result.successful) {
+            console.log('Route editor: Created route(s)');
+            this.router.navigate(['routes']);
+          }
+        },
+        error => {
+          console.log(error);
+        }
+      );
+    }
   }
 }

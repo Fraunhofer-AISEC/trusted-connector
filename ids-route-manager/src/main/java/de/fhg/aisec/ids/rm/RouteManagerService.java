@@ -46,6 +46,7 @@ import de.fhg.aisec.ids.rm.util.GraphProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
+import org.apache.camel.ServiceStatus;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
 import org.apache.camel.model.ModelHelper;
@@ -53,6 +54,7 @@ import org.apache.camel.model.OptionalIdentifiedDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
 import org.apache.camel.spi.ManagementAgent;
+import org.apache.camel.util.CamelContextHelper;
 import org.apache.camel.util.RouteStatDump;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -378,6 +380,11 @@ public class RouteManagerService implements RouteManager {
           return null;
 	}
 
+	/**
+	 * Retrieves the Prolog representation of a route
+	 *
+	 * @param routeId The id of the route that is to be exported
+	 */
 	@Override
 	public String getRouteAsProlog(@NonNull String routeId) {
 		Optional<CamelContext> c = getCamelContexts()
@@ -399,7 +406,12 @@ public class RouteManagerService implements RouteManager {
 
 			return "";
 	}
-	
+
+	/**
+	 * Retrieves the textual representation of a route
+	 *
+	 * @param routeId The id of the route that is to be exported
+	 */
 	@Override
 	@Nullable
 	public String getRouteAsString(@NonNull String routeId) {
@@ -418,7 +430,76 @@ public class RouteManagerService implements RouteManager {
 	}
 
 	/**
+	 * Save a route, replacing it with a new representation within the same context
+	 *
+	 * @param routeId ID of the route to save
+	 * @param routeRepresentation The new textual representation of the route (XML etc.)
+	 * @throws RouteException If the route does not exist or some Exception was thrown during route replacement.
+	 */
+	@Override
+	public RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation) throws RouteException {
+		LOG.debug("Save route \"" + routeId + "\": " + routeRepresentation);
+
+		CamelContext cCtx = null;
+		boolean routeStarted = false;
+
+		// Find the state and CamelContext of the route to be saved
+		for(CamelContext c : getCamelContexts()) {
+			Route targetRoute = c.getRoute(routeId);
+			if (targetRoute != null) {
+				cCtx = c;
+				ServiceStatus serviceStatus = cCtx.getRouteStatus(routeId);
+				routeStarted = serviceStatus == ServiceStatus.Started || serviceStatus == ServiceStatus.Starting;
+				break;
+			}
+		}
+		if (cCtx == null) {
+			LOG.error("Could not find route with id \"" + routeId + "\"");
+			throw new RouteException("Could not find route with id \"" + routeId + "\"");
+		}
+
+		// Check for validity of route representation
+		List<RouteDefinition> routes;
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(routeRepresentation.getBytes("UTF-8"))) {
+			// Load route(s) from XML
+			RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
+			routes = rd.getRoutes();
+			Optional<String> id = routes.stream().map(RouteDefinition::getId)
+					.filter(rid -> !routeId.equals(rid)).findAny();
+			if (id.isPresent()) {
+				throw new Exception("The new route representation has a different ID: " +
+						"Expected \"" + routeId + "\" but got \"" + id.get() + "\"");
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			throw new RouteException(e);
+		}
+
+		// Remove old route from CamelContext
+		try {
+			cCtx.removeRoute(routeId);
+		} catch (Exception e) {
+			LOG.error("Error while removing old route \"" + routeId + "\"", e);
+			throw new RouteException(e);
+		}
+
+		// Add new route and start it if it was started/starting before save
+		try {
+			RouteDefinition routeDefinition = routes.get(0);
+			cCtx.addRouteDefinition(routeDefinition);
+			if (routeStarted) {
+				cCtx.startRoute(routeDefinition.getId());
+			}
+			return routeDefinitionToObject(cCtx, routeDefinition);
+		} catch (Exception e) {
+			LOG.error("Error while adding new route \"" + routeId + "\"", e);
+			throw new RouteException(e);
+		}
+	}
+
+	/**
 	 * Create a new route in a fresh context from text
+	 *
 	 * @param routeRepresentation The textual representation of the route to be inserted
 	 * @throws RouteException If a route with that name already exists
 	 */

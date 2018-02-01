@@ -6,15 +6,15 @@
         {{route.description}}
         <div class="mdl-grid">
             <div class="mdl-grid mdl-cell--5-col">
-                <div class="mdl-cell mdl-cell--6-col">Uptime</div>
-                <div class="mdl-cell mdl-cell--6-col">{{(route.uptime/1000/60).toFixed()}} minutes</div>
+                <div class="mdl-cell mdl-cell--6-col">Ctx Uptime</div>
+                <div class="mdl-cell mdl-cell--6-col">{{(route.uptime / 1000 / 60).toFixed()}} minutes</div>
                 <div class="mdl-cell mdl-cell--6-col">Context</div>
                 <div class="mdl-cell mdl-cell--6-col">{{route.context}}</div>
                 <div class="mdl-cell mdl-cell--6-col">Status</div>
                 <div class="mdl-cell mdl-cell--6-col">{{route.status}}</div>
             </div>
             <div class="mdl-grid mdl-cell--7-col">
-                <zoom-viz class="zoom-viz" [dotPromise]="dotPromise"></zoom-viz>
+                <zoom-viz class="zoom-viz" [dotSubject]="dotSubject"></zoom-viz>
             </div>
         </div>
     </div>

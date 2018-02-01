@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 
-import { Result } from '../result';
+import { Result, RouteResult } from '../result';
 import { Route } from './route';
 import { RouteMetrics } from './route-metrics';
 import { ValidationInfo } from './validation';
@@ -45,11 +45,20 @@ export class RouteService {
     return this.httpClient.get(environment.apiURL + '/routes/startroute/' + routeId) as Observable<Result>;
   }
 
-  save(routeString: string): Observable<Result> {
-    // Save Camel route
+  saveRoute(routeId: string, routeString: string): Observable<RouteResult> {
+    // Update Camel route
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
-    console.log('Sending ' + routeString);
-    return this.httpClient.post(environment.apiURL + '/routes/save', routeString, { headers: headers }) as Observable<Result>;
+    console.log('Sending Update: ' + routeString);
+    return this.httpClient.post(environment.apiURL + '/routes/save/' + routeId,
+      routeString, { headers: headers }) as Observable<RouteResult>;
+  }
+
+  addRoute(routeString: string): Observable<Result> {
+    // Save new Camel route
+    const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
+    console.log('Sending New: ' + routeString);
+    return this.httpClient.put(environment.apiURL + '/routes/add',
+      routeString, { headers: headers }) as Observable<Result>;
   }
 
   listEndpoints(): Observable<string[]> {

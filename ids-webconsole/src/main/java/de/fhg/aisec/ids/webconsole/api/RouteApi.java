@@ -21,15 +21,11 @@ package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.*;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import de.fhg.aisec.ids.api.RouteResult;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -132,18 +128,39 @@ public class RouteApi {
 	}
 
 	@POST
-	@Path("save")
+	@Path("/save/{id}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Result saveRoute(String routeDefinition) {
-		Result result = new Result();
+	public RouteResult saveRoute(@PathParam("id") String id, String routeDefinition) {
+		RouteResult result = new RouteResult();
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			result.setMessage("no route manager");
+			result.setMessage("No Route Manager present!");
 			result.setSuccessful(false);
 			return result;
 		}
+		try {
+			result.setRoute(rm.get().saveRoute(id, routeDefinition));
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			result.setSuccessful(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
+	}
 
+	@PUT
+	@Path("/add")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result addRoute(String routeDefinition) {
+		Result result = new Result();
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			result.setMessage("No Route Manager present!");
+			result.setSuccessful(false);
+			return result;
+		}
 		try {
 			rm.get().addRoute(routeDefinition);
 		} catch (Exception e) {

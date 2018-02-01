@@ -78,6 +78,16 @@ public interface RouteManager {
 	public Map<String, Collection<String>> getEndpoints();
 	
 	public Map<String,String> listEndpoints();
+
+	/**
+	 * Save a route, replacing it with a new representation within the same context
+	 *
+	 * @param routeId ID of the route to save
+	 * @param routeRepresentation The new textual representation of the route (XML etc.)
+	 * @return The object representing the modified route
+	 * @throws RouteException If the route does not exist or some Exception was thrown during route replacement.
+	 */
+	RouteObject saveRoute(String routeId, String routeRepresentation) throws RouteException;
 	
 	/**
 	 * Adds a route and starts it.
@@ -87,7 +97,7 @@ public interface RouteManager {
 	 * If the route id already exists, this method will throw a RouteException 
 	 * and not overwrite the existing route. 
 	 * 
-	 * @param routeDefinition
+	 * @param routeDefinition Textual representation of the route (XML etc.)
 	 * @throws RouteException if a route with the same id already exists or if any 
 	 * Exception is thrown during loading and starting the route.
 	 */
@@ -112,7 +122,7 @@ public interface RouteManager {
 	 * 
 	 * For Apache Camel, this method will return the XML-based Camel DSL configuration file.
 	 * 
-	 * @return
+	 * @return String representation of the route
 	 */
 	String getRouteAsString(String routeId);
 	

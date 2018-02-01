@@ -4,6 +4,7 @@ import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 import {Result} from '../../result';
 import {Route} from '../route';
 import {RouteService} from '../route.service';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 declare var Viz: any;
 
@@ -17,24 +18,21 @@ export class RouteCardComponent implements OnInit {
   vizResult: SafeHtml;
   result: Result;
   statusIcon: string;
-  dotPromise: Promise<string>;
-  private dotResolver: (dot: string) => void;
+  dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
-  constructor(private sanitizer: DomSanitizer, private routeService: RouteService) {
-    this.dotPromise = new Promise ((resolve, reject) => this.dotResolver = resolve);
-  }
+  constructor(private sanitizer: DomSanitizer, private routeService: RouteService) {}
 
   get started() {
-    return this.route.status == 'Started';
+    return this.route.status === 'Started';
   }
 
   ngOnInit(): void {
-    if(this.route.status == 'Started') {
+    if (this.route.status === 'Started') {
       this.statusIcon = 'stop';
     } else {
       this.statusIcon = 'play_arrow';
     }
- 	  this.dotResolver(this.route.dot);
+    this.dotSubject.next(this.route.dot);
   }
 
   onStart(routeId: string): void {

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * IDS Core Platform API
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2017 - 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,37 +19,25 @@
  */
 package de.fhg.aisec.ids.api;
 
+import de.fhg.aisec.ids.api.router.RouteObject;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-/**
- * Generic result of an API call.
- */
-public class Result {
-	private boolean successful = true;
-	private String message = "ok";
-	
-	public Result() {
-		
-	}
-	
-	public Result(boolean success, @NonNull String msg) {
-		this.setSuccessful(success);
-		this.setMessage(msg);
-	}
+public class RouteResult extends Result {
+    private RouteObject route;
 
-	public boolean isSuccessful() {
-		return successful;
-	}
+    public RouteResult() {}
 
-	public void setSuccessful(boolean successful) {
-		this.successful = successful;
-	}
+    public RouteResult(@NonNull boolean success, @NonNull String msg, @Nullable RouteObject route) {
+        super(success, msg);
+        this.route = route;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public RouteObject getRoute() {
+        return route;
+    }
 
-	public void setMessage(@NonNull String message) {
-		this.message = message;
-	}
+    public void setRoute(@Nullable RouteObject route) {
+        this.route = route;
+    }
 }

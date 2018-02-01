@@ -8,8 +8,7 @@
   <div class="mdl-cell mdl-cell--6-col" *ngFor="let route of routes">
 		<route-card [route]="route"></route-card>
 	</div>
-    
-	<button [routerLink]="['/routeeditor']" style="position:absolute; bottom:30px; right: 30px; z-index:9999" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-  		<i class="material-icons">add</i>
-	</button>
 </div>
+<button [routerLink]="['/routeeditor']" style="position:absolute; bottom:30px; right: 30px; z-index:9999" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+  <i class="material-icons">add</i>
+</button>
