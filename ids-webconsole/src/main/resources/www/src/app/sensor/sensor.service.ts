@@ -1,9 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Headers, Http, Response } from '@angular/http';
 
+import 'rxjs/Rx';
 import { Observable } from 'rxjs/Observable';
-
-import 'rxjs/add/operator/map';
 
 import { environment } from '../../environments/environment';
 
@@ -17,8 +16,8 @@ export class SensorService {
 
   constructor(private http: Http) {
     console.log('constructor SensorService');
-    this.powerObservable = Observable.timer(0, 1000).map(() => this.getCurrentPower());
-    this.rpmObservable = Observable.timer(0, 1000).map(() => this.getCurrentRPM());
+    this.powerObservable = Observable.timer(0, 1000).mergeMap(() => this.getCurrentPower());
+    this.rpmObservable = Observable.timer(0, 1000).mergeMap(() => this.getCurrentRPM());
   }
 
   getCurrentPower() {
