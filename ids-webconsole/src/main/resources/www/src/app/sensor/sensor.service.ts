@@ -16,14 +16,9 @@ export class SensorService {
   private rpmObservable;
 
   constructor(private http: Http) {
-    console.log("constructor SensorService");
-    this.powerObservable = Observable
-      .timer(0, 1000)
-      .flatMap(() => { return this.getCurrentPower(); });
-
-    this.rpmObservable = Observable
-      .timer(0, 1000)
-      .flatMap(() => { return this.getCurrentRPM(); });
+    console.log('constructor SensorService');
+    this.powerObservable = Observable.timer(0, 1000).map(() => this.getCurrentPower());
+    this.rpmObservable = Observable.timer(0, 1000).map(() => this.getCurrentRPM());
   }
 
   getCurrentPower() {
