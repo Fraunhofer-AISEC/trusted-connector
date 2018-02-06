@@ -2,6 +2,7 @@ import { Component, Input, OnInit, ElementRef, ViewChild, Renderer2 } from '@ang
 
 import '../../../../node_modules/svg-pan-zoom';
 import { Subject } from 'rxjs/Subject';
+import { removeListener } from 'cluster';
 
 declare var Viz: any;
 
@@ -14,10 +15,11 @@ export class ZoomVizComponent implements OnInit {
   @Input() private dotSubject: Subject<string>;
   @Input() private dot: string;
   @ViewChild('vizCanvas') private vizCanvasRef: ElementRef;
-  @ViewChild('iLock') private lockIcon: ElementRef;
   private vizCanvas: HTMLElement;
-  private svgElement: SVGSVGElement;
+  private zoom?: SvgPanZoom.Instance;
   private isLocked = false;
+  private removeMoveListener: () => void = (() => undefined);
+  private isInitialized = false;
 
   constructor(private renderer: Renderer2) {}
 
@@ -27,24 +29,25 @@ export class ZoomVizComponent implements OnInit {
 
   ngOnInit(): void {
     this.vizCanvas = this.vizCanvasRef.nativeElement;
+    let container = document.createElement('div');
+    this.vizCanvas.appendChild(container);
     this.dotSubject.subscribe((dot) => {
-      let container = document.createElement('div');
+      // remove old mousemove listener that relies on old dimensions
+      this.removeMoveListener();
+      // replace old graph with new one
       container.innerHTML = Viz(dot);
-      while (this.vizCanvas.firstChild) {
-        this.vizCanvas.removeChild(this.vizCanvas.firstChild);
-      }
-      this.vizCanvas.appendChild(container);
-      this.svgElement = this.vizCanvas.getElementsByTagName('svg')[0];
+      let svgElement = this.vizCanvas.getElementsByTagName('svg')[0];
       let zoomFactor = 1.;
-      let someNode = this.svgElement.querySelector('g.node');
+      let someNode = svgElement.querySelector('g.node');
       if (someNode !== null) {
         zoomFactor = 50 / (someNode as HTMLElement).getBoundingClientRect().height;
       }
       if (zoomFactor > 1.) {
-        let mouseEnterListener = this.renderer.listen(this.vizCanvas, 'mouseenter', (e: MouseEvent) => {
-          // listener removes itself on first call
+        // lazy init on first mouseenter event
+        let mouseEnterListener = this.renderer.listen(this.vizCanvas, 'mouseenter', () => {
+          // listener removes itself upon first invocation, equivalent to jQuery's once()
           mouseEnterListener();
-          let zoom = svgPanZoom(this.svgElement, {
+          this.zoom = svgPanZoom(svgElement, {
             panEnabled: false,
             zoomEnabled: false,
             dblClickZoomEnabled: false,
@@ -52,32 +55,36 @@ export class ZoomVizComponent implements OnInit {
             maxZoom: Math.max(10, zoomFactor)
           });
           let canvasRect = this.vizCanvas.getBoundingClientRect();
-          let svgRect = this.svgElement.getBoundingClientRect();
+          let svgRect = svgElement.getBoundingClientRect();
           let canvasPad = (canvasRect.width - svgRect.width) / 2;
-          let zoomRect = (this.svgElement.firstChild as HTMLElement).getBoundingClientRect();
+          let zoomRect = (svgElement.firstChild as HTMLElement).getBoundingClientRect();
           let panXFactor = -(zoomFactor - 1);
           let panYFactor = -(zoomRect.height / svgRect.height * zoomFactor - 1);
-          this.renderer.listen(this.vizCanvas, 'mousemove', (e: MouseEvent) => {
+          this.removeMoveListener = this.renderer.listen(this.vizCanvas, 'mousemove', (e: MouseEvent) => {
             if (!this.isLocked) {
               canvasRect = this.vizCanvas.getBoundingClientRect();
               let x = e.x - canvasRect.left - canvasPad, y = e.y - canvasRect.top - canvasPad;
               // console.log((e.x - cRect.left) + " => " + Math.min(Math.max(0, x), svgRect.width));
               // console.log((e.y - cRect.top) + " => " + Math.min(Math.max(0, y), svgRect.height));
-              zoom.zoom(zoomFactor);
-              zoom.pan({
+              this.zoom.zoom(zoomFactor);
+              this.zoom.pan({
                 x: panXFactor * Math.min(Math.max(0, x), svgRect.width),
                 y: panYFactor * Math.min(Math.max(0, y), svgRect.height)
               });
             }
           });
-          this.renderer.listen(this.vizCanvas, 'mouseleave', (e: MouseEvent) => {
-            if (!this.isLocked) {
-              zoom.reset();
-            }
-          });
-          this.renderer.listen(this.vizCanvas, 'click', (e: MouseEvent) => {
-            this.isLocked = !this.isLocked;
-          });
+          // this must not run more than once, as events are registered on the unchanged vizCanvas element
+          if (!this.isInitialized) {
+            this.isInitialized = true;
+            this.renderer.listen(this.vizCanvas, 'mouseleave', () => {
+              if (!this.isLocked && this.zoom) {
+                this.zoom.reset();
+              }
+            });
+            this.renderer.listen(this.vizCanvas, 'click', () => {
+              this.isLocked = !this.isLocked;
+            });
+          }
         });
       }
     });
