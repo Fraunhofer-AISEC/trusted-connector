@@ -15,6 +15,7 @@ import { RouteMetrics } from './route-metrics';
 @Component({
     selector: 'route-list',
     templateUrl: './routes.component.html',
+    styleUrls: ['./routes.component.css']
 })
 
 export class RoutesComponent implements OnInit, OnDestroy {
