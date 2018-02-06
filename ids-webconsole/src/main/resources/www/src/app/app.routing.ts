@@ -17,7 +17,7 @@ import { ConnectionConfigurationComponent } from './connectionConfiguration/conn
 const appRoutes: Routes = [{
     path: '',
     redirectTo: '/dashboard',
-  	pathMatch: 'full'
+    pathMatch: 'full'
   }, {
     path: 'dashboard',
     component: DashboardComponent,

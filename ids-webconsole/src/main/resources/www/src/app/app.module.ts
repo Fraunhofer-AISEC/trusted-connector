@@ -1,7 +1,7 @@
 import { NgModule }      from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { HttpModule }     from '@angular/http';
-import { HttpClientModule } from "@angular/common/http";
+import { HttpClientModule } from '@angular/common/http';
 import { AceEditorModule } from 'ng2-ace-editor';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -45,8 +45,8 @@ import { routing } from './app.routing';
 
 import {PrettifyPipe} from './prettify-json.pipe';
 
-import {ConfirmService} from "./confirm/confirm.service";
-import {ConfirmComponent} from "./confirm/confirm.component";
+import {ConfirmService} from './confirm/confirm.service';
+import {ConfirmComponent} from './confirm/confirm.component';
 
 import { ConnectionReportComponent } from './connectionReport/connectionReport.component'
 import { ConnectionConfigurationComponent } from './connectionConfiguration/connectionConfiguration.component';
