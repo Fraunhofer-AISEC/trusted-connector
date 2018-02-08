@@ -51,7 +51,7 @@ export class ConnectionConfigurationComponent implements OnInit {
     // Call connection service API to store configurations
     this.connectionConfService.storeConfiguration(this.model).subscribe(
       () => {
-        console.log('Saved configuration ' + this.model.connection)
+        console.log('Saved configuration ' + this.model.connection);
         this.model.dirty = false;
       },
       err => console.log('Error occured while saving configuration ' + this.model.connection + ': ', err)
