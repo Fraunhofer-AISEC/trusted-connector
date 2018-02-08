@@ -26,7 +26,7 @@ import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.connectionsettings.ConnectionSettings;
+import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;

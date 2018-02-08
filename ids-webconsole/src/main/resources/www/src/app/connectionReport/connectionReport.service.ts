@@ -17,24 +17,18 @@ export class ConnectionReportService {
   constructor(private http: Http) { }
 
   getEndpoints() {
-    return this.http.get(environment.apiURL + '/connections/listendpointsonly')
-               .map(response => {
-                 return response.json() as Endpoint[];
-               }); 
+    return this.http.get(environment.apiURL + '/connections/endpoints')
+      .map(response => response.json() as Endpoint[]);
   }
 
   getIncomingConnections() {
-    return this.http.get(environment.apiURL + '/connections/listincoming')
-               .map(response => {
-                 return response.json() as IncomingConnection[];
-               });
+    return this.http.get(environment.apiURL + '/connections/incoming')
+      .map(response => response.json() as IncomingConnection[]);
   }
 
   getOutgoingConnections() {
-    return this.http.get(environment.apiURL + '/connections/listoutgoing')
-               .map(response => {
-                 return response.json() as OutgoingConnection[];
-               });
+    return this.http.get(environment.apiURL + '/connections/outgoing')
+      .map(response => response.json() as OutgoingConnection[]);
   }
 
 

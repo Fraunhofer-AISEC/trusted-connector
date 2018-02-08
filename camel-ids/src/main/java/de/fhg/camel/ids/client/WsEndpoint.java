@@ -74,28 +74,21 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class WsEndpoint extends AhcEndpoint {
     private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
-    private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<IDSCPOutgoingConnection>();
+    private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<>();
 
 	private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
     private final WsListener listener = new WsListener();
     private transient WebSocket websocket;
-    
-    private boolean ratSuccess = false;
 
-	@UriParam(label = "producer")
+    @UriParam(label = "producer")
     private boolean useStreaming;
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
     @UriParam(label = "attestation", defaultValue = "0", description = "defines the remote attestation mode: 0=BASIC, 1=ALL, 2=ADVANCED, 3=ZERO. default value is 0=BASIC. (see api/attestation.proto for more details)")
     private Integer attestation = 0;
     @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
-    private Integer attestationMask = 0; 
-    
-    //@UriParam(label = "sslContextParameters", description = "used to save the SSLContextParameters when connecting via idsclient:// ")
-    //private SSLContextParameters sslContextParameters;
-    Optional<ConnectionManager> connectionManager = IdsProtocolComponent.getConnectionManager();
-    private IDSPListener idspListener;
-    
+    private Integer attestationMask = 0;
+
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
     }
@@ -197,16 +190,17 @@ public class WsEndpoint extends AhcEndpoint {
         LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
         
         // Execute IDS protocol immediately after connect
-        this.idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(), this.getSslContextParameters());
+        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(), this.getSslContextParameters());
         websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
         // wait for IDS protocol to finish 
-        this.idspListener.semaphore().lockInterruptibly();
+        idspListener.semaphore().lockInterruptibly();
+        boolean ratSuccess;
         try {
-	        this.idspListener.isFinished().await();
+	        idspListener.isFinished().await();
         } finally {
-        	ratSuccess = this.idspListener.isAttestationSuccessful();
+        	ratSuccess = idspListener.isAttestationSuccessful();
         	//attestationResult = idspListener.getAttestationResult();
-        	this.idspListener.semaphore().unlock();
+        	idspListener.semaphore().unlock();
         }
         
         LOG.debug("remote attestation was successful: " + ratSuccess);
@@ -218,13 +212,11 @@ public class WsEndpoint extends AhcEndpoint {
         
         //Add Client Endpoint information to static List
         IDSCPOutgoingConnection ce = new IDSCPOutgoingConnection();
-        ce.setAttestationResult(this.idspListener.getAttestationResult());
+        ce.setAttestationResult(idspListener.getAttestationResult());
         ce.setEndpointIdentifier(this.getEndpointUri());
-        ce.setEndpointKey(this.getEndpointKey().toString()); 
+        ce.setEndpointKey(this.getEndpointKey());
         ce.setRemoteIdentity(websocket.getRemoteAddress().toString());
         outgoingConnections.add(ce);
-
-        
     }
 
     @Override

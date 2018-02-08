@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.connectionsettings;
+package de.fhg.aisec.ids.webconsole.api.data;
 
 
 public class ConnectionSettings {

@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import com.google.gson.Gson;
 import de.fhg.aisec.ids.webconsole.api.ConfigApi;
-import de.fhg.aisec.ids.webconsole.connectionsettings.ConnectionSettings;
+import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

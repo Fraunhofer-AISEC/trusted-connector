@@ -20,12 +20,14 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
@@ -46,42 +48,39 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 public class ConnectionAPI {
 	
 	@GET
-	@Path("listincoming")
-	@Produces("application/json")
-	public List<IDSCPIncomingConnection> listincoming() {
-		List<IDSCPIncomingConnection> result = new ArrayList<>();
+	@Path("/incoming")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<IDSCPIncomingConnection> getIncoming() {
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listIncomingConnections();
+			return connectionManager.get().listIncomingConnections();
+		} else {
+			return Collections.emptyList();
 		}
-
-		return result;
 	}
 	
 	@GET
-	@Path("listoutgoing")
-	@Produces("application/json")
-	public List<IDSCPOutgoingConnection> listoutgoing() {
-		List<IDSCPOutgoingConnection> result = new ArrayList<>();		
+	@Path("/outgoing")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<IDSCPOutgoingConnection> getOutgoing() {
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listOutgoingConnections();
+			return connectionManager.get().listOutgoingConnections();
+		} else {
+			return Collections.emptyList();
 		}
-
-		return result;
 	}
 	
 	@GET
-	@Path("listendpointsonly")
-	@Produces("application/json")
-	public List<IDSCPServerEndpoint> listAvailableEndpoints() {
-		List<IDSCPServerEndpoint> result = new ArrayList<>();
+	@Path("/endpoints")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<IDSCPServerEndpoint> getAvailableEndpoints() {
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
 		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listAvailableEndpoints();
+			return connectionManager.get().listAvailableEndpoints();
+		} else {
+			return Collections.emptyList();
 		}
-
-		return result;
 	}
 	
 	
