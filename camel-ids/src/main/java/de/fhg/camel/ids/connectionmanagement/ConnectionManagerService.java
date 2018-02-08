@@ -71,19 +71,15 @@ public class ConnectionManagerService implements ConnectionManager {
 	public List<IDSCPServerEndpoint> listAvailableEndpoints() {
 		List<IDSCPServerEndpoint> endpoints = new ArrayList<IDSCPServerEndpoint>();
 		
-		Iterator<Entry<String, ConnectorRef>> connectorIterator = WebsocketComponent.getConnectors().entrySet().iterator();
-	    while (connectorIterator.hasNext()) {
-	    	IDSCPServerEndpoint idscpendpoint = new IDSCPServerEndpoint();	
-	        Map.Entry<String, ConnectorRef> mapEntry = connectorIterator.next();
+		for (Map.Entry<String, ConnectorRef> mapEntry: WebsocketComponent.getConnectors().entrySet()) {
 	        ConnectorRef connectorRef = mapEntry.getValue();
-
+	        IDSCPServerEndpoint idscpendpoint = new IDSCPServerEndpoint();	
 	        idscpendpoint.setHost(connectorRef.getConnector().getHost());
 	        idscpendpoint.setPort(Integer.toString(connectorRef.getConnector().getPort()));
 	        idscpendpoint.setDefaultProtocol(connectorRef.getConnector().getDefaultProtocol());
 	        idscpendpoint.setEndpointIdentifier(connectorRef.getConnector().toString());
-	        endpoints.add(idscpendpoint);
-
-	    }
+	        endpoints.add(idscpendpoint);			
+		}
 
 		return endpoints;
 	}
@@ -93,9 +89,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	public List<IDSCPIncomingConnection> listIncomingConnections() {
 		List<IDSCPIncomingConnection> connections = new ArrayList<>();
 		
-		Iterator<Entry<String, ConnectorRef>> connectorIterator = WebsocketComponent.getConnectors().entrySet().iterator();
-	    while (connectorIterator.hasNext()) {
-	        Map.Entry<String, ConnectorRef> pair = connectorIterator.next();
+	    for (Map.Entry<String, ConnectorRef> pair: WebsocketComponent.getConnectors().entrySet()) {
 	        ConnectorRef connectorRef = pair.getValue();
 	        MemoryWebsocketStore memoryStore = connectorRef.getMemoryStore();
 	        WebsocketComponentServlet servlet = connectorRef.getServlet();
@@ -106,8 +100,7 @@ public class ConnectionManagerService implements ConnectionManager {
 	        	Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
 	
 		        //Every connection has a websocket. We collect connection information this way. 
-		        while(webSocketIterator.hasNext())  {
-		        	DefaultWebsocket dws = webSocketIterator.next();
+		        for(DefaultWebsocket dws: memoryStore.getAll())  {
 			    	IDSCPIncomingConnection incomingConnection = new IDSCPIncomingConnection();
 			    	incomingConnection.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
 			    	incomingConnection.setEndpointKey(dws.getConnectionKey());
