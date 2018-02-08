@@ -28,23 +28,23 @@ export class ConnectionReportComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.connectionService.getIncomingConnections().subscribe(inConnections => {
-      this.incomingConnections = inConnections;
-      console.log('incomingConnections');
-      console.log(this.incomingConnections);
-    });
+    this.connectionService.getIncomingConnections()
+      .retryWhen(errors => errors.delay(5000).take(6))
+      .subscribe(inConnections => {
+        this.incomingConnections = inConnections;
+      });
 
-    this.connectionService.getOutgoingConnections().subscribe(outConnections => {
-      this.outgoingConnections = outConnections;
-      console.log('outgoingConnections' + typeof this.outgoingConnections);
-      console.log(this.outgoingConnections);
-    });
+    this.connectionService.getOutgoingConnections()
+      .retryWhen(errors => errors.delay(5000).take(6))
+      .subscribe(outConnections => {
+        this.outgoingConnections = outConnections;
+      });
 
-    this.connectionService.getEndpoints().subscribe(endpointList => {
-      this.endpoints = endpointList;
-      console.log('endpoints' + typeof this.endpoints);
-      console.log(this.endpoints);
-    });
+    this.connectionService.getEndpoints()
+      .retryWhen(errors => errors.delay(5000).take(6))
+      .subscribe(endpointList => {
+        this.endpoints = endpointList;
+      });
   }
 
 }
