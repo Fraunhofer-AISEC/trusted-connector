@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.api.router;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +127,15 @@ public interface RouteManager {
 	 * @return String representation of the route
 	 */
 	String getRouteAsString(String routeId);
+
+	/**
+	 * Returns a List of URIs of the given route's inputs (from definitions)
+	 *
+	 * @param routeId The identifier of the route
+	 * @return The from (input) URIs of the route
+	 */
+	@NonNull
+	public List<String> getRouteInputUris(@NonNull String routeId);
 	
 	/**
 	 * Returns aggregated runtime metrics of all installed routes.

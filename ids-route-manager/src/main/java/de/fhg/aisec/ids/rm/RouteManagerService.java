@@ -49,10 +49,7 @@ import org.apache.camel.Route;
 import org.apache.camel.ServiceStatus;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
-import org.apache.camel.model.ModelHelper;
-import org.apache.camel.model.OptionalIdentifiedDefinition;
-import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.model.RoutesDefinition;
+import org.apache.camel.model.*;
 import org.apache.camel.spi.ManagementAgent;
 import org.apache.camel.util.CamelContextHelper;
 import org.apache.camel.util.RouteStatDump;
@@ -360,6 +357,20 @@ public class RouteManagerService implements RouteManager {
 		}
 		return result;
 	}
+
+	@Override
+	@NonNull
+	public List<String> getRouteInputUris(@NonNull String routeId) {
+		for (CamelContext ctx: getCamelContexts()) {
+			for (RouteDefinition rd : ctx.getRouteDefinitions()) {
+				if (routeId.equals(rd.getId())) {
+					return rd.getInputs().stream().map(FromDefinition::getUri)
+							.filter(Objects::nonNull).collect(Collectors.toList());
+				}
+			}
+		}
+		return Collections.emptyList();
+	}
 	
 	protected RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
 		JAXBContext context = JAXBContext.newInstance(RouteStatDump.class);
@@ -392,19 +403,19 @@ public class RouteManagerService implements RouteManager {
 				.filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
 				.findAny();
 			
-			if (c.isPresent()) {
-				try {
-					RouteDefinition rd = c.get().getRouteDefinition(routeId);
-					StringWriter writer = new StringWriter();
-					new PrologPrinter().printSingleRoute(writer, rd);
-					writer.flush();
-					return writer.toString();
-				} catch (IOException e) {
-					LOG.error("Error printing route to prolog " + routeId, e);
-				}
+		if (c.isPresent()) {
+			try {
+				RouteDefinition rd = c.get().getRouteDefinition(routeId);
+				StringWriter writer = new StringWriter();
+				new PrologPrinter().printSingleRoute(writer, rd);
+				writer.flush();
+				return writer.toString();
+			} catch (IOException e) {
+				LOG.error("Error printing route to prolog " + routeId, e);
 			}
+		}
 
-			return "";
+		return "";
 	}
 
 	/**

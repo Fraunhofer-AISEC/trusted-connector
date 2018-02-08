@@ -1,3 +1,8 @@
+.loading {
+  font-size: 2em;
+  margin: 1em;
+}
+
 table{
   width:100%;
   table-layout: fixed;
@@ -93,10 +98,14 @@ td{
 }
 
 .selectEndpoint {
-  height: 60px;
   border: 1px solid;
   padding: 10px;
 }
-.selectEndpoint select {
-  width: 700px;
+
+.selectEndpoint > button {
+  margin: .3em;
+}
+
+.no-upper {
+  text-transform: none;
 }

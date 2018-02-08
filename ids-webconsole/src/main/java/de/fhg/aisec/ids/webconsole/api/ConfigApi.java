@@ -19,43 +19,26 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import org.apache.camel.model.FromDefinition;
-import org.apache.camel.model.RouteDefinition;
+import com.google.gson.Gson;
+import de.fhg.aisec.ids.api.Constants;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.connectionsettings.ConnectionSettings;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import de.fhg.aisec.ids.api.Constants;
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
-import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.connectionsettings.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -65,32 +48,31 @@ import de.fhg.aisec.ids.webconsole.connectionsettings.*;
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
- *
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 @Path("/config")
 public class ConfigApi {
+	public final static String GENERAL_CONFIG = "General Configuration";
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
 	
-	@GET()
+	@GET
 	@Path("list")
-	public Map<String,String> get() {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Map<String, String> get() {
 		Optional<PreferencesService> cO = WebConsoleComponent.getConfigService();
-		
-		// if config service is not available at runtime, return empty map
 		if (!cO.isPresent()) {
-			return new HashMap<>();
+			throw new ServiceUnavailableException("PreferenceService not available");
 		}
 		
 		Preferences prefs = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
 		if (prefs == null) {
 			return new HashMap<>();
 		}
-
 		
 		HashMap<String, String> pMap = new HashMap<>();
 		try {
 			for (String key : prefs.keys()) {
-				pMap.put(key, prefs.get(key,null));
+				pMap.put(key, prefs.get(key, null));
 			}
 		} catch (BackingStoreException e) {
 			LOG.error(e.getMessage(), e);
@@ -101,223 +83,148 @@ public class ConfigApi {
 	@POST
 	@OPTIONS
 	@Path("set")
-	@Consumes("application/json")
-	public Response set(Map<String,String> settings) {
+	@Consumes(MediaType.APPLICATION_JSON)
+	public String set(Map<String, String> settings) {
 		Optional<PreferencesService> cO = WebConsoleComponent.getConfigService();
-		
-		if (settings==null) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+		if (!cO.isPresent()) {
+			throw new ServiceUnavailableException("PreferenceService not available");
 		}
 		
-		// if preferences service is not available at runtime, return empty map
-		if (!cO.isPresent()) {
-			return Response.serverError().encoding("no preferences service").build();
+		if (settings == null) {
+			throw new NotFoundException("Settings not found");
 		}
 		
 		// Store into preferences service
 		Preferences idsConfig = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
-		if (idsConfig==null) {
-			return Response.serverError().entity("no preferences registered for pid " + Constants.PREFERENCES_ID).build();
+		if (idsConfig == null) {
+			throw new WebApplicationException(Response.serverError()
+					.entity("no preferences registered for pid " + Constants.PREFERENCES_ID).build());
 		}
-		
-		for (Iterator<String> iterator = settings.keySet().iterator(); iterator.hasNext();) {
-			String key = iterator.next();
-			String value = settings.get(key);
-			idsConfig.put(key, value);
-		}
+
+		settings.forEach(idsConfig::put);
 		
 		try {
 			idsConfig.flush();
-			return Response.ok("ok").build();
+			return "ok";
 		} catch (BackingStoreException e) {
-			LOG.error(e.getMessage(), e);
-			return Response.serverError().entity(e.getMessage()).build();
+			throw new InternalServerErrorException(e);
 		}		
 	}
-	
-	/***
-	 * 
-	 * @param settings
-	 * @return
+
+	/**
+	 * Save connection configuration of a particular connection
+	 * @param connection The name of the connection
+	 * @param settings The connection configuration of the connection
+	 * @return "ok" String
 	 */
 	@POST
-	@Path("setconnectionconfigs")
-	@Consumes("application/json")
-	public Response setConnectionConfigurations(@QueryParam("connection") String connection,
-												Map<String,String> settings) {
-		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
-		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+	@Path("/connectionConfigs/{con}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public String setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings settings) {
+		PreferencesService preferencesService = WebConsoleComponent.getPreferencesServiceOrThrowSUE();
+
+		Preferences prefs = preferencesService.getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
 		
 		if (settings == null) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			throw new BadRequestException();
 		}
 		
 		//Check connection's settings exist
 		try {
-			String[] connections = prefs.keys();
-			boolean connExist = false;
-			for (int _i = 0; _i < connections.length; _i++) {
-				if(connections[_i].equals(connection)) {
-					connExist = true;
-					break;
-				}
-				
-			}
-			if(!connExist) {
-				return Response.status(500).entity("no such node").build();
+			if(Arrays.stream(prefs.keys()).noneMatch(connection::equals)) {
+				throw new NotFoundException();
 			}
 		} catch (BackingStoreException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new InternalServerErrorException(e);
 		}
-		
-		JsonObject sets = new JsonObject();
-		Gson gson = new Gson();
-		
-		for (Iterator<String> iterator = settings.keySet().iterator(); iterator.hasNext();) {
-			String key = iterator.next();
-			String value = settings.get(key);
-			switch (key) {
-			case "integrityProtectionandVerification" :
-			case "authentication":
-			case "serviceIsolation":
-			case "integrityProtectionVerificationScope":
-			case "appExecutionResources":
-			case "dataUsageControlSupport":
-			case "auditLogging":
-			case "localDataConfidentiality":
-				sets.addProperty(key, value);
-				break;
 
-			default:
-				return Response.status(Response.Status.BAD_REQUEST).build();
-			}
-		}
-		
-		
-		
-		prefs.put(connection, gson.toJson(sets));
-		prefs.get(connection, "");
-		
-	    return Response.status(200).entity("ok").build();
+		prefs.put(connection, new Gson().toJson(settings));
+		return "ok";
+
 	}
 	
-	/***
-	 * Sends back configuration of a connection
-	 * @param connection
-	 * @return
+	/**
+	 * Sends configuration of a connection
+	 * @param connection Connection identifier
+	 * @return The connection configuration of the requested connection
 	 */
-	@GET()
-	@Path("/getconnectionconfigs")
-	@Produces("application/json")
-	public String getConnectionConfigurations(@QueryParam("connection") String connection) {
-		
-		Gson gson = new Gson();
-		JsonObject config = new JsonObject();
-		
-		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
-		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
-		
-		if(prefs == null) {
-			config.addProperty(connection,"");
-		    return gson.toJson(config);
+	@GET
+	@Path("/connectionConfigs/{con}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
+		PreferencesService preferencesService = WebConsoleComponent.getPreferencesServiceOrThrowSUE();
+
+		Preferences preferences = preferencesService.getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+		if (preferences == null) {
+		    return new ConnectionSettings();
+		} else {
+			return new Gson().fromJson(preferences.get(connection, ""), ConnectionSettings.class);
 		}
-	    
-		JsonParser parser=new JsonParser();
-		config.add(connection,parser.parse(prefs.get(connection, "")));
-		
-	    return gson.toJson(config);
 	}
 
-	/***
-	 * 
-	 * @return
+	/**
+	 * Sends configurations of all connections
+	 * @return Map of connection names/configurations
 	 */
-	
-	@GET()
-	@Path("/getallconnectionconfigs")
-	@Produces("application/json")
-	public List<ConnectionSetting> getAll() {
-		List<ConnectionSetting> allSettings = new ArrayList<>();
-		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
-		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
-		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		Optional<RouteManager> routeManager = WebConsoleComponent.getRouteManager();
-		
-		List<IDSCPServerEndpoint> endpoints = connectionManager.get().listAvailableEndpoints();
-		Iterator<IDSCPServerEndpoint> endpointIterator = endpoints.iterator();
-		boolean found = false;
-		
-		List<RouteObject> routeObjects = routeManager.get().getRoutes();
-		
-		while(endpointIterator.hasNext()) {
-			IDSCPServerEndpoint endpoint = endpointIterator.next();
+	@GET
+	@Path("/connectionConfigs")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
+		PreferencesService preferencesService = WebConsoleComponent.getPreferencesServiceOrThrowSUE();
+		ConnectionManager connectionManager = WebConsoleComponent.getConnectionManagerOrThrowSUE();
+		RouteManager routeManager = WebConsoleComponent.getRouteManagerOrThrowSUE();
+
+		Preferences prefs = preferencesService.getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+
+		Map<String, List<String>> routeInputs = routeManager.getRoutes().stream().map(RouteObject::getId)
+				.collect(Collectors.toMap(Function.identity(), routeManager::getRouteInputUris));
+
+		for (IDSCPServerEndpoint endpoint: connectionManager.listAvailableEndpoints()) {
 			try {					
-				//For every currently available endpoint, go through all preferences and check if the id is already there. If not, create emtpy config
+				// For every currently available endpoint, go through all preferences and check
+				// if the id is already there. If not, create empty config.
 				String[] connections = prefs.keys();
 				String hostIdentifier = endpoint.getHost() + ":" + endpoint.getPort();
-				String endpointIdentifier = "noRouteFound" + "-" + hostIdentifier;
-    			for(RouteObject route: routeObjects) {
-					String label = routeManager.get().getRouteAsString(route.getId());
-					if(label != null  && label.contains("idsserver") && label.contains(hostIdentifier)) {
-						endpointIdentifier = route.getId() + "-"+ hostIdentifier;
-					} 
+				String serverUri = "idsserver://" + hostIdentifier;
+				List<String> endpointIdentifiers = routeInputs.entrySet().stream()
+						.filter(e -> e.getValue().stream().anyMatch(u -> u.startsWith(serverUri)))
+						.map(e -> e.getKey() + " - " + hostIdentifier).collect(Collectors.toList());
 
-    			}
-    			
-				for (int i = 0; i < connections.length; i++) {
-					if(connections[i].equals(endpointIdentifier)) {
-						found = true;
+				if (endpointIdentifiers.isEmpty()) {
+					endpointIdentifiers = Collections.singletonList("<no route found>" + " - " + hostIdentifier);
+				}
+
+				// Create missing endpoint configurations
+				endpointIdentifiers.forEach(endpointIdentifier -> {
+					if (Arrays.stream(connections).noneMatch(endpointIdentifier::equals)) {
+						prefs.put(endpointIdentifier, new Gson().toJson(new ConnectionSettings()));
 					}
-				}
-				//if not already present, create
-				if(!found) {
-					prefs.put(endpointIdentifier, Helper.createDefaultJsonConfig());
-				}
-				
+				});
 			} catch (BackingStoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new InternalServerErrorException(e);
 			}
 		}
 		
-		//After synch, get complet set of prefs. 
-		prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+		//After synchronization, return complete set of preferences
+		Map<String, ConnectionSettings> allSettings = new TreeMap<>((o1, o2) -> {
+			if (ConfigApi.GENERAL_CONFIG.equals(o1)) {
+				return -1;
+			} else if (ConfigApi.GENERAL_CONFIG.equals(o2)) {
+				return 1;
+			} else {
+				return o1.compareTo(o2);
+			}
+		});
 		try {
-			String[] connections = prefs.keys();
-			for (int i = 0; i < connections.length; i++) {
-				Settings sets = Helper.convertToSettings(prefs.get(connections[i], ""));
-				ConnectionSetting cs = new ConnectionSetting(connections[i], sets);
-				allSettings.add(cs);
-				
-			}
+			Gson gson = new Gson();
+			Arrays.stream(prefs.keys()).forEach(connection -> allSettings.put(connection,
+					gson.fromJson(prefs.get(connection, null), ConnectionSettings.class)));
 		} catch (BackingStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new InternalServerErrorException(e);
 		}
-		
+
 		return allSettings;
-	}
-	
-	/***
-	 * 
-	 * @param connection
-	 * @return
-	 */
-	@GET()
-	@Path("/setsampleconnectionconfigs")
-	public String setSampleConnectionConfigurations(@QueryParam("connection") String connection) {
-		
-		//ConnectionPreferenceManager.addConnectionPreferences(target);
-		//Gson g = new GsonBuilder().disableHtmlEscaping().create();
-		//return g.toJson(ConnectionPreferenceManager.findConnectionPreferences(target));
-		
-		Optional<PreferencesService> confService = WebConsoleComponent.getConfigService();
-		Preferences prefs = confService.get().getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
-		
-		prefs.put(connection, Helper.createDefaultJsonConfig());
-		return prefs.get(connection, "");
 	}
 
 }

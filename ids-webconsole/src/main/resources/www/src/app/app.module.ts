@@ -49,8 +49,8 @@ import {ConfirmService} from './confirm/confirm.service';
 import {ConfirmComponent} from './confirm/confirm.component';
 
 import { ConnectionReportComponent } from './connectionReport/connectionReport.component'
-import { ConnectionConfigurationComponent } from './connectionConfiguration/connectionConfiguration.component';
-import { ConnectionConfigurationService } from './connectionConfiguration/connectionConfiguration.service';
+import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
+import { ConnectionConfigurationService } from './connectionConfiguration/connection-configuration.service';
 
 
 import { MDLTextFieldDirective } from './mdl-textfield-directive';

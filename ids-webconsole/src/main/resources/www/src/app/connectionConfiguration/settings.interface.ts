@@ -1,11 +1,10 @@
 export interface Settings {
-    integrityProtectionandVerification: String;
-    authentication: String;
-    serviceIsolation: String;
-    integrityProtectionVerificationScope: String;
-    appExecutionResources: String;
-    dataUsageControlSupport: String;
-    auditLogging: String;
-    localDataConfidentiality: String;
-  }
-  
+  integrityProtectionAndVerification: string;
+  authentication: string;
+  serviceIsolation: string;
+  integrityProtectionVerificationScope: string;
+  appExecutionResources: string;
+  dataUsageControlSupport: string;
+  auditLogging: string;
+  localDataConfidentiality: string;
+}

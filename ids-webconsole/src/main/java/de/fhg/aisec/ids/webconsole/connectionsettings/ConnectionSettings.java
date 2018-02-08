@@ -20,9 +20,9 @@
 package de.fhg.aisec.ids.webconsole.connectionsettings;
 
 
-public class Settings {
+public class ConnectionSettings {
 	
-	private String integrityProtectionandVerification;
+	private String integrityProtectionAndVerification;
 	private String authentication;
 	private String serviceIsolation;
 	private String integrityProtectionVerificationScope;
@@ -32,11 +32,11 @@ public class Settings {
 	private String localDataConfidentiality;
 
 	
-	public Settings(String integrityProtectionandVerification, String authentication,
-			String serviceIsolation, String integrityProtectionVerificationScope, String appExecutionResources,
-			String dataUsageControlSupport, String auditLogging, String localDataConfidentiality) {
+	public ConnectionSettings(String integrityProtectionAndVerification, String authentication,
+							  String serviceIsolation, String integrityProtectionVerificationScope, String appExecutionResources,
+							  String dataUsageControlSupport, String auditLogging, String localDataConfidentiality) {
 		super();
-		this.integrityProtectionandVerification = integrityProtectionandVerification;
+		this.integrityProtectionAndVerification = integrityProtectionAndVerification;
 		this.authentication = authentication;
 		this.serviceIsolation = serviceIsolation;
 		this.integrityProtectionVerificationScope = integrityProtectionVerificationScope;
@@ -46,9 +46,9 @@ public class Settings {
 		this.localDataConfidentiality = localDataConfidentiality;
 	}
 	
-	public Settings(Settings inConnConfiguration) {
+	public ConnectionSettings(ConnectionSettings inConnConfiguration) {
 		super();
-		this.integrityProtectionandVerification = inConnConfiguration.getIntegrityProtectionandVerification();
+		this.integrityProtectionAndVerification = inConnConfiguration.getIntegrityProtectionAndVerification();
 		this.authentication = inConnConfiguration.getAuthentication();
 		this.serviceIsolation = inConnConfiguration.getServiceIsolation();
 		this.integrityProtectionVerificationScope = inConnConfiguration.getIntegrityProtectionVerificationScope();
@@ -58,8 +58,8 @@ public class Settings {
 		this.localDataConfidentiality = inConnConfiguration.getLocalDataConfidentiality();
 	}
 	
-	public Settings() {
-		this.integrityProtectionandVerification = "1";
+	public ConnectionSettings() {
+		this.integrityProtectionAndVerification = "1";
 		this.authentication = "1";
 		this.serviceIsolation = "1";
 		this.integrityProtectionVerificationScope = "1";
@@ -68,14 +68,13 @@ public class Settings {
 		this.auditLogging = "1";
 		this.localDataConfidentiality = "1";
 	}
-	
-	
-	public String getIntegrityProtectionandVerification() {
-		return integrityProtectionandVerification;
+
+	public String getIntegrityProtectionAndVerification() {
+		return integrityProtectionAndVerification;
 	}
 	
-	public void setIntegrityProtectionandVerification(String integrityProtectionandVerification) {
-		this.integrityProtectionandVerification = integrityProtectionandVerification;
+	public void setIntegrityProtectionAndVerification(String integrityProtectionAndVerification) {
+		this.integrityProtectionAndVerification = integrityProtectionAndVerification;
 	}
 	
 	public String getAuthentication() {
