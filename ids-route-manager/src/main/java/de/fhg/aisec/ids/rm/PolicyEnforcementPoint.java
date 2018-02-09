@@ -58,7 +58,10 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
     public void process(Exchange exchange) throws Exception {
     	// Check if environment is usable as expected
     	if (target==null || exchange==null || !(target instanceof InstrumentationProcessor)) {
-			LOG.warn("Cannot check data flow policy. Null or no InstrumentationProcessor");
+			LOG.warn("Cannot check data flow policy. Null or no InstrumentationProcessor. Passing on.");
+			if (target!=null) {
+				target.process(exchange);
+			}
 			return;
 		}
 		
