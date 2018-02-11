@@ -21,33 +21,24 @@
 
 		<feature version="[9.3.9,10)">jetty</feature>
 		<!-- <feature>wrap</feature> -->
-		<!-- <feature version="2.19.2">camel</feature>  -->
 
 		<feature version="9.3.14.v20161028">pax-jetty</feature>        
 		<feature version="6.0.6">pax-http-whiteboard</feature>
 
 		<!-- REST feature provided by CXF -->
-		<feature version="3.1.11">cxf-jaxrs</feature>
+		<feature>cxf-commands</feature>
+		<feature>cxf-jaxrs</feature>
 		<!-- JSON is no fun without Jackson -->
-		<feature version="3.1.11">cxf-jackson</feature>
-		
-		<!-- Declarative OSGi Services -->
-		<!--<feature version="4.1.2">scr</feature> -->
-		
+		<feature>cxf-jackson</feature>
+		<feature>camel-jackson</feature>
+		<feature>camel-milo</feature>
+				
 		<!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
-		<bundle>mvn:org.apache.camel/camel-core-osgi/2.19.2</bundle>
+		<bundle>mvn:org.apache.camel/camel-core-osgi/2.20.2</bundle>
 		
 		<!-- This is how to add a custom config file which will be picked up by Config Admin-->
 		<!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
 
-		<!-- OPC-UA support (not yet available as a feature in Karaf 4.1.2, thus as individual bundles) -->
-		<bundle>mvn:org.apache.camel/camel-milo/2.19.2</bundle>
-		<bundle>mvn:org.eclipse.milo/stack-core/0.1.3</bundle>
-		<bundle>mvn:org.eclipse.milo/stack-client/0.1.3</bundle>
-		<bundle>mvn:org.eclipse.milo/stack-server/0.1.3</bundle>
-		<bundle>mvn:org.eclipse.milo/sdk-core/0.1.3</bundle>
-		<bundle>mvn:org.eclipse.milo/sdk-client/0.1.3</bundle>
-		<bundle>mvn:org.eclipse.milo/sdk-server/0.1.3</bundle>
 		<bundle>mvn:org.javassist/javassist/3.20.0-GA</bundle>
 		<bundle>mvn:com.codepoetics/protonpack/1.10</bundle>
 		<bundle>wrap:mvn:org.reflections/reflections/0.9.10</bundle>
@@ -68,8 +59,8 @@
 		<bundle>mvn:io.netty/netty-codec/4.1.9.Final</bundle>
 		<bundle>mvn:io.netty/netty-codec-http/4.1.9.Final</bundle>
 		<bundle>mvn:javax.servlet/javax.servlet-api/3.1.0</bundle>
-		<bundle>mvn:org.apache.camel/camel-http-common/2.19.2</bundle>
-		<bundle>mvn:org.apache.camel/camel-ahc/2.19.2</bundle>		
+		<bundle>mvn:org.apache.camel/camel-http-common/2.20.2</bundle>
+		<bundle>mvn:org.apache.camel/camel-ahc/2.20.2</bundle>		
 
 		<bundle>mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
 
