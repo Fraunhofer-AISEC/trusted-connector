@@ -10,7 +10,7 @@ import { Configuration } from './configuration';
   styleUrls: ['./connection-configuration.component.css']
 })
 export class ConnectionConfigurationComponent implements OnInit {
-  private models: Configuration[];
+  public models: Configuration[];
   private _model?: Configuration;
   private _selectedIndex = 0;
 
