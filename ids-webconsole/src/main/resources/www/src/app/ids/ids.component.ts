@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Headers, Http, RequestOptions, Response } from '@angular/http';
 import { CanDeactivate } from '@angular/router';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings.interface';
@@ -18,7 +17,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
     saved: boolean;
     events: Array<any> = [];
 
-    constructor(private _fb: FormBuilder, private _http: Http, private _settingsService: SettingsService) {
+    constructor(private _fb: FormBuilder, private _settingsService: SettingsService) {
         this.saved = true;
     }
 
