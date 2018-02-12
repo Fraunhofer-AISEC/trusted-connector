@@ -5,7 +5,8 @@
   "extends": ["angular-tslint-rules"],
   "rules": {
     "i18n": false,
-    "component-selector": false,
-    "prefer-template": false
+    "no-unused-css": false,
+    "prefer-template": false,
+    "component-selector": false
   }
 }

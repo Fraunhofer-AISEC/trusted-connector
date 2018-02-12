@@ -1,6 +1,16 @@
+.list {
+  margin: 5px;
+  margin-top: 5px;
+  height: 300px;
+  overflow-y:
+  scroll;
+}
 
+p {
+    margin: 2px
+}
 
-
+p:nth-child(odd){background: #eee;}
 
 table {
     border-collapse: collapse;
@@ -11,7 +21,11 @@ th, td {
     text-align: left;
     padding: 10px;
 }
-tr:nth-child(even){background-color: #f2f2f2}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2
+}
+
 th {
     background-color: #4CAF50;
     color: white;
@@ -19,26 +33,42 @@ th {
     
 }
 
+.packet {
+  margin: 2px;
+}
 
+.packet:nth-child(odd){background-color: #eee;}
 
+.chartContainer {
+  margin: 10px;
+  margin-right: 10px;
+  width: 100%;
+}
 
-
-
-
-
-
+#transparentScrollbarDiv::-webkit-scrollbar {
+            width: inherit;
+}
 
 /* this targets the default scrollbar (compulsory) */
 
-
+#transparentScrollbarDiv::-webkit-scrollbar-track {
+    background-color: transparent;
+}
 
 /* the new scrollbar will have a flat appearance with the set background color */
 
-
+#transparentScrollbarDiv::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
 
 /* this will style the thumb, ignoring the track */
 
-
+#transparentScrollbarDiv::-webkit-scrollbar-button {
+    background-color: transparent;
+}
 
 /* optionally, you can style the top and the bottom buttons (left and right for horizontal bars) */
 
+#transparentScrollbarDiv::-webkit-scrollbar-corner {
+    background-color: transparent;
+}

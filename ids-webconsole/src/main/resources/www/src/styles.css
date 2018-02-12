@@ -133,29 +133,35 @@ i.connect-icons {
   border: none;
   box-shadow: none;
 }
+
 /* iOS Safari specific workaround */
 .iot-connector-drawer .mdl-menu__container {
   z-index: -1;
 }
+
 .iot-connector-drawer .iot-connector-navigation {
   z-index: -2;
 }
+
 /* END iOS Safari specific workaround */
 .iot-connector-drawer .mdl-menu .mdl-menu__item {
   display: flex;
   align-items: center;
 }
+
 .iot-connector-drawer-header {
   box-sizing: border-box;
   flex-direction: column;
   background-color: #1C2B36;
   text-align: center;
 }
+
 .iot-connector-avatar {
   width: 225px;
   margin: 0 auto;
   padding: 5px 0px 5px 0px;
 }
+
 .iot-connector-product-title {
   color: #209e91;
 }
@@ -210,6 +216,7 @@ header.iot-connector-header.mdl-layout__header {
   flex-grow: 1;
   background-color: #1C2B36;
 }
+
 .iot-connector-layout .iot-connector-navigation .mdl-navigation__link {
   display: flex !important;
   flex-direction: row;
@@ -218,11 +225,13 @@ header.iot-connector-header.mdl-layout__header {
   font-weight: 500;
   text-decoration: none;
 }
+
 .iot-connector-layout .iot-connector-navigation .mdl-navigation__link:hover {
   background-color: #209e91;
   color: #fff;
   text-decoration: none;
 }
+
 .iot-connector-navigation .mdl-navigation__link .material-icons {
   font-size: 24px;
   margin-right: 22px;
