@@ -8,6 +8,6 @@ export class App {
   uptime: string;
   signature: string;
   owner: string;
-  labels: string[][];
+  labels: Array<Array<string>>;
   ports: string;
 }

@@ -1,4 +1,4 @@
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppsComponent } from './apps/apps.component';
@@ -12,7 +12,6 @@ import { KeycertsComponent } from './keycerts/keycerts.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
 import { ConnectionReportComponent } from './connectionReport/connectionReport.component';
 import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
-
 
 const appRoutes: Routes = [{
     path: '',
@@ -44,7 +43,7 @@ const appRoutes: Routes = [{
     component: ConnectionConfigurationComponent
   }, {
     path: 'routes',
-    component: RoutesComponent,
+    component: RoutesComponent
   }, {
     path: 'routeeditor/:id',
     component: RouteeditorComponent
@@ -54,11 +53,11 @@ const appRoutes: Routes = [{
   }, {
     path: 'ids',
     component: IdsComponent,
-    canDeactivate: [IdsComponent],
+    canDeactivate: [IdsComponent]
   }, {
     path: 'certificates',
     component: KeycertsComponent
-  },
+  }
 ];
 
 export const routing = RouterModule.forRoot(appRoutes, { useHash: true });

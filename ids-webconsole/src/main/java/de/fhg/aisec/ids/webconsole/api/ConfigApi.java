@@ -141,7 +141,6 @@ public class ConfigApi {
 
 		prefs.put(connection, new Gson().toJson(settings));
 		return "ok";
-
 	}
 	
 	/**

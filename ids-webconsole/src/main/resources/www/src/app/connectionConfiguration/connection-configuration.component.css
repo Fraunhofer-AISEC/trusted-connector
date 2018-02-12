@@ -36,9 +36,7 @@ td{
     overflow: hidden;
 }
 
-.switch-title {
-  margin-bottom: 60px;
-}
+
 
 .switch-field input {
     position: absolute !important;
@@ -79,23 +77,13 @@ td{
      width: 40%;
 }
 
-.switch-field label:hover {
-    cursor: pointer;
-}
 
-.switch-field input:checked + label {
-  background-color: #A5DC86;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-}
 
-.switch-field label:first-of-type {
-  border-radius: 4px 0 0 4px;
-}
 
-.switch-field label:last-of-type {
-  border-radius: 0 4px 4px 0;
-}
+
+
+
+
 
 .selectEndpoint {
   border: 1px solid;

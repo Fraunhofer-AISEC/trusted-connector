@@ -10,13 +10,18 @@ import { AppCardComponent } from './app-card.component';
   providers: []
 })
 export class AppsComponent {
-  apps: App[];
+  apps: Array<App>;
 
   constructor(private appService: AppService, private titleService: Title) {
     this.titleService.setTitle('Apps');
 
-    this.appService.getApps().subscribe(apps => {
-       this.apps = apps;
-     });
+    this.appService.getApps()
+      .subscribe(apps => {
+        this.apps = apps;
+      });
+  }
+
+  trackApps(index: number, item: App): string {
+    return item.id;
   }
 }

@@ -1,4 +1,4 @@
-import { Route } from 'app/routes/route';
+import { Route } from './routes/route';
 
 export class Result {
   successful: boolean;

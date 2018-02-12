@@ -6,13 +6,7 @@
     box-sizing: border-box;
 }
 
-.viz i {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 24px;
-    height: 24px;
-}
+
 
 .viz >>> svg {
     width: 100%;

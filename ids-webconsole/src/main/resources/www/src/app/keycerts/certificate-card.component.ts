@@ -17,8 +17,8 @@ declare var componentHandler: any;
 })
 
 export class CertificateCardComponent implements OnInit {
-  @Input() certificates: Certificate[];
-  @Input() trusts: Certificate[];
+  @Input() certificates: Array<Certificate>;
+  @Input() trusts: Array<Certificate>;
   result: string;
 
   @Input() private onDeleteCallback: Function;
@@ -32,9 +32,8 @@ export class CertificateCardComponent implements OnInit {
   onDelete(alias: string): void {
     this.confirmService.activate('Are you sure that you want to delete this item?')
       .then(res => {
-        if (res) {
+        if (res)
           this.onDeleteCallback(alias);
-        }
       });
   }
 }

@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { Http, Headers } from '@angular/http';
+import { Headers, Http } from '@angular/http';
 import { CertificateService } from './keycert.service';
 
 @Component({
@@ -12,18 +12,17 @@ export class CertUploadComponent {
 
     constructor(private http: Http, private certificateService: CertificateService) {}
 
-    upload() {
-        let inputEl: HTMLInputElement = this.inputEl.nativeElement;
-        let fileCount: number = inputEl.files.length;
-        let formData = new FormData();
-        let headers = new Headers();
+    upload(): void {
+        const inputEl: HTMLInputElement = this.inputEl.nativeElement;
+        const fileCount: number = inputEl.files.length;
+        const formData = new FormData();
+        const headers = new Headers();
         headers.append('Content-Type', 'multipart/form-data');
 
         if (fileCount > 0) { // a file was selected
 
-            for (let i = 0; i < fileCount; i++) {
+            for (let i = 0; i < fileCount; i++)
                 this.certificateService.uploadCert(inputEl.files.item(i));
-            }
 
             location.reload();
         }

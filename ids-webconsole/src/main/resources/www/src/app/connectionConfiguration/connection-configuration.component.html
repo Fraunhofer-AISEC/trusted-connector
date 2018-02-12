@@ -5,7 +5,7 @@
             <h2 class="mdl-card__title-text">Endpoint Security Obligations</h2>
         </div>
         <div class="selectEndpoint clearfix">
-            <button *ngFor="let ep of models; let i = index" (click)="selectedIndex = i"
+            <button *ngFor="let ep of models; let i = index; trackBy: trackModels" (click)="selectedIndex = i"
                     class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect no-upper"
                     [class.mdl-button--colored]="i === selectedIndex"
                     [class.mdl-button--accent]="ep.dirty &amp;&amp; i !== selectedIndex">

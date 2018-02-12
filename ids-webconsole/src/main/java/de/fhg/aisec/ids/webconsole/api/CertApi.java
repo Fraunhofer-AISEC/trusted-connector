@@ -175,8 +175,8 @@ public class CertApi {
 	/**
 	 * Stores a certificate in a JKS truststore.
 	 * 
-	 * @param dest
-	 * @param filePath
+	 * @param trustStoreFile
+	 * @param certFile
 	 * @return
 	 */
 	private boolean storeCert(File trustStoreFile, File certFile) {

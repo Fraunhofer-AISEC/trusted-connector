@@ -27,11 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,9 +106,9 @@ public class AppApi {
 	}
 	
 	@GET
-	@Path("start")
+	@Path("start/{containerId}")
 	@Produces("application/json")
-	public boolean start(@QueryParam("containerId") String containerId) {
+	public boolean start(@PathParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {
@@ -128,9 +124,9 @@ public class AppApi {
 	}
 
 	@GET
-	@Path("stop")
+	@Path("stop/{containerId}")
 	@Produces("application/json")
-	public boolean stop(@QueryParam("containerId") String containerId) {
+	public boolean stop(@PathParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		
 		if (!cml.isPresent()) {

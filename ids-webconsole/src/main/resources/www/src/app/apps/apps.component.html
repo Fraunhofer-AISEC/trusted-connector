@@ -1,5 +1,5 @@
 <div class="mdl-grid">
-	<div class="mdl-cell mdl-cell--6-col" *ngFor="let app of apps">
+	<div class="mdl-cell mdl-cell--6-col" *ngFor="let app of apps; trackBy: trackApps">
 		<app-card [app]="app"></app-card>
 	</div>
 </div>

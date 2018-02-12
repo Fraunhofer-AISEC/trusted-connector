@@ -271,26 +271,6 @@ public class RouteApi {
 	}
 
 	/**
-	 * Returns map from camel contexts to list of endpoint URIs.
-	 *
-	 * Example:
-	 *
-	 * {"camel-1":["timer://simpleTimer?period\u003d10000"]}
-	 *
-	 * @return
-	 */
-	@GET
-	@Path("endpoints")
-	@Produces("application/json")
-	public Map<String, Collection<String>> getEndpoints() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new HashMap<>();
-		}
-		return rm.get().getEndpoints();
-	}
-
-	/**
 	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
 	 */
 	@GET
