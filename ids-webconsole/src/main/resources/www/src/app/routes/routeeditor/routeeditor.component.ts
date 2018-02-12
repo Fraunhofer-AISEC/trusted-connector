@@ -6,9 +6,8 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Result, RouteResult } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
-import { ValidationInfo } from '../validation';
+import { CounterExample, ValidationInfo } from '../validation';
 
-import { switchMap } from 'rxjs/operators';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { validateConfig } from '@angular/router/src/config';
 import { Observable } from 'rxjs/Observable';
@@ -106,6 +105,14 @@ export class RouteeditorComponent implements OnInit {
     this.myForm = this._fb.group({
       txtRepresentation: ['', [Validators.required as any, Validators.minLength(5) as any]]
     });
+  }
+
+  trackCounterExamples(index: number, item: CounterExample): string {
+    return item.explanation + Number(index);
+  }
+
+  trackSteps(index: number, item: string): string {
+    return item;
   }
 
   onStart(routeId: string): void {

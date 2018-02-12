@@ -29,6 +29,10 @@ export class CertificateCardComponent implements OnInit {
     componentHandler.upgradeDom();
   }
 
+  trackCerts(index: number, item: Certificate): string {
+    return item.subjectCN + item.subjectOU + item.subjectO + item.subjectL;
+  }
+
   onDelete(alias: string): void {
     this.confirmService.activate('Are you sure that you want to delete this item?')
       .then(res => {

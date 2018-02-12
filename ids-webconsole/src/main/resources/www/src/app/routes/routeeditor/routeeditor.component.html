@@ -43,9 +43,9 @@
 			</div>
 			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
 				<p>This route violates usage control policies</p>
-				<pre *ngFor="let ce of validationInfo.counterExamples">
+				<pre *ngFor="let ce of validationInfo.counterExamples; trackBy: trackCounterExamples">
 <em class="mdl-color-text--red-A700">{{ ce.explanation }}</em>
-<span *ngFor="let step of ce.steps">{{ step }}
+<span *ngFor="let step of ce.steps; trackBy: trackSteps">{{ step }}
 </span></pre>
 			</div>
 		</div>

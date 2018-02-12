@@ -50,6 +50,10 @@ export class RoutesComponent implements OnInit, OnDestroy {
         this.alive = false;
     }
 
+    trackRoutes(index: number, item: Route): string {
+        return item.id;
+    }
+
     onSelect(route: Route): void {
         this.selectedRoute = route;
     }

@@ -5,7 +5,7 @@
   <div metricCard [text]="'Max Proc. (ms)'" [value]="routemetrics.maxProcessingTime" class="mdl-cell mdl-cell--3-col"></div>
 </div>
 <div class="mdl-grid">
-  <div class="mdl-cell mdl-cell--6-col" *ngFor="let route of routes">
+  <div class="mdl-cell mdl-cell--6-col" *ngFor="let route of routes; trackBy: trackRoutes">
 		<route-card [route]="route"></route-card>
 	</div>
 </div>
