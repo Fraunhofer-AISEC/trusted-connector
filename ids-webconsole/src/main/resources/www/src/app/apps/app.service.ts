@@ -1,20 +1,19 @@
 import { Injectable } from '@angular/core';
-//import { Headers, Http, Response } from '@angular/http';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import { Observable } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 import 'rxjs/add/operator/map';
 
 import { App } from './app';
 import { Cml } from './cml';
-import {Result} from '../result';
+import { Result } from '../result';
 
 import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AppService {
   constructor(private http: HttpClient) {
-    console.log("constructor AppService");
+    console.log('constructor AppService');
   }
 
   getApps(): Observable<App[]> {
@@ -22,11 +21,11 @@ export class AppService {
   }
 
   stopApp(appId: string): Observable<Result> {
-      return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId) as Observable<Result>;
+    return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId) as Observable<Result>;
   }
 
   startApp(appId: string): Observable<Result> {
-      return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId) as Observable<Result>;
+    return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId) as Observable<Result>;
   }
 
   getCmlVersion(): Observable<Cml> {

@@ -14,18 +14,18 @@ export class MDLTextFieldDirective implements AfterViewChecked, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        console.log("After view init");
+        console.log('After view init');
         componentHandler.upgradeAllRegistered();
     }
 
     ngAfterViewChecked() {
         let bla = this.element.nativeElement;
         let mdlField = this.element.nativeElement.MaterialTextfield;
-        if(mdlField) {
+        if (mdlField) {
             mdlField.checkDirty();
             mdlField.checkValidity();
         } else {
-            console.log("Directive not applied to mdl textfield. Make sure to add directive to outer div.");
+            console.log('Directive not applied to mdl textfield. Make sure to add directive to outer div.');
         }
     }
 }

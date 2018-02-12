@@ -4,6 +4,6 @@ export class CounterExample {
 }
 
 export class ValidationInfo {
-    valid: boolean = true;
+    valid = true;
     counterExamples: CounterExample[] = null;
 }

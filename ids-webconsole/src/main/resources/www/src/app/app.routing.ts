@@ -10,7 +10,7 @@ import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component
 import { IdsComponent } from './ids/ids.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
-import { ConnectionReportComponent } from './connectionReport/connectionReport.component'
+import { ConnectionReportComponent } from './connectionReport/connectionReport.component';
 import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
 
 

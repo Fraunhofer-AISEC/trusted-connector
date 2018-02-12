@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import { SubscriptionComponent } from '../subscription.component';
+import {  SubscriptionComponent } from '../subscription.component';
 
 import { Observable } from 'rxjs/Observable';
 
@@ -20,12 +20,13 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   camelComponents: any;
   apps: App[];
   cmlVersion: string;
-  policies: number = 0;
+  policies = 0;
   metric: String[] = [];
 
-  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService, private policyService: PolicyService, private metricService: MetricService) {
-  	 super();
-     this.titleService.setTitle('Overview');
+  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService,
+      private policyService: PolicyService, private metricService: MetricService) {
+    super();
+    this.titleService.setTitle('Overview');
 
     this.appService.getApps().subscribe(apps => {
       this.apps = apps;
@@ -34,10 +35,10 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
 
   ngOnInit(): void {
     this.changeTitle.emit('Dashboard');
-    this.routeService.listComponents().subscribe(result => {this.camelComponents = result});
-    this.appService.getCmlVersion().subscribe(result => {this.cmlVersion = result.cml_version});
-    this.policyService.getPolicies().subscribe(result => {this.policies = result.length});
-    this.metricService.getMetricObservable().subscribe(result => {this.metric = result});
+    this.routeService.listComponents().subscribe(result => { this.camelComponents = result; });
+    this.appService.getCmlVersion().subscribe(result => { this.cmlVersion = result.cml_version; });
+    this.policyService.getPolicies().subscribe(result => { this.policies = result.length; });
+    this.metricService.getMetricObservable().subscribe(result => { this.metric = result; });
   }
 
 }

@@ -1,6 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { Headers, Http, Response } from '@angular/http';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 declare var API_URL: string;
 
@@ -13,35 +11,12 @@ declare var API_URL: string;
                </div>
               </div>`,
 })
-export class MetricCardComponent implements OnInit {
-  @Input('text') text:string = 'test';
-  @Input('value') value:string = '0';
-  @Input('value-url') valueUrl:string = null;
+export class MetricCardComponent {
+  @Input('text') text = 'test';
+  @Input('value') value = '0';
   @Output('valueChange') valueChange: EventEmitter<string> = new EventEmitter();
 
   private interval;
 
-  constructor(private http: Http) { }
-
-  ngOnInit() {
-    // If remote date source is given, update value from there. Otherwise use static values
-    if (this.valueUrl==null) {
-      return;
-    }
-
-    // TODO use an Angular2 service to regularly poll metrics from the backend
-    this.interval = setInterval(() => {
-        this.getMetrics();
-      }, 2000);
-   }
-
-  ngOnDestroy() {
-    clearInterval(this.interval);
-  }
-
-  private getMetrics():void {
-       this.http.get(this.valueUrl)
-      .map(res => res.json())
-      .subscribe(value => this.value = value);
-  }
+  constructor() { }
 }

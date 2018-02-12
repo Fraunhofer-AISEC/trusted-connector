@@ -21,10 +21,11 @@ declare var Viz: any;
   styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
+  public myForm: FormGroup;
+
   private _route: Route = new Route();
   private _textRepresentation: string = null;
   private _validationInfo: ValidationInfo = new ValidationInfo();
-  public myForm: FormGroup;
   private _result: Result = new Result();
   private _saved = true;
   private statusIcon: string;
@@ -97,7 +98,7 @@ export class RouteeditorComponent implements OnInit {
 
       this.routeService.getRouteAsString(id).subscribe(routeString => {
         this._textRepresentation = routeString.trim();
-      })
+      });
 
       this.routeService.getValidationInfo(id).subscribe(validationInfo => {
         this._validationInfo = validationInfo;

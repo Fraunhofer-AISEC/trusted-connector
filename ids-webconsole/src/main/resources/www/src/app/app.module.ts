@@ -48,7 +48,7 @@ import {PrettifyPipe} from './prettify-json.pipe';
 import {ConfirmService} from './confirm/confirm.service';
 import {ConfirmComponent} from './confirm/confirm.component';
 
-import { ConnectionReportComponent } from './connectionReport/connectionReport.component'
+import { ConnectionReportComponent } from './connectionReport/connectionReport.component';
 import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
 import { ConnectionConfigurationService } from './connectionConfiguration/connection-configuration.service';
 
@@ -70,7 +70,7 @@ import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
     routing,
     HttpModule,             // deprecated. To be removed
     HttpClientModule,       // new since Angular 5
-	FormsModule,
+    FormsModule,
     ReactiveFormsModule,
     FormsModule
 //    ModalModule.forRoot(),
@@ -99,12 +99,12 @@ import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
     PrettifyPipe,
     ConnectionConfigurationComponent,
     MDLTextFieldDirective,
-    //FileWindow,
-    //DataFlowComponent,
+    // FileWindow,
+    // DataFlowComponent,
     ConnectionReportComponent,
     ZoomVizComponent,
     ConnectionReportComponent,
-    //D3Component,
+    // D3Component,
   ],
   providers: [
     AppService,
@@ -119,7 +119,7 @@ import { ZoomVizComponent } from 'app/routes/zoom-viz/zoom-viz.component';
     ConnectionConfigurationService,
     MetricService,
     Title
-    //D3Service,
+    // D3Service,
   ],
   bootstrap: [
     AppComponent

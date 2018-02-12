@@ -30,7 +30,7 @@ export class NewIdentityComponent implements OnInit {
         });
     }
 
-    save(identity: Identity, /*fileInputElement: any,*/ isValid: boolean) {        
+    save(identity: Identity, /*fileInputElement: any,*/ isValid: boolean) {
          // Call REST to create identity
         this.certService.createIdentity(identity).subscribe();
         this.router.navigate(['/certificates']);

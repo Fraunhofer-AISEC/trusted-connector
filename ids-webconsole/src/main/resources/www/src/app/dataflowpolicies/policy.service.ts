@@ -24,10 +24,10 @@ export class PolicyService {
     install(policy: Policy, policyFile: any) {
         let headers = new Headers({ 'Content-Type': 'multipart/form-data' });
         let options = new RequestOptions({ headers: headers });
-        var model = new FormData();
-        model.append("policy_name", policy.policy_name);
-        model.append("policy_description", policy.policy_description);
-        model.append("policy_file", policyFile);
+        let model = new FormData();
+        model.append('policy_name', policy.policy_name);
+        model.append('policy_description', policy.policy_description);
+        model.append('policy_file', policyFile);
 
         let result = this.http.post(environment.apiURL + '/policies/install', model, options)
             .catch((error: any) => Observable.throw(error || 'Server error'));

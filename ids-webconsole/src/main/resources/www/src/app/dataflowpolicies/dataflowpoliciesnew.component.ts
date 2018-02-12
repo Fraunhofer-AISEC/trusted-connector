@@ -13,7 +13,7 @@ export class NewDataflowPolicyComponent implements OnInit {
     @Output() changeTitle = new EventEmitter();
     public myForm: FormGroup;
     public data: Policy;
-    public policyFileLabel: string = "Select lucon file ...";
+    public policyFileLabel = 'Select lucon file ...';
     public events: any[] = [];
     public multiple: false;
     public fileUpload: AbstractControl;
@@ -25,26 +25,22 @@ export class NewDataflowPolicyComponent implements OnInit {
     ngOnInit() {
         // the short way to create a FormGroup
         this.myForm = this._fb.group({
-            //policy_name: ['', <any>Validators.required],
             policy_file: ['', <any>Validators.required],
-            //policy_description: '',
         });
-        
+
         this.fileUpload = this.myForm.get('policy_file');
     }
-
-    ngAfterViewInit() {    }
 
     save(policy: Policy, fileInputElement: any, isValid: boolean) {
         console.log(policy, fileInputElement, isValid);
         console.log(fileInputElement.files[0]);
-        
+
          // Call REST POST to store settings
         return this.policyService.install(policy, fileInputElement.files[0]).subscribe();
     }
-    
-    // Update caption of upload button with file name when a file is selected    
-    fileChangeEvent(fileInput: any){
+
+    // Update caption of upload button with file name when a file is selected
+    fileChangeEvent(fileInput: any) {
         if (fileInput.target.files && fileInput.target.files[0]) {
             this.policyFileLabel = fileInput.target.files[0].name;
         }

@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import 'rxjs/Rx';
 import { IntervalObservable } from 'rxjs/observable/IntervalObservable';
 import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription'
+import { Subscription } from 'rxjs/Subscription';
 
 import { Route } from './route';
 import { RouteService } from './route.service';
@@ -19,13 +19,13 @@ import { RouteMetrics } from './route-metrics';
 })
 
 export class RoutesComponent implements OnInit, OnDestroy {
-    title = 'Current Routes';
-    routes: Route[];
-    selectedRoute: Route;
-    routemetrics: RouteMetrics = new RouteMetrics();
-    private alive: boolean;
+    public title = 'Current Routes';
+    @Output() public changeTitle = new EventEmitter();
+    public routes: Route[];
+    public selectedRoute: Route;
+    public routemetrics: RouteMetrics = new RouteMetrics();
 
-    @Output() changeTitle = new EventEmitter();
+    private alive: boolean;
 
     constructor(private titleService: Title, private routeService: RouteService) {
         this.titleService.setTitle('Message Routes');

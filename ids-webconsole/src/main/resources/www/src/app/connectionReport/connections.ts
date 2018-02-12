@@ -13,8 +13,8 @@ export class OutgoingConnection {
 }
 
 export class Endpoint {
-	endpointIdentifier: string;
-	defaultProtocol: string;
-	port: string;
-	host: string; 
+  endpointIdentifier: string;
+  defaultProtocol: string;
+  port: string;
+  host: string;
 }

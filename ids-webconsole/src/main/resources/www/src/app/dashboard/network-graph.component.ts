@@ -23,14 +23,15 @@ import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
   encapsulation: ViewEncapsulation.None   // Generate global CSS classes
 })
 export class NetworkGraphComponent extends SubscriptionComponent implements OnInit, AfterViewInit {
+  public power = 0;
+
   private chart: any;
   private color;
   private hexbin;
   private svg;
   private locations;
-  power: number = 0;
-  private errorTimer : Observable<number>;
-  private isBlinking: boolean = false;
+  private errorTimer: Observable<number>;
+  private isBlinking = false;
 
   constructor(private sensorService: SensorService) {
     super();
@@ -40,7 +41,7 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
     this.subscriptions.push(this.sensorService.getPowerObservable().subscribe(power => {
       this.power = power;
 
-      if(this.power >= 60) {
+      if (this.power >= 60) {
         this.errorOn();
       }
     }));
@@ -49,7 +50,7 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   loadMap(): Promise<any> {
     return new Promise((resolve, reject) => {
       d3.json('data/eu.topo.json', (error, json) => {
-        if(error) {
+        if (error) {
           return reject(error);
         }
 
@@ -61,7 +62,7 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   loadLocations(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       d3.tsv('data/locations.tsv', (error, json) => {
-        if(error) {
+        if (error) {
           return reject(error);
         }
 
@@ -94,7 +95,7 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
 
     let projection = d3.geo.mercator()
         .scale(1720)
-        .translate([width-1000, height+1600])
+        .translate([width - 1000, height + 1600])
         .precision(.1);
 
     let path = d3.geo.path()
@@ -133,13 +134,13 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
       .enter().append('path')
         .attr('d', function(d: any) { return self.hexbin.hexagon(radius(d.length)); })
         .attr('transform', function(d: any) { return 'translate(' + d.x + ',' + d.y + ')'; })
-        .style('fill', function(d: any) { return (self.color as any)(d3.mean(d, (d: any) => { return +parseInt(d.date); })); });
+        .style('fill', function(d: any) { return (self.color as any)(d3.mean(d, (di: any) => parseInt(di.date, 10))); });
   }
 
   /* Show warning in map (Hannover blinking red) */
   errorOn(): any {
     // if already blinking, skip
-    if(this.isBlinking) {
+    if (this.isBlinking) {
       console.log('already blinking');
       return;
     }
@@ -151,13 +152,13 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
       .take(10);
 
     this.errorTimer.subscribe(x => {
-      if(x % 2 == 0) {
+      if (x % 2 === 0) {
         this.showErrorLocation(this, this.locations.slice(0, 1));
       } else {
         this.hideErrorLocation();
       }
 
-      if(x == 9) {
+      if (x === 9) {
         console.log('turning off blinking...');
         this.isBlinking = false;
       }
@@ -165,7 +166,7 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   }
 
   /* Shows red warning dot */
-  showErrorLocation(self, location :any) : any {
+  showErrorLocation(self, location: any): any {
     // Do not duplicate element
     if (!this.svg.select('#warning_location').empty()) {
       return;
@@ -174,7 +175,7 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
     // Add element to SVG and fade in
     let errLoc = this.svg.append('g')
         .attr('class', 'hexagons')
-        .attr("id", "warning_location")
+        .attr('id', 'warning_location')
       .selectAll('path')
         .data(self.hexbin(location).sort(function(a, b) { return b.length - a.length; }))
       .enter().append('path')
@@ -182,19 +183,19 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
         .attr('transform', function(d: any) { return 'translate(' + d.x + ',' + d.y + ')'; })
         .style('fill', '#f44336');
 
-    errLoc.style("opacity", 0)
-           .transition().duration(400).style("opacity", 1)
+    errLoc.style('opacity', 0)
+           .transition().duration(400).style('opacity', 1);
 
     return;
   }
 
   /* Hide red warning dot */
-  hideErrorLocation() : any {
+  hideErrorLocation(): any {
     let errLoc = this.svg.select('#warning_location');
     errLoc
-      .style("opacity", 1)
-      .transition().duration(400).style("opacity", 0)
-      .each("end", function() {
+      .style('opacity', 1)
+      .transition().duration(400).style('opacity', 0)
+      .each('end', function() {
          // Remove element from SVG
         errLoc.remove();
       });

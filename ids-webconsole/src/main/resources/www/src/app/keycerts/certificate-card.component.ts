@@ -18,9 +18,10 @@ declare var componentHandler: any;
 
 export class CertificateCardComponent implements OnInit {
   @Input() certificates: Certificate[];
-  @Input() private onDeleteCallback: Function;
   @Input() trusts: Certificate[];
   result: string;
+
+  @Input() private onDeleteCallback: Function;
 
   constructor(private certificateService: CertificateService, private confirmService: ConfirmService) { }
 

@@ -1,6 +1,6 @@
 import {OnInit, Component} from '@angular/core';
 
-import {ConfirmService} from "./confirm.service";
+import {ConfirmService} from './confirm.service';
 
 const KEY_ESC = 27;
 
@@ -11,23 +11,30 @@ const KEY_ESC = 27;
 })
 export class ConfirmComponent implements OnInit {
 
+    public title: string;
+    public message: string;
+    public okText: string;
+    public cancelText: string;
+
     private _defaults = {
         title: 'Confirmation',
         message: 'Do you want to cancel your changes?',
         cancelText: 'Cancel',
         okText: 'OK'
     };
-    title:string;
-    message:string;
-    okText:string;
-    cancelText:string;
 
-    private _confirmElement:any;
-    private _cancelButton:any;
-    private _okButton:any;
+    private _confirmElement: any;
+    private _cancelButton: any;
+    private _okButton: any;
 
-    constructor(confirmService:ConfirmService) {
+    constructor(confirmService: ConfirmService) {
         confirmService.activate = this.activate.bind(this);
+    }
+
+    ngOnInit() {
+        this._confirmElement = document.getElementById('confirmationModal');
+        this._cancelButton = document.getElementById('cancelButton');
+        this._okButton = document.getElementById('okButton');
     }
 
     _setLabels(message = this._defaults.message, title = this._defaults.title) {
@@ -46,25 +53,25 @@ export class ConfirmComponent implements OnInit {
         return promise;
     }
 
-    private _show(resolve:(boolean) => any) {
+    private _show(resolve: (boolean) => any) {
         document.onkeyup = null;
 
-        let negativeOnClick = (e:any) => resolve(false);
-        let positiveOnClick = (e:any) => resolve(true);
+        let negativeOnClick = (e: any) => resolve(false);
+        let positiveOnClick = (e: any) => resolve(true);
 
-        if (!this._confirmElement || !this._cancelButton || !this._okButton) return;
+        if (!this._confirmElement || !this._cancelButton || !this._okButton) { return; }
 
         this._confirmElement.style.opacity = 0;
         this._confirmElement.style.zIndex = 9999;
 
-        this._cancelButton.onclick = ((e:any) => {
+        this._cancelButton.onclick = ((e: any) => {
             e.preventDefault();
-            if (!negativeOnClick(e)) this._hideDialog();
-        })
+            if (!negativeOnClick(e)) { this._hideDialog(); }
+        });
 
-        this._okButton.onclick = ((e:any) => {
+        this._okButton.onclick = ((e: any) => {
             e.preventDefault();
-            if (!positiveOnClick(e)) this._hideDialog()
+            if (!positiveOnClick(e)) { this._hideDialog(); }
         });
 
         this._confirmElement.onclick = () => {
@@ -72,8 +79,8 @@ export class ConfirmComponent implements OnInit {
             return negativeOnClick(null);
         };
 
-        document.onkeyup = (e:any) => {
-            if (e.which == KEY_ESC) {
+        document.onkeyup = (e: any) => {
+            if (e.which === KEY_ESC) {
                 this._hideDialog();
                 return negativeOnClick(null);
             }
@@ -86,11 +93,5 @@ export class ConfirmComponent implements OnInit {
         document.onkeyup = null;
         this._confirmElement.style.opacity = 0;
         window.setTimeout(() => this._confirmElement.style.zIndex = -1, 400);
-    }
-
-    ngOnInit():any {
-        this._confirmElement = document.getElementById('confirmationModal');
-        this._cancelButton = document.getElementById('cancelButton');
-        this._okButton = document.getElementById('okButton');
     }
 }

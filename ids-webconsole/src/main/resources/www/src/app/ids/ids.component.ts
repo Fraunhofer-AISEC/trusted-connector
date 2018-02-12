@@ -52,7 +52,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
         );
 
     }
-    
+
     subcribeToFormChanges() {
         const myFormStatusChanges$ = this.myForm.statusChanges;
         const myFormValueChanges$ = this.myForm.valueChanges;
@@ -60,7 +60,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
         myFormStatusChanges$.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
         myFormValueChanges$.subscribe(x => {
         this.saved = false;
-            this.events.push({ event: 'VALUE_CHANGED', object: x })
+            this.events.push({ event: 'VALUE_CHANGED', object: x });
         });
     }
 
@@ -75,7 +75,7 @@ export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
                 // If saved successfully, user may leave the route (=saved=true)
                 this.saved = true;
             },
-            err => console.log("Did not save form " + err.json().message)
+            err => console.log('Did not save form ' + err.json().message)
         );
 
     }

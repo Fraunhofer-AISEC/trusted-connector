@@ -19,7 +19,7 @@ export class Configuration {
                 dataUsageControlSupport: '1',
                 auditLogging: '1',
                 localDataConfidentiality: '1'
-            }
+            };
         }
     }
 }
