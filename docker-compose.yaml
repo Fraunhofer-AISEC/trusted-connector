@@ -3,20 +3,20 @@ services:
 
   # Image for TPM simulator
   ids-tpm2dsim:
-    image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop
+    image: fhgaisec/tpm2dsim:develop
     volumes:
       - ./camel-ids/socket/:/data/cml/tpm2d/communication/
     command: /tpm2d/cml-tpm2d
 
   # Image for TPM trusted third party (RAT repository)
   ids-ttpsim:      
-    image: registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop
+    image: fhgaisec/ttpsim:develop
     ports:
       - "31337:31337"
 
   # Image for core platform, gets docker control socket mounted into the image
   ids-core:
-    image: registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop
+    image: fhgaisec/iot-connector:develop
     tty: true
     stdin_open: true
     volumes:
