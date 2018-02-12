@@ -1,6 +1,35 @@
 [![Build Status](https://travis-ci.org/industrial-data-space/trusted-connector.svg?branch=develop)](https://travis-ci.org/industrial-data-space/trusted-connector)
 
-This project creates the _Core Platform_ of the Trusted Connector. It comes as a custom Apache Karaf assembly, including a feature `ids` which wraps the following subprojects:
+The _Trusted Connector_ is an Apache Karaf-based platform for the Industrial Internet of Things (IIoT). It supports Docker and trust|me as containerization environments and provides the following features:
+
+* Message routing and conversion between protocols with Apache Camel
+* _Apps_ in isolated containers
+* Data flow- and data usage control
+* An Apache Camel component for secure communication and remote attestation between Connectors.
+
+# How to run
+
+## Start core platform
+* Install docker-compose.
+* Run core container, TPM2.0 simulator and simulator of trusted third party (ttpsim):
+```
+docker-compose up -d
+```
+
+## Open the dashboard
+
+* Get IP address of the `iot-connector` container: 
+```
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' iot-connector
+```
+* Open dashboard in browser: `http://<IP ADDRESS OF CONTAINER>:8181`.
+
+
+# How to build
+
+For detailed instruction on how to build the Trusted Connector with the trustme platform, please see the [Github documentation page](https://industrial-data-space.github.io/trusted-connector-documentation/docs/dev_core/)
+
+## Subprojects
 
 * `camel-ids`: An Apache Camel component implementing the "IDS Protocol" for remote attestation, meta data exchange, and message transfer between Trusted Connectors. The camel component supports the following protocol schemes: `idsserver://`, `idsclient://`, `idsclientplain://`
 * `ids-dataflow-policy`: The LUCON data flow policy framework
@@ -12,46 +41,6 @@ This project creates the _Core Platform_ of the Trusted Connector. It comes as a
 * `karaf-feature-ids`: The "ids" feature including all bundles listed here.
 
 Further, there are two additional sub-projects:
+
 * `rat-repository`: A dummy remote attestation repository for testing purposes
 * `tpm2j`: Java wrapper for TPM 2.0 daemon (tpmd)
-
-
-# How to build
-
-Please see the [Github documentation page](https://industrial-data-space.github.io/trusted-connector-documentation/docs/dev_core/)
-
-
-# Open the dashboard
-
-When running, main UI of the connector if available under `http://localhost:8181`.
-
-(If you run in a docker container, replace `localhost` by the name of the Core Platform container)
-
-
-# Configuring routes
-
-To set up a message route, create a file `karaf-assembly/target/assembly/deploy/my_route.xml` and paste the following lines into it:
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<blueprint
-    xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
-      http://www.osgi.org/xmlns/blueprint/v1.0.0
-      http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
-
-    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
-      <route>
-        <from uri="ids://echo"/>
-        <log message="Copying ${file:name} to the output directory"/>
-        <to uri="file:output"/>
-      </route>
-    </camelContext>
-
-</blueprint>
-```
-
-If you observe the logs in the Karaf console with `log:tail` you will see how that route is picked up. Type `camel:route-list` to confirm the route has been picked up and activated. 
-
-This route opens an endpoint speaking the IDS protocol (by default at port `9292`) and puts all data received at that endpoint into a file `karaf-assembly/target/assembly/output/<filename>`. 
