@@ -1,8 +1,8 @@
-import {Component, OnInit, AfterViewInit, EventEmitter, Output} from '@angular/core';
-import {Title} from '@angular/platform-browser';
+import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
-import {Policy} from './policy.interface';
-import {PolicyService} from './policy.service';
+import { Policy } from './policy.interface';
+import { PolicyService } from './policy.service';
 
 declare var componentHandler: any;
 
@@ -11,17 +11,17 @@ declare var componentHandler: any;
 })
 export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
   @Output() changeTitle = new EventEmitter();
-  policies: string[];
-  isLoaded: boolean;
+  private _policies?: Array<string>;
+  private _isLoaded = false;
 
   constructor(private titleService: Title, private policyService: PolicyService) {
     this.titleService.setTitle('Data Flow Control');
 
-    this.policyService.getPolicies().subscribe(policies => {
-      this.policies = policies;
-      this.isLoaded = this.policies != null && this.policies.length > 0;
-    });
-
+    this.policyService.getPolicies()
+      .subscribe(policies => {
+        this._policies = policies;
+        this._isLoaded = this._policies && this._policies.length > 0;
+      });
   }
 
   ngOnInit(): void {
@@ -30,5 +30,17 @@ export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     componentHandler.upgradeAllRegistered();
+  }
+
+  get policies(): Array<string> {
+    return this._policies;
+  }
+
+  get isLoaded(): boolean {
+    return this._isLoaded;
+  }
+
+  trackRules(index: number, item: string): string {
+    return item;
   }
 }

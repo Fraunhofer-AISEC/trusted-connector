@@ -24,7 +24,7 @@
 				
 			<div class="mdl-cell--12-col">
 		 		 <label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="fileUploadLabel">
-					  {{policyFileLabel}}
+					  {{ policyFileLabel }}
                     <input type="file" [multiple]="multiple" #fileInput formControlName="policy_file" (change)="fileChangeEvent($event)">
                 </label>
 			</div>

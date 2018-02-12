@@ -23,7 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let endp of endpoints">
+          <tr *ngFor="let endp of endpoints; trackBy: trackEndpoints">
             <td style="padding-left:16px;">
               {{ endp.endpointIdentifier }}
             </td>
@@ -62,7 +62,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let conn of incomingConnections">
+        <tr *ngFor="let conn of incomingConnections; trackBy: trackIncoming">
           <td style="padding-left:16px;">
             {{ conn.endpointIdentifier }}
           </td>
@@ -96,7 +96,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let connOut of outgoingConnections">
+        <tr *ngFor="let connOut of outgoingConnections; trackBy: trackOutgoing">
           <td style="padding-left:16px;">
             {{ connOut.endpointIdentifier }}
           </td>

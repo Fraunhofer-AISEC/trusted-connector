@@ -5,7 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 
 import { Result, RouteResult } from '../result';
-import { Route } from './route';
+import { Route, RouteComponent } from './route';
 import { RouteMetrics } from './route-metrics';
 import { ValidationInfo } from './validation';
 
@@ -31,8 +31,8 @@ export class RouteService {
     return this.httpClient.get(environment.apiURL + '/routes/metrics') as Observable<RouteMetrics>;
   }
 
-  getRoutes(): Observable<Route[]> {
-    return this.httpClient.get(environment.apiURL + '/routes/list/') as Observable<Route[]>;
+  getRoutes(): Observable<Array<Route>> {
+    return this.httpClient.get(environment.apiURL + '/routes/list/') as Observable<Array<Route>>;
   }
 
   stopRoute(routeId: string): Observable<Result> {
@@ -48,24 +48,22 @@ export class RouteService {
   saveRoute(routeId: string, routeString: string): Observable<RouteResult> {
     // Update Camel route
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
-    console.log('Sending Update: ' + routeString);
+    // console.log('Sending Update: ' + routeString);
+
     return this.httpClient.post(environment.apiURL + '/routes/save/' + routeId,
-      routeString, { headers: headers }) as Observable<RouteResult>;
+      routeString, { headers }) as Observable<RouteResult>;
   }
 
   addRoute(routeString: string): Observable<Result> {
     // Save new Camel route
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
-    console.log('Sending New: ' + routeString);
+    // console.log('Sending New: ' + routeString);
+
     return this.httpClient.put(environment.apiURL + '/routes/add',
-      routeString, { headers: headers }) as Observable<Result>;
+      routeString, { headers }) as Observable<Result>;
   }
 
-  listEndpoints(): Observable<string[]> {
-    return this.httpClient.get(environment.apiURL + '/routes/list_endpoints') as Observable<string[]>;
-  }
-
-  listComponents(): Observable<string[]> {
-    return this.httpClient.get(environment.apiURL + '/routes/list_components') as Observable<string[]>;
+  listComponents(): Observable<Array<RouteComponent>> {
+    return this.httpClient.get<Array<RouteComponent>>(environment.apiURL + '/routes/components');
   }
 }

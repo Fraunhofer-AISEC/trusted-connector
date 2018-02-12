@@ -1,13 +1,9 @@
-import { Component, OnInit, EventEmitter, Output, ViewContainerRef } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule }   from '@angular/forms';
-import { Title } from '@angular/platform-browser';
+import { Component, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { BrowserModule, Title } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 import { Certificate } from './certificate';
 import { CertificateService } from './keycert.service';
-
-// import { Overlay, overlayConfigFactory } from 'angular2-modal';
-// import { Modal, BSModalContext } from 'angular2-modal/plugins/bootstrap';
 
 @Component({
     selector: 'keycerts',
@@ -15,23 +11,23 @@ import { CertificateService } from './keycert.service';
 })
 export class KeycertsComponent implements OnInit {
     title = 'Current Certificates';
-    identities: Certificate[];
-    certificates: Certificate[];
-//
+    identities: Array<Certificate>;
+    certificates: Array<Certificate>;
+
     @Output() changeTitle = new EventEmitter();
 
-    // constructor(private titleService: Title, private certificateService: CertificateService,
-    //     overlay: Overlay, vcRef: ViewContainerRef, public modal: Modal) {
     constructor(private titleService: Title, private certificateService: CertificateService, vcRef: ViewContainerRef) {
         this.titleService.setTitle('Identities');
 
-        this.certificateService.getIdentities().subscribe(identities => {
-            this.identities = identities;
-        });
+        this.certificateService.getIdentities()
+            .subscribe(identities => {
+                this.identities = identities;
+            });
 
-        this.certificateService.getCertificates().subscribe(certificates => {
-            this.certificates = certificates;
-        });
+        this.certificateService.getCertificates()
+            .subscribe(certificates => {
+                this.certificates = certificates;
+            });
     }
 
     ngOnInit(): void {
@@ -39,20 +35,22 @@ export class KeycertsComponent implements OnInit {
     }
 
     deleteCert(alias: string): void {
-        this.certificateService.deleteCert(alias).subscribe(result => {
-            //             this.result = result;
-            //             if(result.toString() === "true") {
-            //                location.reload();
-            //              }
-        });
+        this.certificateService.deleteCert(alias)
+            .subscribe(result => {
+                //             this.result = result;
+                //             if(result.toString() === "true") {
+                //                location.reload();
+                //              }
+            });
     }
 
     deleteIdentity(alias: string): void {
-        this.certificateService.deleteIdentity(alias).subscribe(result => {
-            //             this.result = result;
-            //             if(result.toString() === "true") {
-            //                location.reload();
-            //              }
-        });
+        this.certificateService.deleteIdentity(alias)
+            .subscribe(result => {
+                //             this.result = result;
+                //             if(result.toString() === "true") {
+                //                location.reload();
+                //              }
+            });
     }
     }

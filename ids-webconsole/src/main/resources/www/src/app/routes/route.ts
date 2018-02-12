@@ -1,6 +1,6 @@
 // import { GraphData } from "../d3/graph";
 
-export class Route {
+export interface Route {
   id: string;
   description: string;
   dot: string;
@@ -8,4 +8,9 @@ export class Route {
   context: string;
   uptime: number;
   status: string;
+}
+
+export interface RouteComponent {
+  bundle: string;
+  description: string;
 }

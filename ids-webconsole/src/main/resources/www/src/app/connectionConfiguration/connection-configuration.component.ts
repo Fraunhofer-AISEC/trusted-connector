@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { ConnectionConfigurationService } from './connection-configuration.service';
@@ -10,7 +10,7 @@ import { Configuration } from './configuration';
   styleUrls: ['./connection-configuration.component.css']
 })
 export class ConnectionConfigurationComponent implements OnInit {
-  public models: Configuration[];
+  models: Array<Configuration>;
   private _model?: Configuration;
   private _selectedIndex = 0;
 
@@ -18,18 +18,21 @@ export class ConnectionConfigurationComponent implements OnInit {
     this.titleService.setTitle('Connections Configuration');
   }
 
-  public ngOnInit(): void {
-    let sets = this.connectionConfService.getAllConfiguration().subscribe(val => {
-      this.models = val;
-      for (let i = 0; i < this.models.length; i++) {
-        if (this.models[i].connection === 'General Configuration') {
-          this.selectedIndex = i;
-        }
-      }
-    });
+  ngOnInit(): void {
+    const sets = this.connectionConfService.getAllConfiguration()
+      .subscribe(val => {
+        this.models = val;
+        for (let i = 0; i < this.models.length; i++)
+          if (this.models[i].connection === 'General Configuration')
+            this.selectedIndex = i;
+      });
   }
 
-  get selectedIndex() {
+  trackModels(index: number, item: Configuration): string {
+    return item.connection;
+  }
+
+  get selectedIndex(): number {
     return this._selectedIndex;
   }
 
@@ -38,24 +41,20 @@ export class ConnectionConfigurationComponent implements OnInit {
     this._model = this.models[selectedIndex];
   }
 
-  get model() {
+  get model(): Configuration {
     return this._model;
   }
 
-  onChange(event) {
-    console.log(this.selectedIndex);
-    this.selectedIndex = event.target.value;
-  }
-
-  save() {
+  save(): void {
     // Call connection service API to store configurations
-    this.connectionConfService.storeConfiguration(this.model).subscribe(
-      () => {
-        console.log('Saved configuration ' + this.model.connection);
-        this.model.dirty = false;
-      },
-      err => console.log('Error occured while saving configuration ' + this.model.connection + ': ', err)
-    );
+    this.connectionConfService.storeConfiguration(this.model)
+      .subscribe(
+        () => {
+          // console.log('Saved configuration ' + this.model.connection);
+          this.model.dirty = false;
+        }
+        // err => console.log('Error occured while saving configuration ' + this.model.connection + ': ', err)
+      );
   }
 
 }

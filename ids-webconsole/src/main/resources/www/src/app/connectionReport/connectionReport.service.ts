@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { map, retryWhen } from 'rxjs/operators';
+import { Observable } from 'rxjs/observable';
 
-import { IncomingConnection } from './connections';
-import { OutgoingConnection } from './connections';
-import { Endpoint } from './connections';
+import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 
@@ -13,19 +10,16 @@ export class ConnectionReportService {
 
   constructor(private http: HttpClient) { }
 
-  getEndpoints(): Observable<Endpoint[]> {
-    return this.http.get(environment.apiURL + '/connections/endpoints')
-      .map(response => response as Endpoint[]);
+  getEndpoints(): Observable<Array<Endpoint>> {
+    return this.http.get<Array<Endpoint>>(environment.apiURL + '/connections/endpoints');
   }
 
-  getIncomingConnections(): Observable<IncomingConnection[]> {
-    return this.http.get(environment.apiURL + '/connections/incoming')
-      .map(response => response as IncomingConnection[]);
+  getIncomingConnections(): Observable<Array<IncomingConnection>> {
+    return this.http.get<Array<IncomingConnection>>(environment.apiURL + '/connections/incoming');
   }
 
-  getOutgoingConnections(): Observable<OutgoingConnection[]> {
-    return this.http.get(environment.apiURL + '/connections/outgoing')
-      .map(response => response as OutgoingConnection[]);
+  getOutgoingConnections(): Observable<Array<OutgoingConnection>> {
+    return this.http.get<Array<OutgoingConnection>>(environment.apiURL + '/connections/outgoing');
   }
 
 }

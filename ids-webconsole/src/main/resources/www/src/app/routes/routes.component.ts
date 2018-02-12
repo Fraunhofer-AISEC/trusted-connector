@@ -1,8 +1,6 @@
-import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule }   from '@angular/forms';
-import { Title } from '@angular/platform-browser';
-import 'rxjs/Rx';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { BrowserModule, Title } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { IntervalObservable } from 'rxjs/observable/IntervalObservable';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -11,6 +9,8 @@ import { Route } from './route';
 import { RouteService } from './route.service';
 import { RouteMetrics } from './route-metrics';
 
+import 'rxjs/add/operator/takeWhile';
+import { mergeMap } from 'rxjs/operators';
 
 @Component({
     selector: 'route-list',
@@ -19,20 +19,21 @@ import { RouteMetrics } from './route-metrics';
 })
 
 export class RoutesComponent implements OnInit, OnDestroy {
-    public title = 'Current Routes';
-    @Output() public changeTitle = new EventEmitter();
-    public routes: Route[];
-    public selectedRoute: Route;
-    public routemetrics: RouteMetrics = new RouteMetrics();
+    title = 'Current Routes';
+    @Output() changeTitle = new EventEmitter();
+    routes: Array<Route>;
+    selectedRoute: Route;
+    routemetrics: RouteMetrics = new RouteMetrics();
 
     private alive: boolean;
 
     constructor(private titleService: Title, private routeService: RouteService) {
         this.titleService.setTitle('Message Routes');
 
-        this.routeService.getRoutes().subscribe(routes => {
-            this.routes = routes;
-        });
+        this.routeService.getRoutes()
+            .subscribe(routes => {
+                this.routes = routes;
+            });
     }
 
     ngOnInit(): void {
@@ -45,8 +46,12 @@ export class RoutesComponent implements OnInit, OnDestroy {
         this.alive = true;
     }
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         this.alive = false;
+    }
+
+    trackRoutes(index: number, item: Route): string {
+        return item.id;
     }
 
     onSelect(route: Route): void {

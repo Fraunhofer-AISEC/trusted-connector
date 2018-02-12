@@ -1,68 +1,58 @@
-import { Injectable } from '@angular/core';
-import { Headers, Http, Response } from '@angular/http';
-import { URLSearchParams } from '@angular/http';
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import {RequestOptions, Request, RequestMethod} from '@angular/http';
-import {Observable} from 'rxjs/Observable';
+import { Component, ElementRef, Injectable, Input, ViewChild } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 
 import { Certificate } from './certificate';
 import { Identity } from './identity.interface';
 
 import { environment } from '../../environments/environment';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable()
 export class CertificateService {
 
-  constructor(private http: Http) { }
+  constructor(private http: HttpClient) { }
 
-  getIdentities(): Observable<Certificate[]> {
-    return this.http.get(environment.apiURL + '/certs/list_identities').map(response => { return response.json() as Certificate[]; });
+  getIdentities(): Observable<Array<Certificate>> {
+    return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_identities');
   }
 
-  getCertificates(): Observable<Certificate[]> {
-    return this.http.get(environment.apiURL + '/certs/list_certs').map(response => { return response.json() as Certificate[]; });
+  getCertificates(): Observable<Array<Certificate>> {
+    return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_certs');
   }
 
   createIdentity(identity: Identity): Observable<string> {
-    let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
-    let body = JSON.stringify(identity);
-    return this.http.post(environment.apiURL + '/certs/create_identity', body, options )
-      .map((res: Response) => {return res.json() as string; });
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const body = JSON.stringify(identity);
+
+    return this.http.post(environment.apiURL + '/certs/create_identity', body, {
+      headers,
+      responseType: 'text'
+    });
   }
 
   deleteCert(alias: string): Observable<string> {
-    let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
-    return this.http.post(environment.apiURL + '/certs/delete_cert', alias, options )
-      .map((res: Response) => {return res.json() as string; });
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.http.post(environment.apiURL + '/certs/delete_cert', alias, {
+      headers,
+      responseType: 'text'
+    });
   }
 
-  deleteIdentity(alias: string) {
-    let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
-    return this.http.post(environment.apiURL + '/certs/delete_identity', alias, options )
-      .map((res: Response) => {return res.json() as string; });
+  deleteIdentity(alias: string): Observable<string> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.http.post(environment.apiURL + '/certs/delete_identity', alias, {
+      headers,
+      responseType: 'text'
+    });
   }
 
-  uploadCert(inFile: File) {
-        return new Promise((resolve, reject) => {
-           let formData: any = new FormData();
-           let xhr = new XMLHttpRequest();
-           formData.append('upfile', inFile, inFile.name);
+  uploadCert(inFile: File): Observable<string> {
+    const formData: any = new FormData();
+    formData.append('upfile', inFile, inFile.name);
 
-           xhr.onreadystatechange = function () {
-               if (xhr.readyState === 4) {
-                   if (xhr.status === 200) {
-                       console.log(xhr.response);
-                   } else {
-                       console.log(xhr.response);
-                   }
-               }
-           };
-           xhr.open('POST', environment.apiURL + '/certs/install_trusted_cert', true);
-           xhr.send(formData);
-       });
+    return this.http.post(environment.apiURL + '/certs/install_trusted_cert', formData, { responseType: 'text' });
   }
 }

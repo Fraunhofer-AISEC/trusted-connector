@@ -5,7 +5,7 @@
             <h2 class="mdl-card__title-text">Endpoint Security Obligations</h2>
         </div>
         <div class="selectEndpoint clearfix">
-            <button *ngFor="let ep of models; let i = index" (click)="selectedIndex = i"
+            <button *ngFor="let ep of models; let i = index; trackBy: trackModels" (click)="selectedIndex = i"
                     class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect no-upper"
                     [class.mdl-button--colored]="i === selectedIndex"
                     [class.mdl-button--accent]="ep.dirty &amp;&amp; i !== selectedIndex">
@@ -31,7 +31,7 @@
                                     <input class="switch-button" type="radio" id="switch_1_left" [(ngModel)]="model.settings.integrityProtectionAndVerification"
                                         name="integrityProtectionAndVerification" [value]="'1'" [checked]="model.settings.integrityProtectionAndVerification === '1'"
                                     />
-                                    <label class="labelSmall" for="switch_1_left">None Test</label>
+                                    <label class="labelSmall" for="switch_1_left">None</label>
                                     <input class="switch-button" type="radio" id="switch_1_center" [(ngModel)]="model.settings.integrityProtectionAndVerification"
                                         name="integrityProtectionAndVerification" [value]="'2'" [checked]="model.settings.integrityProtectionAndVerification === '2'"
                                     />

@@ -4,12 +4,13 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'prettify'
 })
 export class PrettifyPipe implements PipeTransform {
-  transform(val) {
-    let obj =  JSON.stringify(val)
-        .replace('\n', '<br/>')
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  transform(val): Object {
+    const obj =  JSON.stringify(val)
+        .replace('\n', '<br />')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 
-    let jsonObject = JSON.parse(obj);
-    return jsonObject;
+    return JSON.parse(obj);
   }
 }

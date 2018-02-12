@@ -11,10 +11,10 @@
     </div>
     <div class="mdl-card__supporting-text">
 	  <ul class="mdl-list">
-	  	<li class="mdl-list__item mdl-list__item--two-line" *ngFor="let camelComponent of camelComponents">
+	  	<li class="mdl-list__item mdl-list__item--two-line" *ngFor="let camelComponent of camelComponents; trackBy: trackComponents">
 	  		<span class="mdl-list__item-primary-content">
-	  			<span>{{camelComponent.name}}</span>
-	  			<span class="mdl-list__item-sub-title">{{camelComponent.description}}</span>
+	  			<span>{{ camelComponent.bundle }}</span>
+	  			<span class="mdl-list__item-sub-title">{{ camelComponent.description }}</span>
   			</span>
 	  	</li>
 	  </ul>
@@ -42,7 +42,7 @@
 		      <span class="mdl-list__item-sub-title">Ensures that applications are sandboxed</span>
 		    </span>
 		    <span class="mdl-list__item-secondary-content">
-		      <span class="mdl-list__item-secondary-info" *ngIf="cmlVersion">{{cmlVersion}}</span>
+		      <span class="mdl-list__item-secondary-info" *ngIf="cmlVersion">{{ cmlVersion }}</span>
 		      <a class="mdl-list__item-secondary-action" href="#"  *ngIf="cmlVersion"><i class="material-icons mdl-color-text--teal">done</i></a>
 		      <span class="mdl-list__item-secondary-info" *ngIf="!cmlVersion">Not supported</span>
 		      <a class="mdl-list__item-secondary-action" href="#" *ngIf="!cmlVersion"><i class="material-icons mdl-color-text--grey">remove</i></a>

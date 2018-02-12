@@ -1,10 +1,12 @@
 <ul class="mdl-list">
-  <li class="mdl-list__item mdl-list__item--three-line" *ngFor="let certificate of certificates">
+  <li class="mdl-list__item mdl-list__item--three-line" *ngFor="let certificate of certificates; trackBy: trackCerts">
     <span class="mdl-list__item-primary-content">
       <i class="material-icons mdl-list__item-avatar">person</i>
-      <span>{{certificate.subjectCN}}</span>
+      <span>{{ certificate.subjectCN }}</span>
       <span class="mdl-list__item-text-body">
-        {{certificate.subjectOU}} {{certificate.subjectO}} {{certificate.subjectL}}
+        {{ certificate.subjectOU }}
+        {{ certificate.subjectO }}
+        {{ certificate.subjectL }}
       </span>
     </span>
     <span class="mdl-list__item-secondary-content" style="text-align:right">
