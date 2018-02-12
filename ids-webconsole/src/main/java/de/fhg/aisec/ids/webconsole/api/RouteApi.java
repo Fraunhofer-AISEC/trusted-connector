@@ -251,57 +251,16 @@ public class RouteApi {
 	}
 
 	/**
-	 * Returns map from camel contexts to list of camel components.
+	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
 	 *
-	 * Example:
-	 *
-	 * {"camel-1":["timer","properties"]}
-	 *
-	 * @return
+	 * @return List of supported protocols
 	 */
 	@GET
-	@Path("components")
+	@Path("/components")
 	@Produces("application/json")
 	public List<RouteComponent> getComponents() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new ArrayList<>();
-		}
-		return rm.get().listComponents();
-	}
-
-	/**
-	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
-	 */
-	@GET
-	@Path("/list_components")
-	public List<Map<String, String>> listComponents() {
-		List<Map<String, String>> componentNames = new ArrayList<>();
-		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
-		if (bCtx == null) {		
-			return componentNames;			
-		}
-
-		try {
-			ServiceReference<?>[] services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null);
-			for (ServiceReference<?> sr : services) {
-				String bundle = sr.getBundle().getHeaders().get("Bundle-Name");
-				if (bundle==null || "".equals(bundle)) {
-					bundle = sr.getBundle().getSymbolicName();
-				}
-				String description = sr.getBundle().getHeaders().get("Bundle-Description");
-				if (description==null) {
-					description = "";
-				}
-				Map<String, String> component = new HashMap<>();
-				component.put("name", bundle);
-				component.put("description", description);
-				componentNames.add(component);
-			}
-		} catch (InvalidSyntaxException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return componentNames;			
+		RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+		return rm.listComponents();
 	}
 
 	/**

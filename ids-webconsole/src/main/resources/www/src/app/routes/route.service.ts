@@ -64,6 +64,6 @@ export class RouteService {
   }
 
   listComponents(): Observable<Array<RouteComponent>> {
-    return this.httpClient.get<Array<RouteComponent>>(environment.apiURL + '/routes/list_components');
+    return this.httpClient.get<Array<RouteComponent>>(environment.apiURL + '/routes/components');
   }
 }
