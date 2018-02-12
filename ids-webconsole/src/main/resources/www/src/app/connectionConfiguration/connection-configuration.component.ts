@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { ConnectionConfigurationService } from './connection-configuration.service';
@@ -43,11 +43,6 @@ export class ConnectionConfigurationComponent implements OnInit {
 
   get model(): Configuration {
     return this._model;
-  }
-
-  onChange(event): void {
-    // console.log(this.selectedIndex);
-    this.selectedIndex = event.target.value;
   }
 
   save(): void {
