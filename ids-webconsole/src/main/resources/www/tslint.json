@@ -1,9 +1,22 @@
 {
   "rulesDirectory": [
-    "node_modules/codelyzer"
+    "node_modules/codelyzer",
+    "node_modules/rxjs-tslint-rules/dist/rules"
   ],
-  "extends": ["angular-tslint-rules"],
+  "extends": [
+    "angular-tslint-rules"
+  ],
   "rules": {
+    "rxjs-add": {
+      "options": [
+        {
+          "allowElsewhere": false,
+          "allowUnused": false,
+          "file": "./app/rxjs.ts"
+        }
+      ],
+      "severity": "error"
+    },
     "i18n": false,
     "no-unused-css": false,
     "prefer-template": false,

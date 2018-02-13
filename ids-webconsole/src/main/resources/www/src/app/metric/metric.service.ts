@@ -4,9 +4,6 @@ import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs/Observable';
 import { IntervalObservable } from 'rxjs/observable/IntervalObservable';
 
-import 'rxjs/add/operator/takeWhile';
-import 'rxjs/add/operator/mergeMap';
-
 @Injectable()
 export class MetricService implements OnDestroy {
     private metricObservable: Observable<Array<String>>;

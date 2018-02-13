@@ -1,12 +1,10 @@
 import { Component, ElementRef, Injectable, Input, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
-
-import { Certificate } from './certificate';
-import { Identity } from './identity.interface';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { environment } from '../../environments/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Certificate } from './certificate';
+import { Identity } from './identity.interface';
 
 @Injectable()
 export class CertificateService {

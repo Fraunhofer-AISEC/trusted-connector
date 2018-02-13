@@ -1,15 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
 
-import { Result, RouteResult } from '../result';
+import { environment } from './../../environments/environment';
+import { Result, RouteResult } from './../result';
 import { Route, RouteComponent } from './route';
 import { RouteMetrics } from './route-metrics';
 import { ValidationInfo } from './validation';
-
-import { environment } from '../../environments/environment';
 
 @Injectable()
 export class RouteService {

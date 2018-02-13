@@ -1,13 +1,7 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/timer';
-
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-
-import 'rxjs/add/operator/takeWhile';
-import 'rxjs/add/operator/mergeMap';
 
 declare var EventSource: any;
 

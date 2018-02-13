@@ -4,15 +4,11 @@ import { Title } from '@angular/platform-browser';
 import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 import { ConnectionReportService } from './connectionReport.service';
 
-import 'rxjs/add/operator/retryWhen';
-import 'rxjs/add/operator/delay';
-
 @Component({
   selector: 'connections',
   templateUrl: './connectionReport.component.html',
   styleUrls: ['./connectionReport.component.css']
 })
-
 export class ConnectionReportComponent implements OnInit {
 
   incomingConnections: Array<IncomingConnection>;

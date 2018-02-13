@@ -7,7 +7,7 @@
     "ng": "ng",
     "start": "ng serve --delete-output-path=false",
     "bundle": "ng build --env=prod --prod",
-    "lint": "tslint \"src/**/*.ts\""
+    "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
@@ -31,6 +31,7 @@
     "material-design-lite": "^1.3.0",
     "ng2-ace-editor": "^0.3.4",
     "rxjs": "^5.5.6",
+    "rxjs-tslint-rules": "^3.9.0",
     "svg-pan-zoom": "^3.5.3",
     "topojson": "^1.6.27",
     "ts-helpers": "^1.1.1",

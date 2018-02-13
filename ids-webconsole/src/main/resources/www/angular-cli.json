@@ -41,6 +41,12 @@
       }
     }
   ],
+  "lint": [
+    {
+      "project": "src/tsconfig.json",
+      "exclude": "**/node_modules/**"
+    }
+  ],
   "addons": [],
   "packages": [],
   "defaults": {

@@ -9,9 +9,6 @@ import { Route } from './route';
 import { RouteService } from './route.service';
 import { RouteMetrics } from './route-metrics';
 
-import 'rxjs/add/operator/takeWhile';
-import 'rxjs/add/operator/mergeMap';
-
 @Component({
     selector: 'route-list',
     templateUrl: './routes.component.html',
