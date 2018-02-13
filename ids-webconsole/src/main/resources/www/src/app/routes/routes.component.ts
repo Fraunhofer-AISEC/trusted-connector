@@ -10,7 +10,7 @@ import { RouteService } from './route.service';
 import { RouteMetrics } from './route-metrics';
 
 import 'rxjs/add/operator/takeWhile';
-import { mergeMap } from 'rxjs/operators';
+import 'rxjs/add/operator/mergeMap';
 
 @Component({
     selector: 'route-list',
@@ -38,8 +38,8 @@ export class RoutesComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.changeTitle.emit('Camel Routes');
-        // Update route metrics every 2s
-        IntervalObservable.create(2000)
+        // Update route metrics every second
+        IntervalObservable.create(1000)
             .takeWhile(() => this.alive)
             .mergeMap(() => this.routeService.getMetrics())
             .subscribe(routeMetrics => this.routemetrics = routeMetrics);

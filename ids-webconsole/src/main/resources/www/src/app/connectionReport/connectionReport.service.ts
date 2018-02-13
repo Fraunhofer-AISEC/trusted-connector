@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/observable';
+import { Observable } from 'rxjs/Observable';
 
 import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 import { environment } from '../../environments/environment';
