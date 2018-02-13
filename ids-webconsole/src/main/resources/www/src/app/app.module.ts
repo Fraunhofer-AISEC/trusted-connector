@@ -53,6 +53,8 @@ import { MetricService } from './metric/metric.service';
 
 import { ZoomVizComponent } from './routes/zoom-viz/zoom-viz.component';
 
+import './rxjs';
+
 // import { D3Service } from 'd3-ng2-service';
 // import { D3Component } from './d3/d3.component';
 
