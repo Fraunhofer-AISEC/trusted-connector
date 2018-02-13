@@ -39,8 +39,9 @@ export class ZoomVizComponent implements OnInit {
       const svgElement = this.vizCanvas.getElementsByTagName('svg')[0];
       let zoomFactor = 1.;
       const someNode = svgElement.querySelector('g.node');
-      if (someNode !== null)
+      if (someNode !== null) {
         zoomFactor = 50 / (someNode as HTMLElement).getBoundingClientRect().height;
+      }
       // tslint:disable-next-line:curly
       if (zoomFactor > 1.) {
         // lazy init on first mouseenter event
@@ -78,8 +79,9 @@ export class ZoomVizComponent implements OnInit {
           if (!this.isInitialized) {
             this.isInitialized = true;
             this.renderer.listen(this.vizCanvas, 'mouseleave', () => {
-              if (!this.isLocked && this.zoom)
+              if (!this.isLocked && this.zoom) {
                 this.zoom.reset();
+              }
             });
             this.renderer.listen(this.vizCanvas, 'click', () => {
               this.isLocked = !this.isLocked;

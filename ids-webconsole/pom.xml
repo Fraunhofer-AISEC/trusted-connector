@@ -207,7 +207,6 @@
 
 					<!-- Required: The following will ensure `npm install` is called before
 						anything else during the 'Clean Lifecycle' -->
-
 					<execution>
 						<id>npm install (clean)</id>
 						<goals>
@@ -239,6 +238,23 @@
 						</configuration>
 					</execution>
 
+					<!-- Required: The following calls `npm run lint` which ensures that the code
+						is free of recognizable linting errors with may corrupt the productive build -->
+					<execution>
+						<id>npm run lint (linting)</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>lint</argument>
+							</arguments>
+						</configuration>
+					</execution>
+
 					<!-- Required: This following calls `npm run build` where 'build' is
 						the script name I used in my project, change this if yours is different -->
 					<execution>
@@ -262,10 +278,7 @@
 						</goals> <phase>clean</phase> <configuration> <executable>npm</executable>
 						<arguments> <argument>run</argument> <argument>clean</argument> </arguments>
 						</configuration> </execution> -->
-
 				</executions>
-
-
 
 				<configuration>
 					<environmentVariables>

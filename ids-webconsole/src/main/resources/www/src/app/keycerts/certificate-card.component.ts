@@ -36,8 +36,9 @@ export class CertificateCardComponent implements OnInit {
   onDelete(alias: string): void {
     this.confirmService.activate('Are you sure that you want to delete this item?')
       .then(res => {
-        if (res)
+        if (res) {
           this.onDeleteCallback(alias);
+        }
       });
   }
 }

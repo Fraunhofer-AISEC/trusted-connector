@@ -7,9 +7,9 @@ export class Configuration {
 
     constructor(connection: string, settings?: Settings) {
         this.connection = connection;
-        if (settings)
+        if (settings) {
             this.settings = settings;
-        else
+        } else {
             this.settings = {
                 integrityProtectionAndVerification: '1',
                 authentication: '1',
@@ -20,5 +20,6 @@ export class Configuration {
                 auditLogging: '1',
                 localDataConfidentiality: '1'
             };
+        }
     }
 }

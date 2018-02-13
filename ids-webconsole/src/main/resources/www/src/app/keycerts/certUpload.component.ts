@@ -17,8 +17,9 @@ export class CertUploadComponent {
 
         if (fileCount > 0) { // a file was selected
 
-            for (let i = 0; i < fileCount; i++)
+            for (let i = 0; i < fileCount; i++) {
                 this.certificateService.uploadCert(inputEl.files.item(i));
+            }
 
             location.reload();
         }

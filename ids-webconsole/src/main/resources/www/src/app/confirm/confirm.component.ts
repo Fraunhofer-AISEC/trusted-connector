@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-
 import { ConfirmService } from './confirm.service';
 
 const KEY_ESC = 27;
@@ -58,22 +57,25 @@ export class ConfirmComponent implements OnInit {
         const negativeOnClick = (e: any) => resolve(false);
         const positiveOnClick = (e: any) => resolve(true);
 
-        if (!this._confirmElement || !this._cancelButton || !this._okButton)
+        if (!this._confirmElement || !this._cancelButton || !this._okButton) {
             return;
+        }
 
         this._confirmElement.style.opacity = 0;
         this._confirmElement.style.zIndex = 9999;
 
         this._cancelButton.onclick = ((e: any) => {
             e.preventDefault();
-            if (!negativeOnClick(e))
+            if (!negativeOnClick(e)) {
                 this._hideDialog();
+            }
         });
 
         this._okButton.onclick = ((e: any) => {
             e.preventDefault();
-            if (!positiveOnClick(e))
+            if (!positiveOnClick(e)) {
                 this._hideDialog();
+            }
         });
 
         this._confirmElement.onclick = () => {

@@ -38,16 +38,18 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
       .subscribe(power => {
         this.power = power;
 
-        if (this.power >= 60)
+        if (this.power >= 60) {
           this.errorOn();
+        }
       }));
   }
 
   loadMap(): Promise<any> {
     return new Promise((resolve, reject) => {
       d3.json('data/eu.topo.json', (error, json) => {
-        if (error)
+        if (error) {
           return reject(error);
+        }
 
         resolve(json);
       });
@@ -57,8 +59,9 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   loadLocations(): Promise<Array<any>> {
     return new Promise((resolve, reject) => {
       d3.tsv('data/locations.tsv', (error, json) => {
-        if (error)
+        if (error) {
           return reject(error);
+        }
 
         resolve(json);
       });
@@ -136,9 +139,10 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   /* Show warning in map (Hannover blinking red) */
   errorOn(): any {
     // if already blinking, skip
-    if (this.isBlinking)
+    if (this.isBlinking) {
       // console.log('already blinking');
       return;
+    }
 
     this.isBlinking = true;
     // console.log('preparing to blink...');
@@ -147,14 +151,16 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
       .take(10);
 
     this.errorTimer.subscribe(x => {
-      if (x % 2 === 0)
+      if (x % 2 === 0) {
         this.showErrorLocation(this, this.locations.slice(0, 1));
-      else
+      } else {
         this.hideErrorLocation();
+      }
 
-      if (x === 9)
+      if (x === 9) {
         // console.log('turning off blinking...');
         this.isBlinking = false;
+      }
     });
   }
 
@@ -162,8 +168,9 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
   showErrorLocation(self, location: any): any {
     // Do not duplicate element
     if (!this.svg.select('#warning_location')
-      .empty())
+      .empty()) {
         return;
+    }
 
     // Add element to SVG and fade in
     const errLoc = this.svg.append('g')

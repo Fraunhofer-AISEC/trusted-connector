@@ -43,8 +43,9 @@ export class NewDataflowPolicyComponent implements OnInit {
 
     // Update caption of upload button with file name when a file is selected
     fileChangeEvent(fileInput: any): void {
-        if (fileInput.target.files && fileInput.target.files[0])
+        if (fileInput.target.files && fileInput.target.files[0]) {
             this.policyFileLabel = fileInput.target.files[0].name;
+        }
     }
 
 }

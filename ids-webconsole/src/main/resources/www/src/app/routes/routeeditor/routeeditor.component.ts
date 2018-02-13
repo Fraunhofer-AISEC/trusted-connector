@@ -82,8 +82,9 @@ export class RouteeditorComponent implements OnInit {
     this.navRoute.params.subscribe(params => {
       const id = params.id;
 
-      if (!id)
+      if (!id) {
         return;
+      }
 
       this.routeService.getRoute(id)
         .subscribe(route => {
@@ -158,7 +159,7 @@ export class RouteeditorComponent implements OnInit {
     const id = this._route.id;
 
     // Call REST POST/PUT to store route
-    if (id)
+    if (id) {
       this.routeService.saveRoute(id, this._textRepresentation)
         .subscribe(
           result => {
@@ -178,20 +179,22 @@ export class RouteeditorComponent implements OnInit {
             // console.log(error);
           }
         );
-    else
+    } else {
       this.routeService.addRoute(this._textRepresentation)
         .subscribe(
           result => {
             // If created successfully, redirect user to routes overview
             this._result = result;
             this._saved = true;
-            if (result.successful)
+            if (result.successful) {
               // console.log('Route editor: Created route(s)');
               this.router.navigate(['routes']);
+            }
           },
           error => {
             // console.log(error);
           }
         );
+    }
   }
 }

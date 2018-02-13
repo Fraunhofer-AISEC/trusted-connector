@@ -22,9 +22,11 @@ export class ConnectionConfigurationComponent implements OnInit {
     const sets = this.connectionConfService.getAllConfiguration()
       .subscribe(val => {
         this.models = val;
-        for (let i = 0; i < this.models.length; i++)
-          if (this.models[i].connection === 'General Configuration')
+        for (let i = 0; i < this.models.length; i++) {
+          if (this.models[i].connection === 'General Configuration') {
             this.selectedIndex = i;
+          }
+        }
       });
   }
 

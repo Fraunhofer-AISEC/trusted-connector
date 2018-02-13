@@ -6,8 +6,9 @@ export class SubscriptionComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     // console.log('Unsubscribing...');
-    for (const subscription of this.subscriptions)
+    for (const subscription of this.subscriptions) {
       subscription.unsubscribe();
+    }
   }
 
 }

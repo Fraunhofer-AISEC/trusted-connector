@@ -17,6 +17,8 @@
       ],
       "severity": "error"
     },
+    "curly": true,
+    
     "i18n": false,
     "no-unused-css": false,
     "prefer-template": false,
