@@ -1,0 +1,27 @@
+<div class="mdl-grid">
+<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, myForm.valid)"	class="mdl-cell--12-col mdl-grid">
+	<div class="mdl-cell--12-col">
+		<div class="app-card mdl-card card-dark mdl-cell mdl-cell--12-col">
+		   	<div class="mdl-card__title">
+		       	<h2 class="mdl-card__title-text">Search for application</h2>
+		   	</div>
+		   	<div class="mdl-card__supporting-text mdl-grid">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col form-group is-dirty">
+					<input class="mdl-textfield__input" id="apps_search" type="text" formControlName="apps_search"> 
+					<label class="mdl-textfield__label" for="apps_search">Enter search term ...</label> 
+					<span [hidden]="myForm.controls.apps_search.valid || (myForm.controls.apps_search.pristine && !submitted)" class="mdl-textfield__error"> Enter some search term</span>
+					<!--<pre class="margin-20">{{ myForm.controls.name.errors | json }}</pre>-->
+				</div>
+				<div class="mdl-cell--2-col" style="margin-left:auto">
+					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Search</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</form>
+	<div class="mdl-grid">
+		<div class="mdl-cell mdl-cell--6-col" *ngFor="let app of searchResults trackBy: trackApps">
+			<app-search-result-card [app]="app"></app-search-result-card>
+		</div>
+	</div>	
+</div>

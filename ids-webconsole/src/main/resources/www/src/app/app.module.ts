@@ -11,8 +11,9 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { NetworkGraphComponent } from './dashboard/network-graph.component';
 import { MetricCardComponent } from './dashboard/metric-card.component';
 
-import { AppsComponent } from './apps/apps.component';
+import { AppsComponent, AppsSearchComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
+import { AppSearchResultCardComponent } from './apps/app-search-result-card.component';
 
 import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
@@ -72,11 +73,13 @@ import './rxjs';
   ],
   declarations: [
     AppComponent,
+    AppsSearchComponent,
     DashboardComponent,
     NetworkGraphComponent,
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
+    AppSearchResultCardComponent,
     DataflowPoliciesComponent,
     NewDataflowPolicyComponent,
     RoutesComponent,
