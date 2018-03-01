@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @Path("/config")
 public class ConfigApi {
-	public final static String GENERAL_CONFIG = "General Configuration";
+	public static final String GENERAL_CONFIG = "General Configuration";
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
 	
 	@GET

@@ -418,6 +418,10 @@ table.table.table-striped thead tr th {
   color: rgb(51, 51, 51);
 }
 
+.mdl-layout__header--waterfall{
+    overflow: visible;
+}
+
 /* Clearfix, credits: https://css-tricks.com/all-about-floats/ */
 .clearfix:after { 
    content: "."; 
