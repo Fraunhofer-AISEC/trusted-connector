@@ -248,6 +248,10 @@
 						<phase>process-sources</phase>
 						<configuration>
 							<executable>npm</executable>
+					        <successCodes>
+					            <successCode>0</successCode>
+					            <successCode>2</successCode>
+					        </successCodes>
 							<arguments>
 								<argument>run</argument>
 								<argument>lint</argument>

@@ -1,7 +1,7 @@
 import { RouterModule, Routes } from '@angular/router';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { AppsComponent } from './apps/apps.component';
+import { AppsComponent, AppsSearchComponent } from './apps/apps.component';
 
 import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
@@ -26,6 +26,9 @@ const appRoutes: Routes = [{
   }, {
     path: 'apps',
     component: AppsComponent
+  }, {
+      path: 'appsearch',
+      component: AppsSearchComponent
   }, {
     path: 'dataflowpolicies',
     component: DataflowPoliciesComponent

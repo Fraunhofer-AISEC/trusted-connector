@@ -170,7 +170,9 @@ public class DockerCM implements ContainerManager {
 			// Instantly create a container from that image, but do not start it yet.
 			LOG.info("Creating container instance from image " + imageID);
 			String containerID = defaultContainerName(imageID);
-			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "create", "-P", "--label", "created="+Instant.now().toEpochMilli(), "--name", containerID, imageID));
+			List<String> cmd = Arrays.asList(DOCKER_CLI, "create", "-P", "--label", "created="+Instant.now().toEpochMilli(), "--name", containerID, imageID);
+			LOG.debug("Exec " + String.join(" ", cmd));
+			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
 			p = pb.start();
 			p.waitFor(600, TimeUnit.SECONDS);
 			return Optional.<String>of(containerID);
@@ -192,11 +194,11 @@ public class DockerCM implements ContainerManager {
 		if (imageID.indexOf('/') > -1 && imageID.indexOf('/')<imageID.length()-1) {
 			String name = imageID.substring(imageID.indexOf('/')+1);
 			String rest = imageID.replace(name, "").replace('/', '-');
-			rest = rest.substring(0, rest.length()-2);
+			rest = rest.substring(0, rest.length()-1);
 			return name + "-" + rest;
-		} else {
-			return imageID;
 		}
+		
+		return imageID;
 	}
 
 
