@@ -28,7 +28,7 @@
             <div class="mdl-card__actions mdl-card--border">
 				<button [attr.id]="'menu_' + app.name" class="mdl-button mdl-js-button mdl-button--colored">Install</button>
 				<ul [attr.for]="'menu_' + app.name" class="mdl-menu mdl-menu--top-right mdl-js-menu mdl-js-ripple-effect">
-				  <li class="mdl-menu__item" *ngFor="let tag of app.tags trackBy: trackApps;" ng-click="onInstall(app.name,tag.name)">{{ tag.name }}</li>
+				  <li class="mdl-menu__item" *ngFor="let tag of app.tags; trackBy: trackApps;" ng-click="onInstall(app.name,tag.name)">{{ tag.name }}</li>
 				</ul>
             </div>
         </div>
