@@ -1,2 +1,2 @@
 #!/bin/sh
-mvn install -DskipITs -DskipTests -DskipDocker
+mvn install -DskipITs -DskipTests -DskipDocker -DskipAngular
