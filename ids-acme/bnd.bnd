@@ -1,0 +1,18 @@
+src: src/main/java
+bin: target/classes
+testsrc: src/test/java,src/test/resources
+testbin: target/test-classes
+Bundle-Name: ids-acme
+Bundle-Version: 2.0
+Export-Package: de.fhg.ids.dataflowcontrol
+-dsannotations: *
+Bundle-Vendor: Fraunhofer
+-noee=true
+Import-Package: \
+	!cli.System.Reflection,\
+	*
+Private-Package: \
+    org.shredzone.acme4j,\
+    com.sun.net.httpserver
+Export-Package: \
+	de.fhg.aisec.ids.acme

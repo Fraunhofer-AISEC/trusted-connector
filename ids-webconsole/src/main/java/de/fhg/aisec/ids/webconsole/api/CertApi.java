@@ -19,15 +19,19 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.Cert;
+import de.fhg.aisec.ids.webconsole.api.data.Identity;
+import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -41,23 +45,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.webconsole.api.data.Cert;
-import de.fhg.aisec.ids.webconsole.api.data.Identity;
-import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -74,6 +61,12 @@ public class CertApi {
 	private static final String KEYSTORE_PWD = "password";
 	private static final String TRUSTSTORE_FILE = "client-truststore.jks";
 	private static final String KEYSTORE_FILE = "client-keystore.jks";
+
+	@GET
+	@Path("acme_get_cert")
+	public void getAcmeCert() {
+		WebConsoleComponent.getAcmeClient().requestCertificate();
+	}
 
 	@GET
 	@Path("list_certs")

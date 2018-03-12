@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>ids-route-manager</artifactId>
+	<artifactId>ids-acme</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -23,7 +23,7 @@
 		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>IDS Route Manager</name>
+	<name>ACME v2 client</name>
 
 	<dependencies>
 		<!-- IDS components -->
@@ -33,14 +33,47 @@
 			<version>1.1.0-SNAPSHOT</version>
 		</dependency>
 
-		<!-- OSGi -->
+		<!-- acme4j dependencies -->
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.framework</artifactId>
+			<groupId>org.shredzone.acme4j</groupId>
+			<artifactId>acme4j-client</artifactId>
+			<version>2.0-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/acme4j-client-2.0-SNAPSHOT.jar</systemPath>
 		</dependency>
+		<dependency>
+			<groupId>org.shredzone.acme4j</groupId>
+			<artifactId>acme4j-utils</artifactId>
+			<version>2.0-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/acme4j-utils-2.0-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.bitbucket.b_c</groupId>
+			<artifactId>jose4j</artifactId>
+			<version>0.6.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk15on</artifactId>
+			<version>1.59</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcmail-jdk15on</artifactId>
+			<version>1.59</version>
+		</dependency>
+
+		<!-- OSGi -->
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.compendium</artifactId>
+			<version>5.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -48,39 +81,8 @@
 			<artifactId>org.osgi.annotation</artifactId>
 			<version>6.0.0</version>
 		</dependency>
-		<!-- logging -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-		</dependency>
-		<!-- type checking -->
-		<dependency>
-			<groupId>de.fhg.ids</groupId>
-			<artifactId>org.checkerframework.checker-qual</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
-		</dependency>
-			
-		<!-- for testing -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-    </dependencies>
+
+	</dependencies>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
@@ -89,6 +91,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -99,6 +102,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -115,6 +119,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
