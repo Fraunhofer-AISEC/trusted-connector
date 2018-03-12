@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component(immediate=true, name="acme-client")
+@Component(immediate=true)
 public class AcmeClientService implements AcmeClient {
 
     public static final String[] DOMAINS = {"localhost"};
