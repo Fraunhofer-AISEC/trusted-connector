@@ -13,6 +13,7 @@ Import-Package: \
 	*
 Private-Package: \
     org.shredzone.acme4j,\
-    com.sun.net.httpserver
+    org.bouncycastle*,\
+    org.jose4j*
 Export-Package: \
 	de.fhg.aisec.ids.acme
