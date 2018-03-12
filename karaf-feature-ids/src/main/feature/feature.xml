@@ -67,6 +67,7 @@
 
 		<!-- IDS specific bundles -->
 		<bundle>mvn:de.fhg.ids/api/1.1.0-SNAPSHOT</bundle>
+		<bundle>mvn:de.fhg.ids/ids-acme/1.1.0-SNAPSHOT</bundle>
 		<bundle>mvn:de.fhg.ids/ids-container-manager/1.1.0-SNAPSHOT</bundle>
 		<bundle>mvn:de.fhg.ids/ids-route-manager/1.1.0-SNAPSHOT</bundle>
 		<bundle>mvn:de.fhg.ids/ids-dataflow-control/1.1.0-SNAPSHOT</bundle>
