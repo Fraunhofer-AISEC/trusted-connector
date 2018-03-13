@@ -72,19 +72,12 @@ public class AcmeClientService implements AcmeClient {
             LOG.error("Could not read ACME key pair", e);
             throw new RuntimeException(e);
         }
-        Session session = new Session(ACME_URL, acmeKeyPair);
 
         Account account;
         try {
+            Session session = new Session(ACME_URL);
             LOG.info(session.getMetadata().getTermsOfService().toString());
-            try {
-                AccountBuilder accountBuilder = new AccountBuilder();
-                account = accountBuilder.onlyExisting().create(session);
-            } catch (AcmeException e) {
-                AccountBuilder accountBuilder = new AccountBuilder();
-                accountBuilder.agreeToTermsOfService();
-                account = accountBuilder.create(session);
-            }
+            account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
             LOG.info(account.getLocation().toString());
         } catch (AcmeException e) {
             LOG.error("Error while accessing/creating ACME account", e);
@@ -123,30 +116,27 @@ public class AcmeClientService implements AcmeClient {
             throw new RuntimeException(e);
         }
 
-        try {
-            KeyPair domainKeyPair;
-            try (Reader keyReader = new FileReader("domain.key");
-                 Writer csrWriter = new FileWriter("domain.csr");
-                 Writer chainWriter = new FileWriter("cert-chain.crt")) {
-                domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
-                CSRBuilder csrb = new CSRBuilder();
-                csrb.addDomains(DOMAINS);
-                csrb.setOrganization("Fraunhofer ACME Demo");
-                csrb.sign(domainKeyPair);
-                csrb.write(csrWriter);
-                order.execute(csrb.getEncoded());
-                Certificate certificate = order.getCertificate();
-                // Print and save certificate chain
-                System.out.println("---------- CERTIFICATE: ----------");
-                System.out.println(certificate.getCertificate());
-                System.out.println("------------- CHAIN: -------------");
-                certificate.getCertificateChain().forEach(System.out::println);
-                // Save certificate
-                certificate.writeCertificate(chainWriter);
-            } catch (IOException e) {
-                LOG.error("Could not read ACME key pair", e);
-                throw new RuntimeException(e);
-            }
+        try (Reader keyReader = new FileReader("domain.key");
+             Writer csrWriter = new FileWriter("domain.csr");
+             Writer chainWriter = new FileWriter("cert-chain.crt")) {
+            KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
+            CSRBuilder csrb = new CSRBuilder();
+            csrb.addDomains(DOMAINS);
+            csrb.setOrganization("Fraunhofer ACME Demo");
+            csrb.sign(domainKeyPair);
+            csrb.write(csrWriter);
+            order.execute(csrb.getEncoded());
+            Certificate certificate = order.getCertificate();
+            // Print and save certificate chain
+            System.out.println("---------- CERTIFICATE: ----------");
+            System.out.println(certificate.getCertificate());
+            System.out.println("------------- CHAIN: -------------");
+            certificate.getCertificateChain().forEach(System.out::println);
+            // Save certificate
+            certificate.writeCertificate(chainWriter);
+        } catch (IOException e) {
+            LOG.error("Could not read ACME key pair", e);
+            throw new RuntimeException(e);
         } catch (AcmeException e) {
             LOG.error("Error while retrieving certificate", e);
             throw new RuntimeException(e);
