@@ -4,16 +4,19 @@ testsrc: src/test/java,src/test/resources
 testbin: target/test-classes
 Bundle-Name: ids-acme
 Bundle-Version: 2.0
-Export-Package: de.fhg.ids.dataflowcontrol
 -dsannotations: *
 Bundle-Vendor: Fraunhofer
 -noee=true
-Import-Package: \
-	!cli.System.Reflection,\
-	*
+Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.registrar)",\
+    osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",\
+    osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"
+Provide-Capability: osgi.serviceloader; osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider
+Import-Package: *
 Private-Package: \
     org.shredzone.acme4j,\
     org.bouncycastle*,\
     org.jose4j*
 Export-Package: \
-	de.fhg.aisec.ids.acme
+    de.fhg.aisec.ids.acme*,\
+    org.shredzone.acme4j.provider*,\
+    de.fhg.aisec.ids.acme.provider
