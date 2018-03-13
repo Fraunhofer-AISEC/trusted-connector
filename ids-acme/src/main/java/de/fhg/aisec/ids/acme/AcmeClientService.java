@@ -53,93 +53,104 @@ public class AcmeClientService implements AcmeClient {
     }
 
     public void requestCertificate() {
-        Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
-            if (!Files.exists(fs.getPath(keyFile))) {
-                KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
-                try (FileWriter fileWriter = new FileWriter(keyFile)) {
-                    KeyPairUtils.writeKeyPair(keyPair, fileWriter);
-                } catch (IOException e) {
-                    LOG.error("Could not write key pair", e);
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        KeyPair acmeKeyPair;
-        try (FileReader fileReader = new FileReader("acme.key")) {
-            acmeKeyPair = KeyPairUtils.readKeyPair(fileReader);
-        } catch (IOException e) {
-            LOG.error("Could not read ACME key pair", e);
-            throw new RuntimeException(e);
-        }
-
-        Account account;
         try {
-            Session session = new Session(ACME_URL);
-            LOG.info(session.getMetadata().getTermsOfService().toString());
-            account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
-            LOG.info(account.getLocation().toString());
-        } catch (AcmeException e) {
-            LOG.error("Error while accessing/creating ACME account", e);
-            throw new RuntimeException(e);
-        }
+            // Start ACME challenge responder
+            AcmeChallengeServer.startServer(this);
 
-        Order order;
-        try {
-            order = account.newOrder().domains(DOMAINS).create();
-//            Order order = account.newOrder().domains(DOMAINS).notAfter(Instant.now().plus(Duration.ofDays(20L)))
-//                    .create();
-            order.getAuthorizations().parallelStream().map(authorization ->
-                    (Http01Challenge) authorization.findChallenge(Http01Challenge.TYPE)).forEach(challenge -> {
-                challengeMap.put(challenge.getToken(), challenge.getAuthorization());
-                try {
-                    // solve the challenge
-                    challenge.trigger();
-                    do {
-                        try {
-                            Thread.sleep(1000L);
-                        } catch (InterruptedException ie) {
-                            LOG.error("Error while doing 1 second sleep");
-                        }
-                        challenge.update();
-                        LOG.info(challenge.getStatus().toString());
-                    } while (challenge.getStatus() == Status.PENDING);
-                    if (challenge.getStatus() != Status.VALID) {
-                        throw new RuntimeException("Failed to successfully solve challenge");
+            Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
+                if (!Files.exists(fs.getPath(keyFile))) {
+                    KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
+                    try (FileWriter fileWriter = new FileWriter(keyFile)) {
+                        KeyPairUtils.writeKeyPair(keyPair, fileWriter);
+                    } catch (IOException e) {
+                        LOG.error("Could not write key pair", e);
+                        throw new RuntimeException(e);
                     }
-                } catch (AcmeException e) {
-                    throw new RuntimeException(e);
                 }
             });
-        } catch (AcmeException e) {
-            LOG.error("Error while placing certificate order", e);
-            throw new RuntimeException(e);
-        }
 
-        try (Reader keyReader = new FileReader("domain.key");
-             Writer csrWriter = new FileWriter("domain.csr");
-             Writer chainWriter = new FileWriter("cert-chain.crt")) {
-            KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
-            CSRBuilder csrb = new CSRBuilder();
-            csrb.addDomains(DOMAINS);
-            csrb.setOrganization("Fraunhofer ACME Demo");
-            csrb.sign(domainKeyPair);
-            csrb.write(csrWriter);
-            order.execute(csrb.getEncoded());
-            Certificate certificate = order.getCertificate();
-            // Print and save certificate chain
-            System.out.println("---------- CERTIFICATE: ----------");
-            System.out.println(certificate.getCertificate());
-            System.out.println("------------- CHAIN: -------------");
-            certificate.getCertificateChain().forEach(System.out::println);
-            // Save certificate
-            certificate.writeCertificate(chainWriter);
+            KeyPair acmeKeyPair;
+            try (FileReader fileReader = new FileReader("acme.key")) {
+                acmeKeyPair = KeyPairUtils.readKeyPair(fileReader);
+            } catch (IOException e) {
+                LOG.error("Could not read ACME key pair", e);
+                throw new RuntimeException(e);
+            }
+
+            Account account;
+            try {
+                Session session = new Session(ACME_URL);
+                LOG.info(session.getMetadata().getTermsOfService().toString());
+                account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
+                LOG.info(account.getLocation().toString());
+            } catch (AcmeException e) {
+                LOG.error("Error while accessing/creating ACME account", e);
+                throw new RuntimeException(e);
+            }
+
+            Order order;
+            try {
+                order = account.newOrder().domains(DOMAINS).create();
+//            Order order = account.newOrder().domains(DOMAINS).notAfter(Instant.now().plus(Duration.ofDays(20L)))
+//                    .create();
+                order.getAuthorizations().parallelStream().map(authorization ->
+                        (Http01Challenge) authorization.findChallenge(Http01Challenge.TYPE)).forEach(challenge -> {
+                    challengeMap.put(challenge.getToken(), challenge.getAuthorization());
+                    try {
+                        // solve the challenge
+                        challenge.trigger();
+                        do {
+                            try {
+                                Thread.sleep(1000L);
+                            } catch (InterruptedException ie) {
+                                LOG.error("Error while doing 1 second sleep");
+                            }
+                            challenge.update();
+                            LOG.info(challenge.getStatus().toString());
+                        } while (challenge.getStatus() == Status.PENDING);
+                        if (challenge.getStatus() != Status.VALID) {
+                            throw new RuntimeException("Failed to successfully solve challenge");
+                        }
+                    } catch (AcmeException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (AcmeException e) {
+                LOG.error("Error while placing certificate order", e);
+                throw new RuntimeException(e);
+            }
+
+            try (Reader keyReader = new FileReader("domain.key");
+                 Writer csrWriter = new FileWriter("domain.csr");
+                 Writer chainWriter = new FileWriter("cert-chain.crt")) {
+                KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
+                CSRBuilder csrb = new CSRBuilder();
+                csrb.addDomains(DOMAINS);
+                csrb.setOrganization("Fraunhofer ACME Demo");
+                csrb.sign(domainKeyPair);
+                csrb.write(csrWriter);
+                order.execute(csrb.getEncoded());
+                Certificate certificate = order.getCertificate();
+                // Print and save certificate chain
+                System.out.println("---------- CERTIFICATE: ----------");
+                System.out.println(certificate.getCertificate());
+                System.out.println("------------- CHAIN: -------------");
+                certificate.getCertificateChain().forEach(System.out::println);
+                // Save certificate
+                certificate.writeCertificate(chainWriter);
+            } catch (IOException e) {
+                LOG.error("Could not read ACME key pair", e);
+                throw new RuntimeException(e);
+            } catch (AcmeException e) {
+                LOG.error("Error while retrieving certificate", e);
+                throw new RuntimeException(e);
+            }
         } catch (IOException e) {
-            LOG.error("Could not read ACME key pair", e);
+            LOG.error("Failed to start HTTP server", e);
             throw new RuntimeException(e);
-        } catch (AcmeException e) {
-            LOG.error("Error while retrieving certificate", e);
-            throw new RuntimeException(e);
+        } finally {
+            // Stop ACME challenge responder
+            AcmeChallengeServer.stopServer();
         }
     }
 

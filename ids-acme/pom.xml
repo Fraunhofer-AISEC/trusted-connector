@@ -69,6 +69,13 @@
 			<version>1.59</version>
 		</dependency>
 
+		<!-- NanoHTTPD ACME challenge server -->
+		<dependency>
+			<groupId>org.nanohttpd</groupId>
+			<artifactId>nanohttpd</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+
 		<!-- OSGi -->
 		<dependency>
 			<groupId>org.osgi</groupId>

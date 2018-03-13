@@ -13,7 +13,8 @@ Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.re
 Provide-Capability: osgi.serviceloader; osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider
 Import-Package: *
 Private-Package: \
-    org.shredzone.acme4j,\
+    fi.iki.elonen*,\
+    org.shredzone.acme4j*,\
     org.bouncycastle*,\
     org.jose4j*
 Export-Package: \
