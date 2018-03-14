@@ -31,7 +31,7 @@ public class AcmeChallengeServer {
                     LOG.warn("ACME challenge is unknown");
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, TEXT_PLAIN, null);
                 } else {
-                    LOG.warn("ACME challenge response: " + response);
+                    LOG.info("ACME challenge response: " + response);
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, TEXT_PLAIN, response);
                 }
             }
@@ -44,5 +44,4 @@ public class AcmeChallengeServer {
         server.stop();
         LOG.debug("NanoHTTPD stopped");
     }
-
 }
