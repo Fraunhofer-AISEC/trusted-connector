@@ -31,9 +31,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,7 +44,7 @@ import java.util.Map;
 @Component(immediate=true)
 public class AcmeClientService implements AcmeClient {
 
-    public static final String[] DOMAINS = {"localhost"};
+    private static final String[] DOMAINS = {"localhost"};
     public static final URI ACME_URL = URI.create("acme://pebble");
     public static final FileSystem fs = FileSystems.getDefault();
     private static final Logger LOG = LoggerFactory.getLogger(de.fhg.aisec.ids.acme.AcmeClientService.class);
@@ -58,10 +60,12 @@ public class AcmeClientService implements AcmeClient {
             AcmeChallengeServer.startServer(this);
 
             Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
-                if (!Files.exists(fs.getPath(keyFile))) {
+                Path keyFilePath = fs.getPath(keyFile);
+                if (!Files.exists(keyFilePath)) {
                     KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
-                    try (FileWriter fileWriter = new FileWriter(keyFile)) {
+                    try (Writer fileWriter = Files.newBufferedWriter(keyFilePath, StandardCharsets.UTF_8)) {
                         KeyPairUtils.writeKeyPair(keyPair, fileWriter);
+                        LOG.info("Successfully created RSA KeyPair: " + fs.getPath(keyFile).toAbsolutePath());
                     } catch (IOException e) {
                         LOG.error("Could not write key pair", e);
                         throw new RuntimeException(e);
@@ -70,7 +74,7 @@ public class AcmeClientService implements AcmeClient {
             });
 
             KeyPair acmeKeyPair;
-            try (FileReader fileReader = new FileReader("acme.key")) {
+            try (Reader fileReader = Files.newBufferedReader(fs.getPath("acme.key"), StandardCharsets.UTF_8)) {
                 acmeKeyPair = KeyPairUtils.readKeyPair(fileReader);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
@@ -120,9 +124,10 @@ public class AcmeClientService implements AcmeClient {
                 throw new RuntimeException(e);
             }
 
-            try (Reader keyReader = new FileReader("domain.key");
-                 Writer csrWriter = new FileWriter("domain.csr");
-                 Writer chainWriter = new FileWriter("cert-chain.crt")) {
+            try (Reader keyReader = Files.newBufferedReader(fs.getPath("domain.key"), StandardCharsets.UTF_8);
+                 Writer csrWriter = Files.newBufferedWriter(fs.getPath("domain.csr"), StandardCharsets.UTF_8);
+                 Writer chainWriter = Files.newBufferedWriter(fs.getPath("cert-chain.crt"), StandardCharsets.UTF_8))
+            {
                 KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
                 CSRBuilder csrb = new CSRBuilder();
                 csrb.addDomains(DOMAINS);
