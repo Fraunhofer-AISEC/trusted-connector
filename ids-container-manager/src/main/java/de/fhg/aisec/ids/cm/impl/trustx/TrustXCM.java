@@ -129,7 +129,23 @@ public class TrustXCM implements ContainerManager {
 
 	@Override
 	public void startContainer(String containerID) {
-		sendCommand(Command.CONTAINER_START);
+		ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+        ctdmsg.setCommand(Command.CONTAINER_START);
+        ContainerStartParams.Builder cspbld = ContainerStartParams.newBuilder();
+        cspbld.setKey("trustme");
+        cspbld.setNoSwitch(true);
+        ctdmsg.setContainerStartParams(cspbld.build());
+		try {
+			DaemonToController dtc = parseResponse(sendProtobufAndWaitForResponse(ctdmsg.build()));
+			if (!Response.CONTAINER_START_OK.equals(dtc.getResponse())) {
+				//TODO
+				LOG.error("Container start failed, response was " + dtc.getResponse());
+			}
+			LOG.error("Container start ok, response was " + dtc.getResponse());
+		} catch (InvalidProtocolBufferException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
