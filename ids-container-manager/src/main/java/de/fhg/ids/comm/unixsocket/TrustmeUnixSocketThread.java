@@ -216,7 +216,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 			channel.close();
 			return -1;
 		}
-		LOG.debug("read message from UNIX socket with length" + length);
+		LOG.debug("read message from UNIX socket with length " + length);
 		return length;
 	}
 	
