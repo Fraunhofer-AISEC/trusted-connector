@@ -38,6 +38,11 @@ message ContainerStartParams {
 	optional bool no_switch = 2 [default = false];
 }
 
+message AssignInterfaceParams {
+	optional string iface_name = 1;
+	optional bool persistent = 2 [default = false];
+}
+
 /**
  * Control message sent to and processed by the cml-daemon on the device.
  */
@@ -84,7 +89,6 @@ message ControllerToDaemon {
 		OBSERVE_LOG_START = 14;
 		OBSERVE_LOG_STOP = 15;
 
-
 		//////////////////////////////////////////////
 		// Commands (global) that modify the system //
 		//////////////////////////////////////////////
@@ -100,7 +104,6 @@ message ControllerToDaemon {
 		// Wipes the entire device (i.e. all containers)
 		// TODO: Only wipes containers, not e.g. GuestOSes and device.conf.
 		WIPE_DEVICE = 30;
-
 
 		///////////////////////////////////////////////////
 		// Commands that operate on a specific container //
@@ -131,6 +134,15 @@ message ControllerToDaemon {
 
 		CONTAINER_ALLOWAUDIO = 108;
 		CONTAINER_DENYAUDIO = 109;
+
+		// Assigns a network interface to a container. Also needs [assign_iface_params]
+		CONTAINER_ASSIGNIFACE = 110;
+
+		// Unassigns a network interface from a container. Also needs [assign_iface_params]
+                CONTAINER_UNASSIGNIFACE = 111;
+
+		// List network interfaces assigned to a container
+		CONTAINER_LIST_IFACES = 112;
 	}
 	required Command command = 1;
 
@@ -142,6 +154,7 @@ message ControllerToDaemon {
 	// Container
 	repeated string container_uuids = 10;		// container UUID(s) for GET_CONTAINER_* and CONTAINER_*
 	optional ContainerStartParams container_start_params = 11;	// start parameters for CONTAINER_START
+	optional AssignInterfaceParams assign_iface_params = 12;	// parameter for CONTAINER_ASSIGNIFACE / CONTAINER_UNASSIGNIFACE
 
 	// Daemon
 	optional bytes guestos_config_file = 20;	// new/updated GuestOS config for PUSH_GUESTOS_CONFIG
@@ -167,6 +180,8 @@ message DaemonToController {
 
 		CONTAINER_STATUS = 3;		// -> [container_status]
 		CONTAINER_CONFIG = 4;		// -> [container_config], [container_uuids]
+
+		CONTAINER_IFACES = 5;		// -> [container_ifaces]
 
 		STATUS_CHANGED = 10;		// -> [log_message]
 		NOTIFICATION = 11;		// -> [log_message]
@@ -194,6 +209,7 @@ message DaemonToController {
 	repeated string container_uuids = 6;				// UUIDs for LIST_CONTAINERS
 	repeated ContainerStatus container_status = 7;		// ContainerStatus(es) for GET_CONTAINER_STATUS
 	repeated ContainerConfig container_configs = 8;		// ContainerConfig(s) for GET_CONTAINER_CONFIG
+	repeated string container_ifaces = 9;			// Container network interface(s) for CONTAINER_LIST_IFACES
 
 	optional string notification_text = 11;
 	optional LogMessage log_message = 12;				// log message received because of OBSERVE_LOG_START
