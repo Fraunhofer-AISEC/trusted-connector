@@ -1,18 +1,19 @@
-import { NgModule }      from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
-import { HttpModule }     from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
+import { AceEditorModule } from 'ng2-ace-editor';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 
-import { DashboardComponent }  from './dashboard/dashboard.component';
-import { ActivityComponent }  from './dashboard/activity.component';
-import { NetworkGraphComponent }  from './dashboard/network-graph.component';
-import { MetricCardComponent }  from './dashboard/metric-card.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { NetworkGraphComponent } from './dashboard/network-graph.component';
+import { MetricCardComponent } from './dashboard/metric-card.component';
 
-import { AppsComponent } from './apps/apps.component';
+import { AppsComponent, AppsSearchComponent } from './apps/apps.component';
 import { AppCardComponent } from './apps/app-card.component';
+import { AppSearchResultCardComponent } from './apps/app-search-result-card.component';
 
 import { DataflowPoliciesComponent } from './dataflowpolicies/dataflowpolicies.component';
 import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesnew.component';
@@ -23,60 +24,62 @@ import { RouteCardComponent } from './routes/route-card/route-card.component';
 import { IdsComponent } from './ids/ids.component';
 import { SettingsService } from './ids/settings.service';
 
-
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
 import { CertUploadComponent } from './keycerts/certUpload.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
 
-
 import { AppService } from './apps/app.service';
 import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
 import { PolicyService } from './dataflowpolicies/policy.service';
 
+import { ConnectionReportService } from './connectionReport/connectionReport.service';
 import { ValuesPipe } from './values.pipe';
 
 import { routing } from './app.routing';
 
-import {PrettifyPipe} from './prettify-json.pipe';
+import { PrettifyPipe } from './prettify-json.pipe';
 
-import {ConfirmService} from "./confirm/confirm.service";
-import {ConfirmComponent} from "./confirm/confirm.component";
+import { ConfirmService } from './confirm/confirm.service';
+import { ConfirmComponent } from './confirm/confirm.component';
 
-//import { ModalModule } from 'angular2-modal';
-//import { BootstrapModalModule } from 'angular2-modal/plugins/bootstrap';
-
-//import { ConnectionReportComponent } from './inOutConnections/inOutConnections.component'
-//import { ConnectionService } from './inOutConnections/inOutConnections.service';
-
-import { MDLTextFieldDirective } from './mdl-textfield-directive';
-//import { DataFlowComponent } from './dataFlow/dataFlow.component';
-import { ConnectionReportComponent } from './connectionsReport/connectionsReport.component'
-import { ConnectionService } from './connectionsReport/connectionReport.service';
-
+import { ConnectionReportComponent } from './connectionReport/connectionReport.component';
+import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
+import { ConnectionConfigurationService } from './connectionConfiguration/connection-configuration.service';
 
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
 
+import { ZoomVizComponent } from './routes/zoom-viz/zoom-viz.component';
+
+import './rxjs';
+
+// import { D3Service } from 'd3-ng2-service';
+// import { D3Component } from './d3/d3.component';
+
 @NgModule({
   imports: [
+    AceEditorModule,
     BrowserModule,
     routing,
-    HttpModule,
+    HttpClientModule,
+    FormsModule,
     ReactiveFormsModule,
+    FormsModule
 //    ModalModule.forRoot(),
 //    BootstrapModalModule
-    ],
+  ],
   declarations: [
     AppComponent,
+    AppsSearchComponent,
     DashboardComponent,
-    ActivityComponent,
     NetworkGraphComponent,
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
+    AppSearchResultCardComponent,
     DataflowPoliciesComponent,
     NewDataflowPolicyComponent,
     RoutesComponent,
@@ -90,12 +93,12 @@ import { MetricService } from './metric/metric.service';
     ConfirmComponent,
     ValuesPipe,
     PrettifyPipe,
-    MDLTextFieldDirective,
-    //FileWindow,
-    //DataFlowComponent,
+    ConnectionConfigurationComponent,
+    ConnectionReportComponent,
+    ZoomVizComponent,
     ConnectionReportComponent
+    // D3Component,
   ],
-
   providers: [
     AppService,
     RouteService,
@@ -104,15 +107,16 @@ import { MetricService } from './metric/metric.service';
     CertificateService,
     SensorService,
     ConfirmService,
-    ConnectionService,
     IdsComponent,
-    Title,
+    ConnectionReportService,
+    ConnectionConfigurationService,
     MetricService,
     Title
+    // D3Service,
   ],
   bootstrap: [
-    AppComponent ],
-    entryComponents: [
-      ]
+    AppComponent
+  ],
+  entryComponents: []
 })
 export class AppModule { }

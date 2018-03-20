@@ -19,15 +19,13 @@
  */
 package de.fhg.camel.ids.connectionmanagement;
 
-import java.util.ArrayList;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.camel.util.jsse.SSLContextParameters;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.camel.ids.client.WsEndpoint;
+import de.fhg.camel.ids.server.WebsocketComponent;
+import de.fhg.camel.ids.server.WebsocketComponentServlet;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -35,15 +33,10 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
-import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.camel.ids.server.DefaultWebsocket;
-import de.fhg.camel.ids.server.MemoryWebsocketStore;
-import de.fhg.camel.ids.server.WebsocketComponent;
-import de.fhg.camel.ids.server.WebsocketComponent.ConnectorRef;
-import de.fhg.camel.ids.server.WebsocketComponentServlet;
-import de.fhg.ids.comm.ws.protocol.ProtocolState;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -56,7 +49,7 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 @Component(enabled=true, immediate=true, name="ids-conm")
 public class ConnectionManagerService implements ConnectionManager {
 	private static final Logger LOG = LoggerFactory.getLogger(ConnectionManagerService.class);
-
+	
 	@Activate
 	protected void activate() {
 		LOG.info("Activating Connection Manager");
@@ -68,71 +61,43 @@ public class ConnectionManagerService implements ConnectionManager {
 	}
 
 	@Override
+	public List<IDSCPServerEndpoint> listAvailableEndpoints() {
+		return WebsocketComponent.getConnectors().values().stream().map(connectorRef -> {
+	        IDSCPServerEndpoint endpoint = new IDSCPServerEndpoint();
+	        endpoint.setHost(connectorRef.getConnector().getHost());
+	        endpoint.setPort(Integer.toString(connectorRef.getConnector().getPort()));
+	        endpoint.setDefaultProtocol(connectorRef.getConnector().getDefaultProtocol());
+	        endpoint.setEndpointIdentifier(connectorRef.getConnector().toString());
+	        return endpoint;
+		}).collect(Collectors.toList());
+	}
+
+	
+	@Override
 	public List<IDSCPIncomingConnection> listIncomingConnections() {
-		List<IDSCPIncomingConnection> connections = new ArrayList<>();
-		
-		Iterator<Entry<String, ConnectorRef>> it = WebsocketComponent.getConnectors().entrySet().iterator();
-	    while (it.hasNext()) {
-	    	IDSCPIncomingConnection idscpc = new IDSCPIncomingConnection();
-	    	
-	        Map.Entry<String, ConnectorRef> pair = it.next();
-	        ConnectorRef connectorRef = pair.getValue();
-	        MemoryWebsocketStore memoryStore = connectorRef.getMemoryStore();
-	        WebsocketComponentServlet servlet = connectorRef.getServlet();
-	        idscpc.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
-	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
-	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
-
-	        //Assume only websocket per endpoint
-	        while(webSocketIterator.hasNext())  {
-	        	DefaultWebsocket dws = webSocketIterator.next();
-	        	idscpc.setAttestationResult(dws.getAttestationResult());
-	        }
-	        connections.add(idscpc);
-	        it.remove(); // avoids a ConcurrentModificationException
-	    }
-
-		return connections;
+		return WebsocketComponent.getConnectors().values().stream().flatMap(connectorRef -> {
+			WebsocketComponentServlet servlet = connectorRef.getServlet();
+			//Servlet only present if an incoming connection exists. If null, do not collect consumer information.
+			if(servlet != null) {
+				//Every connection has a websocket. We collect connection information this way.
+				return connectorRef.getMemoryStore().getAll().stream().map(dws -> {
+					IDSCPIncomingConnection incomingConnection = new IDSCPIncomingConnection();
+					incomingConnection.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
+					incomingConnection.setEndpointKey(dws.getConnectionKey());
+					incomingConnection.setRemoteHostName(dws.getRemoteHostname());
+					incomingConnection.setAttestationResult(dws.getAttestationResult());
+					return incomingConnection;
+				});
+			} else {
+				return Stream.empty();
+			}
+		}).collect(Collectors.toList());
 	}
 	
 	@Override
 	public List<IDSCPOutgoingConnection> listOutgoingConnections() {
-		List<IDSCPOutgoingConnection> connections = new ArrayList<>();
-		
-		Iterator<Entry<String, ConnectorRef>> it =  WebsocketComponent.getConnectors().entrySet().iterator();
-	    while (it.hasNext()) {
-	    	IDSCPOutgoingConnection idscpc = new IDSCPOutgoingConnection();
-	    	
-	        Map.Entry<String, ConnectorRef> pair = it.next();
-	        ConnectorRef connectorRef = pair.getValue();
-	        MemoryWebsocketStore memoryStore = connectorRef.getMemoryStore();
-	        WebsocketComponentServlet servlet = connectorRef.getServlet();
-	        idscpc.setEndpointIdentifier(servlet.getConsumer().getEndpoint().toString());
-	        
-	        Collection<DefaultWebsocket> websockets = memoryStore.getAll();
-	        Iterator<DefaultWebsocket> webSocketIterator = websockets.iterator();
-	        
-	        //Assume only websocket per endpoint
-	        while(webSocketIterator.hasNext())  {
-	        	DefaultWebsocket dws = webSocketIterator.next();
-	        	
-	        	// in order to check if the provider has done a successful remote attestation
-	        	// we have to check the state of the dsm (=IDSCP_END) and the result of the rat:
-	        	idscpc.setAttestationResult(dws.getAttestationResult());
-	        	idscpc.setLastProtocolState(dws.getCurrentProtocolState());
-
-	        	// in order to check the identity of the remote counterpart, we could use the SSLContextParameters of the dws:
-	        	// this is "NONE", "WANT" or "REQUIRE"
-	        	SSLContextParameters sslParams = connectorRef.getServlet().getConsumer().getEndpoint().getSslContextParameters();
-	        	idscpc.setRemoteIdentity(dws.getRemoteHostname());
-	        	idscpc.setRemoteAuthentication(sslParams.getServerParameters().getClientAuthentication());
-	        	
-	        	
-	        }
-	        connections.add(idscpc);
-	        it.remove(); // avoids a ConcurrentModificationException
-	    }
-
-		return connections;
+        return WsEndpoint.getOutgoingConnections();
 	}	
+	
+
 }

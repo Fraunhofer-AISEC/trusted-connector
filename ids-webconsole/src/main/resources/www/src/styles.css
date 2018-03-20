@@ -7,14 +7,6 @@ text {
   pointer-events: none;
 }
 
-.c3-ygrid-line text {
-  font-size: 14px;
-}
-
-.c3 .tick text {
-  font-size: 12px;
-}
-
 i.connect-icons {
   padding-left: 5px;
   padding-right: 5px;
@@ -133,29 +125,35 @@ i.connect-icons {
   border: none;
   box-shadow: none;
 }
+
 /* iOS Safari specific workaround */
 .iot-connector-drawer .mdl-menu__container {
   z-index: -1;
 }
+
 .iot-connector-drawer .iot-connector-navigation {
   z-index: -2;
 }
+
 /* END iOS Safari specific workaround */
 .iot-connector-drawer .mdl-menu .mdl-menu__item {
   display: flex;
   align-items: center;
 }
+
 .iot-connector-drawer-header {
   box-sizing: border-box;
   flex-direction: column;
   background-color: #1C2B36;
   text-align: center;
 }
+
 .iot-connector-avatar {
   width: 225px;
   margin: 0 auto;
   padding: 5px 0px 5px 0px;
 }
+
 .iot-connector-product-title {
   color: #209e91;
 }
@@ -210,6 +208,7 @@ header.iot-connector-header.mdl-layout__header {
   flex-grow: 1;
   background-color: #1C2B36;
 }
+
 .iot-connector-layout .iot-connector-navigation .mdl-navigation__link {
   display: flex !important;
   flex-direction: row;
@@ -218,14 +217,16 @@ header.iot-connector-header.mdl-layout__header {
   font-weight: 500;
   text-decoration: none;
 }
+
 .iot-connector-layout .iot-connector-navigation .mdl-navigation__link:hover {
   background-color: #209e91;
   color: #fff;
   text-decoration: none;
 }
+
 .iot-connector-navigation .mdl-navigation__link .material-icons {
   font-size: 24px;
-  margin-right: 32px;
+  margin-right: 22px;
 }
 
 .workflow-fsm {
@@ -366,27 +367,24 @@ header.iot-connector-header.mdl-layout__header {
   width: 98%;
 }
 
-.mdl-button--file {
-  input {
-    cursor: pointer;
-    height: 100%;
-    right: 0;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    width: 300px;
-    z-index: 4;
-  }
+.mdl-button--file input {
+  cursor: pointer;
+  height: 100%;
+  right: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 300px;
+  z-index: 4;
 }
 
-.mdl-textfield--file {
-  .mdl-textfield__input {
-    box-sizing: border-box;
-    width: calc(100% - 32px);
-  }
-  .mdl-button--file {
-    right: 0;
-  }
+.mdl-textfield--file .mdl-textfield__input {
+  box-sizing: border-box;
+  width: calc(100% - 32px);
+}
+
+.mdl-textfield--file .mdl-button--file {
+  right: 0;
 }
 
 label.input-custom-file input[type=file] {
@@ -397,4 +395,30 @@ table.table.table-striped thead tr th {
 	background-color: #cfd8dc;
 	color: #000000;
 	font-weight: normal;
+}
+
+.create-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+}
+
+.ace_text-input {
+  font-family: "Helvetica","Arial",sans-serif!important;
+  font-size:16px!important; 
+  color: rgb(51, 51, 51);
+}
+
+.mdl-layout__header--waterfall{
+    overflow: visible;
+}
+
+/* Clearfix, credits: https://css-tricks.com/all-about-floats/ */
+.clearfix:after { 
+   content: "."; 
+   visibility: hidden; 
+   display: block; 
+   height: 0; 
+   clear: both;
 }

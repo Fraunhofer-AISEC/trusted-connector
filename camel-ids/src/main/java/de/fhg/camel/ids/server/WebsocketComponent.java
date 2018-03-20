@@ -162,6 +162,10 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         public WebsocketComponentServlet getServlet() {
         	return servlet;
         }
+        
+        public ServerConnector getConnector() {        	
+        	return connector;
+        }
     }
 
     public WebsocketComponent() {

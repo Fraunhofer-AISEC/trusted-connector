@@ -83,6 +83,14 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
+				</configuration>
+			</plugin>
+
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>

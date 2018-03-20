@@ -56,7 +56,6 @@ public class NodeData {
 	public boolean nodeWritten;
 	public String url;
 	public List<ProcessorDefinition<?>> outputs;
-	public String association = "property";
 
 	public NodeData(String id, Object node, String imagePrefix) {
 		this.id = id;
@@ -97,7 +96,7 @@ public class NodeData {
 			this.edgeLabel = "";
 
 			ChoiceDefinition choice = (ChoiceDefinition) node;
-			List<ProcessorDefinition<?>> outputs = new ArrayList<ProcessorDefinition<?>>(choice.getWhenClauses());
+			List<ProcessorDefinition<?>> outputs = new ArrayList<>(choice.getWhenClauses());
 			if (choice.getOtherwise() != null) {
 				outputs.add(choice.getOtherwise());
 			}
@@ -147,7 +146,7 @@ public class NodeData {
 			} else if (isNotEmpty(this.edgeLabel)) {
 				this.label = "";
 			} else {
-				this.label = node.toString();
+				this.label = String.valueOf(node);
 			}
 		}
 		if (isEmpty(this.tooltip)) {

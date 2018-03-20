@@ -7,11 +7,11 @@
 		<div class="mdl-card__supporting-text">
 	
 		<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, fileInput, myForm.valid)" class="mdl-cell--12-col mdl-grid">
-			<div class="mdl-cell--12-col">
+			<!--<div class="mdl-cell--12-col">
 				<div class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
 					<label class="mdl-textfield__label" for="policy_name">Policy Name*</label>
 					<input class="mdl-textfield__input" id="policy_name" type="text" formControlName="policy_name">
-					<span [hidden]="myForm.controls.policy_name.valid || (myForm.controls.policy_name.pristine && !submitted)" class="mdl-textfield__error">Policy name is required.</span>
+					<span [hidden]="myForm.controls.policy_name.valid || (myForm.controls.policy_name.pristine)" class="mdl-textfield__error">Policy name is required.</span>
 				</div>
 			</div>
 				
@@ -20,16 +20,17 @@
 				    <textarea class="mdl-textfield__input" type="text" rows= "4" id="policy_description" formControlName="policy_description"></textarea>
 				    <label class="mdl-textfield__label" for="policy_description">Description</label>
 				</div>
-			</div>
+			</div>-->
 				
 			<div class="mdl-cell--12-col">
-		 		 <label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="fileUploadLabel">{{policyFileName}}
+		 		 <label class="input-custom-file mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="fileUploadLabel">
+					  {{ policyFileLabel }}
                     <input type="file" [multiple]="multiple" #fileInput formControlName="policy_file" (change)="fileChangeEvent($event)">
                 </label>
 			</div>
 			
 			<div class="mdl-cell--12-col" style="margin-top:20px">
-				<button type="submit" class="mdl-button mdl-color--colored mdl-button--raised">Create Policy</button>
+				<button type="submit" class="mdl-button mdl-color--colored mdl-button--raised">Upload Policy</button>
 			</div>
 		</form>
 

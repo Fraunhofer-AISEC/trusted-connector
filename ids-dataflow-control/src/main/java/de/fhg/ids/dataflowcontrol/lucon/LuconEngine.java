@@ -22,13 +22,30 @@ package de.fhg.ids.dataflowcontrol.lucon;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import alice.tuprolog.*;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import alice.tuprolog.InvalidLibraryException;
+import alice.tuprolog.InvalidTheoryException;
+import alice.tuprolog.MalformedGoalException;
+import alice.tuprolog.NoMoreSolutionException;
+import alice.tuprolog.NoSolutionException;
+import alice.tuprolog.Operator;
+import alice.tuprolog.PrimitiveInfo;
+import alice.tuprolog.Prolog;
+import alice.tuprolog.SolveInfo;
+import alice.tuprolog.Theory;
+import alice.tuprolog.event.LibraryEvent;
+import alice.tuprolog.event.LibraryListener;
 import de.fhg.aisec.ids.api.router.CounterExample;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 
@@ -55,18 +72,21 @@ public class LuconEngine {
 	 *            OutputStream to write Prolog engine outputs to or null if
 	 *            output should not printed.
 	 */
-	public LuconEngine(OutputStream out) {
+	public LuconEngine(@Nullable OutputStream out) {
 		p = new Prolog();
-		try {
-			p.loadLibrary(new LuconLibrary());
-		} catch (InvalidLibraryException e) {
-			// should never happen
-			throw new RuntimeException("Error loading " + LuconLibrary.class.getName(), e);
-		}
-
+		
 		// Add some listeners for logging/debugging
 		p.addExceptionListener(ex -> LOG.error("Exception in Prolog reasoning: " + ex.getMsg()));
 		p.addQueryListener(q -> LOG.trace("Prolog query " + q.getSolveInfo().getQuery().toString()));
+		p.addLibraryListener(new LibraryListener() {
+			@Override
+			public void libraryLoaded(LibraryEvent e) {
+				LOG.debug("Prolog library loaded " + e.getLibraryName());
+			}
+			@Override
+			public void libraryUnloaded(LibraryEvent e) {
+				LOG.debug("Prolog library unloaded " + e.getLibraryName());
+			}});
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
 		p.addWarningListener(w -> {
 			if (!w.getMsg().contains("The predicate false/0 is unknown"))
@@ -75,12 +95,26 @@ public class LuconEngine {
 		p.addOutputListener(l -> {
 			if (out != null) {
 				try {
-					out.write(l.getMsg().getBytes());
+					out.write(l.getMsg().getBytes(StandardCharsets.UTF_8));
 				} catch (Exception e) {
 					LOG.error(e.getMessage(), e);
 				}
 			}
 		});
+		try {
+			LOG.debug("Loading library");
+			p.loadLibrary(new LuconLibrary());
+			for (String l : p.getCurrentLibraries()) {
+				LOG.debug(l);
+			}
+			for (Operator op : p.getOperatorManager().getOperators()) {
+				LOG.debug("Operator: " + op.name);
+			}
+		} catch (InvalidLibraryException e) {
+			// should never happen
+			throw new RuntimeException("Error loading " + LuconLibrary.class.getName(), e);
+		}
+		
 	}
 
 	public void setSpy(boolean spy) {
@@ -96,18 +130,36 @@ public class LuconEngine {
 	 * @throws InvalidTheoryException  Syntax error in Prolog document
 	 * @throws IOException			   I/O error reading from stream
 	 */
-	public void loadPolicy(InputStream is) throws InvalidTheoryException, IOException {
+	public void loadPolicy(@Nullable InputStream is) throws InvalidTheoryException, IOException {
+		if (is == null) {
+			return;
+		}		
 		Theory t = new Theory(is);
-		LOG.debug("Loading theory: " + t.toString());
+		LOG.debug("Loading theory:\n" + t.toString());
 		p.setTheory(t);
 	}
 
-	public List<SolveInfo> query(String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
-		return query(p, query, findAll);
+	@NonNull
+	public List<SolveInfo> query(@Nullable String query, boolean findAll) throws NoMoreSolutionException, MalformedGoalException {
+		LOG.debug("Running Prolog query: " + query);
+		@NonNull
+		List<SolveInfo> result = query(p, query, findAll);
+		try {
+			for (SolveInfo i: result) {
+				LOG.debug("Result is " + i.getSolution().toString());
+			}
+		} catch (NoSolutionException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
-	private List<SolveInfo> query(Prolog engine, String query, boolean findAll)	throws NoMoreSolutionException, MalformedGoalException {
+	@NonNull
+	private List<SolveInfo> query(@NonNull Prolog engine, @Nullable String query, boolean findAll)	throws NoMoreSolutionException, MalformedGoalException {
 		List<SolveInfo> result = new ArrayList<>();
+		if (query==null) {
+			return result;
+		}
 		SolveInfo solution = engine.solve(query);
 		while (solution.isSuccess()) {
 			result.add(solution);
@@ -121,12 +173,16 @@ public class LuconEngine {
 		return result;
 	}
 
+	@NonNull
 	public String getTheory() {
-		return p.getTheory().toString();
+		Theory t = p.getTheory();
+		return t == null ? "" : t.toString();
 	}
 
+	@NonNull
 	public String getTheoryAsJSON() {
-		return p.getTheory().toJSON();
+		Theory t = p.getTheory();
+		return t == null ? "" : t.toJSON();
 	}
 
 	/**
@@ -138,7 +194,7 @@ public class LuconEngine {
 	 * @return A list of counterexamples which violate the rule or empty, if no
 	 *         route violates the policy.
 	 */
-	public RouteVerificationProof proofInvalidRoute(String id, String routePl) {
+	public RouteVerificationProof proofInvalidRoute(@Nullable String id, @Nullable String routePl) {
 		// The proof object we will return
 		RouteVerificationProof proof = new RouteVerificationProof(id);
 		
@@ -152,10 +208,6 @@ public class LuconEngine {
 			Prolog newP = new Prolog();
 			newP.loadLibrary(new LuconLibrary());
 			newP.setTheory(t);
-
-//			System.out.println("-------------------------");
-//			System.out.println(new LuconLibrary().getTheory() + "\n" + p.getTheory() + "\n" + routePl);
-//			System.out.println("-------------------------");
 
 			// Generate the proof (=run query)
 			List<SolveInfo> result = query(newP, QUERY_ROUTE_VERIFICATION, true);
@@ -179,5 +231,4 @@ public class LuconEngine {
 		}
 		return proof;
 	}
-
 }

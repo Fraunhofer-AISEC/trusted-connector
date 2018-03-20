@@ -22,6 +22,9 @@ package de.fhg.aisec.ids.webconsole;
 
 import java.util.Optional;
 
+import com.google.gson.Gson;
+import de.fhg.aisec.ids.webconsole.api.ConfigApi;
+import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -29,14 +32,18 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
+
+import javax.ws.rs.ServiceUnavailableException;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -52,33 +59,41 @@ import de.fhg.aisec.ids.api.router.RouteManager;
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
- *
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 
 @Component(name="ids-webconsole")
 public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
-	private static Optional<PreferencesService> configService = Optional.empty();
-	private static Optional<ContainerManager> cml = Optional.empty();
-	private static Optional<RouteManager> rm = Optional.empty();
-	private static Optional<ConnectionManager> connectionManager = Optional.empty();
-	private static Optional<PAP> pap;
-	private static Optional<ComponentContext> componentCtx = Optional.empty();
+	private static PreferencesService preferencesService = null;
+	private static ContainerManager cml = null;
+	private static RouteManager rm = null;
+	private static ConnectionManager connectionManager = null;
+	private static PAP pap;
+	private static ComponentContext componentCtx = null;
 	
 	@Activate
 	protected void activate(ComponentContext componentContext) {
 		LOG.info("IDS webconsole activated");
-		WebConsoleComponent.componentCtx = Optional.of(componentContext);
+		WebConsoleComponent.componentCtx = componentContext;
 	}
 	
 	@Deactivate
 	protected void deactivate(ComponentContext componentContext) throws Exception {
 		LOG.info("IDS webconsole deactivated");
-		WebConsoleComponent.componentCtx = Optional.empty();
+		WebConsoleComponent.componentCtx = null;
 	}
 	
 	public static Optional<ComponentContext> getComponentContext() {
-		return WebConsoleComponent.componentCtx;
+		return Optional.ofNullable(componentCtx);
+	}
+
+	public static ComponentContext getComponentContextOrThrowSUE() {
+		if (componentCtx != null) {
+			return componentCtx;
+		} else {
+			throw new ServiceUnavailableException("ConnectionManager is currently not available");
+		}
 	}
 		
 	@Reference(name = "cml.service",
@@ -88,16 +103,24 @@ public class WebConsoleComponent {
             unbind = "unbindContainerManagerService")
 	protected void bindContainerManagerService(ContainerManager cml) {
 		LOG.info("Bound to container manager");
-		WebConsoleComponent.cml= Optional.of(cml);
+		WebConsoleComponent.cml = cml;
 	}
 	
 	
 	protected void unbindContainerManagerService(ContainerManager http) {
-		WebConsoleComponent.cml = Optional.empty();		
+		WebConsoleComponent.cml = null;
 	}
 	
 	public static Optional<ContainerManager> getContainerManager() {
-		return WebConsoleComponent.cml;
+		return Optional.ofNullable(cml);
+	}
+
+	public static ContainerManager getContainerManagerOrThrowSUE() {
+		if (cml != null) {
+			return cml;
+		} else {
+			throw new ServiceUnavailableException("ConnectionManager is currently not available");
+		}
 	}
 	
     @Reference(name = "connections.service",
@@ -107,15 +130,23 @@ public class WebConsoleComponent {
             unbind = "unbindConnectionManager")
     protected void bindConnectionManager(ConnectionManager conn) {
         LOG.info("Bound to connection manager");
-        WebConsoleComponent.connectionManager= Optional.of(conn);
+        WebConsoleComponent.connectionManager = conn;
     }
 
     protected void unbindConnectionManager(ConnectionManager conn) {
-        WebConsoleComponent.connectionManager = Optional.empty();      
+        WebConsoleComponent.connectionManager = null;
     }
 
 	public static Optional<ConnectionManager> getConnectionManager() {
-		return WebConsoleComponent.connectionManager;
+		return Optional.ofNullable(connectionManager);
+	}
+
+	public static ConnectionManager getConnectionManagerOrThrowSUE() {
+		if (connectionManager != null) {
+			return connectionManager;
+		} else {
+			throw new ServiceUnavailableException("ConnectionManager is currently not available");
+		}
 	}
 
 	@Reference(name = "config.service",
@@ -125,15 +156,28 @@ public class WebConsoleComponent {
             unbind = "unbindConfigurationService")
 	public void bindConfigurationService(PreferencesService conf) {
 		LOG.info("Bound to configuration service");
-		WebConsoleComponent.configService = Optional.of(conf);
+		preferencesService = conf;
+		// Create generic ConnectionSettings, if not existing
+		Preferences prefs = conf.getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
+		if(prefs != null && prefs.get(ConfigApi.GENERAL_CONFIG, null) == null) {
+			prefs.put(ConfigApi.GENERAL_CONFIG, new Gson().toJson(new ConnectionSettings()));
+		}
 	}
 
 	public void unbindConfigurationService(PreferencesService conf) {
-		WebConsoleComponent.configService = Optional.empty();
+		preferencesService = null;
 	}
 
 	public static Optional<PreferencesService> getConfigService() {
-		return WebConsoleComponent.configService;
+		return Optional.ofNullable(preferencesService);
+	}
+
+	public static PreferencesService getPreferencesServiceOrThrowSUE() {
+		if (preferencesService != null) {
+			return preferencesService;
+		} else {
+			throw new ServiceUnavailableException("PreferenceService is currently not available");
+		}
 	}
 	
 	@Reference(name = "rm.service",
@@ -143,15 +187,23 @@ public class WebConsoleComponent {
             unbind = "unbindRouteManagerService")
 	protected void bindRouteManagerService(RouteManager rm) {
 		LOG.info("Bound to route manager");
-		WebConsoleComponent.rm  = Optional.of(rm);
+		WebConsoleComponent.rm  = rm;
 	}
 
 	protected void unbindRouteManagerService(RouteManager rm) {
-		WebConsoleComponent.rm = Optional.empty();		
+		WebConsoleComponent.rm = null;
 	}
 	
 	public static Optional<RouteManager> getRouteManager() {
-		return WebConsoleComponent.rm;
+		return Optional.ofNullable(rm);
+	}
+
+	public static RouteManager getRouteManagerOrThrowSUE() {
+		if (rm != null) {
+			return rm;
+		} else {
+			throw new ServiceUnavailableException("RouteManager is currently not available");
+		}
 	}
 
 	@Reference(name = "pap.service",
@@ -161,14 +213,22 @@ public class WebConsoleComponent {
             unbind = "unbindPolicyAdministrationPoint")
 	protected void bindPolicyAdministrationPoint(PAP pap) {
 		LOG.info("Bound to policy administration point");
-		WebConsoleComponent.pap  = Optional.of(pap);
+		WebConsoleComponent.pap = pap;
 	}
 
 	protected void unbindPolicyAdministrationPoint(PAP pap) {
-		WebConsoleComponent.pap = Optional.empty();		
+		WebConsoleComponent.pap = null;
 	}
 	
 	public static Optional<PAP> getPolicyAdministrationPoint() {
-		return WebConsoleComponent.pap;
-	}	
+		return Optional.ofNullable(pap);
+	}
+
+	public static PAP getPolicyAdministrationPointOrThrowSUE() {
+		if (pap != null) {
+			return pap;
+		} else {
+			throw new ServiceUnavailableException("PAP is currently not available");
+		}
+	}
 }

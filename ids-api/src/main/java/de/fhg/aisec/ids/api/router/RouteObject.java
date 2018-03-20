@@ -35,7 +35,8 @@ public class RouteObject {
 
 	public RouteObject() { /* Bean std c'tor */	}
 	
-	public RouteObject(String id, String description, String dot, String shortName, String context, long uptime, String status) {
+	public RouteObject(String id, String description, String dot, String shortName, String context,
+                       long uptime, String status) {
 		this.id = id;
 		this.description = description;
 		this.dot = dot;

@@ -20,7 +20,9 @@
 package de.fhg.aisec.ids.cm.impl.docker;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.ProcessBuilder.Redirect;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +82,13 @@ public class DockerCM implements ContainerManager {
 		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
-		String[] lines = bbStd.toString().split("\n");
+		String[] lines;
+		try {
+			lines = bbStd.toString(StandardCharsets.UTF_8.name()).split("\n");
+		} catch (UnsupportedEncodingException e) {
+			// impossible
+			throw new RuntimeException(e);
+		}
 		for (String line:lines) {
 			String[] columns = line.split("@@");
 			if (columns.length!=8) {
@@ -170,7 +178,9 @@ public class DockerCM implements ContainerManager {
 			// Instantly create a container from that image, but do not start it yet.
 			LOG.info("Creating container instance from image " + imageID);
 			String containerID = defaultContainerName(imageID);
-			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "create", "-P", "--label", "created="+Instant.now().toEpochMilli(), "--name", containerID, imageID));
+			List<String> cmd = Arrays.asList(DOCKER_CLI, "create", "-P", "--label", "created="+Instant.now().toEpochMilli(), "--name", containerID, imageID);
+			LOG.debug("Exec " + String.join(" ", cmd));
+			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
 			p = pb.start();
 			p.waitFor(600, TimeUnit.SECONDS);
 			return Optional.<String>of(containerID);
@@ -192,11 +202,11 @@ public class DockerCM implements ContainerManager {
 		if (imageID.indexOf('/') > -1 && imageID.indexOf('/')<imageID.length()-1) {
 			String name = imageID.substring(imageID.indexOf('/')+1);
 			String rest = imageID.replace(name, "").replace('/', '-');
-			rest = rest.substring(0, rest.length()-2);
+			rest = rest.substring(0, rest.length()-1);
 			return name + "-" + rest;
-		} else {
-			return imageID;
 		}
+		
+		return imageID;
 	}
 
 
@@ -236,7 +246,13 @@ public class DockerCM implements ContainerManager {
 		}
 
 		// Parse JSON output from "docker inspect" and return labels.
-		String[] lines = bbStd.toString().split("\n");
+		String[] lines;
+		try {
+			lines = bbStd.toString(StandardCharsets.UTF_8.name()).split("\n");
+		} catch (UnsupportedEncodingException e) {
+			// impossible
+			throw new RuntimeException(e);
+		}
 		Map<String, String> labels = new HashMap<>();
 		boolean reading = false;
 		for (String line:lines) {
@@ -267,13 +283,20 @@ public class DockerCM implements ContainerManager {
 		
 	}
 
+	/**
+	 * TODO: This function seems incorrect, sb is never provided with any data
+	 *
+	 * @param containerID container id
+	 * @return container information
+	 */
 	@Override
 	public String inspectContainer(final String containerID) {
 		StringBuilder sb = new StringBuilder();
 		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
 		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
 		try {
-			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "inspect", containerID));
+			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(
+					Arrays.asList(DOCKER_CLI, "inspect", containerID));
 			Process p = pb.start();
 			StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
 			StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
@@ -305,9 +328,14 @@ public class DockerCM implements ContainerManager {
 			errorGobbler.close();
 			outputGobbler.close();
 		} catch (Exception e) {
-			LOG.error(e.getMessage(),e);
+			LOG.error(e.getMessage(), e);
 		}
 
-		return bbStd.toString();
+		try {
+			return bbStd.toString(StandardCharsets.UTF_8.name());
+		} catch (UnsupportedEncodingException e) {
+			// impossible
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.api.router;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +39,16 @@ public interface RouteManager {
 	/**
 	 * Returns a list of currently installed routes.
 	 * 
-	 * @return
+	 * @return All installed rules
 	 */
 	public List<RouteObject> getRoutes();
+
+	/**
+	 * Returns a list of currently installed routes.
+	 *
+	 * @return The queried route or null
+	 */
+	public RouteObject getRoute(String id);
 	
 	/**
 	 * Starts a route.
@@ -71,18 +80,30 @@ public interface RouteManager {
 	public Map<String, Collection<String>> getEndpoints();
 	
 	public Map<String,String> listEndpoints();
+
+	/**
+	 * Save a route, replacing it with a new representation within the same context
+	 *
+	 * @param routeId ID of the route to save
+	 * @param routeRepresentation The new textual representation of the route (XML etc.)
+	 * @return The object representing the modified route
+	 * @throws RouteException If the route does not exist or some Exception was thrown during route replacement.
+	 */
+	RouteObject saveRoute(String routeId, String routeRepresentation) throws RouteException;
 	
 	/**
-	 * Adds a route from one endpoint to another. 
-	 * 
-	 * The route only becomes immediately effective.
+	 * Adds a route and starts it.
 	 * 
 	 * Endpoint declarations must be supported by the underlying implementation.
 	 * 
-	 * @param from
-	 * @param to
+	 * If the route id already exists, this method will throw a RouteException 
+	 * and not overwrite the existing route. 
+	 * 
+	 * @param routeDefinition Textual representation of the route (XML etc.)
+	 * @throws RouteException if a route with the same id already exists or if any 
+	 * Exception is thrown during loading and starting the route.
 	 */
-	void addRoute(String from, String to);
+	void addRoute(String routeDefinition) throws RouteException;
 
 	
 	/**
@@ -103,11 +124,18 @@ public interface RouteManager {
 	 * 
 	 * For Apache Camel, this method will return the XML-based Camel DSL configuration file.
 	 * 
-	 * @return
+	 * @return String representation of the route
 	 */
 	String getRouteAsString(String routeId);
-	
-	void loadRoutes(String routeConfig);
+
+	/**
+	 * Returns a List of URIs of the given route's inputs (from definitions)
+	 *
+	 * @param routeId The identifier of the route
+	 * @return The from (input) URIs of the route
+	 */
+	@NonNull
+	public List<String> getRouteInputUris(@NonNull String routeId);
 	
 	/**
 	 * Returns aggregated runtime metrics of all installed routes.

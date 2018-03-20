@@ -20,18 +20,12 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.router.*;
-import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
+import de.fhg.aisec.ids.api.RouteResult;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -39,7 +33,15 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.aisec.ids.api.Result;
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.router.RouteComponent;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteMetrics;
+import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -62,7 +64,7 @@ public class RouteApi {
 	 *
 	 * {"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]] -\u003e [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
 	 *
-	 * @return
+	 * @return The resulting route objects
 	 */
 	@GET
 	@Path("list")
@@ -70,7 +72,7 @@ public class RouteApi {
 	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 		return rm.get().getRoutes();
 	}
@@ -81,13 +83,28 @@ public class RouteApi {
 	public Response get(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not present").build();
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
 		}
-		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
-		if (!oRoute.isPresent()) {
-			return Response.serverError().entity("Route not present").build();
+		RouteObject oRoute = rm.get().getRoute(id);
+		if (oRoute == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
 		}
-		return Response.ok(oRoute.get()).build();
+		return Response.ok(oRoute).build();
+	}
+
+	@GET
+	@Path("/getAsString/{id}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAsString(@PathParam("id") String id) {
+		Optional<RouteManager> rmOpt = WebConsoleComponent.getRouteManager();
+		if (!rmOpt.isPresent()) {
+			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
+		}
+		String routeAsString = rmOpt.get().getRouteAsString(id);
+		if (routeAsString == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
+		}
+		return Response.ok(routeAsString).build();
 	}
 
 	/**
@@ -95,18 +112,63 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/startroute/{id}")
-	public String startRoute(@PathParam("id") String id) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result startRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().startRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return "{\"status:\": \"error\"}";
+				return new Result(false, e.getMessage());
 			}
-			return "{\"status\": \"ok\"}";	
+			return new Result();
 		}
-		return "{\"status:\": \"error\"}";
+		return new Result();
+	}
+
+	@POST
+	@Path("/save/{id}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	public RouteResult saveRoute(@PathParam("id") String id, String routeDefinition) {
+		RouteResult result = new RouteResult();
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			result.setMessage("No Route Manager present!");
+			result.setSuccessful(false);
+			return result;
+		}
+		try {
+			result.setRoute(rm.get().saveRoute(id, routeDefinition));
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			result.setSuccessful(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
+	}
+
+	@PUT
+	@Path("/add")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result addRoute(String routeDefinition) {
+		Result result = new Result();
+		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
+		if (!rm.isPresent()) {
+			result.setMessage("No Route Manager present!");
+			result.setSuccessful(false);
+			return result;
+		}
+		try {
+			rm.get().addRoute(routeDefinition);
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			result.setSuccessful(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 
 	/**
@@ -114,18 +176,19 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/stoproute/{id}")
-	public boolean stopRoute(@PathParam("id") String id) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Result stopRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (rm.isPresent()) {
 			try {
 				rm.get().stopRoute(id);
 			} catch (Exception e) {
 				LOG.debug(e.getMessage(), e);
-				return false;
+				return new Result(false, e.getMessage());
 			}
-			return true;	
+			return new Result();
 		}
-		return false;
+		return new Result(false, "No route manager");
 	}
 
 	/**
@@ -182,82 +245,22 @@ public class RouteApi {
 			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
 			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
 		});
-		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/currentMetrics.size());
+		int metricsCount = currentMetrics.size();
+		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/(metricsCount!=0?metricsCount:1));
 		return metrics;
 	}
 
 	/**
-	 * Returns map from camel contexts to list of camel components.
+	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
 	 *
-	 * Example:
-	 *
-	 * {"camel-1":["timer","properties"]}
-	 *
-	 * @return
+	 * @return List of supported protocols
 	 */
 	@GET
-	@Path("components")
+	@Path("/components")
 	@Produces("application/json")
 	public List<RouteComponent> getComponents() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new ArrayList<>();
-		}
-		return rm.get().listComponents();
-	}
-
-	/**
-	 * Returns map from camel contexts to list of endpoint URIs.
-	 *
-	 * Example:
-	 *
-	 * {"camel-1":["timer://simpleTimer?period\u003d10000"]}
-	 *
-	 * @return
-	 */
-	@GET
-	@Path("endpoints")
-	@Produces("application/json")
-	public Map<String, Collection<String>> getEndpoints() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new HashMap<>();
-		}
-		return rm.get().getEndpoints();
-	}
-
-	/**
-	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
-	 */
-	@GET
-	@Path("/list_components")
-	public List<Map<String, String>> listComponents() {
-		List<Map<String, String>> componentNames = new ArrayList<>();
-		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
-		if (bCtx == null) {		
-			return componentNames;			
-		}
-
-		try {
-			ServiceReference<?>[] services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null);
-			for (ServiceReference<?> sr : services) {
-				String bundle = sr.getBundle().getHeaders().get("Bundle-Name");
-				if (bundle==null || "".equals(bundle)) {
-					bundle = sr.getBundle().getSymbolicName();
-				}
-				String description = sr.getBundle().getHeaders().get("Bundle-Description");
-				if (description==null) {
-					description = "";
-				}
-				Map<String, String> component = new HashMap<>();
-				component.put("name", bundle);
-				component.put("description", description);
-				componentNames.add(component);
-			}
-		} catch (InvalidSyntaxException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return componentNames;			
+		RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+		return rm.listComponents();
 	}
 
 	/**

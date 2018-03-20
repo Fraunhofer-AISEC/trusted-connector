@@ -2,16 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <artifactId>offline-karaf</artifactId>
     <packaging>karaf-assembly</packaging>
-    
+
     <parent>
-      <groupId>de.fhg.ids</groupId>
-      <artifactId>core-platform</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
-    </parent>    
-    
+        <groupId>de.fhg.ids</groupId>
+        <artifactId>core-platform</artifactId>
+        <version>1.1.0-SNAPSHOT</version>
+    </parent>
+
     <name>IDS Karaf Platform</name>
     <description>Offline Karaf server</description>
     <scm>
@@ -40,7 +40,7 @@
         <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
     </properties>
 
-        <!-- Import Karaf POM to use the correct version of the Karaf dependencies -->
+    <!-- Import Karaf POM to use the correct version of the Karaf dependencies -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -77,8 +77,8 @@
             <classifier>features</classifier>
             <type>xml</type>
             <version>${karaf.version}</version>
- 			<!-- <scope>runtime</scope>  http://stackoverflow.com/questions/35433552/karaf-4-0-4-custom-distribution-karaf-maven-plugin -->
-         </dependency>
+            <!-- <scope>runtime</scope>  http://stackoverflow.com/questions/35433552/karaf-4-0-4-custom-distribution-karaf-maven-plugin -->
+        </dependency>
 
         <!--
             https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/${karaf.version}/enterprise-${karaf.version}-features.xml
@@ -164,7 +164,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
         </dependency>
 
         <dependency>
@@ -184,15 +183,15 @@
             <type>xml</type>
             <classifier>features</classifier>
             <scope>runtime</scope>
-		</dependency>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
-           <plugin>
-            <groupId>org.apache.karaf.tooling</groupId>
-            <artifactId>features-maven-plugin</artifactId>
-            <version>2.2.1</version>
-          </plugin>
+            <plugin>
+                <groupId>org.apache.karaf.tooling</groupId>
+                <artifactId>features-maven-plugin</artifactId>
+                <version>2.2.1</version>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
@@ -223,7 +222,7 @@
                         <!-- <feature>standard</feature> -->
                         <!-- The following features are the same like "standard".
                                 In a productive version we might want to exclude "management" and "ssh" -->
-                        
+
                         <!-- Allow deployment of kar archives at runtime -->
                         <feature>kar</feature>
 
@@ -245,7 +244,7 @@
                         <feature>service</feature>
                         <feature>system</feature>
                         <feature>camel-core</feature>
-			            <feature>camel-http</feature>
+                        <feature>camel-http</feature>
                         <feature>camel-restlet</feature>
                         <feature>camel-jetty</feature>
                         <feature>camel-spring</feature>
@@ -270,7 +269,7 @@
                         <!-- <feature>spring</feature>
                         <feature>spring-tx</feature> -->
                         <feature>war</feature>
-						<feature>ids</feature>
+                        <feature>ids</feature>
 
                         <!-- Not needed, but nice to have in repository -->
                         <feature>camel-amqp</feature>
@@ -285,53 +284,21 @@
                 <executions>
                     <execution>
                         <id>copy</id>
-                        <phase>prepare-package</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
                         <configuration>
                             <artifactItems>
-                                <!-- Not all runtime library dependencies are listed in features.xml (bug?)
-                                     We have to help offline Karaf by manually downloading the missing dependencies
-                                 -->
-                                <!--<artifactItem>
-                                    <groupId>org.apache.karaf.diagnostic</groupId>
-                                    <artifactId>org.apache.karaf.diagnostic.boot</artifactId>
-                                    <version>${karaf.version}</version>
-                                    <outputDirectory>target/assembly/system/org/apache/karaf/diagnostic/org.apache.karaf.diagnostic.boot/${karaf.version}</outputDirectory>
-                                </artifactItem>-->
-                                <!--<artifactItem>
-                                    <groupId>org.apache.karaf.jaas</groupId>
-                                    <artifactId>org.apache.karaf.jaas.boot</artifactId>
-                                    <version>${karaf.version}</version>
-                                    <outputDirectory>target/assembly/system/org/apache/karaf/jaas/org.apache.karaf.jaas.boot/${karaf.version}</outputDirectory>
-                                </artifactItem> -->
+                                <artifactItem>
+                                    <groupId>org.jledit</groupId>
+                                    <artifactId>core</artifactId>
+                                    <version>0.2.1</version>
+                                    <outputDirectory>target/assembly/system/org/jledit/core/0.2.1</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                  <execution>
-                    <id>copy</id>
-                    <phase>generate-resources</phase>
-                    <goals>
-                     <goal>copy</goal>
-                    </goals>
-                    <configuration>
-                     <artifactItems>
-                          <artifactItem>
-                              <groupId>org.jledit</groupId>
-                              <artifactId>core</artifactId>
-                              <version>0.2.1</version>
-                              <outputDirectory>target/assembly/system/org/jledit/core/0.2.1</outputDirectory>
-                          </artifactItem>
-                         </artifactItems>
-                    </configuration>
-                  </execution>
                 </executions>
             </plugin>
 
@@ -346,7 +313,7 @@
                     <autoPull>once</autoPull>
                     <skip>${skipDocker}</skip>
                 </configuration>
-                
+
                 <!-- Register qemu in binfmt_misc to support cross-platform docker containers-->
                 <executions>
                     <execution>
@@ -440,54 +407,54 @@
         </plugins>
 
         <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>org.apache.karaf.tooling</groupId>
-        								<artifactId>karaf-maven-plugin</artifactId>
-        								<versionRange>[${karaf.version},)</versionRange>
-        								<goals>
-        									<goal>assembly</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-						               <execute>
-						                 <runOnIncremental>false</runOnIncremental>
-						               </execute >
-        							</action>
-        						</pluginExecution>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>
-        									org.apache.maven.plugins
-        								</groupId>
-        								<artifactId>
-        									maven-dependency-plugin
-        								</artifactId>
-        								<versionRange>
-        									[2.8,)
-        								</versionRange>
-        								<goals>
-        									<goal>copy</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.karaf.tooling</groupId>
+                                        <artifactId>karaf-maven-plugin</artifactId>
+                                        <versionRange>[${karaf.version},)</versionRange>
+                                        <goals>
+                                            <goal>assembly</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute>
+                                            <runOnIncremental>false</runOnIncremental>
+                                        </execute>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-dependency-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.8,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>copy</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
         </pluginManagement>
     </build>
 </project>

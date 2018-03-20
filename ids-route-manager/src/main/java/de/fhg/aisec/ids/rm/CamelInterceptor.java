@@ -23,6 +23,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.InterceptStrategy;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * 
@@ -32,7 +33,7 @@ import org.apache.camel.spi.InterceptStrategy;
 public class CamelInterceptor implements InterceptStrategy {
 	private RouteManagerService rm;
 
-	public CamelInterceptor(RouteManagerService rm) {
+	public CamelInterceptor(@Nullable RouteManagerService rm) {
 		this.rm = rm;
 	}
 	

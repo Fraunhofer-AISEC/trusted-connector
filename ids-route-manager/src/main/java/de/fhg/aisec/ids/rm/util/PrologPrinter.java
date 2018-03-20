@@ -22,13 +22,16 @@ package de.fhg.aisec.ids.rm.util;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.FromDefinition;
 import org.apache.camel.model.OptionalIdentifiedDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PrologPrinter {
 	
@@ -39,7 +42,11 @@ public class PrologPrinter {
 	 * @param route
 	 * @throws IOException 
 	 */
-	public void printSingleRoute(Writer writer, RouteDefinition route) throws IOException {
+	public void printSingleRoute(@Nullable Writer writer, @Nullable RouteDefinition route) throws IOException {
+		if (writer == null || route == null) {
+			return;
+		}
+
 		// Print route entry points
 		printInputs(writer, route, route.getInputs());
 	}
@@ -53,27 +60,24 @@ public class PrologPrinter {
 	 * @return
 	 * @throws IOException 
 	 */
-	private List<ProcessorDefinition<?>> printNode(Writer writer, ProcessorDefinition<?> current, List<OptionalIdentifiedDefinition<?>> preds) throws IOException {
-		writer.write("stmt(node"+current.getIndex() + ").\n");
-		writer.write("has_action(node"+current.getIndex() + ", \"" + current.getLabel() + "\").\n");
+	private List<ProcessorDefinition<?>> printNode(Writer writer, ProcessorDefinition<?> current,
+												   List<OptionalIdentifiedDefinition<?>> preds) throws IOException {
 		for (OptionalIdentifiedDefinition<?> p : preds) {
-			if (p instanceof FromDefinition) {
-				writer.write("succ(input" + p.getId() +", node" + current.getIndex() + ").\n");
-			} else if (p instanceof ProcessorDefinition) {
-				writer.write("succ(node" + ((ProcessorDefinition<?>) p).getIndex() +", node" + current.getIndex() + ").\n");				
-			}
+			writer.write("succ(" + p.getId() + ", " + current.getId() + ").\n");
 		}
+		writer.write("stmt(" + current.getId() + ").\n");
+		writer.write("has_action(" + current.getId() + ", \"" + current.getLabel() + "\").\n");
 
 		// predecessor of next recursion is the current node 
 		List<ProcessorDefinition<?>> newPreds = new ArrayList<>();
 		newPreds.add(current);
 		for (ProcessorDefinition<?> out : current.getOutputs()) {
-			
 			// if this is a ChoiceDefinition, there is no link between its WhereDefinitions.
 			ArrayList<OptionalIdentifiedDefinition<?>> myPreds = new ArrayList<>();
 			if (current instanceof ChoiceDefinition) {
 				myPreds.add(current);
 			} else {
+				//@TODO: Looks somewhat strange... is this correct?
 				myPreds.addAll(newPreds);
 			}
 			
@@ -96,25 +100,21 @@ public class PrologPrinter {
 	 * @throws IOException 
 	 */
 	private void printInputs(Writer writer, RouteDefinition route, List<FromDefinition> inputs) throws IOException {
-		int counter = 0;
+		AtomicInteger counter = new AtomicInteger(0);
 		for (FromDefinition i : inputs) {
 			// Make sure every input node has a unique id
-			if (i.getId()==null) {
+			if (i.getId() == null) {
 				i.setCustomId(true);
-				i.setId(String.valueOf(counter));
-			}			
-			String nodeName = "input"+i.getId();
-			writer.write("stmt("+nodeName+").\n");
-			writer.write("entrynode("+nodeName+").\n");
-			writer.write("has_action("+nodeName+", \"" + i.getLabel() + "\").\n");
+				i.setId("input" + counter.incrementAndGet());
+			}
+			writer.write("stmt(" + i.getId() + ").\n");
+			writer.write("entrynode(" + i.getId() + ").\n");
+			writer.write("has_action(" + i.getId() + ", \"" + i.getLabel() + "\").\n");
 			
-			ArrayList<OptionalIdentifiedDefinition<?>> preds = new ArrayList<>();
-			preds.add(i);
-
+			OptionalIdentifiedDefinition<?> prev = i;
 			for (ProcessorDefinition<?> next : route.getOutputs()) {
-				printNode(writer, next, preds);
-				preds.clear();
-				preds.add(next);
+				printNode(writer, next, Collections.singletonList(prev));
+				prev = next;
 			}
 		}
 	}

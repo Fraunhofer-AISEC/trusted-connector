@@ -22,14 +22,24 @@ package de.fhg.aisec.ids.webconsole.api;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +52,14 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 /**
  * REST API interface for managing "apps" in the connector.
  * 
- * In this implementation, apps are either docker or trustX containers. 
+ * In this implementation, apps are either docker or trustX containers.
  * 
  * The API will be available at http://localhost:8181/cxf/api/v1/apps/<method>.
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
  */
-@Path("/apps")
+@Path("/app")
 public class AppApi {
 	private static final Logger LOG = LoggerFactory.getLogger(AppApi.class);
 	
@@ -58,18 +68,18 @@ public class AppApi {
 	@Produces("application/json")
 	public List<ApplicationContainer> list() {
 		List<ApplicationContainer> result = new ArrayList<>();
-		
+
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		if (cml.isPresent()) {
 			result = cml.get().list(false);
 		}
-		
+
 		result.sort((app1, app2) -> {
 			try {
 				SimpleDateFormat d = new SimpleDateFormat("dd-MM-yyyy HH:mm:s Z");
 				Date date1 = d.parse(app1.getCreated());
 				Date date2 = d.parse(app2.getCreated());
-				if (date1.getTime()<date2.getTime()) {
+				if (date1.getTime() < date2.getTime()) {
 					return 1;
 				} else {
 					return -1;
@@ -81,38 +91,13 @@ public class AppApi {
 		});
 		return result;
 	}
-	
-	@POST
-	@Path("pull")
-	@Produces("application/json")
-	public boolean pull(@QueryParam("imageId") String imageId) {
-		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
-		
-		if (!cml.isPresent()) {
-			return false;
-		}
 
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					if (cml.isPresent()) {
-						cml.get().pullImage(imageId);
-					}
-				} catch (Exception e) {
-					LOG.error(e.getMessage(), e);					
-				}
-			}
-		}.start();			
-		return true;
-	}
-	
 	@GET
-	@Path("start")
+	@Path("start/{containerId}")
 	@Produces("application/json")
-	public boolean start(@QueryParam("containerId") String containerId) {
+	public boolean start(@PathParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
-		
+
 		if (!cml.isPresent()) {
 			return false;
 		}
@@ -126,11 +111,11 @@ public class AppApi {
 	}
 
 	@GET
-	@Path("stop")
+	@Path("stop/{containerId}")
 	@Produces("application/json")
-	public boolean stop(@QueryParam("containerId") String containerId) {
+	public boolean stop(@PathParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
-		
+
 		if (!cml.isPresent()) {
 			return false;
 		}
@@ -141,6 +126,42 @@ public class AppApi {
 			LOG.error(e.getMessage(), e);
 		}
 		return true;
+	}
+
+	@POST
+	@OPTIONS
+	@Path("install")
+	@Produces("application/json")
+	public Response install(Map<String, String> app) {
+		LOG.debug("Request to load " + app);
+		final Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
+		if (!cml.isPresent()) {
+			LOG.warn("No cmld");
+			return Response.serverError().entity("No cmld").build();
+		}
+
+		final String image = app.get("image");
+		if (image==null) {
+			LOG.warn("Null image");
+			return Response.serverError().entity("Null image").build();
+		}
+		LOG.debug("Pulling app " + image);
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+
+		// Pull image asynchronously and create new container
+		final Future<String> handler = executor.submit(new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				if (!cml.isPresent()) {
+					return null;
+				}
+				Optional<String> containerId = cml.get().pullImage(image);
+				return containerId.orElse(null);
+			}
+		});
+		// Cancel pulling after 20 minutes, just in case.
+		executor.schedule(() -> handler.cancel(true), 20, TimeUnit.MINUTES);
+		return Response.ok().build();
 	}
 
 	@GET
@@ -163,14 +184,16 @@ public class AppApi {
 
 	@GET
 	@Path("cml_version")
-	@Produces("text/plain")
-	public String getCml() {
+	@Produces("application/json")
+	public Map<String, String> getCml() {
+		Map<String, String> result = new HashMap<>();
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
 		if (!cml.isPresent()) {
-			return "";
+			return result;
 		}
-		
-		return cml.get().getVersion();
-	}	
+
+		result.put("cml_version", cml.get().getVersion());
+		return result;
+	}
 }

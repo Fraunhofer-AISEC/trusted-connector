@@ -25,6 +25,10 @@
 
 	<name>IDS Core Platform Webconsole</name>
 
+	<properties>
+		<skipAngular>false</skipAngular>
+	</properties>
+
 	<dependencies>
 		<!-- IDS interfaces -->
 		<dependency>
@@ -70,7 +74,7 @@
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.compendium</artifactId>
 		</dependency>
-		
+
 		<!-- JSON support -->
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
@@ -82,7 +86,7 @@
 			<artifactId>jettison</artifactId>
 			<version>1.3.8</version>
 		</dependency>
-				
+
 
 		<!-- logging -->
 		<dependency>
@@ -106,11 +110,7 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 		<!-- Local CXF transports only for testing -->
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
@@ -123,7 +123,7 @@
 		    <artifactId>cxf-rt-rs-client</artifactId>
 		    <version>3.1.5</version>
 			<scope>test</scope>
-		</dependency>				
+		</dependency>
 		<dependency>
 		    <groupId>com.fasterxml.jackson.jaxrs</groupId>
 		    <artifactId>jackson-jaxrs-json-provider</artifactId>
@@ -131,12 +131,12 @@
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>
-		
+
 
 	<build>
 		<defaultGoal>install</defaultGoal>
 
-		<!-- Do not copy everything from src/main/resources, but rather only blueprint 
+		<!-- Do not copy everything from src/main/resources, but rather only blueprint
 			descriptor and compiled Angular stuff -->
 		<resources>
 			<resource>
@@ -150,6 +150,14 @@
 
 		<plugins>
 			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
@@ -158,6 +166,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -167,9 +176,9 @@
 				</executions>
 			</plugin>
 
-			<!-- The following configuration is required because bnd-maven-plugin 
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
+			<!-- The following configuration is required because bnd-maven-plugin
+				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal
+				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up
 				the manifest from this location, then the following config is not needed. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -187,7 +196,7 @@
 				<version>1.3.2</version>
 
 				<executions>
-					<!-- Required: The following will ensure `npm install` is called before 
+					<!-- Required: The following will ensure `npm install` is called before
 						anything else during the 'Default Lifecycle' -->
 
 					<execution>
@@ -205,9 +214,8 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: The following will ensure `npm install` is called before 
+					<!-- Required: The following will ensure `npm install` is called before
 						anything else during the 'Clean Lifecycle' -->
-
 					<execution>
 						<id>npm install (clean)</id>
 						<goals>
@@ -218,11 +226,12 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>install</argument>
+								<argument>--no-optional</argument>
 							</arguments>
 						</configuration>
 					</execution>
 
-					<!-- Optional: The following will output the npm configuration. I do 
+					<!-- Optional: The following will output the npm configuration. I do
 						this so my CI logs will show the npm information used for the build -->
 					<execution>
 						<id>npm config list (validate)</id>
@@ -239,7 +248,28 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: This following calls `npm run build` where 'build' is 
+					<!-- Required: The following calls `npm run lint` which ensures that the code
+						is free of recognizable linting errors with may corrupt the productive build -->
+					<execution>
+						<id>npm run lint (linting)</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<executable>npm</executable>
+					        <successCodes>
+					            <successCode>0</successCode>
+					            <successCode>2</successCode>
+					        </successCodes>
+							<arguments>
+								<argument>run</argument>
+								<argument>lint</argument>
+							</arguments>
+						</configuration>
+					</execution>
+
+					<!-- Required: This following calls `npm run build` where 'build' is
 						the script name I used in my project, change this if yours is different -->
 					<execution>
 						<id>npm run build (compile)</id>
@@ -256,16 +286,13 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: The following calls the npm script that cleans up the 
+					<!-- Required: The following calls the npm script that cleans up the
 						build. -->
-					<!-- <execution> <id>npm run clean (clean)</id> <goals> <goal>exec</goal> 
-						</goals> <phase>clean</phase> <configuration> <executable>npm</executable> 
-						<arguments> <argument>run</argument> <argument>clean</argument> </arguments> 
+					<!-- <execution> <id>npm run clean (clean)</id> <goals> <goal>exec</goal>
+						</goals> <phase>clean</phase> <configuration> <executable>npm</executable>
+						<arguments> <argument>run</argument> <argument>clean</argument> </arguments>
 						</configuration> </execution> -->
-
 				</executions>
-
-
 
 				<configuration>
 					<environmentVariables>
@@ -275,6 +302,7 @@
 						<NPM_CONFIG_TMP>${project.build.directory}/npmtmp</NPM_CONFIG_TMP>
 					</environmentVariables>
 					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
+					<skip>${skipAngular}</skip>
 				</configuration>
 			</plugin>
 
@@ -284,7 +312,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>

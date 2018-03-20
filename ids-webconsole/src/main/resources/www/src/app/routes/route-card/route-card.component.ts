@@ -1,8 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
+import { Result } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 declare var Viz: any;
 
@@ -14,64 +16,54 @@ declare var Viz: any;
 export class RouteCardComponent implements OnInit {
   @Input() route: Route;
   vizResult: SafeHtml;
-  result: string;
+  result: Result;
   statusIcon: string;
-  statusColor: string;
-  statusTextColor: string;
+  dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
-  constructor(private dom: DomSanitizer, private routeService: RouteService) {}
+  constructor(private sanitizer: DomSanitizer, private routeService: RouteService) {}
+
+  get started(): boolean {
+    return this.route.status === 'Started';
+  }
 
   ngOnInit(): void {
-    let graph = this.route.dot;
-    if(this.route.status == "Started") {
-      this.statusIcon = "stop";
-      this.statusColor = "";
-      this.statusTextColor = "";
-    } else {
-      this.statusIcon = "play_arrow";
-      this.statusColor = "card-dark";
-    }
-
- 	this.vizResult = this.dom.bypassSecurityTrustHtml(Viz(graph, {engine:"dot"}));
+    this.statusIcon = this.route.status === 'Started' ? 'stop' : 'play_arrow';
+    this.dotSubject.next(this.route.dot);
   }
 
   onStart(routeId: string): void {
-    this.routeService.startRoute(routeId).subscribe(result => {
-       this.result = result;
-     });
-     this.route.status = 'Started';
-     this.statusIcon = "play_arrow";
-     this.statusColor = "";
-     this.statusTextColor = "";
+    this.statusIcon = 'play_arrow';
+    this.routeService.startRoute(routeId)
+      .subscribe(result => {
+        this.result = result;
+        this.route.status = 'Started';
+      });
   }
 
   onStop(routeId: string): void {
-    this.routeService.stopRoute(routeId).subscribe(result => {
-       this.result = result;
-     });
-     this.route.status = 'Stopped';
-     this.statusIcon = "stop";
-     this.statusColor = "card-dark";
+    this.statusIcon = 'stop';
+    this.routeService.stopRoute(routeId)
+      .subscribe(result => {
+        this.result = result;
+        this.route.status = 'Stopped';
+      });
   }
 
-  onToggle(routeId: string): boolean {
-    if(this.statusIcon == "play_arrow") {
-      this.statusIcon = "stop";
-      this.routeService.startRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
-       this.route.status = 'Started';
-       this.statusColor = "";
-       this.statusTextColor = "";
+  onToggle(routeId: string): void {
+    if (this.statusIcon === 'play_arrow') {
+      this.statusIcon = 'stop';
+      this.routeService.startRoute(routeId)
+        .subscribe(result => {
+          this.result = result;
+          this.route.status = 'Started';
+        });
     } else {
-      this.statusIcon = "play_arrow";
-      this.routeService.stopRoute(routeId).subscribe(result => {
-         this.result = result;
-       });
-
-       this.route.status = 'Stopped';
-       this.statusColor = "card-dark";
+      this.statusIcon = 'play_arrow';
+      this.routeService.stopRoute(routeId)
+        .subscribe(result => {
+          this.result = result;
+          this.route.status = 'Stopped';
+        });
     }
-    return true;
   }
 }

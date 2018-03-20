@@ -21,7 +21,6 @@
       "styles": [
         "fonts/fonts.css",
         "../node_modules/material-design-lite/material.css",
-        "../node_modules/c3/c3.css",
         "../node_modules/bootstrap/dist/css/bootstrap.min.css",
         "material.teal-pink.min.css",
         "styles.css",
@@ -29,13 +28,23 @@
       ],
       "scripts": [
         "../node_modules/viz.js/viz.js",
-        "../node_modules/vis/dist/vis.js"
+        "../node_modules/svg-pan-zoom/dist/svg-pan-zoom.js",
+        "../node_modules/vis/dist/vis.js",
+        "../node_modules/ace-builds/src-min/ace.js"        ,
+        "../node_modules/ace-builds/src-min/theme-eclipse.js",
+        "../node_modules/ace-builds/src-min/mode-xml.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {
-          "dev": "environments/environment.ts",
-          "prod": "environments/environment.prod.ts"
-       }
+        "dev": "environments/environment.ts",
+        "prod": "environments/environment.prod.ts"
+      }
+    }
+  ],
+  "lint": [
+    {
+      "project": "src/tsconfig.json",
+      "exclude": "**/node_modules/**"
     }
   ],
   "addons": [],

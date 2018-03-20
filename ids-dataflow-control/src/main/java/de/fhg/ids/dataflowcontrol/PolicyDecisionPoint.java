@@ -19,17 +19,26 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -39,13 +48,15 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoMoreSolutionException;
 import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.PrologException;
 import alice.tuprolog.SolveInfo;
-import alice.tuprolog.Struct;
 import alice.tuprolog.Term;
 import alice.tuprolog.Var;
 import de.fhg.aisec.ids.api.policy.DecisionRequest;
@@ -60,9 +71,6 @@ import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
-
 /**
  * servicefactory=false is the default and actually not required. But we want to make
  * clear that this is a singleton, i.e. there will only be one instance of
@@ -75,8 +83,13 @@ import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
 public class PolicyDecisionPoint implements PDP, PAP {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
 	private static final String LUCON_FILE_EXTENSION = ".pl";	
-	private LuconEngine engine;
+	
+	@NonNull
+	private LuconEngine engine = new LuconEngine(System.out);
+	@Nullable
 	private RouteManager routeManager;
+	private Cache<ServiceNode, TransformationDecision> transformationCache = CacheBuilder.newBuilder()
+			.maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
 	
 	/**
 	 * Creates a query to retrieve policy decision from Prolog knowledge base.
@@ -86,19 +99,24 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * Target			Decision	Alternative		Obligation
 	 * 	hadoopClusters	D			drop			(delete_after_days(_1354),_1354<30)	1
 	 *	hiveMqttBroker	drop		Alt				A
-	 * @param msgLabels 
+	 *
+	 * @param target The target node of the transformation
+	 * @param msgLabels The dynamically assigned message labels
 	 */
-	private String createDecisionQuery(ServiceNode target, Map<String, Object> msgLabels) {			
+	private String createDecisionQuery(@NonNull ServiceNode target, @NonNull Map<String, Object> msgLabels) {			
 		StringBuilder sb = new StringBuilder();
-		sb.append("rule(_X), has_target(_X, T), ");
+		sb.append("rule(X), has_target(X, T), ");
 		sb.append("has_endpoint(T, EP), ");
 		sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
 		msgLabels.keySet()
 			.stream()
 			.filter( k -> k.startsWith(LABEL_PREFIX) && msgLabels.get(k)!=null && !msgLabels.get(k).toString().equals(""))
 			.forEach(k -> {
-					sb.append("receives_label(T, ").append(msgLabels.get(k).toString()).append("), ");
+				// QUERY structure must be: has_endpoint(rule, bla), assert(label(x)), receives_label(rule).
+				sb.append("assert(label(").append(TuPrologHelper.escape(msgLabels.get(k).toString())).append(")), ");
 			});
+		sb.append("receives_label(X), ");
+		sb.append("rule_priority(X, P), ");
 		if (target.getCapabilties().size() + target.getProperties().size() > 0) {
 			List<String> capProp = new LinkedList<>();
 			for (String cap: target.getCapabilties()) {
@@ -109,7 +127,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			}
 			sb.append("(").append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
 		}
-		sb.append("(has_decision(_X, D); (has_obligation(_X, _O), has_alternativedecision(_O, Alt), " +
+		sb.append("(has_decision(X, D); (has_obligation(X, _O), has_alternativedecision(_O, Alt), " +
 				"requires_prerequisite(_O, A))).");
 		return sb.toString();
 	}
@@ -122,7 +140,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param target
 	 * @return
 	 */
-	private String createTransformationQuery(ServiceNode target) {
+	private String createTransformationQuery(@NonNull ServiceNode target) {
 		StringBuilder sb = new StringBuilder();
 		if (target.getEndpoint() != null) {
 			sb.append("dominant_allow_rules(").append(escape(target.getEndpoint())).append(", _T, _), ");
@@ -144,16 +162,26 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Activate
-	public void activate(ComponentContext ctx) throws IOException {
-		if (this.engine == null) {
-			this.engine = new LuconEngine(System.out);
-		}
-		
+	protected void activate(@NonNull ComponentContext ctx) throws IOException {
+		loadPolicies();
+	}
+	
+	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
+	protected void bindRouteManager(@NonNull RouteManager routeManager) {
+		LOG.warn("RouteManager bound. Camel routes can be analyzed");
+		this.routeManager = routeManager;
+	}
+	protected void unbindRouteManager(@NonNull RouteManager routeManager) {
+		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
+		this.routeManager = null;
+	}
+
+	protected void loadPolicies() throws FileNotFoundException {
 		// Try to load existing policies from deploy dir at activation
 		File dir = new File(System.getProperty("karaf.base") + File.separator + "deploy");
 		File[] directoryListing = dir.listFiles();
 		if (directoryListing==null || !dir.isDirectory()) {
-			LOG.warn("Unexpected: Not a directory: " + dir.getAbsolutePath());
+			LOG.warn("Unexpected or not running in karaf: Not a directory: " + dir.getAbsolutePath());
 			return;
 		}
 		
@@ -171,70 +199,59 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	    }
 	}
 	
-	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
-	public void bindRouteManager(RouteManager routeManager) {
-		LOG.warn("RouteManager bound. Camel routes can be analyzed");
-		this.routeManager = routeManager;
-	}
-	public void unbindRouteManager(RouteManager routeManager) {
-		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
-		this.routeManager = null;
-	}
-
-	private Cache<ServiceNode, TransformationDecision> transformationCache = CacheBuilder.newBuilder()
-			.maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
-
 	@Override
-	public TransformationDecision requestTranformations(ServiceNode lastServiceNode) {
-		TransformationDecision result;
-
-		result = transformationCache.getIfPresent(lastServiceNode);
-		if (result != null) {
-			return result;
+	public TransformationDecision requestTranformations(@Nullable ServiceNode lastServiceNode) {
+		if (lastServiceNode == null) {
+			return new TransformationDecision();
 		}
-
-		// Query prolog for labels to remove or add from message
-		String query = this.createTransformationQuery(lastServiceNode);
-		LOG.info("QUERY: " + query);
-
 		try {
-			result = new TransformationDecision();
+			return transformationCache.get(lastServiceNode, () -> {
+				// Query prolog for labels to remove or add from message
+				String query = this.createTransformationQuery(lastServiceNode);
+				LOG.info("QUERY: " + query);
 
-			List<SolveInfo> solveInfo = this.engine.query(query, true);
-			if (solveInfo.isEmpty()) {
-				transformationCache.put(lastServiceNode, result);
-				return result;
-			}
-
-			// Get solutions, convert label variables to string and collect in sets
-			Set<String> labelsToAdd = result.getLabelsToAdd();
-			Set<String> labelsToRemove = result.getLabelsToRemove();
-			solveInfo.forEach(s -> {
+				TransformationDecision result = new TransformationDecision();
 				try {
-					Term adds = s.getVarValue("Adds").getTerm();
-					if (adds.isList()) {
-						listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
+					List<SolveInfo> solveInfo = this.engine.query(query, true);
+					if (solveInfo.isEmpty()) {
+						return result;
 					}
-					Term removes = s.getVarValue("Removes").getTerm();
-					if (removes.isList()) {
-						listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
-					}
-				} catch (NoSolutionException ignored) {}
-			});
-		} catch (NoMoreSolutionException | MalformedGoalException e) {
-			LOG.error(e.getMessage(), e);
-		}
 
-		transformationCache.put(lastServiceNode, result);
-		return result;
+					// Get solutions, convert label variables to string and collect in sets
+					Set<String> labelsToAdd = result.getLabelsToAdd();
+					Set<String> labelsToRemove = result.getLabelsToRemove();
+					solveInfo.forEach(s -> {
+						try {
+							Term adds = s.getVarValue("Adds").getTerm();
+							if (adds.isList()) {
+								listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
+							}
+							Term removes = s.getVarValue("Removes").getTerm();
+							if (removes.isList()) {
+								listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
+							}
+						} catch (NoSolutionException ignored) {}
+					});
+				} catch (NoMoreSolutionException | MalformedGoalException e) {
+					LOG.error(e.getMessage(), e);
+				}
+				return result;
+			});
+		} catch (ExecutionException ee) {
+			LOG.error(ee.getMessage(), ee);
+			return new TransformationDecision();
+		}
 	}
 
 	@Override
-	public PolicyDecision requestDecision(DecisionRequest req) {
-		LOG.debug("Decision requested " + req.getFrom() + " -> " + req.getTo());
+	public PolicyDecision requestDecision(@Nullable DecisionRequest req) {
 		PolicyDecision dec = new PolicyDecision();
 		dec.setDecision(Decision.DENY); // Default value
-		dec.setReason("Not yet ready for productive use!");
+		if (req == null) {
+			dec.setReason("Null request");
+			return dec;
+		}
+		LOG.debug("Decision requested " + req.getFrom().getEndpoint() + " -> " + req.getTo().getEndpoint());
 
 		try {
 			// Query Prolog engine for a policy decision
@@ -244,27 +261,57 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			List<SolveInfo> solveInfo = this.engine.query(query, true);
 			long time = System.nanoTime() - startTime;
 			LOG.info("Policy decision took " + time + " nanos");
-						
-			// Just for debugging
-			if (LOG.isDebugEnabled()) {
-				debug(solveInfo);
-			}
 			
 			// If there is no matching rule, allow by default
 			if (solveInfo.isEmpty()) {
+				LOG.trace("No policy decision found. Returning " + dec.getDecision().toString());
+				dec.setReason("No matching rule");
 				return dec;
 			}
 			
+			// Include only solveInfos with highest priority
+			int maxPrio = Integer.MIN_VALUE;
+			for (SolveInfo si : solveInfo) {
+				try {
+					int priority = Integer.parseInt(si.getVarValue("P").getTerm().toString());
+					if (priority>maxPrio) {
+						maxPrio = priority;
+					}
+				} catch (NumberFormatException | NullPointerException e) {
+					LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e);
+				}
+			}
+			List<SolveInfo> applicableSolveInfos = new ArrayList<>();
+			for (SolveInfo si : solveInfo) {
+				try {
+					int priority = Integer.parseInt(si.getVarValue("P").getTerm().toString());
+					if (priority==maxPrio) {
+						applicableSolveInfos.add(si);
+					}
+				} catch (NumberFormatException | NullPointerException e) {
+					LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e);
+				}
+			}
+			
+			// Just for debugging
+			if (LOG.isDebugEnabled()) {
+				debug(applicableSolveInfos);
+			}
+
+			
 			// Collect obligations
 			List<Obligation> obligations = new LinkedList<>();
-			solveInfo.forEach(s -> {
+			applicableSolveInfos.forEach(s -> {
 				try {
+					Term rule = s.getVarValue("X");
 					Term decision = s.getVarValue("D");
 					if (!(decision instanceof Var)) {
 						String decString = decision.getTerm().toString();
 						if ("drop".equals(decString)) {
+							dec.setReason(rule.getTerm().toString());
 							dec.setDecision(Decision.DENY);
 						} else if ("allow".equals(decString)) {
+							dec.setReason(rule.getTerm().toString());
 							dec.setDecision(Decision.ALLOW);
 						}
 					}
@@ -282,11 +329,15 @@ public class PolicyDecisionPoint implements PDP, PAP {
 						}
 						obligations.add(o);
 					}
-				} catch (NoSolutionException ignored) {}
+				} catch (NoSolutionException e) {
+					LOG.warn("Unexpected: solution variable not present: " + e.getMessage());
+					dec.setReason("Solution variable not present");
+				}
 			});
 			dec.setObligations(obligations);
 		} catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
 			LOG.error(e.getMessage(), e);
+			dec.setReason("Error " + e.getMessage());
 			dec.setDecision(Decision.DENY);
 		}
 		return dec;
@@ -298,7 +349,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param solveInfo
 	 * @throws NoSolutionException
 	 */
-	private void debug(List<SolveInfo> solveInfo) throws NoSolutionException {
+	private void debug(@NonNull List<SolveInfo> solveInfo) throws NoSolutionException {
 		for (SolveInfo i: solveInfo) {
 			if (i.isSuccess()) {
 				List<Var> vars = i.getBindingVars();
@@ -321,7 +372,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	}
 
 	@Override
-	public void loadPolicy(InputStream is) {
+	public void loadPolicy(@Nullable InputStream is) {
 		try {
 			// Load policy into engine, possibly overwriting the existing one.
 			this.engine.loadPolicy(is);

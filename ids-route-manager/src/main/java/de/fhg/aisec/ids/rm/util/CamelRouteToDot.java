@@ -24,10 +24,7 @@ import static org.apache.camel.util.ObjectHelper.isNotEmpty;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.FromDefinition;
@@ -36,6 +33,8 @@ import org.apache.camel.model.PipelineDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.ToDefinition;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Camel route definition to GraphViz converter.
@@ -44,7 +43,7 @@ import org.apache.camel.model.ToDefinition;
  *
  */
 public class CamelRouteToDot {
-	protected final Map<Object, NodeData> nodeMap = new HashMap<>();
+	protected final Map<Object, NodeData> nodeMap = new IdentityHashMap<>();
 	private int clusterCounter = 0;
 	private static final String PREFIX = "http://www.eaipatterns.com/img/";
 
@@ -82,7 +81,10 @@ public class CamelRouteToDot {
 	 * @param route
 	 * @throws IOException
 	 */
-	public void printSingleRoute(Writer writer, final RouteDefinition route) throws IOException {
+	public void printSingleRoute(@Nullable Writer writer, @Nullable final RouteDefinition route) throws IOException {
+		if (writer==null || route==null) {
+			return;
+		}
 		writer.write("digraph { rankdir=LR; size=\"4.5,5.5\" \n\n");
 		writer.write("node [shape=\"box\", style = \"filled\", fillcolor = white, " + "fontname=\"Helvetica-Oblique\"];");
 		List<FromDefinition> inputs = route.getInputs();
@@ -100,8 +102,7 @@ public class CamelRouteToDot {
 
 		NodeData from = nodeData;
 		for (ProcessorDefinition<?> output : route.getOutputs()) {
-			NodeData newData = printNode(writer, from, output);
-			from = newData;
+			from = printNode(writer, from, output);
 		}
 	}
 
@@ -132,7 +133,7 @@ public class CamelRouteToDot {
 
 			String label = fromData.edgeLabel;
 			if (isNotEmpty(label)) {
-				writer.write("label = \"" +  label.substring(0,Math.min(8, label.length())) + (label.length()>8?"..":"") + "\"\n");
+				writer.write("label = \"" +  label + "\"\n");
 			}
 			writer.write("];\n");
 		}
@@ -157,7 +158,7 @@ public class CamelRouteToDot {
 			writer.write("\n");
 			writer.write(data.id + "\n");
 			writer.write(" [\n");
-			writer.write("label = \"" + data.label.substring(0,Math.min(12, data.label.length())) + (data.label.length()>12?"..":"") + "\"\n");
+			writer.write("label = \"" + data.label + "\"\n");
 			writer.write("tooltip = \"" + data.tooltip + "\"\n");
 
 			String image = data.image;
@@ -176,7 +177,10 @@ public class CamelRouteToDot {
 		}
 	}
 
-	public void generateFile(PrintWriter writer, Map<String, List<RouteDefinition>> map) throws IOException {
+	public void generateFile(@Nullable PrintWriter writer, @Nullable Map<String, List<RouteDefinition>> map) throws IOException {
+		if (writer == null || map==null) {
+			return;
+		}
 		writer.println("digraph CamelRoutes {");
 		writer.println();
 
@@ -187,7 +191,7 @@ public class CamelRouteToDot {
 		writer.println("}");
 	}
 
-	protected NodeData getNodeData(Object node) {
+	protected NodeData getNodeData(@NonNull Object node) {
 		Object key = node;
 		if (node instanceof FromDefinition) {
 			FromDefinition fromType = (FromDefinition) node;

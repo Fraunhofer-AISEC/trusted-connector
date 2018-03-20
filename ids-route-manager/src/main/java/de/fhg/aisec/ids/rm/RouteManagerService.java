@@ -20,20 +20,14 @@
 package de.fhg.aisec.ids.rm;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.management.AttributeNotFoundException;
@@ -47,14 +41,20 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import de.fhg.aisec.ids.api.router.graph.GraphData;
+import de.fhg.aisec.ids.rm.util.GraphProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
+import org.apache.camel.ServiceStatus;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
-import org.apache.camel.model.ModelHelper;
-import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.model.*;
 import org.apache.camel.spi.ManagementAgent;
+import org.apache.camel.util.CamelContextHelper;
 import org.apache.camel.util.RouteStatDump;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -95,7 +95,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Reference(name="routemanager-camelcontext", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.MULTIPLE)
-	public void bindCamelContext(CamelContext cCtx) {
+	public void bindCamelContext(@NonNull CamelContext cCtx) {
 		try {
 			cCtx.stop();
 		} catch (Exception e) {
@@ -119,16 +119,16 @@ public class RouteManagerService implements RouteManager {
 		}
 	}
 	
-	public void unbindCamelContext(CamelContext cCtx) {
+	public void unbindCamelContext(@NonNull CamelContext cCtx) {
 		LOG.info("unbound from CamelContext " + cCtx);		
 	}
 	
 	@Reference(name="routemanager-pdp", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
-	public void bindPdp(PDP pdp) {
+	public void bindPdp(@NonNull PDP pdp) {
 		LOG.info("Bound to pdp " + pdp);
 		this.pdp = pdp;
 	}
-	public void unbindPdp(PDP pdp) {
+	public void unbindPdp(@NonNull PDP pdp) {
 		LOG.warn("Policy decision point disappeared. All events will pass through uncontrolled.");
 		this.pdp = null;
 	}
@@ -137,6 +137,7 @@ public class RouteManagerService implements RouteManager {
 	}
 	
 	@Override
+	@NonNull
 	public List<RouteObject> getRoutes() {
 		List<RouteObject> result = new ArrayList<>();
 		List<CamelContext> camelO = getCamelContexts();
@@ -149,9 +150,24 @@ public class RouteManagerService implements RouteManager {
 		}
 		return result;
 	}
-	
+
 	@Override
-	public void startRoute(String routeId) throws RouteException {
+	public RouteObject getRoute(@NonNull String id) {
+		List<CamelContext> camelO = getCamelContexts();
+
+		// Create response
+		for (CamelContext cCtx : camelO) {
+			RouteDefinition rd = cCtx.getRouteDefinition(id);
+			if (rd != null) {
+				return routeDefinitionToObject(cCtx, rd);
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public void startRoute(@Nullable String routeId) throws RouteException {
 		List<CamelContext> camelC = getCamelContexts();
 
 		for (CamelContext cCtx : camelC) {
@@ -167,7 +183,7 @@ public class RouteManagerService implements RouteManager {
 	}
 
 	@Override
-	public void stopRoute(String routeId) throws RouteException {
+	public void stopRoute(@Nullable String routeId) throws RouteException {
 		List<CamelContext> camelC = getCamelContexts();
 
 		for (CamelContext cCtx : camelC) {
@@ -242,34 +258,28 @@ public class RouteManagerService implements RouteManager {
 				RouteStatDump stat;
 				try {
 					stat = this.getRouteStats(cCtx, rd);
+					if (stat != null) {
+						RouteMetrics m = new RouteMetrics();
+						m.setCompleted(stat.getExchangesCompleted());
+						m.setRedeliveries(stat.getRedeliveries());
+						m.setFailed(stat.getExchangesFailed());
+						m.setFailuresHandled(stat.getFailuresHandled());
+						m.setInflight(stat.getExchangesInflight());
+						m.setMaxProcessingTime(stat.getMaxProcessingTime());
+						m.setMinProcessingTime(stat.getMinProcessingTime());
+						m.setMeanProcessingTime(stat.getMeanProcessingTime());
+						rdump.put(rd.getId(), m);
+					}
 				} catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException | JAXBException e) {
 					LOG.error(e.getMessage(), e);
-					continue;
 				}
-				RouteMetrics m = new RouteMetrics();
-				m.setCompleted(stat.getExchangesCompleted());
-				m.setRedeliveries(stat.getRedeliveries());
-				m.setFailed(stat.getExchangesFailed());
-				m.setFailuresHandled(stat.getFailuresHandled());
-				m.setInflight(stat.getExchangesInflight());
-				m.setMaxProcessingTime(stat.getMaxProcessingTime());
-				m.setMinProcessingTime(stat.getMinProcessingTime());
-				m.setMeanProcessingTime(stat.getMeanProcessingTime());
-				rdump.put(rd.getId(), m);
 			}
 		}
 		return rdump;
 	}
 
-	
 	@Override
-	public void addRoute(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-
-	}
-	
-	@Override
-	public void delRoute(String routeId) {
+	public void delRoute(@Nullable String routeId) {
 		List<CamelContext> cCtxs = getCamelContexts();
 		for (CamelContext cCtx: cCtxs) {
 			for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
@@ -285,58 +295,55 @@ public class RouteManagerService implements RouteManager {
 		}
 	}
 
-	@Override
-	public void loadRoutes(String arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
+	@NonNull
 	private List<CamelContext> getCamelContexts() {
 		List<CamelContext> camelContexts = new ArrayList<>();
         try {
-            ServiceReference<?>[] references = this.ctx.getBundleContext().getServiceReferences(CamelContext.class.getName(), null);
+            ServiceReference<?>[] references = this.ctx.getBundleContext()
+					.getServiceReferences(CamelContext.class.getName(), null);
             if (references != null) {
-                for (ServiceReference<?> reference : references) {
-                    if (reference != null) {
-                        CamelContext camelContext = (CamelContext) this.ctx.getBundleContext().getService(reference);
-                        if (camelContext != null) {
-                            camelContexts.add(camelContext);
-                        }
-                    }
-                }
+				Arrays.stream(references).map(this.ctx.getBundleContext()::getService).filter(Objects::nonNull)
+						.map(CamelContext.class::cast).forEach(camelContexts::add);
             }
         } catch (Exception e) {
             LOG.warn("Cannot retrieve the list of Camel contexts.", e);
         }
 
         // sort the list
-        Collections.sort(camelContexts, (ctx1, ctx2) -> ctx1.getName().compareTo(ctx2.getName()));
+        camelContexts.sort(Comparator.comparing(CamelContext::getName));
 		return camelContexts;
 	}
 
 	/**
 	 * Wraps a RouteDefinition in a RouteObject for use over API.
 	 * 
-	 * @param cCtx
-	 * @param rd
-	 * @return
+	 * @param cCtx Camel Context
+	 * @param rd The RouteDefinition to be transformed
+	 * @return The resulting RouteObject
 	 */
-	private RouteObject routeDefinitionToObject(CamelContext cCtx, RouteDefinition rd) {
-		try {
-			ModelHelper.dumpModelAsXml(cCtx, rd);
-		} catch (JAXBException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(), cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
+	private RouteObject routeDefinitionToObject(@NonNull CamelContext cCtx, @NonNull RouteDefinition rd) {
+		return new RouteObject(rd.getId(), rd.getDescriptionText(), routeToDot(rd), rd.getShortName(),
+				cCtx.getName(), cCtx.getUptimeMillis(), cCtx.getRouteStatus(rd.getId()).toString());
 	}
-	
+
 	/**
 	 * Creates a visualization of a Camel route in DOT (graphviz) format.
-	 *  
-	 * @param rd
-	 * @return
+	 *
+	 * @param rd The route definition to process
+	 * @return The string representation of the Camel route in DOT
 	 */
-	private String routeToDot(RouteDefinition rd) {
+	private GraphData routeToGraph(RouteDefinition rd) {
+		return GraphProcessor.processRoute(rd);
+	}
+
+	/**
+	 * Creates a visualization of a Camel route in DOT (graphviz) format.
+	 *
+	 * @param rd The route definition to process
+	 * @return The string representation of the Camel route in DOT
+	 */
+	@NonNull
+	private String routeToDot(@NonNull RouteDefinition rd) {
 		String result="";
 		try {
 			CamelRouteToDot viz = new CamelRouteToDot();
@@ -349,6 +356,20 @@ public class RouteManagerService implements RouteManager {
 			LOG.error(e.getMessage(), e);
 		}
 		return result;
+	}
+
+	@Override
+	@NonNull
+	public List<String> getRouteInputUris(@NonNull String routeId) {
+		for (CamelContext ctx: getCamelContexts()) {
+			for (RouteDefinition rd : ctx.getRouteDefinitions()) {
+				if (routeId.equals(rd.getId())) {
+					return rd.getInputs().stream().map(FromDefinition::getUri)
+							.filter(Objects::nonNull).collect(Collectors.toList());
+				}
+			}
+		}
+		return Collections.emptyList();
 	}
 	
 	protected RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
@@ -370,43 +391,152 @@ public class RouteManagerService implements RouteManager {
           return null;
 	}
 
+	/**
+	 * Retrieves the Prolog representation of a route
+	 *
+	 * @param routeId The id of the route that is to be exported
+	 */
 	@Override
-	public String getRouteAsProlog(String routeId) {
+	public String getRouteAsProlog(@NonNull String routeId) {
 		Optional<CamelContext> c = getCamelContexts()
 				.parallelStream()
 				.filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
 				.findAny();
 			
-			if (c.isPresent()) {
-				try {
-					RouteDefinition rd = c.get().getRouteDefinition(routeId);
-					StringWriter writer = new StringWriter();
-					new PrologPrinter().printSingleRoute(writer, rd);
-					writer.flush();
-					return writer.toString();
-				} catch (IOException e) {
-					LOG.error("Error printing route to prolog " + routeId, e);
-				}
-			}
-
-			return "";
-	}
-	
-	@Override
-	public String getRouteAsString(String routeId) {
-		Optional<CamelContext> c = getCamelContexts()
-			.parallelStream()
-			.filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
-			.findAny();
-		
 		if (c.isPresent()) {
-			RouteDefinition rd = c.get().getRouteDefinition(routeId);
 			try {
-				ModelHelper.dumpModelAsXml(c.get(), rd);
+				RouteDefinition rd = c.get().getRouteDefinition(routeId);
+				StringWriter writer = new StringWriter();
+				new PrologPrinter().printSingleRoute(writer, rd);
+				writer.flush();
+				return writer.toString();
+			} catch (IOException e) {
+				LOG.error("Error printing route to prolog " + routeId, e);
+			}
+		}
+
+		return "";
+	}
+
+	/**
+	 * Retrieves the textual representation of a route
+	 *
+	 * @param routeId The id of the route that is to be exported
+	 */
+	@Override
+	@Nullable
+	public String getRouteAsString(@NonNull String routeId) {
+		for (CamelContext c : getCamelContexts()) {
+			RouteDefinition rd = c.getRouteDefinition(routeId);
+			if (rd == null) {
+				continue;
+			}
+			try {
+				return ModelHelper.dumpModelAsXml(c, rd);
 			} catch (JAXBException e) {
 				LOG.error(e.getMessage(), e);
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Save a route, replacing it with a new representation within the same context
+	 *
+	 * @param routeId ID of the route to save
+	 * @param routeRepresentation The new textual representation of the route (XML etc.)
+	 * @throws RouteException If the route does not exist or some Exception was thrown during route replacement.
+	 */
+	@Override
+	public RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation) throws RouteException {
+		LOG.debug("Save route \"" + routeId + "\": " + routeRepresentation);
+
+		CamelContext cCtx = null;
+		boolean routeStarted = false;
+
+		// Find the state and CamelContext of the route to be saved
+		for(CamelContext c : getCamelContexts()) {
+			Route targetRoute = c.getRoute(routeId);
+			if (targetRoute != null) {
+				cCtx = c;
+				ServiceStatus serviceStatus = cCtx.getRouteStatus(routeId);
+				routeStarted = serviceStatus == ServiceStatus.Started || serviceStatus == ServiceStatus.Starting;
+				break;
+			}
+		}
+		if (cCtx == null) {
+			LOG.error("Could not find route with id \"" + routeId + "\"");
+			throw new RouteException("Could not find route with id \"" + routeId + "\"");
+		}
+
+		// Check for validity of route representation
+		List<RouteDefinition> routes;
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(routeRepresentation.getBytes("UTF-8"))) {
+			// Load route(s) from XML
+			RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
+			routes = rd.getRoutes();
+			Optional<String> id = routes.stream().map(RouteDefinition::getId)
+					.filter(rid -> !routeId.equals(rid)).findAny();
+			if (id.isPresent()) {
+				throw new Exception("The new route representation has a different ID: " +
+						"Expected \"" + routeId + "\" but got \"" + id.get() + "\"");
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			throw new RouteException(e);
+		}
+
+		// Remove old route from CamelContext
+		try {
+			cCtx.removeRoute(routeId);
+		} catch (Exception e) {
+			LOG.error("Error while removing old route \"" + routeId + "\"", e);
+			throw new RouteException(e);
+		}
+
+		// Add new route and start it if it was started/starting before save
+		try {
+			RouteDefinition routeDefinition = routes.get(0);
+			cCtx.addRouteDefinition(routeDefinition);
+			if (routeStarted) {
+				cCtx.startRoute(routeDefinition.getId());
+			}
+			return routeDefinitionToObject(cCtx, routeDefinition);
+		} catch (Exception e) {
+			LOG.error("Error while adding new route \"" + routeId + "\"", e);
+			throw new RouteException(e);
+		}
+	}
+
+	/**
+	 * Create a new route in a fresh context from text
+	 *
+	 * @param routeRepresentation The textual representation of the route to be inserted
+	 * @throws RouteException If a route with that name already exists
+	 */
+	@Override
+	public void addRoute(@NonNull String routeRepresentation) throws RouteException {
+		LOG.debug("Adding new route: " + routeRepresentation);
+		List<RouteObject> existingRoutes = this.getRoutes();
+		//@todo: Need to verify that this or the call to CamelContext.start() below actually registers the route properly
+		CamelContext cCtx = new DefaultCamelContext();
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(routeRepresentation.getBytes("UTF-8"))) {
+			// Load route(s) from XML
+			RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
+			List<RouteDefinition> routes = rd.getRoutes();
+			// Check that intersection of existing and new routes is empty (=we do not allow overwriting existing route ids)
+			List<String> intersect = routes.stream()
+					.filter(r -> existingRoutes.stream().anyMatch(er -> er.getId().equals(r.getId())))
+					.map(OptionalIdentifiedDefinition::getId).collect(Collectors.toList());
+			if (!intersect.isEmpty()) {
+				throw new RouteException("Route id already exists. Will not overwrite it. "
+						+ String.join(", ", intersect));
+			}
+			cCtx.addRouteDefinitions(routes);
+			cCtx.start();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+			throw new RouteException(e);
+		}
 	}
 }

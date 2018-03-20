@@ -1,50 +1,45 @@
-import { Injectable, NgZone } from '@angular/core';
-import { Headers, Http, Response } from '@angular/http';
-
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-
-import 'rxjs/add/operator/map';
-
 import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 declare var EventSource: any;
 
 @Injectable()
-export class SensorService {
-
+export class SensorService implements OnDestroy {
   private powerObservable;
   private rpmObservable;
+  private alive = true;
 
-  constructor(private http: Http) {
-    console.log("constructor SensorService");
-    this.powerObservable = Observable
-      .timer(0, 1000)
-      .flatMap(() => { return this.getCurrentPower(); });
-
-    this.rpmObservable = Observable
-      .timer(0, 1000)
-      .flatMap(() => { return this.getCurrentRPM(); });
+  constructor(private http: HttpClient) {
+    // console.log('constructor SensorService');
+    this.powerObservable = Observable.timer(0, 1000)
+      .takeWhile(() => this.alive)
+      .mergeMap(() => this.getCurrentPower());
+    this.rpmObservable = Observable.timer(0, 1000)
+      .takeWhile(() => this.alive)
+      .mergeMap(() => this.getCurrentRPM());
   }
 
-  getCurrentPower() {
-    return this.http.get('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentpower/value/')
-        .map(response => {
-          return +response.json().currentPower as number;
-        });
+  ngOnDestroy(): void {
+    this.alive = false;
   }
 
-  getCurrentRPM() {
-    return this.http.get('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentrpm/value/')
-        .map(response => {
-          return +response.json().sensorReading as number;
-        });
+  getCurrentPower(): Observable<number> {
+    return this.http.get<any>('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentpower/value/')
+        .map(response => response.currentPower);
   }
 
-  getPowerObservable() {
+  getCurrentRPM(): Observable<number> {
+    return this.http.get<any>('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentrpm/value/')
+        .map(response => response.sensorReading);
+  }
+
+  getPowerObservable(): Observable<number> {
     return this.powerObservable;
   }
 
-  getRPMObservable() {
+  getRPMObservable(): Observable<number> {
     return this.rpmObservable;
   }
 

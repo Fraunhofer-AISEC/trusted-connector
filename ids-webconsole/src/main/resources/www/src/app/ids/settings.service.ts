@@ -1,27 +1,25 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http, Response, RequestOptions } from '@angular/http';
-import {Observable} from 'rxjs/Rx';
+import { Observable } from 'rxjs/Observable';
 
 import { Settings } from './settings.interface';
 import { environment } from '../../environments/environment';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable()
-export class SettingsService {  
-  constructor(private http: Http) { }
-  
-  getSettings() {
-    return this.http.get(environment.apiURL + '/config/list/')
-               .map(response => {
-                 return response.json() as Settings;
-               });
+export class SettingsService {
+  constructor(private http: HttpClient) { }
+
+  getSettings(): Observable<Settings> {
+    return this.http.get<Settings>(environment.apiURL + '/config/list/');
   }
-  
-  store(model: Settings): Observable<Response> {
-    	let headers = new Headers({ 'Content-Type': 'application/json' });
-    	let options = new RequestOptions({ headers: headers });
-  
-        let result = this.http.post(environment.apiURL + '/config/set', model, options);
-        return result;
-	}
-  
+
+  store(model: Settings): Observable<string> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.http.post(environment.apiURL + '/config/set', model, {
+      headers,
+      responseType: 'text'
+    });
+  }
+
 }

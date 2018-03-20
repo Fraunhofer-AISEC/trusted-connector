@@ -111,11 +111,15 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+			</plugin>
+
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<goals>

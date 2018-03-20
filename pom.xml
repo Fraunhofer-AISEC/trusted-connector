@@ -7,6 +7,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>checker-qual</module>
 		<module>tpm2j</module>
 		<module>asynchttpclient</module>
 		<module>jnr-unixsocket-osgi-wrapper</module>
@@ -28,8 +29,7 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-
-		<camel-version>2.19.2</camel-version>
+		<camel-version>2.20.2</camel-version>
 		<jetty-version>9.3.9.v20160517</jetty-version>
 		<jersey-version>2.25</jersey-version>
 		<protobuf-version>3.3.0</protobuf-version>
@@ -38,6 +38,8 @@
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
 		<karaf.version>4.1.2</karaf.version>
+
+		<skipBugs>false</skipBugs>
 	</properties>
 
 
@@ -62,7 +64,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-
 			<!-- Protobuf -->
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
@@ -70,6 +71,13 @@
 				<version>${protobuf-version}</version>
 			</dependency>
 
+			<!-- Guava -->
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>23.4-jre</version>
+			</dependency>
+			
 			<!-- for REST API -->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
@@ -266,6 +274,22 @@
 					<version>0.7.7.201606060606</version>
 				</plugin>
 				<plugin>
+					<groupId>com.github.spotbugs</groupId>
+					<artifactId>spotbugs-maven-plugin</artifactId>
+					<version>3.1.2</version>
+					<configuration>
+						<onlyAnalyze>de.fhg.-,de.fraunhofer.-</onlyAnalyze>
+						<skip>${skipBugs}</skip>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.5.1</version>
@@ -277,7 +301,7 @@
 				<plugin>
 					<groupId>biz.aQute.bnd</groupId>
 					<artifactId>bnd-maven-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>com.github.os72</groupId>
@@ -326,7 +350,6 @@
 				</executions>
 			</plugin>
 			<!-- Add license headers and LICENSE.txt -->
-			<!-- Add license headers and LICENSE.txt -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
@@ -350,7 +373,7 @@
 							<roots>
 								<root>src/main/java</root>
 								<root>src/main/proto</root>
-								<root>src/test</root>
+								<root>src/test/java</root>
 							</roots>
 						</configuration>
 					</execution>

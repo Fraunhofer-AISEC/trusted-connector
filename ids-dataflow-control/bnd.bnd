@@ -16,9 +16,7 @@ Import-Package: \
 	!javax.script,\
 	!cli.System.Reflection,\
 	!com.google.gson,\
+	!com.google.errorprone*,\
 	!ikvm.runtime,\
 	!alice.tuprolog*,\
 	*
-Private-Package: \
-    de.fhg.ids.dataflowcontrol.lucon,\
-    com.google.*

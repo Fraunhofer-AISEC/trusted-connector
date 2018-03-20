@@ -1,30 +1,30 @@
-import { Injectable } from '@angular/core';
-import { Headers, Http, Response } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-
+import { Observable } from 'rxjs/Observable';
+import { IntervalObservable } from 'rxjs/observable/IntervalObservable';
 
 @Injectable()
-export class MetricService {
-    private metricObservable;
+export class MetricService implements OnDestroy {
+    private metricObservable: Observable<Array<String>>;
+    private alive = false;
 
-    constructor(private http: Http) {
-        this.metricObservable = Observable
-            .timer(0, 2000)
-            .flatMap(() => { return this.getMetric(); });
+    constructor(private http: HttpClient) {
+        this.metricObservable = IntervalObservable.create(1000)
+            .takeWhile(() => this.alive)
+            .mergeMap(() => this.getMetric());
+        this.alive = true;
     }
 
-    getMetric() {
-        return this.http.get(environment.apiURL + "/metric/get")
-            .map(response => {
-                var result = response.json();
-                console.log(result);
-                return result;
-            });
+    ngOnDestroy(): void {
+        this.alive = false;
     }
-    
-    getMetricObservable() : Observable<any> {
+
+    getMetric(): Observable<Array<String>> {
+        return this.http.get<Array<String>>(environment.apiURL + '/metric/get');
+    }
+
+    getMetricObservable(): Observable<Array<String>> {
         return this.metricObservable;
     }
 }

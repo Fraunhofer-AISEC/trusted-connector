@@ -47,6 +47,12 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
+		<!-- type checking -->
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>org.checkerframework.checker-qual</artifactId>
+			<version>1.1.0-SNAPSHOT</version>
+		</dependency>
 		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -87,6 +93,7 @@
 						</goals>
 						<configuration>
 							<protocArtifact>com.google.protobuf:protoc:${protobuf-version}:exe:${os.detected.classifier}</protocArtifact>
+							<clearOutputDirectory>false</clearOutputDirectory> <!--  prevents eclipse from deleting dir in the middle of the build. -->
 						</configuration>
 					</execution>
 				</executions>
@@ -95,6 +102,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
+				</configuration>
 			</plugin>
 
 			<!-- Copy downloaded protobuf.jar into directory "lib" so it can be wrapped 
@@ -131,7 +146,6 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<goals>

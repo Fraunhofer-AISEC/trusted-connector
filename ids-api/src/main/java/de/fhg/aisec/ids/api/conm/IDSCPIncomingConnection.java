@@ -29,6 +29,8 @@ package de.fhg.aisec.ids.api.conm;
 public class IDSCPIncomingConnection {
 	private String endpointIdentifier;
 	private AttestationResult attestationResult;
+	private String endpointKey;
+	private String remoteHostName;
 	
 	public IDSCPIncomingConnection() {
 	}
@@ -50,5 +52,23 @@ public class IDSCPIncomingConnection {
 	public String toString() {
 		return "IDSCPConnection [endpoint_identifier=" + endpointIdentifier 
 				+ ", attestationResult=" + attestationResult + "]";
+	}
+
+	public void setEndpointKey(String connectionKey) {
+		this.endpointKey = connectionKey;
+		
+	}
+
+	public String getEndpointKey() {
+		return endpointKey;
+	}
+
+	public String getRemoteHostName() {
+		return remoteHostName;
+	}
+
+	public void setRemoteHostName(String remoteHostname) {
+		this.remoteHostName = remoteHostname;
+		
 	}
 }

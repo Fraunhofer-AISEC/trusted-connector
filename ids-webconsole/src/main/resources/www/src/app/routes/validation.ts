@@ -1,9 +1,9 @@
 export class CounterExample {
-    explanation: string = null;
-    steps: string[] = null;
+    explanation?: string;
+    steps?: Array<string>;
 }
 
 export class ValidationInfo {
-    valid: boolean = true;
-    counterExamples: CounterExample[] = null;
+    valid = true;
+    counterExamples?: Array<CounterExample>;
 }
