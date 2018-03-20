@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -144,21 +145,20 @@ public class CertApi {
 
 		String filename = attachment.getContentDisposition().getParameter("filename");
 		File tempPath = File.createTempFile(filename, "cert");
-		OutputStream out = new FileOutputStream(tempPath);
-		InputStream in = attachment.getObject(InputStream.class);
-
-		int read;
-		byte[] bytes = new byte[1024];
-		while ((read = in.read(bytes)) != -1) {
-			out.write(bytes, 0, read);
+		try (OutputStream out = new FileOutputStream(tempPath);
+			 InputStream in = attachment.getObject(InputStream.class)) {
+			int read;
+			byte[] bytes = new byte[1024];
+			while ((read = in.read(bytes)) != -1) {
+				out.write(bytes, 0, read);
+			}
 		}
-		in.close();
-		out.flush();
-		out.close();
 
 		boolean success = storeCert(getKeystoreFile(TRUSTSTORE_FILE), tempPath);
 		if (success) {
-			tempPath.delete();
+			if (!tempPath.delete()) {
+				LOG.warn("Failed to delete temporary file " + tempPath);
+			}
 			return "Trusted certificate has been uploaded to " + TRUSTSTORE_FILE;
 		}
 
@@ -347,7 +347,7 @@ public class CertApi {
 				"-storepass", KEYSTORE_PWD, "-keypass", KEYSTORE_PWD };
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		new ProcessExecutor().execute(keytoolCmd, bos, bos);
-		LOG.debug("Keytool: " + new String(bos.toByteArray()));
+		LOG.debug("Keytool: " + new String(bos.toByteArray(), StandardCharsets.UTF_8));
 	}
 
 	protected boolean delete(String alias, File file) {

@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,14 +37,12 @@ import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
 public class Database {
-	
-	private static PreparedStatement pStatement = null;
-	private Logger LOG = LoggerFactory.getLogger(Database.class);
+
+	private static final Logger LOG = LoggerFactory.getLogger(Database.class);
 	private Connection connection;
-	private Statement statement;
 	private String sql;
-	private String zero = "0000000000000000000000000000000000000000000000000000000000000000";
-	private String fff =  "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+	private static final String ZERO = "0000000000000000000000000000000000000000000000000000000000000000";
+	private static final String FFFF =  "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
  
 	public Database() {
 		makeJDBCConnection();
@@ -73,17 +70,17 @@ public class Database {
 		Pcr[] all = new Pcr[numAll];
 		
 		for (int i = 0; i < numBasic ; i++) {
-			basic[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
+			basic[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
 		}
 		for (int i = 0; i < numAdvanced ; i++) {
-			advanced[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
+			advanced[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
 		}
 		for (int i = 0; i < numAll ; i++) {
 			if(i < numAdvanced || i == numAll - 1) {
-				all[i] = Pcr.newBuilder().setNumber(i).setValue(zero).build();
+				all[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
 			}
 			else {
-				all[i] = Pcr.newBuilder().setNumber(i).setValue(fff).build();
+				all[i] = Pcr.newBuilder().setNumber(i).setValue(FFFF).build();
 			}
 		}		
     	this.insertConfiguration("default_basic", "BASIC", basic);
@@ -101,14 +98,9 @@ public class Database {
 		}
 		try {
 			connection = DriverManager.getConnection("jdbc:sqlite:configuration.db");
-			if (connection != null) {
-				LOG.debug("connection to sqlite db successful!");
-			} else {
-				LOG.debug("Failed to make connection to mysql db!");
-			}
+			LOG.debug("connection to sqlite db successful!");
 		} catch (SQLException e) {
-			LOG.debug(e.getMessage());
-			return;
+			LOG.debug("Failed to make connection to mysql db!", e);
 		}
 
 	}
@@ -117,74 +109,65 @@ public class Database {
 		return connection;
 	}
 	
-	
-	public void close() throws SQLException {
-		if(pStatement != null) {
-			pStatement.close();
-		}
-		if(connection != null) {
-			connection.close();
-		}
-	}
-	
 	public void createTables() throws SQLException {
-		statement = connection.createStatement();
-		sql = "DROP TABLE IF EXISTS CONFIG; CREATE TABLE CONFIG ("
-				+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ "'NAME' VARCHAR(255) NULL DEFAULT 'Configuration Name',"
-				+ "'TYPE' VARCHAR(255) NULL DEFAULT 'BASIC');"; 
-		statement.executeUpdate(sql);
-		statement.close();
+		try (Statement statement = connection.createStatement()) {
+			sql = "DROP TABLE IF EXISTS CONFIG; CREATE TABLE CONFIG ("
+					+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
+					+ "'NAME' VARCHAR(255) NULL DEFAULT 'Configuration Name',"
+					+ "'TYPE' VARCHAR(255) NULL DEFAULT 'BASIC');";
+			statement.executeUpdate(sql);
+		}
 		
-		statement = connection.createStatement();
-		sql = "DROP TABLE IF EXISTS PCR; CREATE TABLE PCR ("
-				+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ "'SEQ' INTEGER DEFAULT '0',"
-				+ "'VALUE' CHAR(64) NOT NULL DEFAULT '"+this.zero+"',"
-				+ "'CID' INTEGER NOT NULL,"
-				+ "FOREIGN KEY (CID) REFERENCES 'CONFIG' ('ID'));"; 
-		statement.executeUpdate(sql);
-		statement.close();
+		try (Statement statement = connection.createStatement()) {
+			sql = "DROP TABLE IF EXISTS PCR; CREATE TABLE PCR ("
+					+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
+					+ "'SEQ' INTEGER DEFAULT '0',"
+					+ "'VALUE' CHAR(64) NOT NULL DEFAULT '" + ZERO + "',"
+					+ "'CID' INTEGER NOT NULL,"
+					+ "FOREIGN KEY (CID) REFERENCES 'CONFIG' ('ID'));";
+			statement.executeUpdate(sql);
+		}
 	}
 	
 	public long insertConfiguration(String name, String type, Pcr[] values) throws SQLException {
 		sql = "INSERT INTO CONFIG (NAME, TYPE) VALUES (?,?)";
-		pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-		pStatement.setString(1, name);
-		pStatement.setString(2, type);
- 		pStatement.executeUpdate();
- 		pStatement.close();
- 		long key = pStatement.getGeneratedKeys().getLong(1);
- 		this.insertPcrs(values, key);
- 		return key;
+		try (PreparedStatement pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			pStatement.setString(1, name);
+			pStatement.setString(2, type);
+			pStatement.executeUpdate();
+			long key = pStatement.getGeneratedKeys().getLong(1);
+			this.insertPcrs(values, key);
+			return key;
+		}
 	}
 	
 	private void insertPcrs(Pcr[] values, long key) throws SQLException {
-		for(int i = 0; i < values.length; i++) {
-			LOG.debug("INSERT PCR order:" + values[i].getNumber() + " value " + values[i].getValue());
-			sql = "INSERT INTO PCR (SEQ, VALUE, CID) VALUES  (?,?,?)";
-			pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			pStatement.setInt(1, values[i].getNumber());
-			pStatement.setString(2, values[i].getValue());
-			pStatement.setLong(3, key);
-	 		pStatement.executeUpdate();
-	 		pStatement.close();
+		sql = "INSERT INTO PCR (SEQ, VALUE, CID) VALUES  (?,?,?)";
+		try (PreparedStatement pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			for (Pcr value : values) {
+				LOG.debug("INSERT PCR order:" + value.getNumber() + " value " + value.getValue());
+				pStatement.setInt(1, value.getNumber());
+				pStatement.setString(2, value.getValue());
+				pStatement.setLong(3, key);
+				pStatement.executeUpdate();
+			}
 		}
 	}
 	
 	private Long[] getConfigurationIdSingle(Pcr value) throws SQLException {
 		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
-		pStatement = connection.prepareStatement(sql);
-		pStatement.setInt(1, value.getNumber());
-		pStatement.setString(2, value.getValue());
-		ResultSet rs = pStatement.executeQuery();
-		List<Long> result = new ArrayList<Long>();
-		while(rs.next()) {
-			result.add(rs.getLong("ID"));
+		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
+			pStatement.setInt(1, value.getNumber());
+			pStatement.setString(2, value.getValue());
+			List<Long> result = new ArrayList<Long>();
+			try (ResultSet rs = pStatement.executeQuery()) {
+				while (rs.next()) {
+					result.add(rs.getLong("ID"));
+				}
+				pStatement.close();
+			}
+			return result.toArray(new Long[result.size()]);
 		}
- 		pStatement.close();
- 		rs.close();
- 		return result.toArray(new Long[result.size()]);
 	}
 	
 	public Long[] getConfigurationId(Pcr[] values) throws SQLException {
@@ -201,36 +184,36 @@ public class Database {
 	}
 	
 	private Long[] intersection(Long[] a, Long[] b){
-		Collection listOne = new ArrayList(Arrays.asList(a));
-		Collection listTwo = new ArrayList(Arrays.asList(b));
+		ArrayList<Long> listOne = new ArrayList<>(Arrays.asList(a));
+		ArrayList<Long> listTwo = new ArrayList<>(Arrays.asList(b));
 		listOne.retainAll(listTwo);
-		return (Long[]) listOne.toArray(new Long[listOne.size()]);
+		return listOne.toArray(new Long[listOne.size()]);
 	}
 
 	public boolean deleteConfigurationById(long id) throws SQLException {
 		sql = "DELETE FROM CONFIG WHERE ID = ?";
-		pStatement = connection.prepareStatement(sql);
-		pStatement.setLong(1, id);
- 		int val = pStatement.executeUpdate();
- 		pStatement.close();
- 		if(val==1) {
- 	 		sql = "DELETE FROM PCR WHERE CID = ?";
- 	 		pStatement = connection.prepareStatement(sql);
- 			pStatement.setLong(1, id);
- 	 		pStatement.executeUpdate();
- 	 		pStatement.close();
- 			return true;
- 		}
- 		else {
- 			return false;
- 		}
+		int rowCount;
+		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
+			pStatement.setLong(1, id);
+			rowCount = pStatement.executeUpdate();
+		}
+		if(rowCount == 1) {
+			sql = "DELETE FROM PCR WHERE CID = ?";
+			try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
+				pStatement.setLong(1, id);
+				pStatement.executeUpdate();
+			}
+		}
+		return rowCount == 1;
 	}
 	
 	public Configuration[] getConfigurationList() throws SQLException {
 		List<Configuration> ll = new LinkedList<Configuration>();
-		ResultSet rs = statement.executeQuery("SELECT * FROM CONFIG");
-		while (rs.next()) {
-			ll.add(this.getConfiguration(rs.getLong("ID")));
+		try (Statement stmt = connection.createStatement();
+			 ResultSet rs = stmt.executeQuery("SELECT * FROM CONFIG")) {
+			while (rs.next()) {
+				ll.add(this.getConfiguration(rs.getLong("ID")));
+			}
 		}
 		return ll.toArray(new Configuration[ll.size()]);
 	}
@@ -240,35 +223,31 @@ public class Database {
 		List<Pcr> values = new ArrayList<Pcr>();
 		String sql1 = "select * from CONFIG where ID = ?;";
 		String sql2 = "select * from PCR where CID = ?;";
-		PreparedStatement pStatement1;
-		PreparedStatement pStatement2;
-		try {
-			pStatement1 = connection.prepareStatement(sql1);
-			pStatement2 = connection.prepareStatement(sql2);
+		try (PreparedStatement pStatement1 = connection.prepareStatement(sql1);
+			 PreparedStatement pStatement2 = connection.prepareStatement(sql2)) {
 			pStatement1.setLong(1, id);
 			pStatement2.setLong(1, id);
-			ResultSet rs1 = pStatement1.executeQuery();
-			ResultSet rs2 = pStatement2.executeQuery();
-			if(rs1.next()) {
-				while(rs2.next()) {
-					values.add(Pcr.newBuilder().setNumber(rs2.getInt("SEQ")).setValue(rs2.getString("VALUE")).build());
-				}
-				if(values.size() > 0) { 
-					c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"), rs1.getString("TYPE"), values.toArray(new Pcr[values.size()]));
+			try (ResultSet rs1 = pStatement1.executeQuery();
+				 ResultSet rs2 = pStatement2.executeQuery()) {
+				if(rs1.next()) {
+					while(rs2.next()) {
+						values.add(Pcr.newBuilder().setNumber(rs2.getInt("SEQ"))
+								.setValue(rs2.getString("VALUE")).build());
+					}
+					if(values.size() > 0) {
+						c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"),
+								rs1.getString("TYPE"), values.toArray(new Pcr[values.size()]));
+					}
+					else {
+						c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"),
+								rs1.getString("TYPE"));
+					}
+					return c;
 				}
 				else {
-					c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"), rs1.getString("TYPE"));
+					return null;
 				}
-				pStatement1.close();
-				pStatement2.close();			
-				rs1.close();
-				rs2.close();
-				return c;
 			}
-			else {
-				return null;
-			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
@@ -285,7 +264,8 @@ public class Database {
 				return true;
 			}
 			else if(configIds.length > 1) {
-				LOG.debug("found more than one matching configuration ("+configIds.toString()+") =( this shouldn't happen !");
+				LOG.debug("found more than one matching configuration (" + Arrays.toString(configIds)
+						+ ") =( this shouldn't happen !");
 				return true;
 			}
 			else {

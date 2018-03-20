@@ -22,6 +22,7 @@ package de.fhg.ids.dataflowcontrol.lucon;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -94,7 +95,7 @@ public class LuconEngine {
 		p.addOutputListener(l -> {
 			if (out != null) {
 				try {
-					out.write(l.getMsg().getBytes());
+					out.write(l.getMsg().getBytes(StandardCharsets.UTF_8));
 				} catch (Exception e) {
 					LOG.error(e.getMessage(), e);
 				}
@@ -174,14 +175,14 @@ public class LuconEngine {
 
 	@NonNull
 	public String getTheory() {
-		String t = p.getTheory().toString();
-		return t!=null?t:"";
+		Theory t = p.getTheory();
+		return t == null ? "" : t.toString();
 	}
 
 	@NonNull
 	public String getTheoryAsJSON() {
-		String t = p.getTheory().toJSON();
-		return t!=null?t:"";
+		Theory t = p.getTheory();
+		return t == null ? "" : t.toJSON();
 	}
 
 	/**

@@ -31,7 +31,7 @@ public class Configuration {
 		this.id = id;
 		this.name = name;
 		this.type = type;
-		this.values = values;
+		this.values = values.clone();
 	}
 	
 	public Configuration(long id, String name, String type) {
@@ -41,11 +41,11 @@ public class Configuration {
 	}	
 	
 	public Pcr[] getValues() {
-		return values;
+		return values.clone();
 	}
 
 	public void setValues(Pcr[] values) {
-		this.values = values;
+		this.values = values.clone();
 	}
 
 	public long getId() {

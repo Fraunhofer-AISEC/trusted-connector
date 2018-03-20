@@ -7,14 +7,6 @@ text {
   pointer-events: none;
 }
 
-.c3-ygrid-line text {
-  font-size: 14px;
-}
-
-.c3 .tick text {
-  font-size: 12px;
-}
-
 i.connect-icons {
   padding-left: 5px;
   padding-right: 5px;

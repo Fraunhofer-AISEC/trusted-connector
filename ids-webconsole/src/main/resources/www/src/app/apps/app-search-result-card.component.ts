@@ -26,9 +26,9 @@ export class AppSearchResultCardComponent implements AfterViewInit {
             .installApp(appName, tag)
             .subscribe(success => success);
     }
-    
+
     // Unused, just here to calm down the linter
     trackApps(index: number, item: App): string {
         return item.id;
-    }    
+    }
 }

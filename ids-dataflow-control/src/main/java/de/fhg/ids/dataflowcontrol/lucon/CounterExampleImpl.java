@@ -38,7 +38,8 @@ public class CounterExampleImpl extends CounterExample {
         Iterator<? extends Term> reasonIterator = ((Struct) traceIterator.next()).listIterator();
         StringBuilder sb = new StringBuilder().append("Service ").append(reasonIterator.next().toString())
                 .append(" may receive messages");
-        Term explanation = reasonIterator.next();
+        reasonIterator.next();
+//        Term explanation = reasonIterator.next();
 ////        if (explanation.isList()) {
 //            sb.append(" labeled [");
 //            appendCSList(sb, explanation);

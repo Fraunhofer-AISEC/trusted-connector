@@ -39,6 +39,8 @@
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
 		<karaf.version>4.1.2</karaf.version>
+
+		<skipBugs>false</skipBugs>
 	</properties>
 
 
@@ -271,6 +273,22 @@
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
 					<version>0.7.7.201606060606</version>
+				</plugin>
+				<plugin>
+					<groupId>com.github.spotbugs</groupId>
+					<artifactId>spotbugs-maven-plugin</artifactId>
+					<version>3.1.2</version>
+					<configuration>
+						<onlyAnalyze>de.fhg.-,de.fraunhofer.-</onlyAnalyze>
+						<skip>${skipBugs}</skip>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

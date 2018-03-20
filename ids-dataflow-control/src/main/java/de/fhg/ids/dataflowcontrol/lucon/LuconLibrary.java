@@ -166,7 +166,6 @@ public class LuconLibrary extends Library {
     private static boolean isComplex(@NonNull Term t) {
         if (t instanceof Var) {
             t = t.getTerm();
-            t.isCompound();
         }
         return (!t.isAtom() || t.isList()) && !(t instanceof Number);
     }

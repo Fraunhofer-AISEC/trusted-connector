@@ -104,6 +104,14 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
+				</configuration>
+			</plugin>
+
 			<!-- Copy downloaded protobuf.jar into directory "lib" so it can be wrapped 
 				in our bundle -->
 			<plugin>

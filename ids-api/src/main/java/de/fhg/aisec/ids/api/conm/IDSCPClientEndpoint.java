@@ -31,8 +31,6 @@ public class IDSCPClientEndpoint {
 	private AttestationResult attestationResult;
 	private String endpointKey;
 
-
-	
 	@Override
 	public String toString() {
 		return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
@@ -50,8 +48,7 @@ public class IDSCPClientEndpoint {
 		this.attestationResult = attestationResult;
 	}
 	public void setEndpointKey(String endpointKey) {
-		// TODO Auto-generated method stub
-		
+		this.endpointKey = endpointKey;
 	}
 	public String getEndpointKey() {
 		return endpointKey;

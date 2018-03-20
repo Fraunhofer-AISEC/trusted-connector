@@ -193,7 +193,7 @@ public class WebConsoleComponent {
 		WebConsoleComponent.pap = pap;
 	}
 	protected void unbindPolicyAdministrationPoint(PAP pap) {
-		pap = null;
+		WebConsoleComponent.pap = null;
 	}
 	public static Optional<PAP> getPolicyAdministrationPoint() {
 		return Optional.ofNullable(pap);

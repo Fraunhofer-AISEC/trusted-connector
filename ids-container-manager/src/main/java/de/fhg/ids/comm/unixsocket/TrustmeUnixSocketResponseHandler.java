@@ -27,7 +27,7 @@ public class TrustmeUnixSocketResponseHandler {
 	private byte[] rsp = null;
 	
 	public synchronized boolean handleResponse(byte[] rsp) {
-		this.rsp = rsp;
+		this.rsp = rsp.clone();
 		this.notify();
 		return true;
 	}
