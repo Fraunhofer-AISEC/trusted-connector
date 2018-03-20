@@ -23,6 +23,7 @@ export class RouteeditorComponent implements OnInit {
   myForm: FormGroup;
 
   private _route?: Route;
+  private _newRoute = false;
   private _textRepresentation?: string;
   private _validationInfo: ValidationInfo = new ValidationInfo();
   private _result: Result = new Result();
@@ -50,6 +51,10 @@ export class RouteeditorComponent implements OnInit {
 
     // Update icon
     this.statusIcon = (this._route.status === 'Started') ? 'stop' : 'play_arrow';
+  }
+
+  get newRoute(): boolean {
+    return this._newRoute;
   }
 
   get textRepresentation(): string {
@@ -83,6 +88,8 @@ export class RouteeditorComponent implements OnInit {
       const id = params.id;
 
       if (!id) {
+        this._newRoute = true;
+
         return;
       }
 
@@ -156,10 +163,10 @@ export class RouteeditorComponent implements OnInit {
 
   save(): void {
     this._saved = true;
-    const id = this._route.id;
 
     // Call REST POST/PUT to store route
-    if (id) {
+    if (this._route) {
+      const id = this._route.id;
       this.routeService.saveRoute(id, this._textRepresentation)
         .subscribe(
           result => {
