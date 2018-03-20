@@ -43,29 +43,26 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Represents a node in the EIP diagram tree
- *
- * @version
  */
 public class PrologNode {
-	public String id;
+//	public String id;
 	public String nodeType;
-	public boolean nodeWritten;
 	public String value;
-	public String predicate = "has_url";
+//	public String predicate = "has_url";
 	public List<ProcessorDefinition<?>> outputs;
 	
 	public PrologNode(@NonNull String id, @NonNull Object node) {
-		this.id = id;
+//		this.id = id;
 
 		if (node instanceof ProcessorDefinition) {
 			ProcessorDefinition<?> processorType = (ProcessorDefinition<?>) node;
-			this.predicate = "has_operation";
+//			this.predicate = "has_operation";
 			this.value = processorType.getLabel();
 		}
 		if (node instanceof FromDefinition) {
 			FromDefinition fromType = (FromDefinition) node;
 			this.nodeType = "from";
-			this.predicate = "has_url";
+//			this.predicate = "has_url";
 			this.value = fromType.getEndpointUri();
 		} else if (node instanceof ToDefinition) {
 			ToDefinition toType = (ToDefinition) node;
@@ -81,14 +78,14 @@ public class PrologNode {
 			this.value = "";
 		} else if (node instanceof ChoiceDefinition) {
 			ChoiceDefinition choice = (ChoiceDefinition) node;
-			List<ProcessorDefinition<?>> outputs = new ArrayList<ProcessorDefinition<?>>(choice.getWhenClauses());
+			List<ProcessorDefinition<?>> outputs = new ArrayList<>(choice.getWhenClauses());
 			if (choice.getOtherwise() != null) {
 				outputs.add(choice.getOtherwise());
 			}
 			this.outputs = outputs;
 			this.nodeType = "choice";
 		} else if (node instanceof RecipientListDefinition) {
-			this.predicate = "recipient_list";
+//			this.predicate = "recipient_list";
 			this.value = ((RecipientListDefinition) node).getLabel();
 			this.nodeType = "recipients";
 		} else if (node instanceof RoutingSlipDefinition) {
@@ -99,14 +96,14 @@ public class PrologNode {
 		} else if (node instanceof AggregateDefinition) {
 			this.nodeType = "aggregator";
 		} else if (node instanceof ResequenceDefinition) {
-			this.predicate = "resequence";
+//			this.predicate = "resequence";
 			this.value = ((ResequenceDefinition) node).getLabel();
-		} else if (node instanceof BeanDefinition) {;
-			this.predicate = "bean";
+		} else if (node instanceof BeanDefinition) {
+//			this.predicate = "bean";
 			this.value = ((BeanDefinition) node).getLabel();
 		} else if (node instanceof TransformDefinition) {
 			this.value = ((TransformDefinition) node).getLabel();
-			this.predicate = "transform";
+//			this.predicate = "transform";
 		}
 
 		// lets auto-default as many values as we can

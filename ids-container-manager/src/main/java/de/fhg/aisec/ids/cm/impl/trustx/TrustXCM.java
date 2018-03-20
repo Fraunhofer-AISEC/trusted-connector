@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,7 +92,7 @@ public class TrustXCM implements ContainerManager {
 			List<ContainerStatus> containerStats = dtc.getContainerStatusList();
 			for (ContainerStatus cs : containerStats) {
 				ApplicationContainer container;
-				if (!onlyRunning || (onlyRunning && ContainerState.RUNNING.equals(cs.getState()))){
+				if (!onlyRunning || ContainerState.RUNNING.equals(cs.getState())){
 					container = new ApplicationContainer(cs.getUuid(), 
 							null, 
 							null, 
@@ -111,7 +112,7 @@ public class TrustXCM implements ContainerManager {
 			LOG.error("Response Length: " + response.length);
 			e.printStackTrace();
 		}
-		LOG.debug("Received response from cml: " + new String(response));
+		LOG.debug("Received response from cml: " + new String(response, StandardCharsets.UTF_8));
 		
 		return result;
 	}

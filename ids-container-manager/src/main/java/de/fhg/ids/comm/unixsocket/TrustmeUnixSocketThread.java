@@ -53,10 +53,10 @@ public class TrustmeUnixSocketThread implements Runnable {
 	private ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
 	
 	// A list of PendingChange instances
-	private List<ChangeRequest> pendingChanges = new LinkedList<>();
+	private final List<ChangeRequest> pendingChanges = new LinkedList<>();
 
 	// Maps a UnixSocketChannel to a list of ByteBuffer instances
-	private Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
+	private final Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
 	private Map<UnixSocketChannel, TrustmeUnixSocketResponseHandler> rspHandlers = Collections
@@ -113,17 +113,17 @@ public class TrustmeUnixSocketThread implements Runnable {
 			try {
 				// Process any pending changes
 				synchronized (this.pendingChanges) {
-					Iterator<ChangeRequest> changes = this.pendingChanges.iterator();
-					while (changes.hasNext()) {
-						ChangeRequest change = (ChangeRequest) changes.next();
+					for (ChangeRequest change : this.pendingChanges) {
 						switch (change.type) {
-						case ChangeRequest.CHANGEOPS:
-							SelectionKey key = change.channel.keyFor(this.selector);
-							key.interestOps(change.ops);
-							break;
-						case ChangeRequest.REGISTER:
-							change.channel.register(this.selector, change.ops);
-							break;
+							case ChangeRequest.CHANGEOPS:
+								SelectionKey key = change.channel.keyFor(this.selector);
+								key.interestOps(change.ops);
+								break;
+							case ChangeRequest.REGISTER:
+								change.channel.register(this.selector, change.ops);
+								break;
+							default:
+								LOG.warn("Unknown ChangeRequest type", change.type);
 						}
 					}
 					this.pendingChanges.clear();
