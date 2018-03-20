@@ -63,12 +63,19 @@
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.compendium</artifactId>
 			<version>5.0.0</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.annotation</artifactId>
 			<version>6.0.0</version>
+		</dependency>
+
+		<!-- Karaf Scheduler -->
+		<dependency>
+			<groupId>org.apache.karaf.scheduler</groupId>
+			<artifactId>org.apache.karaf.scheduler.core</artifactId>
+			<version>4.1.5</version>
+			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>

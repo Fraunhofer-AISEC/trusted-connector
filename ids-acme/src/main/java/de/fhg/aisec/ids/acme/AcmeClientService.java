@@ -20,6 +20,9 @@
 package de.fhg.aisec.ids.acme;
 
 import de.fhg.aisec.ids.api.acme.AcmeClient;
+import org.apache.karaf.scheduler.Job;
+import org.apache.karaf.scheduler.JobContext;
+import org.apache.karaf.scheduler.Scheduler;
 import org.osgi.service.component.annotations.Component;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -29,7 +32,9 @@ import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
@@ -41,8 +46,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component(immediate=true)
-public class AcmeClientService implements AcmeClient {
+@Component(immediate=true, property = {
+        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0/10 * * * ?",
+        Scheduler.PROPERTY_SCHEDULER_IMMEDIATE + "=true"
+})
+public class AcmeClientService implements AcmeClient, Job {
 
     private static final String[] DOMAINS = {"localhost"};
     public static final URI ACME_URL = URI.create("acme://pebble");
@@ -157,6 +165,11 @@ public class AcmeClientService implements AcmeClient {
             // Stop ACME challenge responder
             AcmeChallengeServer.stopServer();
         }
+    }
+
+    @Override
+    public void execute(JobContext jobContext) {
+        System.out.println("Upon start, and every 10 minutes again...");
     }
 
 }

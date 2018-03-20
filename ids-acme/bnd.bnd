@@ -11,13 +11,13 @@ Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.re
     osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",\
     osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"
 Provide-Capability: osgi.serviceloader; osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider
-Import-Package: *
+Import-Package: \
+    *
 Private-Package: \
     fi.iki.elonen*,\
     org.shredzone.acme4j*,\
     org.bouncycastle*,\
     org.jose4j*
 Export-Package: \
-    de.fhg.aisec.ids.acme*,\
-    org.shredzone.acme4j.provider*,\
-    de.fhg.aisec.ids.acme.provider
+    org.apache.karaf.scheduler,\
+    de.fhg.aisec.ids.acme
