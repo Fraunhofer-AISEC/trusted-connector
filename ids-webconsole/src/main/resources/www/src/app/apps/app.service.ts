@@ -48,7 +48,7 @@ export class AppService {
   }
 
   getCmlVersion(): Observable<Cml> {
-    return this.http.get<Cml>(environment.apiURL + '/apps/cml_version');
+    return this.http.get<Cml>(environment.apiURL + '/app/cml_version');
   }
 
   searchApps(term: string): Observable<Array<DockerHubApp>> {

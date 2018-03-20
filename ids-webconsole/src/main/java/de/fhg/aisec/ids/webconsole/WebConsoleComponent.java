@@ -217,7 +217,7 @@ public class WebConsoleComponent {
 	}
 
 	protected void unbindPolicyAdministrationPoint(PAP pap) {
-		pap = null;
+		WebConsoleComponent.pap = null;
 	}
 	
 	public static Optional<PAP> getPolicyAdministrationPoint() {

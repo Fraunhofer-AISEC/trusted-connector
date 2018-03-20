@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -200,48 +201,46 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	
 	@Override
 	public TransformationDecision requestTranformations(@Nullable ServiceNode lastServiceNode) {
-		TransformationDecision result = transformationCache.getIfPresent(lastServiceNode);
-		if (result != null) {
-			return result;
-		}
-		if (lastServiceNode==null) {
+		if (lastServiceNode == null) {
 			return new TransformationDecision();
 		}
-
-		// Query prolog for labels to remove or add from message
-		String query = this.createTransformationQuery(lastServiceNode);
-		LOG.info("QUERY: " + query);
-
 		try {
-			result = new TransformationDecision();
+			return transformationCache.get(lastServiceNode, () -> {
+				// Query prolog for labels to remove or add from message
+				String query = this.createTransformationQuery(lastServiceNode);
+				LOG.info("QUERY: " + query);
 
-			List<SolveInfo> solveInfo = this.engine.query(query, true);
-			if (solveInfo.isEmpty()) {
-				transformationCache.put(lastServiceNode, result);
-				return result;
-			}
-
-			// Get solutions, convert label variables to string and collect in sets
-			Set<String> labelsToAdd = result.getLabelsToAdd();
-			Set<String> labelsToRemove = result.getLabelsToRemove();
-			solveInfo.forEach(s -> {
+				TransformationDecision result = new TransformationDecision();
 				try {
-					Term adds = s.getVarValue("Adds").getTerm();
-					if (adds.isList()) {
-						listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
+					List<SolveInfo> solveInfo = this.engine.query(query, true);
+					if (solveInfo.isEmpty()) {
+						return result;
 					}
-					Term removes = s.getVarValue("Removes").getTerm();
-					if (removes.isList()) {
-						listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
-					}
-				} catch (NoSolutionException ignored) {}
-			});
-		} catch (NoMoreSolutionException | MalformedGoalException e) {
-			LOG.error(e.getMessage(), e);
-		}
 
-		transformationCache.put(lastServiceNode, result);
-		return result;
+					// Get solutions, convert label variables to string and collect in sets
+					Set<String> labelsToAdd = result.getLabelsToAdd();
+					Set<String> labelsToRemove = result.getLabelsToRemove();
+					solveInfo.forEach(s -> {
+						try {
+							Term adds = s.getVarValue("Adds").getTerm();
+							if (adds.isList()) {
+								listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
+							}
+							Term removes = s.getVarValue("Removes").getTerm();
+							if (removes.isList()) {
+								listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
+							}
+						} catch (NoSolutionException ignored) {}
+					});
+				} catch (NoMoreSolutionException | MalformedGoalException e) {
+					LOG.error(e.getMessage(), e);
+				}
+				return result;
+			});
+		} catch (ExecutionException ee) {
+			LOG.error(ee.getMessage(), ee);
+			return new TransformationDecision();
+		}
 	}
 
 	@Override

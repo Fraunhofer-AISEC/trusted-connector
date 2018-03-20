@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,21 +66,20 @@ class StreamGobbler extends Thread {
 
 	@Override
 	public void run() {
-		try (	InputStreamReader isr = new InputStreamReader(is);
-				BufferedReader br = new BufferedReader(isr); ) {			
-			BufferedWriter bw = null; 
-			if (out!=null) {
-				bw = new BufferedWriter(new OutputStreamWriter(out));
-			}
-			String line;
-			while ((line = br.readLine()) != null) {
-				if (bw!=null) {
-					bw.write(line);
-					bw.newLine();
+		try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+			 BufferedReader br = new BufferedReader(isr)) {
+			if (out != null) {
+				try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
+					String line;
+					while ((line = br.readLine()) != null) {
+						bw.write(line);
+						bw.newLine();
+					}
 				}
-			}
-			if (bw!=null) {
-				bw.close();
+			} else {
+				while (true) {
+					if (br.readLine() == null) break;
+				}
 			}
 		} catch (IOException ioe) {
 			LOG.error(ioe.getMessage(), ioe);

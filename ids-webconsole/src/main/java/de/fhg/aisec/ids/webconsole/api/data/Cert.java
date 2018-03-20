@@ -30,7 +30,6 @@ public class Cert {
 	public String subjectOU;
 	public Collection<List<?>> subjectAltNames;
 	public String subjectCN;
-	public String issuerDistinguishedName;
 	public String alias;
 	public String file;
 	public String certificate;

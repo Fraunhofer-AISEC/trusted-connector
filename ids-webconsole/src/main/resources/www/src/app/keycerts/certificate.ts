@@ -3,7 +3,6 @@ export class Certificate {
   file: string;
   certificate: string;
   subjectDistinguishedName: string;
-  issuerDistinguishedName: string;
   subjectAltnames: Array<string>;
   subjectCN: string;
   subjectOU: string;
