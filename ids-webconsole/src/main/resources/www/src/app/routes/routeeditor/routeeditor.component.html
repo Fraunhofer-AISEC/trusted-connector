@@ -49,9 +49,10 @@
 </span></pre>
 			</div>
 		</div>
-
+	</div>
+	<div class="mdl-grid mdl-cell mdl-cell--12-col" *ngIf="route || newRoute">
 		<div class="mdl-textfield__error" style="visibility: visible;position:relative;margin-left:8px" *ngIf="!result.successful">{{ result.message }}</div>
-		
+
 		<div class="mdl-cell mdl-cell--12-col">
 			<div ace-editor
 				[(text)]="textRepresentation"
@@ -64,7 +65,7 @@
 				style="min-height: 400px; width:100%; overflow: auto; font-size:16px; font-family: Consolas,Monaco,'Andale Mono',monospace;"></div>
 		</div>
 		<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
-			<span>{{ route.id ? 'Apply' : 'Save' }}</span>
+			<span>{{ route ? 'Apply' : 'Save' }}</span>
 		</button>
 	</div>
 
