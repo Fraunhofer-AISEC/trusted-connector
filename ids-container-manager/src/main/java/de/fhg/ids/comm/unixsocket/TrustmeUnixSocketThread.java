@@ -76,6 +76,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 	// send some data to the unix socket
 	public void send(byte[] data, TrustmeUnixSocketResponseHandler handler, boolean withLengthHeader)
 			throws IOException, InterruptedException {
+		LOG.debug("writing protobuf to socket");
 		byte[] result = data;
 		// if message has to be sent with length header
 		if (withLengthHeader) {
@@ -157,7 +158,8 @@ public class TrustmeUnixSocketThread implements Runnable {
 	}
 
 	// read send some data from the unix socket
-	private void read(SelectionKey key) throws IOException {		
+	private void read(SelectionKey key) throws IOException {
+		LOG.debug("reading protobuf from socket");
 		UnixSocketChannel channel = this.getChannel(key);
 		
 		int length = readMessageLength(key, channel);
@@ -165,6 +167,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 		if (length == -1) {
 			// Remote entity shut the socket down cleanly. Do the same from our end and
 			// cancel the channel.
+			LOG.debug("Closing channel because length = -1");
 			key.channel().close();
 			key.cancel();
 			return;
@@ -174,18 +177,25 @@ public class TrustmeUnixSocketThread implements Runnable {
 		
 		messageBuffer.clear();
 		
-		int numRead;
+		int numRead = 0;
+		int totalRead = 0;
 		try {
-			numRead = channel.read(messageBuffer);
+			while (totalRead < length) {
+				numRead = channel.read(messageBuffer);
+				totalRead += numRead;
+				LOG.debug("read {} bytes of protobuf from socket, {} in total", numRead, totalRead);
+			}
 		} catch (IOException e) {
 			// The remote forcibly closed the connection, cancel the selection key and close
 			// the channel.
+			LOG.debug("error while reading from socket", e);
 			key.cancel();
 			channel.close();
 			return;
 		}
 		if (numRead == -1) {
 			// Remote entity shut the socket down cleanly. Do the same from our end and cancel the channel.
+			LOG.debug("Closing channel because numRead = 1");
 			key.channel().close();
 			key.cancel();
 			return;
@@ -212,6 +222,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 		} catch (IOException e) {
 			// The remote forcibly closed the connection, cancel the selection key and close
 			// the channel.
+			LOG.debug("error while reading message length from socket", e);
 			key.cancel();
 			channel.close();
 			return -1;
@@ -232,6 +243,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 
 		// And pass the response to it
 		if (handler.handleResponse(rspData)) {
+			LOG.debug("Handler done, close channel");
 			// The handler has seen enough, close the connection
 			socketChannel.close();
 			socketChannel.keyFor(this.selector).cancel();

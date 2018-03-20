@@ -41,6 +41,7 @@ public class TrustmeUnixSocketResponseHandler {
 			}
 		}
 		byte[] result = rsp;
+		LOG.debug("received response byte length: {}", result.length);
 		this.rsp = null;
 		return result;
 	}

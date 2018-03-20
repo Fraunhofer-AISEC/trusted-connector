@@ -92,8 +92,6 @@ public class TrustXCM implements ContainerManager {
 		byte[] response = sendCommandAndWaitForResponse(Command.GET_CONTAINER_STATUS);
 		try {
 			DaemonToController dtc = DaemonToController.parseFrom(response);
-			LOG.debug("Response Length: " + response.length);
-			LOG.debug("Response was: \n" + bytesToHex(response));
 			List<ContainerStatus> containerStats = dtc.getContainerStatusList();
 			for (ContainerStatus cs : containerStats) {
 				ApplicationContainer container;
@@ -117,8 +115,6 @@ public class TrustXCM implements ContainerManager {
 			LOG.error("Response Length: " + response.length, e);
 			LOG.error("Response was: \n" + bytesToHex(response));
 		}
-		LOG.debug("Received response from cml: " + new String(response));
-		
 		return result;
 	}
 
