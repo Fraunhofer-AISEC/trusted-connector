@@ -25,8 +25,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -67,6 +71,10 @@ public class TrustXCM implements ContainerManager {
 	private static final String SOCKET = "/dev/socket/cml-control";
 	private TrustmeUnixSocketThread socketThread;
 	private TrustmeUnixSocketResponseHandler responseHandler;
+	private DateTimeFormatter formatter =
+		    DateTimeFormatter.ofLocalizedDateTime( FormatStyle.SHORT )
+		                     .withLocale(Locale.GERMANY)
+		                     .withZone(ZoneId.systemDefault());
 	
 	public TrustXCM() {
 		this(SOCKET);
@@ -98,7 +106,7 @@ public class TrustXCM implements ContainerManager {
 				if (!onlyRunning || (onlyRunning && ContainerState.RUNNING.equals(cs.getState()))){
 					container = new ApplicationContainer(cs.getUuid(), 
 							null, 
-							Instant.ofEpochMilli(cs.getCreated()).toString(), 
+							formatter.format(Instant.ofEpochSecond(cs.getCreated())), 
 							cs.getState().name(), 
 							null, 
 							cs.getName(), 
