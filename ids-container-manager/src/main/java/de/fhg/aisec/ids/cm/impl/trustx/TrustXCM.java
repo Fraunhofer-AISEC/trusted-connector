@@ -20,7 +20,6 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -275,11 +274,22 @@ public class TrustXCM implements ContainerManager {
     private static String formatDuration(Duration duration) {
         long seconds = duration.getSeconds();
         long absSeconds = Math.abs(seconds);
-        String positive = String.format(
-            "%d:%02d:%02d",
+        String days = dayString(absSeconds);
+        String hoursAndMinutes = String.format(
+            "%d:%02d",
             absSeconds / 3600,
-            (absSeconds % 3600) / 60,
-            absSeconds % 60);
-        return seconds < 0 ? "-" + positive : positive;
+            (absSeconds % 3600) / 60);
+        return days + hoursAndMinutes;
+    }
+    
+    private static String dayString(long seconds) {
+    		long hours = seconds / 3600;
+    		if (hours < 24)
+    			return "";
+		else if (hours < 48)
+			return "1 day ";
+		else {
+			return String.format("%d days ", hours/24);
+		}
     }
 }
