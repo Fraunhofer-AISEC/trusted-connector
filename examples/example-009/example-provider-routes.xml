@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"    
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:camel="http://camel.apache.org/schema/blueprint"
  xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf"
  xmlns:cxfcore="http://cxf.apache.org/blueprint/core"
@@ -15,12 +15,12 @@
 	</camel:keyManagers>
 	<camel:trustManagers>
 	 <camel:keyStore resource="/root/etc/client-truststore.jks" password="password"/>
- </camel:trustManagers>        
+ </camel:trustManagers>
 </camel:sslContextParameters>
 
 <!-- Routes -->
 <camelContext xmlns="http://camel.apache.org/schema/blueprint">
- <!-- Retrieve temperature value from Data App via HTTP GET request and forward it over secure IDS protocol, 
+ <!-- Retrieve temperature value from Data App via HTTP GET request and forward it over secure IDS protocol,
  			setting remote attestation to most relaxed config (for demo only. Use 1 in production )-->
 {{ range $host, $containers := groupBy $ "Env.HOST" }}
 	{{ range $container := $containers }}
