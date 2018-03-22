@@ -3,7 +3,7 @@ services:
 
   # Image for TPM trusted third party (RAT repository)
   provider-ttpsim:
-    image: fhgaisec/ttpsim:develop
+    image: fraunhoferaisec/ttpsim:develop
     ports:
       - "31337:31337"
     networks:

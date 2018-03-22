@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:camel="http://camel.apache.org/schema/blueprint"
+ xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf"
+ xmlns:cxfcore="http://cxf.apache.org/blueprint/core"
+ xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+ <!-- Define TLS configuration for data consumer -->
+<camel:sslContextParameters id="serverSslContext">
+	<camel:keyManagers keyPassword="password">
+		<camel:keyStore  resource="etc/server-keystore.jks" password="password"/>
+	</camel:keyManagers>
+	<camel:trustManagers>
+	 <camel:keyStore resource="etc/server-truststore.jks" password="password"/>
+ </camel:trustManagers>
+</camel:sslContextParameters>
+
+<camel-cxf:cxfEndpoint id="testEndpoint" address="http://consumer-app:8081/temp">
+     <camel-cxf:properties>
+       <entry key="dataFormat" value="MESSAGE"/>
+       <!--  enable mtom by setting this property to true -->
+       <entry key="mtom-enabled" value="true"/>
+     </camel-cxf:properties>
+   </camel-cxf:cxfEndpoint>
+
+<!-- Routes -->
+<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+ <!-- Retrieve temperature value from IDS protocol, setting remote attestation to most relaxed config (for
+ 			demo only. Use 1 in production). Forward to Data App 2 -->
+	<route id="receiveTemp">
+		<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=3" />
+		<log message="Received via IDS protocol: ${body}"/>
+		<to uri="testEndpoint"/>
+	</route>
+</camelContext>
+</blueprint>
