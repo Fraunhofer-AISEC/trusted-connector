@@ -333,7 +333,6 @@
 				<configuration>
 					<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
 					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
-					<skip>${skipITs}</skip>
 				</configuration>
 				<executions>
 					<execution>
@@ -342,17 +341,6 @@
 						<goals>
 							<goal>build</goal>
 						</goals>
-					</execution>
-					<execution>
-						<id>tag-image</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>tag</goal>
-						</goals>
-						<configuration>
-							<image>ids/tpm2dsim:develop</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</newName>
-						</configuration>
 					</execution>
 					<execution>
 						<id>push-image</id>
