@@ -22,18 +22,12 @@
 <camelContext xmlns="http://camel.apache.org/schema/blueprint">
  <!-- Retrieve temperature value from Data App via HTTP GET request and forward it over secure IDS protocol,
  			setting remote attestation to most relaxed config (for demo only. Use 1 in production )-->
-{{ range $host, $containers := groupBy $ "Env.HOST" }}
-	{{ range $container := $containers }}
-		{{ $addrLen := len $container.Addresses }}
-		<!-- {{ $addrLen }} -->
 	<route id="sendTemp">
 		<from uri="timer://tempPerSecond?fixedRate=true&amp;period=1000"/>
 		<to uri="ahc:http://provider-app:8080/temp"/>
 		<convertBodyTo type="java.lang.String"/>
 		<log message="Got temperature ${body}"/>
-		<to uri="idsclient://{{ $host }}:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=3" />
+		<to uri="idsclient://consumer-core:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=3" />
 	</route>
-	{{ end }}
-{{ end }}
 </camelContext>
 </blueprint>

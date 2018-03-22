@@ -21,7 +21,7 @@ services:
       - ./system.properties:/root/etc/system.properties
       - ./provider-client-truststore.jks:/root/etc/client-truststore.jks
       - ./provider-client-keystore.jks:/root/etc/client-keystore.jks
-      - /root/deploy/
+      - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
     ports:
       - "5006:5005"
       - "8282:8181"
@@ -34,15 +34,6 @@ services:
     image: fraunhoferaisec/example-client:develop
     networks:
       - provider-internal
-
-  dockergen:
-    image: jwilder/docker-gen
-    command: -watch /root/tmpl/example-provider-routes.xml /root/deploy/example-provider-routes.xml
-    volumes_from:
-      - provider-core
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./example-provider-routes.xml:/root/tmpl/example-provider-routes.xml
 
 networks:
   ids-wide:

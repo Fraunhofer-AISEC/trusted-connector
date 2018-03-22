@@ -32,6 +32,7 @@
 		<feature>cxf-jackson</feature>
 		<feature>camel-jackson</feature>
 		<feature>camel-milo</feature>
+		<feature>camel-cxf</feature>
 				
 		<!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
 		<bundle>mvn:org.apache.camel/camel-core-osgi/2.20.2</bundle>
