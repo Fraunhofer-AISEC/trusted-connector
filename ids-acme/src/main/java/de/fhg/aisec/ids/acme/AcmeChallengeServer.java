@@ -55,7 +55,7 @@ public class AcmeChallengeServer {
                 }
             }
         };
-        server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+        server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, true);
         LOG.debug("NanoHTTPD started");
     }
 
