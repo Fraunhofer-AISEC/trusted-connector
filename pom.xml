@@ -39,7 +39,7 @@
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
 		<karaf.version>4.1.2</karaf.version>
-
+		<slf4j-version>1.7.25</slf4j-version>
 		<skipBugs>false</skipBugs>
 	</properties>
 
@@ -238,6 +238,11 @@
 				<groupId>org.osgi</groupId>
 				<artifactId>org.osgi.compendium</artifactId>
 				<version>5.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.annotation</artifactId>
+				<version>6.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.felix</groupId>
