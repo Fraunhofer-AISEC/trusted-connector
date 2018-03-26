@@ -12,6 +12,7 @@ Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.re
     osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"
 Provide-Capability: osgi.serviceloader; osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider
 Import-Package: \
+    org.quartz;resolution:=optional,\
     *
 Private-Package: \
     fi.iki.elonen*,\

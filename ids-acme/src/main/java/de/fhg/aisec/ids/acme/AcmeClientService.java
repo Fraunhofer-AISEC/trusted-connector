@@ -25,6 +25,7 @@ import org.apache.karaf.scheduler.JobContext;
 import org.apache.karaf.scheduler.Scheduler;
 import org.osgi.service.component.annotations.Component;
 import org.shredzone.acme4j.*;
+import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.CSRBuilder;
@@ -33,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
@@ -41,21 +43,23 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyPair;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component(immediate=true, property = {
-        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0/10 * * * ?",
-        Scheduler.PROPERTY_SCHEDULER_IMMEDIATE + "=true"
+        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 * * * * ?",
+        Scheduler.PROPERTY_SCHEDULER_IMMEDIATE + ":Boolean=true"
 })
 public class AcmeClientService implements AcmeClient, Job {
 
     private static final String[] DOMAINS = {"localhost"};
-    public static final URI ACME_URL = URI.create("acme://pebble");
+    public static final URI ACME_URL = URI.create("acme://boulder");
     public static final FileSystem fs = FileSystems.getDefault();
-    private static final Logger LOG = LoggerFactory.getLogger(de.fhg.aisec.ids.acme.AcmeClientService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
 
     public String getChallengeAuthorization(String challenge) {
@@ -134,9 +138,15 @@ public class AcmeClientService implements AcmeClient, Job {
 
             try (Reader keyReader = Files.newBufferedReader(fs.getPath("domain.key"), StandardCharsets.UTF_8);
                  Writer csrWriter = Files.newBufferedWriter(fs.getPath("domain.csr"), StandardCharsets.UTF_8);
+                 OutputStream jksOutputStream = Files.newOutputStream(fs.getPath("test.jks"));
                  Writer chainWriter = Files.newBufferedWriter(fs.getPath("cert-chain.crt"), StandardCharsets.UTF_8))
             {
                 KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
+
+                System.out.println(domainKeyPair.getPrivate().getFormat());
+                System.out.println(domainKeyPair.getPrivate().getAlgorithm());
+                System.out.println(domainKeyPair.getPrivate().getClass());
+
                 CSRBuilder csrb = new CSRBuilder();
                 csrb.addDomains(DOMAINS);
                 csrb.setOrganization("Fraunhofer ACME Demo");
@@ -144,13 +154,22 @@ public class AcmeClientService implements AcmeClient, Job {
                 csrb.write(csrWriter);
                 order.execute(csrb.getEncoded());
                 Certificate certificate = order.getCertificate();
+
+                try {
+                    KeyStore store = KeyStore.getInstance("JKS");
+                    store.load(null);
+                    store.setKeyEntry("ids", domainKeyPair.getPrivate(), "ids".toCharArray(),
+                            certificate.getCertificateChain().toArray(new X509Certificate[0]));
+                    store.store(jksOutputStream, "ids".toCharArray());
+                } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
+                    LOG.error("Error whilst creating KeyStore!", e);
+                }
+
                 // Print and save certificate chain
-                System.out.println("---------- CERTIFICATE: ----------");
-                System.out.println(certificate.getCertificate());
-                System.out.println("------------- CHAIN: -------------");
+                System.out.println("------------- BEGIN CERTIFICATE CHAIN -------------");
                 certificate.getCertificateChain().forEach(System.out::println);
-                // Save certificate
                 certificate.writeCertificate(chainWriter);
+                System.out.println("-------------- END CERTIFICATE CHAIN --------------");
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
                 throw new RuntimeException(e);
@@ -169,7 +188,7 @@ public class AcmeClientService implements AcmeClient, Job {
 
     @Override
     public void execute(JobContext jobContext) {
-        System.out.println("Upon start, and every 10 minutes again...");
+        System.out.println("Upon start, and every minute again...");
     }
 
 }
