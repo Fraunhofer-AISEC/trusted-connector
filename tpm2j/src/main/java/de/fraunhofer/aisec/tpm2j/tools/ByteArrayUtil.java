@@ -344,17 +344,16 @@ public class ByteArrayUtil
         }
 
         // TODO: write more efficient implementation
-        String s = "";
-        for ( int i = 0; i < data.length; i++ )
-        {
-            char b = (char) data[i];
+        StringBuilder s = new StringBuilder();
+        for (byte aData : data) {
+            char b = (char) aData;
             //            if ( (b >= 0) && (b < 16) )
             //            {
             //                s = s + "0";
             //            }
-            s = s + b;
+            s.append(b);
         }
-        return s;
+        return s.toString();
     }
 
     /**
@@ -371,17 +370,14 @@ public class ByteArrayUtil
         }
 
         // TODO: write more efficient implementation
-        String s = "";
-        for ( int i = 0; i < data.length; i++ )
-        {
-            byte b = data[i];
-            if ( (b >= 0) && (b < 16) )
-            {
-                s = s + "0";
+        StringBuilder s = new StringBuilder();
+        for (byte b : data) {
+            if ((b >= 0) && (b < 16)) {
+                s.append('0');
             }
-            s = s + Integer.toHexString( b & 0xff );
+            s.append(Integer.toHexString(b & 0xff));
         }
-        return s;
+        return s.toString();
     }
 
     public static byte[] parseHexString( String s )
@@ -452,10 +448,10 @@ public class ByteArrayUtil
         }
 
         // TODO: write more efficient implementation
-        String s = "";
+        StringBuilder s = new StringBuilder();
         if ( data.length > 20 )
         {
-            s = "\n";
+            s.append('\n');
         }
         for ( int i = 0; i < data.length; i++ )
         {
@@ -469,27 +465,27 @@ public class ByteArrayUtil
 
             if ( (b >= 0) && (b < 16) )
             {
-                s = s + "0";
+                s.append('0');
             }
-            s = s + Integer.toHexString( b & 0xff );
+            s.append(Integer.toHexString(b & 0xff));
 
             if ( i < data.length - 1 )
             {
                 if ( i % 20 == 19 )
                 {
-                    s = s + "\n";
+                    s.append('\n');
                 }
                 else
                 {
-                    s = s + " ";
+                    s.append(' ');
                 }
             }
         }
         if ( data.length > 20 )
         {
-            s = s + "\n";
+            s.append('\n');
         }
-        return s;
+        return s.toString();
     }
 
     public static String toPrintableHexString( ByteArrayable ba )

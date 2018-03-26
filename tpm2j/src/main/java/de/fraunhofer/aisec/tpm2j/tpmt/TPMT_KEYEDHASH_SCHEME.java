@@ -5,6 +5,7 @@ import de.fraunhofer.aisec.tpm2j.tools.ByteArrayReadWriter;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 import de.fraunhofer.aisec.tpm2j.tpmi.TPMI_ALG_KEYEDHASH_SCHEME;
 import de.fraunhofer.aisec.tpm2j.tpmu.TPMU_SCHEME_KEYEDHASH;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TPMT_KEYEDHASH_SCHEME extends StandardTPMStruct {
 
@@ -38,7 +39,6 @@ public class TPMT_KEYEDHASH_SCHEME extends StandardTPMStruct {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 }

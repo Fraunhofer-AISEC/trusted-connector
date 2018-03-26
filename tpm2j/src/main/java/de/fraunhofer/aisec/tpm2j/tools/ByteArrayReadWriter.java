@@ -42,7 +42,7 @@ public class ByteArrayReadWriter
 
     public ByteArrayReadWriter( byte[] source, int offset )
     {
-        this.bytes = source;
+        this.bytes = source.clone();
         this.offset = offset;
     }
 
@@ -82,7 +82,7 @@ public class ByteArrayReadWriter
 
     public byte[] getBytes()
     {
-        return bytes;
+        return bytes.clone();
     }
 
     /**

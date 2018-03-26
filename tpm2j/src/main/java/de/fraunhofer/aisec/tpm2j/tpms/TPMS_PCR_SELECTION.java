@@ -83,13 +83,13 @@ public class TPMS_PCR_SELECTION extends StandardTPMStruct {
 	}
 	
 	// #sizeofSelect times octet (8)
-	public static double getOctet(int numRegister) {
-		return Math.floor(numRegister / 8);
+	public static int getOctet(int numRegister) {
+		return numRegister / 8;
 	}
 	
 	// check if pcr @numRegister is set or not
 	public boolean isPcrSelected(int numRegister) {
-		byte mask = this.pcrSelect[(int) TPMS_PCR_SELECTION.getOctet(numRegister)];
+		byte mask = this.pcrSelect[TPMS_PCR_SELECTION.getOctet(numRegister)];
 		return TPMS_PCR_SELECTION.isSet(mask, numRegister % 8);
 	}
 

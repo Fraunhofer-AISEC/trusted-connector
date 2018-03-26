@@ -46,6 +46,7 @@
 				<configuration>
 					<onlyAnalyze>de.fhg.-,de.fraunhofer.-</onlyAnalyze>
 					<skip>${skipBugs}</skip>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
 				</configuration>
 				<executions>
 					<execution>
