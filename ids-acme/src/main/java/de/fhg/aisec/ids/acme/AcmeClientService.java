@@ -51,7 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component(immediate=true, property = {
-        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 * * * * ?",
+        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "= 0 0/1 * * * ?",
         Scheduler.PROPERTY_SCHEDULER_IMMEDIATE + ":Boolean=true"
 })
 public class AcmeClientService implements AcmeClient, Job {
