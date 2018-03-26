@@ -34,23 +34,25 @@ public class AcmeChallengeServer {
     private static NanoHTTPD server = null;
     private static final Logger LOG = LoggerFactory.getLogger(AcmeChallengeServer.class);
 
+    private AcmeChallengeServer() { /* hides public c'tor */ }
+    
     public static void startServer(final AcmeClient acmeClient) throws IOException {
         server = new NanoHTTPD(5002) {
             @Override
             public Response serve(IHTTPSession session) {
                 Matcher tokenMatcher = ACME_REGEX.matcher(session.getUri());
                 if (!tokenMatcher.matches()) {
-                    LOG.error("Received invalid ACME challenge: " + session.getUri());
+                    LOG.error("Received invalid ACME challenge {} ", session.getUri());
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.BAD_REQUEST, TEXT_PLAIN, null);
                 }
                 String token = tokenMatcher.group(1);
-                LOG.info("Received ACME challenge: " + token);
+                LOG.info("Received ACME challenge: {}", token);
                 String response = acmeClient.getChallengeAuthorization(token);
                 if (response == null) {
                     LOG.warn("ACME challenge is unknown");
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, TEXT_PLAIN, null);
                 } else {
-                    LOG.info("ACME challenge response: " + response);
+                    LOG.info("ACME challenge response: {}", response);
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, TEXT_PLAIN, response);
                 }
             }

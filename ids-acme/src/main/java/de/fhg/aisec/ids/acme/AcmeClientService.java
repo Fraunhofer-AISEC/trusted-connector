@@ -73,7 +73,7 @@ public class AcmeClientService implements AcmeClient, Job {
 
             Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
                 Path keyFilePath = fs.getPath(keyFile);
-                if (!Files.exists(keyFilePath)) {
+                if (!keyFilePath.toFile().exists()) {
                     KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
                     try (Writer fileWriter = Files.newBufferedWriter(keyFilePath, StandardCharsets.UTF_8)) {
                         KeyPairUtils.writeKeyPair(keyPair, fileWriter);
@@ -120,6 +120,7 @@ public class AcmeClientService implements AcmeClient, Job {
                                 Thread.sleep(1000L);
                             } catch (InterruptedException ie) {
                                 LOG.error("Error while doing 1 second sleep");
+                                Thread.currentThread().interrupt();
                             }
                             challenge.update();
                             LOG.info(challenge.getStatus().toString());
