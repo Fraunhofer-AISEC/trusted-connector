@@ -20,9 +20,8 @@
 package de.fhg.aisec.ids.acme;
 
 import de.fhg.aisec.ids.api.acme.AcmeClient;
-import org.apache.karaf.scheduler.Job;
-import org.apache.karaf.scheduler.JobContext;
 import org.apache.karaf.scheduler.Scheduler;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.Certificate;
@@ -51,10 +50,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component(immediate=true, property = {
-        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "= 0 0/1 * * * ?",
-        Scheduler.PROPERTY_SCHEDULER_IMMEDIATE + ":Boolean=true"
+        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 * * * * ?"
 })
-public class AcmeClientService implements AcmeClient, Job {
+public class AcmeClientService implements AcmeClient, Runnable {
 
     private static final String[] DOMAINS = {"localhost"};
     public static final URI ACME_URL = URI.create("acme://boulder");
@@ -107,8 +105,6 @@ public class AcmeClientService implements AcmeClient, Job {
             Order order;
             try {
                 order = account.newOrder().domains(DOMAINS).create();
-//            Order order = account.newOrder().domains(DOMAINS).notAfter(Instant.now().plus(Duration.ofDays(20L)))
-//                    .create();
                 order.getAuthorizations().parallelStream().map(authorization ->
                         (Http01Challenge) authorization.findChallenge(Http01Challenge.TYPE)).forEach(challenge -> {
                     challengeMap.put(challenge.getToken(), challenge.getAuthorization());
@@ -187,8 +183,9 @@ public class AcmeClientService implements AcmeClient, Job {
         }
     }
 
+    @Activate
     @Override
-    public void execute(JobContext jobContext) {
+    public void run() {
         System.out.println("Upon start, and every minute again...");
     }
 

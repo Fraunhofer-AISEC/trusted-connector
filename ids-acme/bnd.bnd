@@ -17,6 +17,4 @@ Private-Package: \
     org.shredzone.acme4j*,\
     org.bouncycastle*,\
     org.jose4j*
-Export-Package: \
-	de.fhg.aisec.ids.acme.provider
 Import-Package: *
