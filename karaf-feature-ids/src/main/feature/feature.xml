@@ -19,11 +19,9 @@
 		<bundle start-level="75">mvn:com.google.code.gson/gson/2.7</bundle>
 		<bundle start-level="75">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>        
 
-		<feature version="[9.3.9,10)">jetty</feature>
-		<!-- <feature>wrap</feature> -->
-
-		<feature version="9.3.14.v20161028">pax-jetty</feature>        
-		<feature version="6.0.6">pax-http-whiteboard</feature>
+		<feature version="[9,10)">jetty</feature>
+		<feature version="[9,10)">pax-jetty</feature>
+		<feature version="[6,7)">pax-http-whiteboard</feature>
 
 		<!-- REST feature provided by CXF -->
 		<feature>cxf-commands</feature>
