@@ -195,7 +195,7 @@ public class TrustmeUnixSocketThread implements Runnable {
 		}
 		if (numRead == -1) {
 			// Remote entity shut the socket down cleanly. Do the same from our end and cancel the channel.
-			LOG.debug("Closing channel because numRead = 1");
+			LOG.debug("Closing channel because numRead = -1");
 			key.channel().close();
 			key.cancel();
 			return;

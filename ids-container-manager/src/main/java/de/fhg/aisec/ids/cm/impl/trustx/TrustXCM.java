@@ -96,6 +96,7 @@ public class TrustXCM implements ContainerManager {
 	
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
+		LOG.debug("Starting list containers");
 		List<ApplicationContainer> result = new ArrayList<>();
 		byte[] response = sendCommandAndWaitForResponse(Command.GET_CONTAINER_STATUS);
 		try {
@@ -133,6 +134,7 @@ public class TrustXCM implements ContainerManager {
 
 	@Override
 	public void startContainer(String containerID) {
+		LOG.debug("Starting start container");
 		ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
         ctdmsg.setCommand(Command.CONTAINER_START);
         ContainerStartParams.Builder cspbld = ContainerStartParams.newBuilder();
@@ -154,6 +156,7 @@ public class TrustXCM implements ContainerManager {
 
 	@Override
 	public void stopContainer(String containerID) {
+		LOG.debug("Starting stop container");
 		sendCommand(Command.CONTAINER_STOP);
 	}
 
@@ -224,6 +227,7 @@ public class TrustXCM implements ContainerManager {
      */
     private void sendProtobuf(ControllerToDaemon ctd){
         LOG.debug("sending message " + ctd.getCommand());
+        LOG.debug(ctd.toString());
         byte[] encodedMessage = ctd.toByteArray();
     	try {
 			socketThread.sendWithHeader(encodedMessage, responseHandler);
@@ -277,19 +281,23 @@ public class TrustXCM implements ContainerManager {
         String days = dayString(absSeconds);
         String hoursAndMinutes = String.format(
             "%d:%02d",
-            absSeconds / 3600,
+            (absSeconds / 3600) / 24,
             (absSeconds % 3600) / 60);
         return days + hoursAndMinutes;
     }
     
     private static String dayString(long seconds) {
-    		long hours = seconds / 3600;
-    		if (hours < 24)
-    			return "";
-		else if (hours < 48)
-			return "1 day ";
-		else {
-			return String.format("%d days ", hours/24);
-		}
+	    	if (seconds != 0) {
+	    		long hours = seconds / 3600;
+	    		if (hours < 24)
+	    			return "";
+			else if (hours < 48)
+				return "1 day ";
+			else {
+				return String.format("%d days ", hours/24);
+			}
+	    }
+	    	return "";
     }
+    
 }
