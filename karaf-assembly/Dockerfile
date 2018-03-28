@@ -12,7 +12,7 @@ RUN apk --update --no-cache add socat libstdc++ bash docker \
 # The latter is required for proper hostname resolution in Java on Alpine linux
 
 # Adding the actual core platform files to /root
-ADD * /root/
+ADD build/assembly /root/
 
 # Making karaf start script and docker CLI executable
 RUN chmod 0755 /root/bin/karaf

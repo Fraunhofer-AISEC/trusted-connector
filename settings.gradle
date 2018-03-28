@@ -1,0 +1,16 @@
+enableFeaturePreview("IMPROVED_POM_SUPPORT")
+
+rootProject.name = 'core-platform'
+
+include ':camel-ids'
+include ':ids-acme'
+include ':ids-api'
+include ':ids-comm'
+include ':ids-route-manager'
+include ':ids-container-manager'
+include ':ids-webconsole'
+include ':ids-dataflow-control'
+include ':karaf-features-ids'
+include ':karaf-assembly'
+include ':rat-repository'
+include ':tpm2j'

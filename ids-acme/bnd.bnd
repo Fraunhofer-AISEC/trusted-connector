@@ -10,6 +10,5 @@ Private-Package: \
     org.bouncycastle*,\
     org.jose4j*
 Import-Package: \
-	org.eclipse.jetty.util.ssl.*,\
 	*
 Export-Package: de.fhg.aisec.ids.acme

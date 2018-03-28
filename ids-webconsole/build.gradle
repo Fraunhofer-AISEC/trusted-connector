@@ -1,0 +1,81 @@
+apply plugin: 'com.moowork.node'
+
+description = 'IDS Core Platform Webconsole'
+
+sourceSets {
+    main {
+        // only include the OSGI blueprint and the built angular app
+        resources {
+            include 'OSGI-INF/blueprint/*'
+        }
+    }
+}
+
+dependencies {
+    providedByBundle project(':ids-api')
+
+    // Bill of Materials (BOM) for Camel
+    bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
+
+    providedByFeature group: 'javax.servlet', name: 'javax.servlet-api'
+
+    providedByFeature group: 'org.apache.camel', name: 'camel-core'
+    providedByFeature group: 'org.apache.camel', name: 'camel-core-osgi'
+
+    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs'
+    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers'
+
+    // use our specified version of jackson instead of the cxf-jackson feature
+    providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
+
+    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
+    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+
+    providedByBundle(group: 'org.apache.felix', name: 'org.apache.felix.prefs', version: '1.1.0') {
+        transitive = false
+    }
+    
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    implementation group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
+    
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+
+    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local'
+    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client'
+}
+
+task yarnLint(type: YarnTask) {
+    workingDir = file('src/main/resources/www')
+
+    args = ['lint']
+}
+
+task yarnBuild(type: YarnTask) {
+    workingDir = file('src/main/resources/www')
+
+    args = ['bundle']
+}
+
+task yarnInstall(type: YarnTask) {
+    workingDir = file('src/main/resources/www')
+
+    args = ['install']
+}
+
+// make sure, yarn install is executed first
+yarnBuild.dependsOn(yarnInstall)
+
+// yarn build on resources task
+// TODO: this also does not solve the wanted effect that yarn build should 
+// only be triggered if the contents of src/main/resources/www have changed :(
+processResources.dependsOn(yarnBuild)
+
+// lint on check task
+check.dependsOn(yarnLint)

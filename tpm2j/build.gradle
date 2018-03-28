@@ -1,0 +1,19 @@
+version = '1.0.4'
+
+jar {
+    manifest {
+        attributes 'Bundle-Name': 'TPM2J'
+        attributes 'Bundle-Description': 'TPM2J: Java-based API for the Trusted Platform Module (TPM) in version 2.0.'
+        
+        attributes('Export-Package': 'de.fraunhofer.aisec.tpm2j.*')
+    }
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
+}
+
+test {
+    // TODO: maven seems to exclude all tests in this project and there seem to be missing files. why?
+    exclude '*'
+}

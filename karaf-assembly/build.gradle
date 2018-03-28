@@ -1,0 +1,27 @@
+/*
+Now this is tricky. We need to build a custom assembly of karaf with a few features:
+- included ids feature
+- deactivated all other repos, basically it beeing 'offline'
+- add a bunch of configuration files in etc (although we need to re-verify, which of them are really necessary
+
+Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
+*/
+
+task assembleKaraf(type: Exec) {
+  commandLine "mvn", "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
+}
+
+jar.dependsOn(assembleKaraf)
+
+// make sure, all sub projects have finished their install task
+rootProject.subprojects.findAll() {
+  if(it.name != project.name) {
+    assembleKaraf.dependsOn(it.tasks.install)
+  }
+}
+
+task docker(type: Exec) {
+  commandLine 'docker', 'build', '-t', 'registry.netsec.aisec.fraunhofer.de/ids/core-platform:gradle', '.'
+}
+
+docker.dependsOn(assembleKaraf)
