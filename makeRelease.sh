@@ -24,4 +24,4 @@ echo "Performing a clean install..."
 mvn clean install
 # finish the feature
 echo "Finish git flow release..."
-git flow release finish
+git flow release finish -k
