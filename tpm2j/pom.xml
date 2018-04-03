@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.fraunhofer.aisec</groupId>
 	<artifactId>tpm2j</artifactId>
 	<version>1.0.4</version>
 	<name>TPM 2.0 for java</name>
 	<description>TPM2J: Java-based API for the Trusted Platform Module (TPM) in version 2.0.</description>
-    <packaging>bundle</packaging>
+	<packaging>bundle</packaging>
 	<organization>
 		<name>Fraunhofer AISEC</name>
 		<url>https://www.aisec.fraunhofer.de/</url>
@@ -14,6 +14,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<skipBugs>false</skipBugs>
 	</properties>
 
 	<dependencies>
@@ -40,6 +42,19 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>3.1.2</version>
+				<configuration>
+					<onlyAnalyze>de.fhg.-,de.fraunhofer.-</onlyAnalyze>
+					<skip>${skipBugs}</skip>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

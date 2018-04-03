@@ -9,7 +9,7 @@ Export-Package: \
 	de.fhg.aisec.ids.webconsole,\
 	de.fhg.aisec.ids.webconsole.servlets,\
 	de.fhg.aisec.ids.webconsole.api,\
-	de.fhg.aisec.ids.webconsole.api.impl
+	de.fhg.aisec.ids.webconsole.api.data
 Bundle-Name: ids-webconsole
 Bundle-Description: A web console for the IDS Core Platform. The web console allows to configure \
 	routes, containers, brokers, etc.
@@ -18,8 +18,6 @@ Bundle-Vendor: Fraunhofer AISEC
 Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
 -wab: src/main/resources/www/dist/
 Import-Package: \
-	org.osgi.framework.*,\
-	de.fhg.aisec.ids.webconsole.api,\
 	org.apache.cxf.jaxrs.provider.json,\
 	org.apache.cxf.jaxrs.provider.jsonp,\
 	org.apache.cxf.jaxrs.security,\
@@ -33,4 +31,3 @@ DynamicImport-Package: org.apache.*,\
 	org.eclipse.jetty.*
 -noee=true
 -dsannotations: *
-Private-Package: de.fhg.aisec.ids.webconsole.api.helper

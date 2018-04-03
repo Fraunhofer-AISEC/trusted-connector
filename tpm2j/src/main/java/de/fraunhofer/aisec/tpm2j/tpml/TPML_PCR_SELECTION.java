@@ -52,12 +52,13 @@ public class TPML_PCR_SELECTION extends StandardTPMStruct {
 
 	@Override
 	public String toString() {
-		String selections = "";
 		if(this.count > 0) {
+			StringBuilder selections = new StringBuilder();
 			for(int i = 0; i < this.count; i++) {
-				selections += "[" + i + ":" + this.pcrSelections[i].toString() + "], ";
+				selections.append("[").append(i).append(":").append(this.pcrSelections[i].toString()).append("], ");
 	        }
-			return "TPML_PCR_SELECTION:[count="+this.count+", pcrSelections="+selections.substring(0,selections.length()-2)+"]";
+			return "TPML_PCR_SELECTION:[count="+this.count+", pcrSelections="
+					+ selections.substring(0, selections.length() - 2) + "]";
 		}
 		else {
 			return "TPML_PCR_SELECTION:[count=0, pcrSelections=]";

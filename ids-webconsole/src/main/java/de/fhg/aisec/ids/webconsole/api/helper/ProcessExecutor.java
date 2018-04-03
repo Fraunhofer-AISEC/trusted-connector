@@ -19,17 +19,11 @@
  */
 package de.fhg.aisec.ids.webconsole.api.helper;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class ProcessExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessExecutor.class);
@@ -49,40 +43,3 @@ public class ProcessExecutor {
 
 }
 
-class StreamGobbler extends Thread {
-    private static final Logger LOG = LoggerFactory.getLogger(StreamGobbler.class);
-	InputStream is;
-	OutputStream out;
-
-	@SuppressWarnings("unused")
-	private StreamGobbler() {
-		// Do not call me
-	}
-	
-	StreamGobbler(InputStream is, OutputStream out) {
-		this.is = is;
-		this.out = out;
-	}
-
-	@Override
-	public void run() {
-		try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-			 BufferedReader br = new BufferedReader(isr)) {
-			if (out != null) {
-				try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
-					String line;
-					while ((line = br.readLine()) != null) {
-						bw.write(line);
-						bw.newLine();
-					}
-				}
-			} else {
-				while (true) {
-					if (br.readLine() == null) break;
-				}
-			}
-		} catch (IOException ioe) {
-			LOG.error(ioe.getMessage(), ioe);
-		}
-	}
-}

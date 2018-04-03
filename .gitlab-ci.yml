@@ -1,0 +1,19 @@
+image: maven
+
+build:
+  before_script:
+  - echo $M2_SETTINGS > ~/.m2/settings.xml
+  - mkdir -p /cache/.m2
+  - curl -sL https://deb.nodesource.com/setup_8.x | bash -
+  - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+  - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+  - apt-get update && apt-get install -y nodejs yarn
+  script: 
+  - mvn clean deploy site --batch-mode
+  artifacts:
+    when: always
+    paths:
+    - "*/target/surefire-reports"
+    - "target/site"
+  only:
+    - develop
