@@ -198,35 +198,18 @@
 				<executions>
 					<!-- Required: The following will ensure `npm install` is called before
 						anything else during the 'Default Lifecycle' -->
-
 					<execution>
-						<id>npm install (initialize)</id>
+						<id>yarn install (initialize)</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>initialize</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>yarn</executable>
 							<arguments>
 								<argument>install</argument>
-								<argument>--no-optional</argument>
-							</arguments>
-						</configuration>
-					</execution>
-
-					<!-- Required: The following will ensure `npm install` is called before
-						anything else during the 'Clean Lifecycle' -->
-					<execution>
-						<id>npm install (clean)</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>pre-clean</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>install</argument>
-								<argument>--no-optional</argument>
+								<argument>--no-progress</argument>
+								<argument>--non-interactive</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -234,13 +217,13 @@
 					<!-- Optional: The following will output the npm configuration. I do
 						this so my CI logs will show the npm information used for the build -->
 					<execution>
-						<id>npm config list (validate)</id>
+						<id>yarn config list (validate)</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>validate</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>yarn</executable>
 							<arguments>
 								<argument>config</argument>
 								<argument>list</argument>
@@ -251,16 +234,17 @@
 					<!-- Required: The following calls `npm run lint` which ensures that the code
 						is free of recognizable linting errors with may corrupt the productive build -->
 					<execution>
-						<id>npm run lint (linting)</id>
+						<id>yarn run lint (linting)</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>process-sources</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>yarn</executable>
 					        <successCodes>
 					            <successCode>0</successCode>
-					            <successCode>2</successCode>
+								<!-- Enable the following line to ignore linting errors: -->
+					            <!--<successCode>2</successCode>-->
 					        </successCodes>
 							<arguments>
 								<argument>run</argument>
@@ -272,35 +256,22 @@
 					<!-- Required: This following calls `npm run build` where 'build' is
 						the script name I used in my project, change this if yours is different -->
 					<execution>
-						<id>npm run build (compile)</id>
+						<id>yarn run bundle (compile)</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>compile</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>yarn</executable>
 							<arguments>
 								<argument>run</argument>
 								<argument>bundle</argument>
 							</arguments>
 						</configuration>
 					</execution>
-
-					<!-- Required: The following calls the npm script that cleans up the
-						build. -->
-					<!-- <execution> <id>npm run clean (clean)</id> <goals> <goal>exec</goal>
-						</goals> <phase>clean</phase> <configuration> <executable>npm</executable>
-						<arguments> <argument>run</argument> <argument>clean</argument> </arguments>
-						</configuration> </execution> -->
 				</executions>
 
 				<configuration>
-					<environmentVariables>
-						<!-- The following parameters create an NPM sandbox for CI -->
-						<NPM_CONFIG_PREFIX>${basedir}/npm</NPM_CONFIG_PREFIX>
-						<NPM_CONFIG_CACHE>${NPM_CONFIG_PREFIX}/cache</NPM_CONFIG_CACHE>
-						<NPM_CONFIG_TMP>${project.build.directory}/npmtmp</NPM_CONFIG_TMP>
-					</environmentVariables>
 					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
 					<skip>${skipAngular}</skip>
 				</configuration>
