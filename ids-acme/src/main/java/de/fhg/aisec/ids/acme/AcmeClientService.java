@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component(immediate=true, property = {
-        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 * * * * ?"
+        Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"  // Every day at 3:00 (3 am)
 })
 public class AcmeClientService implements AcmeClient, Runnable {
 
@@ -186,7 +186,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
     @Activate
     @Override
     public void run() {
-        System.out.println("Upon start, and every minute again...");
+        System.out.println("Upon start, and every day at 3:00...");
     }
 
 }
