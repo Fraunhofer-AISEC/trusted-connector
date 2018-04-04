@@ -24,7 +24,6 @@ import org.apache.karaf.scheduler.Scheduler;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.shredzone.acme4j.*;
-import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.CSRBuilder;
@@ -42,7 +41,10 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -54,7 +56,7 @@ import java.util.Map;
 })
 public class AcmeClientService implements AcmeClient, Runnable {
 
-    private static final String[] DOMAINS = {"localhost"};
+    private static final String[] DOMAINS = {"local.host"};
     public static final URI ACME_URL = URI.create("acme://boulder");
     public static final FileSystem fs = FileSystems.getDefault();
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
@@ -135,14 +137,9 @@ public class AcmeClientService implements AcmeClient, Runnable {
 
             try (Reader keyReader = Files.newBufferedReader(fs.getPath("domain.key"), StandardCharsets.UTF_8);
                  Writer csrWriter = Files.newBufferedWriter(fs.getPath("domain.csr"), StandardCharsets.UTF_8);
-                 OutputStream jksOutputStream = Files.newOutputStream(fs.getPath("test.jks"));
                  Writer chainWriter = Files.newBufferedWriter(fs.getPath("cert-chain.crt"), StandardCharsets.UTF_8))
             {
                 KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
-
-                System.out.println(domainKeyPair.getPrivate().getFormat());
-                System.out.println(domainKeyPair.getPrivate().getAlgorithm());
-                System.out.println(domainKeyPair.getPrivate().getClass());
 
                 CSRBuilder csrb = new CSRBuilder();
                 csrb.addDomains(DOMAINS);
@@ -150,9 +147,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 csrb.sign(domainKeyPair);
                 csrb.write(csrWriter);
                 order.execute(csrb.getEncoded());
-                Certificate certificate = order.getCertificate();
 
-                try {
+                // Download and save certificate
+                Certificate certificate = order.getCertificate();
+                certificate.writeCertificate(chainWriter);
+                // Create JKS keystore from key and certificate chain
+                try (OutputStream jksOutputStream = Files.newOutputStream(fs.getPath("test.jks"))) {
                     KeyStore store = KeyStore.getInstance("JKS");
                     store.load(null);
                     store.setKeyEntry("ids", domainKeyPair.getPrivate(), "ids".toCharArray(),
@@ -161,12 +161,6 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating KeyStore!", e);
                 }
-
-                // Print and save certificate chain
-                System.out.println("------------- BEGIN CERTIFICATE CHAIN -------------");
-                certificate.getCertificateChain().forEach(System.out::println);
-                certificate.writeCertificate(chainWriter);
-                System.out.println("-------------- END CERTIFICATE CHAIN --------------");
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
                 throw new RuntimeException(e);
@@ -186,7 +180,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
     @Activate
     @Override
     public void run() {
-        System.out.println("Upon start, and every day at 3:00...");
+        LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
     }
 
 }
