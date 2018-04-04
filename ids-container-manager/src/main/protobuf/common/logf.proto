@@ -21,7 +21,7 @@
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
 
-option java_package = "de.fhg.aisec.ids";
+option java_package = "de.fraunhofer.aisec.trustme";
 
 enum LogPriority {
 	TRACE = 1;
