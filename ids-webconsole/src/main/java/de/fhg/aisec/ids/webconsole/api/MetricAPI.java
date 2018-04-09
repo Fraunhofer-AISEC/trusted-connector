@@ -19,23 +19,13 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-
-import org.osgi.service.prefs.PreferencesService;
-
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import java.lang.management.*;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * REST API interface for platform metrics.
@@ -47,6 +37,8 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  */
 @Path("/metric")
 public class MetricAPI {
+
+	private static final DecimalFormat loadAvgFormat = new DecimalFormat("###.##");
 
 	/**
 	 * Returns map of metrics.
@@ -67,7 +59,7 @@ public class MetricAPI {
 		double loadAvg = os.getSystemLoadAverage();
 		
 		result.put("cpu.availableprocessors", String.valueOf(Runtime.getRuntime().availableProcessors()));
-		result.put("cpu.loadavg", loadAvg >= 0 ? String.valueOf(loadAvg) : "N/A");
+		result.put("cpu.loadavg", loadAvg >= 0 ? loadAvgFormat.format(loadAvg) : "N/A");
 		result.put("mem.free", String.valueOf(Runtime.getRuntime().freeMemory()));
 		result.put("mem.max", String.valueOf(Runtime.getRuntime().maxMemory()));
 		result.put("mem.total", String.valueOf(Runtime.getRuntime().totalMemory()));
