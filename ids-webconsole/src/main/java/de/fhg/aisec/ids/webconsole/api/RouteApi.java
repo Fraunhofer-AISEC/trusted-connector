@@ -234,7 +234,7 @@ public class RouteApi {
 		// This is technically nonsense, as average values of average values are not really
 		// the average values of the single elements, but it's the best aggregation we can get.
 		metrics.setMeanProcessingTime((long) currentMetrics.stream().mapToLong(RouteMetrics::getMeanProcessingTime)
-				.filter(i -> i < 0).average().orElse(.0));
+				.filter(i -> i >= 0).average().orElse(.0));
 		metrics.setMinProcessingTime(currentMetrics.stream().mapToLong(RouteMetrics::getMinProcessingTime)
 				.min().orElse(0));
 		metrics.setCompleted(currentMetrics.stream().mapToLong(RouteMetrics::getCompleted).sum());
