@@ -19,29 +19,19 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.*;
+import de.fhg.aisec.ids.api.Result;
+import de.fhg.aisec.ids.api.RouteResult;
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.router.*;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import de.fhg.aisec.ids.api.RouteResult;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.Result;
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
+import java.util.*;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -230,23 +220,24 @@ public class RouteApi {
 	/**
 	 * Aggregates metrics of several rules
 	 * 
-	 * @param currentMetrics
-	 * @return
+	 * @param currentMetrics List of RouteMetrics to process
+	 * @return The aggregated RouteMetrics object
 	 */
 	private RouteMetrics aggregateMetrics(Collection<RouteMetrics> currentMetrics) {
 		RouteMetrics metrics = new RouteMetrics();
-		currentMetrics.parallelStream().forEach(m -> {
-			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
-			metrics.setFailed(metrics.getFailed() + m.getFailed());
-			metrics.setFailuresHandled(metrics.getFailuresHandled() + m.getFailuresHandled());
-			metrics.setInflight(metrics.getInflight() + m.getInflight());
-			metrics.setMaxProcessingTime(Math.max(metrics.getMaxProcessingTime(), m.getMaxProcessingTime()));
-			metrics.setMeanProcessingTime(metrics.getMeanProcessingTime() + m.getMeanProcessingTime());
-			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
-			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
-		});
-		int metricsCount = currentMetrics.size();
-		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/(metricsCount!=0?metricsCount:1));
+		metrics.setCompleted(currentMetrics.stream().mapToLong(RouteMetrics::getCompleted).sum());
+		metrics.setFailed(currentMetrics.stream().mapToLong(RouteMetrics::getFailed).sum());
+		metrics.setFailuresHandled(currentMetrics.stream().mapToLong(RouteMetrics::getFailuresHandled).sum());
+		metrics.setInflight(currentMetrics.stream().mapToLong(RouteMetrics::getInflight).sum());
+		metrics.setMaxProcessingTime(currentMetrics.stream().mapToLong(RouteMetrics::getMaxProcessingTime)
+				.max().orElse(0));
+		// This is technically nonsense, as average values of average values are not really
+		// the average values of the single elements, but it's the best aggregation we can get.
+		metrics.setMeanProcessingTime((long) currentMetrics.stream().mapToLong(RouteMetrics::getMeanProcessingTime)
+				.filter(i -> i < 0).average().orElse(.0));
+		metrics.setMinProcessingTime(currentMetrics.stream().mapToLong(RouteMetrics::getMinProcessingTime)
+				.min().orElse(0));
+		metrics.setCompleted(currentMetrics.stream().mapToLong(RouteMetrics::getCompleted).sum());
 		return metrics;
 	}
 
