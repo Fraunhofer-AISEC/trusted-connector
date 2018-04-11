@@ -1,13 +1,18 @@
 image: maven
 
+stages:
+- build
+- push
+
 build:
+  stage: build
   before_script:
   - echo $M2_SETTINGS > ~/.m2/settings.xml
   - mkdir -p /cache/.m2
   - curl -sL https://deb.nodesource.com/setup_8.x | bash -
   - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
   - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-  - apk add --no-cache nodejs yarn
+  - apt update && apt install -y nodejs yarn
   script: 
   - mvn clean deploy site --batch-mode
   artifacts:
@@ -20,9 +25,10 @@ build:
 
 # apparently mvn does not push the core-platform image    
 push:
+  stage: push
   image: docker
   script:
-  - docker tag docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   only:
