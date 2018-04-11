@@ -28,7 +28,7 @@ push:
   stage: push
   image: docker
   script:
-  - docker tag docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   only:
