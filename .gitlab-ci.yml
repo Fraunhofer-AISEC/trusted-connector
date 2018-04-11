@@ -1,6 +1,11 @@
 image: maven
 
+stages:
+- build
+- push
+
 build:
+  stage: build
   before_script:
   - echo $M2_SETTINGS > ~/.m2/settings.xml
   - mkdir -p /cache/.m2
@@ -20,6 +25,7 @@ build:
 
 # apparently mvn does not push the core-platform image    
 push:
+  stage: push
   image: docker
   script:
   - docker tag docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
