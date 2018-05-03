@@ -20,9 +20,14 @@
 package de.fhg.aisec.ids.acme;
 
 import de.fhg.aisec.ids.api.acme.AcmeClient;
+import de.fhg.aisec.ids.api.acme.CertificateReloader;
+
 import org.apache.karaf.scheduler.Scheduler;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -50,6 +55,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Component(immediate=true, property = {
         Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"  // Every day at 3:00 (3 am)
@@ -61,7 +67,28 @@ public class AcmeClientService implements AcmeClient, Runnable {
     public static final FileSystem fs = FileSystems.getDefault();
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
-
+    private Optional<CertificateReloader> certReloader = Optional.empty();
+    
+    /*
+     * The following block subscribes this component to any CertificateReloader.
+     * 
+     * A CertificateReloader is expected to refresh all TLS connections with new
+     * certificates from the key store.
+     */
+	@Reference(name = "dynamic-tls.service",
+            service = CertificateReloader.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindCertificateReloader")
+	protected void bindCertificateReloader(CertificateReloader certReloader) {
+		LOG.info("Bound to certifcate reloader");
+		this.certReloader = Optional.of(certReloader);
+	}
+	protected void unbindCertificateReloader(CertificateReloader certReloader) {
+		this.certReloader = Optional.of(certReloader);
+	}
+    
+    
     public String getChallengeAuthorization(String challenge) {
         return challengeMap.get(challenge);
     }
@@ -158,6 +185,14 @@ public class AcmeClientService implements AcmeClient, Runnable {
                     store.setKeyEntry("ids", domainKeyPair.getPrivate(), "ids".toCharArray(),
                             certificate.getCertificateChain().toArray(new X509Certificate[0]));
                     store.store(jksOutputStream, "ids".toCharArray());
+                    
+                    /*
+                     * If there is a CertificateReloader, make it refresh the TLS connections. 
+                     */
+                    if (certReloader.isPresent()) {
+                    	LOG.info("Reloading certificates");
+                    	certReloader.get().reloadAllCerts();
+                    }
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating KeyStore!", e);
                 }

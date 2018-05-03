@@ -17,4 +17,7 @@ Private-Package: \
     org.shredzone.acme4j*,\
     org.bouncycastle*,\
     org.jose4j*
-Import-Package: *
+Import-Package: \
+	org.eclipse.jetty.util.ssl.*,\
+	*
+Export-Package: de.fhg.aisec.ids.acme

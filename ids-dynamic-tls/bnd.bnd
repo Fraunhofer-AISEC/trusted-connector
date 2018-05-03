@@ -1,0 +1,15 @@
+src: src/main/java
+bin: target/classes
+testsrc: src/test/java,src/test/resources
+testbin: target/test-classes
+-dsannotations: *
+-noee=true
+Bundle-Name: ids-dynamic-tls
+Bundle-Version: 1.0
+Bundle-Vendor: Fraunhofer
+Import-Package: \
+	org.eclipse.jetty.util.ssl.*,\
+	*
+# The following line makes this bundle a "Fragment" to pax-web-jetty, i.e. its classes will simply be added to the class path of pax-web-jetty.
+Fragment-Host: org.ops4j.pax.web.pax-web-jetty
+Export-Package: de.fhg.aisec.ids.dynamictls

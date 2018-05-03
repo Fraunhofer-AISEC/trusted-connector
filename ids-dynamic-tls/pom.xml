@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>ids-acme</artifactId>
+	<artifactId>ids-dynamic-tls</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -23,7 +23,7 @@
 		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>ACME v2 client</name>
+	<name>Dynamic TLS keystore extension for Pax Web</name>
 
 	<dependencies>
 		<!-- IDS components -->
@@ -33,29 +33,11 @@
 			<version>1.1.0-SNAPSHOT</version>
 		</dependency>
 
-		<!-- NanoHTTPD ACME challenge server -->
-		<dependency>
-			<groupId>org.nanohttpd</groupId>
-			<artifactId>nanohttpd</artifactId>
-			<version>2.3.1</version>
-		</dependency>
 		<!-- logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j-version}</version>
-		</dependency>
-
-		<!-- acme4j dependencies -->
-		<dependency>
-			<groupId>org.shredzone.acme4j</groupId>
-			<artifactId>acme4j-client</artifactId>
-			<version>2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.shredzone.acme4j</groupId>
-			<artifactId>acme4j-utils</artifactId>
-			<version>2.0</version>
 		</dependency>
 
 		<!-- Dependency to jetty-util is required to extend SslContextFactory with ability
@@ -75,14 +57,6 @@
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.annotation</artifactId>
 		</dependency>
-
-		<!-- Karaf Scheduler -->
-		<dependency>
-			<groupId>org.apache.karaf.scheduler</groupId>
-			<artifactId>org.apache.karaf.scheduler.core</artifactId>
-			<version>${karaf.version}</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>

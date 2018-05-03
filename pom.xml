@@ -13,6 +13,7 @@
 		<module>jnr-unixsocket-osgi-wrapper</module>
 		<module>ids-api</module>
 		<module>ids-acme</module>
+		<module>ids-dynamic-tls</module>
 		<module>camel-ids</module>
 		<module>ids-route-manager</module>
 		<module>ids-container-manager</module>
