@@ -21,7 +21,7 @@
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
 
-option java_package = "de.fhg.aisec.ids";
+option java_package = "de.fraunhofer.aisec.trustme";
 
 import "guestos.proto";
 import "container.proto";
@@ -200,6 +200,7 @@ message DaemonToController {
 		CONTAINER_START_UNLOCK_FAILED = 3;
 		CONTAINER_START_PASSWD_WRONG = 4;
 		CONTAINER_START_LOCKED_TILL_REBOOT = 5;
+		CONTAINER_START_EEXIST = 6;
 	}
 
 	required Code code = 1;

@@ -21,7 +21,7 @@
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
 
-option java_package = "de.fhg.aisec.ids";
+option java_package = "de.fraunhofer.aisec.trustme";
 
 message ContainerImageSize {
 	required string image_name = 1; // virtual name of the image file in guestos
