@@ -73,10 +73,19 @@
 			<artifactId>mockito-all</artifactId>
 		</dependency>
 	</dependencies>
-
+		
 	<build>
 		<defaultGoal>install</defaultGoal>
 
+		<!-- OS detection, needed for download of proper protoc binary -->
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.3.0.Final</version>
+			</extension>
+		</extensions>
+	
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -104,30 +113,25 @@
 				</executions>
 			</plugin>
 
+			<!-- Download protoc binary (Protobuf compiler) and compile protobufs -->
 			<plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.3.0.1</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                        	<protocVersion>${protobuf-version}</protocVersion>
-                            <includeDirectories>
-                                <include>src/main/protobuf</include>
-                                <include>src/main/protobuf/common</include>
-                            </includeDirectories>
-                            <inputDirectories>
-                                <include>src/main/protobuf</include>
-                                <include>src/main/protobuf/common</include>
-                            </inputDirectories>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>0.5.0</version>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>test-compile</goal>
+						</goals>
+						<configuration>
+							<protocArtifact>com.google.protobuf:protoc:${protobuf-version}:exe:${os.detected.classifier}</protocArtifact>
+							<clearOutputDirectory>false</clearOutputDirectory> <!--  prevents eclipse from deleting dir in the middle of the build. -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<!-- The following configuration is required because bnd-maven-plugin 
 				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 

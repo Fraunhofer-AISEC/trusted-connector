@@ -20,6 +20,7 @@
  * Contact Information:
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
+syntax = "proto2";
 
 option java_package = "de.fraunhofer.aisec.trustme";
 
