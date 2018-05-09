@@ -32,16 +32,17 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<camel-version>2.20.2</camel-version>
-		<jetty-version>9.3.9.v20160517</jetty-version>
+		<jetty-version>9.3.21.v20170918</jetty-version>
 		<jersey-version>2.25</jersey-version>
-		<protobuf-version>3.3.0</protobuf-version>
+		<protobuf-version>3.5.1</protobuf-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.34</ahc-version> <!-- Bug up to 2.0.31: ClassNotFoundExceptiion JdkSslContext -->
+		<ahc-version>2.0.34</ahc-version> <!-- Bug up to 2.0.31: ClassNotFoundException JdkSslContext -->
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
-		<karaf.version>4.1.2</karaf.version>
+		<karaf.version>4.1.5</karaf.version>
 		<slf4j-version>1.7.25</slf4j-version>
 		<skipBugs>false</skipBugs>
+		<skipLicense>false</skipLicense>
 	</properties>
 
 
@@ -378,6 +379,7 @@
 					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 					<processStartTag>========================LICENSE_START=================================</processStartTag>
 					<processEndTag>=========================LICENSE_END==================================</processEndTag>
+					<skipDownloadLicenses>${skipLicense}</skipDownloadLicenses>
 				</configuration>
 				<executions>
 					<execution>

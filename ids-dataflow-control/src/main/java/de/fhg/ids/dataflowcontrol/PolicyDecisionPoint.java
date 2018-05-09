@@ -168,11 +168,11 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	
 	@Reference(name="pdp-routemanager", policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL)
 	protected void bindRouteManager(@NonNull RouteManager routeManager) {
-		LOG.warn("RouteManager bound. Camel routes can be analyzed");
+		LOG.debug("RouteManager bound. Camel routes can be analyzed");
 		this.routeManager = routeManager;
 	}
 	protected void unbindRouteManager(@NonNull RouteManager routeManager) {
-		LOG.warn("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
+		LOG.debug("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
 		this.routeManager = null;
 	}
 

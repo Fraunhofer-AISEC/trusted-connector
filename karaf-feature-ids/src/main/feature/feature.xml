@@ -12,13 +12,13 @@
 			only the feature description.</details>
 		
 		<bundle start-level="75">mvn:de.fhg.ids/org.checkerframework.checker-qual/1.1.0-SNAPSHOT</bundle>
-		<bundle start-level="75">mvn:com.google.protobuf/protobuf-java/3.3.0</bundle>
+		<bundle start-level="75">mvn:com.google.protobuf/protobuf-java/3.5.1</bundle>
 		<bundle start-level="75">mvn:com.github.jnr/jnr-unixsocket-osgi-wrapper/1.1.0-SNAPSHOT</bundle>
 
 		<!-- Dependencies which must be available at runtime. Can be features or bundles. -->
 		<bundle start-level="75">mvn:org.apache.felix/org.apache.felix.prefs/1.1.0</bundle>
 		<bundle start-level="75">mvn:com.google.code.gson/gson/2.7</bundle>
-		<bundle start-level="75">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>        
+		<bundle start-level="75">mvn:de.fraunhofer.aisec/tpm2j/1.0.4</bundle>
 
 		<feature version="[9,10)">jetty</feature>
 		<feature version="[9,10)">pax-jetty</feature>

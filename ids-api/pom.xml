@@ -78,7 +78,7 @@
 		</extensions>
 
 		<plugins>
-			<!-- Download protoc binary (Protobuf compiler) -->
+			<!-- Download protoc binary (Protobuf compiler) and compile protobufs -->
 			<plugin>
 				<groupId>org.xolstice.maven.plugins</groupId>
 				<artifactId>protobuf-maven-plugin</artifactId>
@@ -109,35 +109,6 @@
 				<configuration>
 					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
 				</configuration>
-			</plugin>
-
-			<!-- Copy downloaded protobuf.jar into directory "lib" so it can be wrapped 
-				in our bundle -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>com.google.protobuf</groupId>
-									<artifactId>protobuf-java</artifactId>
-									<version>${protobuf-version}</version>
-									<type>jar</type>
-									<destFileName>protobuf.jar</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${basedir}/libs</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 
 			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->

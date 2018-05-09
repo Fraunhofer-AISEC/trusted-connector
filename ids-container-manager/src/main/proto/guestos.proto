@@ -20,8 +20,9 @@
  * Contact Information:
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
+syntax = "proto2";
 
-option java_package = "de.fhg.aisec.ids";
+option java_package = "de.fraunhofer.aisec.trustme";
 
 // (English) string with optional translations in other languages
 message I18NString {

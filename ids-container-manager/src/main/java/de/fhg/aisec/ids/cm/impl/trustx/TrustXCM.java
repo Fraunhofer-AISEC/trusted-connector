@@ -38,13 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import de.fhg.aisec.ids.Container.ContainerState;
-import de.fhg.aisec.ids.Container.ContainerStatus;
-import de.fhg.aisec.ids.Control.ContainerStartParams;
-import de.fhg.aisec.ids.Control.ControllerToDaemon;
-import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
-import de.fhg.aisec.ids.Control.DaemonToController;
-import de.fhg.aisec.ids.Control.DaemonToController.Response;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
@@ -52,6 +45,13 @@ import de.fhg.aisec.ids.api.cm.Direction;
 import de.fhg.aisec.ids.api.cm.Protocol;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
+import de.fraunhofer.aisec.trustme.Container.ContainerState;
+import de.fraunhofer.aisec.trustme.Container.ContainerStatus;
+import de.fraunhofer.aisec.trustme.Control.ContainerStartParams;
+import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon;
+import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon.Command;
+import de.fraunhofer.aisec.trustme.Control.DaemonToController;
+import de.fraunhofer.aisec.trustme.Control.DaemonToController.Response;
 
 /**
  * ContainerManager implementation for trust-x containers.
@@ -134,12 +134,14 @@ public class TrustXCM implements ContainerManager {
 
 	@Override
 	public void startContainer(String containerID) {
-		LOG.debug("Starting start container");
+		LOG.debug("Starting start container with ID {}", containerID);
 		ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
         ctdmsg.setCommand(Command.CONTAINER_START);
+        ctdmsg.addContainerUuids(containerID);
         ContainerStartParams.Builder cspbld = ContainerStartParams.newBuilder();
         cspbld.setKey("trustme");
         cspbld.setNoSwitch(true);
+        
         ctdmsg.setContainerStartParams(cspbld.build());
 		try {
 			DaemonToController dtc = parseResponse(sendProtobufAndWaitForResponse(ctdmsg.build()));
@@ -149,15 +151,17 @@ public class TrustXCM implements ContainerManager {
 			}
 			LOG.error("Container start ok, response was " + dtc.getResponse());
 		} catch (InvalidProtocolBufferException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void stopContainer(String containerID) {
-		LOG.debug("Starting stop container");
-		sendCommand(Command.CONTAINER_STOP);
+		LOG.debug("Starting stop container with ID {}", containerID);
+		ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
+        ctdmsg.setCommand(Command.CONTAINER_STOP);
+        ctdmsg.addContainerUuids(containerID);
+		sendProtobuf(ctdmsg.build());
 	}
 
 

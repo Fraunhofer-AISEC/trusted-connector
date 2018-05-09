@@ -201,7 +201,7 @@
 				<version>1.3.2</version>
 
 				<executions>
-					<!-- Required: The following will ensure `npm install` is called before
+					<!-- Required: The following will ensure `yarn install` is called before
 						anything else during the 'Default Lifecycle' -->
 					<execution>
 						<id>yarn install (initialize)</id>
@@ -219,8 +219,8 @@
 						</configuration>
 					</execution>
 
-					<!-- Optional: The following will output the npm configuration. I do
-						this so my CI logs will show the npm information used for the build -->
+					<!-- Optional: The following will output the yarn configuration. I do
+						this so my CI logs will show the yarn information used for the build -->
 					<execution>
 						<id>yarn config list (validate)</id>
 						<goals>
@@ -236,7 +236,7 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: The following calls `npm run lint` which ensures that the code
+					<!-- Required: The following calls `yarn run lint` which ensures that the code
 						is free of recognizable linting errors with may corrupt the productive build -->
 					<execution>
 						<id>yarn run lint (linting)</id>
@@ -258,7 +258,7 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: This following calls `npm run build` where 'build' is
+					<!-- Required: This following calls `yarn run build` where 'build' is
 						the script name I used in my project, change this if yours is different -->
 					<execution>
 						<id>yarn run bundle (compile)</id>

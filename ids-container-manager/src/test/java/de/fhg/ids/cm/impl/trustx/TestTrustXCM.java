@@ -31,19 +31,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import de.fhg.aisec.ids.Control.ControllerToDaemon;
-import de.fhg.aisec.ids.Control.ControllerToDaemon.Command;
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
+import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon;
+import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon.Command;
 import jnr.unixsocket.UnixServerSocketChannel;
 import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;

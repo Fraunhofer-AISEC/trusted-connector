@@ -38,6 +38,8 @@
         <karaf.plugin.version>${karaf.version}</karaf.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
+
+        <skipDocker>false</skipDocker>
     </properties>
 
     <!-- Import Karaf POM to use the correct version of the Karaf dependencies -->
@@ -447,7 +449,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
