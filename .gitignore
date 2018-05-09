@@ -12,3 +12,4 @@ rat-repository/src/main/docker/jar/*
 /RemoteSystemsTempFiles/
 *.iml
 /.idea
+/karaf-assembly/src/main/resources/deploy/*.xml
