@@ -24,7 +24,10 @@ import fi.iki.elonen.NanoHTTPD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringBufferInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +56,9 @@ public class AcmeChallengeServer {
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, TEXT_PLAIN, null);
                 } else {
                     LOG.info("ACME challenge response: {}", response);
-                    return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, TEXT_PLAIN, response);
+                    byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
+                    return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, TEXT_PLAIN,
+                            new ByteArrayInputStream(responseBytes), responseBytes.length);
                 }
             }
         };

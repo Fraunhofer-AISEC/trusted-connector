@@ -77,6 +77,7 @@ public class WebConsoleComponent {
 		LOG.info("Bound to container manager");
 		WebConsoleComponent.cml = cml;
 	}
+	@SuppressWarnings("unused")
 	protected void unbindContainerManagerService(ContainerManager cml) {
 		WebConsoleComponent.cml = null;
 	}
@@ -98,6 +99,7 @@ public class WebConsoleComponent {
 	protected void bindAcmeClient(AcmeClient client) {
 		acmeClient = client;
 	}
+	@SuppressWarnings("unused")
 	protected void unbindAcmeClient(AcmeClient client) {
 		acmeClient = null;
 	}
@@ -118,6 +120,7 @@ public class WebConsoleComponent {
         LOG.info("Bound to connection manager");
         WebConsoleComponent.connectionManager = conn;
     }
+	@SuppressWarnings("unused")
     protected void unbindConnectionManager(ConnectionManager conn) {
         WebConsoleComponent.connectionManager = null;
     }
@@ -146,6 +149,7 @@ public class WebConsoleComponent {
 			prefs.put(ConfigApi.GENERAL_CONFIG, new Gson().toJson(new ConnectionSettings()));
 		}
 	}
+	@SuppressWarnings("unused")
 	public void unbindConfigurationService(PreferencesService conf) {
 		preferencesService = null;
 	}
@@ -169,6 +173,7 @@ public class WebConsoleComponent {
 		LOG.info("Bound to route manager");
 		WebConsoleComponent.rm  = rm;
 	}
+	@SuppressWarnings("unused")
 	protected void unbindRouteManagerService(RouteManager rm) {
 		WebConsoleComponent.rm = null;
 	}
@@ -192,6 +197,7 @@ public class WebConsoleComponent {
 		LOG.info("Bound to policy administration point");
 		WebConsoleComponent.pap = pap;
 	}
+	@SuppressWarnings("unused")
 	protected void unbindPolicyAdministrationPoint(PAP pap) {
 		WebConsoleComponent.pap = null;
 	}

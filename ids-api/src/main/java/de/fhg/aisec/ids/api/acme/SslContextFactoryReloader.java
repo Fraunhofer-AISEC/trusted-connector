@@ -20,10 +20,8 @@
 package de.fhg.aisec.ids.api.acme;
 
 /**
- * Interface to reload X509v3 certificates.
- *
+ * Interface to manage and reload SslContextFactory instances.
  */
-public interface CertificateReloader {
-
-	public void reloadAllCerts();
+public interface SslContextFactoryReloader {
+	public void reloadAll();
 }

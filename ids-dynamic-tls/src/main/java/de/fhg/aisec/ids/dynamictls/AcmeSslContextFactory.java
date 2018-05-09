@@ -23,42 +23,38 @@ import java.net.InetSocketAddress;
 
 import javax.net.ssl.SSLEngine;
 
-import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.osgi.service.component.annotations.Component;
-
-import de.fhg.aisec.ids.api.acme.CertificateReloader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This SslContextFactory can be used instead of the default
- * org.eclipse.jetty.util.ssl.SslContextFactory by including it 
- * in jetty.xml.
- * 
- * @author Julian Schuette
- * 
- * It makes itself available as an OSGi service that allow reloading 
- * the SSL context (but nothing else). 
+ * This SslContextFactory registers started instances to an OSGi service
+ * that allows reloading of all active SslContextFactory instances.
  *
+ * @author Michael Lux
  */
-@Component(immediate=true, name="ids-certificate-reloader")
-public class AcmeSslContextFactory extends SslContextFactory implements CertificateReloader {
+public class AcmeSslContextFactory extends SslContextFactory {
+	private static final Logger LOG = LoggerFactory.getLogger(AcmeSslContextFactory.class);
+
+	@Override
+	protected void doStart() throws Exception {
+		LOG.debug("Start SslContextFactory: " + this.hashCode());
+		JettySslContextFactoryReloader.addFactory(this);
+		super.doStart();
+	}
+
+	@Override
+	protected void doStop() throws Exception {
+		LOG.debug("Stop SslContextFactory: " + this.hashCode());
+		JettySslContextFactoryReloader.removeFactory(this);
+		super.doStop();
+	}
 	
 	@Override
 	public SSLEngine newSSLEngine(InetSocketAddress address) {
 		// Just for debugging: log something when SSL connection is initiated
-		System.out.println("AcmeSslContextFactory.newSSLEngine(address)");
+		System.out.println(this.hashCode() + ": AcmeSslContextFactory.newSSLEngine(address)");
 		return super.newSSLEngine(address);
 	}
-	
-	public void reloadAllCerts() {
-		System.out.println("Reloading all certificates from key storey " + this.getKeyStorePath());
-		
-		// TODO from jetty 9.4 on, SslContextFactory provides a reload() method to refresh all SSL sessions with new certificates. It should be used after an upgrade to Karaf 4.20, instead of this poor PoC code here.
-		try {
-			System.out.println("Reloading keystore from " + getKeyStorePath());
-			loadKeyStore(Resource.newResource(getKeyStorePath()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+
 }
