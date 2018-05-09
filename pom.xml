@@ -10,7 +10,6 @@
 		<module>checker-qual</module>
 		<module>tpm2j</module>
 		<module>asynchttpclient</module>
-		<module>jnr-unixsocket-osgi-wrapper</module>
 		<module>ids-api</module>
 		<module>camel-ids</module>
 		<module>ids-route-manager</module>
@@ -29,6 +28,7 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+		<jnr-unixsocket-version>0.18</jnr-unixsocket-version>
 		<camel-version>2.20.2</camel-version>
 		<jetty-version>9.3.9.v20160517</jetty-version>
 		<jersey-version>2.25</jersey-version>
@@ -222,7 +222,7 @@
 			<dependency>
 				<groupId>com.github.jnr</groupId>
 				<artifactId>jnr-unixsocket</artifactId>
-				<version>0.13</version>
+				<version>${jnr-unixsocket-version}</version>
 			</dependency>
 
 			<dependency>

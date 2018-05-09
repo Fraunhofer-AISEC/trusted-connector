@@ -12,7 +12,15 @@
 		
 		<bundle start-level="75">mvn:de.fhg.ids/org.checkerframework.checker-qual/1.1.0-SNAPSHOT</bundle>
 		<bundle start-level="75">mvn:com.google.protobuf/protobuf-java/3.5.1</bundle>
-		<bundle start-level="75">mvn:com.github.jnr/jnr-unixsocket-osgi-wrapper/1.1.0-SNAPSHOT</bundle>
+
+		<!-- JNR unixsocket and its runtime dependencies --> 
+		<bundle>mvn:com.github.jnr/jnr-unixsocket/${jnr-unixsocket-version}</bundle>
+		<bundle>mvn:com.github.jnr/jnr-ffi/2.1.4</bundle>
+		<bundle>mvn:com.github.jnr/jnr-constants/0.9.8</bundle>
+		<bundle>mvn:com.github.jnr/jnr-enxio/0.16</bundle>
+		<bundle>mvn:com.github.jnr/jnr-posix/3.0.35</bundle>
+    	<bundle>mvn:com.github.jnr/jffi/1.2.15</bundle>
+    	<bundle>wrap:mvn:com.github.jnr/jnr-x86asm/1.0.2</bundle>
 
 		<!-- Dependencies which must be available at runtime. Can be features or bundles. -->
 		<bundle start-level="75">mvn:org.apache.felix/org.apache.felix.prefs/1.1.0</bundle>

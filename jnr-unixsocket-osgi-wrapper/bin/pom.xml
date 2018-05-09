@@ -34,6 +34,7 @@
 		<dependency>
 			<groupId>com.github.jnr</groupId>
 			<artifactId>jnr-posix</artifactId>
+			<version>3.0.30</version>
 		</dependency>
 	</dependencies>
 
@@ -48,7 +49,6 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Bundle-Version>1.0.0</Bundle-Version>
 						<Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<_exportcontents>*</_exportcontents>
