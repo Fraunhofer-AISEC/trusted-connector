@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
 
-
 <!-- Jetty configuration for TLS w/ POODLE-protection and a custom SslContextFactory -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
 
@@ -14,7 +13,9 @@
  
   <!-- Just nice to have: Customizer that extracts the attribute from an SSLContext and sets them on the ServletRequest so application layer can access them-->
  <New id="sslHttpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
-    <Arg><Ref refid="httpConfig"/></Arg>
+    <Arg>
+      <Ref refid="httpConfig"/>
+    </Arg>
     <Call name="addCustomizer">
       <Arg>
         <New class="org.eclipse.jetty.server.SecureRequestCustomizer"/>

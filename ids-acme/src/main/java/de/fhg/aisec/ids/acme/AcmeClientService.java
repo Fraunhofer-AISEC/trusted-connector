@@ -23,6 +23,7 @@ import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.acme.CertificateReloader;
 
 import org.apache.karaf.scheduler.Scheduler;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -52,10 +53,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component(immediate=true, property = {
         Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"  // Every day at 3:00 (3 am)
@@ -67,7 +65,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
     public static final FileSystem fs = FileSystems.getDefault();
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
-    private Optional<CertificateReloader> certReloader = Optional.empty();
+    @Nullable
+    private CertificateReloader certReloader = null;
     
     /*
      * The following block subscribes this component to any CertificateReloader.
@@ -81,11 +80,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unbindCertificateReloader")
 	protected void bindCertificateReloader(CertificateReloader certReloader) {
-		LOG.info("Bound to certifcate reloader");
-		this.certReloader = Optional.of(certReloader);
+		LOG.info("Bound CertificateReloader in AcmeClientService");
+		this.certReloader = certReloader;
 	}
+	@SuppressWarnings("unused")
 	protected void unbindCertificateReloader(CertificateReloader certReloader) {
-		this.certReloader = Optional.of(certReloader);
+		this.certReloader = null;
 	}
     
     
@@ -185,16 +185,13 @@ public class AcmeClientService implements AcmeClient, Runnable {
                     store.setKeyEntry("ids", domainKeyPair.getPrivate(), "ids".toCharArray(),
                             certificate.getCertificateChain().toArray(new X509Certificate[0]));
                     store.store(jksOutputStream, "ids".toCharArray());
-                    
-                    /*
-                     * If there is a CertificateReloader, make it refresh the TLS connections. 
-                     */
-                    if (certReloader.isPresent()) {
+                    // If there is a CertificateReloader, make it refresh the TLS connections.
+                    if (certReloader != null) {
                     	LOG.info("Reloading certificates");
-                    	certReloader.get().reloadAllCerts();
+                    	certReloader.reloadAllCerts();
                     }
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
-                    LOG.error("Error whilst creating KeyStore!", e);
+                    LOG.error("Error whilst creating new KeyStore!", e);
                 }
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);

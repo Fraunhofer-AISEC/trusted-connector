@@ -40,7 +40,7 @@ import de.fhg.aisec.ids.api.acme.CertificateReloader;
  * the SSL context (but nothing else). 
  *
  */
-@Component(enabled=true, immediate=true, name="ids-certificate-reloader")
+@Component(immediate=true, name="ids-certificate-reloader")
 public class AcmeSslContextFactory extends SslContextFactory implements CertificateReloader {
 	
 	@Override
