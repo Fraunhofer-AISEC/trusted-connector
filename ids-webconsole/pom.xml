@@ -241,11 +241,6 @@
 						<phase>process-sources</phase>
 						<configuration>
 							<executable>yarn</executable>
-					        <successCodes>
-					            <successCode>0</successCode>
-								<!-- Enable the following line to ignore linting errors: -->
-					            <!--<successCode>2</successCode>-->
-					        </successCodes>
 							<arguments>
 								<argument>run</argument>
 								<argument>lint</argument>

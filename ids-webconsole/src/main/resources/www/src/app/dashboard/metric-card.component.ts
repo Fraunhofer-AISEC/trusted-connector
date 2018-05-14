@@ -7,8 +7,8 @@ declare var API_URL: string;
   templateUrl: './metric-card.component.html'
 })
 export class MetricCardComponent {
-  @Input('text') text = 'test';
-  @Input('value') value = '0';
+  @Input() text = 'test';
+  @Input() value = '0';
   @Output('valueChange') valueChange: EventEmitter<string> = new EventEmitter();
 
   private interval;
