@@ -1,0 +1,6 @@
+/target/
+/bin/
+/generated/
+configuration.db
+/cp.txt
+*.pyc

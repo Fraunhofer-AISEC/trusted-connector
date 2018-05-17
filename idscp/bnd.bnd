@@ -1,0 +1,13 @@
+src=src/main/java
+bin=target/classes
+Bundle-Version: 1.0.0
+Bundle-Name: idscp
+Bundle-Description: IDS Communication Protocol
+Bundle-Copyright: Fraunhofer 2018
+Bundle-Vendor: Fraunhofer Gesellschaft
+-includeresource: src/main/resources
+Export-Package: de.fhg.ids.idscp
+Import-Package: \
+	*
+-noee=true
+-dsannotations: *
