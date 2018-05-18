@@ -5,11 +5,11 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 public class IdscpServer {
-	private Configuration config = new Configuration();
+	private ServerConfiguration config = new ServerConfiguration();
 	private Server server;
 	
 	
-	public IdscpServer config(Configuration config) {
+	public IdscpServer config(ServerConfiguration config) {
 		this.config = config;
 		return this;
 	}
@@ -24,13 +24,11 @@ public class IdscpServer {
 		server.setHandler(context);
 
 		// Add a websocket to a specific path spec
-		ServletHolder holderEvents = new ServletHolder("ws-events", ServerSocketServlet.class);
+		ServletHolder holderEvents = new ServletHolder("ids", new ServerSocketServlet(config));
 		context.addServlet(holderEvents, "/");
 
 		try {
 			server.start();
-			//server.dump(System.err);
-			//server.join();
 		} catch (Throwable t) {
 			t.printStackTrace(System.err);
 		}

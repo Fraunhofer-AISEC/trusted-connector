@@ -37,7 +37,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
@@ -53,39 +52,23 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
  *
  */
 @WebSocket
-public class IdspServerSocket {
-    private Logger LOG = LoggerFactory.getLogger(IdspServerSocket.class);
+public class IdscpServerSocket {
+    private Logger LOG = LoggerFactory.getLogger(IdscpServerSocket.class);
     private FSM fsm;
-    private int attestationType = 0;
-    private int attestationMask = 0;
     private ProtocolMachine machine;
     private boolean ratSuccess = false;
     private SSLContextParameters params;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
-    private final ConnectorMessage startMsg = Idscp.ConnectorMessage
-										    		.newBuilder()
-										    		.setType(ConnectorMessage.Type.RAT_START)
-										    		.setId(new java.util.Random().nextLong())
-										    		.build();
-	
-	public IdspServerSocket() {
-		// Create provider socket
-		this.attestationMask = 0;
-		this.attestationType = 0;
-		this.params = null;
-		System.out.println("Init Provider");
-	}
-    
-    
-	public IdspServerSocket(int attestationType, int attestationMask, SSLContextParameters params) {
-		// Create consumer socket
-		this.attestationType = attestationType;
-		this.attestationMask = attestationMask;
-		this.params = params;
-		System.out.println("Init Consumer");
-	}
 
+    private ServerConfiguration config;
+	
+	public IdscpServerSocket(ServerConfiguration config) {
+		// Create provider socket
+		System.out.println("Init Provider");
+		this.config = config;
+	}
+    
 	/**
 	 * Called upon incoming connection to server.
 	 * 
@@ -94,28 +77,10 @@ public class IdspServerSocket {
 	@OnWebSocketConnect
     public void onOpen(Session session) {
         LOG.debug("Websocket opened " + this + " from " + session.getRemoteAddress().toString() + " to " + session.getLocalAddress().toString());
-        IdsAttestationType type;
-        switch(this.attestationType) {
-	    	case 0:            
-	    		type = IdsAttestationType.BASIC;
-	    		break;
-	    	case 1:
-	    		type = IdsAttestationType.ALL;
-	    		break;
-	    	case 2:
-	    		type = IdsAttestationType.ADVANCED;
-	    		break;
-	    	case 3:
-	    		type = IdsAttestationType.ZERO;
-	    		break;
-	    	default:
-	    		type = IdsAttestationType.BASIC;
-	    		break;	    		
-        }
+
         // create Finite State Machine for IDS protocol
         machine = new ProtocolMachine();
-    	System.out.println("Starting provider");
-    	fsm = machine.initIDSProviderProtocol(session, type, this.attestationMask);
+    	fsm = machine.initIDSProviderProtocol(session, this.config.attestationType, this.config.attestationMask, this.config.tpmdSocket);
     }
 
     @OnWebSocketClose

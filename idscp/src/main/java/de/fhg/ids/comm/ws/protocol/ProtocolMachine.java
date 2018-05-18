@@ -21,6 +21,7 @@ package de.fhg.ids.comm.ws.protocol;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -159,7 +160,7 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask) {
+	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask, File tpmdSocket) {
 		this.attestationType = type;
 		this.serverSession = sess;
 		FSM fsm = new FSM();
