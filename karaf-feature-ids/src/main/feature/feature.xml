@@ -41,7 +41,7 @@
 		<feature>camel-cxf</feature>
 				
 		<!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
-		<bundle>mvn:org.apache.camel/camel-core-osgi/2.20.2</bundle>
+		<bundle>mvn:org.apache.camel/camel-core-osgi/2.21.1</bundle>
 		
 		<!-- This is how to add a custom config file which will be picked up by Config Admin-->
 		<!-- <configfile finalname="/etc/ConfigApp.cfg">mvn:net.lr.tutorial.configadmin/configadmin-features/${pom.version}/cfg</configfile> -->
