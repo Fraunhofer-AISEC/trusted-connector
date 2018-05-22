@@ -154,7 +154,6 @@ public class FSM {
 
 	public void feedEvent(Event event) {
 		Object evtKey = event.getKey();
-		System.out.println("Received event " + event.getKey().toString());
 		State state = states.get(currentState);
 		if (state.transitions.containsKey(evtKey)) {
 			Transition trans = state.transitions.get(evtKey);

@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * IDS Communication Protocol
+ * %%
+ * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.ids.comm.client;
 
 import java.util.concurrent.locks.Condition;
@@ -20,18 +39,18 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 public class IdspClientSocket extends DefaultWebSocketListener {
-    private Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
+    private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
     private FSM fsm;
     private ProtocolMachine machine;
-    private boolean ratSuccess = false;
     private final ReentrantLock lock = new ReentrantLock();
-    private final Condition isFinishedCond = lock.newCondition();
+    private final Condition idscpInProgress = lock.newCondition();
     private final ConnectorMessage startMsg = Idscp.ConnectorMessage
 										    		.newBuilder()
 										    		.setType(ConnectorMessage.Type.RAT_START)
 										    		.setId(new java.util.Random().nextLong())
 										    		.build();
 	private ClientConfiguration config;
+	private boolean isTerminated = false;
 
 
 	
@@ -71,12 +90,14 @@ public class IdspClientSocket extends DefaultWebSocketListener {
     		lock.lockInterruptibly();
     		try {
     			ConnectorMessage msg = ConnectorMessage.parseFrom(message);
+    			Log.debug("Received in state " + fsm.getState() + ": " + new String(message));
     			fsm.feedEvent(new Event(msg.getType(), new String(message), msg));
     		} catch (InvalidProtocolBufferException e) {
     			Log.error(e.getMessage(), e);
     		}
     		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
-	    		isFinishedCond.signalAll();
+	    		this.isTerminated = true;
+    			idscpInProgress.signalAll();
 	    	}
     	} catch (InterruptedException e) {
 			Log.warn(e.getMessage());
@@ -94,8 +115,12 @@ public class IdspClientSocket extends DefaultWebSocketListener {
     	return lock;
     }
 
-    public Condition isFinished() {
-    	return isFinishedCond;
+    public Condition idscpInProgressCondition() {
+    	return idscpInProgress;
+    }
+    
+    public boolean isTerminated() {
+    	return this.isTerminated ;
     }
 	
     //get the result of the remote attestation

@@ -26,9 +26,7 @@
 	<name>IDS Communication Protocol</name>
 
 	<properties>
-		<docker.follow>false</docker.follow>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skipITs>true</skipITs>
 	</properties>
 	
 	<dependencies>
@@ -209,7 +207,7 @@
 						<configuration>
 							<images>
 								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</name>
+									<name>fhgaisec/tpm2dsim:develop</name>
 									<alias>tpm2d</alias>
 									<run>
 										<volumes>
@@ -234,7 +232,7 @@
 						<configuration>
 							<images>
 								<image>
-									<name>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</name>
+									<name>fhgaisec/ttpsim:develop</name>
 									<alias>ttp</alias>
 									<run>
 										<ports>
@@ -288,33 +286,6 @@
 									<name>ttp</name>
 								</image>
 							</images>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<configuration>
-					<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
-					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
-				</configuration>
-				<executions>
-					<execution>
-						<id>build-image</id>
-						<phase>install</phase>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>push-image</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>push</goal>
-						</goals>
-						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:develop</imageName>
 						</configuration>
 					</execution>
 				</executions>

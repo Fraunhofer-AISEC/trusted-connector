@@ -8,7 +8,7 @@
     </Console>
 </Appenders>
 <Loggers>
-    <Logger name="de.fhg.ids.comm" level="debug">
+    <Logger name="de.fhg.ids.comm" level="debug" additivity="false">
         <AppenderRef ref="Console"/>
     </Logger>
     <!-- <Root level="info">

@@ -37,6 +37,7 @@ import com.google.protobuf.MessageLite;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.ids.comm.ws.protocol.error.ErrorHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
@@ -123,13 +124,13 @@ public class ProtocolMachine {
 					
 					/* error protocol */
 					// in case of error go back to IDSC_START state
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_ERROR, (e) -> { return errorHandler.handleError(e, ProtocolState.IDSCP_START, true);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, true);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, true);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT, true);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, true);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_REQUEST, true);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_RESPONSE, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_END, (e) -> { return errorHandler.handleError(e, ProtocolState.IDSCP_START, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_REQUEST, true);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_RESPONSE, true);} ));
 					break;
 
 				case ZERO:
@@ -205,13 +206,13 @@ public class ProtocolMachine {
 					
 					/* error protocol */
 					// in case of error go back to IDSC_START state
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_START, false);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, false);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, false);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT, false);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, false);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_REQUEST, false);} ));
-					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_ERROR, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_META_RESPONSE, false);} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_START, false); return replyAbort();} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, false); return replyAbort();} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, false); return replyAbort();} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESULT, false); return replyAbort();} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, false); return replyAbort();} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_META_REQUEST, false); return replyAbort();} ));
+					fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_END, (e) -> {errorHandler.handleError(e, ProtocolState.IDSCP_META_RESPONSE, false); return replyAbort();} ));
 					break;
 
 				case ZERO:
@@ -225,10 +226,10 @@ public class ProtocolMachine {
 					break;
 			}
 			
-			/* Add listener to log state transitions*/
+			/* Add listener to log state transitions */
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
 			String graph = fsm.toDot();
-//			System.out.println(graph);
+			System.out.println(graph);
 
 		} catch (URISyntaxException e) {
 			LOG.error("TTP URI Syntax exception", e);
@@ -290,6 +291,28 @@ public class ProtocolMachine {
 			this.clientSocket.sendMessage(text);
 		}
 		return true;
+	}
+	
+
+	private boolean replyAbort() {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		MessageLite abortMessage =  ConnectorMessage
+				.newBuilder()
+				.setId(0)
+				.setType(ConnectorMessage.Type.ERROR)
+				.setError(
+						Error
+						.newBuilder()
+						.setErrorCode("")
+						.setErrorMessage("Abort")
+						.build())
+				.build();
+		try {
+			abortMessage.writeTo(bos);
+		} catch (IOException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return reply(bos.toByteArray());
 	}
 	
 	/**

@@ -62,11 +62,13 @@ public class IdscpServerSocket {
     private final Condition isFinishedCond = lock.newCondition();
 
     private ServerConfiguration config;
+	private SocketListener socketListener;
 	
-	public IdscpServerSocket(ServerConfiguration config) {
+	public IdscpServerSocket(ServerConfiguration config, SocketListener socketListener) {
 		// Create provider socket
 		System.out.println("Init Provider");
 		this.config = config;
+		this.socketListener = socketListener;
 	}
     
 	/**
@@ -112,13 +114,16 @@ public class IdscpServerSocket {
     		lock.lockInterruptibly();
     		try {
         		if (fsm.getState().equals(ProtocolState.IDSCP_END.id()) || fsm.getState().equals(ProtocolState.IDSCP_ERROR.id())) {
-        			System.out.println("Passing through to web socket " + new String(message));
+        			LOG.debug("Passing through to web socket " + new String(message));
+        			if (this.socketListener != null) {
+        				this.socketListener.onMessage(session, message);
+        			}
         			return;
         		}
     			ConnectorMessage msg = ConnectorMessage.parseFrom(message);
     			fsm.feedEvent(new Event(msg.getType(), new String(message), msg));
     		} catch (InvalidProtocolBufferException e) {
-    			LOG.error(e.getMessage(), e);
+    			LOG.error(e.getMessage() + ": " + new String(message), e);
     			fsm.feedEvent(new Event(ConnectorMessage.Type.ERROR, e.getMessage(), ConnectorMessage.getDefaultInstance()));
     		}
     	} catch (InterruptedException e) {
