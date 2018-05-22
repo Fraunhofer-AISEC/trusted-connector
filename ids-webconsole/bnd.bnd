@@ -1,33 +1,14 @@
-src: src/main/java
-bin: target/classes
-testsrc: src/test/java
-testbin: target/test-classes
--sources: false 
-Bundle-Version: 1.0.0
-Web-ContextPath: /
-Export-Package: \
-	de.fhg.aisec.ids.webconsole,\
-	de.fhg.aisec.ids.webconsole.servlets,\
-	de.fhg.aisec.ids.webconsole.api,\
-	de.fhg.aisec.ids.webconsole.api.data
-Bundle-Name: ids-webconsole
+Bundle-Name: IDS :: Web Console
 Bundle-Description: A web console for the IDS Core Platform. The web console allows to configure \
 	routes, containers, brokers, etc.
-Bundle-Copyright: Fraunhofer 2016
-Bundle-Vendor: Fraunhofer AISEC
-Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
--wab: src/main/resources/www/dist/
+Export-Package: \
+	de.fhg.aisec.ids.webconsole,\
+	de.fhg.aisec.ids.webconsole.api,\
+	de.fhg.aisec.ids.webconsole.api.data
 Import-Package: \
-	org.apache.cxf.jaxrs.provider.json,\
-	org.apache.cxf.jaxrs.provider.jsonp,\
-	org.apache.cxf.jaxrs.security,\
-	com.google.gson,\
-	com.fasterxml.jackson.jaxrs.json,\
-	com.fasterxml.jackson.databind,\
-	!com.eclipsesource.json.*,\
-	org.codehaus.jettison.mapped,\
-	*
-DynamicImport-Package: org.apache.*,\
-	org.eclipse.jetty.*
--noee=true
--dsannotations: *
+  org.apache.cxf.jaxrs.security,\
+  org.apache.cxf.interceptor.security,\
+  com.fasterxml.jackson.jaxrs.json,\
+  com.fasterxml.jackson.databind,*
+Web-ContextPath: /
+-wab: src/main/resources/www/dist/

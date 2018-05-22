@@ -15,7 +15,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>ids</artifactId>
+	<artifactId>karaf-features-ids</artifactId>
 	<packaging>feature</packaging>
 
 	<parent>
