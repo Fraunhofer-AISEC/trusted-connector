@@ -54,23 +54,11 @@
 		<bundle>mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
 		<bundle>mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
 		
-		<!-- Camel-AHC, but the crappy wrap:asynchttp:2.0.32 has been replaced by our wrapping bundle -->
-		<bundle>mvn:org.asynchttpclient/org.asynchttpclient/2.0.32</bundle>
-		<bundle>mvn:org.reactivestreams/reactive-streams/1.0.0</bundle>
-		<bundle>mvn:io.netty/netty-resolver/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-common/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-buffer/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-transport/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-handler/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-transport-native-epoll/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-codec/4.1.9.Final</bundle>
-		<bundle>mvn:io.netty/netty-codec-http/4.1.9.Final</bundle>
 		<bundle>mvn:javax.servlet/javax.servlet-api/3.1.0</bundle>
-		<bundle>mvn:org.apache.camel/camel-http-common/2.20.2</bundle>
-		<bundle>mvn:org.apache.camel/camel-ahc/2.20.2</bundle>		
+		<bundle>mvn:org.apache.camel/camel-http-common/2.21.1</bundle>
+		<bundle>mvn:org.apache.camel/camel-ahc/2.21.1</bundle>		
 
 		<bundle>mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
-
 
 		<!-- IDS specific bundles -->
 		<bundle>mvn:de.fhg.ids/api/1.1.0-SNAPSHOT</bundle>
