@@ -39,6 +39,9 @@
 		<feature>camel-jackson</feature>
 		<feature>camel-milo</feature>
 		<feature>camel-cxf</feature>
+
+		<!-- for the IDS protocol -->
+		<feature>camel-ahc</feature>
 				
 		<!-- camel-core-osgi is not contained in main camel feature, but is needed for the ids-webconsole to directly manage camel routes via REST API -->
 		<bundle>mvn:org.apache.camel/camel-core-osgi/2.21.1</bundle>
@@ -54,9 +57,20 @@
 		<bundle>mvn:com.sun.xml.bind/jaxb-core/2.2.11</bundle>
 		<bundle>mvn:com.sun.xml.bind/jaxb-impl/2.2.11</bundle>
 		
+		<!-- dependencies of camel-ahc -->
+		<!--<bundle>mvn:org.asynchttpclient/async-http-client/2.4.4</bundle>
+		<bundle>mvn:org.reactivestreams/reactive-streams/1.0.2</bundle>
+		<bundle>mvn:io.netty/netty-resolver/4.1.22.Final</bundle>
+		<bundle>mvn:io.netty/netty-common/4.1.22.Finall</bundle>
+		<bundle>mvn:io.netty/netty-buffer/4.1.22.Final</bundle>
+		<bundle>mvn:io.netty/netty-transport/4.1.22.Final</bundle>
+		<bundle>mvn:io.netty/netty-handler/4.1.22.Final</bundle>
+		<bundle>mvn:io.netty/netty-transport-native-epoll/4.1.22.Final</bundle>
+		<bundle>mvn:io.netty/netty-codec/4.1.22.Final</bundle>
+		<bundle>mvn:io.netty/netty-codec-http/4.1.22.Final</bundle>
 		<bundle>mvn:javax.servlet/javax.servlet-api/3.1.0</bundle>
 		<bundle>mvn:org.apache.camel/camel-http-common/2.21.1</bundle>
-		<bundle>mvn:org.apache.camel/camel-ahc/2.21.1</bundle>		
+		<bundle>mvn:org.apache.camel/camel-ahc/2.21.1</bundle>	-->
 
 		<bundle>mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
 
