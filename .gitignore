@@ -14,4 +14,5 @@ rat-repository/src/main/docker/jar/*
 /.idea
 /karaf-assembly/src/main/resources/deploy/*.xml
 .classpath
+.DS_Store
 
