@@ -35,18 +35,11 @@
  */
 package de.fhg.camel.ids.both;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ProcessBuilder.Redirect;
-import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.camel.util.jsse.ClientAuthentication;
 import org.apache.camel.util.jsse.KeyManagersParameters;
@@ -54,19 +47,10 @@ import org.apache.camel.util.jsse.KeyStoreParameters;
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.apache.camel.util.jsse.SSLContextServerParameters;
 import org.apache.camel.util.jsse.TrustManagersParameters;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.fhg.camel.ids.client.TestServletFactory;
 import de.fhg.camel.ids.client.WsComponent;
 import de.fhg.camel.ids.server.WebsocketComponent;
 /**
@@ -79,25 +63,6 @@ public class WssProducerConsumerIT extends CamelTestSupport {
     protected static Server server;
     protected List<Object> messages;
 	private static String PWD = "password";	
-
-	/*
-    public static void startTestServer() throws Exception {
-        // start a simple websocket echo service
-        server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(PORT);
-        server.addConnector(connector);
-
-        ServletContextHandler ctx = new ServletContextHandler();
-        ctx.setContextPath("/");
-        ctx.addServlet(TestServletFactory.class.getName(), "/*");
-
-        server.setHandler(ctx);
-        
-        server.start();
-        assertTrue(server.isStarted());      
-    }
-    */
     
     @Override
     public void setUp() throws Exception {

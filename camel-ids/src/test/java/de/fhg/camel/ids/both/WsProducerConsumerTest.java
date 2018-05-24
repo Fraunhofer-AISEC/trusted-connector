@@ -44,7 +44,6 @@ import org.eclipse.jetty.server.Server;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.camel.ids.IdsProtocolComponent;
 import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
