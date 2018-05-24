@@ -73,8 +73,6 @@ public class WebsocketEndpoint extends DefaultEndpoint {
 
     @UriParam(label = "producer", defaultValue = "30000")
     private Integer sendTimeout = 30000;
-    @UriParam(label = "monitoring")
-    private boolean enableJmx;
     @UriParam(label = "consumer")
     private boolean sessionSupport;
     @UriParam(label = "cors", description = "enables or disables Cross Origin Filter")
@@ -298,17 +296,6 @@ public class WebsocketEndpoint extends DefaultEndpoint {
      */
     public void setSslContextParameters(SSLContextParameters sslContextParameters) {
         this.sslContextParameters = sslContextParameters;
-    }
-
-    public boolean isEnableJmx() {
-        return this.enableJmx;
-    }
-
-    /**
-     * If this option is true, Jetty JMX support will be enabled for this endpoint. See Jetty JMX support for more details.
-     */
-    public void setEnableJmx(boolean enableJmx) {
-        this.enableJmx = enableJmx;
     }
 
     public String getAllowedOrigins() {

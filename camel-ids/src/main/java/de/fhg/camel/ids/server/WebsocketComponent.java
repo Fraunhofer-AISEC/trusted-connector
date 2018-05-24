@@ -20,7 +20,6 @@
 package de.fhg.camel.ids.server;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
@@ -35,10 +34,7 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.Metadata;
-import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.StringHelper;
 import org.apache.camel.util.jsse.SSLContextParameters;
-import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -67,7 +63,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
 	private static final File TPM_SOCKET = new File("tpmd.sock");
 
     protected Map<String, WebSocketFactory> socketFactory;
-    protected MBeanContainer mbContainer;
 
     @Metadata(label = "security")
     protected SSLContextParameters sslContextParameters;
@@ -81,8 +76,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     protected Integer minThreads;
     @Metadata(label = "advanced")
     protected Integer maxThreads;
-    @Metadata(label = "advanced")
-    protected boolean enableJmx;
     @Metadata(defaultValue = "0.0.0.0")
     protected String host = "0.0.0.0";
     @Metadata(label = "consumer")
@@ -167,9 +160,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
                 ServerConnector connector;
                 // Create Server and add connector
                 Server server = createServer();
-                if (endpoint.isEnableJmx()) {
-                    enableJmx(server);
-                }
+
                 if (endpoint.getSslContextParameters() != null) {
                     connector = getSslSocketConnector(server, endpoint.getSslContextParameters());
                 } else {
@@ -268,10 +259,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
                     CONNECTORS.remove(connectorKey);
                     // Camel controls the lifecycle of these entities so remove the
                     // registered MBeans when Camel is done with the managed objects.
-                    if (mbContainer != null) {
-                        mbContainer.beanRemoved(null, connectorRef.server);
-                        mbContainer.beanRemoved(null, connectorRef.connector);
-                    }
                 }
                 if (prodcon instanceof WebsocketConsumer) {
                     connectorRef.servlet.disconnect((WebsocketConsumer) prodcon);
@@ -283,30 +270,14 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         }
     }
 
-    public synchronized MBeanContainer getMbContainer() {
-        // If null, provide the default implementation.
-        if (mbContainer == null) {
-            mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-        }
-
-        return this.mbContainer;
-    }
-
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         SSLContextParameters sslContextParameters = resolveAndRemoveReferenceParameter(parameters, "sslContextParameters", SSLContextParameters.class);
 
-        Boolean enableJmx = getAndRemoveParameter(parameters, "enableJmx", Boolean.class);
         int port = extractPortNumber(remaining);
         String host = extractHostName(remaining);
 
         WebsocketEndpoint endpoint = new WebsocketEndpoint(this, uri, remaining, parameters);
-
-        if (enableJmx != null) {
-            endpoint.setEnableJmx(enableJmx);
-        } else {
-            endpoint.setEnableJmx(isEnableJmx());
-        }
 
         // prefer to use endpoint configured over component configured
         if (sslContextParameters == null) {
@@ -577,17 +548,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         return endpoint.getProtocol() + ":" + endpoint.getHost() + ":" + endpoint.getPort();
     }
 
-    private void enableJmx(Server server) {
-        MBeanContainer containerToRegister = getMbContainer();
-        if (containerToRegister != null) {
-            LOG.info("Jetty JMX Extensions is enabled");
-            server.addEventListener(containerToRegister);
-            // Since we may have many Servers running, don't tie the MBeanContainer
-            // to a Server lifecycle or we end up closing it while it is still in use.
-            //server.addBean(mbContainer);
-        }
-    }
-
     private void applyCrossOriginFiltering(WebsocketEndpoint endpoint, ServletContextHandler context) {
         if (endpoint.isCrossOriginFilterOn()) {
             FilterHolder filterHolder = new FilterHolder();
@@ -673,17 +633,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
      */
     public void setSslKeystore(String sslKeystore) {
         this.sslKeystore = sslKeystore;
-    }
-
-    /**
-     * If this option is true, Jetty JMX support will be enabled for this endpoint. See Jetty JMX support for more details.
-     */
-    public void setEnableJmx(boolean enableJmx) {
-        this.enableJmx = enableJmx;
-    }
-
-    public boolean isEnableJmx() {
-        return enableJmx;
     }
 
     public Integer getMinThreads() {
