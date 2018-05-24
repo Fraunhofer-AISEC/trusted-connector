@@ -229,8 +229,8 @@ public class ProtocolMachine {
 			
 			/* Add listener to log state transitions */
 			fsm.addSuccessfulChangeListener((f,e) -> {LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState());});
-			String graph = fsm.toDot();
-			System.out.println(graph);
+//			String graph = fsm.toDot();
+//			System.out.println(graph);
 
 		} catch (URISyntaxException e) {
 			LOG.error("TTP URI Syntax exception", e);

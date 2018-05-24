@@ -37,6 +37,7 @@ public class ClientConfiguration {
 	protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
 	protected SSLContextParameters params = null;
 	protected int attestationMask = 0;
+	protected SSLContextParameters sslContext;
 
 	public ClientConfiguration port(int port) {
 		this.port = port;
@@ -58,5 +59,9 @@ public class ClientConfiguration {
 		return this;
 	}
 	
+	public ClientConfiguration sslContext(SSLContextParameters sslContext) {
+		this.sslContext = sslContext;
+		return this;
+	}
 
 }
