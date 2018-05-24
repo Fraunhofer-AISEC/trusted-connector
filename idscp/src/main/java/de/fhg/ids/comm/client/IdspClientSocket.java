@@ -22,7 +22,7 @@ package de.fhg.ids.comm.client;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.asynchttpclient.ws.DefaultWebSocketListener;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
-public class IdspClientSocket extends DefaultWebSocketListener {
+public class IdspClientSocket implements WebSocketListener {
     private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
     private FSM fsm;
     private ProtocolMachine machine;
@@ -71,7 +71,7 @@ public class IdspClientSocket extends DefaultWebSocketListener {
     }
 
     @Override
-    public void onClose(WebSocket websocket) {
+    public void onClose(WebSocket websocket, int code, String status) {
         Log.debug("websocket closed - reconnecting");
         fsm.reset();
     }
@@ -85,7 +85,7 @@ public class IdspClientSocket extends DefaultWebSocketListener {
     }
 
     @Override
-    public void onMessage(byte[] message) {
+    public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
     	try {
     		lock.lockInterruptibly();
     		try {
@@ -107,8 +107,8 @@ public class IdspClientSocket extends DefaultWebSocketListener {
     }
 
     @Override
-    public void onMessage(String message) {
-    	onMessage(message.getBytes());
+    public void onTextFrame(String message, boolean finalFragment, int rsv) {
+    	onBinaryFrame(message.getBytes(), finalFragment, rsv);
     }
     
     public ReentrantLock semaphore() {

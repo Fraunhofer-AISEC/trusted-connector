@@ -74,7 +74,7 @@ public class WsProducer extends DefaultProducer {
                 sendStreamMessage(getWebSocket(), (InputStream)message);
             } else {
                 //TODO provide other binding option, for now use the converted string
-                getWebSocket().sendMessage(in.getMandatoryBody(String.class));
+            	getWebSocket().sendTextFrame(in.getMandatoryBody(String.class));
             }
         }
     }
@@ -84,15 +84,15 @@ public class WsProducer extends DefaultProducer {
             int p = 0;
             while (p < msg.length()) {
                 if (msg.length() - p < streamBufferSize) {
-                    webSocket.stream(msg.substring(p), true);
+                	webSocket.sendContinuationFrame(msg.substring(p), true, 0);
                     p = msg.length();
                 } else {
-                    webSocket.stream(msg.substring(p, streamBufferSize), false);
+                	webSocket.sendContinuationFrame(msg.substring(p, streamBufferSize), false, 0);
                     p += streamBufferSize;
                 }
             }
         } else {
-            webSocket.sendMessage(msg);
+            webSocket.sendTextFrame(msg);
         }
     }
     
@@ -108,20 +108,20 @@ public class WsProducer extends DefaultProducer {
                     System.arraycopy(msg, p, writebuf, 0, rest);
                     byte[] tmpbuf = new byte[rest];
                     System.arraycopy(writebuf, 0, tmpbuf, 0, rest);
-                    webSocket.stream(tmpbuf, 0, rest, true);
+                    webSocket.sendContinuationFrame(tmpbuf, false, 0);
                     // ends
                     p = msg.length;
                 } else {
                     // bug in grizzly? we need to create a byte array with the exact length
                     //webSocket.stream(msg, p, streamBufferSize, false);
                     System.arraycopy(msg, p, writebuf, 0, streamBufferSize);
-                    webSocket.stream(writebuf, 0, streamBufferSize, false);
+                    webSocket.sendContinuationFrame(writebuf, false, 0);
                     // ends
                     p += streamBufferSize;
                 }
             }
         } else {
-            webSocket.sendMessage(msg);
+            webSocket.sendBinaryFrame(msg);
         }
     }
 
@@ -133,7 +133,7 @@ public class WsProducer extends DefaultProducer {
         try {
             while ((rn = in.read(readbuf, 0, readbuf.length)) != -1) {
                 if (wn > 0) {
-                    webSocket.stream(writebuf, 0, writebuf.length, false);
+                    webSocket.sendContinuationFrame(writebuf, false, 0);
                 }
                 System.arraycopy(readbuf, 0, writebuf, 0, rn);
                 wn = rn;
@@ -144,7 +144,7 @@ public class WsProducer extends DefaultProducer {
                 writebuf = new byte[wn];
                 System.arraycopy(tmpbuf, 0, writebuf, 0, wn);
             } // ends
-            webSocket.stream(writebuf, 0, wn, true);
+            webSocket.sendContinuationFrame(writebuf, true, 0);
         } finally {
             in.close();
         }

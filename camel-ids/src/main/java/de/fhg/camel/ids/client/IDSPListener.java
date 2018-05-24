@@ -24,7 +24,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.camel.util.jsse.SSLContextParameters;
-import org.asynchttpclient.ws.DefaultWebSocketListener;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
 import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *
  */
-public class IDSPListener extends DefaultWebSocketListener {
+public class IDSPListener implements WebSocketListener {
     private Logger LOG = LoggerFactory.getLogger(IDSPListener.class);
     private FSM fsm;
     private int attestationType = 0;
@@ -105,7 +105,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     }
 
     @Override
-    public void onClose(WebSocket websocket) {
+    public void onClose(WebSocket websocket, int code, String reason) {
         LOG.debug("websocket closed - reconnecting");
         fsm.reset();
     }
@@ -119,7 +119,7 @@ public class IDSPListener extends DefaultWebSocketListener {
     }
 
     @Override
-    public void onMessage(byte[] message) {
+    public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
     	try {
     		lock.lockInterruptibly();
     		try {
@@ -139,8 +139,8 @@ public class IDSPListener extends DefaultWebSocketListener {
     }
 
     @Override
-    public void onMessage(String message) {
-    	onMessage(message.getBytes());
+    public void onTextFrame(String message, boolean finalFragment, int rsv) {
+    	onBinaryFrame(message.getBytes(), finalFragment, rsv);
     }
     
     public ReentrantLock semaphore() {

@@ -24,7 +24,7 @@ import static org.asynchttpclient.Dsl.asyncHttpClient;
 import java.util.concurrent.ExecutionException;
 
 import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.ws.DefaultWebSocketListener;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 

@@ -77,7 +77,7 @@ public class ProtocolTest {
 		//AttestationResult serverAttestationRes = server.getAttestationResult();
 		
 		// Send some payload from client to server
-		wsClient.sendMessage("Hello");
+		wsClient.sendTextFrame("Hello");
 
 		// Not very elegant here but sending is asynchronous and we need to 
 		// wait a little until message has received by server.

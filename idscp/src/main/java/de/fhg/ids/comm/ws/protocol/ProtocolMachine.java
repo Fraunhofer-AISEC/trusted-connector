@@ -289,7 +289,7 @@ public class ProtocolMachine {
 				LOG.error(e.getMessage(), e);
 			}
 		} else if (this.clientSocket != null) {
-			this.clientSocket.sendMessage(text);
+			this.clientSocket.sendBinaryFrame(text);
 		}
 		return true;
 	}
