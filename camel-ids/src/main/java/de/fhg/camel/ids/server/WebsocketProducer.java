@@ -37,28 +37,21 @@ package de.fhg.camel.ids.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.camel.CamelExchangeException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
-import org.apache.camel.util.StopWatch;
 import org.asynchttpclient.netty.handler.StreamedResponsePublisher;
 
 public class WebsocketProducer extends DefaultProducer implements WebsocketProducerConsumer {
 
     private WebsocketStore store;
-    private final Boolean sendToAll;
     private final WebsocketEndpoint endpoint;
 
     public WebsocketProducer(WebsocketEndpoint endpoint) {
         super(endpoint);
-        this.sendToAll = endpoint.getSendToAll();
         this.endpoint = endpoint;
     }
 
@@ -69,31 +62,29 @@ public class WebsocketProducer extends DefaultProducer implements WebsocketProdu
         if (!(message == null || message instanceof String || message instanceof byte[])) {
             message = in.getMandatoryBody(String.class);
         }
-        if (isSendToAllSet(in)) {
-            sendToAll(store, message, exchange);
-        } else {
-            // look for connection key and get Websocket
-            String connectionKey = in.getHeader(WebsocketConstants.CONNECTION_KEY, String.class);
-            if (connectionKey != null) {
-                String pathSpec = "";
-                if (endpoint.getResourceUri() != null) {
-                    pathSpec = WebsocketComponent.createPathSpec(endpoint.getResourceUri());
-                }
-                DefaultWebsocket websocket = store.get(connectionKey + pathSpec);
-                log.debug("Sending to connection key {} -> {}", connectionKey, message);
-                Future<Void> future = sendMessage(websocket, message);
-                StreamedResponsePublisher sp;
-                if (future != null) {
-                    int timeout = endpoint.getSendTimeout();
-                    future.get(timeout, TimeUnit.MILLISECONDS);
-                    if (!future.isCancelled() && !future.isDone()) {
-                        throw new WebsocketSendException("Failed to send message to the connection within " + timeout + " millis.", exchange);
-                    }
-                }
-            } else {
-                throw new WebsocketSendException("Failed to send message to single connection; connection key not set.", exchange);
+
+        // look for connection key and get Websocket
+        String connectionKey = in.getHeader(WebsocketConstants.CONNECTION_KEY, String.class);
+        if (connectionKey != null) {
+            String pathSpec = "";
+            if (endpoint.getResourceUri() != null) {
+                pathSpec = WebsocketComponent.createPathSpec(endpoint.getResourceUri());
             }
+            DefaultWebsocket websocket = store.get(connectionKey + pathSpec);
+            log.debug("Sending to connection key {} -> {}", connectionKey, message);
+            Future<Void> future = sendMessage(websocket, message);
+            StreamedResponsePublisher sp;
+            if (future != null) {
+                int timeout = endpoint.getSendTimeout();
+                future.get(timeout, TimeUnit.MILLISECONDS);
+                if (!future.isCancelled() && !future.isDone()) {
+                    throw new WebsocketSendException("Failed to send message to the connection within " + timeout + " millis.", exchange);
+                }
+            }
+        } else {
+            throw new WebsocketSendException("Failed to send message to single connection; connection key not set.", exchange);
         }
+        
     }
 
     public WebsocketEndpoint getEndpoint() {
@@ -110,70 +101,6 @@ public class WebsocketProducer extends DefaultProducer implements WebsocketProdu
     public void doStop() throws Exception {
         endpoint.disconnect(this);
         super.doStop();
-    }
-
-    boolean isSendToAllSet(Message in) {
-        // header may be null; have to be careful here (and fallback to use sendToAll option configured from endpoint)
-        Boolean value = in.getHeader(WebsocketConstants.SEND_TO_ALL, sendToAll, Boolean.class);
-        return value == null ? false : value;
-    }
-
-    void sendToAll(WebsocketStore store, Object message, Exchange exchange) throws Exception {
-        log.debug("Sending to all {}", message);
-        Collection<DefaultWebsocket> websockets = store.getAll();
-        Exception exception = null;
-
-        List<Future> futures = new CopyOnWriteArrayList<>();
-        for (DefaultWebsocket websocket : websockets) {
-            boolean isOkToSendMessage = false;
-            if (endpoint.getResourceUri() == null) {
-                isOkToSendMessage = true;
-            } else if (websocket.getPathSpec().equals(WebsocketComponent.createPathSpec(endpoint.getResourceUri()))) {
-                isOkToSendMessage = true;
-            }
-            if (isOkToSendMessage) {
-                try {
-                    Future<Void> future = sendMessage(websocket, message);
-                    if (future != null) {
-                        futures.add(future);
-                    }
-                } catch (Exception e) {
-                    if (exception == null) {
-                        exception = new WebsocketSendException("Failed to deliver message to one or more recipients.", exchange, e);
-                    }
-                }
-            }
-        }
-
-        // check if they are all done within the timed out period
-        StopWatch watch = new StopWatch();
-        int timeout = endpoint.getSendTimeout();
-        while (!futures.isEmpty() && watch.taken() < timeout) {
-            // remove all that are done/cancelled
-            for (Future future : futures) {
-                if (future.isDone() || future.isCancelled()) {
-                    futures.remove(future);
-                }
-                // if there are still more then we need to wait a little bit before checking again, to avoid burning cpu cycles in the while loop
-                if (!futures.isEmpty()) {
-                    long interval = Math.min(1000, timeout);
-                    log.debug("Sleeping {} millis waiting for sendToAll to complete sending with timeout {} millis", interval, timeout);
-                    try {
-                        Thread.sleep(interval);
-                    } catch (InterruptedException e) {
-                        handleSleepInterruptedException(e, exchange);
-                    }
-                }
-            }
-
-        }
-        if (!futures.isEmpty()) {
-            exception = new WebsocketSendException("Failed to deliver message within " + endpoint.getSendTimeout() + " millis to one or more recipients.", exchange);
-        }
-
-        if (exception != null) {
-            throw exception;
-        }
     }
 
     Future<Void> sendMessage(DefaultWebsocket websocket, Object message) throws IOException {

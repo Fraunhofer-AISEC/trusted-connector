@@ -67,7 +67,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
 	private static final File TPM_SOCKET = new File("tpmd.sock");
 
     protected Map<String, WebSocketFactory> socketFactory;
-    protected Server staticResourcesServer;
     protected MBeanContainer mbContainer;
 
     @Metadata(label = "security")
@@ -202,11 +201,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
                 // Apply CORS (http://www.w3.org/TR/cors/)
                 applyCrossOriginFiltering(endpoint, context);
 
-                // Create Static resources
-                if (endpoint.getStaticResources() != null) {
-                    server = createStaticResourcesServer(server, context, endpoint.getStaticResources());
-                }
-
                 MemoryWebsocketStore memoryStore = new MemoryWebsocketStore();
                 
                 // Don't provide a Servlet object as Producer/Consumer will create them later on
@@ -303,7 +297,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         SSLContextParameters sslContextParameters = resolveAndRemoveReferenceParameter(parameters, "sslContextParameters", SSLContextParameters.class);
 
         Boolean enableJmx = getAndRemoveParameter(parameters, "enableJmx", Boolean.class);
-        String staticResources = getAndRemoveParameter(parameters, "staticResources", String.class);
         int port = extractPortNumber(remaining);
         String host = extractHostName(remaining);
 
@@ -322,16 +315,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         }
         if (sslContextParameters == null) {
             sslContextParameters = retrieveGlobalSslContextParameters();
-        }
-
-        // prefer to use endpoint configured over component configured
-        if (staticResources == null) {
-            // fallback to component configured
-            staticResources = getStaticResources();
-        }
-
-        if (staticResources != null) {
-            endpoint.setStaticResources(staticResources);
         }
 
         endpoint.setSslContextParameters(sslContextParameters);
@@ -786,25 +769,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-
-        if (staticResources != null) {
-            // host and port must be configured
-            StringHelper.notEmpty(host, "host", this);
-            ObjectHelper.notNull(port, "port", this);
-
-            LOG.info("Starting static resources server {}:{} with static resource: {}", host, port, staticResources);
-            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-            staticResourcesServer = createStaticResourcesServer(context, host, port, staticResources);
-            staticResourcesServer.start();
-            ServerConnector connector = (ServerConnector) staticResourcesServer.getConnectors()[0];
-
-            // must add static resource server to CONNECTORS in case the websocket producers/consumers
-            // uses the same port number, and therefore we must be part of this
-            MemoryWebsocketStore memoryStore = new MemoryWebsocketStore();
-            ConnectorRef ref = new ConnectorRef(staticResourcesServer, connector, null, memoryStore);
-            String key = "websocket:" + host + ":" + port;
-            CONNECTORS.put(key, ref);
-        }
     }
 
     @Override
@@ -824,14 +788,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
             }
         }
         CONNECTORS.clear();
-
-        if (staticResourcesServer != null) {
-            LOG.info("Stopping static resources server {}:{} with static resource: {}", host, port, staticResources);
-            staticResourcesServer.stop();
-            staticResourcesServer.destroy();
-            staticResourcesServer = null;
-        }
-
+       
         servlets.clear();
     }
 }
