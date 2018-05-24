@@ -64,6 +64,7 @@ public class WsProducerConsumerTest extends CamelTestSupport {
 		idspc.bindConnectionManager(conm);
         assertTrue(conm.listIncomingConnections().isEmpty());
     	super.setUp();
+    	
     }
 
     @Override

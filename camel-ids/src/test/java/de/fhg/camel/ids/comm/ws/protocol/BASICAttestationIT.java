@@ -49,7 +49,7 @@ import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 // BASIC test
 public class BASICAttestationIT {
-	
+	private static final String TPMD_SOCKET = "socket/control.sock";	
 	private static RemoteAttestationConsumerHandler consumer;
 	private static RemoteAttestationProviderHandler provider;
 	private static Logger LOG = LoggerFactory.getLogger(BASICAttestationIT.class);
@@ -72,8 +72,8 @@ public class BASICAttestationIT {
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/control.sock");
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(ratRepoUri), "socket/control.sock");
+        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
 	}
 	
     @Test

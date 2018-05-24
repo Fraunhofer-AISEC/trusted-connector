@@ -6,7 +6,16 @@ Bundle-Description: IDS Communication Protocol
 Bundle-Copyright: Fraunhofer 2018
 Bundle-Vendor: Fraunhofer Gesellschaft
 -includeresource: src/main/resources
-Export-Package: de.fhg.ids.idscp
+Export-Package: \
+	de.fhg.ids.comm,\
+	de.fhg.ids.comm.client,\
+	de.fhg.ids.comm.server,\
+	de.fhg.ids.comm.unixsocket,\
+	de.fhg.ids.comm.ws.protocol,\
+	de.fhg.ids.comm.ws.protocol.error,\
+	de.fhg.ids.comm.ws.protocol.fsm,\
+	de.fhg.ids.comm.ws.protocol.metadata,\
+	de.fhg.ids.comm.ws.protocol.rat
 Import-Package: \
 	*
 -noee=true
