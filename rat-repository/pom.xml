@@ -134,6 +134,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.0.2</version>
 				<configuration>
+					<finalName>rat-repository</finalName>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
@@ -172,7 +173,7 @@
 						<resource>
 							<targetPath>/</targetPath>
 							<directory>${project.build.directory}</directory>
-							<include>${project.build.finalName}.jar</include>
+							<include>rat-repository.jar</include>
 						</resource>
 					</resources>
 				</configuration>
