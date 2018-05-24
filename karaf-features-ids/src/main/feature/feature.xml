@@ -74,7 +74,7 @@
 
 		<!-- IDS specific bundles -->
 		<bundle>mvn:de.fhg.ids/ids-api/${project.version}</bundle>
-		<bundle>mvn:de.fhg.ids/idscp/${project.version}</bundle>
+		<bundle>mvn:de.fhg.ids/ids-comm/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-container-manager/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-route-manager/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-dataflow-control/${project.version}</bundle>

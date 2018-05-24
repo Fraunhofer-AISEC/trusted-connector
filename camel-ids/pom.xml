@@ -137,13 +137,13 @@
 		<!-- IDS API -->
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
-			<artifactId>api</artifactId>
+			<artifactId>ids-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
-			<artifactId>idscp</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
+			<artifactId>ids-comm</artifactId>
+			<version>${project.version}</version>
 		</dependency>		
 
 		<!--  OSGi compendium services (e.g., Preferences) -->
