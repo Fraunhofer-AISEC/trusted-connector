@@ -59,8 +59,10 @@
 		<feature>camel-cxf</feature>
 		<feature>camel-http</feature>
 		<feature>camel-jetty</feature>
+		
 		<!-- for the IDS protocol -->
-		<feature>camel-ahc</feature>
+		<feature>camel-ahc</feature> <!-- ids-comm extends this -->
+		<feature>camel-reactive-streams</feature> <!-- Could be reduced to bundle mvn:org.reactivestreams/reactive-streams/1.0.2-->
 		
 		<bundle>mvn:org.javassist/javassist/3.20.0-GA</bundle>
 		<bundle>mvn:com.codepoetics/protonpack/1.10</bundle>
