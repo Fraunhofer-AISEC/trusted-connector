@@ -37,7 +37,7 @@
 		<!-- IDS components -->
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
-			<artifactId>api</artifactId>
+			<artifactId>ids-api</artifactId>
 			<version>1.1.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>

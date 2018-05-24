@@ -137,7 +137,7 @@
 		<!-- IDS API -->
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
-			<artifactId>api</artifactId>
+			<artifactId>ids-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
