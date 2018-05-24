@@ -63,6 +63,7 @@ public class IdscpServerSocket {
 
     private ServerConfiguration config;
 	private SocketListener socketListener;
+	private Session session;
 	
 	public IdscpServerSocket(ServerConfiguration config, SocketListener socketListener) {
 		// Create provider socket
@@ -80,9 +81,11 @@ public class IdscpServerSocket {
     public void onOpen(Session session) {
         LOG.debug("Websocket opened " + this + " from " + session.getRemoteAddress().toString() + " to " + session.getLocalAddress().toString());
 
+        this.session = session;
+
         // create Finite State Machine for IDS protocol
         machine = new ProtocolMachine();
-    	fsm = machine.initIDSProviderProtocol(session, this.config.attestationType, this.config.attestationMask, this.config.tpmdSocket);
+    	fsm = machine.initIDSProviderProtocol(session, this.config.attestationType, this.config.attestationMask, this.config.tpmdSocket);    	
     }
 
     @OnWebSocketClose
@@ -114,6 +117,7 @@ public class IdscpServerSocket {
     		lock.lockInterruptibly();
     		try {
         		if (fsm.getState().equals(ProtocolState.IDSCP_END.id()) || fsm.getState().equals(ProtocolState.IDSCP_ERROR.id())) {
+        			
         			LOG.debug("Passing through to web socket " + new String(message));
         			if (this.socketListener != null) {
         				this.socketListener.onMessage(session, message);
@@ -143,7 +147,7 @@ public class IdscpServerSocket {
 	
     //get the result of the remote attestation
 	public boolean isAttestationSuccessful() {
-		return machine.getIDSCPConsumerSuccess();
+		return machine.getIDSCPProviderSuccess();
 	}
 
     //get the result of the remote attestation
@@ -157,5 +161,9 @@ public class IdscpServerSocket {
 				return AttestationResult.FAILED;
 			}
 		}
+	}
+	
+	public Session getSession() {
+		return this.session;
 	}
 }

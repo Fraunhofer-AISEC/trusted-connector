@@ -32,7 +32,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 public class ServerConfiguration {
 	protected int port = 8080;
 	protected String basePath = "/";
-	protected IdsAttestationType attestationType;
+	protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
 	protected File tpmdSocket;
 	protected int attestationMask;
 	

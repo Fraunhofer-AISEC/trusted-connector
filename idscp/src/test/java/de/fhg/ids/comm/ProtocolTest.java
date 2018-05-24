@@ -41,7 +41,7 @@ import de.fhg.ids.comm.server.SocketListener;
 public class ProtocolTest {
 
 	@Test
-	public void test() throws InterruptedException, ExecutionException {
+	public void testFailureHandling() throws InterruptedException, ExecutionException {
 
 		MySocketListener listener = new MySocketListener();
 		

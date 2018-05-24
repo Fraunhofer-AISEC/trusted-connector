@@ -35,6 +35,7 @@
  */
 package de.fhg.camel.ids.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
@@ -71,11 +72,13 @@ public class DefaultWebsocket implements Serializable {
     private String connectionKey;
     private String pathSpec;
 	private FSM idsFsm;
+	private File tpmSocket;
 
-    public DefaultWebsocket(NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer) {
+    public DefaultWebsocket(NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, File tpmSocket) {
         this.sync = sync;
         this.consumer = consumer;
         this.pathSpec = pathSpec;
+        this.tpmSocket = tpmSocket;
     }
 
     @OnWebSocketClose
@@ -111,7 +114,7 @@ public class DefaultWebsocket implements Serializable {
         }
 		// Integrate server-side of IDS protocol
         machine = new ProtocolMachine();
-        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
+        idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask, tpmSocket);
         sync.addSocket(this);
     }
 

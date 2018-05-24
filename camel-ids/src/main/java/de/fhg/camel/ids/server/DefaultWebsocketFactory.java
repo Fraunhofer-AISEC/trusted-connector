@@ -35,6 +35,8 @@
  */
 package de.fhg.camel.ids.server;
 
+import java.io.File;
+
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 
 /**
@@ -44,7 +46,7 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 public class DefaultWebsocketFactory implements WebSocketFactory {
 
     @Override
-    public DefaultWebsocket newInstance(ServletUpgradeRequest request, String protocol, String pathSpec, NodeSynchronization sync, WebsocketConsumer consumer) {
-        return new DefaultWebsocket(sync, pathSpec, consumer);
+    public DefaultWebsocket newInstance(ServletUpgradeRequest request, String protocol, String pathSpec, NodeSynchronization sync, WebsocketConsumer consumer, File tpmSocket) {
+        return new DefaultWebsocket(sync, pathSpec, consumer, tpmSocket);
     }
 }

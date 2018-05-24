@@ -19,6 +19,17 @@
  */
 package de.fhg.camel.ids.server;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.DispatcherType;
+
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
@@ -28,7 +39,12 @@ import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.StringHelper;
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.eclipse.jetty.jmx.MBeanContainer;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
@@ -45,18 +61,10 @@ import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class WebsocketComponent extends UriEndpointComponent implements SSLContextParametersAware {
     protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
     protected static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<>();
+	private static final File TPM_SOCKET = new File("tpmd.sock");
 
     protected Map<String, WebSocketFactory> socketFactory;
     protected Server staticResourcesServer;
@@ -224,7 +232,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
             }
 
             NodeSynchronization sync = new DefaultNodeSynchronization(connectorRef.memoryStore);
-            WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
+            WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri(), TPM_SOCKET);
             if (prodcon instanceof WebsocketConsumer) {
                 WebsocketConsumer consumer = WebsocketConsumer.class.cast(prodcon);
                 if (servlet.getConsumer() == null) {
@@ -434,7 +442,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         return createStaticResourcesServer(server, context, home);
     }
 
-    protected WebsocketComponentServlet addServlet(NodeSynchronization sync, WebsocketProducerConsumer prodcon, String resourceUri) throws Exception {
+    protected WebsocketComponentServlet addServlet(NodeSynchronization sync, WebsocketProducerConsumer prodcon, String resourceUri, File tpmSocket) throws Exception {
 
         // Get Connector from one of the Jetty Instances to add WebSocket Servlet
         WebsocketEndpoint endpoint = prodcon.getEndpoint();
@@ -449,7 +457,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
             if (servlet == null) {
                 // Retrieve Context
                 ServletContextHandler context = (ServletContextHandler) connectorRef.server.getHandler();
-                servlet = createServlet(sync, pathSpec, servlets, context);
+                servlet = createServlet(sync, pathSpec, servlets, context, tpmSocket);
                 connectorRef.servlet = servlet;
                 LOG.debug("WebSocket servlet added for the following path : " + pathSpec + ", to the Jetty Server : " + key);
             }
@@ -460,8 +468,8 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         }
     }
 
-    protected WebsocketComponentServlet createServlet(NodeSynchronization sync, String pathSpec, Map<String, WebsocketComponentServlet> servlets, ServletContextHandler handler) {
-        WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, socketFactory);
+    protected WebsocketComponentServlet createServlet(NodeSynchronization sync, String pathSpec, Map<String, WebsocketComponentServlet> servlets, ServletContextHandler handler, File tpmSocket) {
+        WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, socketFactory, tpmSocket);
         servlets.put(pathSpec, servlet);
         ServletHolder servletHolder = new ServletHolder(servlet);
         servletHolder.getInitParameters().putAll(handler.getInitParams());
