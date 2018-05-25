@@ -59,6 +59,10 @@
 		<feature>camel-cxf</feature>
 		<feature>camel-http</feature>
 		<feature>camel-jetty</feature>
+
+		<!-- support for time-series data -->
+		<feature>camel-influxdb</feature>
+
 		<!-- for the IDS protocol -->
 		<feature>camel-ahc</feature>
 		
