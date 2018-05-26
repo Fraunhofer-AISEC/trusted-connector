@@ -61,7 +61,14 @@
 		<feature>camel-jetty</feature>
 
 		<!-- support for time-series data -->
-		<feature>camel-influxdb</feature>
+		<!-- NOTE: the camel-influxdb feature is broken, since it uses service-mix bundled influxdb, which does not have proper OSGi headers to include com.squareup.moshi as an Import, even though it is used -->
+		<!-- <feature>camel-influxdb</feature> -->
+		<bundle>wrap:mvn:org.influxdb/influxdb-java/2.10</bundle>
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.okhttp/3.9.1_2</bundle>
+  		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.retrofit/2.3.0_1</bundle>
+  		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.okio/1.13.0_1</bundle>
+  		<bundle>mvn:org.apache.camel/camel-influxdb/${camel.version}</bundle>
+		<bundle>wrap:mvn:com.squareup.moshi/moshi/1.6.0</bundle>
 
 		<!-- for the IDS protocol -->
 		<feature>camel-ahc</feature>
