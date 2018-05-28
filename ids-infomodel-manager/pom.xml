@@ -25,7 +25,20 @@
 
 	<name>IDS Container Manager</name>
 
+	<repositories>
+		<repository>
+			<id>isst-repo</id>
+			<name>Maven repository at ISST</name>
+			<url>https://mvn.isst.fraunhofer.de/artifactory/ids-local</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
+	<dependency>
+		<artifactId>ids-infomodel-java-lean</artifactId>
+		<groupId>de.fraunhofer.iais.eis</groupId>
+		<version>0.21-SNAPSHOT</version>
+	</dependency>
 
 		<!-- IDS components -->
 		<dependency>
