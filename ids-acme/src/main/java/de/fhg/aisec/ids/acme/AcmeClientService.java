@@ -19,16 +19,12 @@
  */
 package de.fhg.aisec.ids.acme;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloader;
-
 import org.apache.karaf.scheduler.Scheduler;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.*;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -37,16 +33,13 @@ import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -61,12 +54,27 @@ import java.util.*;
 public class AcmeClientService implements AcmeClient, Runnable {
 
     private static final String[] DOMAINS = {"local.host"};
-    public static final URI ACME_URL = URI.create("acme://boulder");
-    public static final FileSystem fs = FileSystems.getDefault();
+    public static final URI ACME_URI = URI.create("acme://boulder");
+    public static final Path KARAF_ETC = FileSystems.getDefault().getPath("etc");
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
+
+    public static String getTermsOfService(URI acmeUri) {
+        try {
+            Session session = new Session(ACME_URI);
+            URI tos = session.getMetadata().getTermsOfService();
+            try (InputStream tosStream = tos.toURL().openStream()) {
+                return CharStreams.toString(new InputStreamReader(tosStream, Charsets.UTF_8));
+            } catch (IOException ioe) {
+                return "Error reading ACME ToS from " + tos.toString() + ": " + ioe.getMessage();
+            }
+        } catch (AcmeException e) {
+            return "ACME ToS retrieval error: " + e.getMessage();
+        }
+    }
+
+
     private Set<SslContextFactoryReloader> reloader = Collections.synchronizedSet(new HashSet<>());
-    
     /*
      * The following block subscribes this component to any SslContextFactoryReloader.
      * 
@@ -98,12 +106,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
             AcmeChallengeServer.startServer(this);
 
             Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
-                Path keyFilePath = fs.getPath(keyFile);
+                Path keyFilePath = KARAF_ETC.resolve(keyFile);
                 if (!keyFilePath.toFile().exists()) {
                     KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
                     try (Writer fileWriter = Files.newBufferedWriter(keyFilePath, StandardCharsets.UTF_8)) {
                         KeyPairUtils.writeKeyPair(keyPair, fileWriter);
-                        LOG.info("Successfully created RSA KeyPair: " + fs.getPath(keyFile).toAbsolutePath());
+                        LOG.info("Successfully created RSA KeyPair: " + KARAF_ETC.resolve(keyFile).toAbsolutePath());
                     } catch (IOException e) {
                         LOG.error("Could not write key pair", e);
                         throw new RuntimeException(e);
@@ -112,7 +120,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
             });
 
             KeyPair acmeKeyPair;
-            try (Reader fileReader = Files.newBufferedReader(fs.getPath("acme.key"), StandardCharsets.UTF_8)) {
+            try (Reader fileReader = Files.newBufferedReader(KARAF_ETC.resolve("acme.key"), StandardCharsets.UTF_8)) {
                 acmeKeyPair = KeyPairUtils.readKeyPair(fileReader);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
@@ -121,8 +129,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
 
             Account account;
             try {
-                Session session = new Session(ACME_URL);
-                LOG.info(session.getMetadata().getTermsOfService().toString());
+                Session session = new Session(ACME_URI);
                 account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
                 LOG.info(account.getLocation().toString());
             } catch (AcmeException e) {
@@ -161,9 +168,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 throw new RuntimeException(e);
             }
 
-            try (Reader keyReader = Files.newBufferedReader(fs.getPath("domain.key"), StandardCharsets.UTF_8);
-                 Writer csrWriter = Files.newBufferedWriter(fs.getPath("domain.csr"), StandardCharsets.UTF_8);
-                 Writer chainWriter = Files.newBufferedWriter(fs.getPath("cert-chain.crt"), StandardCharsets.UTF_8))
+            String timestamp = Long.toString(System.currentTimeMillis());
+            try (Reader keyReader = Files.newBufferedReader(KARAF_ETC.resolve("domain.key"), StandardCharsets.UTF_8);
+                 Writer csrWriter = Files.newBufferedWriter(
+                         KARAF_ETC.resolve("csr_ " + timestamp + ".csr"), StandardCharsets.UTF_8);
+                 Writer chainWriter = Files.newBufferedWriter(
+                         KARAF_ETC.resolve("cert-chain_" + timestamp + ".crt"), StandardCharsets.UTF_8))
             {
                 KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
 
@@ -178,7 +188,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 Certificate certificate = order.getCertificate();
                 certificate.writeCertificate(chainWriter);
                 // Create JKS keystore from key and certificate chain
-                try (OutputStream jksOutputStream = Files.newOutputStream(fs.getPath("test.jks"))) {
+                Path keyStorePath = KARAF_ETC.resolve("keystore_" + timestamp + ".jks");
+                try (OutputStream jksOutputStream = Files.newOutputStream(keyStorePath)) {
                     KeyStore store = KeyStore.getInstance("JKS");
                     store.load(null);
                     store.setKeyEntry("ids", domainKeyPair.getPrivate(), "ids".toCharArray(),
@@ -186,10 +197,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                     store.store(jksOutputStream, "ids".toCharArray());
                     // If there is a SslContextFactoryReloader, make it refresh the TLS connections.
                     LOG.info("Reloading of " + reloader.size() + " SslContextFactoryReloader implementations...");
-                    reloader.forEach(SslContextFactoryReloader::reloadAll);
+                    reloader.forEach(r -> r.reloadAll(keyStorePath.toString()));
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating new KeyStore!", e);
                 }
+                Files.copy(keyStorePath, KARAF_ETC.resolve("keystore_latest.jks"), StandardCopyOption.REPLACE_EXISTING);
+                LOG.info(KARAF_ETC.resolve("keystore_latest.jks").toAbsolutePath().toString());
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
                 throw new RuntimeException(e);

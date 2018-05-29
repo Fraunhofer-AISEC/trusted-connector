@@ -19,13 +19,12 @@
  */
 package de.fhg.aisec.ids.dynamictls;
 
-import java.net.InetSocketAddress;
-
-import javax.net.ssl.SSLEngine;
-
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLEngine;
+import java.net.InetSocketAddress;
 
 /**
  * This SslContextFactory registers started instances to an OSGi service
@@ -38,14 +37,14 @@ public class AcmeSslContextFactory extends SslContextFactory {
 
 	@Override
 	protected void doStart() throws Exception {
-		LOG.debug("Start SslContextFactory: " + this.hashCode());
+		LOG.debug("Start " + this.toString());
 		JettySslContextFactoryReloader.addFactory(this);
 		super.doStart();
 	}
 
 	@Override
 	protected void doStop() throws Exception {
-		LOG.debug("Stop SslContextFactory: " + this.hashCode());
+		LOG.debug("Stop " + this.toString());
 		JettySslContextFactoryReloader.removeFactory(this);
 		super.doStop();
 	}
@@ -53,8 +52,13 @@ public class AcmeSslContextFactory extends SslContextFactory {
 	@Override
 	public SSLEngine newSSLEngine(InetSocketAddress address) {
 		// Just for debugging: log something when SSL connection is initiated
-		System.out.println(this.hashCode() + ": AcmeSslContextFactory.newSSLEngine(address)");
+		LOG.debug(this.toString() + ": AcmeSslContextFactory.newSSLEngine(" + address.toString() + ")");
 		return super.newSSLEngine(address);
 	}
+
+	@Override
+    public String toString() {
+        return String.format("%s@%x (%s)", this.getClass().getSimpleName(), this.hashCode(), this.getKeyStorePath());
+    }
 
 }

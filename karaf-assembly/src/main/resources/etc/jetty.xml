@@ -26,11 +26,11 @@
   <!-- Use our own Acme-enhanced SslContextFacctory instead of the standard org.eclipse.jetty.util.ssl.SslContextFactory -->
   <New id="sslContextFactory" class="de.fhg.aisec.ids.dynamictls.AcmeSslContextFactory">
     <Set name="KeyStorePath">
-      <SystemProperty name="karaf.home"/>/etc/test.jks
+      <SystemProperty name="karaf.home"/>/etc/keystore_latest.jks
     </Set>
     <Set name="KeyStorePassword">ids</Set>
     <Set name="KeyManagerPassword">ids</Set>
-    <Set name="EndpointIdentificationAlgorithm"></Set>
+    <Set name="EndpointIdentificationAlgorithm"/>
 
     <!-- Disable SSLv3 to protect against POODLE bug -->
     <Set name="ExcludeProtocols">
