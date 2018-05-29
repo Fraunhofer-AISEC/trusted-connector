@@ -33,7 +33,7 @@
 		<!-- IDS interfaces -->
 		<dependency>
 			<groupId>de.fhg.ids</groupId>
-			<artifactId>api</artifactId>
+			<artifactId>ids-api</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -79,14 +79,8 @@
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
 		    <artifactId>cxf-rt-rs-extension-providers</artifactId>
-		    <version>3.1.11</version>
+		    <version>${cxf.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jettison</groupId>
-			<artifactId>jettison</artifactId>
-			<version>1.3.8</version>
-		</dependency>
-
 
 		<!-- logging -->
 		<dependency>
@@ -97,7 +91,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
-
 
 		<!-- for testing -->
 		<dependency>
@@ -115,19 +108,19 @@
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
 		    <artifactId>cxf-rt-transports-local</artifactId>
-		    <version>3.1.5</version>
+		    <version>${cxf.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.cxf</groupId>
 		    <artifactId>cxf-rt-rs-client</artifactId>
-		    <version>3.1.5</version>
+		    <version>${cxf.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>com.fasterxml.jackson.jaxrs</groupId>
 		    <artifactId>jackson-jaxrs-json-provider</artifactId>
-		    <version>2.8.7</version>
+		    <version>${jackson.version}</version>
 		    <scope>test</scope>
 		</dependency>
         <dependency>
@@ -136,7 +129,6 @@
             <version>1.7.25</version>
         </dependency>
     </dependencies>
-
 
 	<build>
 		<defaultGoal>install</defaultGoal>
@@ -246,11 +238,6 @@
 						<phase>process-sources</phase>
 						<configuration>
 							<executable>yarn</executable>
-					        <successCodes>
-					            <successCode>0</successCode>
-								<!-- Enable the following line to ignore linting errors: -->
-					            <!--<successCode>2</successCode>-->
-					        </successCodes>
 							<arguments>
 								<argument>run</argument>
 								<argument>lint</argument>

@@ -9,8 +9,6 @@
 	<modules>
 		<module>checker-qual</module>
 		<module>tpm2j</module>
-		<module>asynchttpclient</module>
-		<module>jnr-unixsocket-osgi-wrapper</module>
 		<module>ids-api</module>
 		<module>ids-acme</module>
 		<module>ids-dynamic-tls</module>
@@ -19,7 +17,7 @@
 		<module>ids-container-manager</module>
 		<module>ids-webconsole</module>
 		<module>ids-dataflow-control</module>
-		<module>karaf-feature-ids</module>
+		<module>karaf-features-ids</module>
 		<module>karaf-assembly</module>
 		<module>rat-repository</module>
 	</modules>
@@ -31,20 +29,27 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<camel-version>2.20.2</camel-version>
+		<activemq.version>5.13.3</activemq.version>
+		<cxf.version>3.2.4</cxf.version>
+		<karaf.version>4.2.0</karaf.version>
+		<camel.version>2.21.1</camel.version>
+		<guava.version>23.4-jre</guava.version>
+
+		<!-- TODO: should change them to .version, not -version -->
+		<jnr-unixsocket-version>0.18</jnr-unixsocket-version>
 		<jetty-version>9.3.21.v20170918</jetty-version>
 		<jersey-version>2.25</jersey-version>
+		<jackson.version>2.9.5</jackson.version>
 		<protobuf-version>3.5.1</protobuf-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.0.34</ahc-version> <!-- Bug up to 2.0.31: ClassNotFoundException JdkSslContext -->
+		<ahc-version>2.4.4</ahc-version>
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
-		<karaf.version>4.1.5</karaf.version>
 		<slf4j-version>1.7.25</slf4j-version>
+
 		<skipBugs>false</skipBugs>
 		<skipLicense>false</skipLicense>
 	</properties>
-
 
 	<licenses>
 		<license>
@@ -78,14 +83,14 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>23.4-jre</version>
+				<version>${guava.version}</version>
 			</dependency>
 			
 			<!-- for REST API -->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-				<version>3.1.5</version>
+				<version>${cxf.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -163,22 +168,22 @@
 			<dependency>
 				<groupId>org.apache.camel</groupId>
 				<artifactId>camel-ahc</artifactId>
-				<version>${camel-version}</version>
+				<version>${camel.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.camel</groupId>
 				<artifactId>camel-cxf</artifactId>
-				<version>${camel-version}</version>
+				<version>${camel.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.camel</groupId>
 				<artifactId>camel-core</artifactId>
-				<version>${camel-version}</version>
+				<version>${camel.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.camel</groupId>
 				<artifactId>camel-core-osgi</artifactId>
-				<version>${camel-version}</version>
+				<version>${camel.version}</version>
 			</dependency>
 
 			<!-- AHC -->
@@ -204,7 +209,7 @@
 			<dependency>
 				<groupId>org.apache.camel</groupId>
 				<artifactId>camel-test</artifactId>
-				<version>${camel-version}</version>
+				<version>${camel.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -224,7 +229,7 @@
 			<dependency>
 				<groupId>com.github.jnr</groupId>
 				<artifactId>jnr-unixsocket</artifactId>
-				<version>0.13</version>
+				<version>${jnr-unixsocket-version}</version>
 			</dependency>
 
 			<dependency>
@@ -337,7 +342,7 @@
 				<plugin>
 					<groupId>org.apache.camel</groupId>
 					<artifactId>camel-maven-plugin</artifactId>
-					<version>${camel-version}</version>
+					<version>${camel.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>io.fabric8</groupId>

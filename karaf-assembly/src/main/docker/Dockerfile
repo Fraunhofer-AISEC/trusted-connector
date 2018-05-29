@@ -6,8 +6,7 @@ LABEL AUTHOR="Julian Schütte (julian.schuette@aisec.fraunhofer.de)"
 # socat is not important, just for debugging and playing around with UNIX sockets
 # libstdc++ is required for some (core) Java functionality
 # bash is just a nicer shell than sh
-# libtdl is required for the docker CLI client
-RUN apk --update --no-cache add socat libstdc++ bash libltdl \
+RUN apk --update --no-cache add socat libstdc++ bash docker \
     && ldconfig /lib /usr/glibc/usr/lib \
     && echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 # The latter is required for proper hostname resolution in Java on Alpine linux
@@ -16,9 +15,7 @@ RUN apk --update --no-cache add socat libstdc++ bash libltdl \
 ADD * /root/
 
 # Making karaf start script and docker CLI executable
-RUN chmod 0755 /root/bin/karaf \
-    && chmod 0755 /root/bin/docker \
-    && ln -s /root/bin/docker /bin/docker
+RUN chmod 0755 /root/bin/karaf
 
 CMD "/bin/bash"
 WORKDIR "/root"

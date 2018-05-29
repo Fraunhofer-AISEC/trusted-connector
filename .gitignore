@@ -13,3 +13,6 @@ rat-repository/src/main/docker/jar/*
 *.iml
 /.idea
 /karaf-assembly/src/main/resources/deploy/*.xml
+.classpath
+.DS_Store
+

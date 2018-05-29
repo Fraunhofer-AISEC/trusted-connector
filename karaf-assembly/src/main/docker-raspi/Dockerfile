@@ -5,8 +5,7 @@ MAINTAINER Julian Schütte (julian.schuette@aisec.fraunhofer.de)
 # socat is not important, just for debugging and playing around with UNIX sockets
 # libstdc++ is required for some (core) Java functionality
 # bash is just a nicer shell than sh
-# libtdl is required for the docker CLI client
-RUN apk --update add socat libstdc++ bash libltdl openjdk8-jre-base \
+RUN apk --update add socat libstdc++ bash docker openjdk8-jre-base \
     && rm -rf /var/cache/apk/* \
     && rm /bin/sh \
     && ln -s /bin/bash /bin/sh \
@@ -18,9 +17,7 @@ RUN apk --update add socat libstdc++ bash libltdl openjdk8-jre-base \
 ADD * /root/
 
 # Making karaf start script and docker CLI executable
-RUN chmod 0755 /root/bin/karaf \
-	&& chmod 0755 /root/bin/docker \
-	&& ln -s /root/bin/docker /bin/docker
+RUN chmod 0755 /root/bin/karaf
 
 CMD "/bin/bash"
 WORKDIR "/root"
