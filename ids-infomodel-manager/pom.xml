@@ -49,8 +49,15 @@
         <dependency>
             <groupId>de.fhg.ids</groupId>
             <artifactId>info-lean</artifactId>
-            <version>1.0</version>
+            <version>0.20-SNAPSHOT</version>
         </dependency>
+        
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>ids-webconsole</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 
 		<!-- OSGi -->
 		<dependency>
@@ -68,8 +75,6 @@
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
 		
-		
-
 		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -113,7 +118,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf 
+			<!-- This plugin creates an OSGi-compliant MANIFEST.MF from your bnd.cnf -->
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
@@ -124,12 +129,12 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> -->
+			</plugin> 
 
 			<!-- The following configuration is required because bnd-maven-plugin 
 				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
 				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
-				the manifest from this location, then the following config is not needed. 
+				the manifest from this location, then the following config is not needed.  -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -138,7 +143,7 @@
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
-			</plugin>  -->
+			</plugin> 
 		</plugins>
 	</build>
 </project>

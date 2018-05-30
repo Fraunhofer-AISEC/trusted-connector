@@ -33,7 +33,6 @@
 package de.fhg.aisec.ids.informationmodelmanager;
 
 import com.google.gson.Gson;
-import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fraunhofer.iais.eis.AppExecutionResources;
@@ -52,7 +51,6 @@ import de.fraunhofer.iais.eis.ServiceIsolationSupport;
 import de.fraunhofer.iais.eis.idsLocalDataConfidentiality;
 import de.fraunhofer.iais.eis.util.ConstraintViolationException;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
-import de.fraunhofer.iais.eis.util.VocabUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,6 +59,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -72,20 +71,20 @@ import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.fhg.aisec.ids.api.ConnectionSettings;
 
 
 /**
  * IDS Info Model Manager.
  *
  */
-@Component(enabled = true, immediate = true, name = "ids-infomodel-manager")
+@Component(name = "ids-infomodel-manager")
 public class InfoModelService implements InfoModel {
 	private static final Logger LOG = LoggerFactory.getLogger(InfoModelService.class);
 	private static final String CONNECTOR_MODEL = "ids.model";
-	private static final String STANDARD_URL = "http://standard/";
-	private Optional<PreferencesService> preferencesService = null;
-	private Optional<ConnectionManager> connectionManager = null;
+	//private Optional<PreferencesService> preferencesService = null;
+	private PreferencesService preferencesService = null;
+	//private Optional<ConnectionManager> connectionManager = null;
+	private ConnectionManager connectionManager = null;
 	
 	Preferences p;
 
@@ -98,21 +97,35 @@ public class InfoModelService implements InfoModel {
 	protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
 		LOG.info("Deactivating Info Model Manager");
 	}
-
+	
 	@Reference(name = "config.service",
-            service = PreferencesService.class,
+			service = PreferencesService.class,
             cardinality = ReferenceCardinality.OPTIONAL,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unbindConfigurationService")
-	public void bindConfigurationService(Optional<PreferencesService> conf) {
+	public void bindConfigurationService(PreferencesService conf) {
 		LOG.info("Bound to configuration service");
-		this.preferencesService = conf;
+		preferencesService = conf;
 		//TODO: Do we need to do any housekeeping?
 	}
 
 	public void unbindConfigurationService(PreferencesService conf) {
 		preferencesService = null;
 	}
+	
+	@Reference(name = "connections.service",
+            service = ConnectionManager.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindConnectionManager")
+    protected void bindConnectionManager(ConnectionManager conn) {
+        LOG.info("Bound to connection manager");
+        connectionManager = conn;
+    }
+
+    protected void unbindConnectionManager(ConnectionManager conn) {
+        connectionManager = null;
+    }
 
 	private void setPreference(String key, String value, Preferences p) {
 		if (p != null) {
@@ -121,14 +134,13 @@ public class InfoModelService implements InfoModel {
 			LOG.error("No Preferences available.");
 		}
 	}
-
 	
 	private URL getURL(String key) {
 		URL url;
 
-		if (preferencesService.isPresent()) {
+		if (preferencesService!=null) {
 			
-			if ((p = this.preferencesService.get().getUserPreferences(CONNECTOR_MODEL)) != null) {
+			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 				try {
 					url = new URL(p.get(key, null));
 					return url;
@@ -148,10 +160,10 @@ public class InfoModelService implements InfoModel {
 	// Build Connector Entity Names
 	private List<PlainLiteral> getConnectorEntityNames() {
 		
-		if (preferencesService.isPresent()) {
+		if (preferencesService!=null) {
 			
 	
-			if ((p = this.preferencesService.get().getUserPreferences(CONNECTOR_MODEL)) != null) {
+			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 				return new Gson().fromJson(p.get("conn_entity", null), ArrayList.class);
 			} else {
 				LOG.error("Couldn't get Connector Entity Names");
@@ -167,9 +179,9 @@ public class InfoModelService implements InfoModel {
 		DataEndpoint eP;
 		List<DataEndpoint> ePs = new ArrayList<>();
 		
-		if (this.connectionManager.isPresent()) {
+		if (connectionManager!=null) {
 		
-			List<IDSCPServerEndpoint> sePs = this.connectionManager.get().listAvailableEndpoints();
+			List<IDSCPServerEndpoint> sePs = connectionManager.listAvailableEndpoints();
 	
 			for (IDSCPServerEndpoint tempEP : sePs) {
 				// TODO build EndpointIdentifier like URL in Infomodell
@@ -191,12 +203,10 @@ public class InfoModelService implements InfoModel {
 	// Build Security Profile
 	private SecurityProfile getSecurityProfile() {
 
-		ConnectionSettings settings;
-
-		if (this.preferencesService.isPresent()) {
+		if (preferencesService!=null) {
 	
 	
-			if ((p = this.preferencesService.get().getUserPreferences(CONNECTOR_MODEL)) != null) {
+			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 				try {
 					SecurityProfile prof = new SecurityProfileBuilder()
 							.integrityProtectionAndVerification(IntegrityProtectionAndVerification
@@ -228,7 +238,7 @@ public class InfoModelService implements InfoModel {
 
 	private boolean generateRDF() {
 
-		if ((p = this.preferencesService.get().getUserPreferences(CONNECTOR_MODEL)) != null) {
+		if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 
 			try {
 				String rdf = new ConnectorBuilder(getURL("conn_url")).operator(getURL("op_url"))
@@ -249,9 +259,9 @@ public class InfoModelService implements InfoModel {
 	}
 
 	private String getRDF() {
-		if (this.preferencesService.isPresent()) {
+		if (preferencesService!=null) {
 
-			if ((p = this.preferencesService.get().getUserPreferences(CONNECTOR_MODEL)) != null) {
+			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 				return p.get("infomodel", "");
 			} else {
 				LOG.error("Couldn't set Connector_URL.");
@@ -285,10 +295,10 @@ public class InfoModelService implements InfoModel {
 	public boolean setConnector(URL conn_url, URL op_url, Collection<? extends PlainLiteral> entityNames,
 			SecurityProfile profile) {
 
-		if (this.preferencesService.isPresent()) {
+		if (preferencesService!=null) {
 	
 	
-			if ((p = this.preferencesService.get().getUserPreferences(CONNECTOR_MODEL)) != null) {
+			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 	
 				// Set Connector URL ---> allowed to be empty from model
 				if (conn_url != null) {
