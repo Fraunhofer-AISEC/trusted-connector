@@ -3,7 +3,4 @@ Export-Package: \
   de.fhg.ids.infomodel*,\
   de.fhg.aisec.ids.informationmodelmanager
 Import-Package: \
-  de.fraunhofer.iais.eis*,\
   *
--includeresource: @lib/ids-infomodel-java-lean-0.20-SNAPSHOT.jar
-Bundle-ClassPath: .,ids-infomodel-java-lean-0.20-SNAPSHOT.jar

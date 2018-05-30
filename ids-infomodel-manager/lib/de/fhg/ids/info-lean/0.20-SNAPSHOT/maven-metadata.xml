@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>de.fhg.ids</groupId>
+  <artifactId>info-lean</artifactId>
+  <version>0.20-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20180530.082310</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20180530082310</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>0.20-20180530.082310-1</value>
+        <updated>20180530082310</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>0.20-20180530.082310-1</value>
+        <updated>20180530082310</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
