@@ -23,8 +23,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLEngine;
-import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 
 /**
  * This SslContextFactory registers started instances to an OSGi service
@@ -48,12 +47,11 @@ public class AcmeSslContextFactory extends SslContextFactory {
 		JettySslContextFactoryReloader.removeFactory(this);
 		super.doStop();
 	}
-	
+
 	@Override
-	public SSLEngine newSSLEngine(InetSocketAddress address) {
-		// Just for debugging: log something when SSL connection is initiated
-		LOG.debug(this.toString() + ": AcmeSslContextFactory.newSSLEngine(" + address.toString() + ")");
-		return super.newSSLEngine(address);
+	public void reload(Consumer<SslContextFactory> consumer) throws Exception {
+		LOG.info("Reload " + this.toString());
+		super.reload(consumer);
 	}
 
 	@Override

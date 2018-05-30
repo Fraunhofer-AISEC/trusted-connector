@@ -32,9 +32,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -66,7 +68,8 @@ public class CertApi {
 	@GET
 	@Path("acme_get_cert")
 	public void getAcmeCert() {
-		WebConsoleComponent.getAcmeClient().requestCertificate();
+		WebConsoleComponent.getAcmeClient().renewCertificate(FileSystems.getDefault().getPath("etc"),
+				URI.create("acme://boulder"));
 	}
 
 	@GET
@@ -173,7 +176,6 @@ public class CertApi {
 	 * @return
 	 */
 	private boolean storeCert(File trustStoreFile, File certFile) {
-		boolean returnResult = false;
 		CertificateFactory cf;
 		String alias = certFile.getName().replace(".", "_");
 		try {
@@ -182,7 +184,7 @@ public class CertApi {
 			Certificate certs = cf.generateCertificate(certstream);
 
 			try (FileInputStream fis = new FileInputStream(trustStoreFile);
-					FileOutputStream fos = new FileOutputStream(trustStoreFile);) {
+					FileOutputStream fos = new FileOutputStream(trustStoreFile)) {
 				KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 				String password = KEYSTORE_PWD;
 				keystore.load(fis, password.toCharArray());
@@ -193,12 +195,11 @@ public class CertApi {
 				keystore.store(fos, password.toCharArray());
 			}
 
-			returnResult = true;
+			return true;
 		} catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
 			LOG.error(e.getMessage(), e);
-			returnResult = false;
+			return false;
 		}
-		return returnResult;
 	}
 
 	private static InputStream fullStream(String fname) throws IOException {
@@ -272,10 +273,9 @@ public class CertApi {
 	 */
 	private List<Cert> getKeystoreEntries(File keystoreFile) {
 		List<Cert> certs = new ArrayList<>();
-		try (FileInputStream fis = new FileInputStream(keystoreFile);) {
+		try (FileInputStream fis = new FileInputStream(keystoreFile)) {
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-			String password = KEYSTORE_PWD;
-			keystore.load(fis, password.toCharArray());
+			keystore.load(fis, KEYSTORE_PWD.toCharArray());
 			
 			Enumeration<String> enumeration = keystore.aliases();
 			while (enumeration.hasMoreElements()) {
@@ -324,7 +324,6 @@ public class CertApi {
 
 				certs.add(cert);
 			}
-			fis.close();
 		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException
 				| IOException e) {
 			LOG.error(e.getMessage(), e);

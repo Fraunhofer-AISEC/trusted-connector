@@ -52,12 +52,11 @@ public class JettySslContextFactoryReloader implements SslContextFactoryReloader
     @Override
     public void reloadAll(String newKeyStorePath) {
         synchronized (factories) {
-            LOG.info("Reloading " + factories.size() + " SslContentFactory instance(s) of Jetty");
             factories.forEach(factory -> {
                 try {
                     factory.reload(f -> f.setKeyStorePath(newKeyStorePath));
                 } catch (Exception e) {
-                    LOG.error("Error whilst reloading a SslContextFactory", e);
+                    LOG.error("Error whilst reloading SslContextFactory:" + factory.toString() + " - ", e);
                 }
             });
         }

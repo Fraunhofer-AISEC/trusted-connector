@@ -46,6 +46,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component(immediate=true, property = {
@@ -54,14 +56,14 @@ import java.util.*;
 public class AcmeClientService implements AcmeClient, Runnable {
 
     private static final String[] DOMAINS = {"local.host"};
-    public static final URI ACME_URI = URI.create("acme://boulder");
-    public static final Path KARAF_ETC = FileSystems.getDefault().getPath("etc");
+    public static final double RENEWAL_THRESHOLD = 100./3.;
+    public static final String KEYSTORE_LATEST = "keystore_latest.jks";
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
 
-    public static String getTermsOfService(URI acmeUri) {
+    public static String getTermsOfService(URI acmeServerUri) {
         try {
-            Session session = new Session(ACME_URI);
+            Session session = new Session(acmeServerUri);
             URI tos = session.getMetadata().getTermsOfService();
             try (InputStream tosStream = tos.toURL().openStream()) {
                 return CharStreams.toString(new InputStreamReader(tosStream, Charsets.UTF_8));
@@ -100,18 +102,18 @@ public class AcmeClientService implements AcmeClient, Runnable {
         return challengeMap.get(challenge);
     }
 
-    public void requestCertificate() {
+    public void renewCertificate(Path targetDirectory, URI acmeServerUri) {
         try {
             // Start ACME challenge responder
             AcmeChallengeServer.startServer(this);
 
             Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
-                Path keyFilePath = KARAF_ETC.resolve(keyFile);
+                Path keyFilePath = targetDirectory.resolve(keyFile);
                 if (!keyFilePath.toFile().exists()) {
                     KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
                     try (Writer fileWriter = Files.newBufferedWriter(keyFilePath, StandardCharsets.UTF_8)) {
                         KeyPairUtils.writeKeyPair(keyPair, fileWriter);
-                        LOG.info("Successfully created RSA KeyPair: " + KARAF_ETC.resolve(keyFile).toAbsolutePath());
+                        LOG.info("Successfully created RSA KeyPair: " + targetDirectory.resolve(keyFile).toAbsolutePath());
                     } catch (IOException e) {
                         LOG.error("Could not write key pair", e);
                         throw new RuntimeException(e);
@@ -120,7 +122,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
             });
 
             KeyPair acmeKeyPair;
-            try (Reader fileReader = Files.newBufferedReader(KARAF_ETC.resolve("acme.key"), StandardCharsets.UTF_8)) {
+            try (Reader fileReader = Files.newBufferedReader(targetDirectory.resolve("acme.key"), StandardCharsets.UTF_8)) {
                 acmeKeyPair = KeyPairUtils.readKeyPair(fileReader);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
@@ -129,7 +131,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
 
             Account account;
             try {
-                Session session = new Session(ACME_URI);
+                Session session = new Session(acmeServerUri);
                 account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
                 LOG.info(account.getLocation().toString());
             } catch (AcmeException e) {
@@ -168,12 +170,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 throw new RuntimeException(e);
             }
 
-            String timestamp = Long.toString(System.currentTimeMillis());
-            try (Reader keyReader = Files.newBufferedReader(KARAF_ETC.resolve("domain.key"), StandardCharsets.UTF_8);
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss.SSS"));
+            try (Reader keyReader = Files.newBufferedReader(targetDirectory.resolve("domain.key"), StandardCharsets.UTF_8);
                  Writer csrWriter = Files.newBufferedWriter(
-                         KARAF_ETC.resolve("csr_ " + timestamp + ".csr"), StandardCharsets.UTF_8);
+                         targetDirectory.resolve("csr_ " + timestamp + ".csr"), StandardCharsets.UTF_8);
                  Writer chainWriter = Files.newBufferedWriter(
-                         KARAF_ETC.resolve("cert-chain_" + timestamp + ".crt"), StandardCharsets.UTF_8))
+                         targetDirectory.resolve("cert-chain_" + timestamp + ".crt"), StandardCharsets.UTF_8))
             {
                 KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
 
@@ -188,7 +190,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 Certificate certificate = order.getCertificate();
                 certificate.writeCertificate(chainWriter);
                 // Create JKS keystore from key and certificate chain
-                Path keyStorePath = KARAF_ETC.resolve("keystore_" + timestamp + ".jks");
+                Path keyStorePath = targetDirectory.resolve("keystore_" + timestamp + ".jks");
                 try (OutputStream jksOutputStream = Files.newOutputStream(keyStorePath)) {
                     KeyStore store = KeyStore.getInstance("JKS");
                     store.load(null);
@@ -201,8 +203,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating new KeyStore!", e);
                 }
-                Files.copy(keyStorePath, KARAF_ETC.resolve("keystore_latest.jks"), StandardCopyOption.REPLACE_EXISTING);
-                LOG.info(KARAF_ETC.resolve("keystore_latest.jks").toAbsolutePath().toString());
+                Files.copy(keyStorePath, targetDirectory.resolve("keystore_latest.jks"), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
                 throw new RuntimeException(e);
@@ -219,10 +220,31 @@ public class AcmeClientService implements AcmeClient, Runnable {
         }
     }
 
+    public void renewalCheck(Path targetDirectory, URI acmeServerUri) {
+        try (InputStream jksInputStream = Files.newInputStream(targetDirectory.resolve(KEYSTORE_LATEST))) {
+            KeyStore store = KeyStore.getInstance("JKS");
+            store.load(jksInputStream, "ids".toCharArray());
+            X509Certificate cert = (X509Certificate) store.getCertificateChain("ids")[0];
+            long now = new Date().getTime(),
+                    notBeforeTime = cert.getNotBefore().getTime(),
+                    notAfterTime = cert.getNotAfter().getTime();
+            double validityPercentile = 100. * (double) (notAfterTime - now) / (double) (notAfterTime - notBeforeTime);
+            LOG.info(String.format("Remaining relative validity span (%s): %.2f%%",
+                    targetDirectory.toString(), validityPercentile));
+            if (validityPercentile < RENEWAL_THRESHOLD) {
+                LOG.info(String.format("%.2f < %.2f, requesting renewal", validityPercentile, RENEWAL_THRESHOLD));
+                renewCertificate(targetDirectory, acmeServerUri);
+            }
+        } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException|IOException e) {
+            LOG.error("Error in web console keystore renewal check", e);
+        }
+    }
+
     @Activate
     @Override
     public void run() {
         LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
+        renewalCheck(FileSystems.getDefault().getPath("etc"), URI.create("acme://boulder"));
     }
 
 }

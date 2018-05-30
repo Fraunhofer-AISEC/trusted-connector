@@ -19,10 +19,13 @@
  */
 package de.fhg.aisec.ids.api.acme;
 
+import java.net.URI;
+import java.nio.file.Path;
+
 public interface AcmeClient {
 
-    public String getChallengeAuthorization(String challenge);
+    String getChallengeAuthorization(String challenge);
 
-    public void requestCertificate();
+    void renewCertificate(Path targetDirectory, URI acmeServerUri);
 
 }
