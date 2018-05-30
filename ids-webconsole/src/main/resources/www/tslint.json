@@ -18,6 +18,7 @@
       "severity": "error"
     },
     "curly": true,
+    "comment-format": false,
     
     "i18n": false,
     "no-unused-css": false,
