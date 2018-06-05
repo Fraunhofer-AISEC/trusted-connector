@@ -25,7 +25,10 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.Config;
 import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -35,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,61 +56,27 @@ import java.util.stream.Collectors;
 public class ConfigApi {
 	public static final String GENERAL_CONFIG = "General Configuration";
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
-	
+
 	@GET
-	@Path("list")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Map<String, String> get() {
-		Optional<PreferencesService> cO = WebConsoleComponent.getConfigService();
-		if (!cO.isPresent()) {
-			throw new ServiceUnavailableException("PreferenceService not available");
-		}
-		
-		Preferences prefs = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
-		if (prefs == null) {
-			return new HashMap<>();
-		}
-		
-		HashMap<String, String> pMap = new HashMap<>();
-		try {
-			for (String key : prefs.keys()) {
-				pMap.put(key, prefs.get(key, null));
-			}
-		} catch (BackingStoreException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return pMap;
+	public ConnectorConfig get() {
+		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
+		ConnectorConfig config = settings.getConnectorConfig();
+		return config != null ? config : new Config();
 	}
 
 	@POST
 	@OPTIONS
-	@Path("set")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String set(Map<String, String> settings) {
-		Optional<PreferencesService> cO = WebConsoleComponent.getConfigService();
-		if (!cO.isPresent()) {
-			throw new ServiceUnavailableException("PreferenceService not available");
-		}
-		
-		if (settings == null) {
-			throw new NotFoundException("Settings not found");
-		}
-		
-		// Store into preferences service
-		Preferences idsConfig = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
-		if (idsConfig == null) {
-			throw new WebApplicationException(Response.serverError()
-					.entity("no preferences registered for pid " + Constants.PREFERENCES_ID).build());
+	public String set(ConnectorConfig config) {
+		if (config == null) {
+			throw new BadRequestException("No valid preferences received!");
 		}
 
-		settings.forEach(idsConfig::put);
-		
-		try {
-			idsConfig.flush();
-			return "ok";
-		} catch (BackingStoreException e) {
-			throw new InternalServerErrorException(e);
-		}		
+		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
+		settings.setConnectorConfig(config);
+
+		return "ok";
 	}
 
 	/**

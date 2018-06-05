@@ -27,6 +27,7 @@ import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.api.ConfigApi;
 import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.component.annotations.Component;
@@ -61,6 +62,7 @@ import java.util.Optional;
 @Component(name="ids-webconsole")
 public class WebConsoleComponent {
 	private static final Logger LOG = LoggerFactory.getLogger(WebConsoleComponent.class);
+	private static Settings settings = null;
 	private static PreferencesService preferencesService = null;
 	private static ContainerManager cml = null;
 	private static AcmeClient acmeClient = null;
@@ -135,7 +137,7 @@ public class WebConsoleComponent {
 		}
 	}
 
-	@Reference(name = "config.service",
+	@Reference(name = "preferences.service",
             service = PreferencesService.class,
             cardinality = ReferenceCardinality.OPTIONAL,
             policy = ReferencePolicy.DYNAMIC,
@@ -153,14 +155,32 @@ public class WebConsoleComponent {
 	public void unbindConfigurationService(PreferencesService conf) {
 		preferencesService = null;
 	}
-	public static Optional<PreferencesService> getConfigService() {
-		return Optional.ofNullable(preferencesService);
-	}
 	public static PreferencesService getPreferencesServiceOrThrowSUE() {
 		if (preferencesService != null) {
 			return preferencesService;
 		} else {
 			throw new ServiceUnavailableException("PreferenceService is currently not available");
+		}
+	}
+
+	@Reference(name = "config.service",
+			service = Settings.class,
+			cardinality = ReferenceCardinality.OPTIONAL,
+			policy = ReferencePolicy.DYNAMIC,
+			unbind = "unbindSettingsService")
+	public void bindSettingsService(Settings s) {
+		LOG.info("Bound to configuration service");
+		settings = s;
+	}
+	@SuppressWarnings("unused")
+	public void unbindSettingsService(Settings s) {
+		settings = null;
+	}
+	public static Settings getSettingsOrThrowSUE() {
+		if (settings != null) {
+			return settings;
+		} else {
+			throw new ServiceUnavailableException("Settings are currently not available");
 		}
 	}
 	

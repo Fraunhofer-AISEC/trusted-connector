@@ -10,13 +10,13 @@ export class SettingsService {
   constructor(private http: HttpClient) { }
 
   getSettings(): Observable<Settings> {
-    return this.http.get<Settings>(environment.apiURL + '/config/list/');
+    return this.http.get<Settings>(environment.apiURL + '/config');
   }
 
   store(model: Settings): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    return this.http.post(environment.apiURL + '/config/set', model, {
+    return this.http.post(environment.apiURL + '/config', model, {
       headers,
       responseType: 'text'
     });
