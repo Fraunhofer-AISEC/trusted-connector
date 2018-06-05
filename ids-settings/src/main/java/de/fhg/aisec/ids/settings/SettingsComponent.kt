@@ -33,8 +33,8 @@ class SettingsComponent : Settings {
         mapDB!!.close()
     }
 
-    override fun getConnectorConfig(): ConnectorConfig? {
-        return settingsStore!![CONNECTOR_SETTINGS_KEY] as ConnectorConfig?
+    override fun getConnectorConfig(): ConnectorConfig {
+        return settingsStore!!.getOrPut(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
     }
 
     override fun setConnectorConfig(connectorConfig: ConnectorConfig) {

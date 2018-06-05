@@ -28,7 +28,6 @@ import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.data.Config;
 import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -61,8 +60,7 @@ public class ConfigApi {
 	@Produces(MediaType.APPLICATION_JSON)
 	public ConnectorConfig get() {
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
-		ConnectorConfig config = settings.getConnectorConfig();
-		return config != null ? config : new Config();
+		return settings.getConnectorConfig();
 	}
 
 	@POST

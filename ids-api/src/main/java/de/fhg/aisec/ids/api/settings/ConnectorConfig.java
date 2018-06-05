@@ -19,18 +19,38 @@
  */
 package de.fhg.aisec.ids.api.settings;
 
-public interface ConnectorConfig {
+import java.io.Serializable;
 
-    String getBrokerUrl();
+public class ConnectorConfig implements Serializable {
+    private String brokerUrl;
+    private String ttpHost;
+    private int ttpPort;
+    private String acmeServerWebcon;
+    private String acmeDnsWebcon;
+    private int acmePortWebcon;
 
-    String getTtpHost();
+    public String getBrokerUrl() {
+        return brokerUrl;
+    }
 
-    int getTtpPort();
+    public String getTtpHost() {
+        return ttpHost;
+    }
 
-    String getAcmeServerWebcon();
+    public int getTtpPort() {
+        return ttpPort;
+    }
 
-    String getAcmeDnsWebcon();
+    public String getAcmeServerWebcon() {
+        return acmeServerWebcon;
+    }
 
-    int getAcmePortWebcon();
+    public String getAcmeDnsWebcon() {
+        return acmeDnsWebcon;
+    }
 
+    public int getAcmePortWebcon() {
+        return acmePortWebcon;
+    }
 }
+
