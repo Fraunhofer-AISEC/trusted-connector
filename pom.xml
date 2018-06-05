@@ -10,6 +10,7 @@
 		<module>checker-qual</module>
 		<module>tpm2j</module>
 		<module>ids-api</module>
+		<module>ids-settings</module>
 		<module>ids-acme</module>
 		<module>ids-dynamic-tls</module>
 		<module>camel-ids</module>
@@ -46,6 +47,7 @@
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
 		<slf4j-version>1.7.25</slf4j-version>
+		<kotlin.version>1.2.41</kotlin.version>
 
 		<skipBugs>false</skipBugs>
 		<skipLicense>false</skipLicense>
