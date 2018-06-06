@@ -26,6 +26,6 @@ public interface AcmeClient {
 
     String getChallengeAuthorization(String challenge);
 
-    void renewCertificate(Path targetDirectory, URI acmeServerUri);
+    void renewCertificate(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort);
 
 }

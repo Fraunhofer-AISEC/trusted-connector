@@ -29,6 +29,10 @@ public class ConnectorConfig implements Serializable {
     private String acmeDnsWebcon;
     private int acmePortWebcon;
 
+    public ConnectorConfig() {
+        acmePortWebcon = 80;
+    }
+
     public String getBrokerUrl() {
         return brokerUrl;
     }

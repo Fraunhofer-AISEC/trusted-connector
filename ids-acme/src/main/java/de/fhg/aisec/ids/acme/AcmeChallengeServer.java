@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringBufferInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,8 +38,8 @@ public class AcmeChallengeServer {
 
     private AcmeChallengeServer() { /* hides public c'tor */ }
     
-    public static void startServer(final AcmeClient acmeClient) throws IOException {
-        server = new NanoHTTPD(5002) {
+    public static void startServer(final AcmeClient acmeClient, int challengePort) throws IOException {
+        server = new NanoHTTPD(challengePort) {
             @Override
             public Response serve(IHTTPSession session) {
                 Matcher tokenMatcher = ACME_REGEX.matcher(session.getUri());

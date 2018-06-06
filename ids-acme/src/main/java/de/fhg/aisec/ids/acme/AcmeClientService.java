@@ -23,6 +23,8 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloader;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
 import org.apache.karaf.scheduler.Scheduler;
 import org.osgi.service.component.annotations.*;
 import org.shredzone.acme4j.*;
@@ -55,26 +57,28 @@ import java.util.*;
 })
 public class AcmeClientService implements AcmeClient, Runnable {
 
-    private static final String[] DOMAINS = {"local.host"};
     public static final double RENEWAL_THRESHOLD = 100./3.;
     public static final String KEYSTORE_LATEST = "keystore_latest.jks";
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
 
-    public static String getTermsOfService(URI acmeServerUri) {
-        try {
-            Session session = new Session(acmeServerUri);
-            URI tos = session.getMetadata().getTermsOfService();
-            try (InputStream tosStream = tos.toURL().openStream()) {
-                return CharStreams.toString(new InputStreamReader(tosStream, Charsets.UTF_8));
-            } catch (IOException ioe) {
-                return "Error reading ACME ToS from " + tos.toString() + ": " + ioe.getMessage();
-            }
-        } catch (AcmeException e) {
-            return "ACME ToS retrieval error: " + e.getMessage();
-        }
+    private static Settings settings = null;
+    /*
+     * The following block subscribes this component to the Settings Service
+     */
+    @Reference(name = "config.service",
+            service = Settings.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindSettingsService")
+    public void bindSettingsService(Settings s) {
+        LOG.info("Bound to configuration service");
+        settings = s;
     }
-
+    @SuppressWarnings("unused")
+    public void unbindSettingsService(Settings s) {
+        settings = null;
+    }
 
     private Set<SslContextFactoryReloader> reloader = Collections.synchronizedSet(new HashSet<>());
     /*
@@ -96,17 +100,27 @@ public class AcmeClientService implements AcmeClient, Runnable {
 	protected void unbindSslContextFactoryReloader(SslContextFactoryReloader reloader) {
 		this.reloader.remove(reloader);
 	}
-    
-    
+
+    public static String getTermsOfService(URI acmeServerUri) {
+        try {
+            Session session = new Session(acmeServerUri);
+            URI tos = session.getMetadata().getTermsOfService();
+            try (InputStream tosStream = tos.toURL().openStream()) {
+                return CharStreams.toString(new InputStreamReader(tosStream, Charsets.UTF_8));
+            } catch (IOException ioe) {
+                return "Error reading ACME ToS from " + tos.toString() + ": " + ioe.getMessage();
+            }
+        } catch (AcmeException e) {
+            return "ACME ToS retrieval error: " + e.getMessage();
+        }
+    }
+
     public String getChallengeAuthorization(String challenge) {
         return challengeMap.get(challenge);
     }
 
-    public void renewCertificate(Path targetDirectory, URI acmeServerUri) {
+    public void renewCertificate(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort) {
         try {
-            // Start ACME challenge responder
-            AcmeChallengeServer.startServer(this);
-
             Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
                 Path keyFilePath = targetDirectory.resolve(keyFile);
                 if (!keyFilePath.toFile().exists()) {
@@ -139,9 +153,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 throw new RuntimeException(e);
             }
 
+            // Start ACME challenge responder
+            AcmeChallengeServer.startServer(this, challengePort);
+
             Order order;
             try {
-                order = account.newOrder().domains(DOMAINS).create();
+                order = account.newOrder().domains(domains).create();
                 order.getAuthorizations().parallelStream().map(authorization ->
                         (Http01Challenge) authorization.findChallenge(Http01Challenge.TYPE)).forEach(challenge -> {
                     challengeMap.put(challenge.getToken(), challenge.getAuthorization());
@@ -180,8 +197,9 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 KeyPair domainKeyPair = KeyPairUtils.readKeyPair(keyReader);
 
                 CSRBuilder csrb = new CSRBuilder();
-                csrb.addDomains(DOMAINS);
-                csrb.setOrganization("Fraunhofer ACME Demo");
+                csrb.addDomains(domains);
+                // TODO: Retrieve such information from settings/info-model
+                csrb.setOrganization("Trusted Connector");
                 csrb.sign(domainKeyPair);
                 csrb.write(csrWriter);
                 order.execute(csrb.getEncoded());
@@ -220,7 +238,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
         }
     }
 
-    public void renewalCheck(Path targetDirectory, URI acmeServerUri) {
+    public void renewalCheck(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort) {
         try (InputStream jksInputStream = Files.newInputStream(targetDirectory.resolve(KEYSTORE_LATEST))) {
             KeyStore store = KeyStore.getInstance("JKS");
             store.load(jksInputStream, "ids".toCharArray());
@@ -233,7 +251,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
                     targetDirectory.toString(), validityPercentile));
             if (validityPercentile < RENEWAL_THRESHOLD) {
                 LOG.info(String.format("%.2f < %.2f, requesting renewal", validityPercentile, RENEWAL_THRESHOLD));
-                renewCertificate(targetDirectory, acmeServerUri);
+                renewCertificate(targetDirectory, acmeServerUri, domains, challengePort);
             }
         } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException|IOException e) {
             LOG.error("Error in web console keystore renewal check", e);
@@ -244,7 +262,9 @@ public class AcmeClientService implements AcmeClient, Runnable {
     @Override
     public void run() {
         LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
-        renewalCheck(FileSystems.getDefault().getPath("etc"), URI.create("acme://boulder"));
+        ConnectorConfig config = settings.getConnectorConfig();
+        renewalCheck(FileSystems.getDefault().getPath("etc"), URI.create(config.getAcmeServerWebcon()),
+                config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
     }
 
 }

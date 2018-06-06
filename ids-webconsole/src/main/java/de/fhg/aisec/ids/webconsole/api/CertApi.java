@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
@@ -66,10 +67,16 @@ public class CertApi {
 	private static final String KEYSTORE_FILE = "client-keystore.jks";
 
 	@GET
-	@Path("acme_get_cert")
-	public void getAcmeCert() {
-		WebConsoleComponent.getAcmeClient().renewCertificate(FileSystems.getDefault().getPath("etc"),
-				URI.create("acme://boulder"));
+	@Path("acme_renew/{target}")
+	public void getAcmeCert(@PathParam("target") String target) {
+		ConnectorConfig config = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig();
+		if ("console".equals(target)) {
+			WebConsoleComponent.getAcmeClient().renewCertificate(
+					FileSystems.getDefault().getPath("etc"), URI.create(config.getAcmeServerWebcon()),
+					config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
+		} else {
+			LOG.warn("ACME renewal for service other than WebConsole is not yet implemented!");
+		}
 	}
 
 	@GET
