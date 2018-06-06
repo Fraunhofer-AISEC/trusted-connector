@@ -20,7 +20,7 @@ class SettingsComponent : Settings {
     fun activate() {
         LOG.info("Open Settings Database...")
         // Use default reliable (non-mmap) mode and WAL for transaction safety
-        mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().make()
+        mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().closeOnJvmShutdown().make()
     }
 
     @Deactivate
