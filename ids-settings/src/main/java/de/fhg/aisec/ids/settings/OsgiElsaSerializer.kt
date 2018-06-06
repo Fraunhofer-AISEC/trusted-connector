@@ -6,7 +6,7 @@ import org.mapdb.Serializer
 import org.mapdb.elsa.ElsaMaker
 import org.mapdb.elsa.ElsaSerializer
 
-class OsgiElsaSerializer : Serializer<Any> {
+class OsgiElsaSerializer<T> : Serializer<T> {
     private val serializer: ElsaSerializer
 
     init {
@@ -19,11 +19,11 @@ class OsgiElsaSerializer : Serializer<Any> {
         currentThread.contextClassLoader = cl
     }
 
-    override fun serialize(output: DataOutput2, obj: Any) {
+    override fun serialize(output: DataOutput2, obj: T) {
         serializer.serialize(output, obj)
     }
 
-    override fun deserialize(input: DataInput2, available: Int): Any {
-        return serializer.deserialize<Any>(input)
+    override fun deserialize(input: DataInput2, available: Int): T {
+        return serializer.deserialize<T>(input)
     }
 }

@@ -14,4 +14,3 @@ Private-Package: \
     org.mapdb*,\
     net.jpountz*,\
     org.eclipse.collections*
-Export-Package: de.fhg.aisec.ids.settings

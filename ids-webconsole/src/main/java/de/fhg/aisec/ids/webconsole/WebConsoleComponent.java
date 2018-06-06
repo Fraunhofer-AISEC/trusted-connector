@@ -20,21 +20,16 @@
 package de.fhg.aisec.ids.webconsole;
 
 
-import com.google.gson.Gson;
-import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.settings.Settings;
-import de.fhg.aisec.ids.webconsole.api.ConfigApi;
-import de.fhg.aisec.ids.webconsole.api.data.ConnectionSettings;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.prefs.Preferences;
 import org.osgi.service.prefs.PreferencesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,32 +129,6 @@ public class WebConsoleComponent {
 			return connectionManager;
 		} else {
 			throw new ServiceUnavailableException("ConnectionManager is currently not available");
-		}
-	}
-
-	@Reference(name = "preferences.service",
-            service = PreferencesService.class,
-            cardinality = ReferenceCardinality.OPTIONAL,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unbindConfigurationService")
-	public void bindConfigurationService(PreferencesService conf) {
-		LOG.info("Bound to configuration service");
-		preferencesService = conf;
-		// Create generic ConnectionSettings, if not existing
-		Preferences prefs = conf.getUserPreferences(Constants.CONNECTIONS_PREFERENCES);
-		if(prefs != null && prefs.get(ConfigApi.GENERAL_CONFIG, null) == null) {
-			prefs.put(ConfigApi.GENERAL_CONFIG, new Gson().toJson(new ConnectionSettings()));
-		}
-	}
-	@SuppressWarnings("unused")
-	public void unbindConfigurationService(PreferencesService conf) {
-		preferencesService = null;
-	}
-	public static PreferencesService getPreferencesServiceOrThrowSUE() {
-		if (preferencesService != null) {
-			return preferencesService;
-		} else {
-			throw new ServiceUnavailableException("PreferenceService is currently not available");
 		}
 	}
 

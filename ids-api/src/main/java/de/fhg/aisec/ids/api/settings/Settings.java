@@ -19,10 +19,18 @@
  */
 package de.fhg.aisec.ids.api.settings;
 
+import java.util.Map;
+
 public interface Settings {
 
     ConnectorConfig getConnectorConfig();
 
     void setConnectorConfig(ConnectorConfig config);
+
+    ConnectionSettings getConnectionSettings(String connection);
+
+    void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
+
+    Map<String, ConnectionSettings> getAllConnectionSettings();
 
 }
