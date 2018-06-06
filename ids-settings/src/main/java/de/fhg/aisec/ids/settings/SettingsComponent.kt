@@ -5,7 +5,6 @@ import de.fhg.aisec.ids.api.settings.Settings
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
-import org.mapdb.serializer.GroupSerializer
 import org.osgi.service.component.annotations.Activate
 import org.osgi.service.component.annotations.Component
 import org.osgi.service.component.annotations.Deactivate
@@ -23,7 +22,7 @@ class SettingsComponent : Settings {
         mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().make()
         settingsStore = mapDB!!.hashMap("settings_store")
                 .keySerializer(Serializer.STRING)
-                .valueSerializer(Serializer.ELSA as GroupSerializer<Any>)
+                .valueSerializer(OsgiElsaSerializer())
                 .createOrOpen()
     }
 
