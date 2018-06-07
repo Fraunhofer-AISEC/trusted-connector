@@ -21,15 +21,20 @@ package de.fhg.aisec.ids.api.settings;
 
 import java.io.Serializable;
 
-public class ConnectorConfig implements Serializable {
-    private String brokerUrl;
-    private String ttpHost;
-    private int ttpPort;
-    private String acmeServerWebcon;
-    private String acmeDnsWebcon;
-    private int acmePortWebcon;
+public final class ConnectorConfig implements Serializable {
+    private final String brokerUrl;
+    private final String ttpHost;
+    private final int ttpPort;
+    private final String acmeServerWebcon;
+    private final String acmeDnsWebcon;
+    private final int acmePortWebcon;
 
     public ConnectorConfig() {
+        brokerUrl = "";
+        ttpHost = "";
+        ttpPort = 0;
+        acmeServerWebcon = "";
+        acmeDnsWebcon = "";
         acmePortWebcon = 80;
     }
 

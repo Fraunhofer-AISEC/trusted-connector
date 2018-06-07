@@ -11,42 +11,44 @@ import org.osgi.service.component.annotations.Component
 import org.osgi.service.component.annotations.Deactivate
 import org.slf4j.LoggerFactory
 import java.nio.file.FileSystems
+import java.util.*
 import java.util.concurrent.ConcurrentMap
 
 @Component(immediate = true)
 class SettingsComponent : Settings {
-
     @Activate
     fun activate() {
-        LOG.info("Open Settings Database...")
+        LOG.debug("Open Settings Database...")
         // Use default reliable (non-mmap) mode and WAL for transaction safety
-        mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().closeOnJvmShutdown().make()
+        mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().make()
     }
 
     @Deactivate
     fun deactivate() {
-        LOG.info("Close Settings Database...")
+        LOG.debug("Close Settings Database...")
         mapDB.close()
     }
 
     override fun getConnectorConfig(): ConnectorConfig {
-        return settingsStore.getOrPut(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
+        return settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
     }
 
     override fun setConnectorConfig(connectorConfig: ConnectorConfig) {
         settingsStore[CONNECTOR_SETTINGS_KEY] = connectorConfig
+        mapDB.commit()
     }
 
     override fun getConnectionSettings(connection: String): ConnectionSettings {
-        return connectionSettings.getOrPut(connection) { ConnectionSettings() }
+        return connectionSettings.getOrElse(connection) { ConnectionSettings() }
     }
 
     override fun setConnectionSettings(connection: String, conSettings: ConnectionSettings) {
         connectionSettings[connection] = conSettings
+        mapDB.commit()
     }
 
     override fun getAllConnectionSettings(): Map<String, ConnectionSettings> {
-        return connectionSettings
+        return Collections.unmodifiableMap(connectionSettings)
     }
 
     companion object {

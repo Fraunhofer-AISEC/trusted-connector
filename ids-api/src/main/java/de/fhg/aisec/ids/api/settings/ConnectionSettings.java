@@ -22,16 +22,15 @@ package de.fhg.aisec.ids.api.settings;
 
 import java.io.Serializable;
 
-public class ConnectionSettings implements Serializable {
-	
-	private String integrityProtectionAndVerification;
-	private String authentication;
-	private String serviceIsolation;
-	private String integrityProtectionVerificationScope;
-	private String appExecutionResources;
-	private String dataUsageControlSupport;
-	private String auditLogging;
-	private String localDataConfidentiality;
+public final class ConnectionSettings implements Serializable {
+	private final String integrityProtectionAndVerification;
+	private final String authentication;
+	private final String serviceIsolation;
+	private final String integrityProtectionVerificationScope;
+	private final String appExecutionResources;
+	private final String dataUsageControlSupport;
+	private final String auditLogging;
+	private final String localDataConfidentiality;
 
 	public ConnectionSettings() {
 		integrityProtectionAndVerification = "1";
@@ -75,5 +74,4 @@ public class ConnectionSettings implements Serializable {
 	public String getLocalDataConfidentiality() {
 		return localDataConfidentiality;
 	}
-
 }

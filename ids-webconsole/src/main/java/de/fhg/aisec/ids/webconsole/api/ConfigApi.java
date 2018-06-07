@@ -118,10 +118,20 @@ public class ConfigApi {
 		ConnectionManager connectionManager = WebConsoleComponent.getConnectionManagerOrThrowSUE();
 		RouteManager routeManager = WebConsoleComponent.getRouteManagerOrThrowSUE();
 
-		Map<String, ConnectionSettings> connectionSettings = settings.getAllConnectionSettings();
-		if (connectionSettings.size() == 0) {
-			connectionSettings.put(ConfigApi.GENERAL_CONFIG, new ConnectionSettings());
-		}
+		// Set of all connection configurations, properly ordered
+		Map<String, ConnectionSettings> allSettings = new TreeMap<>((o1, o2) -> {
+			if (ConfigApi.GENERAL_CONFIG.equals(o1)) {
+				return -1;
+			} else if (ConfigApi.GENERAL_CONFIG.equals(o2)) {
+				return 1;
+			} else {
+				return o1.compareTo(o2);
+			}
+		});
+		// Load all existing entries
+		allSettings.putAll(settings.getAllConnectionSettings());
+		// Assert global configuration entry
+		allSettings.putIfAbsent(ConfigApi.GENERAL_CONFIG, new ConnectionSettings());
 
 		Map<String, List<String>> routeInputs = routeManager.getRoutes().stream().map(RouteObject::getId)
 				.collect(Collectors.toMap(Function.identity(), routeManager::getRouteInputUris));
@@ -141,23 +151,12 @@ public class ConfigApi {
 
 			// Create missing endpoint configurations
 			endpointIdentifiers.forEach(endpointIdentifier -> {
-				if (connectionSettings.keySet().stream().noneMatch(endpointIdentifier::equals)) {
-					connectionSettings.put(endpointIdentifier, new ConnectionSettings());
+				if (allSettings.keySet().stream().noneMatch(endpointIdentifier::equals)) {
+					allSettings.put(endpointIdentifier, new ConnectionSettings());
 				}
 			});
 		}
-		
-		// After synchronization, return complete set of preferences
-		Map<String, ConnectionSettings> allSettings = new TreeMap<>((o1, o2) -> {
-			if (ConfigApi.GENERAL_CONFIG.equals(o1)) {
-				return -1;
-			} else if (ConfigApi.GENERAL_CONFIG.equals(o2)) {
-				return 1;
-			} else {
-				return o1.compareTo(o2);
-			}
-		});
-		allSettings.putAll(connectionSettings);
+
 		return allSettings;
 	}
 
