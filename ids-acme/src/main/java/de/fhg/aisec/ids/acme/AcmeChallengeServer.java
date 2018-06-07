@@ -66,7 +66,10 @@ public class AcmeChallengeServer {
     }
 
     public static void stopServer() {
-        server.stop();
-        LOG.debug("NanoHTTPD stopped");
+        if (server != null) {
+            server.stop();
+            server = null;
+            LOG.debug("NanoHTTPD stopped");
+        }
     }
 }
