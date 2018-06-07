@@ -144,13 +144,35 @@ public class AcmeClientService implements AcmeClient, Runnable {
             }
 
             Account account;
-            try {
-                Session session = new Session(acmeServerUri);
-                account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
-                LOG.info(account.getLocation().toString());
-            } catch (AcmeException e) {
-                LOG.error("Error while accessing/creating ACME account", e);
-                throw new RuntimeException(e);
+            // It may happen that certain ACME protocol implementations (provided as SPI services) are not ready yet.
+            // This situation leads to an IllegalArgumentException.
+            // We will retry up to 3 times until operation is completed successfully or another Exception is thrown.
+            int sessionTries = 0;
+            while (true) {
+                try {
+                    Session session = new Session(acmeServerUri);
+                    account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
+                    LOG.info(account.getLocation().toString());
+                    break;
+                } catch (AcmeException e) {
+                    // In case of ACME error, session creation has failed; return immediately.
+                    LOG.error("Error while accessing/creating ACME account", e);
+                    return;
+                } catch (IllegalArgumentException iae) {
+                    if (sessionTries++ == 3) {
+                        LOG.error("Got IllegalArgumentException 3 times, leaving renewal task...");
+                        return;
+                    } else {
+                        LOG.error("Got an IllegalArgumentException, maybe the ACME protocol handler " +
+                                "is not available yet. Retry in 10 seconds...", iae);
+                        // Wait 10 seconds before trying again
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException ie) {
+                            LOG.error("Interrupt error during 3-seconds-delay", ie);
+                        }
+                    }
+                }
             }
 
             // Start ACME challenge responder
@@ -251,7 +273,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                     targetDirectory.toString(), validityPercentile));
             if (validityPercentile < RENEWAL_THRESHOLD) {
                 LOG.info(String.format("%.2f < %.2f, requesting renewal", validityPercentile, RENEWAL_THRESHOLD));
-                renewCertificate(targetDirectory, acmeServerUri, domains, challengePort);
+                // Do the renewal in a separate Thread such that other stuff can be executed in parallel.
+                // This is especially important if the ACME protocol implementations are missing upon boot.
+                Thread t = new Thread(() -> renewCertificate(targetDirectory, acmeServerUri, domains, challengePort));
+                t.setName("ACME Renewal Thread");
+                t.setDaemon(true);
+                t.start();
             }
         } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException|IOException e) {
             LOG.error("Error in web console keystore renewal check", e);
