@@ -82,6 +82,8 @@
 			<artifactId>org.apache.karaf.scheduler.core</artifactId>
 			<version>${karaf.version}</version>
 		</dependency>
+
+		<!-- Guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

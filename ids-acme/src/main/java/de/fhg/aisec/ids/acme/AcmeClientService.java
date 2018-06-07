@@ -262,9 +262,13 @@ public class AcmeClientService implements AcmeClient, Runnable {
     @Override
     public void run() {
         LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
-        ConnectorConfig config = settings.getConnectorConfig();
-        renewalCheck(FileSystems.getDefault().getPath("etc"), URI.create(config.getAcmeServerWebcon()),
-                config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
+        try {
+            ConnectorConfig config = settings.getConnectorConfig();
+            renewalCheck(FileSystems.getDefault().getPath("etc"), URI.create(config.getAcmeServerWebcon()),
+                    config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
+        } catch (Exception e) {
+            LOG.error("ACME Renewal task failed", e);
+        }
     }
 
 }
