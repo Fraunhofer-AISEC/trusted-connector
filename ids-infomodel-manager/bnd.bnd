@@ -3,4 +3,5 @@ Export-Package: \
   de.fhg.ids.infomodel*,\
   de.fhg.aisec.ids.informationmodelmanager
 Import-Package: \
+  de.fraunhofer.iais.eis,\
   *

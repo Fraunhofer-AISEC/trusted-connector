@@ -24,7 +24,7 @@
 	</parent>
 
 	<name>IDS Infomodel Manager</name>
-	
+	  
 	<repositories>
 		<repository>
 		    <id>lib</id>
