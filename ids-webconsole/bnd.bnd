@@ -7,6 +7,7 @@ Export-Package: \
 	de.fhg.aisec.ids.webconsole.api.data
 Import-Package: \
 	!org.checkerframework.checker.*,\
+	de.fraunhofer.iais.eis*,\
 	org.apache.cxf.jaxrs.security,\
 	org.apache.cxf.interceptor.security,\
 	com.fasterxml.jackson.jaxrs.json,\
