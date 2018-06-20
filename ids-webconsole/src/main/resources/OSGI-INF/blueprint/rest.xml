@@ -24,6 +24,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 			<bean id="metric" class="de.fhg.aisec.ids.webconsole.api.MetricAPI" />
 			<bean id="policy" class="de.fhg.aisec.ids.webconsole.api.PolicyApi" />
 			<bean id="route" class="de.fhg.aisec.ids.webconsole.api.RouteApi" />
+			<bean id="settings" class="de.fhg.aisec.ids.webconsole.api.SettingsApi" />
 		</jaxrs:serviceBeans>
 
 		<jaxrs:providers>
@@ -36,7 +37,8 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
 		</jaxrs:providers>
 	</jaxrs:server>
 
-	<bean id="jacksonMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/>
+	<!--   <bean id="jacksonMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/> -->
+	<bean id="jacksonMapper" class="de.fhg.aisec.ids.webconsole.api.helper.CustomObjectMapper"/>
 
 	<bean id="authenticationFilter" class="org.apache.cxf.jaxrs.security.JAASAuthenticationFilter">
 		<property name="contextName" value="karaf" />

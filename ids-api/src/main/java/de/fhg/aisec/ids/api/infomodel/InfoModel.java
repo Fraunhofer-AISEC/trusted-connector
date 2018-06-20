@@ -37,6 +37,7 @@ package de.fhg.aisec.ids.api.infomodel;
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.SecurityProfile;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
+
 import java.net.URL;
 import java.util.Collection;
 
@@ -46,6 +47,12 @@ import java.util.Collection;
  */
 public interface InfoModel {
     
+	
+		/**
+	     * retrieve Connector description
+	     * @return matching URL to key
+	     */
+		public String getRDF();
     
         /**
          * create new Connector description
@@ -74,8 +81,8 @@ public interface InfoModel {
          * @param profile Connector security profile
          * @return update success
          */
-        public boolean setConnector(URL conn_url, URL op_url, Collection<? extends PlainLiteral> entityNames, SecurityProfile profile);
-        
+        public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames, SecurityProfile profile);
+
         /**
          * save/update Connector object to preferences
          * @param conn_url Connector id
@@ -83,7 +90,7 @@ public interface InfoModel {
          * @param entityNames Connector entity names
          * @return update success
          */
-        public boolean setConnector(URL conn_url, URL op_url, Collection<? extends PlainLiteral> entityNames);
+        public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames);
         
         /**
          * save/update Connector object to preferences
@@ -91,6 +98,6 @@ public interface InfoModel {
          * @param entityNames Connector entity names
          * @return update success
          */
-        public boolean setConnector(URL op_url, Collection<? extends PlainLiteral> entityNames);
+        public boolean setConnector(URL op_url, Collection<PlainLiteral> entityNames);
     
 }
