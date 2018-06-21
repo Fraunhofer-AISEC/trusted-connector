@@ -5,4 +5,5 @@ export interface Settings {
   acmeServerWebcon: string;
   acmeDnsWebcon: string;
   acmePortWebcon: number;
+  tosAcceptWebcon: boolean;
 }

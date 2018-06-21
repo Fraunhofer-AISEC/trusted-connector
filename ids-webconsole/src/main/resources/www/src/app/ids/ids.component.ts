@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { SettingsService } from './settings.service';
-import { Settings } from './settings.interface';
-import { environment } from '../../environments/environment';
+import { TermsOfService } from './terms-of-service.interface';
+import { Observable } from 'rxjs/Observable';
+import { map, switchMap, take } from 'rxjs/operators';
 
 @Component({
     selector: 'my-app',
@@ -11,51 +12,53 @@ import { environment } from '../../environments/environment';
     providers: [SettingsService]
 })
 export class IdsComponent implements OnInit {
-    myForm: FormGroup;
-    submitted: boolean;
-    saved: boolean;
-    // events: Array<any> = [];
+    settingsForm?: FormGroup;
+    saved = true;
+    tosWebconsole?: TermsOfService;
 
-    constructor(private settingsService: SettingsService) {
-        this.saved = true;
-    }
+    constructor(private settingsService: SettingsService, private formBuilder: FormBuilder) { }
 
     canDeactivate(target: IdsComponent): boolean {
-        return target.saved; // false stops navigation, true continue navigation
+        return target.saved;
     }
 
     ngOnInit(): void {
+        // Pull settings from server
         this.settingsService.getSettings()
             .subscribe(response => {
-                this.myForm = new FormGroup({
-                    brokerUrl: new FormControl(response.brokerUrl),
-                    ttpHost: new FormControl(response.ttpHost),
-                    ttpPort: new FormControl(response.ttpPort),
-                    acmeServerWebcon: new FormControl(response.acmeServerWebcon),
-                    acmeDnsWebcon: new FormControl(response.acmeDnsWebcon),
-                    acmePortWebcon: new FormControl(response.acmePortWebcon)
+                // Initialize form
+                this.settingsForm = this.formBuilder.group({
+                    brokerUrl: response.brokerUrl,
+                    ttpHost: response.ttpHost,
+                    ttpPort: response.ttpPort,
+                    acmeServerWebcon: [response.acmeServerWebcon, [], [control =>
+                        Observable.timer(300)
+                            .pipe(
+                                switchMap(_ => this.settingsService.getToS(control.value)),
+                                map(tos => {
+                                    this.tosWebconsole = tos;
+
+                                    return tos.error ? { asyncError: tos.error } : undefined;
+                                }),
+                                take(1)
+                            )]],
+                    acmeDnsWebcon: response.acmeDnsWebcon,
+                    acmePortWebcon: response.acmePortWebcon,
+                    tosAcceptWebcon: response.tosAcceptWebcon
                 });
-                // subscribe to form changes
                 this.subscribeToFormChanges();
             });
     }
 
     subscribeToFormChanges(): void {
-        // this.myForm.statusChanges.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
-        this.myForm.valueChanges.subscribe(x => {
+        this.settingsForm.valueChanges.subscribe(_ => {
             this.saved = false;
-            // this.events.push({ event: 'VALUE_CHANGED', object: x });
-            // console.log(this.myForm.controls.brokerUrl.valid, this.myForm.controls.brokerUrl.pristine,
-            //     !this.myForm.controls.ttpHost.valid && this.myForm.controls.ttpHost.dirty);
         });
     }
 
-    save(model: Settings, isValid: boolean): void {
-        // console.log(model, isValid);
-        if (isValid) {
-            this.submitted = true;
-            // Store settings
-            this.settingsService.store(model)
+    save(): void {
+        if (this.settingsForm.valid) {
+            this.settingsService.store(this.settingsForm.value)
                 .subscribe(() => this.saved = true);
         }
     }

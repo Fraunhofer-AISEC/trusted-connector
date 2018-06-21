@@ -1,25 +1,26 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
 import { Settings } from './settings.interface';
-import { environment } from '../../environments/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { TermsOfService } from './terms-of-service.interface';
+import { ApplicationHttpClient, HTTP_INJECTION_TOKEN } from '../application-http-client.service';
 
 @Injectable()
 export class SettingsService {
-  constructor(private http: HttpClient) { }
+  constructor(@Inject(HTTP_INJECTION_TOKEN) private http: ApplicationHttpClient) { }
 
   getSettings(): Observable<Settings> {
-    return this.http.get<Settings>(environment.apiURL + '/config');
+    return this.http.get<Settings>('/config');
   }
 
-  store(model: Settings): Observable<string> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-
-    return this.http.post(environment.apiURL + '/config', model, {
-      headers,
-      responseType: 'text'
+  getToS(uri: string): Observable<TermsOfService> {
+    return this.http.get<TermsOfService>('/certs/acme_tos', {
+      cacheTTL: 60,
+      params: {uri}
     });
   }
 
+  store(model: Settings): Observable<string> {
+    return this.http.post('/config', model, { responseType: 'text' });
+  }
 }
