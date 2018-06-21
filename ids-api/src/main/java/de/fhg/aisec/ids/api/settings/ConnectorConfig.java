@@ -28,6 +28,7 @@ public final class ConnectorConfig implements Serializable {
     private final String acmeServerWebcon;
     private final String acmeDnsWebcon;
     private final int acmePortWebcon;
+    private final boolean tosAcceptWebcon;
 
     public ConnectorConfig() {
         brokerUrl = "";
@@ -36,6 +37,7 @@ public final class ConnectorConfig implements Serializable {
         acmeServerWebcon = "";
         acmeDnsWebcon = "";
         acmePortWebcon = 80;
+        tosAcceptWebcon = false;
     }
 
     public String getBrokerUrl() {
@@ -60,6 +62,10 @@ public final class ConnectorConfig implements Serializable {
 
     public int getAcmePortWebcon() {
         return acmePortWebcon;
+    }
+
+    public boolean isTosAcceptWebcon() {
+        return tosAcceptWebcon;
     }
 }
 

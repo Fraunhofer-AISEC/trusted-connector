@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.Cert;
@@ -70,13 +71,20 @@ public class CertApi {
 	@Path("acme_renew/{target}")
 	public void getAcmeCert(@PathParam("target") String target) {
 		ConnectorConfig config = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig();
-		if ("console".equals(target)) {
+		if ("webconsole".equals(target)) {
 			WebConsoleComponent.getAcmeClient().renewCertificate(
-					FileSystems.getDefault().getPath("etc"), URI.create(config.getAcmeServerWebcon()),
+					FileSystems.getDefault().getPath("etc", "tls-webconsole"),
+					URI.create(config.getAcmeServerWebcon()),
 					config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
 		} else {
-			LOG.warn("ACME renewal for service other than WebConsole is not yet implemented!");
+			LOG.warn("ACME renewal for services other than WebConsole is not yet implemented!");
 		}
+	}
+
+	@GET
+	@Path("acme_tos")
+	public AcmeTermsOfService getAcmeTermsOfService(@QueryParam("uri") String uri) {
+		return WebConsoleComponent.getAcmeClient().getTermsOfService(URI.create(uri.trim()));
 	}
 
 	@GET

@@ -19,15 +19,29 @@
  */
 package de.fhg.aisec.ids.api.acme;
 
-import java.net.URI;
-import java.nio.file.Path;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public interface AcmeClient {
+public final class AcmeTermsOfService {
+    final String tos;
+    final boolean isUri;
+    final String error;
 
-    String getChallengeAuthorization(String challenge);
+    public AcmeTermsOfService(String tos, boolean isUri, String error) {
+        this.tos = tos;
+        this.isUri = isUri;
+        this.error = error;
+    }
 
-    void renewCertificate(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort);
+    public String getTos() {
+        return tos;
+    }
 
-    AcmeTermsOfService getTermsOfService(URI acmeServerUri);
+    @JsonProperty(value="isUri")
+    public boolean isUri() {
+        return isUri;
+    }
 
+    public String getError() {
+        return error;
+    }
 }

@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.acme;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
+import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloader;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
@@ -101,17 +102,20 @@ public class AcmeClientService implements AcmeClient, Runnable {
 		this.reloader.remove(reloader);
 	}
 
-    public static String getTermsOfService(URI acmeServerUri) {
+    public AcmeTermsOfService getTermsOfService(URI acmeServerUri) {
         try {
             Session session = new Session(acmeServerUri);
-            URI tos = session.getMetadata().getTermsOfService();
-            try (InputStream tosStream = tos.toURL().openStream()) {
-                return CharStreams.toString(new InputStreamReader(tosStream, Charsets.UTF_8));
+            URI tosUri = session.getMetadata().getTermsOfService();
+            try (InputStream tosStream = tosUri.toURL().openStream()) {
+                String tos = CharStreams.toString(new InputStreamReader(tosStream, Charsets.UTF_8));
+                return new AcmeTermsOfService(tos, false, null);
             } catch (IOException ioe) {
-                return "Error reading ACME ToS from " + tos.toString() + ": " + ioe.getMessage();
+                return new AcmeTermsOfService(tosUri.toString(), true, null);
             }
-        } catch (AcmeException e) {
-            return "ACME ToS retrieval error: " + e.getMessage();
+        } catch (Exception e) {
+            LOG.error("ACME ToS retrieval error", e);
+            return new AcmeTermsOfService(null, false,
+                    e.getClass().getSimpleName() + ": " + e.getMessage());
         }
     }
 
@@ -291,7 +295,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
         LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
         try {
             ConnectorConfig config = settings.getConnectorConfig();
-            renewalCheck(FileSystems.getDefault().getPath("etc"), URI.create(config.getAcmeServerWebcon()),
+            renewalCheck(FileSystems.getDefault().getPath("etc", "tls-webconsole"),
+                    URI.create(config.getAcmeServerWebcon()),
                     config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
         } catch (Exception e) {
             LOG.error("ACME Renewal task failed", e);
