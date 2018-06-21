@@ -1,48 +1,87 @@
-<div class="mdl-grid">
+<div ngxMdl class="mdl-grid">
 	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
 		<div class="mdl-card__title">
 			<h2 class="mdl-card__title-text">Settings</h2>
 		</div>
-		<div class="mdl-card__supporting-text mdl-cell--12-col mdl-grid">
-			<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, myForm.valid)" class="mdl-cell--12-col mdl-grid">
+		<div class="mdl-card__supporting-text mdl-cell--12-col mdl-grid" *ngIf="settingsForm">
+			<form [formGroup]="settingsForm" (ngSubmit)="save()" class="mdl-cell--12-col mdl-grid">
 				<div class="mdl-cell--12-col">
-					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col form-group is-dirty">
-						<input class="mdl-textfield__input" id="broker_url"	type="text" formControlName="broker_url">
-						<label class="mdl-textfield__label" for="broker_url">Broker	URL</label>
-						<span [hidden]="myForm.controls.broker_url.valid || (myForm.controls.broker_url.pristine && !submitted)" class="mdl-textfield__error"> Broker URL is required. </span>
-						<!--<pre class="margin-20">{{ myForm.controls.name.errors | json }}</pre>-->
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+						<input class="mdl-textfield__input" id="brokerUrl"	type="URL" formControlName="brokerUrl"
+						required minlength="5">
+						<label class="mdl-textfield__label" for="brokerUrl">Broker	URL</label>
+						<span class="mdl-textfield__error"> Valid Broker URL required </span>
 					</div>
 				</div>
-				<div class="mdl-cell--6-col">
-					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-group is-dirty">
-						<input type="text" class="mdl-textfield__input" id="ttp.host" formControlName="ttp_host">
-						<label class="mdl-textfield__label" for="ttp_host">Host of Remote
-							Attestation Repository</label>
-						<span [hidden]="myForm.controls.ttp_host.valid || (myForm.controls.ttp_host.pristine && !submitted)" class="mdl-textfield__error"> URL required </span>
+				<div class="mdl-cell--8-col">
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+						<input type="text" class="mdl-textfield__input" id="ttpHost" formControlName="ttpHost"
+						required minlength="5">
+						<label class="mdl-textfield__label" for="ttpHost">Host of Remote Attestation Repository</label>
+						<span class="mdl-textfield__error"> Valid URL required </span>
 					</div>
 				</div>
-				<div class="mdl-cell--5-col">
-					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-group is-dirty">
-						<input type="text" class="mdl-textfield__input" id="ttp.port" formControlName="ttp_port">
-						<label class="mdl-textfield__label" for="ttp_port">Port of Remote Attestation Repository</label>
-						<span [hidden]="myForm.controls.ttp_port.valid || (myForm.controls.ttp_port.pristine && !submitted)" class="mdl-textfield__error"> URL required </span>
-					</div>
-				</div>
-				<div class="mdl-cell--12-col">
-					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col form-group is-dirty">
-						<input class="mdl-textfield__input" id="acme_url" type="text" formControlName="acme_url">
-						<label class="mdl-textfield__label" for="acme_url">ACME Server URL</label>
-						<span [hidden]="myForm.controls.acme_url.valid || (myForm.controls.acme_url.pristine && !submitted)" class="mdl-textfield__error">ACME URL is required </span>
+				<div class="mdl-cell--4-col">
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+						<input type="number" class="mdl-textfield__input" id="ttpPort" formControlName="ttpPort"
+						required min="1" max="65535">
+						<label class="mdl-textfield__label" for="ttpPort">Port of Remote Attestation Repository</label>
+						<span class="mdl-textfield__error"> Valid Port required </span>
 					</div>
 				</div>
 				<div class="mdl-cell--12-col">
-					<label class="mdl-checkbox mdl-js-checkbox" for="announce_by_gossip">
-	                  <input type="checkbox" id="announce_by_gossip" class="mdl-checkbox__input" formControlName="announce_by_gossip" checked="{{myForm.controls.announce_by_gossip.value}}">
-	                  <span class="mdl-checkbox__label">Announce Connector Globally</span>
-	               	</label>
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group"
+					[ngClass]="{'is-invalid': settingsForm.controls.acmeServerWebcon.errors}">
+						<input class="mdl-textfield__input" id="acmeServerWebcon" type="URL" formControlName="acmeServerWebcon"
+						required minlength="5">
+						<label class="mdl-textfield__label" for="acmeServerWebcon">ACME Server URL (Web Console)</label>
+						<span class="mdl-textfield__error">
+							<span *ngIf="settingsForm.controls.acmeServerWebcon.errors
+								&& settingsForm.controls.acmeServerWebcon.errors.asyncError; else defaultError">
+								{{ settingsForm.controls.acmeServerWebcon.errors.asyncError }}
+							</span>
+							<ng-template #defaultError>
+								Valid ACME Server URL required
+							</ng-template>
+						</span>
+					</div>
 				</div>
-				<div class=" mdl-cell--10-col">
-					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">Save	Settings</button>
+				<div class="mdl-cell--12-col space_v1em">
+					<div mdl-textfield class="mdl-cell--12-col form-group">
+						<label class = "mdl-checkbox mdl-js-checkbox" for="tosAcceptWebcon">
+							<input class="mdl-checkbox__input" type="checkbox" id="tosAcceptWebcon" formControlName="tosAcceptWebcon" required>
+							<span class="mdl-checkbox__label">Accept ACME server Terms of Service</span>
+							<span class="mdl-textfield__error"> You must accept the ACME server Terms of Service </span>
+						</label>
+					</div>
+					<div *ngIf="tosWebconsole && tosWebconsole.isUri">
+						Terms of Service URI: <a [href]="tosWebconsole.tos" target="_blank">{{ tosWebconsole.tos }}</a>
+					</div>
+					<div *ngIf="tosWebconsole && !tosWebconsole.isUri">
+						Terms of Service:
+						<div class="tos-container">{{ tosWebconsole.tos }}</div>
+					</div>
+				</div>
+				<div class="mdl-cell--8-col">
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+						<input type="text" class="mdl-textfield__input" id="acmeDnsWebcon" formControlName="acmeDnsWebcon"
+						required minlength="5">
+						<label class="mdl-textfield__label" for="acmeDnsWebcon">ACME Challenge Domain (Web Console)</label>
+						<span class="mdl-textfield__error"> Valid URL required </span>
+					</div>
+				</div>
+				<div class="mdl-cell--4-col">
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+						<input type="number" class="mdl-textfield__input" id="acmePortWebcon" formControlName="acmePortWebcon"
+						required min="1" max="65535">
+						<label class="mdl-textfield__label" for="acmePortWebcon">ACME Challenge Port (Web Console)</label>
+						<span class="mdl-textfield__error"> Valid Port required </span>
+					</div>
+				</div>
+				<div class="mdl-cell--12-col">
+					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved}">
+						Save Settings
+					</button>
 				</div>
 			</form>
 		</div>

@@ -1,0 +1,16 @@
+src: src/main/java
+bin: target/classes
+testsrc: src/test/java,src/test/resources
+testbin: target/test-classes
+-dsannotations: *
+-noee=true
+Bundle-Name: ids-settings
+Bundle-Version: 1.0
+Bundle-Vendor: Fraunhofer
+Import-Package: \
+    sun.nio.ch*;resolution:=optional,\
+    *
+Private-Package: \
+    org.mapdb*,\
+    net.jpountz*,\
+    org.eclipse.collections*

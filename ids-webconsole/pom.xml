@@ -43,10 +43,6 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-		</dependency>
 
 		<!-- servlets -->
 		<dependency>
@@ -123,7 +119,12 @@
 		    <version>${jackson.version}</version>
 		    <scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<defaultGoal>install</defaultGoal>

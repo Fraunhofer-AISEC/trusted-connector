@@ -10,6 +10,9 @@
 		<module>checker-qual</module>
 		<module>tpm2j</module>
 		<module>ids-api</module>
+		<module>ids-settings</module>
+		<module>ids-acme</module>
+		<module>ids-dynamic-tls</module>
 		<module>camel-ids</module>
 		<module>ids-route-manager</module>
 		<module>ids-container-manager</module>
@@ -28,14 +31,16 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<activemq.version>5.13.3</activemq.version>
-    <cxf.version>3.2.4</cxf.version>
+		<cxf.version>3.2.4</cxf.version>
 		<karaf.version>4.2.0</karaf.version>
 		<camel.version>2.21.1</camel.version>
-		<guava.version>23.4-jre</guava.version>
+		<guava.version>25.1-jre</guava.version>
+		<kotlin.version>1.2.41</kotlin.version>
+		<mapdb.version>3.0.7</mapdb.version>
 
 		<!-- TODO: should change them to .version, not -version -->
 		<jnr-unixsocket-version>0.18</jnr-unixsocket-version>
-		<jetty-version>9.3.9.v20160517</jetty-version>
+		<jetty-version>9.3.21.v20170918</jetty-version>
 		<jersey-version>2.25</jersey-version>
 		<jackson.version>2.9.5</jackson.version>
 		<protobuf-version>3.5.1</protobuf-version>
@@ -43,6 +48,7 @@
 		<ahc-version>2.4.4</ahc-version>
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
+		<slf4j-version>1.7.25</slf4j-version>
 
 		<skipBugs>false</skipBugs>
 		<skipLicense>false</skipLicense>
@@ -247,6 +253,11 @@
 				<groupId>org.osgi</groupId>
 				<artifactId>org.osgi.compendium</artifactId>
 				<version>5.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.annotation</artifactId>
+				<version>6.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.felix</groupId>

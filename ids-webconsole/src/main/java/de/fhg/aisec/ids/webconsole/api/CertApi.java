@@ -19,18 +19,26 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.Cert;
+import de.fhg.aisec.ids.webconsole.api.data.Identity;
+import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -42,23 +50,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.webconsole.api.data.Cert;
-import de.fhg.aisec.ids.webconsole.api.data.Identity;
-import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -75,6 +66,26 @@ public class CertApi {
 	private static final String KEYSTORE_PWD = "password";
 	private static final String TRUSTSTORE_FILE = "client-truststore.jks";
 	private static final String KEYSTORE_FILE = "client-keystore.jks";
+
+	@GET
+	@Path("acme_renew/{target}")
+	public void getAcmeCert(@PathParam("target") String target) {
+		ConnectorConfig config = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig();
+		if ("webconsole".equals(target)) {
+			WebConsoleComponent.getAcmeClient().renewCertificate(
+					FileSystems.getDefault().getPath("etc", "tls-webconsole"),
+					URI.create(config.getAcmeServerWebcon()),
+					config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
+		} else {
+			LOG.warn("ACME renewal for services other than WebConsole is not yet implemented!");
+		}
+	}
+
+	@GET
+	@Path("acme_tos")
+	public AcmeTermsOfService getAcmeTermsOfService(@QueryParam("uri") String uri) {
+		return WebConsoleComponent.getAcmeClient().getTermsOfService(URI.create(uri.trim()));
+	}
 
 	@GET
 	@Path("list_certs")
@@ -180,7 +191,6 @@ public class CertApi {
 	 * @return
 	 */
 	private boolean storeCert(File trustStoreFile, File certFile) {
-		boolean returnResult = false;
 		CertificateFactory cf;
 		String alias = certFile.getName().replace(".", "_");
 		try {
@@ -189,7 +199,7 @@ public class CertApi {
 			Certificate certs = cf.generateCertificate(certstream);
 
 			try (FileInputStream fis = new FileInputStream(trustStoreFile);
-					FileOutputStream fos = new FileOutputStream(trustStoreFile);) {
+					FileOutputStream fos = new FileOutputStream(trustStoreFile)) {
 				KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 				String password = KEYSTORE_PWD;
 				keystore.load(fis, password.toCharArray());
@@ -200,12 +210,11 @@ public class CertApi {
 				keystore.store(fos, password.toCharArray());
 			}
 
-			returnResult = true;
+			return true;
 		} catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
 			LOG.error(e.getMessage(), e);
-			returnResult = false;
+			return false;
 		}
-		return returnResult;
 	}
 
 	private static InputStream fullStream(String fname) throws IOException {
@@ -279,10 +288,9 @@ public class CertApi {
 	 */
 	private List<Cert> getKeystoreEntries(File keystoreFile) {
 		List<Cert> certs = new ArrayList<>();
-		try (FileInputStream fis = new FileInputStream(keystoreFile);) {
+		try (FileInputStream fis = new FileInputStream(keystoreFile)) {
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-			String password = KEYSTORE_PWD;
-			keystore.load(fis, password.toCharArray());
+			keystore.load(fis, KEYSTORE_PWD.toCharArray());
 			
 			Enumeration<String> enumeration = keystore.aliases();
 			while (enumeration.hasMoreElements()) {
@@ -331,7 +339,6 @@ public class CertApi {
 
 				certs.add(cert);
 			}
-			fis.close();
 		} catch (java.security.cert.CertificateException | KeyStoreException | NoSuchAlgorithmException
 				| IOException e) {
 			LOG.error(e.getMessage(), e);
