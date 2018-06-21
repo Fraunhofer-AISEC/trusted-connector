@@ -9,4 +9,9 @@
         <Class name="~de\.fraunhofer\.aisec\.trustme\.[a-zA-Z0-9$]+" />
     </Match>
 
+    <Match>
+        <Class name="de.fhg.aisec.ids.api.infomodel.ConnectorProfile" />
+        <Bug pattern="SE_BAD_FIELD" />
+    </Match>
+
 </FindBugsFilter>

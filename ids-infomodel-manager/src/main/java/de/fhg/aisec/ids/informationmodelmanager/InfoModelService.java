@@ -33,22 +33,12 @@
 package de.fhg.aisec.ids.informationmodelmanager;
 
 import com.google.gson.Gson;
+
+import de.fhg.aisec.ids.api.ConnectionSettings;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
-import de.fraunhofer.iais.eis.AppExecutionResources;
-import de.fraunhofer.iais.eis.AuditLogging;
-import de.fraunhofer.iais.eis.AuthenticationSupport;
-import de.fraunhofer.iais.eis.Connector;
-import de.fraunhofer.iais.eis.ConnectorBuilder;
-import de.fraunhofer.iais.eis.DataEndpoint;
-import de.fraunhofer.iais.eis.DataEndpointBuilder;
-import de.fraunhofer.iais.eis.DataUsageControlSupport;
-import de.fraunhofer.iais.eis.IntegrityProtectionAndVerification;
-import de.fraunhofer.iais.eis.IntegrityProtectionScope;
-import de.fraunhofer.iais.eis.SecurityProfile;
-import de.fraunhofer.iais.eis.SecurityProfileBuilder;
-import de.fraunhofer.iais.eis.ServiceIsolationSupport;
-import de.fraunhofer.iais.eis.idsLocalDataConfidentiality;
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
+import de.fraunhofer.iais.eis.*;
 import de.fraunhofer.iais.eis.util.ConstraintViolationException;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
 import java.net.MalformedURLException;
@@ -59,6 +49,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+//import org.apache.commons.lang3.ObjectUtils;
+
+import de.fraunhofer.iais.eis.util.VocabUtil;
 
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -77,13 +71,11 @@ import org.slf4j.LoggerFactory;
  * IDS Info Model Manager.
  *
  */
-@Component(name = "ids-infomodel-manager")
+@Component(enabled=true, immediate=true, name = "ids-infomodel-manager")
 public class InfoModelService implements InfoModel {
 	private static final Logger LOG = LoggerFactory.getLogger(InfoModelService.class);
 	private static final String CONNECTOR_MODEL = "ids.model";
-	//private Optional<PreferencesService> preferencesService = null;
 	private PreferencesService preferencesService = null;
-	//private Optional<ConnectionManager> connectionManager = null;
 	private ConnectionManager connectionManager = null;
 	
 	Preferences p;
@@ -145,7 +137,8 @@ public class InfoModelService implements InfoModel {
 					url = new URL(p.get(key, null));
 					return url;
 				} catch (MalformedURLException ex) {
-					LOG.error("Caught MalformedURLException", ex);
+					//LOG.debug("Caught MalformedURLException while building URL from preferences", ex);
+					LOG.debug("Caught MalformedURLException while building URL from preferences");
 					return null;
 				}
 			} else {
@@ -208,7 +201,14 @@ public class InfoModelService implements InfoModel {
 	
 			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 				try {
-					SecurityProfile prof = new SecurityProfileBuilder()
+					PredefinedSecurityProfile psp;
+					if(!p.get("basedOn", "").equals(""))
+						psp =  PredefinedSecurityProfile.getByString(p.get("basedOn", ""));
+					else
+						psp = null;
+
+					if(!p.get("sPiD", "").equals(""))
+						return new SecurityProfileBuilder(new URL(p.get("sPiD", ""))).basedOn(psp)
 							.integrityProtectionAndVerification(IntegrityProtectionAndVerification
 									.valueOf(p.get("IntegrityProtectionAndVerification", "NONE")))
 							.authenticationSupport(AuthenticationSupport.valueOf(p.get("AuthenticationSupport", "NONE")))
@@ -223,11 +223,29 @@ public class InfoModelService implements InfoModel {
 							.localDataConfidentiality(
 									idsLocalDataConfidentiality.valueOf(p.get("idsLocalDataConfidentiality", "NONE")))
 							.build();
-					return prof;
+					else
+						return new SecurityProfileBuilder().basedOn(psp)			//id automatically generated
+								.integrityProtectionAndVerification(IntegrityProtectionAndVerification
+										.valueOf(p.get("IntegrityProtectionAndVerification", "NONE")))
+								.authenticationSupport(AuthenticationSupport.valueOf(p.get("AuthenticationSupport", "NONE")))
+								.serviceIsolationSupport(
+										ServiceIsolationSupport.valueOf(p.get("ServiceIsolationSupport", "NONE")))
+								.integrityProtectionScope(
+										IntegrityProtectionScope.valueOf(p.get("IntegrityProtectionScope", "NONE")))
+								.appExecutionResources(AppExecutionResources.valueOf(p.get("AppExecutionResources", "NONE")))
+								.dataUsageControlSupport(
+										DataUsageControlSupport.valueOf(p.get("DataUsageControlSupport", "NONE")))
+								.auditLogging(AuditLogging.valueOf(p.get("AuditLogging", "NONE")))
+								.localDataConfidentiality(
+										idsLocalDataConfidentiality.valueOf(p.get("idsLocalDataConfidentiality", "NONE")))
+								.build();
 				} catch (ConstraintViolationException ex) {
-					LOG.error("Caught ConstraintViolationException while building Security profile.", ex);
+					LOG.error("Caught ConstraintViolationException while building Security profile from preferences.", ex);
 					return null;
-				}
+				} catch (MalformedURLException ex) {
+				LOG.error("Caught MalformedURLException while building Security profile from preferences.", ex);
+				return null;
+			}
 			} else {
 				LOG.error("Couldn't get Preferences for building Security Profile.");
 				return null;
@@ -236,77 +254,79 @@ public class InfoModelService implements InfoModel {
 		return null;
 	}
 
-	private boolean generateRDF() {
+	private boolean generateRDF(Connector c) {
 
 		if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
-
-			try {
-				String rdf = new ConnectorBuilder(getURL("conn_url")).operator(getURL("op_url"))
-						.entityNames(getConnectorEntityNames()).securityProfile(getSecurityProfile())
-						.provides(getEndpoints()).build().toRdf();
-				p.put("infomodel", rdf);
-				return true;
-			} catch (ConstraintViolationException ex) {
-				LOG.error("Caught ConstraintViolationException while generating RDF", ex);
-				return false;
-			}
-
+			String rdf = c.toRdf();
+			p.put("infomodel", rdf);
+			LOG.debug("Generated RDF description: " + rdf);
+			return true;
 		} else {
 			LOG.debug("Couldn't get Preferences for generating RDF.");
 			return false;
 		}
-
 	}
 
-	private String getRDF() {
+	@Override
+	public String getRDF() {
 		if (preferencesService!=null) {
 
 			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 				return p.get("infomodel", "");
 			} else {
-				LOG.error("Couldn't set Connector_URL.");
+				LOG.error("Couldn't get Connector description.");
 				return null;
 			}
 		}
 		return null;
-
 	}
 
 	@Override
 	public Connector getConnector() {
 
+		Connector c = null;
 		SecurityProfile securityprofile = getSecurityProfile();
 		List<DataEndpoint> endpoints = getEndpoints();
 		URL conn_url = getURL("conn_url");
 		URL op_url = getURL("op_url");
 		List<PlainLiteral> entityNames = getConnectorEntityNames();
 
-		try {
-			return new ConnectorBuilder(conn_url).operator(op_url).entityNames(entityNames)
-					.securityProfile(securityprofile).provides(endpoints).build();
-		} catch (ConstraintViolationException ex) {
-			LOG.error("Caught ConstraintViolationException while building Connector", ex);
+		if(!((op_url==null) || (entityNames==null))) {
+			try {
+				if(conn_url!=null)
+					return new ConnectorBuilder(conn_url).operator(op_url).entityNames(entityNames)
+						.securityProfile(securityprofile).provides(endpoints).build();
+				//LOG.info("Successfully build connector.");
+				else
+					return new ConnectorBuilder().operator(op_url).entityNames(entityNames)
+							.securityProfile(securityprofile).provides(endpoints).build();
+				
+			} catch (ConstraintViolationException ex) {
+				LOG.error("Caught ConstraintViolationException while building Connector", ex);
+				return null;
+			}
+		} else {
+			//LOG.debug("Connector couldn't be built due to null objects.");
 			return null;
 		}
-
 	}
 
 	@Override
-	public boolean setConnector(URL conn_url, URL op_url, Collection<? extends PlainLiteral> entityNames,
+	public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames,
 			SecurityProfile profile) {
 
 		if (preferencesService!=null) {
-	
 	
 			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
 	
 				// Set Connector URL ---> allowed to be empty from model
 				if (conn_url != null) {
 					setPreference("conn_url", conn_url.toString(), p);
-				} else {
-					setPreference("conn_url", "someNonRandomString", p);
+				} /*else {
+					//setPreference("conn_url", "someNonRandomString", p);
+					setPreference("conn_url", VocabUtil.getInstance().createRandomUrl("connector").toString(), p);
 					//TODO: Check instantiation of VocabUtil.createRandomUrl("connector").toString()
-				}
+				}*/
 	
 				// Set Operator URL
 				if (op_url != null) {
@@ -317,15 +337,18 @@ public class InfoModelService implements InfoModel {
 				}
 	
 				// Set Entity Names
-				if (!entityNames.isEmpty()) {
+				if(entityNames!=null && !entityNames.isEmpty()) {
 					setPreference("conn_entity", new Gson().toJson(entityNames), p);
 				} else {
 					LOG.error("Entity Names can not be empty.");
 					return false;
 				}
 	
-				// Set SecurityProfile -- if null will return "NONE" automatically
+				// Set SecurityProfile -- if null, will return "NONE" automatically
 				if (profile != null) {
+					if(profile.getBasedOn()!=null)
+						setPreference("basedOn", profile.getBasedOn().toString(), p);
+					setPreference("sPiD", profile.getId().toString(), p);
 					setPreference("IntegrityProtectionAndVerification",
 							profile.getIntegrityProtectionAndVerification().toString(), p);
 					setPreference("AuthenticationSupport", profile.getAuthenticationSupport().toString(), p);
@@ -336,43 +359,38 @@ public class InfoModelService implements InfoModel {
 					setPreference("AuditLogging", profile.getAuditLogging().toString(), p);
 					setPreference("idsLocalDataConfidentiality", profile.getLocalDataConfidentiality().toString(), p);
 				}
-	
+
+				try {
+					if(conn_url!=null)
+						return generateRDF(new ConnectorBuilder(conn_url).operator(op_url).entityNames(entityNames)
+								.securityProfile(profile).build());
+					else
+						return generateRDF(new ConnectorBuilder().operator(op_url).entityNames(entityNames)
+								.securityProfile(profile).build());
+				} catch (ConstraintViolationException ex) {
+					LOG.error("Caught ConstraintViolationException while building Connector to generate RDF description.", ex);
+					return false;
+				}
+
 			} else {
 				LOG.error("Couldn't set Preferences.");
+				return false;
 			}
-	
-			// Endpoints will be freshly loaded on generating RDF
-			return generateRDF();
+		} else {
+			LOG.debug("Couldn't load preferences to store connector object.");
+			return false;
 		}
-		return false;
 	}
 
 	@Override
-	public boolean setConnector(URL conn_url, URL op_url, Collection<? extends PlainLiteral> entityNames) {
+	public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames) {
 		return setConnector(conn_url, op_url, entityNames, null);
 	}
 
 	@Override
-	public boolean setConnector(URL op_url, Collection<? extends PlainLiteral> entityNames) {
+	public boolean setConnector(URL op_url, Collection<PlainLiteral> entityNames) {
 		return setConnector(null, op_url, entityNames, null);
 	}
-
-	/*
-	 * @Override public Connector getEmptyConnector(){ URL conn_url, op_url;
-	 * PlainLiteral p = new PlainLiteral("");
-	 * 
-	 * try { conn_url = new URL(STANDARD_URL); op_url = new URL(STANDARD_URL); }
-	 * catch (MalformedURLException ex) { LOG.error(ex.getMessage(), ex); return
-	 * null; }
-	 * 
-	 * try{ return new ConnectorBuilder(conn_url) .operator(op_url)
-	 * .entityNames(Arrays.asList(p)) .build();
-	 * 
-	 * } catch (ConstraintViolationException ex){ LOG.error(ex.getMessage(),
-	 * ex); return null; }
-	 * 
-	 * }
-	 */
 
 	/*
 	 * @Override public boolean setConnector(Connector c){
@@ -386,10 +404,6 @@ public class InfoModelService implements InfoModel {
 	 * //Get SecurityProfile -- if null will return "NONE" automatically
 	 * if(c.getSecurityProfile()!=null){
 	 * setSecurityProfile(c.getSecurityProfile()); }
-	 * 
-	 * //Endpoints will be freshly loaded on generating RDF return
-	 * generateRDF();
-	 * 
 	 * }
 	 */
 
