@@ -356,8 +356,8 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         Server server = null;
         if (minThreads == null && maxThreads == null && getThreadPool() == null) {
             minThreads = 1;
-            // 1+selectors+acceptors
-            maxThreads = 2 * (1 + Runtime.getRuntime().availableProcessors() * 2);
+            // max pax web threads + 1 + selectors + acceptors
+            maxThreads = 20 + 1 + Runtime.getRuntime().availableProcessors() * 2;
         }
         // configure thread pool if min/max given
         if (minThreads != null || maxThreads != null) {
