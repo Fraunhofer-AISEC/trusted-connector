@@ -98,6 +98,9 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclusions.xml</excludeFilterFile>
+				</configuration>
 			</plugin>
 
 			<plugin>
