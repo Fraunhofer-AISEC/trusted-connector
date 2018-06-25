@@ -56,8 +56,6 @@ import { MetricService } from './metric/metric.service';
 
 import { ZoomVizComponent } from './routes/zoom-viz/zoom-viz.component';
 
-import './rxjs';
-
 import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
 
 // import { D3Service } from 'd3-ng2-service';
