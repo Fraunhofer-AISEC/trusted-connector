@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 import { tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
 export const HTTP_INJECTION_TOKEN = 'ApplicationHttpClient';
 export const HTTP_PROVIDER = {
@@ -87,7 +87,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
       const key = endPoint + JSON.stringify(options);
       const val = this.cache.get(key);
       if (val && val[0] > Date.now() - options.cacheTTL * 1e3) {
-        return Observable.of(val[1]);
+        return of(val[1]);
       } else {
         return this.http.get(environment.apiURL + endPoint, options)
           .pipe(

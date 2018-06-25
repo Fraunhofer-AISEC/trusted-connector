@@ -1,16 +1,14 @@
-import { Component, ElementRef, HostListener, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
+import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Result, RouteResult } from '../../result';
+import { Result } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
 import { CounterExample, ValidationInfo } from '../validation';
 
-import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { validateConfig } from '@angular/router/src/config';
-import { Observable } from 'rxjs/Observable';
+import { ReplaySubject } from 'rxjs';
 
 declare var Viz: any;
 

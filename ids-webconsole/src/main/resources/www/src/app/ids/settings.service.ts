@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 import { Settings } from './settings.interface';
 import { TermsOfService } from './terms-of-service.interface';

@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 
 import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 import { ConnectionReportService } from './connectionReport.service';
+import { delay, retryWhen, take } from 'rxjs/operators';
 
 @Component({
   selector: 'connections',
@@ -20,23 +21,25 @@ export class ConnectionReportComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const errorStrategy = errors => errors.pipe(
+      delay(5000),
+      take(6)
+    );
+
     this.connectionService.getIncomingConnections()
-      .retryWhen(errors => errors.delay(5000)
-        .take(6))
+      .pipe(retryWhen(errorStrategy))
       .subscribe(inConnections => {
         this.incomingConnections = inConnections;
       });
 
     this.connectionService.getOutgoingConnections()
-      .retryWhen(errors => errors.delay(5000)
-        .take(6))
+      .pipe(retryWhen(errorStrategy))
       .subscribe(outConnections => {
         this.outgoingConnections = outConnections;
       });
 
     this.connectionService.getEndpoints()
-      .retryWhen(errors => errors.delay(5000)
-        .take(6))
+      .pipe(retryWhen(errorStrategy))
       .subscribe(endpointList => {
         this.endpoints = endpointList;
       });

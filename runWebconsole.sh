@@ -1,7 +1,7 @@
 #!/bin/bash
-set LAST_PWD = $(pwd)
+LAST_PWD=$(pwd)
 
 cd ~/VM_Shared/karaf-policy-platform/ids-webconsole/src/main/resources/www
-ng serve --progress --delete-output-path=false "$@"
+ng serve --progress "$@"
 
 cd $LAST_PWD

@@ -1,8 +1,7 @@
 import { Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
 
 import '../../../../node_modules/svg-pan-zoom';
-import { Subject } from 'rxjs/Subject';
-import { removeListener } from 'cluster';
+import { Subject } from 'rxjs';
 
 declare var Viz: any;
 

@@ -5,7 +5,6 @@ import { Title } from '@angular/platform-browser';
 import { Policy } from './policy.interface';
 import { PolicyService } from './policy.service';
 import { AbstractControl } from '@angular/forms/src/model';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
     templateUrl: './dataflowpoliciesnew.component.html'

@@ -1,8 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, OnInit, Output,  ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
+import { AfterViewInit, Component, OnInit, ViewEncapsulation } from '@angular/core';
 
 import { SensorService } from '../sensor/sensor.service';
 import { SubscriptionComponent } from '../subscription.component';
@@ -10,6 +6,8 @@ import { SubscriptionComponent } from '../subscription.component';
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
 import d3_hexbin from 'd3-plugins-dist/dist/mbostock/hexbin/amd';
+import { Observable, timer } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'network-graph',
@@ -147,8 +145,8 @@ export class NetworkGraphComponent extends SubscriptionComponent implements OnIn
     this.isBlinking = true;
     // console.log('preparing to blink...');
 
-    this.errorTimer = Observable.timer(0, 600)
-      .take(10);
+    this.errorTimer = timer(0, 600)
+      .pipe(take(10));
 
     this.errorTimer.subscribe(x => {
       if (x % 2 === 0) {

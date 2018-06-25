@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { SettingsService } from './settings.service';
 import { TermsOfService } from './terms-of-service.interface';
-import { Observable } from 'rxjs/Observable';
 import { map, switchMap, take } from 'rxjs/operators';
+import { timer } from 'rxjs';
 
 @Component({
     selector: 'my-app',
@@ -32,7 +32,7 @@ export class IdsComponent implements OnInit {
                     ttpHost: response.ttpHost,
                     ttpPort: response.ttpPort,
                     acmeServerWebcon: [response.acmeServerWebcon, [], [control =>
-                        Observable.timer(300)
+                        timer(300)
                             .pipe(
                                 switchMap(_ => this.settingsService.getToS(control.value)),
                                 map(tos => {

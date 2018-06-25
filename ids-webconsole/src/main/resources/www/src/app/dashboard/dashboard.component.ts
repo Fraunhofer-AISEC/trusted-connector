@@ -3,8 +3,6 @@ import { Title } from '@angular/platform-browser';
 
 import {  SubscriptionComponent } from '../subscription.component';
 
-import { Observable } from 'rxjs/Observable';
-
 import { App } from '../apps/app';
 import { AppService } from '../apps/app.service';
 import { MetricService } from '../metric/metric.service';

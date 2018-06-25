@@ -1,13 +1,11 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { BrowserModule, Title } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
-import { IntervalObservable } from 'rxjs/observable/IntervalObservable';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
+import { Title } from '@angular/platform-browser';
 
 import { Route } from './route';
 import { RouteService } from './route.service';
 import { RouteMetrics } from './route-metrics';
+import { interval } from 'rxjs';
+import { mergeMap, takeWhile } from 'rxjs/operators';
 
 @Component({
     selector: 'route-list',
@@ -36,9 +34,11 @@ export class RoutesComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.changeTitle.emit('Camel Routes');
         // Update route metrics every second
-        IntervalObservable.create(1000)
-            .takeWhile(() => this.alive)
-            .mergeMap(() => this.routeService.getMetrics())
+        interval(1000)
+            .pipe(
+                takeWhile(() => this.alive),
+                mergeMap(() => this.routeService.getMetrics())
+            )
             .subscribe(routeMetrics => this.routemetrics = routeMetrics);
         this.alive = true;
     }

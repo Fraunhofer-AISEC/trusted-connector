@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
 
 import { App, DockerHubApp, DockerHubTag } from './app';
 import { Cml } from './cml';
 import { Result } from '../result';
 
 import { environment } from '../../environments/environment';
+
+import { catchError, map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
 
 @Injectable()
 export class AppService {
@@ -32,7 +34,7 @@ export class AppService {
 
         return this.http.post<string>(environment.apiURL + '/app/install',
             { image: this.company + '/' + appId + ':' + tag }, { headers })
-            .catch((error: any) => Observable.throw(error || 'Server error'));
+            .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
     }
 
     getTags(appName: string): Observable<Array<DockerHubTag>> {
@@ -42,7 +44,7 @@ export class AppService {
             + appName
             + '/tags/';
         const result = this.http.get(url)
-            .map(resp => resp['results'] as Array<DockerHubTag>);
+            .pipe(map(resp => resp['results'] as Array<DockerHubTag>));
 
         return result;
     }
@@ -59,14 +61,16 @@ export class AppService {
             + limit;
 
         return this.http.get(url)
-            .map(res => res['results'] as Array<DockerHubApp>)
-            .map(apps => apps.filter(app => app.name.match(term)));
+        .pipe(
+            map(res => res['results'] as Array<DockerHubApp>),
+            map(apps => apps.filter(app => app.name.match(term)))
+        );
     }
 
     getAllTags(term: string): Observable<Array<DockerHubApp>> {
         const searchedApps: Observable<Array<DockerHubApp>> = this.searchApps(term);
 
-        return searchedApps.map(apps => {
+        return searchedApps.pipe(map(apps => {
             for (const app of apps) {
                 this.getTags(app.name)
                     .forEach(x => {
@@ -77,6 +81,6 @@ export class AppService {
             }
 
             return apps;
-        });
+        }));
     }
 }
