@@ -1,11 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { Certificate } from './certificate';
-import { CertificateService } from './keycert.service';
-
-import { PrettifyPipe } from '../prettify-json.pipe';
-
 import { ConfirmService } from '../confirm/confirm.service';
 
 declare var componentHandler: any;
@@ -20,10 +15,9 @@ export class CertificateCardComponent implements OnInit {
   @Input() certificates: Array<Certificate>;
   @Input() trusts: Array<Certificate>;
   result: string;
-
   @Input() private onDeleteCallback: Function;
 
-  constructor(private certificateService: CertificateService, private confirmService: ConfirmService) { }
+  constructor(private confirmService: ConfirmService) { }
 
   ngOnInit(): void {
     componentHandler.upgradeDom();

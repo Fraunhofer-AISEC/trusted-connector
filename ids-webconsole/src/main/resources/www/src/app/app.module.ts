@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { AceEditorModule } from 'ng2-ace-editor';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';

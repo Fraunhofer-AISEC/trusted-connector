@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -9,8 +9,6 @@ import { RouteService } from '../route.service';
 import { CounterExample, ValidationInfo } from '../validation';
 
 import { ReplaySubject } from 'rxjs';
-
-declare var Viz: any;
 
 @Component({
   selector: 'routeeditor',
@@ -27,13 +25,10 @@ export class RouteeditorComponent implements OnInit {
   private _result: Result = new Result();
   private _saved = true;
   private statusIcon: string;
-  @ViewChild('vizCanvas')
-  private vizCanvas: ElementRef;
-  private svgElement: HTMLElement;
   private _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
   constructor(private titleService: Title, private _fb: FormBuilder, private router: Router,
-              private navRoute: ActivatedRoute, private renderer: Renderer2, private routeService: RouteService) {
+              private navRoute: ActivatedRoute, private routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
   }
 

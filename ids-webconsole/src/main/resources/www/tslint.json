@@ -17,6 +17,7 @@
     "rxjs-no-subject-unsubscribe": true,
     "rxjs-throw-error": true,
     
+    "no-unused-variable": true,
     "curly": true,
     "comment-format": false,
     

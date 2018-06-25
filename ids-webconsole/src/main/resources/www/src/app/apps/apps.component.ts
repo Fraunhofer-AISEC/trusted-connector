@@ -1,10 +1,9 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
 import { App, DockerHubApp } from './app';
 import { AppService } from './app.service';
-import { AppCardComponent } from './app-card.component';
 
 declare var componentHandler: any;
 

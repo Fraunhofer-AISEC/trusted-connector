@@ -19,7 +19,7 @@ export class ConnectionConfigurationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const sets = this.connectionConfService.getAllConfiguration()
+    this.connectionConfService.getAllConfiguration()
       .subscribe(val => {
         this.models = val;
         for (let i = 0; i < this.models.length; i++) {

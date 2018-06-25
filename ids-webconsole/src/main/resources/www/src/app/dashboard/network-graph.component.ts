@@ -19,7 +19,6 @@ import { take } from 'rxjs/operators';
 export class NetworkGraphComponent extends SubscriptionComponent implements OnInit, AfterViewInit {
   power = 0;
 
-  private chart: any;
   private color;
   private hexbin;
   private svg;

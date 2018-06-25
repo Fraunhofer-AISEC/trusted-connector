@@ -12,7 +12,6 @@ declare var Viz: any;
 })
 export class ZoomVizComponent implements OnInit {
   @Input() private dotSubject: Subject<string>;
-  @Input() private dot: string;
   @ViewChild('vizCanvas') private vizCanvasRef: ElementRef;
   private vizCanvas: HTMLElement;
   private zoom?: SvgPanZoom.Instance;
