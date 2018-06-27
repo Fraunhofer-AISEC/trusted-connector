@@ -29,7 +29,7 @@ public class MetadataProviderHandler extends MetadataHandler {
 	
 	public MessageLite response(Event e) {
 		this.sessionID = e.getMessage().getId();
-		this.connectorRDFSelfDescription = this.generateMetaDataRDF();
+		this.mySelfDescription = this.generateMetaDataRDF();
 		
 		return ConnectorMessage
 				.newBuilder()
@@ -38,7 +38,7 @@ public class MetadataProviderHandler extends MetadataHandler {
 				.setMetadataExchange(
 						MedadataExchange
 						.newBuilder() 
-						.setRdfdescription(connectorRDFSelfDescription)
+						.setRdfdescription(mySelfDescription)
 						.build())
 				.build();
 	}

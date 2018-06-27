@@ -31,10 +31,7 @@ public class IDSCPIncomingConnection {
 	private AttestationResult attestationResult;
 	private String endpointKey;
 	private String remoteHostName;
-	
-	public IDSCPIncomingConnection() {
-	}
-	
+
 	public String getEndpointIdentifier() {
 		return endpointIdentifier;
 	}

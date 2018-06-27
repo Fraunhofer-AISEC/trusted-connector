@@ -41,9 +41,13 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
+/**
+ * Implements the handling of individual protocol steps in the IDS remote
+ * attestation protocol.
+ *
+ */
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
-	private final FSM fsm;
 	private String myNonce;
 	private String yourNonce;
 	private IdsAttestationType aType;
@@ -61,8 +65,6 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
-		// set finite state machine
-		this.fsm = fsm;
 		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
 		this.attestationMask = attestationMask;
