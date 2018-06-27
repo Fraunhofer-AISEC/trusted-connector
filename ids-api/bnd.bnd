@@ -7,4 +7,3 @@ Export-Package: \
 Import-Package: \
 	!de.fhg.aisec.ids.messages,\
 	*
--noee=true

@@ -1,12 +1,4 @@
-src: src/main/java
-bin: target/classes
-testsrc: src/test/java,src/test/resources
-testbin: target/test-classes
 Bundle-Name: ids-acme
-Bundle-Version: 2.0
--dsannotations: *
-Bundle-Vendor: Fraunhofer
--noee=true
 Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.registrar)",\
     osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",\
     osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"

@@ -1,12 +1,4 @@
-src: src/main/java
-bin: target/classes
-testsrc: src/test/java,src/test/resources
-testbin: target/test-classes
--dsannotations: *
--noee=true
 Bundle-Name: ids-dynamic-tls
-Bundle-Version: 1.0
-Bundle-Vendor: Fraunhofer
 Import-Package: \
 	org.eclipse.jetty.util.ssl.*,\
 	*
