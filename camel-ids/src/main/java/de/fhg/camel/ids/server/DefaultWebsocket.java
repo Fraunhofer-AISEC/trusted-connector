@@ -37,7 +37,6 @@ package de.fhg.camel.ids.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.UUID;
 
 import org.eclipse.jetty.websocket.api.CloseStatus;
@@ -61,8 +60,7 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 @WebSocket
-public class DefaultWebsocket implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class DefaultWebsocket {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);
 
     private final WebsocketConsumer consumer;
@@ -93,7 +91,6 @@ public class DefaultWebsocket implements Serializable {
         this.session = session;
         this.connectionKey = UUID.randomUUID().toString();
         IdsAttestationType type;
-//        SSLContextParameters params = this.consumer.getSSLContextParameters();
         int attestationMask = 0;
         switch(this.consumer.getAttestationType()) {
 	    	case 0:            
@@ -144,17 +141,11 @@ public class DefaultWebsocket implements Serializable {
 
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
-        LOG.trace("server received "+length+" byte in onMessage " + new String(data));
+        LOG.trace("server received {} byte in onMessage", length);
         if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
 	        if (this.consumer != null) {
-	        	if(machine.getIDSCPProviderSuccess()) {
-	        		this.consumer.sendMessage(this.connectionKey, data);
-	        	}	else {
-	        		LOG.debug("remote attestation was NOT successful ... ");
-	        		// do stuff here when attestation was not successful
-	        	}
-	        } 
-	        else {
+        		this.consumer.sendMessage(this.connectionKey, data);
+	        } else {
 	            LOG.debug("No consumer to handle message received: {}", data);
 	        }
         } else {

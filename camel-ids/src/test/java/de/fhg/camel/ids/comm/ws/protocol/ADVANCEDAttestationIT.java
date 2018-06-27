@@ -70,8 +70,7 @@ public class ADVANCEDAttestationIT {
 	private static ConnectorMessage msg6;
 	private static ConnectorMessage msg7;
 	private static ConnectorMessage msg8;
-	private static String PWD = "password";
-	private static String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
+	private static final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
@@ -181,7 +180,6 @@ public class ADVANCEDAttestationIT {
         tmp.setKeyStore(tsp);
 
         SSLContextServerParameters scsp = new SSLContextServerParameters();
-        //scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
         scsp.setClientAuthentication(ClientAuthentication.NONE.name());
 
         SSLContextParameters sslContextParameters = new SSLContextParameters();

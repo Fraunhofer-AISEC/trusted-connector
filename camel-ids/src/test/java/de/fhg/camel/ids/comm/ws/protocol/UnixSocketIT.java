@@ -25,7 +25,6 @@ import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
@@ -35,6 +34,14 @@ import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
 
+/**
+ * Integration tests against a TPM 2.0 daemon (tpmd) over a UNIX domain socket
+ * at ./socket/control.sock.
+ * 
+ * These tests will only run if the respective UNIX domain socket is available.
+ * Otherwise they will be ignored.
+ * 
+ */
 public class UnixSocketIT {
 	private static final String TPMD_SOCKET = "socket/control.sock";
 
