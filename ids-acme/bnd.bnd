@@ -1,4 +1,4 @@
-Bundle-Name: ids-acme
+Bundle-Name: IDS :: ACME Client Service
 Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.registrar)",\
     osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",\
     osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"
