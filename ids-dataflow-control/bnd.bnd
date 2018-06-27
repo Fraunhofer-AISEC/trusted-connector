@@ -2,14 +2,13 @@ Bundle-Name: IDS :: Dataflow Control Engine
 Bundle-ClassPath: ., META-INF/lib/tuprolog.jar
 -includeresource: META-INF/lib/tuprolog.jar=tuprolog-[0-9]*.jar;lib:=true
 Export-Package: \
-  de.fhg.ids.dataflowcontrol
+    de.fhg.ids.dataflowcontrol
 Import-Package: \
+    !org.checkerframework.checker*,\
 	!org.apache.commons.lang3,\
 	!javax.tools,\
 	!javax.script,\
 	!cli.System.Reflection,\
-	!com.google.gson,\
-	!com.google.errorprone*,\
 	!ikvm.runtime,\
 	!alice.tuprolog*,\
 	*

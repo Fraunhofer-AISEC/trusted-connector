@@ -7,7 +7,6 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>checker-qual</module>
 		<module>tpm2j</module>
 		<module>ids-api</module>
 		<module>ids-settings</module>
@@ -37,6 +36,7 @@
 		<guava.version>25.1-jre</guava.version>
 		<kotlin.version>1.2.41</kotlin.version>
 		<mapdb.version>3.0.7</mapdb.version>
+		<checker.version>2.5.2</checker.version>
 
 		<!-- TODO: should change them to .version, not -version -->
 		<jnr-unixsocket-version>0.18</jnr-unixsocket-version>
@@ -226,6 +226,13 @@
 				<artifactId>mockito-all</artifactId>
 				<version>${mockito-version}</version>
 				<scope>test</scope>
+			</dependency>
+
+			<!-- checker framework -->
+			<dependency>
+				<groupId>org.checkerframework</groupId>
+				<artifactId>checker-qual</artifactId>
+				<version>${checker.version}</version>
 			</dependency>
 
 			<!-- JNR-Unixsocket -->

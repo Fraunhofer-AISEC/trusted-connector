@@ -13,8 +13,7 @@
 
 	<feature name="ids" description="IDS Feature" version="${project.version}">
 		<details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
-		
-		<bundle start-level="75">mvn:de.fhg.ids/org.checkerframework.checker-qual/1.1.0-SNAPSHOT</bundle>
+
 		<bundle start-level="75">mvn:com.google.protobuf/protobuf-java/3.5.1</bundle>
 
 		<!-- a slightly newer Jackson version -->
