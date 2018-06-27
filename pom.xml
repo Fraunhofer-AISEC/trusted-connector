@@ -36,12 +36,12 @@
 
 		<!-- TODO: should change them to .version, not -version -->
 		<jnr-unixsocket-version>0.18</jnr-unixsocket-version>
-		<jetty-version>9.3.9.v20160517</jetty-version>
+		<jetty-version>9.4.11.v20180605</jetty-version>
 		<jersey-version>2.25</jersey-version>
 		<jackson.version>2.9.5</jackson.version>
 		<protobuf-version>3.5.1</protobuf-version>
 		<mockito-version>1.10.19</mockito-version>
-		<ahc-version>2.4.4</ahc-version>
+		<ahc-version>2.4.9</ahc-version>
 		<log4j-version>2.6.2</log4j-version>
 		<docker-plugin-version>0.18.1</docker-plugin-version>
 
@@ -189,6 +189,12 @@
 				<groupId>org.asynchttpclient</groupId>
 				<artifactId>async-http-client</artifactId>
 				<version>${ahc-version}</version>
+			</dependency>
+
+			<dependency>
+			    <groupId>com.typesafe.netty</groupId>
+			    <artifactId>netty-reactive-streams</artifactId>
+			    <version>2.0.0</version>
 			</dependency>
 
 			<!-- Logging -->

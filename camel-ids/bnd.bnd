@@ -6,5 +6,7 @@ Export-Package: de.fhg.camel.ids.server,\
 Import-Package: \
 	com.ning.http.client.ws;resolution:=optional,\
 	org.asynchttpclient.netty.*,\
+	com.typesafe.netty.*,\
+	org.asynchttpclient.netty.handler.*,\
 	!org.glassfish.jersey.*,\
 	*
