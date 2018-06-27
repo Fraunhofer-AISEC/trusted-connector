@@ -78,6 +78,9 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			LOG.warn("could not write to/read from " + socket);
+			if (client != null) {
+				this.client.terminate();
+			}
 		}		
 	}
 	
@@ -159,11 +162,15 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 							.build();
 				} catch (IOException ex) {
 					lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
+					client.terminate();
 				} catch (InterruptedException ex) {
 					lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
+					client.terminate();
+					Thread.currentThread().interrupt();
 				}
 			} else {
 				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+				client.terminate();
 			}
 		} else {
 			lastError = "error: RAT client thread is not alive !";

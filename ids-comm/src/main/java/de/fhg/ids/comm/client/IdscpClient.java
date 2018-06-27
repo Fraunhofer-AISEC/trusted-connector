@@ -21,6 +21,7 @@ package de.fhg.ids.comm.client;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 import org.asynchttpclient.AsyncHttpClient;
@@ -34,6 +35,10 @@ public class IdscpClient {
 
 	private ClientConfiguration config = new ClientConfiguration();
 	private AttestationResult attestationResult = null;
+	
+	public WebSocket connect(URI uri) throws InterruptedException, ExecutionException {
+		return connect(uri.getHost(), uri.getPort());
+	}
 	
 	public WebSocket connect(String host, int port) throws InterruptedException, ExecutionException {
 		AsyncHttpClient c = asyncHttpClient();

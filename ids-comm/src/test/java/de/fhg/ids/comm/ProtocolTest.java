@@ -35,6 +35,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdscpClient;
 import de.fhg.ids.comm.server.IdscpServer;
+import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
 
@@ -105,5 +106,10 @@ class MySocketListener implements SocketListener {
 	
 	public String getLastMsg() {
 		return this.lastMsg;
+	}
+
+	@Override
+	public void notifyClosed(IdscpServerSocket idscpServerSocket) {
+		// Nothing to do here. Socket is already closed.		
 	}
 }

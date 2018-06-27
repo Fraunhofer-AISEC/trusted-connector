@@ -86,6 +86,7 @@ public class IdspClientSocket implements WebSocketListener {
 
     @Override
     public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
+    	Log.debug("Client websocket received binary message " + new String(message));
     	try {
     		lock.lockInterruptibly();
     		try {
@@ -96,6 +97,7 @@ public class IdspClientSocket implements WebSocketListener {
     			Log.error(e.getMessage(), e);
     		}
     		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+    			Log.debug("Client is now terminating IDSCP");
 	    		this.isTerminated = true;
     			idscpInProgress.signalAll();
 	    	}
@@ -103,11 +105,13 @@ public class IdspClientSocket implements WebSocketListener {
 			Log.warn(e.getMessage());
 		} finally {
 			lock.unlock();
+			this.isTerminated = true;
 		}
     }
 
     @Override
     public void onTextFrame(String message, boolean finalFragment, int rsv) {
+    	Log.debug("Client websocket received text message " + message);
     	onBinaryFrame(message.getBytes(), finalFragment, rsv);
     }
     

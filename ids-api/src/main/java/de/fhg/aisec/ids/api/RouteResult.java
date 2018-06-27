@@ -28,7 +28,7 @@ public class RouteResult extends Result {
 
     public RouteResult() {}
 
-    public RouteResult(@NonNull boolean success, @NonNull String msg, @Nullable RouteObject route) {
+    public RouteResult(boolean success, @NonNull String msg, @Nullable RouteObject route) {
         super(success, msg);
         this.route = route;
     }

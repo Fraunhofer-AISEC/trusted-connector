@@ -73,7 +73,7 @@ public class WsEndpoint extends AhcEndpoint {
 
     private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<>();
 
-	private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
+	private final Set<WsConsumer> consumers = new HashSet<>();
     private final WsListener listener = new WsListener();
     private transient WebSocket websocket;
 
@@ -82,9 +82,11 @@ public class WsEndpoint extends AhcEndpoint {
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
     @UriParam(label = "attestation", defaultValue = "0", description = "defines the remote attestation mode: 0=BASIC, 1=ALL, 2=ADVANCED, 3=ZERO. default value is 0=BASIC. (see api/attestation.proto for more details)")
-    private IdsAttestationType attestation = IdsAttestationType.BASIC;
+    private int attestation = IdsAttestationType.BASIC.getNumber();
     @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
     private Integer attestationMask = 0;
+
+	private IdspClientSocket idspListener;
 
     public WsEndpoint(String endpointUri, WsComponent component) {
         super(endpointUri, component, null);
@@ -136,11 +138,11 @@ public class WsEndpoint extends AhcEndpoint {
         return sendMessageOnError;
     }
 
-    public void setAttestation(IdsAttestationType type) {
+    public void setAttestation(int type) {
         this.attestation = type;
     }
 
-    public IdsAttestationType getAttestation() {
+    public int getAttestation() {
         return attestation;
     }
 
@@ -172,7 +174,7 @@ public class WsEndpoint extends AhcEndpoint {
         return client;
     }
 
-    public void connect() throws Exception {
+    public void connect() {
     	String uri = getHttpUri().toASCIIString();
     	if (uri.startsWith("idsclient:")) {
     		uri = uri.replaceFirst("idsclient:", "wss:");
@@ -190,25 +192,27 @@ public class WsEndpoint extends AhcEndpoint {
 
         ClientConfiguration config = new ClientConfiguration()
         								.attestationMask(this.getAttestationMask())
-        								.attestationType(this.getAttestation())
+        								.attestationType(IdsAttestationType.forNumber(this.getAttestation()))
         								.sslContext(this.getSslContextParameters());
-        IdspClientSocket idspListener = new IdspClientSocket(config);
-        websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
-       
-        // Block until ISCP has finished
-        idspListener.semaphore().lockInterruptibly();
-         try {
-         	while (!idspListener.isTerminated()) {
-         		idspListener.idscpInProgressCondition().await();
-         	}
-         } finally {
-        	AttestationResult ratSuccess = idspListener.getAttestationResult();
-         	idspListener.semaphore().unlock();
-            LOG.debug("remote attestation was successful: " + ratSuccess);
-         }		        
+        idspListener = new IdspClientSocket(config);
+
+        try {
+	        // Block until ISCP has finished
+	        idspListener.semaphore().lockInterruptibly();
+	
+	        websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
+	        
+	         try {
+	        	 idspListener.idscpInProgressCondition().await();
+	         } finally {
+	        	AttestationResult ratSuccess = idspListener.getAttestationResult();
+	         	idspListener.semaphore().unlock();
+	         }
+        } catch (Exception t) {
+        	LOG.error(t.getMessage(), t);
+        }
         //get remote address, get upgrade headers, instantinate connectionmanagersertvice to register websocket
         // When IDS protocol has finished, hand over to normal web socket listener
-        //This does not work! 
         websocket.addWebSocketListener(listener);
         websocket.removeWebSocketListener(idspListener);
         
@@ -223,15 +227,14 @@ public class WsEndpoint extends AhcEndpoint {
 
     @Override
     protected void doStop() throws Exception {
-        if (websocket != null && websocket.isOpen()) {
+    	if (websocket != null && websocket.isOpen()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Disconnecting from {}", getHttpUri().toASCIIString());
             }
             websocket.removeWebSocketListener(listener);
-            //websocket.close();
+            websocket.sendCloseFrame();
             websocket = null;
         }
-
         outgoingConnections.removeIf(ic-> ic.getEndpointKey().equals(this.getEndpointKey()));
         super.doStop();
     }

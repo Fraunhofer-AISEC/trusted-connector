@@ -29,7 +29,6 @@ import java.nio.ByteBuffer;
 
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.ws.WebSocket;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -285,6 +284,7 @@ public class ProtocolMachine {
 				ByteBuffer bb = ByteBuffer.wrap(text);
 				LOG.trace("Sending out ByteBuffer with " + bb.array().length + " bytes");
 				serverSession.getRemote().sendBytes(bb);
+				serverSession.getRemote().flush();
 			} catch (IOException e) {
 				LOG.error(e.getMessage(), e);
 			}
@@ -296,6 +296,7 @@ public class ProtocolMachine {
 	
 
 	private boolean replyAbort() {
+		LOG.debug((this.serverSession==null?"Server":"Client") + " sending abort");
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		MessageLite abortMessage =  ConnectorMessage
 				.newBuilder()

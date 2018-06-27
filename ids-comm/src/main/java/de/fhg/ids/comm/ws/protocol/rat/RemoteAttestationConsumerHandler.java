@@ -159,15 +159,15 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 							.build();
 				} catch (IOException ex) {
 					lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
+					tpmClient.terminate();
 				} catch (InterruptedException ex) {
 					lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
+					tpmClient.terminate();
 				}
-			}
-			else {
+			} else {
 				lastError = "error: RAT client thread is not alive. No TPM present? ";
 			}	
-		}
-		else {
+		} else {
 			lastError = "error: repository entries do not match";
 		}
 		LOG.debug(lastError);

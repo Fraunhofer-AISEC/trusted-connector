@@ -121,12 +121,12 @@ public class DefaultWebsocket implements Serializable {
     @OnWebSocketMessage
     public void onMessage(String message) {
         LOG.debug("onMessage: {}", message);    	
-        // Check if fsm is in its final state and successful. Only then, the message is forwarded to Camel consumer
-        if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id()) && machine.getIDSCPProviderSuccess()) {
+        // Check if fsm is in its final state If not, this message is not our department
+        if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
 	        if (this.consumer != null) {
 	            this.consumer.sendMessage(this.connectionKey, message);
 	        } else {
-	            LOG.trace("No consumer to handle message received: {}", message);
+	            LOG.warn("No consumer to handle message received: {}", message);
 	        }
 	        return;
         }
@@ -163,7 +163,7 @@ public class DefaultWebsocket implements Serializable {
 	        	idsFsm.feedEvent(new Event(msg.getType(), new String(data), msg));	//we need to de-protobuf here and split messages into cmd and payload
 			} catch (IOException e) {
 				// An invalid message has been received during IDS protocol. close connection
-				LOG.error(e.getMessage(), e);
+				LOG.error("Closing session because " + e.getMessage(), e);
 				this.session.close(new CloseStatus(403, "invalid protobuf"));
 			}
         }

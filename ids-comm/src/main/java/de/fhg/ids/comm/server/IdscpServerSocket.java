@@ -90,8 +90,9 @@ public class IdscpServerSocket {
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        LOG.debug("websocket closed - reconnecting");
+        LOG.debug("websocket closed");
         fsm.reset();
+        socketListener.notifyClosed(this);
     }
 
     @OnWebSocketError
@@ -165,5 +166,15 @@ public class IdscpServerSocket {
 	
 	public Session getSession() {
 		return this.session;
+	}
+
+	public Object getConnectionKey() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object getPathSpec() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

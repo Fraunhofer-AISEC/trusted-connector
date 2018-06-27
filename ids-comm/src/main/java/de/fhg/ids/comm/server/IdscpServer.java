@@ -63,6 +63,28 @@ public class IdscpServer {
 		return this;
 	}
 	
+	/**
+	 * Adds a ServletContextHandler to a (possibly running) server.
+	 * 
+	 * @return
+	 */
+	public IdscpServer addServlet(String basePath) {
+		// TODO There should be one server per host/port, which is started at the first call to start(). This method should be removed and instead start() should register new basePaths, if necessary 
+		if (this.server==null) {
+			throw new IllegalArgumentException("Wrong order: must call start() before addServlet()");
+		}
+		assert this.server!=null;
+		
+		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		context.setContextPath("/");		
+		this.server.setHandler(context);
+		
+		// Add a websocket to a specific path spec
+		ServletHolder holderEvents = new ServletHolder("ids", new ServerSocketServlet(this.config, this.sockerListener));
+		context.addServlet(holderEvents, basePath);
+		return this;
+	}
+	
 	public Server getServer() {
 		return this.server;
 	}

@@ -26,7 +26,14 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -59,6 +66,7 @@ public class UnixSocketThread implements Runnable {
 	
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
 	private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponseHandler>());
+	private boolean stopped = false;
 	
 	// default constructor
 	public UnixSocketThread() throws IOException {
@@ -108,7 +116,7 @@ public class UnixSocketThread implements Runnable {
 	// thread run method
 	@Override
 	public void run() {
-		while (true) {
+		while (!stopped ) {
 			try {
 				// Process any pending changes
 				synchronized (this.pendingChanges) {
@@ -304,6 +312,11 @@ public class UnixSocketThread implements Runnable {
 	// get the channel
 	private UnixSocketChannel getChannel(SelectionKey k) {
 		return (UnixSocketChannel) k.channel();
+	}
+	
+	public void terminate() {
+		this.stopped = true;
+		Thread.currentThread().interrupt();
 	}
 
 }
