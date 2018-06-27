@@ -51,9 +51,8 @@ import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
-public class RemoteAttestationHandler {
-	
-	protected static Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
+public class RemoteAttestationHandler {	
+	protected static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
 	protected static String lastError = "";
 	// used to count messages between ids connector and attestation repository
 	protected static long privateID = new java.util.Random().nextLong();  
@@ -104,9 +103,9 @@ public class RemoteAttestationHandler {
 	public boolean checkSignature(AttestationResponse response, String nonce) {
 		Signature sig;
 		byte[] byteSignature = DatatypeConverter.parseHexBinary(response.getSignature());
-		LOG.debug("signature:" + ByteArrayUtil.toPrintableHexString(byteSignature));
+		LOG.debug("signature: {}", ByteArrayUtil.toPrintableHexString(byteSignature));
 		byte[] byteCert = DatatypeConverter.parseHexBinary(response.getCertificateUri());
-		LOG.debug("cert:" + ByteArrayUtil.toPrintableHexString(byteCert));
+		LOG.debug("cert: {}", ByteArrayUtil.toPrintableHexString(byteCert));
 		byte[] byteQuoted = DatatypeConverter.parseHexBinary(response.getQuoted());
 		try {
 			// construct a new TPM2B_PUBLIC from byteCert bytes
@@ -192,7 +191,7 @@ public class RemoteAttestationHandler {
         };
 		
 		HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
-        SSLContext sslContext = SSLContext.getInstance("SSL");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 //        sslContext.init(params.getKeyManagers().createKeyManagers(), trustAllCerts, new SecureRandom());
         urlc.setSSLSocketFactory(sslContext.getSocketFactory());
 		urlc.setUseCaches(false);
