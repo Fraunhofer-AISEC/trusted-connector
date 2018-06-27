@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { AfterViewInit, Component, Input } from '@angular/core';
 
 import { App, DockerHubApp } from './app';
 import { AppService } from './app.service';

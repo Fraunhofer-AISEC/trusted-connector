@@ -16,7 +16,6 @@
 *.java crlf=input ident
 *.js crlf=input
 *.lib crlf=input
-*.md crlf=input
 *.MF crlf=input
 *.mf crlf=input
 *.perm crlf=input
@@ -46,6 +45,7 @@ LICENSE crlf=input
 
 # No EOL translation
 *.bat -crlf
+*.md -crlf
 
 # Binary. No EOL translation, no diff
 *.ico binary

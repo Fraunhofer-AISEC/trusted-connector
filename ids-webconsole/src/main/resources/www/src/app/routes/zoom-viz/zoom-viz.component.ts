@@ -1,8 +1,7 @@
 import { Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
 
 import '../../../../node_modules/svg-pan-zoom';
-import { Subject } from 'rxjs/Subject';
-import { removeListener } from 'cluster';
+import { Subject } from 'rxjs';
 
 declare var Viz: any;
 
@@ -13,7 +12,6 @@ declare var Viz: any;
 })
 export class ZoomVizComponent implements OnInit {
   @Input() private dotSubject: Subject<string>;
-  @Input() private dot: string;
   @ViewChild('vizCanvas') private vizCanvasRef: ElementRef;
   private vizCanvas: HTMLElement;
   private zoom?: SvgPanZoom.Instance;

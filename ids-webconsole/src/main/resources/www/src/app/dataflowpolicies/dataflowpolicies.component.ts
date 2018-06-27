@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import { Policy } from './policy.interface';
 import { PolicyService } from './policy.service';
 
 declare var componentHandler: any;

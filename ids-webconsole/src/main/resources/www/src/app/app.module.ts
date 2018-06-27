@@ -49,12 +49,14 @@ import { ConnectionReportComponent } from './connectionReport/connectionReport.c
 import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
 import { ConnectionConfigurationService } from './connectionConfiguration/connection-configuration.service';
 
+import { HTTP_PROVIDER } from './application-http-client.service';
+
 import 'material-design-lite';
 import { MetricService } from './metric/metric.service';
 
 import { ZoomVizComponent } from './routes/zoom-viz/zoom-viz.component';
 
-import './rxjs';
+import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
 
 // import { D3Service } from 'd3-ng2-service';
 // import { D3Component } from './d3/d3.component';
@@ -96,10 +98,12 @@ import './rxjs';
     ConnectionConfigurationComponent,
     ConnectionReportComponent,
     ZoomVizComponent,
-    ConnectionReportComponent
+    ConnectionReportComponent,
+    MDLUpgradeElementDirective
     // D3Component,
   ],
   providers: [
+    HTTP_PROVIDER,
     AppService,
     RouteService,
     PolicyService,

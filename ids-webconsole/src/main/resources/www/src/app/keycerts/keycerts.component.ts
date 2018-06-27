@@ -1,6 +1,5 @@
 import { Component, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
-import { BrowserModule, Title } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 
 import { Certificate } from './certificate';
 import { CertificateService } from './keycert.service';

@@ -1,6 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-
-declare var API_URL: string;
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: '[metricCard]',
@@ -9,7 +7,4 @@ declare var API_URL: string;
 export class MetricCardComponent {
   @Input() text = 'test';
   @Input() value = '0';
-  @Output('valueChange') valueChange: EventEmitter<string> = new EventEmitter();
-
-  private interval;
 }

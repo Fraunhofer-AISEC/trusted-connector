@@ -1,23 +1,25 @@
 {
   "rulesDirectory": [
     "node_modules/codelyzer",
-    "node_modules/rxjs-tslint-rules/dist/rules"
+    "node_modules/rxjs-tslint"
   ],
   "extends": [
-    "angular-tslint-rules"
+    "angular-tslint-rules",
+    "rxjs-tslint-rules"
   ],
   "rules": {
-    "rxjs-add": {
-      "options": [
-        {
-          "allowElsewhere": false,
-          "allowUnused": false,
-          "file": "./app/rxjs.ts"
-        }
-      ],
-      "severity": "error"
-    },
+    "rxjs-collapse-imports": true,
+    "rxjs-pipeable-operators-only": true,
+    "rxjs-no-static-observable-methods": true,
+    "rxjs-proper-imports": true,
+
+    "rxjs-no-internal": true,
+    "rxjs-no-subject-unsubscribe": true,
+    "rxjs-throw-error": true,
+    
+    "no-unused-variable": true,
     "curly": true,
+    "comment-format": false,
     
     "i18n": false,
     "no-unused-css": false,

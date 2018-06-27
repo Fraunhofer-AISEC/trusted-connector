@@ -1,11 +1,10 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
 import { Policy } from './policy.interface';
 import { PolicyService } from './policy.service';
 import { AbstractControl } from '@angular/forms/src/model';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
     templateUrl: './dataflowpoliciesnew.component.html'

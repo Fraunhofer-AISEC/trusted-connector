@@ -1,4 +1,0 @@
-Export-Package: *
-Bundle-SymbolicName: org.checkerframework.qual
-#X-ParentProjectProperty: overridden
--includeresource: lib/osgi.annotation.jar=osgi.annotation-*.jar; lib:=true

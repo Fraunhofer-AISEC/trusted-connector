@@ -1,9 +1,8 @@
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { environment } from '../../environments/environment';
-import { HttpClient } from '@angular/common/http';
 
-declare var EventSource: any;
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, timer } from 'rxjs';
+import { map, mergeMap, takeWhile } from 'rxjs/operators';
 
 @Injectable()
 export class SensorService implements OnDestroy {
@@ -13,12 +12,16 @@ export class SensorService implements OnDestroy {
 
   constructor(private http: HttpClient) {
     // console.log('constructor SensorService');
-    this.powerObservable = Observable.timer(0, 1000)
-      .takeWhile(() => this.alive)
-      .mergeMap(() => this.getCurrentPower());
-    this.rpmObservable = Observable.timer(0, 1000)
-      .takeWhile(() => this.alive)
-      .mergeMap(() => this.getCurrentRPM());
+    this.powerObservable = timer(0, 1000)
+      .pipe(
+        takeWhile(() => this.alive),
+        mergeMap(() => this.getCurrentPower())
+      );
+    this.rpmObservable = timer(0, 1000)
+      .pipe(
+        takeWhile(() => this.alive),
+        mergeMap(() => this.getCurrentRPM())
+      );
   }
 
   ngOnDestroy(): void {
@@ -27,12 +30,12 @@ export class SensorService implements OnDestroy {
 
   getCurrentPower(): Observable<number> {
     return this.http.get<any>('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentpower/value/')
-        .map(response => response.currentPower);
+      .pipe(map(response => response.currentPower));
   }
 
   getCurrentRPM(): Observable<number> {
     return this.http.get<any>('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentrpm/value/')
-        .map(response => response.sensorReading);
+      .pipe(map(response => response.sensorReading));
   }
 
   getPowerObservable(): Observable<number> {

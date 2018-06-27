@@ -1,18 +1,14 @@
-import { Component, ElementRef, HostListener, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
+import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Result, RouteResult } from '../../result';
+import { Result } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
 import { CounterExample, ValidationInfo } from '../validation';
 
-import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { validateConfig } from '@angular/router/src/config';
-import { Observable } from 'rxjs/Observable';
-
-declare var Viz: any;
+import { ReplaySubject } from 'rxjs';
 
 @Component({
   selector: 'routeeditor',
@@ -29,13 +25,10 @@ export class RouteeditorComponent implements OnInit {
   private _result: Result = new Result();
   private _saved = true;
   private statusIcon: string;
-  @ViewChild('vizCanvas')
-  private vizCanvas: ElementRef;
-  private svgElement: HTMLElement;
   private _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
   constructor(private titleService: Title, private _fb: FormBuilder, private router: Router,
-              private navRoute: ActivatedRoute, private renderer: Renderer2, private routeService: RouteService) {
+              private navRoute: ActivatedRoute, private routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
   }
 

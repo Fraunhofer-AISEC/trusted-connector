@@ -1,13 +1,13 @@
-import { Component, ElementRef, Injectable, Input, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 
-import { IncomingConnection, OutgoingConnection } from './../connectionReport/connections';
 import { environment } from '../../environments/environment';
 
 import { Configuration } from './configuration';
 import { Settings } from './settings.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ConnectionConfigurationService {
@@ -23,12 +23,12 @@ export class ConnectionConfigurationService {
 
   getConfiguration(connection: string): Observable<Configuration> {
     return this.http.get<Settings>(environment.apiURL + '/config/connectionConfigs/' + encodeURIComponent(connection))
-      .map(res => new Configuration(connection, res));
+      .pipe(map(res => new Configuration(connection, res)));
   }
 
   getAllConfiguration(): Observable<Array<Configuration>> {
     return this.http.get<object>(environment.apiURL + '/config/connectionConfigs')
-      .map(configMap => Object.keys(configMap)
-        .map(key => new Configuration(key, configMap[key])));
+      .pipe(map(configMap => Object.keys(configMap)
+        .map(key => new Configuration(key, configMap[key]))));
   }
 }

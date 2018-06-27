@@ -6,5 +6,5 @@ Export-Package: \
 	de.fhg.aisec.ids.messages
 Import-Package: \
 	!de.fhg.aisec.ids.messages,\
+	!org.checkerframework.checker*,\
 	*
--noee=true

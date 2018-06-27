@@ -48,7 +48,7 @@ import org.asynchttpclient.ws.WebSocket;
  */
 public class WsProducer extends DefaultProducer {
     private static final int DEFAULT_STREAM_BUFFER_SIZE = 127;
-    
+
     private int streamBufferSize = DEFAULT_STREAM_BUFFER_SIZE;
 
     public WsProducer(WsEndpoint endpoint) {
@@ -78,7 +78,7 @@ public class WsProducer extends DefaultProducer {
             }
         }
     }
-    
+
     private void sendMessage(WebSocket webSocket, String msg, boolean streaming) {
         if (streaming) {
             int p = 0;
@@ -95,7 +95,7 @@ public class WsProducer extends DefaultProducer {
             webSocket.sendTextFrame(msg);
         }
     }
-    
+
     private void sendMessage(WebSocket webSocket, byte[] msg, boolean streaming) {
         if (streaming) {
             int p = 0;
@@ -149,7 +149,7 @@ public class WsProducer extends DefaultProducer {
             in.close();
         }
     }
-    
+
     private WebSocket getWebSocket() throws Exception {
         return getEndpoint().getWebSocket();
     }

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
+import { Observable, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { Policy } from './policy.interface';
+import { catchError } from 'rxjs/operators';
 
 @Injectable()
 export class PolicyService {
@@ -22,6 +23,6 @@ export class PolicyService {
         model.append('policy_file', policyFile);
 
         return this.http.post<string>(environment.apiURL + '/policies/install', model, { headers })
-            .catch((error: any) => Observable.throw(error || 'Server error'));
+            .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
     }
 }

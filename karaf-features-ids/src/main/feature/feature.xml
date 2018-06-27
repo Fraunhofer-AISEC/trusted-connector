@@ -13,8 +13,7 @@
 
 	<feature name="ids" description="IDS Feature" version="${project.version}">
 		<details>Feature Description for Apache Karaf including all IDS bundles. This project does not contain the code, only the feature description.</details>
-		
-		<bundle start-level="75">mvn:de.fhg.ids/org.checkerframework.checker-qual/1.1.0-SNAPSHOT</bundle>
+
 		<bundle start-level="75">mvn:com.google.protobuf/protobuf-java/3.5.1</bundle>
 
 		<!-- a slightly newer Jackson version -->
@@ -59,6 +58,17 @@
 		<feature>camel-cxf</feature>
 		<feature>camel-http</feature>
 		<feature>camel-jetty</feature>
+
+		<!-- support for time-series data -->
+		<!-- NOTE: the camel-influxdb feature is broken, since it uses service-mix bundled influxdb, which does not have proper OSGi headers to include com.squareup.moshi as an Import, even though it is used -->
+		<!-- <feature>camel-influxdb</feature> -->
+		<bundle>wrap:mvn:org.influxdb/influxdb-java/2.10</bundle>
+		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.okhttp/3.9.1_2</bundle>
+  		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.retrofit/2.3.0_1</bundle>
+  		<bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.okio/1.13.0_1</bundle>
+  		<bundle>mvn:org.apache.camel/camel-influxdb/${camel.version}</bundle>
+		<bundle>wrap:mvn:com.squareup.moshi/moshi/1.6.0</bundle>
+
 		
 		<!-- for the IDS protocol -->
 		<feature>camel-ahc</feature> <!-- ids-comm extends this -->
@@ -73,9 +83,14 @@
 
 		<bundle>mvn:io.dropwizard.metrics/metrics-core/3.1.2</bundle>
 
+		<bundle>mvn:org.jetbrains.kotlin/kotlin-osgi-bundle/${kotlin.version}</bundle>
+
 		<!-- IDS specific bundles -->
 		<bundle>mvn:de.fhg.ids/ids-api/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-comm/${project.version}</bundle>
+		<bundle>mvn:de.fhg.ids/ids-settings/${project.version}</bundle>
+		<bundle>mvn:de.fhg.ids/ids-acme/${project.version}</bundle>
+		<bundle>mvn:de.fhg.ids/ids-dynamic-tls/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-container-manager/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-route-manager/${project.version}</bundle>
 		<bundle>mvn:de.fhg.ids/ids-dataflow-control/${project.version}</bundle>

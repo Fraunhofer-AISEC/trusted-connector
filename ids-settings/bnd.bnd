@@ -1,0 +1,8 @@
+Bundle-Name: IDS :: Settings Manager
+Import-Package: \
+    sun.nio.ch*;resolution:=optional,\
+    *
+Private-Package: \
+    org.mapdb*,\
+    net.jpountz*,\
+    org.eclipse.collections*
