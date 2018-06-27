@@ -4,3 +4,5 @@
 configuration.db
 /cp.txt
 *.pyc
+/.classpath
+/build.properties

@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>offline-karaf</artifactId>
+    <artifactId>karaf-assembly</artifactId>
     <packaging>karaf-assembly</packaging>
 
     <parent>
@@ -13,7 +13,7 @@
     </parent>
 
     <name>IDS Karaf Platform</name>
-    <description>Offline Karaf server</description>
+    <description>IDS Karaf Platform</description>
     <scm>
         <connection>
             scm:git:https://github.com/juttayaya/karaf.git
@@ -192,7 +192,7 @@
         <dependency>
             <groupId>de.fhg.ids</groupId>
             <artifactId>karaf-features-ids</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
             <scope>runtime</scope>

@@ -4,3 +4,4 @@
 configuration.db
 /cp.txt
 *.pyc
+/.classpath
