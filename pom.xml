@@ -95,11 +95,6 @@
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
 				<version>${cxf.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>com.google.code.gson</groupId>
-				<artifactId>gson</artifactId>
-				<version>2.7</version>
-			</dependency>
 
 			<dependency>
 				<groupId>javax.servlet</groupId>
