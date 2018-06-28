@@ -30,16 +30,8 @@ public class IDSCPOutgoingConnection {
 	private String remoteAuthentication;
 	private String remoteIdentity;
 	private String endpointKey;
-	private AttestationResult attestationResult;
-	
-	
-	public IDSCPOutgoingConnection(String endpoint_identifier, String lastProtocolState) {
-		this.endpointIdentifier = endpoint_identifier;
-	}
-	
-	public IDSCPOutgoingConnection() {
-		// TODO Auto-generated constructor stub
-	}
+	private RatResult attestationResult;
+	private String metaData;
 	
 	public String getEndpointKey() {
 		return endpointKey;
@@ -64,13 +56,13 @@ public class IDSCPOutgoingConnection {
 	public String getEndpointIdentifier() {
 		return endpointIdentifier;
 	}
-	public void setEndpointIdentifier(String endpoint_identifier) {
-		this.endpointIdentifier = endpoint_identifier;
+	public void setEndpointIdentifier(String endpointIdentifier) {
+		this.endpointIdentifier = endpointIdentifier;
 	}
-	public AttestationResult getAttestationResult() {
+	public RatResult getAttestationResult() {
 		return this.attestationResult;
 	}
-	public void setAttestationResult(AttestationResult attestationResult) {
+	public void setAttestationResult(RatResult attestationResult) {
 		this.attestationResult = attestationResult;
 	}
 
@@ -78,6 +70,12 @@ public class IDSCPOutgoingConnection {
 	public String toString() {
 		return "IDSCPOutgoingConnection [endpoint_identifier=" + endpointIdentifier + "]";
 	}
+
+	public void setMetaData(String metaResult) {
+		this.metaData = metaResult;
+	}
 	
-	
+	public String getMetaData() {
+		return this.metaData;
+	}
 }

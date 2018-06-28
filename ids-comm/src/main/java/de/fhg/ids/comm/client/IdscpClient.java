@@ -25,51 +25,104 @@ import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
+import de.fhg.aisec.ids.api.conm.RatResult;
 
+/**
+ * A standalone client implementation for the IDSCP protocol.
+ * 
+ * Simply call <code>connect()</code> and use the returned WebSocket object for
+ * bidirectional text/binary web socket communication with the remote endpoint.
+ * 
+ * Make sure to check <code>getAttestationResult()</code> and
+ * <code>getMetaData()</code> to assess trustworthiness of the remote endpoint
+ * and the self description returned by it.
+ *
+ */
 public class IdscpClient {
 
 	private ClientConfiguration config = new ClientConfiguration();
-	private AttestationResult attestationResult = null;
-	
+	private RatResult attestationResult = null;
+	private String metaData = null;
+
+	/**
+	 * Connects to a remote endpoint, executes the IDSCP handshake and returns the
+	 * ready-to-use WebSocket object.
+	 * 
+	 * @param uri
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public WebSocket connect(URI uri) throws InterruptedException, ExecutionException {
 		return connect(uri.getHost(), uri.getPort());
 	}
-	
+
+	/**
+	 * Connects to a remote endpoint, executes the IDSCP handshake and returns the
+	 * ready-to-use WebSocket object.
+	 * 
+	 * @param uri
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	public WebSocket connect(String host, int port) throws InterruptedException, ExecutionException {
 		AsyncHttpClient c = asyncHttpClient();
 
 		// Connect to web socket
 		IdspClientSocket wsListener = new IdspClientSocket(this.config);
-		WebSocket ws = c.prepareGet("ws://"+host+":"+port+"/")
+		WebSocket ws = c.prepareGet("ws://" + host + ":" + port + "/")
 				.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(wsListener).build()).get();
-		
+
 		// Block until ISCP has finished
 		wsListener.semaphore().lockInterruptibly();
-        try {
-        	while (!wsListener.isTerminated()) {
-        		wsListener.idscpInProgressCondition().await();
-        	}
-        } finally {
-        	this.attestationResult = wsListener.getAttestationResult();
-        	wsListener.semaphore().unlock();
-        }		
-        return ws;
+		try {
+			while (!wsListener.isTerminated()) {
+				wsListener.idscpInProgressCondition().await();
+			}
+		} finally {
+			this.attestationResult = wsListener.getAttestationResult();
+			this.metaData = wsListener.getMetaResult();
+			wsListener.semaphore().unlock();
+		}
+		return ws;
 	}
-	
+
+	/**
+	 * Sets the configuration of this client.
+	 * 
+	 * Use this method in a fluent API style before calling <code>connect()</code>:
+	 * 
+	 * <pre>
+	 * new IdscpClient().config(config).connect(url);
+	 * </pre>
+	 * 
+	 * @param config
+	 * @return
+	 */
 	public IdscpClient config(ClientConfiguration config) {
 		this.config = config;
 		return this;
 	}
 
 	/**
-	 * Returns null if attestation has not yet finished, or status code of remote attestation otherwise.
+	 * Returns null if attestation has not yet finished, or status code of remote
+	 * attestation otherwise.
 	 */
-	public AttestationResult getAttestationResult() {
+	public RatResult getAttestationResult() {
 		return this.attestationResult;
+	}
+
+	/**
+	 * Returns meta data about the remote endpoint or <code>null</code> if no meta
+	 * data has been exchanged.
+	 * 
+	 * @return
+	 */
+	public String getMetaData() {
+		return this.metaData;
 	}
 }

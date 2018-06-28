@@ -30,7 +30,7 @@ import org.asynchttpclient.ws.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 import org.junit.Test;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
+import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdscpClient;
@@ -71,8 +71,8 @@ public class ProtocolTest {
 		assertTrue(wsClient.isOpen());
 		
 		// Attestation result is expected to be not null and FAIL (because we did not connect to proper TPM above)
-		AttestationResult attestationResult = client.getAttestationResult();
-		assertEquals(AttestationResult.FAILED, attestationResult);
+		RatResult attestationResult = client.getAttestationResult();
+		assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
 		
 		// TODO Make server-side attestation result accessible
 		//AttestationResult serverAttestationRes = server.getAttestationResult();

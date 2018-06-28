@@ -22,6 +22,7 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +56,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
 	private URI ttpUri;
 	private boolean repoCheck = false;
-	private boolean yourSuccess = false;
-	private boolean mySuccess = false;
 	private int attestationMask = 0;
 	
 	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
@@ -83,12 +82,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 		}
 	}
 	
-	public boolean isSuccessful() {
-		LOG.debug("your success: " + this.yourSuccess);
-		LOG.debug("my success: " + this.mySuccess);		
-		return this.yourSuccess && this.mySuccess;
-	}
-
 	public MessageLite enterRatRequest(Event e) {
 		// generate a new software nonce on the client and send it to server
 		this.myNonce = NonceGenerator.generate(40);
@@ -110,8 +103,16 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	public MessageLite sendTPM2Ddata(Event e) {
 		// get nonce from server msg
 		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
-		if(++this.sessionID == e.getMessage().getId()) {
-			if(thread!=null && thread.isAlive()) {
+		if (++this.sessionID != e.getMessage().getId()) {
+			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, "Invalid session ID " + e.getMessage().getId());
+		}
+		
+		String halg = "";
+		String quoted = "";
+		String signature = "";
+		List<Pcr> pcrValues = new ArrayList<>();
+		String certificateUrl = "";
+		if (thread!=null && thread.isAlive()) {
 				try {
 					ControllerToTpm msg;
 					if(this.aType.equals(IdsAttestationType.ADVANCED)) {
@@ -139,89 +140,95 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 					// and wait for response
 					byte[] toParse = this.handler.waitForResponse();
 					TpmToController response = TpmToController.parseFrom(toParse);
-					// now return values from answer to provider
-					return ConnectorMessage
-							.newBuilder()
-							.setId(++this.sessionID)
-							.setType(ConnectorMessage.Type.RAT_RESPONSE)
-							.setAttestationResponse(
-									AttestationResponse
-									.newBuilder()
-									.setAtype(this.aType)
-									.setQualifyingData(this.yourNonce)
-									.setHalg(response.getHalg())
-									.setQuoted(response.getQuoted())
-									.setSignature(response.getSignature())
-									.addAllPcrValues(response.getPcrValuesList())
-									.setCertificateUri(response.getCertificateUri())
-									.build()
-									)
-							.build();
+					halg = response.getHalg();
+					quoted = response.getQuoted();
+					signature = response.getSignature();
+					pcrValues = response.getPcrValuesList();
+					certificateUrl = response.getCertificateUri();
 				} catch (IOException ex) {
 					lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
 					tpmClient.terminate();
 				} catch (InterruptedException ex) {
 					lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
 					tpmClient.terminate();
+					Thread.currentThread().interrupt();
 				}
-			} else {
-				lastError = "error: RAT client thread is not alive. No TPM present? ";
-			}	
 		} else {
-			lastError = "error: repository entries do not match";
+			LOG.warn("error: RAT client thread is not alive. No TPM present? ");
 		}
-		LOG.debug(lastError);
-		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
+		// now return values from answer to provider
+		return ConnectorMessage
+				.newBuilder()
+				.setId(++this.sessionID)
+				.setType(ConnectorMessage.Type.RAT_RESPONSE)
+				.setAttestationResponse(
+						AttestationResponse
+						.newBuilder()
+						.setAtype(this.aType)
+						.setQualifyingData(this.yourNonce)
+						.setHalg(halg)
+						.setQuoted(quoted)
+						.setSignature(signature)
+						.addAllPcrValues(pcrValues)
+						.setCertificateUri(certificateUrl)
+						.build()
+						)
+				.build();
 	}
 
 	public MessageLite sendResult(Event e) {
-		if(this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)) {
-			if(++this.sessionID == e.getMessage().getId()) {
-				if(RemoteAttestationHandler.checkRepository(this.aType, e.getMessage().getAttestationResponse(), ttpUri)) {
-					this.mySuccess = true;
-				}
-				return ConnectorMessage
+		
+		// Abort on wrong session ID
+		if(++this.sessionID != e.getMessage().getId()) {
+			lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+			LOG.debug(lastError);
+			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);	
+		}
+		
+		if(    this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)
+			&& RemoteAttestationHandler.checkRepository(this.aType, e.getMessage().getAttestationResponse(), ttpUri)) {
+				this.mySuccess = true;				
+		} else {
+			LOG.warn("Could not verify signature or could not validate PCR values via trusted third party. Remote attestation failed.");
+		}			
+		
+		return ConnectorMessage
+				.newBuilder()
+				.setId(++this.sessionID)
+				.setType(ConnectorMessage.Type.RAT_RESULT)
+				.setAttestationResult(
+						AttestationResult
 						.newBuilder()
-						.setId(++this.sessionID)
-						.setType(ConnectorMessage.Type.RAT_RESULT)
-						.setAttestationResult(
-								AttestationResult
-								.newBuilder()
-								.setAtype(this.aType)
-								.setResult(this.mySuccess)
-								.build())
-						.build();
-			}
-			else {
-				lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-			}
-		}
-		else {
-			lastError = "error: signature check not ok";
-		}
-		LOG.debug(lastError);
-		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);	
+						.setAtype(this.aType)
+						.setResult(this.mySuccess)
+						.build())
+				.build();
 	}
 
 	public MessageLite leaveRatRequest(Event e) {
 		this.yourSuccess = e.getMessage().getAttestationResult().getResult();
-		this.thread.interrupt();
-		if(++this.sessionID == e.getMessage().getId()) {
-			return ConnectorMessage
-					.newBuilder()
-					.setId(++this.sessionID)
-					.setType(ConnectorMessage.Type.RAT_LEAVE)
-					.setAttestationLeave(
-							AttestationLeave
-							.newBuilder()
-							.setAtype(this.aType)
-							.build()
-							)
-					.build();			
+		if (this.thread != null) {
+			this.thread.interrupt();
 		}
-		lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
-		LOG.debug(lastError);
-		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
+		
+		// Abort on wrong session ID
+		if(++this.sessionID != e.getMessage().getId()) {
+			lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+			LOG.debug(lastError);
+			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
+		}
+
+		return ConnectorMessage
+				.newBuilder()
+				.setId(++this.sessionID)
+				.setType(ConnectorMessage.Type.RAT_LEAVE)
+				.setAttestationLeave(
+						AttestationLeave
+						.newBuilder()
+						.setAtype(this.aType)
+						.build()
+						)
+				.build();			
 	}
 	
 	public MessageLite sendNoAttestation(Event e) {

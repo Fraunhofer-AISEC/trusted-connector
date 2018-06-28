@@ -60,8 +60,6 @@ public class ProtocolMachine {
 	
 	/** The session to send and receive messages */
 	private Session serverSession;
-	private boolean ratConsumerSuccess = false;
-	private boolean ratProviderSuccess = false;
 	private String socket = "/var/run/tpm2d/control.sock";
 	private IdsAttestationType attestationType;
 	private WebSocket clientSocket;
@@ -106,16 +104,16 @@ public class ProtocolMachine {
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_START, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, (e) -> {return replyProto(ratConsumerHandler.enterRatRequest(e));} ));
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, (e) -> {return replyProto(ratConsumerHandler.sendTPM2Ddata(e));} ));
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratConsumerHandler.sendResult(e));} ));
-			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(ratConsumerHandler.leaveRatRequest(e)) && setIDSCPConsumerSuccess(ratConsumerHandler.isSuccessful());} ));
+			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> { fsm.setRatResult(ratConsumerHandler.getAttestationResult()); return replyProto(ratConsumerHandler.leaveRatRequest(e));} ));
 			//fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return setIDSCPConsumerSuccess(ratConsumerHandler.isSuccessful());} ));
 						
 			/* Metadata Exchange Protocol */
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_REQUEST, (e) -> {return replyProto(metaHandler.request(e));} ));
-			fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> { saveMetaResponse(e); return true;} ));
+			fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> { fsm.setMetaResult(e.getMessage().getMetadataExchange().getRdfdescription()); return true;} ));
 			//fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {return true;} ));
 
 			/* error protocol */
-			// in case of error go back to IDSC_START state
+			// in case of error, either fast forward to meta exchange (if in rat) or go to END
 			fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_START, ProtocolState.IDSCP_END, (e) -> { return errorHandler.handleError(e, ProtocolState.IDSCP_START, true);} ));
 			fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_REQUEST, true);} ));
 			fsm.addTransition(new Transition(ConnectorMessage.Type.ERROR, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return errorHandler.handleError(e, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, true);} ));
@@ -138,12 +136,6 @@ public class ProtocolMachine {
 		return fsm;
 	}
 	
-	private void saveMetaResponse(Event e) {
-		//TODO Implement!
-		System.out.println("SAVING META RESPONSE" + e.getMessage().toString());
-		
-	}
-
 	public FSM initIDSProviderProtocol(Session sess, IdsAttestationType type, int attestationMask, File tpmdSocket) {
 		this.attestationType = type;
 		this.serverSession = sess;
@@ -177,10 +169,10 @@ public class ProtocolMachine {
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_REQUEST, ProtocolState.IDSCP_START, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, (e) -> {return replyProto(ratProviderHandler.enterRatRequest(e));} ));
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESPONSE, ProtocolState.IDSCP_RAT_AWAIT_RESULT, (e) -> {return replyProto(ratProviderHandler.sendTPM2Ddata(e));} ));
 			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_RESULT, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, (e) -> {return replyProto(ratProviderHandler.sendResult(e));} ));
-			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_END, (e) -> {return replyProto(ratProviderHandler.leaveRatRequest(e)) && setIDSCPProviderSuccess(ratProviderHandler.isSuccessful());} ));
+			fsm.addTransition(new Transition(ConnectorMessage.Type.RAT_LEAVE, ProtocolState.IDSCP_RAT_AWAIT_LEAVE, ProtocolState.IDSCP_META_REQUEST, (e) -> {fsm.setRatResult(ratProviderHandler.getAttestationResult()); return replyProto(ratProviderHandler.leaveRatRequest(e));} ));
 						
 			/* Metadata Exchange Protocol */ 
-			fsm.addTransition(new Transition(ConnectorMessage.Type.META_REQUEST, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {return replyProto(metaHandler.response(e));} ));
+			fsm.addTransition(new Transition(ConnectorMessage.Type.META_REQUEST, ProtocolState.IDSCP_META_REQUEST, ProtocolState.IDSCP_END, (e) -> {System.out.println("SETTING META TO " + e.getMessage().getMetadataExchange().getRdfdescription());fsm.setMetaResult(e.getMessage().getMetadataExchange().getRdfdescription()); return replyProto(metaHandler.response(e));} ));
 			//fsm.addTransition(new Transition(ConnectorMessage.Type.META_RESPONSE, ProtocolState.IDSCP_META_RESPONSE, ProtocolState.IDSCP_END, (e) -> {return true;} ));
 
 			/* error protocol */
@@ -208,25 +200,8 @@ public class ProtocolMachine {
 		return fsm;
 	}
 
-	private boolean setIDSCPProviderSuccess(boolean success) {
-		this.ratProviderSuccess = success;
-		return true;
-	}
-
-	private boolean setIDSCPConsumerSuccess(boolean success) {
-		this.ratConsumerSuccess = success;
-		return true;
-	}
-
 	public IdsAttestationType getAttestationType() {
 		return attestationType; 
-	}
-	public boolean getIDSCPProviderSuccess() {
-		return this.ratProviderSuccess;
-	}
-
-	public boolean getIDSCPConsumerSuccess() {
-		return this.ratConsumerSuccess;
 	}
 
 	private boolean replyProto(MessageLite message) {

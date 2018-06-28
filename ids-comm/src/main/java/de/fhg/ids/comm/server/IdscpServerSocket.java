@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
@@ -53,10 +52,8 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
  */
 @WebSocket
 public class IdscpServerSocket {
-    private Logger LOG = LoggerFactory.getLogger(IdscpServerSocket.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdscpServerSocket.class);
     private FSM fsm;
-    private ProtocolMachine machine;
-    private boolean ratSuccess = false;
     private SSLContextParameters params;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
@@ -67,7 +64,6 @@ public class IdscpServerSocket {
 	
 	public IdscpServerSocket(ServerConfiguration config, SocketListener socketListener) {
 		// Create provider socket
-		System.out.println("Init Provider");
 		this.config = config;
 		this.socketListener = socketListener;
 	}
@@ -84,7 +80,7 @@ public class IdscpServerSocket {
         this.session = session;
 
         // create Finite State Machine for IDS protocol
-        machine = new ProtocolMachine();
+        ProtocolMachine machine = new ProtocolMachine();
     	fsm = machine.initIDSProviderProtocol(session, this.config.attestationType, this.config.attestationMask, this.config.tpmdSocket);    	
     }
 
@@ -133,6 +129,7 @@ public class IdscpServerSocket {
     		}
     	} catch (InterruptedException e) {
 			LOG.warn(e.getMessage());
+			Thread.currentThread().interrupt();
 		} finally {
 			lock.unlock();
 		}
@@ -145,36 +142,17 @@ public class IdscpServerSocket {
     public Condition isFinished() {
     	return isFinishedCond;
     }
-	
-    //get the result of the remote attestation
-	public boolean isAttestationSuccessful() {
-		return machine.getIDSCPProviderSuccess();
-	}
 
     //get the result of the remote attestation
-	public AttestationResult getAttestationResult() {
-		if (machine.getAttestationType()==IdsAttestationType.ZERO) {
-			return AttestationResult.SKIPPED;
-		} else {
-			if (machine.getIDSCPConsumerSuccess()) {
-				return AttestationResult.SUCCESS;
-			} else {
-				return AttestationResult.FAILED;
-			}
-		}
+	public RatResult getAttestationResult() {
+		return fsm.getRatResult();
+	}
+	
+	public String getMetaData() {
+		return fsm.getMetaData();
 	}
 	
 	public Session getSession() {
 		return this.session;
-	}
-
-	public Object getConnectionKey() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Object getPathSpec() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

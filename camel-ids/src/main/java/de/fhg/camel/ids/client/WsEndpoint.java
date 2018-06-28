@@ -230,6 +230,7 @@ public class WsEndpoint extends AhcEndpoint {
         //Add Client Endpoint information to static List
         IDSCPOutgoingConnection ce = new IDSCPOutgoingConnection();
         ce.setAttestationResult(idspListener.getAttestationResult());
+        ce.setMetaData(idspListener.getMetaResult());
         ce.setEndpointIdentifier(this.getEndpointUri());
         ce.setEndpointKey(this.getEndpointKey());
         ce.setRemoteIdentity(websocket.getRemoteAddress().toString());

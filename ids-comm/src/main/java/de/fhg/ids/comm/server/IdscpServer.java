@@ -22,14 +22,26 @@ package de.fhg.ids.comm.server;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
-
+/**
+ * A standalone server implementation for the IDSCP protocol.
+ * 
+ * Simply call <code>start()</code> and use the registered
+ * <code>SocketListener</code> to handling incoming WebSocket connections.
+ * 
+ * Make sure to check <code>getAttestationResult()</code> and
+ * <code>getMetaData()</code> to assess trustworthiness of the remote endpoint
+ * and the self description returned by it.
+ *
+ */
 public class IdscpServer {
+    private static final Logger LOG = LoggerFactory.getLogger(IdscpServer.class);
+	
 	private ServerConfiguration config = new ServerConfiguration();
 	private Server server;
-	private SocketListener sockerListener;
-	
+	private SocketListener socketListener;
 	
 	public IdscpServer config(ServerConfiguration config) {
 		this.config = config;
@@ -37,7 +49,7 @@ public class IdscpServer {
 	}
 	
 	public IdscpServer setSocketListener(SocketListener socketListener) {
-		this.sockerListener = socketListener;
+		this.socketListener = socketListener;
 		return this;
 	}
 	
@@ -51,13 +63,13 @@ public class IdscpServer {
 		s.setHandler(context);
 
 		// Add a websocket to a specific path spec
-		ServletHolder holderEvents = new ServletHolder("ids", new ServerSocketServlet(this.config, this.sockerListener));
+		ServletHolder holderEvents = new ServletHolder("ids", new ServerSocketServlet(this.config, this.socketListener));
 		context.addServlet(holderEvents, "/");
 
 		try {
 			s.start();
-		} catch (Throwable t) {
-			t.printStackTrace(System.err);
+		} catch (Exception e) {
+			LOG.error(e.getMessage(),e);
 		}
 		this.server = s;
 		return this;
@@ -80,7 +92,7 @@ public class IdscpServer {
 		this.server.setHandler(context);
 		
 		// Add a websocket to a specific path spec
-		ServletHolder holderEvents = new ServletHolder("ids", new ServerSocketServlet(this.config, this.sockerListener));
+		ServletHolder holderEvents = new ServletHolder("ids", new ServerSocketServlet(this.config, this.socketListener));
 		context.addServlet(holderEvents, basePath);
 		return this;
 	}

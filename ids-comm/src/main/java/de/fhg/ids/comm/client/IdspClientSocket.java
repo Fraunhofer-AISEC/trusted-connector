@@ -22,14 +22,14 @@ package de.fhg.ids.comm.client;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
+import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
@@ -41,7 +41,6 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 public class IdspClientSocket implements WebSocketListener {
     private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
     private FSM fsm;
-    private ProtocolMachine machine;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition idscpInProgress = lock.newCondition();
     private final ConnectorMessage startMsg = Idscp.ConnectorMessage
@@ -64,10 +63,10 @@ public class IdspClientSocket implements WebSocketListener {
         IdsAttestationType type = config.attestationType;
 
         // create Finite State Machine for IDS protocol
-        machine = new ProtocolMachine();
-        fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask, this.config.params);
+        ProtocolMachine machine = new ProtocolMachine();
+        this.fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask, this.config.params);
         // start the protocol with the first message
-        fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
+        this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
     }
 
     @Override
@@ -86,7 +85,7 @@ public class IdspClientSocket implements WebSocketListener {
 
     @Override
     public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
-    	Log.debug("Client websocket received binary message " + new String(message));
+    	Log.debug("Client websocket received binary message {}", new String(message));
     	try {
     		lock.lockInterruptibly();
     		try {
@@ -103,6 +102,7 @@ public class IdspClientSocket implements WebSocketListener {
 	    	}
     	} catch (InterruptedException e) {
 			Log.warn(e.getMessage());
+			Thread.currentThread().interrupt();
 		} finally {
 			lock.unlock();
 			this.isTerminated = true;
@@ -111,7 +111,7 @@ public class IdspClientSocket implements WebSocketListener {
 
     @Override
     public void onTextFrame(String message, boolean finalFragment, int rsv) {
-    	Log.debug("Client websocket received text message " + message);
+    	Log.debug("Client websocket received text message {}", message);
     	onBinaryFrame(message.getBytes(), finalFragment, rsv);
     }
     
@@ -128,20 +128,11 @@ public class IdspClientSocket implements WebSocketListener {
     }
 	
     //get the result of the remote attestation
-	public boolean isAttestationSuccessful() {
-		return machine.getIDSCPConsumerSuccess();
+	public RatResult getAttestationResult() {
+		return fsm.getRatResult();
 	}
 
-    //get the result of the remote attestation
-	public AttestationResult getAttestationResult() {
-		if (machine.getAttestationType()==IdsAttestationType.ZERO) {
-			return AttestationResult.SKIPPED;
-		} else {
-			if (machine.getIDSCPConsumerSuccess()) {
-				return AttestationResult.SUCCESS;
-			} else {
-				return AttestationResult.FAILED;
-			}
-		}
+	public String getMetaResult() {
+		return fsm.getMetaData();
 	}
 }

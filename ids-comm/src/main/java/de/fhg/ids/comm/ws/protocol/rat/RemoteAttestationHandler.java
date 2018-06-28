@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 
+import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
@@ -56,7 +57,22 @@ public class RemoteAttestationHandler {
 	protected static String lastError = "";
 	// used to count messages between ids connector and attestation repository
 	protected static long privateID = new java.util.Random().nextLong();  
-
+	protected boolean mySuccess = false;
+	protected boolean yourSuccess = false;
+	
+	public RatResult getAttestationResult() {
+		LOG.debug("your success: {}    my success: {}", this.yourSuccess, this.mySuccess);
+		if (!this.mySuccess) {
+			return new RatResult(RatResult.Status.FAILED, "Could not verify");
+		}
+		
+		if (!this.yourSuccess) {
+			return new RatResult(RatResult.Status.FAILED, "Remote party did not verify successfully");
+		}
+		
+		return new RatResult(RatResult.Status.SUCCESS, null);
+	}	
+	
 	public static boolean checkRepository(IdsAttestationType basic, AttestationResponse response, URI ttpUri) {
 		int numPcrValues = response.getPcrValuesCount();
 		String nonce = response.getQualifyingData();
