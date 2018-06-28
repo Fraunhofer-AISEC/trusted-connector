@@ -44,10 +44,11 @@ import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
 
 /**
- * A camel consumer retrieves an message, wraps in a Camel Exchange object and feeds it into Camel. 
+ * A camel consumer retrieves an message, wraps in a Camel Exchange object and
+ * feeds it into Camel.
  * 
- * This is basically the implementation of a web socket server which accepts messages and sends 
- * them to Camel.
+ * This is basically the implementation of a web socket server which accepts
+ * messages and sends them to Camel.
  * 
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *

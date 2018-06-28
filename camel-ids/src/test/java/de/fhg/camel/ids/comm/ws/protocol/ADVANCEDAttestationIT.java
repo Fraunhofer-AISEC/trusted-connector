@@ -50,6 +50,7 @@ import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 // ADVANCED test with PCRS 0-19 i.e. bitmask is 20
 public class ADVANCEDAttestationIT {
 	
+	private static final String TPMD_SOCKET = "socket/control.sock";
 	private static RemoteAttestationConsumerHandler consumer;
 	private static RemoteAttestationProviderHandler provider;
 	private static Logger LOG = LoggerFactory.getLogger(ADVANCEDAttestationIT.class);
@@ -69,13 +70,12 @@ public class ADVANCEDAttestationIT {
 	private static ConnectorMessage msg6;
 	private static ConnectorMessage msg7;
 	private static ConnectorMessage msg8;
-	private static String PWD = "password";
-	private static String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
+	private static final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock");
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), "socket/control.sock");		
+		consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), TPMD_SOCKET);
+		provider = new RemoteAttestationProviderHandler(new FSM(), aType, bitmask, new URI(ratRepoUri), TPMD_SOCKET);		
 	}
 	
     @Test
@@ -180,7 +180,6 @@ public class ADVANCEDAttestationIT {
         tmp.setKeyStore(tsp);
 
         SSLContextServerParameters scsp = new SSLContextServerParameters();
-        //scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
         scsp.setClientAuthentication(ClientAuthentication.NONE.name());
 
         SSLContextParameters sslContextParameters = new SSLContextParameters();

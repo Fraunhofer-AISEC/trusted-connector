@@ -67,14 +67,14 @@ public class WsProducer extends DefaultProducer {
         if (message != null) {
             log.debug("Sending out {}", message);
             if (message instanceof String) {
-                sendMessage(getWebSocket(), (String) message, getEndpoint().isUseStreaming());
+                sendMessage(getWebSocket(), (String)message, getEndpoint().isUseStreaming());
             } else if (message instanceof byte[]) {
-                sendMessage(getWebSocket(), (byte[]) message, getEndpoint().isUseStreaming());
+                sendMessage(getWebSocket(), (byte[])message, getEndpoint().isUseStreaming());
             } else if (message instanceof InputStream) {
-                sendStreamMessage(getWebSocket(), (InputStream) message);
+                sendStreamMessage(getWebSocket(), (InputStream)message);
             } else {
-                // TODO provide other binding option, for now use the converted string
-                getWebSocket().sendTextFrame(in.getMandatoryBody(String.class));
+                //TODO provide other binding option, for now use the converted string
+            	getWebSocket().sendTextFrame(in.getMandatoryBody(String.class));
             }
         }
     }
@@ -84,10 +84,10 @@ public class WsProducer extends DefaultProducer {
             int p = 0;
             while (p < msg.length()) {
                 if (msg.length() - p < streamBufferSize) {
-                    webSocket.sendContinuationFrame(msg.substring(p), true, 0);
+                	webSocket.sendContinuationFrame(msg.substring(p), true, 0);
                     p = msg.length();
                 } else {
-                    webSocket.sendContinuationFrame(msg.substring(p, streamBufferSize), false, 0);
+                	webSocket.sendContinuationFrame(msg.substring(p, streamBufferSize), false, 0);
                     p += streamBufferSize;
                 }
             }

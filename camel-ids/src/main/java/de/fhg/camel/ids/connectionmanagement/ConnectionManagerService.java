@@ -86,6 +86,7 @@ public class ConnectionManagerService implements ConnectionManager {
 					incomingConnection.setEndpointKey(dws.getConnectionKey());
 					incomingConnection.setRemoteHostName(dws.getRemoteHostname());
 					incomingConnection.setAttestationResult(dws.getAttestationResult());
+					incomingConnection.setMetaData(dws.getMetaResult());
 					return incomingConnection;
 				});
 			} else {

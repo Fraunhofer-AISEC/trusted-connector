@@ -140,6 +140,11 @@
 			<artifactId>ids-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.fhg.ids</groupId>
+			<artifactId>ids-comm</artifactId>
+			<version>${project.version}</version>
+		</dependency>		
 
 		<!--  OSGi compendium services (e.g., Preferences) -->
 		<dependency>

@@ -28,23 +28,21 @@ package de.fhg.aisec.ids.api.conm;
 	
 public class IDSCPIncomingConnection {
 	private String endpointIdentifier;
-	private AttestationResult attestationResult;
+	private RatResult attestationResult;
 	private String endpointKey;
 	private String remoteHostName;
-	
-	public IDSCPIncomingConnection() {
-	}
-	
+	private String metaData;
+
 	public String getEndpointIdentifier() {
 		return endpointIdentifier;
 	}
 	public void setEndpointIdentifier(String endpointIdentifier) {
 		this.endpointIdentifier = endpointIdentifier;
 	}
-	public AttestationResult getAttestationResult() {
+	public RatResult getAttestationResult() {
 		return attestationResult;
 	}
-	public void setAttestationResult(AttestationResult result) {
+	public void setAttestationResult(RatResult result) {
 		this.attestationResult = result;
 	}	
 	
@@ -70,5 +68,12 @@ public class IDSCPIncomingConnection {
 	public void setRemoteHostName(String remoteHostname) {
 		this.remoteHostName = remoteHostname;
 		
+	}
+	public void setMetaData(String metaResult) {
+		this.metaData = metaResult;
+	}
+	
+	public String getMetaData() {
+		return this.metaData;
 	}
 }

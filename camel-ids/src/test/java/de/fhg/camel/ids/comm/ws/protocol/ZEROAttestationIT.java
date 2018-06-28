@@ -73,16 +73,7 @@ public class ZEROAttestationIT {
     	LOG.debug(msg1.toString());
     	assertTrue(msg1.getId() == id + 1);
     	assertTrue(msg1.getType().equals(ConnectorMessage.Type.RAT_REQUEST));
-    }
-    
-    @Test
-    public void test2() throws Exception {
-    	msg2 = ConnectorMessage.parseFrom(provider.sendNoAttestation(new Event(msg1.getType(), msg1.toString(), msg1)).toByteString());
-    	LOG.debug(msg2.toString());
-    	assertTrue(msg2.getId() == id + 2);
-    	assertTrue(msg2.getType().equals(ConnectorMessage.Type.RAT_RESULT));
-    	
-    }  
+    } 
     
     public static SSLContextParameters defineClientSSLContextParameters() {
     	SSLContextParameters scp = new SSLContextParameters(); 

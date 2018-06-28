@@ -19,16 +19,28 @@
  */
 package de.fhg.camel.ids.server;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.DispatcherType;
+
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.Metadata;
-import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.StringHelper;
 import org.apache.camel.util.jsse.SSLContextParameters;
-import org.eclipse.jetty.jmx.MBeanContainer;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
@@ -45,22 +57,12 @@ import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class WebsocketComponent extends UriEndpointComponent implements SSLContextParametersAware {
     protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
     protected static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<>();
+	private static final File TPM_SOCKET = new File("tpmd.sock");
 
     protected Map<String, WebSocketFactory> socketFactory;
-    protected Server staticResourcesServer;
-    protected MBeanContainer mbContainer;
 
     @Metadata(label = "security")
     protected SSLContextParameters sslContextParameters;
@@ -74,8 +76,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     protected Integer minThreads;
     @Metadata(label = "advanced")
     protected Integer maxThreads;
-    @Metadata(label = "advanced")
-    protected boolean enableJmx;
     @Metadata(defaultValue = "0.0.0.0")
     protected String host = "0.0.0.0";
     @Metadata(label = "consumer")
@@ -135,6 +135,8 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     public WebsocketComponent() {
         super(WebsocketEndpoint.class);
 
+        this.setUseGlobalSslContextParameters(true);
+        
         if (this.socketFactory == null) {
             this.socketFactory = new HashMap<>();
             this.socketFactory.put("ids", new DefaultWebsocketFactory());
@@ -160,9 +162,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
                 ServerConnector connector;
                 // Create Server and add connector
                 Server server = createServer();
-                if (endpoint.isEnableJmx()) {
-                    enableJmx(server);
-                }
+
                 if (endpoint.getSslContextParameters() != null) {
                     connector = getSslSocketConnector(server, endpoint.getSslContextParameters());
                 } else {
@@ -194,11 +194,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
                 // Apply CORS (http://www.w3.org/TR/cors/)
                 applyCrossOriginFiltering(endpoint, context);
 
-                // Create Static resources
-                if (endpoint.getStaticResources() != null) {
-                    server = createStaticResourcesServer(server, context, endpoint.getStaticResources());
-                }
-
                 MemoryWebsocketStore memoryStore = new MemoryWebsocketStore();
                 
                 // Don't provide a Servlet object as Producer/Consumer will create them later on
@@ -224,7 +219,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
             }
 
             NodeSynchronization sync = new DefaultNodeSynchronization(connectorRef.memoryStore);
-            WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
+            WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri(), TPM_SOCKET);
             if (prodcon instanceof WebsocketConsumer) {
                 WebsocketConsumer consumer = WebsocketConsumer.class.cast(prodcon);
                 if (servlet.getConsumer() == null) {
@@ -266,10 +261,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
                     CONNECTORS.remove(connectorKey);
                     // Camel controls the lifecycle of these entities so remove the
                     // registered MBeans when Camel is done with the managed objects.
-                    if (mbContainer != null) {
-                        mbContainer.beanRemoved(null, connectorRef.server);
-                        mbContainer.beanRemoved(null, connectorRef.connector);
-                    }
                 }
                 if (prodcon instanceof WebsocketConsumer) {
                     connectorRef.servlet.disconnect((WebsocketConsumer) prodcon);
@@ -281,31 +272,14 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         }
     }
 
-    public synchronized MBeanContainer getMbContainer() {
-        // If null, provide the default implementation.
-        if (mbContainer == null) {
-            mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-        }
-
-        return this.mbContainer;
-    }
-
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         SSLContextParameters sslContextParameters = resolveAndRemoveReferenceParameter(parameters, "sslContextParameters", SSLContextParameters.class);
 
-        Boolean enableJmx = getAndRemoveParameter(parameters, "enableJmx", Boolean.class);
-        String staticResources = getAndRemoveParameter(parameters, "staticResources", String.class);
         int port = extractPortNumber(remaining);
         String host = extractHostName(remaining);
 
         WebsocketEndpoint endpoint = new WebsocketEndpoint(this, uri, remaining, parameters);
-
-        if (enableJmx != null) {
-            endpoint.setEnableJmx(enableJmx);
-        } else {
-            endpoint.setEnableJmx(isEnableJmx());
-        }
 
         // prefer to use endpoint configured over component configured
         if (sslContextParameters == null) {
@@ -314,16 +288,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         }
         if (sslContextParameters == null) {
             sslContextParameters = retrieveGlobalSslContextParameters();
-        }
-
-        // prefer to use endpoint configured over component configured
-        if (staticResources == null) {
-            // fallback to component configured
-            staticResources = getStaticResources();
-        }
-
-        if (staticResources != null) {
-            endpoint.setStaticResources(staticResources);
         }
 
         endpoint.setSslContextParameters(sslContextParameters);
@@ -356,8 +320,8 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         Server server = null;
         if (minThreads == null && maxThreads == null && getThreadPool() == null) {
             minThreads = 1;
-            // max pax web threads + 1 + selectors + acceptors
-            maxThreads = 20 + 1 + Runtime.getRuntime().availableProcessors() * 2;
+            // 1+selectors+acceptors
+            maxThreads = 2 * (1 + Runtime.getRuntime().availableProcessors() * 2);
         }
         // configure thread pool if min/max given
         if (minThreads != null || maxThreads != null) {
@@ -434,7 +398,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         return createStaticResourcesServer(server, context, home);
     }
 
-    protected WebsocketComponentServlet addServlet(NodeSynchronization sync, WebsocketProducerConsumer prodcon, String resourceUri) throws Exception {
+    protected WebsocketComponentServlet addServlet(NodeSynchronization sync, WebsocketProducerConsumer prodcon, String resourceUri, File tpmSocket) throws Exception {
 
         // Get Connector from one of the Jetty Instances to add WebSocket Servlet
         WebsocketEndpoint endpoint = prodcon.getEndpoint();
@@ -449,7 +413,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
             if (servlet == null) {
                 // Retrieve Context
                 ServletContextHandler context = (ServletContextHandler) connectorRef.server.getHandler();
-                servlet = createServlet(sync, pathSpec, servlets, context);
+                servlet = createServlet(sync, pathSpec, servlets, context, tpmSocket);
                 connectorRef.servlet = servlet;
                 LOG.debug("WebSocket servlet added for the following path : " + pathSpec + ", to the Jetty Server : " + key);
             }
@@ -460,8 +424,8 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         }
     }
 
-    protected WebsocketComponentServlet createServlet(NodeSynchronization sync, String pathSpec, Map<String, WebsocketComponentServlet> servlets, ServletContextHandler handler) {
-        WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, socketFactory);
+    protected WebsocketComponentServlet createServlet(NodeSynchronization sync, String pathSpec, Map<String, WebsocketComponentServlet> servlets, ServletContextHandler handler, File tpmSocket) {
+        WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, socketFactory, tpmSocket);
         servlets.put(pathSpec, servlet);
         ServletHolder servletHolder = new ServletHolder(servlet);
         servletHolder.getInitParameters().putAll(handler.getInitParams());
@@ -553,7 +517,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         // Is not correct as it does not support to add port in the URI
         //return String.format("/%s/*", remaining);
 
-        int index = remaining.indexOf("/");
+        int index = remaining.indexOf('/');
         if (index != -1) {
             return remaining.substring(index, remaining.length());
         } else {
@@ -562,8 +526,8 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     }
 
     private int extractPortNumber(String remaining) {
-        int index1 = remaining.indexOf(":");
-        int index2 = remaining.indexOf("/");
+        int index1 = remaining.indexOf(':');
+        int index2 = remaining.indexOf('/');
 
         if ((index1 != -1) && (index2 != -1)) {
             String result = remaining.substring(index1 + 1, index2);
@@ -574,7 +538,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     }
 
     private String extractHostName(String remaining) {
-        int index = remaining.indexOf(":");
+        int index = remaining.indexOf(':');
         if (index != -1) {
             return remaining.substring(0, index);
         } else {
@@ -584,17 +548,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
 
     private static String getConnectorKey(WebsocketEndpoint endpoint) {
         return endpoint.getProtocol() + ":" + endpoint.getHost() + ":" + endpoint.getPort();
-    }
-
-    private void enableJmx(Server server) {
-        MBeanContainer containerToRegister = getMbContainer();
-        if (containerToRegister != null) {
-            LOG.info("Jetty JMX Extensions is enabled");
-            server.addEventListener(containerToRegister);
-            // Since we may have many Servers running, don't tie the MBeanContainer
-            // to a Server lifecycle or we end up closing it while it is still in use.
-            //server.addBean(mbContainer);
-        }
     }
 
     private void applyCrossOriginFiltering(WebsocketEndpoint endpoint, ServletContextHandler context) {
@@ -684,17 +637,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
         this.sslKeystore = sslKeystore;
     }
 
-    /**
-     * If this option is true, Jetty JMX support will be enabled for this endpoint. See Jetty JMX support for more details.
-     */
-    public void setEnableJmx(boolean enableJmx) {
-        this.enableJmx = enableJmx;
-    }
-
-    public boolean isEnableJmx() {
-        return enableJmx;
-    }
-
     public Integer getMinThreads() {
         return minThreads;
     }
@@ -778,25 +720,6 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-
-        if (staticResources != null) {
-            // host and port must be configured
-            StringHelper.notEmpty(host, "host", this);
-            ObjectHelper.notNull(port, "port", this);
-
-            LOG.info("Starting static resources server {}:{} with static resource: {}", host, port, staticResources);
-            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-            staticResourcesServer = createStaticResourcesServer(context, host, port, staticResources);
-            staticResourcesServer.start();
-            ServerConnector connector = (ServerConnector) staticResourcesServer.getConnectors()[0];
-
-            // must add static resource server to CONNECTORS in case the websocket producers/consumers
-            // uses the same port number, and therefore we must be part of this
-            MemoryWebsocketStore memoryStore = new MemoryWebsocketStore();
-            ConnectorRef ref = new ConnectorRef(staticResourcesServer, connector, null, memoryStore);
-            String key = "websocket:" + host + ":" + port;
-            CONNECTORS.put(key, ref);
-        }
     }
 
     @Override
@@ -816,15 +739,7 @@ public class WebsocketComponent extends UriEndpointComponent implements SSLConte
             }
         }
         CONNECTORS.clear();
-
-        if (staticResourcesServer != null) {
-            LOG.info("Stopping static resources server {}:{} with static resource: {}", host, port, staticResources);
-            staticResourcesServer.stop();
-            staticResourcesServer.destroy();
-            staticResourcesServer = null;
-        }
-
+       
         servlets.clear();
     }
 }
-

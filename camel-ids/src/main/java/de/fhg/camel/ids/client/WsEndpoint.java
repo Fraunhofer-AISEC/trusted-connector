@@ -38,8 +38,8 @@ package de.fhg.camel.ids.client;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
@@ -52,39 +52,48 @@ import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
-import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPClientEndpoint;
-import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.camel.ids.IdsProtocolComponent;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.timeout.IdleStateHandler;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.ids.comm.client.ClientConfiguration;
+import de.fhg.ids.comm.client.IdspClientSocket;
 
 /**
- * To exchange data with external Websocket servers using <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.
+ * This is the client-side implementation of a Camel endpoint for the IDS
+ * communication protocol (IDCP).
+ * 
+ * It is based on camel-ahc, further info is available at:
+ * <a href="http://github.com/sonatype/async-http-client">Async Http Client</a>.
  */
-@UriEndpoint(scheme = "idsclientplain,idsclient", extendsScheme = "ahc,ahc", title = "IDS Protocol", syntax = "idsclient:httpUri", consumerClass = WsConsumer.class, label = "websocket")
+@UriEndpoint(scheme = "idsclientplain,idsclient",
+			 extendsScheme = "ahc,ahc",
+			 title = "IDS Protocol",
+			 syntax = "idsclient:httpUri",
+			 consumerClass = WsConsumer.class,
+			 label = "websocket")
 public class WsEndpoint extends AhcEndpoint {
-    private static final transient Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
     private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<>();
 
-    private final Set<WsConsumer> consumers = new HashSet<WsConsumer>();
+	private final Set<WsConsumer> consumers = new HashSet<>();
     private final WsListener listener = new WsListener();
-    private transient WebSocket websocket;
+    private WebSocket websocket;
 
     @UriParam(label = "producer")
     private boolean useStreaming;
+    
     @UriParam(label = "consumer")
     private boolean sendMessageOnError;
+    
     @UriParam(label = "attestation", defaultValue = "0", description = "defines the remote attestation mode: 0=BASIC, 1=ALL, 2=ADVANCED, 3=ZERO. default value is 0=BASIC. (see api/attestation.proto for more details)")
-    private Integer attestation = 0;
+    private int attestation = IdsAttestationType.BASIC.getNumber();
+    
     @UriParam(label = "attestationMask", defaultValue = "0", description = "defines the upper boundary of PCR values tested in ADVANCED mode. i.e. attestationMask=5 means values PCR0, PCR1, PCR2, PCR3 and PCR4")
     private Integer attestationMask = 0;
 
@@ -106,12 +115,12 @@ public class WsEndpoint extends AhcEndpoint {
     public Consumer createConsumer(Processor processor) throws Exception {
         return new WsConsumer(this, processor);
     }
-
+    
     public static List<IDSCPOutgoingConnection> getOutgoingConnections() {
-        return outgoingConnections;
-    }
+		return outgoingConnections;
+	}
 
-    WebSocket getWebSocket() throws Exception {
+    WebSocket getWebSocket() {
         synchronized (this) {
             // ensure we are connected
             reConnect();
@@ -154,6 +163,7 @@ public class WsEndpoint extends AhcEndpoint {
         return attestationMask;
     }
 
+    
     /**
      * Whether to send an message if the web-socket listener received an error.
      */
@@ -173,46 +183,54 @@ public class WsEndpoint extends AhcEndpoint {
         return client;
     }
 
-    public void connect() throws Exception {
-        String uri = getHttpUri().toASCIIString();
-        if (uri.startsWith("idsclient:")) {
-            uri = uri.replaceFirst("idsclient:", "wss:");
-        } else if (uri.startsWith("idsclientplain:")) {
-            uri = uri.replaceFirst("idsclientplain:", "ws:");
-        }
-
+    public void connect() {
+    	String uri = getHttpUri().toASCIIString();
+    	if (uri.startsWith("idsclient:")) {
+    		uri = uri.replaceFirst("idsclient:", "wss:");
+    	} else if (uri.startsWith("idsclientplain:")) {
+    		uri = uri.replaceFirst("idsclientplain:", "ws:");
+    	}
+    	
         LOG.debug("Connecting to {}", uri);
         BoundRequestBuilder reqBuilder = getClient().prepareGet(uri).addHeader("Sec-WebSocket-Protocol", "ids");
-
+        
         LOG.debug("remote-attestation mode: {}", this.getAttestation());
         LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
-
+        
         // Execute IDS protocol immediately after connect
-        IDSPListener idspListener = new IDSPListener(this.getAttestation(), this.getAttestationMask(),
-                this.getSslContextParameters());
-        websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build())
-                .get();
-        // wait for IDS protocol to finish 
-        idspListener.semaphore().lockInterruptibly();
-        boolean ratSuccess;
-        try {
-            idspListener.isFinished().await();
-        } finally {
-            ratSuccess = idspListener.isAttestationSuccessful();
-            //attestationResult = idspListener.getAttestationResult();
-            idspListener.semaphore().unlock();
-        }
 
-        LOG.debug("remote attestation was successful: " + ratSuccess);
-        //get remote address, get upgrade headers, instantinate connectionmanagersertvice to register websocket
+        ClientConfiguration config = new ClientConfiguration()
+        								.attestationMask(this.getAttestationMask())
+        								.attestationType(IdsAttestationType.forNumber(this.getAttestation()))
+        								.sslContext(this.getSslContextParameters());
+        IdspClientSocket idspListener = new IdspClientSocket(config);
+
+        try {
+	        // Block until ISCP has finished
+	        idspListener.semaphore().lockInterruptibly();
+	
+	        websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
+	        
+	         try {
+	        	 boolean unlocked = false;
+	        	 do {
+	        		 unlocked = idspListener.idscpInProgressCondition().await(30, TimeUnit.SECONDS);
+	        	 } while (!idspListener.isTerminated() && !unlocked);	// To handle sporadic wake ups
+	         } finally {
+	         	idspListener.semaphore().unlock();
+	         }
+        } catch (Exception t) {
+        	LOG.error(t.getMessage(), t);
+        }
+        //get remote address, get upgrade headers, instantiate ConnectionManagerService to register websocket
         // When IDS protocol has finished, hand over to normal web socket listener
-        //This does not work! 
         websocket.addWebSocketListener(listener);
         websocket.removeWebSocketListener(idspListener);
-
+        
         //Add Client Endpoint information to static List
         IDSCPOutgoingConnection ce = new IDSCPOutgoingConnection();
         ce.setAttestationResult(idspListener.getAttestationResult());
+        ce.setMetaData(idspListener.getMetaResult());
         ce.setEndpointIdentifier(this.getEndpointUri());
         ce.setEndpointKey(this.getEndpointKey());
         ce.setRemoteIdentity(websocket.getRemoteAddress().toString());
@@ -221,7 +239,7 @@ public class WsEndpoint extends AhcEndpoint {
 
     @Override
     protected void doStop() throws Exception {
-        if (websocket != null && websocket.isOpen()) {
+    	if (websocket != null && websocket.isOpen()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Disconnecting from {}", getHttpUri().toASCIIString());
             }
@@ -229,12 +247,11 @@ public class WsEndpoint extends AhcEndpoint {
             websocket.sendCloseFrame();
             websocket = null;
         }
-
-        outgoingConnections.removeIf(ic -> ic.getEndpointKey().equals(this.getEndpointKey()));
+        outgoingConnections.removeIf(ic-> ic.getEndpointKey().equals(this.getEndpointKey()));
         super.doStop();
     }
 
-    void connect(WsConsumer wsConsumer) throws Exception {
+    void connect(WsConsumer wsConsumer) {
         consumers.add(wsConsumer);
         reConnect();
     }
@@ -243,7 +260,7 @@ public class WsEndpoint extends AhcEndpoint {
         consumers.remove(wsConsumer);
     }
 
-    void reConnect() throws Exception {
+    void reConnect() {
         if (websocket == null || !websocket.isOpen()) {
             String uri = getHttpUri().toASCIIString();
             LOG.info("Reconnecting websocket: {}", uri);
@@ -259,7 +276,7 @@ public class WsEndpoint extends AhcEndpoint {
         }
 
         @Override
-        public void onClose(WebSocket websocket, int code, String reason) {
+        public void onClose(WebSocket websocket, int code, String status) {
             LOG.debug("websocket closed - reconnecting");
             try {
                 reConnect();
@@ -279,21 +296,19 @@ public class WsEndpoint extends AhcEndpoint {
         }
 
         @Override
-        public void onBinaryFrame(byte[] payload, boolean finalFragment, int rsv) {
-            LOG.debug("Received message --> {}", payload);
+        public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
+            LOG.debug("Received message --> {}", message);
             for (WsConsumer consumer : consumers) {
-                consumer.sendMessage(payload);
+                consumer.sendMessage(message);
             }
         }
 
         @Override
-        public void onTextFrame(String payload, boolean finalFragment, int rsv) {
-            LOG.debug("Received message --> {}", payload);
+        public void onTextFrame(String message, boolean finalFragment, int rsv) {
+            LOG.debug("Received message --> {}", message);
             for (WsConsumer consumer : consumers) {
-                consumer.sendMessage(payload);
+                consumer.sendMessage(message);
             }
         }
-
     }
-
 }

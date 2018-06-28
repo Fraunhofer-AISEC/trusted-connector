@@ -35,6 +35,7 @@
  */
 package de.fhg.camel.ids.server;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -57,11 +58,13 @@ public class WebsocketComponentServlet extends WebSocketServlet {
 
     private ConcurrentMap<String, WebsocketConsumer> consumers = new ConcurrentHashMap<String, WebsocketConsumer>();
     private Map<String, WebSocketFactory> socketFactory;
+	private File tpmSocket;
 
-    public WebsocketComponentServlet(NodeSynchronization sync, String pathSpec, Map<String, WebSocketFactory> socketFactory) {
+    public WebsocketComponentServlet(NodeSynchronization sync, String pathSpec, Map<String, WebSocketFactory> socketFactory, File tpmSocket) {
         this.sync = sync;
         this.socketFactory = socketFactory;
         this.pathSpec = pathSpec;
+        this.tpmSocket = tpmSocket;
     }
 
     public WebsocketConsumer getConsumer() {
@@ -93,7 +96,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
         WebSocketFactory factory = socketFactory.get(protocolKey);
         return factory.newInstance(request, protocolKey, 
                 (consumer != null && consumer.getEndpoint() != null) ? WebsocketComponent.createPathSpec(consumer.getEndpoint().getResourceUri()) : null,
-                sync, consumer);
+                sync, consumer, tpmSocket);
     }
 
     public Map<String, WebSocketFactory> getSocketFactory() {
@@ -113,7 +116,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
             	if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
                     WebSocketFactory factory = socketFactory.get(protocolKey);
                     resp.setAcceptedSubProtocol(protocolKey);
-                    return factory.newInstance(req, protocolKey, pathSpec, sync, consumer);
+                    return factory.newInstance(req, protocolKey, pathSpec, sync, consumer, tpmSocket);
                 } else {
                 	log.error("WS subprotocols not supported: " + String.join(",", req.getSubProtocols()));
                 	return null;

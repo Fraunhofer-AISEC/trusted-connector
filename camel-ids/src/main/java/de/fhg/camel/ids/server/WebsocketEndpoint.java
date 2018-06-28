@@ -71,12 +71,8 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     @UriPath @Metadata(required = "true")
     private String resourceUri;
 
-    @UriParam(label = "producer")
-    private Boolean sendToAll;
     @UriParam(label = "producer", defaultValue = "30000")
     private Integer sendTimeout = 30000;
-    @UriParam(label = "monitoring")
-    private boolean enableJmx;
     @UriParam(label = "consumer")
     private boolean sessionSupport;
     @UriParam(label = "cors", description = "enables or disables Cross Origin Filter")
@@ -87,8 +83,6 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     private String allowedOrigins;
     @UriParam(label = "cors")
     private String filterPath;
-    @UriParam(label = "consumer")
-    private String staticResources;
     @UriParam(label = "advanced", defaultValue = "8192")
     private Integer bufferSize;
     @UriParam(label = "advanced", defaultValue = "300000")
@@ -181,36 +175,6 @@ public class WebsocketEndpoint extends DefaultEndpoint {
      */
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public String getStaticResources() {
-        return staticResources;
-    }
-
-    /**
-     * Set a resource path for static resources (such as .html files etc).
-     * <p/>
-     * The resources can be loaded from classpath, if you prefix with <tt>classpath:</tt>,
-     * otherwise the resources is loaded from file system or from JAR files.
-     * <p/>
-     * For example to load from root classpath use <tt>classpath:.</tt>, or
-     * <tt>classpath:WEB-INF/static</tt>
-     * <p/>
-     * If not configured (eg <tt>null</tt>) then no static resource is in use.
-     */
-    public void setStaticResources(String staticResources) {
-        this.staticResources = staticResources;
-    }
-
-    public Boolean getSendToAll() {
-        return sendToAll;
-    }
-
-    /**
-     * To send to all websocket subscribers. Can be used to configure on endpoint level, instead of having to use the WebsocketConstants.SEND_TO_ALL header on the message.
-     */
-    public void setSendToAll(Boolean sendToAll) {
-        this.sendToAll = sendToAll;
     }
 
     public Integer getSendTimeout() {
@@ -332,17 +296,6 @@ public class WebsocketEndpoint extends DefaultEndpoint {
      */
     public void setSslContextParameters(SSLContextParameters sslContextParameters) {
         this.sslContextParameters = sslContextParameters;
-    }
-
-    public boolean isEnableJmx() {
-        return this.enableJmx;
-    }
-
-    /**
-     * If this option is true, Jetty JMX support will be enabled for this endpoint. See Jetty JMX support for more details.
-     */
-    public void setEnableJmx(boolean enableJmx) {
-        this.enableJmx = enableJmx;
     }
 
     public String getAllowedOrigins() {
