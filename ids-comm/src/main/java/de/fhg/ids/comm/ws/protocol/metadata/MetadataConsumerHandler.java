@@ -36,7 +36,7 @@ public class MetadataConsumerHandler extends MetadataHandler {
 				.setMetadataExchange(
 						MedadataExchange
 						.newBuilder()
-						.setRdfdescription(mySelfDescription)
+						.setRdfdescription(generateMetaDataRDF())
 						.build())
 				.build();
 	}

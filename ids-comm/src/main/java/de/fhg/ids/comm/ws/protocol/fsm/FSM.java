@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
+import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 
 /**
@@ -40,6 +41,8 @@ public class FSM {
 	protected HashSet<ChangeListener> successFullChangeListeners;
 	protected HashSet<ChangeListener> failedChangeListeners;
 	private String initialState = null;
+	private RatResult ratResult;
+	private String metaData;
 
 	public FSM() {
 		this.states = new HashMap<>();
@@ -181,5 +184,21 @@ public class FSM {
 		}
 		sb.append("			}");
 		return sb.toString();
+	}
+
+	public void setRatResult(RatResult attestationResult) {
+		this.ratResult = attestationResult;
+	}
+	
+	public RatResult getRatResult() {
+		return ratResult;
+	}
+
+	public void setMetaResult(String metaData) {
+		this.metaData = metaData;
+	}
+	
+	public String getMetaData() {
+		return this.metaData;
 	}
 }

@@ -20,7 +20,6 @@
 package de.fhg.ids.comm.server;
 
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.extensions.Frame;
 
 public interface SocketListener {
 

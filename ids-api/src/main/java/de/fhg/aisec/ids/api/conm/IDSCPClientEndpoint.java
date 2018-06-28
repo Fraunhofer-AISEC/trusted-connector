@@ -28,7 +28,7 @@ package de.fhg.aisec.ids.api.conm;
 	
 public class IDSCPClientEndpoint {
 	private String endpointIdentifier;
-	private AttestationResult attestationResult;
+	private RatResult attestationResult;
 	private String endpointKey;
 
 	@Override
@@ -41,10 +41,10 @@ public class IDSCPClientEndpoint {
 	public void setEndpointIdentifier(String endpointIdentifier) {
 		this.endpointIdentifier = endpointIdentifier;
 	}
-	public AttestationResult getAttestationResult() {
+	public RatResult getAttestationResult() {
 		return attestationResult;
 	}
-	public void setAttestationResult(AttestationResult attestationResult) {
+	public void setAttestationResult(RatResult attestationResult) {
 		this.attestationResult = attestationResult;
 	}
 	public void setEndpointKey(String endpointKey) {

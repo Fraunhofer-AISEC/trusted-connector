@@ -44,8 +44,9 @@ import org.eclipse.jetty.server.Server;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.fhg.aisec.ids.api.conm.AttestationResult;
+import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.camel.ids.IdsProtocolComponent;
 import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
 
@@ -89,11 +90,25 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
         List<IDSCPIncomingConnection> incomings = conm.listIncomingConnections();
         assertEquals(1,incomings.size());
 
-        // We expect attestation to FAIL because unit tests have no valid TPM
-        AttestationResult ratResult = incomings.get(0).getAttestationResult();
-        assertEquals(AttestationResult.FAILED, ratResult);
+        IDSCPIncomingConnection incomingConnection = incomings.get(0);
         
-        mock.assertIsSatisfied();
+        // We expect attestation to FAIL because unit tests have no valid TPM
+        RatResult ratResult = incomingConnection.getAttestationResult();
+        assertEquals(RatResult.Status.FAILED, ratResult.getStatus());
+
+        // We expect some meta data about the remot endpoint
+        assertEquals("THIS IS SOME META DATA", incomingConnection.getMetaData());
+        
+        List<IDSCPOutgoingConnection> outgoings = conm.listOutgoingConnections();
+        assertEquals(1, outgoings.size());
+        
+        // Also outgoing connection will have failed remote attestation
+        IDSCPOutgoingConnection outgoingConnection = outgoings.get(0);
+        assertEquals(RatResult.Status.FAILED, outgoingConnection.getAttestationResult().getStatus());
+        
+        // ... and some meta data
+        String meta = outgoingConnection.getMetaData();
+        assertEquals("THIS IS SOME META DATA", meta);
     }
 
     @Test

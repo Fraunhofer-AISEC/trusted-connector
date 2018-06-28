@@ -24,9 +24,8 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
 /**
- * Creates a configurable WebSocket for the IDSC protocol.
+ * Creates a configurable WebSocket for the IDSCP protocol.
  * 
- * @author julian
  *
  */
 public class IdscpWebSocketCreator implements WebSocketCreator {

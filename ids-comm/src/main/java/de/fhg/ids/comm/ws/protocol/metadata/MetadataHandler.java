@@ -32,7 +32,6 @@ public class MetadataHandler {
 	protected static Logger LOG = LoggerFactory.getLogger(MetadataHandler.class);
 	protected static String lastError = "";
 	protected long sessionID = -1;
-	protected String mySelfDescription = "";
 	
 	public String generateMetaDataRDF() {
 		String rdfSelfDescription = "THIS IS SOME META DATA";
