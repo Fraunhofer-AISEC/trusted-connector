@@ -15,11 +15,6 @@ build:
   - apt update && apt install -y nodejs yarn
   script: 
   - mvn clean deploy site --batch-mode
-  artifacts:
-    when: always
-    paths:
-    - "*/target/surefire-reports"
-    - "target/site"
   only:
     - develop
 
