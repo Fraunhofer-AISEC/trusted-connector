@@ -123,6 +123,11 @@ public class RemoteAttestationHandler {
 		byte[] byteCert = DatatypeConverter.parseHexBinary(response.getCertificateUri());
 		LOG.debug("cert: {}", ByteArrayUtil.toPrintableHexString(byteCert));
 		byte[] byteQuoted = DatatypeConverter.parseHexBinary(response.getQuoted());
+		
+		if (byteCert.length==0 || byteQuoted.length==0) {
+			LOG.debug("Response did not contain signature ");
+			return false;
+		}
 		try {
 			// construct a new TPM2B_PUBLIC from byteCert bytes
 			TPM2B_PUBLIC tpm2bPublickey = new TPM2B_PUBLIC(byteCert);
