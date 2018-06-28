@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:camel="http://camel.apache.org/schema/blueprint"
+           xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+           xsi:schemaLocation="
+               ttp://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+               http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+               http://camel.apache.org/schema/blueprint
+               http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+              http://camel.apache.org/schema/spring">
+    <bean id="milo-client" class="org.apache.camel.component.milo.client.MiloClientComponent">
+        <!--<property name="enableAnonymousAuthentication" value="true"/>-->
+    </bean>
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint" id="default">
+      <restConfiguration component="jetty"
+                       contextPath="/"
+                       port="8282"
+                       enableCORS="true">
+        <corsHeaders key="Access-Control-Allow-Origin" value="*"/>
+        <corsHeaders key="Access-Control-Allow-Headers" value="origin, content-type, accept, authorization, X-Requested-With"/>
+        <corsHeaders key="Access-Control-Allow-Credentials" value="true"/>
+        <corsHeaders key="Access-Control-Allow-Methods" value="GET, POST, PUT, DELETE, OPTIONS, HEAD"/>
+      </restConfiguration>
+
+      <rest>
+        <post uri="/led/{id}/direction/{state}" id="REST: Write LED Direction">
+          <to uri="direct:writeLEDDirection"/>
+        </post>
+        <post uri="/led/{id}/power/{state}" id="REST: Write LED Power">
+          <to uri="direct:writeLEDPower"/>
+        </post>
+      </rest>
+
+      <route rest="true" id="OPC-UA: Write LED Direction">
+        <from uri="direct:writeLEDDirection"/>
+        <setBody>
+          <simple>${header.state}</simple>
+        </setBody>
+        <convertBodyTo type="java.lang.Boolean"/>
+        <log message="Setting LED ${header.id} to direction ${header.state}"/>
+        <choice>
+          <when>
+            <simple>${header.id} == '1'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1007)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '2'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1014)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '3'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1021)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '4'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1028)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '5'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1035)"/>
+          </when>
+        </choice>
+      </route>
+
+      <route rest="true" id="OPC-UA: Write LED Power">
+        <from uri="direct:writeLEDPower"/>
+        <setBody>
+          <simple>${header.state}</simple>
+        </setBody>
+        <convertBodyTo type="java.lang.Boolean"/>
+        <log message="Setting LED ${header.id} to power state ${header.state}"/>
+        <choice>
+          <when>
+            <simple>${header.id} == '1'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1008)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '2'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1015)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '3'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1022)"/>
+          </when>
+          <when>
+            <simple>${header.id} == '4'</simple>
+            <to uri="milo-client:tcp://led-server.aisec.fraunhofer.de:4840?node=RAW(ns=1;i=1029)"/>
+          </when>
+        </choice>
+      </route>
+
+      <route rest="true" id="OPC-UA: Set Alarm State to On">
+        <from uri="direct:writeAlarmStateOn"/>
+        <setBody><constant>true</constant></setBody>
+        <convertBodyTo type="java.lang.Boolean"/>
+        <log message="Setting Alarm State to true"/>
+        <to uri="milo-client:tcp://trusted-sensor.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=8)"/>
+      </route>
+
+      <route rest="true" id="OPC-UA: Set Alarm State to Off">
+        <from uri="direct:writeAlarmStateOff"/>
+        <setBody><constant>false</constant></setBody>
+        <convertBodyTo type="java.lang.Boolean"/>
+        <log message="Setting Alarm State to false"/>
+        <to uri="milo-client:tcp://trusted-sensor.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=8)"/>
+      </route>
+
+      <route rest="true" id="OPC-UA: Write Engine RPM">
+        <from uri="rest:post:/:/engine/rpm/{rpm}"/>
+        <!--<restBinding component="jetty"/> -->
+        <setBody>
+          <simple>${header.rpm}</simple>
+        </setBody>
+        <log message="Triggered Route: setEngineRPM, requesting scenario: ${body}"/>
+        <to uri="milo-client:tcp://trusted-sensor.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=2)"/>
+        <setHeader headerName="id"><simple>1</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <to uri="direct:writeLEDDirection"/>
+        <setHeader headerName="id"><simple>1</simple></setHeader>
+        <setHeader headerName="state"><simple>true</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <to uri="direct:writeAlarmStateOn"/>
+        <delay>
+          <constant>10000</constant>
+        </delay>
+        <setHeader headerName="id"><simple>1</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <setHeader headerName="id"><simple>1</simple></setHeader>
+        <setHeader headerName="state"><simple>true</simple></setHeader>
+        <to uri="direct:writeLEDDirection"/>
+        <to uri="direct:writeLEDPower"/>
+        <to uri="direct:writeAlarmStateOff"/>
+      </route>
+
+      <route id="OPC-UA: Read Engine Power (Untrusted)" autoStartup="false">
+        <from uri="milo-client:tcp://untrusted-sensor.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=4)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: engine current to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+      </route>
+
+      <route id="OPC-UA: Reset LEDs">
+        <from uri="timer:reset-led?delay=-1&amp;repeatCount=1"/>
+        <setHeader headerName="id"><simple>1</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <setHeader headerName="id"><simple>2</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <setHeader headerName="id"><simple>3</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <setHeader headerName="id"><simple>4</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+        <setHeader headerName="id"><simple>5</simple></setHeader>
+        <setHeader headerName="state"><simple>false</simple></setHeader>
+        <to uri="direct:writeLEDPower"/>
+      </route>
+
+      <route id="IDS-Protocol: Transmit Connector Data" autoStartup="false">
+        <from uri="direct:transmitConnectorData"/>
+        <log message="Transmitting connector data..."/>
+      </route>
+
+      <route id="HTTPS: Transmit Cloud Data" autoStartup="false">
+        <from uri="direct:transmitCloudData"/>
+        <log message="Transmitting cloud data..."/>
+      </route>
+
+      <route id="OPC-UA: Read Engine Power (Trusted)" autoStartup="false">
+        <from uri="milo-client:tcp://trusted-sensor.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=4)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: engine Power to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+        <to uri="http://data-processing-service:8080/sensordataapp/currentpower/addraw"/>
+      </route>
+
+      <route id="OPC-UA: Read Engine RPM (Trusted)" autoStartup="true">
+        <from uri="milo-client:tcp://trusted-sensor.aisec.fraunhofer.de:4840?node=RAW(ns=2;i=3)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: engine rpm to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+        <to uri="http://data-processing-service:8080/sensordataapp/currentrpm/addraw"/>
+      </route>
+
+      <route id="OPC-UA: Read Vibration status (Bluetooth)" autoStartup="true">
+        <from uri="milo-client:tcp://hws-rpi17.aisec.fraunhofer.de:4840?node=RAW(ns=1;s=19b10012e8f2537e4f6cd104768a1216)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: vibration to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+        <to uri="http://data-processing-service:8080/sensordataapp/newapi/vibration/addraw"/>
+      </route>
+
+      <route id="OPC-UA: Read Temperature value (Bluetooth)" autoStartup="true">
+        <from uri="milo-client:tcp://hws-rpi17.aisec.fraunhofer.de:4840?node=RAW(ns=1;s=19b10012e8f2537e4f6cd104768a121c)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: Temperature to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+        <to uri="http://data-processing-service:8080/sensordataapp/newapi/temperature/addraw"/>
+      </route>
+
+      <route id="OPC-UA: Read Heating status (Bluetooth)" autoStartup="true">
+        <from uri="milo-client:tcp://hws-rpi17.aisec.fraunhofer.de:4840?node=RAW(ns=1;s=19b10012e8f2537e4f6cd104768a121a)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: Heating to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+        <to uri="http://data-processing-service:8080/sensordataapp/newapi/heating/addraw"/>
+      </route>
+
+      <route id="OPC-UA: Read Security status (Bluetooth)" autoStartup="true">
+        <from uri="milo-client:tcp://hws-rpi17.aisec.fraunhofer.de:4840?node=RAW(ns=1;s=19b10012e8f2537e4f6cd104768a1218)&amp;samplingInterval=10000"/>
+        <log message="Triggered Route: Security to REST, reading body: ${body}"/>
+        <setHeader headerName="CamelHttpMethod">
+          <constant>POST</constant>
+        </setHeader>
+        <convertBodyTo type="java.lang.String"/>
+        <log message="Got ${body}"/>
+        <to uri="http://data-processing-service:8080/sensordataapp/newapi/security/addraw"/>
+      </route>
+    </camelContext>
+</blueprint>
