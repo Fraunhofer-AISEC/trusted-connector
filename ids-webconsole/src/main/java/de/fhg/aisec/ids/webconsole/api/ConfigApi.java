@@ -27,9 +27,15 @@ import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -48,11 +54,12 @@ import java.util.stream.Collectors;
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 @Path("/config")
+@Api(value="Config")
 public class ConfigApi {
 	public static final String GENERAL_CONFIG = "General Configuration";
-//	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
 
 	@GET
+	@ApiOperation(value="Retrieves the current configuration", response=ConnectorConfig.class)
 	@Produces(MediaType.APPLICATION_JSON)
 	public ConnectorConfig get() {
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
@@ -61,36 +68,40 @@ public class ConfigApi {
 
 	@POST
 	@OPTIONS
+	@ApiOperation(value="Sets the configuration", response=ConnectorConfig.class)
+	@ApiResponses(@ApiResponse(code=500, message="_No valid preferences received_: If incorrect configuration parameter is provided"))
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String set(ConnectorConfig config) {
+	public Response set(ConnectorConfig config) {
 		if (config == null) {
-			throw new BadRequestException("No valid preferences received!");
+			return Response.serverError().entity("No valid preferences received!").build();
 		}
 
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectorConfig(config);
 
-		return "ok";
+		return Response.ok().build();
 	}
 
 	/**
-	 * Save connection configuration of a particular connection
+	 * Save connection configuration of a particular connection.
+	 * 
 	 * @param connection The name of the connection
 	 * @param conSettings The connection configuration of the connection
-	 * @return "ok" String
 	 */
 	@POST
 	@Path("/connectionConfigs/{con}")
+	@ApiOperation(value="Save connection configuration of a particular connection")
+	@ApiResponses(@ApiResponse(code=500, message="_No valid connection settings received!_: If incorrect connection settings parameter is provided"))
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings conSettings) {
+	public Response setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings conSettings) {
 		if (conSettings == null) {
-			throw new BadRequestException("No valid connection settings received!");
+			Response.serverError().entity("No valid connection settings received!").build();
 		}
 
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectionSettings(connection, conSettings);
 
-		return "ok";
+		return Response.ok().build();
 	}
 	
 	/**
@@ -100,6 +111,7 @@ public class ConfigApi {
 	 */
 	@GET
 	@Path("/connectionConfigs/{con}")
+	@ApiOperation(value="Sends configuration of a connection", response=ConnectionSettings.class)
 	@Produces(MediaType.APPLICATION_JSON)
 	public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
@@ -112,6 +124,8 @@ public class ConfigApi {
 	 */
 	@GET
 	@Path("/connectionConfigs")
+	@ApiOperation(value="Retrieves configurations of all connections")
+	@ApiResponses(@ApiResponse(code=200, message="Map of connections and configurations", response=ConnectionSettings.class, responseContainer="Map"))
 	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();

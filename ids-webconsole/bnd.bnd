@@ -6,9 +6,11 @@ Export-Package: \
 	de.fhg.aisec.ids.webconsole.api,\
 	de.fhg.aisec.ids.webconsole.api.data
 Import-Package: \
-  org.apache.cxf.jaxrs.security,\
-  org.apache.cxf.interceptor.security,\
-  com.fasterxml.jackson.jaxrs.json,\
-  com.fasterxml.jackson.databind,*
+	org.apache.cxf.jaxrs.security,\
+	org.apache.cxf.interceptor.security,\
+	com.fasterxml.jackson.jaxrs.json,\
+	com.fasterxml.jackson.databind,\
+	!io.swagger.annotations,\
+	*
 Web-ContextPath: /
 -wab: src/main/resources/www/dist/

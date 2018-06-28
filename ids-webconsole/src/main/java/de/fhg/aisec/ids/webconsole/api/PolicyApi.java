@@ -40,6 +40,10 @@ import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -52,11 +56,14 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  *
  */
 @Path("/policies")
+@Api("Policies")
 public class PolicyApi {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyApi.class);
 	
 	@GET
 	@Path("list")
+	@ApiOperation(value="Lists active rules", responseContainer="List")
+	@ApiResponses(@ApiResponse(code=200, message="List of usage control rules", response=String.class, responseContainer="List"))
 	@Produces("application/json")
 	public List<String> list() {
 		// TODO JS->ML: Hier sollte vlt. eher eine Liste von Policy-Objekten zurückgegeben werden.

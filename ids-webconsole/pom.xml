@@ -9,7 +9,8 @@
 	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
 	OF ANY KIND, either express or implied. See the License for the specific 
 	language governing permissions and limitations under the License. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
@@ -71,11 +72,17 @@
 			<artifactId>org.osgi.compendium</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-jaxrs</artifactId>
+			<version>1.5.18</version>
+		</dependency>
+
 		<!-- JSON support -->
 		<dependency>
-		    <groupId>org.apache.cxf</groupId>
-		    <artifactId>cxf-rt-rs-extension-providers</artifactId>
-		    <version>${cxf.version}</version>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-rs-extension-providers</artifactId>
+			<version>${cxf.version}</version>
 		</dependency>
 
 		<!-- logging -->
@@ -102,34 +109,34 @@
 
 		<!-- Local CXF transports only for testing -->
 		<dependency>
-		    <groupId>org.apache.cxf</groupId>
-		    <artifactId>cxf-rt-transports-local</artifactId>
-		    <version>${cxf.version}</version>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-local</artifactId>
+			<version>${cxf.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.cxf</groupId>
-		    <artifactId>cxf-rt-rs-client</artifactId>
-		    <version>${cxf.version}</version>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-rs-client</artifactId>
+			<version>${cxf.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.fasterxml.jackson.jaxrs</groupId>
-		    <artifactId>jackson-jaxrs-json-provider</artifactId>
-		    <version>${jackson.version}</version>
-		    <scope>test</scope>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>${jackson.version}</version>
+			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
 
-		<!-- Do not copy everything from src/main/resources, but rather only blueprint
+		<!-- Do not copy everything from src/main/resources, but rather only blueprint 
 			descriptor and compiled Angular stuff -->
 		<resources>
 			<resource>
@@ -169,9 +176,9 @@
 				</executions>
 			</plugin>
 
-			<!-- The following configuration is required because bnd-maven-plugin
-				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal
-				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up
+			<!-- The following configuration is required because bnd-maven-plugin 
+				generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
+				maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
 				the manifest from this location, then the following config is not needed. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -189,7 +196,7 @@
 				<version>1.3.2</version>
 
 				<executions>
-					<!-- Required: The following will ensure `yarn install` is called before
+					<!-- Required: The following will ensure `yarn install` is called before 
 						anything else during the 'Default Lifecycle' -->
 					<execution>
 						<id>yarn install (initialize)</id>
@@ -207,7 +214,7 @@
 						</configuration>
 					</execution>
 
-					<!-- Optional: The following will output the yarn configuration. I do
+					<!-- Optional: The following will output the yarn configuration. I do 
 						this so my CI logs will show the yarn information used for the build -->
 					<execution>
 						<id>yarn config list (validate)</id>
@@ -224,8 +231,9 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: The following calls `yarn run lint` which ensures that the code
-						is free of recognizable linting errors with may corrupt the productive build -->
+					<!-- Required: The following calls `yarn run lint` which ensures that 
+						the code is free of recognizable linting errors with may corrupt the productive 
+						build -->
 					<execution>
 						<id>yarn run lint (linting)</id>
 						<goals>
@@ -241,7 +249,7 @@
 						</configuration>
 					</execution>
 
-					<!-- Required: This following calls `yarn run build` where 'build' is
+					<!-- Required: This following calls `yarn run build` where 'build' is 
 						the script name I used in my project, change this if yours is different -->
 					<execution>
 						<id>yarn run bundle (compile)</id>
@@ -257,6 +265,18 @@
 							</arguments>
 						</configuration>
 					</execution>
+    
+                    <!-- Generate nicely layouted static API HTML documentation from swagger.json -->
+                    <execution>
+                      <id>Generate static API doc HTML in generated/swagger-ui</id>
+                      <phase>process-classes</phase>
+                      <goals>
+                        <goal>exec</goal>
+                      </goals>
+                      <configuration>
+                        <executable>${project.basedir}/generate_api_docs.sh</executable>
+                      </configuration>
+                    </execution>
 				</executions>
 
 				<configuration>
@@ -265,13 +285,51 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<groupId>com.github.kongchen</groupId>
+				<artifactId>swagger-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<apiSources>
+						<apiSource>
+							<springmvc>false</springmvc>
+							<locations>
+                                de.fhg.aisec.ids.webconsole.api
+                            </locations>
+							<schemes>http</schemes>
+							<host>localhost:8181</host>
+							<basePath>/</basePath>
+							<info>
+								<title>Trusted Connector API</title>
+								<version>v1</version>
+								<license>
+									<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+									<name>Apache 2.0</name>
+								</license>
+                                <description>
+                                    This is the internal API of the Trusted Connector.
 
-
-
+                                    The API provides an administrative interface to manage the Trusted Connector at runtime and is used by the default administration dashboard ("webconsole"). Please note that at the moment the Trusted Connector is in a prototype state and this API does not provide any authorization mechanism.
+                                </description>
+							</info>
+							<swaggerDirectory>${basedir}/generated/swagger-ui</swaggerDirectory>
+                            <swaggerApiReader>com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader</swaggerApiReader> 
+						</apiSource>
+					</apiSources>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
