@@ -62,12 +62,12 @@ public class ConnectionManagerService implements ConnectionManager {
 
 	@Override
 	public List<IDSCPServerEndpoint> listAvailableEndpoints() {
-		return WebsocketComponent.getConnectors().values().stream().map(connectorRef -> {
+		return WebsocketComponent.getConnectors().entrySet().stream().map(cEntry -> {
 	        IDSCPServerEndpoint endpoint = new IDSCPServerEndpoint();
-	        endpoint.setHost(connectorRef.getConnector().getHost());
-	        endpoint.setPort(Integer.toString(connectorRef.getConnector().getPort()));
-	        endpoint.setDefaultProtocol(connectorRef.getConnector().getDefaultProtocol());
-	        endpoint.setEndpointIdentifier(connectorRef.getConnector().toString());
+	        endpoint.setHost(cEntry.getValue().getConnector().getHost());
+	        endpoint.setPort(Integer.toString(cEntry.getValue().getConnector().getPort()));
+	        endpoint.setDefaultProtocol(cEntry.getValue().getConnector().getDefaultProtocol());
+	        endpoint.setEndpointIdentifier(cEntry.getKey());
 	        return endpoint;
 		}).collect(Collectors.toList());
 	}

@@ -67,7 +67,7 @@
             {{ conn.endpointIdentifier }}
           </td>
           <td>
-            {{ conn.attestationResult }}
+            <span class="color-warning text-bold">{{ conn.attestationResult.status }}</span> <span *ngIf="conn.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{ conn.attestationResult.reason }}</span>
           </td>
           <td>
             {{ conn.remoteHostName }}
@@ -101,7 +101,7 @@
             {{ connOut.endpointIdentifier }}
           </td>
           <td>
-            {{ connOut.attestationResult }}
+            <span class="color-warning text-bold">{{ connOut.attestationResult.status }}</span> <span *ngIf="connOut.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{ connOut.attestationResult.reason }}</span>
           </td>
           <td>
             {{ connOut.remoteIdentity }}

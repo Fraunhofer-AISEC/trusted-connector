@@ -422,3 +422,7 @@ table.table.table-striped thead tr th {
    height: 0; 
    clear: both;
 }
+
+.color-warning {
+	color: #f09020;
+}
