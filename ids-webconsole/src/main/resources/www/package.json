@@ -5,7 +5,7 @@
   "angular-cli": {},
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --delete-output-path=false",
+    "start": "ng serve",
     "bundle": "ng build --prod",
     "lint": "ng lint"
   },
