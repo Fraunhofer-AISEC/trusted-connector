@@ -119,6 +119,11 @@
 		    <version>${jackson.version}</version>
 		    <scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.asynchttpclient</groupId>
+			<artifactId>async-http-client</artifactId>
+			<scope>test</scope>
+		</dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
