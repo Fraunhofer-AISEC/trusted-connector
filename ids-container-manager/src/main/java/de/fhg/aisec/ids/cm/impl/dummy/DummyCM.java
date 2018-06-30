@@ -62,7 +62,7 @@ public class DummyCM implements ContainerManager {
 	public void restartContainer(final String containerID) { }
 
 	@Override
-	public Optional<String> pullImage(final String imageID) { return Optional.empty(); }
+	public Optional<String> pullImage(final ApplicationContainer app) { return Optional.empty(); }
 
 	@Override
 	public Map<String, String> getMetadata(String containerID) {

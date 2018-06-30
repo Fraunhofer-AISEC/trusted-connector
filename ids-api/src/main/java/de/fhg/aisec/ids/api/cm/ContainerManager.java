@@ -128,7 +128,7 @@ public interface ContainerManager {
 	 * @param image
 	 * @return 
 	 */
-	public Optional<String> pullImage(final String imageID) throws NoContainerExistsException;
+	public Optional<String> pullImage(final ApplicationContainer app) throws NoContainerExistsException;
 
 	/**
 	 * Configures an IP rule for a container.

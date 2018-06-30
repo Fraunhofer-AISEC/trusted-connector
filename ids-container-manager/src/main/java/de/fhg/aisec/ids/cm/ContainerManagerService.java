@@ -123,9 +123,9 @@ public class ContainerManagerService implements ContainerManager {
 	}
 
 	@Override
-	public Optional<String> pullImage(String imageID) {
+	public Optional<String> pullImage(ApplicationContainer app) {
 		try {
-			return containerManager.pullImage(imageID);
+			return containerManager.pullImage(app);
 		} catch (NoContainerExistsException e) {
 			LOG.error(e.getMessage(), e);
 		}

@@ -24,8 +24,9 @@
               "src/fonts/fonts.css",
               "node_modules/material-design-lite/material.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "src/material.teal-pink.min.css",
-              "src/styles.css",
+              "src/css/material.teal-pink.min.css",
+              "src/css/styles.css",
+              "src/css/fontawesome/all.css",
               "node_modules/vis/dist/vis.css"
             ],
             "scripts": [

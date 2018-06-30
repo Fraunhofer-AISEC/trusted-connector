@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -105,11 +106,25 @@ public class DockerCM implements ContainerManager {
 			String names = columns[7];
 			
 			//Extract owner, signature, description from container labels
-			Map<String, String> labels = getMetadata(id);
-			String signature = labels.get("ids.signature");
-			String owner = labels.get("ids.owner");
-			String description = labels.get("ids.description");
-			result.add(new ApplicationContainer(id, image, created, status, ports, names, size, uptime, signature, owner, description, labels));
+			Map<String, Object> labels = getMetadata(id);
+			String signature = (String) labels.get("ids.signature");
+			String owner = (String) labels.get("ids.owner");
+			String description = (String) labels.get("ids.description");
+			
+			ApplicationContainer app = new ApplicationContainer();
+			app.setId(id);
+			app.setImage(image);
+			app.setCreated(created);
+			app.setStatus(status);
+			app.setPorts(Arrays.asList(ports.split("\n")));
+			app.setNames(names);
+			app.setSize(size);
+			app.setUptime(uptime);
+			app.setSignature(signature);
+			app.setOwner(owner);
+			app.setDescription(description);
+			app.setLabels((Map<String, Object>) labels);
+			result.add(app);
 		}
 		return result;
 	}
@@ -167,20 +182,65 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public Optional<String> pullImage(final String imageID) {
+	public Optional<String> pullImage(final ApplicationContainer app) {
 		try {
 			// Pull image from std docker registry
-			LOG.info("Pulling container image " + imageID);
-			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "pull", imageID));
+			LOG.info("Pulling container image {}", app.getImage());
+			ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(Arrays.asList(DOCKER_CLI, "pull", app.getImage()));
 			Process p = pb.start();
 			p.waitFor(600, TimeUnit.SECONDS);
 
 			// Instantly create a container from that image, but do not start it yet.
-			LOG.info("Creating container instance from image " + imageID);
-			String containerID = defaultContainerName(imageID);
-			List<String> cmd = Arrays.asList(DOCKER_CLI, "create", "-P", "--label", "created="+Instant.now().toEpochMilli(), "--name", containerID, imageID);
-			LOG.debug("Exec " + String.join(" ", cmd));
-			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
+			LOG.info("Creating container instance from image {}", app.getImage());
+			
+			// Create the name
+			String containerID;
+			if (app.getName()!=null) {
+				containerID = defaultContainerName(app.getName());
+			} else {
+				containerID = defaultContainerName(app.getImage());
+			}
+
+			List<String> createCmd = new ArrayList<>();
+			createCmd.add(DOCKER_CLI);
+			createCmd.add("create");
+			
+			// Set exposed ports
+			for (String port: app.getPorts()) {
+				createCmd.add("-p");
+				createCmd.add(port);
+			}
+			
+			// Set environment variables
+			if (app.getEnv()!=null) {
+				for (Map<String, Object> env : app.getEnv()) {
+					String varName = (String) env.get("name");
+					String varValue = (String) env.get("set");
+					createCmd.add("-e");
+					createCmd.add(varName + "=" + varValue);
+				}
+			}
+			
+			// Sets label(s)
+			createCmd.add("--label");
+			createCmd.add("created="+Instant.now().toEpochMilli());
+			
+			// Set name
+			createCmd.add("--name");
+			createCmd.add(containerID);
+			
+			// Set restart policy
+			if (app.getRestartPolicy()!=null) {
+				createCmd.add("--restart");
+				createCmd.add(app.getRestartPolicy());
+			}
+			
+			if (app.isPrivileged()) {
+				createCmd.add("--privileged");
+			}
+			
+			createCmd.add(app.getImage());
+			pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(createCmd);
 			p = pb.start();
 			p.waitFor(600, TimeUnit.SECONDS);
 			return Optional.<String>of(containerID);
@@ -203,10 +263,10 @@ public class DockerCM implements ContainerManager {
 			String name = imageID.substring(imageID.indexOf('/')+1);
 			String rest = imageID.replace(name, "").replace('/', '-');
 			rest = rest.substring(0, rest.length()-1);
-			return name + "-" + rest;
+			return (name + "-" + rest).replaceAll(":", "_");
 		}
 		
-		return imageID;
+		return imageID.replaceAll(":", "_");
 	}
 
 
@@ -228,7 +288,7 @@ public class DockerCM implements ContainerManager {
 	}
 
 	@Override
-	public Map<String, String> getMetadata(String containerID) {
+	public Map<String, Object> getMetadata(String containerID) {
 		ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
 		ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
 		try {
@@ -253,7 +313,7 @@ public class DockerCM implements ContainerManager {
 			// impossible
 			throw new RuntimeException(e);
 		}
-		Map<String, String> labels = new HashMap<>();
+		Map<String, Object> labels = new HashMap<>();
 		boolean reading = false;
 		for (String line:lines) {
 			if (line.trim().startsWith("\"Labels\":")) {

@@ -28,11 +28,12 @@ export class IdsComponent implements OnInit {
             .subscribe(response => {
                 // Initialize form
                 this.settingsForm = this.formBuilder.group({
+                    appstoreUrl: response.appstoreUrl,
                     brokerUrl: response.brokerUrl,
                     ttpHost: response.ttpHost,
                     ttpPort: response.ttpPort,
                     acmeServerWebcon: [response.acmeServerWebcon, [], [control =>
-                        timer(300)
+                        timer(3000)
                             .pipe(
                                 switchMap(_ => this.settingsService.getToS(control.value)),
                                 map(tos => {
@@ -57,9 +58,9 @@ export class IdsComponent implements OnInit {
     }
 
     save(): void {
-        if (this.settingsForm.valid) {
+//        if (this.settingsForm.valid) {
             this.settingsService.store(this.settingsForm.value)
                 .subscribe(() => this.saved = true);
-        }
+//        }
     }
 }

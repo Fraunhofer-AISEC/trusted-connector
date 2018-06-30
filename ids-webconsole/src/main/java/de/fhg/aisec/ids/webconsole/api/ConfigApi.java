@@ -30,6 +30,8 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -62,15 +64,18 @@ public class ConfigApi {
 	@POST
 	@OPTIONS
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String set(ConnectorConfig config) {
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response set(ConnectorConfig config) {
 		if (config == null) {
 			throw new BadRequestException("No valid preferences received!");
 		}
+		System.out.println("Saving config " + config);
+		System.out.println("Saving config " + config.getAppstoreUrl());
 
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectorConfig(config);
 
-		return "ok";
+		return Response.ok().entity("ok").build();
 	}
 
 	/**
@@ -82,7 +87,8 @@ public class ConfigApi {
 	@POST
 	@Path("/connectionConfigs/{con}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings conSettings) {
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings conSettings) {
 		if (conSettings == null) {
 			throw new BadRequestException("No valid connection settings received!");
 		}
@@ -90,7 +96,7 @@ public class ConfigApi {
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectionSettings(connection, conSettings);
 
-		return "ok";
+		return Response.ok().entity("ok").build();
 	}
 	
 	/**

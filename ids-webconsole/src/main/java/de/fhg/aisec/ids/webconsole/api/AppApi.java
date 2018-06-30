@@ -19,8 +19,13 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +36,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -39,15 +49,23 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -131,21 +149,23 @@ public class AppApi {
 	@POST
 	@OPTIONS
 	@Path("install")
+	@Consumes("application/json")
 	@Produces("application/json")
-	public Response install(Map<String, String> app) {
-		LOG.debug("Request to load " + app);
+	public Response install(Map<String,ApplicationContainer> apps) {
+		ApplicationContainer app = apps.get("app");
+		LOG.debug("Request to load {}", app.getImage());
 		final Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		if (!cml.isPresent()) {
 			LOG.warn("No cmld");
 			return Response.serverError().entity("No cmld").build();
 		}
 
-		final String image = app.get("image");
+		final String image = app.getImage();
 		if (image==null) {
 			LOG.warn("Null image");
 			return Response.serverError().entity("Null image").build();
 		}
-		LOG.debug("Pulling app " + image);
+		LOG.debug("Pulling app {}", image);
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
 		// Pull image asynchronously and create new container
@@ -155,7 +175,7 @@ public class AppApi {
 				if (!cml.isPresent()) {
 					return null;
 				}
-				Optional<String> containerId = cml.get().pullImage(image);
+				Optional<String> containerId = cml.get().pullImage(app);
 				return containerId.orElse(null);
 			}
 		});
@@ -195,5 +215,45 @@ public class AppApi {
 
 		result.put("cml_version", cml.get().getVersion());
 		return result;
+	}
+	
+	@POST
+	@Path("search")
+	@Consumes("application/json")
+	@Produces("application/json")
+	public Response search(AppSearchRequest searchRequest) throws KeyManagementException, NoSuchAlgorithmException {
+		String term = searchRequest.getSearchTerm();
+		try {
+			    Client client = ClientBuilder.newBuilder().build();
+			    String url = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig().getAppstoreUrl();
+
+				WebTarget webTarget = client.target(url);
+				Invocation.Builder invocationBuilder  = webTarget.request(MediaType.TEXT_PLAIN);
+				Response response = invocationBuilder.get();
+			    String r = response.readEntity(String.class);
+				
+				ObjectMapper mapper = new ObjectMapper();
+				ApplicationContainer[] result = mapper.readValue(r, ApplicationContainer[].class);
+				List<ApplicationContainer> apps;
+				if (term!=null && !term.equals("")) {
+					apps = Arrays
+						.asList(result)
+						.parallelStream()
+						.filter(app -> 
+							   (app.getName()!=null && app.getName().contains(term))
+							|| (app.getDescription()!=null && app.getDescription().contains(term))
+							|| (app.getImage()!=null && app.getImage().contains(term))
+							|| (app.getId()!=null && app.getId().contains(term))
+							|| (app.getCategories()!=null && app.getCategories().contains(term))
+							)
+						.collect(Collectors.toList());
+				} else {
+					apps = Arrays.asList(result);
+				}
+		    return Response.ok(apps.toArray(new ApplicationContainer[apps.size()])).build();
+		} catch (IOException e) {
+			LOG.error(e.getMessage(), e);
+			return Response.serverError().entity(e.getMessage()).build();
+		}
 	}
 }

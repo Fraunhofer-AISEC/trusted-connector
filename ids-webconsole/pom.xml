@@ -117,7 +117,6 @@
 		    <groupId>com.fasterxml.jackson.jaxrs</groupId>
 		    <artifactId>jackson-jaxrs-json-provider</artifactId>
 		    <version>${jackson.version}</version>
-		    <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.asynchttpclient</groupId>

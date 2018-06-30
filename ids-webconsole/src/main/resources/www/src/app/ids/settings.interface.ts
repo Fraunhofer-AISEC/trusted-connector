@@ -1,4 +1,5 @@
 export interface Settings {
+  appstoreUrl: string;
   brokerUrl: string;
   ttpHost: string;
   ttpPort: number;

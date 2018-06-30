@@ -20,7 +20,12 @@
                 {{ app.uptime }}
             </div>
             <div class="mdl-cell mdl-cell--4-col">
-                {{ app.ports }}
+            	<span *ngFor="let port of app.ports; trackBy: trackPorts;">
+            		<span style="display:block" *ngFor="let p of port.split(','); trackBy: trackP;">
+	            		<a *ngIf="p.indexOf('->')>-1; else only_port" href="http://localhost:{{ p.substring(p.indexOf('->')+2, p.indexOf('/')) }}">{{ p }}</a>
+	            		<ng-template #only_port>{{ p }}</ng-template>
+            		</span>
+            	</span>
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(app.id)">
