@@ -30,7 +30,6 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<activemq.version>5.13.3</activemq.version>
     	<cxf.version>3.2.4</cxf.version>
 		<karaf.version>4.2.0</karaf.version>
 		<camel.version>2.21.1</camel.version>

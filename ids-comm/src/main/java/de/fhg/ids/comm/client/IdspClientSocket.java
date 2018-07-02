@@ -19,16 +19,7 @@
  */
 package de.fhg.ids.comm.client;
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
@@ -37,6 +28,13 @@ import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class IdspClientSocket implements WebSocketListener {
     private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
@@ -64,7 +62,7 @@ public class IdspClientSocket implements WebSocketListener {
 
         // create Finite State Machine for IDS protocol
         ProtocolMachine machine = new ProtocolMachine();
-        this.fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask, this.config.params);
+        this.fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask);
         // start the protocol with the first message
         this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
     }

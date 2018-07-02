@@ -19,11 +19,9 @@
  */
 package de.fhg.ids.comm.client;
 
-import java.io.File;
-
-import org.apache.camel.util.jsse.SSLContextParameters;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+
+import java.io.File;
 
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
@@ -35,9 +33,7 @@ public class ClientConfiguration {
 	protected int port = 8080;
 	protected File tpmdSocket;
 	protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
-	protected SSLContextParameters params = null;
 	protected int attestationMask = 0;
-	protected SSLContextParameters sslContext;
 
 	public ClientConfiguration port(int port) {
 		this.port = port;
@@ -56,11 +52,6 @@ public class ClientConfiguration {
 	
 	public ClientConfiguration attestationType(IdsAttestationType attestationType) {
 		this.attestationType = attestationType;
-		return this;
-	}
-	
-	public ClientConfiguration sslContext(SSLContextParameters sslContext) {
-		this.sslContext = sslContext;
 		return this;
 	}
 

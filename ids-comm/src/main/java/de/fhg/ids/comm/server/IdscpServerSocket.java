@@ -19,28 +19,21 @@
  */
 package de.fhg.ids.comm.server;
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.camel.util.jsse.SSLContextParameters;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketFrame;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.websocket.api.extensions.Frame;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
+import org.eclipse.jetty.websocket.api.extensions.Frame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Handles messages for the IDS protocol.
@@ -54,7 +47,6 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 public class IdscpServerSocket {
     private static final Logger LOG = LoggerFactory.getLogger(IdscpServerSocket.class);
     private FSM fsm;
-    private SSLContextParameters params;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition isFinishedCond = lock.newCondition();
 

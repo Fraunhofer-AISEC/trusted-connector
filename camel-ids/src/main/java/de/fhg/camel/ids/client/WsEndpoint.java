@@ -35,33 +35,28 @@
  */
 package de.fhg.camel.ids.client;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.ids.comm.client.ClientConfiguration;
+import de.fhg.ids.comm.client.IdspClientSocket;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.AsyncHttpClientConfig;
-import org.asynchttpclient.BoundRequestBuilder;
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.*;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.ids.comm.client.ClientConfiguration;
-import de.fhg.ids.comm.client.IdspClientSocket;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the client-side implementation of a Camel endpoint for the IDS
@@ -107,12 +102,12 @@ public class WsEndpoint extends AhcEndpoint {
     }
 
     @Override
-    public Producer createProducer() throws Exception {
+    public Producer createProducer() {
         return new WsProducer(this);
     }
 
     @Override
-    public Consumer createConsumer(Processor processor) throws Exception {
+    public Consumer createConsumer(Processor processor) {
         return new WsConsumer(this, processor);
     }
     
@@ -201,8 +196,7 @@ public class WsEndpoint extends AhcEndpoint {
 
         ClientConfiguration config = new ClientConfiguration()
         								.attestationMask(this.getAttestationMask())
-        								.attestationType(IdsAttestationType.forNumber(this.getAttestation()))
-        								.sslContext(this.getSslContextParameters());
+        								.attestationType(IdsAttestationType.forNumber(this.getAttestation()));
         IdspClientSocket idspListener = new IdspClientSocket(config);
 
         try {
@@ -212,7 +206,7 @@ public class WsEndpoint extends AhcEndpoint {
 	        websocket = reqBuilder.execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build()).get();
 	        
 	         try {
-	        	 boolean unlocked = false;
+	        	 boolean unlocked;
 	        	 do {
 	        		 unlocked = idspListener.idscpInProgressCondition().await(30, TimeUnit.SECONDS);
 	        	 } while (!idspListener.isTerminated() && !unlocked);	// To handle sporadic wake ups
