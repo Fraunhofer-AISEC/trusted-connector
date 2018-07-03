@@ -274,7 +274,7 @@
                         <goal>exec</goal>
                       </goals>
                       <configuration>
-                        <executable>${project.basedir}/generate_api_docs.sh</executable>
+                        <executable>${project.basedir}/src/main/resources/www/generate_api_docs.sh</executable>
                       </configuration>
                     </execution>
 				</executions>
