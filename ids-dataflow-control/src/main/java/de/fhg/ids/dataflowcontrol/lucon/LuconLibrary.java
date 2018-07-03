@@ -58,9 +58,13 @@ public class LuconLibrary extends Library {
     @Override
     public String getTheory() {
         return
+        "set_of(In, Out) :-  % get a pairwise different, sorted set from a list\n" +
+        "  quicksort(In, '@<', Sorted),\n" +
+        "  no_duplicates(Sorted, Out).\n" +
+        "\n" +
         "get_labels(Out) :-  % collect and return asserted labels\n" +
         "  once(setof(L, label(L), Out) ; Out = []).\n" +
-        "  \n" +
+        "\n" +
         "assert_labels(L, A) :- assert_labels(L, A, []).\n" +
         "assert_labels([], A, A).\n" +
         "assert_labels([L|Tail], Ar, A) :- label(L), assert_labels(Tail, Ar, A), !.\n" +
@@ -70,11 +74,6 @@ public class LuconLibrary extends Library {
         "retract_labels([], R, R).\n" +
         "retract_labels([L|Tail], Rr, R) :- retract(label(L)), retract_labels(Tail, Rr, [L|R]), !.\n" +
         "retract_labels([L|Tail], Rr, R) :- retract_labels(Tail, Rr, R).\n" +
-        "\n" +
-        "update_labels(S, Out, Aout, Rout) :-                                         % Updates labels according to spec. of service S\n" +
-        "  once(setof(A, creates_label(S, A), AC); AC = []), assert_labels(AC, Aout),   % assert new labels added by S\n" +
-        "  once(setof(R, removes_label(S, R), RC); RC = []), retract_labels(RC, Rout),  % retract labels removed by S\n" +
-        "  get_labels(Out).                                                             % collect and return asserted labels\n" +
         "\n" +
         "all_ground([]).\n" +
         "all_ground([Head|Tail]) :- ground(Head), all_ground(Tail).\n" +
@@ -99,6 +98,27 @@ public class LuconLibrary extends Library {
         "action_service(Action, S) :-  % Finds services S matching endpoints of N  [ O(|Ep_S|) ]\n" +
         "  has_endpoint(S, Regex),       % a service S exists such that  [ O(|Ep_S|) ]\n" +
         "  regex_match(Regex, Action).   % the action of A matches the endpoint of S  [ assume O(1) ]\n" +
+        "\n" +
+        "collect_creates_labels([], []).\n" +
+        "collect_creates_labels([S|SCTail], ACout) :-\n" +
+        "  collect_creates_labels(SCTail, ACnew),\n" +
+        "  findall(A, creates_label(S, A), AC),\n" +
+        "  once(bound(ACnew); ACnew = []),\n" +
+        "  append(AC, ACnew, ACout).\n" +
+        "\n" +
+        "collect_removes_labels([], []).\n" +
+        "collect_removes_labels([S|SCTail], RCout) :-\n" +
+        "  collect_removes_labels(SCTail, RCnew),\n" +
+        "  findall(R, removes_label(S, R), RC),\n" +
+        "  once(bound(RCnew); RCnew = []),\n" +
+        "  append(RC, RCnew, RCout).\n" +
+        "\n" +
+        "update_labels(Act, Out, Aout, Rout) :-                                             % Updates labels according to spec. of service S\n" +
+        "  once(setof(S, action_service(Act, S), SC); SC = []),                             % collect all relevant services\n" +
+        "  collect_creates_labels(SC, ACraw), set_of(ACraw, AC), assert_labels(AC, Aout),   % assert new labels added by S\n" +
+        "  collect_removes_labels(SC, RCraw), set_of(RCraw, RC), retract_labels(RC, Rout),  % retract labels removed by S\n" +
+        "  %print([Act, \"=>\", SC, \"added:\", Aout, \"removed:\", Rout]),nl,\n" +
+        "  get_labels(Out).                                                                 % collect and return asserted labels\n" +
         "\n" +
         "dominant_rules(Act, Req, DC, S, R) :-  % Find the dominant rule R for action Act (from cache)\n" +
         "  get_labels(LC),                        % Collect currently asserted labels\n" +
@@ -142,18 +162,16 @@ public class LuconLibrary extends Library {
         "  A = B,                                    %   A is the desired destination with  [ O(1) ]\n" +
         "  has_action(A, Act),                       %   an action Act and there is  [ O(1) ]\n" +
         "  dominant_drop_rules(Act, S, R),           %   a dominant drop rule R and service S for Act [ O(|Ep_S| x |S -- R|) ]\n" +
-        "  (                                         %   AND\n" +
-        "    receives_label(R),                      %     R receives a set of labels with  [ assume O(1) ]\n" +
-        "    get_labels(LC),                         %     get asserted labels  [ O(L_a), assume O(1) ]\n" +
-        "    T = [[S, LC, R]|Log]                    %     [unify the recursion result with Out]  [ O(1) ]\n" +
-        "  ).                                        %\n" +
+        "  receives_label(R),                        %     R receives a set of labels with  [ assume O(1) ]\n" +
+        "  get_labels(LC),                           %     get asserted labels  [ O(L_a), assume O(1) ]\n" +
+        "  T = [[S, LC, R]|Log].                     %     [unify the recursion result with Out]  [ O(1) ]\n" +
         "  %print(\"finished (END): \"), print(A), nl.\n" +
         "\n" +
         "trace_walk(A, B, L, Log, T) :-              % We can walk from A to B if  [ O(|Ep_S| x |S -- R|) ]\n" +
         "  succ(A, X),                               %   A is connected to X and there is  [ O(|succ(A, _)|), assume O(1) ]\n" +
         "  has_action(A, Act),                       %   an action Action and there is  [ O(1) ]\n" +
         "  dominant_allow_rules(Act, S, _),          %   a dominant allow rule and service S for Act  [ O(|Ep_S| x |S -- R|) ]\n" +
-        "  update_labels(S, LN, Aout, Rout),         %   [update the labels for the next step]  [ O(|L|), assume O(1) ],\n" +
+        "  update_labels(Act, LN, Aout, Rout),       %   [update the labels for the next step]  [ O(|L|), assume O(1) ],\n" +
         "  %print([Aout, Rout]), nl,\n" +
         "  %print(\"transition: \"), print([A, X, S, LN]), nl,\n" +
         "  (\n" +
