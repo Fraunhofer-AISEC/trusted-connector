@@ -19,35 +19,22 @@
  */
 package de.fhg.ids.dataflowcontrol.lucon;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import alice.tuprolog.*;
+import alice.tuprolog.event.LibraryEvent;
+import alice.tuprolog.event.LibraryListener;
+import de.fhg.aisec.ids.api.router.CounterExample;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import alice.tuprolog.InvalidLibraryException;
-import alice.tuprolog.InvalidTheoryException;
-import alice.tuprolog.MalformedGoalException;
-import alice.tuprolog.NoMoreSolutionException;
-import alice.tuprolog.NoSolutionException;
-import alice.tuprolog.Operator;
-import alice.tuprolog.PrimitiveInfo;
-import alice.tuprolog.Prolog;
-import alice.tuprolog.SolveInfo;
-import alice.tuprolog.Theory;
-import alice.tuprolog.event.LibraryEvent;
-import alice.tuprolog.event.LibraryListener;
-import de.fhg.aisec.ids.api.router.CounterExample;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * LUCON (Logic based Usage Control) policy decision engine.
@@ -68,9 +55,8 @@ public class LuconEngine {
 	/**
 	 * Create a new LuconEngine which writes to a given output stream.
 	 * 
-	 * @param out
-	 *            OutputStream to write Prolog engine outputs to or null if
-	 *            output should not printed.
+	 * @param out OutputStream to write Prolog engine outputs to,
+     *            or null if output should not printed.
 	 */
 	public LuconEngine(@Nullable OutputStream out) {
 		p = new Prolog();
@@ -89,8 +75,9 @@ public class LuconEngine {
 			}});
 		p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
 		p.addWarningListener(w -> {
-			if (!w.getMsg().contains("The predicate false/0 is unknown"))
+			if (!w.getMsg().contains("The predicate false/0 is unknown")) {
 				LOG.warn(w.getMsg());
+			}
 		});
 		p.addOutputListener(l -> {
 			if (out != null) {
@@ -102,14 +89,7 @@ public class LuconEngine {
 			}
 		});
 		try {
-			LOG.debug("Loading library");
 			p.loadLibrary(new LuconLibrary());
-			for (String l : p.getCurrentLibraries()) {
-				LOG.debug(l);
-			}
-			for (Operator op : p.getOperatorManager().getOperators()) {
-				LOG.debug("Operator: " + op.name);
-			}
 		} catch (InvalidLibraryException e) {
 			// should never happen
 			throw new RuntimeException("Error loading " + LuconLibrary.class.getName(), e);
@@ -117,6 +97,7 @@ public class LuconEngine {
 		
 	}
 
+	@SuppressWarnings("unused")
 	public void setSpy(boolean spy) {
 		p.setSpy(spy);
 	}
@@ -126,9 +107,9 @@ public class LuconEngine {
 	 * 
 	 * Existing policies will be overwritten.
 	 * 
-	 * @param is
-	 * @throws InvalidTheoryException  Syntax error in Prolog document
-	 * @throws IOException			   I/O error reading from stream
+	 * @param is The input stream from which to load the Theory
+	 * @throws InvalidTheoryException Syntax error in Prolog document
+	 * @throws IOException I/O error reading from stream
 	 */
 	public void loadPolicy(@Nullable InputStream is) throws InvalidTheoryException, IOException {
 		if (is == null) {
