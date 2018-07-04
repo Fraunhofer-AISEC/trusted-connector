@@ -58,9 +58,9 @@ export class IdsComponent implements OnInit {
     }
 
     save(): void {
-//        if (this.settingsForm.valid) {
+        if (this.settingsForm.valid) {
             this.settingsService.store(this.settingsForm.value)
                 .subscribe(() => this.saved = true);
-//        }
+        }
     }
 }

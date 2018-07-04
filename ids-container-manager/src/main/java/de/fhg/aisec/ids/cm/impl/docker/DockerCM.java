@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.cm.impl.docker;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.StandardCharsets;
@@ -244,8 +245,8 @@ public class DockerCM implements ContainerManager {
 			p = pb.start();
 			p.waitFor(600, TimeUnit.SECONDS);
 			return Optional.<String>of(containerID);
-		} catch (Exception e) {
-			LOG.error(e.getMessage(),e);
+		} catch (IOException | InterruptedException | RuntimeException e) {
+			LOG.error(e.getMessage(), e);
 		}
 		return Optional.<String>empty();
 	}

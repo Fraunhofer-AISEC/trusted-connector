@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 @Path("/config")
 public class ConfigApi {
 	public static final String GENERAL_CONFIG = "General Configuration";
-//	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -65,17 +64,15 @@ public class ConfigApi {
 	@OPTIONS
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response set(ConnectorConfig config) {
+	public String set(ConnectorConfig config) {
 		if (config == null) {
 			throw new BadRequestException("No valid preferences received!");
 		}
-		System.out.println("Saving config " + config);
-		System.out.println("Saving config " + config.getAppstoreUrl());
 
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectorConfig(config);
 
-		return Response.ok().entity("ok").build();
+		return "ok";
 	}
 
 	/**
@@ -87,8 +84,7 @@ public class ConfigApi {
 	@POST
 	@Path("/connectionConfigs/{con}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings conSettings) {
+	public String setConnectionConfigurations(@PathParam("con") String connection, ConnectionSettings conSettings) {
 		if (conSettings == null) {
 			throw new BadRequestException("No valid connection settings received!");
 		}
@@ -96,7 +92,7 @@ public class ConfigApi {
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectionSettings(connection, conSettings);
 
-		return Response.ok().entity("ok").build();
+		return "ok";
 	}
 	
 	/**

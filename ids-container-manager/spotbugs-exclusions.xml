@@ -14,9 +14,4 @@
         <Bug pattern="SC_START_IN_CTOR" />
     </Match>
 
-    <!-- Spotbugs wants us to *not* catch potential RuntimeExceptions. We switch that off for the sake of stability -->
-    <Match>
-        <Bug pattern="REC_CATCH_EXCEPTION" />
-    </Match>
-
 </FindBugsFilter>

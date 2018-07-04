@@ -23,6 +23,8 @@ package de.fhg.aisec.ids.api.settings;
 import java.io.Serializable;
 
 public final class ConnectionSettings implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private final String integrityProtectionAndVerification;
 	private final String authentication;
 	private final String serviceIsolation;

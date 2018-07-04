@@ -42,7 +42,7 @@
 						<input class="mdl-textfield__input" id="acmeServerWebcon" type="URL" formControlName="acmeServerWebcon"
 						required minlength="5">
 						<label class="mdl-textfield__label" for="acmeServerWebcon">ACME Server URL (Web Console)</label>
-						<!-- <span class="mdl-textfield__error">
+						<span class="mdl-textfield__error">
 							<span *ngIf="settingsForm.controls.acmeServerWebcon.errors
 								&& settingsForm.controls.acmeServerWebcon.errors.asyncError; else defaultError">
 								{{ settingsForm.controls.acmeServerWebcon.errors.asyncError }}
@@ -50,7 +50,7 @@
 							<ng-template #defaultError>
 								Valid ACME Server URL required
 							</ng-template>
-						</span> -->
+						</span>
 					</div>
 				</div>
 				<div class="mdl-cell--12-col space_v1em">
@@ -61,13 +61,13 @@
 							<span class="mdl-textfield__error"> You must accept the ACME server Terms of Service </span>
 						</label>
 					</div>
-					<!-- <div *ngIf="tosWebconsole && tosWebconsole.isUri">
+					<div *ngIf="tosWebconsole && tosWebconsole.isUri">
 						Terms of Service URI: <a [href]="tosWebconsole.tos" target="_blank">{{ tosWebconsole.tos }}</a>
 					</div>
 					<div *ngIf="tosWebconsole && !tosWebconsole.isUri">
 						Terms of Service:
 						<div class="tos-container">{{ tosWebconsole.tos }}</div>
-					</div> -->
+					</div>
 				</div>
 				<div class="mdl-cell--8-col">
 					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
