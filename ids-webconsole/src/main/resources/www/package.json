@@ -7,7 +7,8 @@
     "ng": "ng",
     "start": "ng serve",
     "bundle": "ng build --prod",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "apidocs": "yarn run spectacle ../../../../generated/swagger-ui/swagger.json -t ../../../../generated/swagger-ui"
   },
   "private": true,
   "dependencies": {
@@ -52,6 +53,7 @@
     "codelyzer": "^4.4.2",
     "rxjs-tslint": "^0.1.5",
     "rxjs-tslint-rules": "~4",
+    "spectacle-docs": "^1.0.5",
     "tslint": "^5.10.0",
     "typescript": "~2.7",
     "vis": "^4.20.0",
