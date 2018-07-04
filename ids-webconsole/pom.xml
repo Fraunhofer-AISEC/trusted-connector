@@ -265,9 +265,12 @@
 							</arguments>
 						</configuration>
 					</execution>
-    
-                    <!-- Generate nicely layouted static API HTML documentation from swagger.json -->
-					<execution>
+
+					<!-- Generate nicely layouted static API HTML documentation from swagger.json -->
+					<!-- Disabled because this would need to run later, i.e. AFTER swagger.json is created but due
+					to weird maven behaviour we cannot set the phase of this execution to site because otherwise all the
+					previous exec tasks would be run again... -->
+					<!--<execution>
 						<id>yarn run apidocs</id>
 						<goals>
 							<goal>exec</goal>
@@ -280,7 +283,7 @@
 								<argument>apidocs</argument>
 							</arguments>
 						</configuration>
-					</execution>
+					</execution>-->
 				</executions>
 				<configuration>
 					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
