@@ -1,4 +1,4 @@
-image: maven
+image: node:8-stretch
 
 stages:
 - build
@@ -11,7 +11,7 @@ build:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   before_script:
   - mkdir -p /cache/.gradle
-  - apt update && apt install -y openjdk-8-jdk
+  - apt update && apt install -y openjdk-8-jdk maven
   script: 
   - ./gradlew --parallel clean install
   artifacts:
