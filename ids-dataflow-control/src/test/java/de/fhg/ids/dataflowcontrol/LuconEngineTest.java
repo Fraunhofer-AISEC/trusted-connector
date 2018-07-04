@@ -19,42 +19,26 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import alice.tuprolog.*;
+import de.fhg.aisec.ids.api.policy.*;
+import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import alice.tuprolog.InvalidTheoryException;
-import alice.tuprolog.MalformedGoalException;
-import alice.tuprolog.NoMoreSolutionException;
-import alice.tuprolog.NoSolutionException;
-import alice.tuprolog.SolveInfo;
-import de.fhg.aisec.ids.api.policy.DecisionRequest;
-import de.fhg.aisec.ids.api.policy.Obligation;
-import de.fhg.aisec.ids.api.policy.PDP;
-import de.fhg.aisec.ids.api.policy.PolicyDecision;
-import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
-import de.fhg.aisec.ids.api.policy.ServiceNode;
-import de.fhg.aisec.ids.api.policy.TransformationDecision;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -110,37 +94,28 @@ public class LuconEngineTest {
 			"%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
 			"service(serviceAll).\n" +
 			"has_endpoint(serviceAll,'.*').\n" +
-			"creates_label(serviceAll,[]).\n" +
-			"removes_label(serviceAll,[]).\n" +
 			"\n" +
 			"service(hiveMqttBrokerService).\n" +
-			"creates_label(hiveMqttBrokerService, [labelone, private]).\n" +
-			"removes_label(hiveMqttBrokerService, [labeltwo]).\n" +
+			"creates_label(hiveMqttBrokerService, labelone).\n" +
+			"creates_label(hiveMqttBrokerService, private).\n" +
+			"removes_label(hiveMqttBrokerService, labeltwo).\n" +
 			"has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" +
 			"has_property(hiveMqttBrokerService, type, public).\n" +
 			"\n" +
 			"service(anonymizerService).\n" +
 			"has_endpoint(anonymizerService, \".*anonymizer.*\").\n" +
 			"has_property(anonymizerService, myProp, anonymize('surname', 'name')).\n" +
-			"removes_label(anonymizerService, []).\n" +
-			"creates_label(anonymizerService, []).\n" +
 			"\n" +
 			"service(loggerService).\n" +
 			"has_endpoint(loggerService, \"^log.*\").\n" +
-			"removes_label(loggerService, []).\n" +
-			"creates_label(loggerService, []).\n" +
 			"\n" +
 			"service(hadoopClustersService).\n" +
 			"has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n" +
 			"has_capability(hadoopClustersService, deletion).\n" +
 			"has_property(hadoopClustersService, anonymizes, anonymize('surname', 'name')).\n" +
-			"removes_label(hadoopClustersService, []).\n" +
-			"creates_label(hadoopClustersService, []).\n" +
 			"\n" +
 			"service(testQueueService).\n" +
-			"has_endpoint(testQueueService, \"^amqp:.*?:test\").\n" +
-			"removes_label(testQueueService, []).\n" +
-			"creates_label(testQueueService, []).";
+			"has_endpoint(testQueueService, \"^amqp:.*?:test\").";
 	
 	// Route from LUCON paper with path searching logic
 	public static final String VERIFIABLE_ROUTE = "%\n" + 
@@ -179,9 +154,9 @@ public class LuconEngineTest {
 	
 	/**
 	 * Loading a valid Prolog theory should not fail.
-	 * 
-	 * @throws InvalidTheoryException
-	 * @throws IOException
+	 *
+	 * @throws InvalidTheoryException If invalid theory is encountered
+	 * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
 	 */
 	@Test
 	public void testLoadingTheoryGood() throws InvalidTheoryException, IOException {
@@ -195,12 +170,11 @@ public class LuconEngineTest {
 
 	/**
 	 * Loading an invalid Prolog theory is expected to throw an exception.
-	 * 
-	 * @throws InvalidTheoryException
-	 * @throws IOException
+	 *
+	 * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
 	 */
 	@Test
-	public void testLoadingTheoryNotGood() throws InvalidTheoryException, IOException {
+	public void testLoadingTheoryNotGood() throws IOException {
 		LuconEngine e = new LuconEngine(System.out);
 		try {
 			e.loadPolicy(new ByteArrayInputStream("This is invalid".getBytes()));
@@ -212,10 +186,10 @@ public class LuconEngineTest {
 	
 	/**
 	 * Solve a simple Prolog puzzle.
-	 * 
-	 * @throws InvalidTheoryException
-	 * @throws IOException
-	 * @throws NoMoreSolutionException
+	 *
+	 * @throws InvalidTheoryException If invalid theory is encountered
+	 * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
+	 * @throws NoMoreSolutionException If no Prolog solutions are found
 	 */
 	@Test
 	public void testSimplePrologQuery() throws InvalidTheoryException, IOException, NoMoreSolutionException {
@@ -223,7 +197,7 @@ public class LuconEngineTest {
 		e.loadPolicy(new ByteArrayInputStream(HANOI_THEORY.getBytes()));
 		try {
 			List<SolveInfo> solutions = e.query("move(3,left,right,center). ", true);
-			assertTrue(solutions.size()==1);
+			assertEquals(1, solutions.size());
 			for (SolveInfo solution : solutions) {
 				System.out.println(solution.getSolution().toString());
 				System.out.println(solution.hasOpenAlternatives());
@@ -239,9 +213,9 @@ public class LuconEngineTest {
 	/**
 	 * Run some simple queries against an actual policy.
 	 * 
-	 * @throws InvalidTheoryException
-	 * @throws IOException
-	 * @throws NoMoreSolutionException
+	 * @throws InvalidTheoryException If invalid theory is encountered
+	 * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
+	 * @throws NoMoreSolutionException If no Prolog solutions are found
 	 */
 	@Test
 	public void testSolve2() throws InvalidTheoryException, IOException, NoMoreSolutionException {
@@ -266,7 +240,7 @@ public class LuconEngineTest {
 	/**
 	 * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
 	 * 
-	 * @throws IOException 
+	 * @throws IOException If something fails
 	 */
 	@Test
 	public void testPolicyDecision() throws IOException {
@@ -295,7 +269,7 @@ public class LuconEngineTest {
 	/**
 	 * List all rules of the currently loaded policy.
 	 * 
-	 * @throws IOException 
+	 * @throws IOException If something fails
 	 */
 	@Test
 	public void testListRules() throws IOException {
@@ -356,7 +330,7 @@ public class LuconEngineTest {
 	/**
 	 * Tests the generation of a proof that a route matches a policy.
 	 *
-	 * @throws Exception
+	 * @throws Exception If something fails
 	 */
 	@Test
 	public void testVerifyRoute() throws Exception {
@@ -390,7 +364,7 @@ public class LuconEngineTest {
 	public void testPerformanceEvaluationScaleRules() throws Exception {
 		for (int i=10;i<=5000;i+=10) {
 			// Load n test rules into PDP 
-			String theory = generateRules(i, ".*");
+			String theory = generateRules(i);
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 			pdp.loadPolicies();
 			long start = System.nanoTime();
@@ -421,7 +395,7 @@ public class LuconEngineTest {
 	public void testPerformanceEvaluationScaleLabels() throws Exception {
 		for (int i=0;i<=5000;i+=10) {
 			// Load n test rules into PDP 
-			String theory = generateLabels(i, ".*");
+			String theory = generateLabels(i);
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 			pdp.loadPolicies();
 			long start = System.nanoTime();
@@ -452,7 +426,7 @@ public class LuconEngineTest {
 	public void testmemoryEvaluationScaleRules() throws Exception {
 		for (int i=10;i<=5000;i+=10) {
 			// Load n test rules into PDP 
-			String theory = generateRules(i, ".*");
+			String theory = generateRules(i);
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 			pdp.loadPolicies();
 			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
@@ -483,7 +457,7 @@ public class LuconEngineTest {
 	public void testmemoryEvaluationScaleLabels() throws Exception {
 		for (int i=10;i<=5000;i+=10) {
 			// Load n test rules into PDP 
-			String theory = generateLabels(i, ".*");
+			String theory = generateLabels(i);
 			PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 			pdp.loadPolicies();
 			pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
@@ -568,7 +542,6 @@ public class LuconEngineTest {
 		to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
 		msgCtx = new HashMap<>();
 		msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
-		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "filtered");
 		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "unusedlabel");
 		envCtx = new HashMap<>();
 		req = new DecisionRequest(from, to, msgCtx, envCtx);
@@ -583,7 +556,6 @@ public class LuconEngineTest {
 		to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
 		msgCtx = new HashMap<>();
 		msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
-		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "filtered");
 		msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "unusedlabel");
 		msgCtx.put(PDP.LABEL_PREFIX + "anotherlabel", "private");
 		envCtx = new HashMap<>();
@@ -600,33 +572,36 @@ public class LuconEngineTest {
 	 * 
 	 * All rules will take an "allow" decision.
 	 * 
-	 * @param n
-	 * @return
+	 * @param n The number of rules to generate
+	 * @return The rules as String
 	 */
-	private String generateRules(int n, String targetEndpointRegex) {
+	private String generateRules(int n) {
 		StringBuilder sb = new StringBuilder();
-		for (int i=0;i<n;i++) {
-			sb.append("rule(testRule"+i+").\n");
-			sb.append("has_decision(testRule"+i+", allow).\n");
-			sb.append("has_alternativedecision(testRule"+i+", allow).\n");
-			sb.append("receives_label(testRule"+i+").\n");
-			sb.append("has_target(testRule"+i+", testTarget"+i+").\n");
-			sb.append("has_obligation(testRule"+i+", testObligation"+i+").\n");
-			sb.append("service(testTarget"+i+").\n");
-			sb.append("has_endpoint(testTarget"+i+", \""+targetEndpointRegex+"\").\n");
-			sb.append("creates_label(testTarget"+i+", label"+i+").\n");
-			sb.append("removes_label(testTarget"+i+", label"+i+").\n");
+		for (int i = 0; i < n; i++) {
+		    String ruleName = "testRule" + i;
+		    String targetName = "testTarget" + i;
+		    String labelName = "label" + i;
+			sb.append("rule(").append(ruleName).append(").\n");
+			sb.append("has_decision(").append(ruleName).append(", allow).\n");
+			sb.append("has_alternativedecision(").append(ruleName).append(", allow).\n");
+			sb.append("receives_label(").append(ruleName).append(").\n");
+			sb.append("has_target(").append(ruleName).append(", ").append(targetName).append(").\n");
+			sb.append("has_obligation(").append(ruleName).append(", testObligation").append(i).append(").\n");
+			sb.append("service(").append(targetName).append(").\n");
+			sb.append("has_endpoint(").append(targetName).append(", \".*\").\n");
+			sb.append("creates_label(").append(targetName).append(", ").append(labelName).append(").\n");
+			sb.append("removes_label(").append(targetName).append(", ").append(labelName).append(").\n");
 		}
 		return sb.toString();
 	}
-	
-	private String generateLabels(int n, String targetEndpointRegex) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(generateRules(50, targetEndpointRegex));
-		for (int i=0;i<n;i++) {
-			sb.append("creates_label(testTarget1, labelX"+i+").\n");
-			sb.append("removes_label(testTarget1, labelX"+i+").\n");
-		}
-		return sb.toString();
-	}
+
+    private String generateLabels(int n) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(generateRules(50));
+        for (int i = 0; i < n; i++) {
+            sb.append("creates_label(testTarget1, labelX").append(i).append(").\n");
+            sb.append("removes_label(testTarget1, labelX").append(i).append(").\n");
+        }
+        return sb.toString();
+    }
 }

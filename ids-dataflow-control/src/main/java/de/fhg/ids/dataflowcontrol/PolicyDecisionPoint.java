@@ -19,57 +19,30 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
+import alice.tuprolog.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import de.fhg.aisec.ids.api.policy.*;
+import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-import alice.tuprolog.InvalidTheoryException;
-import alice.tuprolog.MalformedGoalException;
-import alice.tuprolog.NoMoreSolutionException;
-import alice.tuprolog.NoSolutionException;
-import alice.tuprolog.PrologException;
-import alice.tuprolog.SolveInfo;
-import alice.tuprolog.Term;
-import alice.tuprolog.Var;
-import de.fhg.aisec.ids.api.policy.DecisionRequest;
-import de.fhg.aisec.ids.api.policy.Obligation;
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.policy.PDP;
-import de.fhg.aisec.ids.api.policy.PolicyDecision;
-import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
-import de.fhg.aisec.ids.api.policy.ServiceNode;
-import de.fhg.aisec.ids.api.policy.TransformationDecision;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
 
 /**
  * servicefactory=false is the default and actually not required. But we want to make
@@ -79,7 +52,7 @@ import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
  */
-@Component(enabled = true, immediate = true, name = "ids-dataflow-control", servicefactory = false)
+@Component(immediate = true, name = "ids-dataflow-control")
 public class PolicyDecisionPoint implements PDP, PAP {
 	private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
 	private static final String LUCON_FILE_EXTENSION = ".pl";	
@@ -137,8 +110,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * 
 	 * This method returns the respective query for a specific target.
 	 * 
-	 * @param target
-	 * @return
+	 * @param target The ServiceNode to be processed
+	 * @return The resulting Prolog query for the transformation
 	 */
 	private String createTransformationQuery(@NonNull ServiceNode target) {
 		StringBuilder sb = new StringBuilder();
@@ -155,9 +128,11 @@ public class PolicyDecisionPoint implements PDP, PAP {
 			for (String prop: target.getProperties()) {
 				capProp.add("has_property(_T, " + escape(prop) + ")");
 			}
-			sb.append('(').append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
+			sb.append('(').append(capProp.stream().collect(Collectors.joining(", "))).append("),\n");
 		}
-		sb.append("creates_label(_T, Adds), removes_label(_T, Removes).");
+		sb.append("once(setof(S, action_service(").append(escape(target.getEndpoint())).append(", S), SC); SC = []),\n")
+				.append("collect_creates_labels(SC, ACraw), set_of(ACraw, Adds),\n")
+				.append("collect_removes_labels(SC, RCraw), set_of(RCraw, Removes).");
 		return sb.toString();
 	}
 
@@ -171,6 +146,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
 		LOG.debug("RouteManager bound. Camel routes can be analyzed");
 		this.routeManager = routeManager;
 	}
+	@SuppressWarnings("unused")
 	protected void unbindRouteManager(@NonNull RouteManager routeManager) {
 		LOG.debug("RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
 		this.routeManager = null;
@@ -225,10 +201,14 @@ public class PolicyDecisionPoint implements PDP, PAP {
 							Term adds = s.getVarValue("Adds").getTerm();
 							if (adds.isList()) {
 								listStream(adds).map(Term::toString).forEach(labelsToAdd::add);
+							} else {
+								throw new RuntimeException("\"Adds\" is not a prolog list!");
 							}
 							Term removes = s.getVarValue("Removes").getTerm();
 							if (removes.isList()) {
 								listStream(removes).map(Term::toString).forEach(labelsToRemove::add);
+							} else {
+								throw new RuntimeException("\"Removes\" is not a prolog list!");
 							}
 						} catch (NoSolutionException ignored) {}
 					});
@@ -346,16 +326,19 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	/**
 	 * Just for debugging: Print query solution to DEBUG out.
 	 * 
-	 * @param solveInfo
-	 * @throws NoSolutionException
+	 * @param solveInfo A list of Prolog solutions
 	 */
-	private void debug(@NonNull List<SolveInfo> solveInfo) throws NoSolutionException {
-		for (SolveInfo i: solveInfo) {
-			if (i.isSuccess()) {
-				List<Var> vars = i.getBindingVars();
-				vars.forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
-			}
-		}
+	private void debug(@NonNull List<SolveInfo> solveInfo) {
+	    try {
+            for (SolveInfo i: solveInfo) {
+                if (i.isSuccess()) {
+                    List<Var> vars = i.getBindingVars();
+                    vars.forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
+                }
+            }
+        } catch (NoSolutionException nse) {
+	        LOG.debug("No solution found", nse);
+        }
 	}
 
 	@Override
