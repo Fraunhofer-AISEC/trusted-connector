@@ -20,6 +20,7 @@
 package de.fhg.ids.attestation;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 public class ProtobufMessageException extends WebApplicationException {
@@ -32,6 +33,7 @@ public class ProtobufMessageException extends WebApplicationException {
 
     @Override
     public Response getResponse() {
-        return Response.status(Response.Status.BAD_REQUEST).entity(getCause().getMessage()).type("text/plain").build();
+        return Response.status(Response.Status.BAD_REQUEST).entity(getCause().getMessage())
+                .type(MediaType.TEXT_PLAIN).build();
     }
 }

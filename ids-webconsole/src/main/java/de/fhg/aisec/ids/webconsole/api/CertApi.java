@@ -19,15 +19,22 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.Cert;
+import de.fhg.aisec.ids.webconsole.api.data.Identity;
+import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
+import io.swagger.annotations.*;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,35 +51,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
-import de.fhg.aisec.ids.api.settings.ConnectorConfig;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.data.Cert;
-import de.fhg.aisec.ids.webconsole.api.data.Identity;
-import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -118,20 +96,20 @@ public class CertApi {
 	@ApiOperation(value = "List installed certificates from trust store.", notes="Certificates in this list refer to public keys that are trusted by this connector.")
 	@ApiResponses({ @ApiResponse(code = 200, message = "List of certificates"),
 					@ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available"),})
-	@Produces("application/json")
-	public Response listCerts() {
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Cert> listCerts() {
 		File truststore = getKeystoreFile(TRUSTSTORE_FILE);		
-		if (truststore==null) {
-			return Response.serverError().entity("Truststore not found").build();
+		if (truststore == null) {
+			throw new NotFoundException("Truststore not found");
 		}
-		List<Cert> certs = getKeystoreEntries(truststore);
-		return Response.ok(certs).build();
+		return getKeystoreEntries(truststore);
 	}
 
 	@GET
 	@Path("list_identities")
-	@ApiOperation(value = "List installed certificates from the private key store.", notes="Certificates in this list refer to private keys that can be used as identities by the connector.")
-	@Produces("application/json")
+	@ApiOperation(value = "List installed certificates from the private key store.",
+			notes="Certificates in this list refer to private keys that can be used as identities by the connector.")
+	@Produces(MediaType.APPLICATION_JSON)
 	public List<Cert> listIdentities() {
 		File keystoreFile = getKeystoreFile(KEYSTORE_FILE);
 		return getKeystoreEntries(keystoreFile);
@@ -139,18 +117,18 @@ public class CertApi {
 
 	@POST
 	@Path("create_identity")
-	@Produces("application/json")
-	@Consumes("application/json")
-	public Response createIdentity(@ApiParam(value="Specification of the identity to create a key pair for") Identity spec) {
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public String createIdentity(
+			@ApiParam(value="Specification of the identity to create a key pair for") Identity spec) {
 		String alias = UUID.randomUUID().toString();
 		try {			
 			this.doGenKeyPair(alias, spec, "RSA", 2048, "SHA1WITHRSA",
 					getKeystoreFile(KEYSTORE_FILE));
 		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-			return Response.serverError().entity(e.getMessage()).build();
+			throw new InternalServerErrorException(e);
 		}
-		return Response.ok(alias).build();
+		return alias;
 	}
 
 	/**
@@ -159,14 +137,14 @@ public class CertApi {
 	@POST
 	@Path("delete_identity")
 	@ApiOperation(value="Deletes a public/private key pair")
-	@Produces("application/json")
-	public Response deleteIdentity(String alias) {		
+	@Produces(MediaType.APPLICATION_JSON)
+	public String deleteIdentity(String alias) {
 		File keyStoreFile = getKeystoreFile(KEYSTORE_FILE);
 		boolean success = delete(alias, keyStoreFile);
 		if (success) {
-			return Response.ok(alias).build();
+			return alias;
 		} else {
-			return Response.serverError().build();
+			throw new InternalServerErrorException();
 		}
 	}
 	
@@ -176,14 +154,14 @@ public class CertApi {
 	@POST
 	@Path("delete_cert")
 	@ApiOperation(value = "Deletes a trusted certificate")
-	@Produces("application/json")
-	public Response deleteCert(String alias) {		
+	@Produces(MediaType.APPLICATION_JSON)
+	public String deleteCert(String alias) {
 		File keyStoreFile = getKeystoreFile(TRUSTSTORE_FILE);
 		boolean success = delete(alias, keyStoreFile);
 		if (success) {
-			return Response.ok(alias).build();
+			return alias;
 		} else {
-			return Response.serverError().build();
+            throw new InternalServerErrorException();
 		}
 	}
 	
@@ -219,10 +197,6 @@ public class CertApi {
 
 	/**
 	 * Stores a certificate in a JKS truststore.
-	 * 
-	 * @param trustStoreFile
-	 * @param certFile
-	 * @return
 	 */
 	private boolean storeCert(File trustStoreFile, File certFile) {
 		CertificateFactory cf;
@@ -269,9 +243,6 @@ public class CertApi {
 	 * lets the classloader load the file from classpath.
 	 * 
 	 * If the file cannot be found, this method returns null.
-	 * 
-	 * @param fileName
-	 * @return
 	 */
 	private File getKeystoreFile(String fileName) {
 		// If we run in karaf platform, we expect the keystore to be in
@@ -316,9 +287,6 @@ public class CertApi {
 
 	/**
 	 * Returns all entries (private keys and certificates) from a Java keystore.
-	 * 
-	 * @param keystoreFile
-	 * @return
 	 */
 	private List<Cert> getKeystoreEntries(File keystoreFile) {
 		List<Cert> certs = new ArrayList<>();

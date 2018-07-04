@@ -24,15 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.ws.Service;
 
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
@@ -64,7 +59,7 @@ public class PolicyApi {
 	@Path("list")
 	@ApiOperation(value="Lists active rules", responseContainer="List")
 	@ApiResponses(@ApiResponse(code=200, message="List of usage control rules", response=String.class, responseContainer="List"))
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public List<String> list() {
 		// TODO JS->ML: Hier sollte vlt. eher eine Liste von Policy-Objekten zurückgegeben werden.
 		LOG.info("policy list");
@@ -79,10 +74,11 @@ public class PolicyApi {
 	 */
 	@GET
 	@Path("policyProlog")
-	@Produces("text/plain")
-	public Response getPolicyProlog() {
-		return WebConsoleComponent.getPolicyAdministrationPoint().map(pap -> Response.ok(pap.getPolicy()))
-				.orElseGet(() -> Response.serverError().entity("Could not retrieve policy")).build();
+	@Produces(MediaType.TEXT_PLAIN)
+	public String getPolicyProlog() {
+		return WebConsoleComponent.getPolicyAdministrationPoint().map(PAP::getPolicy)
+				.orElseThrow(() -> new ServerErrorException("Could not retrieve policy",
+						Response.Status.INTERNAL_SERVER_ERROR));
 	}
 	
 	@POST
@@ -90,7 +86,7 @@ public class PolicyApi {
 	@GET
 	@Path("install")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response install(@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
+	public String install(@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
 							@Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription, 
 							@Multipart(value = "policy_file") InputStream is) {
 		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
@@ -98,11 +94,11 @@ public class PolicyApi {
 		
 		// if pap service is not available at runtime, return error
 		if (!pap.isPresent()) {
-			return Response.serverError().entity("no PAP").build();
+			throw new ServiceUnavailableException("PAP not available");
 		}
 				
 		pap.get().loadPolicy(is);
-		return Response.ok("OK").build();
+		return "OK";
 	}	
 	
 	// TODO JS->ML: Endpoints für policy modification, ggf. weitere

@@ -19,40 +19,19 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -73,7 +52,7 @@ public class AppApi {
 	@Path("list")
 	@ApiOperation(value = "List installed apps", notes = "Returns an empty list if no apps are installed", response = ApplicationContainer.class, responseContainer="List")
 	@ApiResponses( @ApiResponse(code=200, message="List of apps") )
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public List<ApplicationContainer> list() {
 		List<ApplicationContainer> result = new ArrayList<>();
 
@@ -104,7 +83,7 @@ public class AppApi {
 	@Path("start/{containerId}")
 	@ApiOperation(value = "Start an app", notes = "Requests to start an app.", response = Boolean.class)	
 	@ApiResponses(	@ApiResponse(code=200, message="true if the app has been requested to be started. false if no container management layer is available") )
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public boolean start(@ApiParam(value="ID of the app to start") @PathParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
@@ -124,7 +103,7 @@ public class AppApi {
 	@Path("stop/{containerId}")
 	@ApiOperation(value = "Stop an app", notes = "Requests to stop an app.", response = Boolean.class)	
 	@ApiResponses(	@ApiResponse(code=200, message="true if the app has been requested to be stopped. false if no container management layer is available") )
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public boolean stop(@ApiParam(value="ID of the app to stop") @PathParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
@@ -148,18 +127,17 @@ public class AppApi {
 					@ApiResponse(code=500, message="_No cmld_: If no container management layer is available", response=String.class),
 					@ApiResponse(code=500, message="_Null image_: If imageID not given", response=String.class)})
 	@Produces("application/json")
-	public Response install(@ApiParam(value="String with imageID", collectionFormat="Map")Map<String, String> app) {
+	public String install(@ApiParam(value="String with imageID", collectionFormat="Map")Map<String, String> app) {
 		LOG.debug("Request to load {}", app);
 		final Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 		if (!cml.isPresent()) {
-			LOG.warn("No cmld");
-			return Response.serverError().entity("No cmld").build();
+			throw new ServiceUnavailableException("No cmld available");
 		}
 
 		final String image = app.get("image");
 		if (image==null) {
 			LOG.warn("Null image");
-			return Response.serverError().entity("Null image").build();
+			throw new InternalServerErrorException("Null image");
 		}
 		LOG.debug("Pulling app {}", image);
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
@@ -168,16 +146,13 @@ public class AppApi {
 		final Future<String> handler = executor.submit(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				if (!cml.isPresent()) {
-					return null;
-				}
 				Optional<String> containerId = cml.get().pullImage(image);
 				return containerId.orElse(null);
 			}
 		});
 		// Cancel pulling after 20 minutes, just in case.
 		executor.schedule(() -> handler.cancel(true), 20, TimeUnit.MINUTES);
-		return Response.ok().build();
+		return "OK";
 	}
 
 	@GET
@@ -186,12 +161,11 @@ public class AppApi {
 	@ApiResponses( {@ApiResponse(code=200, message="If the app is being wiped"),
 					@ApiResponse(code=500, message="_No cmld_ if no container management layer is available")
 					})
-	@Produces("application/json")
-	public Response wipe(@ApiParam(value="ID of the app to wipe") @QueryParam("containerId") String containerId) {
+	public String wipe(@ApiParam(value="ID of the app to wipe") @QueryParam("containerId") String containerId) {
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
 
 		if (!cml.isPresent()) {
-			return Response.serverError().entity("No cmld").build();
+			throw new NotFoundException("No cmld");
 		}
 
 		try {
@@ -199,13 +173,13 @@ public class AppApi {
 		} catch (NoContainerExistsException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		return Response.ok().build();
+		return "OK";
 	}
 
 	@GET
 	@Path("cml_version")
-	@ApiOperation(value = "Returns the version of the currently active container management layer", response = Map.class)	
-	@Produces("application/json")
+	@ApiOperation(value = "Returns the version of the currently active container management layer", response = Map.class)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, String> getCml() {
 		Map<String, String> result = new HashMap<>();
 		Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();

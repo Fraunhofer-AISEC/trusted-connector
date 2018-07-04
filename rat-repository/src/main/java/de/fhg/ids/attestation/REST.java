@@ -22,13 +22,7 @@ package de.fhg.ids.attestation;
 import java.sql.SQLException;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -46,11 +40,8 @@ import de.fhg.aisec.ids.messages.Idscp.Error;
 
 @Path("/")
 public class REST {
-	
-	private ConnectorMessage message;
-	private Logger LOG = LoggerFactory.getLogger(REST.class);
+
 	private Database db;
-	private String ret;
 	private Gson gson = new Gson();
 	private final String PROTOBUF_URL = "/configurations/check";
 	private boolean corsEnabled = true;
@@ -58,9 +49,6 @@ public class REST {
 	
 	public REST(Database db) {
 		this.db = db;
-	}
-	
-	public REST() {
 	}
 	
 	@POST
@@ -115,6 +103,7 @@ public class REST {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getConfigurationList() {
 		this.setCORSHeader(response, corsEnabled);
+		String ret;
 		try {
 			ret = gson.toJson(this.db.getConfigurationList());
 		} catch (Exception e) {
@@ -130,12 +119,10 @@ public class REST {
 	public String getConfiguration(@PathParam("cid") String cid) {
 		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
-			ret = gson.toJson(this.db.getConfiguration(Long.parseLong(cid)));
+			return gson.toJson(this.db.getConfiguration(Long.parseLong(cid)));
+		} else {
+			throw new BadRequestException("id " + cid + " is not an Integer!");
 		}
-		else {
-			ret = "id " + cid + " is not an Integer!";				
-		}
-		return ret;
 	}
 
 	// post a new configuration	
@@ -143,20 +130,17 @@ public class REST {
 	@Path("/json/configurations/new")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addConfiguration(Configuration config) {
+	public long addConfiguration(Configuration config) {
 		this.setCORSHeader(response, corsEnabled);
 		try {
 			Long[] existing = this.db.getConfigurationId(config.getValues());
 			if(existing.length == 0) {
-				long key = this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
-				return Response.ok(key).build();
-			}
-			else {
-				return Response.serverError().build();
+				return this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
+			} else {
+				throw new InternalServerErrorException();
 			}
 		} catch (Exception e) {
-			LOG.debug(e.getMessage());
-			return Response.serverError().build();
+			throw new InternalServerErrorException(e);
 		}
 	}
 	
@@ -164,18 +148,16 @@ public class REST {
 	@DELETE
 	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
+	public String deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
 		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			if(this.db.deleteConfigurationById(Integer.parseInt(cid))) {
-				return Response.ok(cid).build();
+				return cid;
+			} else {
+				throw new InternalServerErrorException();
 			}
-			else {
-				return Response.serverError().build();
-			}
-		}
-		else {
-			return Response.serverError().build();	
+		} else {
+			throw new InternalServerErrorException();
 		}
 	}
 	
@@ -202,7 +184,7 @@ public class REST {
 		}
 	}
 	
-	private ConnectorMessage checkMessage(ConnectorMessage msg) throws SQLException {
+	private ConnectorMessage checkMessage(ConnectorMessage msg) {
 		return ConnectorMessage
 				.newBuilder()
 				.setId(msg.getId() + 1)

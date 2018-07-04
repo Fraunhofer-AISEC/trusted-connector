@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.endpoint.Server;
@@ -102,7 +103,7 @@ public class CertApiTests extends Assert {
 	@Test
 	public void testListCerts() {
 		WebClient client = newClient();
-		client.accept("application/json");
+		client.accept(MediaType.APPLICATION_JSON);
 		client.path("/certs/list_certs");
 		List<Cert> certs = client.get(new GenericType<List<Cert>>() {
 		});
@@ -113,7 +114,7 @@ public class CertApiTests extends Assert {
 	@Test
 	public void testListIdentities() {
 		WebClient client = newClient();
-		client.accept("application/json");
+		client.accept(MediaType.APPLICATION_JSON);
 		client.path("/certs/list_identities");
 		List<Cert> keys = client.get(new GenericType<List<Cert>>() {
 		});
@@ -131,8 +132,8 @@ public class CertApiTests extends Assert {
 		idSpec.l = "location";
 		idSpec.s = "subject";
 
-		client.accept("application/json");
-		client.header("Content-type", "application/json");
+		client.accept(MediaType.APPLICATION_JSON);
+		client.header("Content-type", MediaType.APPLICATION_JSON);
 		client.path("/certs/create_identity");
 		String alias = client.post(idSpec,String.class);
 		assertTrue(alias.length() > 5);
@@ -142,7 +143,7 @@ public class CertApiTests extends Assert {
 	public void testDeleteIdentity() {
 		// Get list of identities
 		WebClient client = newClient();
-		client.accept("application/json");
+		client.accept(MediaType.APPLICATION_JSON);
 		client.path("/certs/list_identities");
 		List<Cert> certs = client.get(new GenericType<List<Cert>>() { });
 		assumeFalse(certs.isEmpty());
@@ -150,7 +151,7 @@ public class CertApiTests extends Assert {
 		// Choose an identity and delete it
 		client = newClient();
 		String alias = certs.get(0).alias;
-		client.header("Content-type", "application/json");
+		client.header("Content-type", MediaType.APPLICATION_JSON);
 		client.path("/certs/delete_identity");
 		Response resp = client.post(alias);
 		assertEquals(Response.Status.OK.getStatusCode(), resp.getStatus());
@@ -170,7 +171,7 @@ public class CertApiTests extends Assert {
 	public void deleteCerts() {
 		// Get list of certs
 		WebClient client = newClient();
-		client.accept("application/json");
+		client.accept(MediaType.APPLICATION_JSON);
 		client.path("/certs/list_certs");
 		List<Cert> certs = client.get(new GenericType<List<Cert>>() {
 		});
@@ -179,7 +180,7 @@ public class CertApiTests extends Assert {
 		// Choose a cert and delete it
 		client = newClient();
 		String alias = certs.get(0).alias;
-		client.header("Content-type", "application/json");
+		client.header("Content-type", MediaType.APPLICATION_JSON);
 		client.path("/certs/delete_cert");
 		Response resp = client.post(alias);
 		assertEquals(Response.Status.OK.getStatusCode(), resp.getStatus());

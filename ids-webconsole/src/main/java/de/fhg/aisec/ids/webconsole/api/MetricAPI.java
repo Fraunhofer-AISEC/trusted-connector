@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -60,7 +61,7 @@ public class MetricAPI {
 	@Path("get")
 	@ApiOperation(value="Returns metrics values")
 	@ApiResponses(@ApiResponse(code=200, message="Map of metrics values", response=String.class, responseContainer="Map"))
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, String> getMetrics() {
 		HashMap<String, String> result = new HashMap<>();
 		

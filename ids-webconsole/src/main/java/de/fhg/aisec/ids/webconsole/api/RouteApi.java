@@ -26,13 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -93,32 +87,32 @@ public class RouteApi {
 	@Path("/get/{id}")
 	@ApiOperation(value="Get a Camel route", response=RouteObject.class)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@ApiParam(value="Route ID") @PathParam("id") String id) {
+	public RouteObject get(@ApiParam(value="Route ID") @PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
+			throw new ServiceUnavailableException("RouteManager not present");
 		}
 		RouteObject oRoute = rm.get().getRoute(id);
 		if (oRoute == null) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
+			throw new NotFoundException("Route not found");
 		}
-		return Response.ok(oRoute).build();
+		return oRoute;
 	}
 
 	@GET
 	@Path("/getAsString/{id}")
 	@ApiOperation(value="Gets a textual representation of a Camel route.", response=RouteObject.class)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAsString(@ApiParam(value="Route ID") @PathParam("id") String id) {
+	public String getAsString(@ApiParam(value="Route ID") @PathParam("id") String id) {
 		Optional<RouteManager> rmOpt = WebConsoleComponent.getRouteManager();
 		if (!rmOpt.isPresent()) {
-			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
+			throw new ServiceUnavailableException("RouteManager not present");
 		}
 		String routeAsString = rmOpt.get().getRouteAsString(id);
 		if (routeAsString == null) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
+			throw new NotFoundException("Route not found");
 		}
-		return Response.ok(routeAsString).build();
+		return routeAsString;
 	}
 
 	/**
@@ -278,7 +272,7 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/components")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public List<RouteComponent> getComponents() {
 		RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
 		return rm.listComponents();
@@ -300,10 +294,10 @@ public class RouteApi {
 	@GET
 	@Path("/validate/{routeId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response validate(@PathParam("routeId") String routeId) {
+	public ValidationInfo validate(@PathParam("routeId") String routeId) {
 		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
 		if (!pap.isPresent()) {
-			return Response.serverError().entity("PolicyAdministrationPoint not available").build();
+		    throw new ServiceUnavailableException("PAP not available");
 		}
 		RouteVerificationProof rvp = pap.get().verifyRoute(routeId);
 		ValidationInfo vi = new ValidationInfo();
@@ -311,17 +305,17 @@ public class RouteApi {
 		if (!rvp.isValid()) {
 			vi.counterExamples = rvp.getCounterExamples();
 		}
-		return Response.ok(vi).build();
+		return vi;
 	}
 
 	@GET
 	@Path("/prolog/{routeId}")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getRouteProlog(@PathParam("routeId") String routeId) {
+	public String getRouteProlog(@PathParam("routeId") String routeId) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not available").build();
+            throw new ServiceUnavailableException("RouteManager not available");
 		}
-		return Response.ok(rm.get().getRouteAsProlog(routeId)).build();
+		return rm.get().getRouteAsProlog(routeId);
 	}
 }
