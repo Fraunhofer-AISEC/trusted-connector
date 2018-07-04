@@ -1,4 +1,4 @@
-image: node:8-stretch
+image: maven
 
 stages:
 - build
@@ -6,13 +6,14 @@ stages:
 
 build:
   stage: build
+  variables:
+    GRADLE_USER_HOME: "/cache/.gradle"
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   before_script:
-  - mkdir -p /root/.m2
-  - echo $M2_SETTINGS > ~/.m2/settings.xml
-  - mkdir -p /cache/.m2
+  - mkdir -p /cache/.gradle
   - apt update && apt install -y openjdk-8-jdk
-  script:
-  - ./gradlew clean install
+  script: 
+  - ./gradlew --parallel clean install
   artifacts:
     when: always
     paths:
