@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 public class SecurityProfileDeserializer extends JsonDeserializer<SecurityProfile>{
     private static final Logger LOG = LoggerFactory.getLogger(SecurityProfileDeserializer.class);
 
+    // profile id will be automatically generated if not given
+    // all attributes default to "NONE" if not specified
     @Override
     public SecurityProfile deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String NONE_STRING = "NONE";

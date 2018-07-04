@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.webconsole.deserializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+// use CostumModule allows Jackson to deserialize custom object types
 public class CustomObjectMapper extends ObjectMapper {
 
 	private static final long serialVersionUID = 1L;

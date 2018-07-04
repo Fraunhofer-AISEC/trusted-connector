@@ -39,7 +39,11 @@ public class PlainLiteralDeserializer extends JsonDeserializer<PlainLiteral> {
         JsonNode node = p.readValueAsTree();
         String value = node.has("value") ? node.get("value").asText() : EMPTY_STRING;
         String language = node.has("language") ? node.get("language").asText() : EMPTY_STRING;
-        return new PlainLiteral(value, language);
+
+        if(language.equals(EMPTY_STRING))
+            return new PlainLiteral(value, language);
+        else
+            return new PlainLiteral(value);
     }
 	
 }

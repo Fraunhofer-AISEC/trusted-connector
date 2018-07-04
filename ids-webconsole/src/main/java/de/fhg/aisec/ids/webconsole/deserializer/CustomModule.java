@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import de.fraunhofer.iais.eis.SecurityProfile;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
 
+// allows Jackson to deserialize custom object types
 public class CustomModule extends SimpleModule {
 
     private static final long serialVersionUID = 1L;
@@ -37,27 +38,5 @@ public class CustomModule extends SimpleModule {
         this.addDeserializer(PlainLiteral.class, new PlainLiteralDeserializer());
         this.addDeserializer(SecurityProfile.class, new SecurityProfileDeserializer());
     }
-
-/*
-private Serializers createSerializers() {
-	SimpleSerializers serializers = new SimpleSerializers();
-	//serializers.addSerializer(zipCodeSerializer());
-	return serializers ;
-}
-
-private Deserializers createDeserializers() {
-	SimpleDeserializers deserializers = new SimpleDeserializers();
-	deserializers.addDeserializer(PlainLiteral.class, new PlainLiteralDeserializer());
-	deserializers.addDeserializer(SecurityProfile.class, new SecurityProfileDeserializer());
-	return deserializers ;
-}
-
-private PlainLiteralDeserializer plainLiteralDeserializer() {
-	return new PlainLiteralDeserializer(PlainLiteral.class, value -> new ZipCode(value));
-}
-
-private ValueObjectSerializer zipCodeSerializer() {
-	return new ValueObjectSerializer<>(ZipCode.class, value -> value.getCode());
-}*/
 
 }

@@ -126,7 +126,9 @@ public class InfoModelService implements InfoModel {
 			LOG.error("No Preferences available.");
 		}
 	}
-	
+
+	// Retrieve URL-String from preferences by key and build URL
+	// (ConnectorURL: "conn_url", OperatorURL: "op_url")
 	private URL getURL(String key) {
 		URL url;
 
@@ -150,7 +152,7 @@ public class InfoModelService implements InfoModel {
 		return null;
 	}
 
-	// Build Connector Entity Names
+	// Build Connector Entity Names from preferences
 	private List<PlainLiteral> getConnectorEntityNames() {
 		
 		if (preferencesService!=null) {
@@ -166,7 +168,9 @@ public class InfoModelService implements InfoModel {
 		return null;
 	}
 
-	// Build Endpoints
+	// Build current endpoints as given by connectionManager
+	// will not be stored in preferences, but freshly loaded each time
+	// multiple names for one connector allowed
 	private List<DataEndpoint> getEndpoints() {
 
 		DataEndpoint eP;
@@ -193,7 +197,8 @@ public class InfoModelService implements InfoModel {
 		return null;
 	}
 
-	// Build Security Profile
+	// Build Security Profile from preferences
+	// defaults to "NONE" for all attributes in case nothing has been stored
 	private SecurityProfile getSecurityProfile() {
 
 		if (preferencesService!=null) {
@@ -254,6 +259,9 @@ public class InfoModelService implements InfoModel {
 		return null;
 	}
 
+	// generates RDF description based on Connector object and
+	// stores it to preferences on each Connector update
+	//TODO: currently broken due to lean jar
 	private boolean generateRDF(Connector c) {
 
 		if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
@@ -267,6 +275,7 @@ public class InfoModelService implements InfoModel {
 		}
 	}
 
+	// get RDF description from preferences
 	@Override
 	public String getRDF() {
 		if (preferencesService!=null) {
@@ -281,6 +290,10 @@ public class InfoModelService implements InfoModel {
 		return null;
 	}
 
+	// creates and returns Connector object based on stored preferences
+	// returns random connector_url if none is stored in preferences
+	// op_url and entityNames can not be null
+	// TODO should be detected on creation already but currently broken due to lean jar
 	@Override
 	public Connector getConnector() {
 
@@ -290,6 +303,8 @@ public class InfoModelService implements InfoModel {
 		URL conn_url = getURL("conn_url");
 		URL op_url = getURL("op_url");
 		List<PlainLiteral> entityNames = getConnectorEntityNames();
+
+		LOG.debug("Conn_url: " + conn_url + " Entity Names: " + entityNames);
 
 		if(!((op_url==null) || (entityNames==null))) {
 			try {
@@ -306,11 +321,14 @@ public class InfoModelService implements InfoModel {
 				return null;
 			}
 		} else {
-			//LOG.debug("Connector couldn't be built due to null objects.");
+			LOG.debug("Connector couldn't be built due to null objects.");
 			return null;
 		}
 	}
 
+	// store or update new Connector description to preferences
+	// creates random connector_url if null and succeeds only if op_url and entityNames != null
+	// generates RDF description from Connector object and returns building success
 	@Override
 	public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames,
 			SecurityProfile profile) {

@@ -38,15 +38,17 @@ import de.fraunhofer.iais.eis.util.PlainLiteral;
 
 
 /**
- * REST API interface for settings in the connector.
+ * REST API interface for Connector settings in the connector.
  * <p>
  * The API will be available at http://localhost:8181/cxf/api/v1/settings/<method>.
  */
 
 
+//ConnectorProfile will be processed by custom Jackson deserializer
 @Path("/settings")
 public class SettingsApi {
     private static final Logger LOG = LoggerFactory.getLogger(SettingsApi.class);
+
 
     @POST
     @Path("/connectorProfile")
@@ -60,6 +62,7 @@ public class SettingsApi {
             return Response.status(500).entity("Connector object couldn't be stored.").build();
     }
 
+    // returns Connector profile based on currently stored preferences or empty Connector profile
     @GET
     @Path("/connectorProfile")
     @Produces(MediaType.APPLICATION_JSON)

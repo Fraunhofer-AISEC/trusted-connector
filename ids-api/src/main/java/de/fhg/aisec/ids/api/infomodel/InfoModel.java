@@ -50,18 +50,18 @@ public interface InfoModel {
 	
 		/**
 	     * retrieve Connector description
-	     * @return matching URL to key
+	     * @return RDF Connector description
 	     */
 		public String getRDF();
     
         /**
-         * create new Connector description
+         * create empty Connector object
          * @return empty Connector object to be filled
          */
         //public Connector getEmptyConnector();
         
         /**
-         * retrieve current Connector description
+         * retrieve Connector object based on currently stored preferences
          * @return currently stored Connector object
          */
         public Connector getConnector();
