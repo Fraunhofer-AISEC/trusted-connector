@@ -19,7 +19,6 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -29,12 +28,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * REST API interface for managing connections from and to the connector.
@@ -45,10 +45,12 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
  *
  */
 @Path("/connections")
+@Api("Connections")
 public class ConnectionAPI {
 	
 	@GET
 	@Path("/incoming")
+	@ApiOperation(value="Returns a list of all inbound connections", response=IDSCPIncomingConnection.class, responseContainer="List")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<IDSCPIncomingConnection> getIncoming() {
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
@@ -61,6 +63,7 @@ public class ConnectionAPI {
 	
 	@GET
 	@Path("/outgoing")
+	@ApiOperation(value="Returns a list of all outbound connections", response=IDSCPOutgoingConnection.class, responseContainer="List")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<IDSCPOutgoingConnection> getOutgoing() {
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
@@ -73,6 +76,7 @@ public class ConnectionAPI {
 	
 	@GET
 	@Path("/endpoints")
+	@ApiOperation(value="Returns a list of all endpoints provided by this connector", response=IDSCPServerEndpoint.class, responseContainer="List")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<IDSCPServerEndpoint> getAvailableEndpoints() {
 		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();

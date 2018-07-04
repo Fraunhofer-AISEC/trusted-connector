@@ -19,13 +19,23 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import java.lang.management.*;
+import java.lang.management.ClassLoadingMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST API interface for platform metrics.
@@ -36,6 +46,7 @@ import java.util.Map;
  *
  */
 @Path("/metric")
+@Api(value="Metric")
 public class MetricAPI {
 
 	private static final DecimalFormat loadAvgFormat = new DecimalFormat("###.##");
@@ -47,6 +58,8 @@ public class MetricAPI {
 	 */
 	@GET
 	@Path("get")
+	@ApiOperation(value="Returns metrics values")
+	@ApiResponses(@ApiResponse(code=200, message="Map of metrics values", response=String.class, responseContainer="Map"))
 	@Produces("application/json")
 	public Map<String, String> getMetrics() {
 		HashMap<String, String> result = new HashMap<>();

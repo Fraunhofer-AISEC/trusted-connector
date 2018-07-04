@@ -19,21 +19,15 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
-import de.fhg.aisec.ids.api.settings.ConnectorConfig;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.data.Cert;
-import de.fhg.aisec.ids.webconsole.api.data.Identity;
-import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -51,6 +45,35 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.Cert;
+import de.fhg.aisec.ids.webconsole.api.data.Identity;
+import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  * REST API interface for managing certificates in the connector.
  * 
@@ -61,6 +84,7 @@ import java.util.UUID;
  */
 
 @Path("/certs")
+@Api(value="Certs")
 public class CertApi {
 	private static final Logger LOG = LoggerFactory.getLogger(CertApi.class);
 	private static final String KEYSTORE_PWD = "password";
@@ -68,8 +92,9 @@ public class CertApi {
 	private static final String KEYSTORE_FILE = "client-keystore.jks";
 
 	@GET
+	@ApiOperation(value = "Starts ACME renewal over X509v3 certificates")
 	@Path("acme_renew/{target}")
-	public void getAcmeCert(@PathParam("target") String target) {
+	public void getAcmeCert(@ApiParam(value="Identifier of the component to renew. Currently, the only valid value is __webconsole__") @PathParam("target") String target) {
 		ConnectorConfig config = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig();
 		if ("webconsole".equals(target)) {
 			WebConsoleComponent.getAcmeClient().renewCertificate(
@@ -82,13 +107,17 @@ public class CertApi {
 	}
 
 	@GET
+	@ApiOperation(value = "Retrieves the Terms of Service (tos) of the ACME endpoint", response=AcmeTermsOfService.class)
 	@Path("acme_tos")
-	public AcmeTermsOfService getAcmeTermsOfService(@QueryParam("uri") String uri) {
+	public AcmeTermsOfService getAcmeTermsOfService(@ApiParam(value="URI to retrieve the TOS from") @QueryParam("uri") String uri) {
 		return WebConsoleComponent.getAcmeClient().getTermsOfService(URI.create(uri.trim()));
 	}
 
 	@GET
 	@Path("list_certs")
+	@ApiOperation(value = "List installed certificates from trust store.", notes="Certificates in this list refer to public keys that are trusted by this connector.")
+	@ApiResponses({ @ApiResponse(code = 200, message = "List of certificates"),
+					@ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available"),})
 	@Produces("application/json")
 	public Response listCerts() {
 		File truststore = getKeystoreFile(TRUSTSTORE_FILE);		
@@ -101,6 +130,7 @@ public class CertApi {
 
 	@GET
 	@Path("list_identities")
+	@ApiOperation(value = "List installed certificates from the private key store.", notes="Certificates in this list refer to private keys that can be used as identities by the connector.")
 	@Produces("application/json")
 	public List<Cert> listIdentities() {
 		File keystoreFile = getKeystoreFile(KEYSTORE_FILE);
@@ -111,7 +141,7 @@ public class CertApi {
 	@Path("create_identity")
 	@Produces("application/json")
 	@Consumes("application/json")
-	public Response createIdentity(Identity spec) {
+	public Response createIdentity(@ApiParam(value="Specification of the identity to create a key pair for") Identity spec) {
 		String alias = UUID.randomUUID().toString();
 		try {			
 			this.doGenKeyPair(alias, spec, "RSA", 2048, "SHA1WITHRSA",
@@ -128,6 +158,7 @@ public class CertApi {
 	 */
 	@POST
 	@Path("delete_identity")
+	@ApiOperation(value="Deletes a public/private key pair")
 	@Produces("application/json")
 	public Response deleteIdentity(String alias) {		
 		File keyStoreFile = getKeystoreFile(KEYSTORE_FILE);
@@ -144,6 +175,7 @@ public class CertApi {
 	 */
 	@POST
 	@Path("delete_cert")
+	@ApiOperation(value = "Deletes a trusted certificate")
 	@Produces("application/json")
 	public Response deleteCert(String alias) {		
 		File keyStoreFile = getKeystoreFile(TRUSTSTORE_FILE);
@@ -157,9 +189,11 @@ public class CertApi {
 	
 	@POST
 	@Path("/install_trusted_cert")
+	@ApiOperation(value="Installs a new trusted public key certificate.")
+	@ApiImplicitParams({@ApiImplicitParam(dataType = "java.io.File", name = "attachment", paramType = "formData")})
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public String installTrustedCert(@Multipart("upfile") Attachment attachment) throws IOException {
+	public String installTrustedCert(@ApiParam(hidden=true, name="attachment") @Multipart("upfile") Attachment attachment) throws IOException {
 
 		String filename = attachment.getContentDisposition().getParameter("filename");
 		File tempPath = File.createTempFile(filename, "cert");

@@ -19,19 +19,39 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import de.fhg.aisec.ids.api.Result;
-import de.fhg.aisec.ids.api.RouteResult;
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.router.*;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.*;
+import de.fhg.aisec.ids.api.Result;
+import de.fhg.aisec.ids.api.RouteResult;
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.router.RouteComponent;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteMetrics;
+import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -44,6 +64,7 @@ import java.util.*;
  *
  */
 @Path("/routes")
+@Api("Routes")
 public class RouteApi {
 	private static final Logger LOG = LoggerFactory.getLogger(RouteApi.class);
 
@@ -58,6 +79,7 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("list")
+	@ApiOperation(value="Returns map from camel context to list of camel routes.", response=RouteObject.class, responseContainer="List")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<RouteObject> list() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
@@ -69,8 +91,9 @@ public class RouteApi {
 
 	@GET
 	@Path("/get/{id}")
+	@ApiOperation(value="Get a Camel route", response=RouteObject.class)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@PathParam("id") String id) {
+	public Response get(@ApiParam(value="Route ID") @PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
 		if (!rm.isPresent()) {
 			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
@@ -84,8 +107,9 @@ public class RouteApi {
 
 	@GET
 	@Path("/getAsString/{id}")
+	@ApiOperation(value="Gets a textual representation of a Camel route.", response=RouteObject.class)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAsString(@PathParam("id") String id) {
+	public Response getAsString(@ApiParam(value="Route ID") @PathParam("id") String id) {
 		Optional<RouteManager> rmOpt = WebConsoleComponent.getRouteManager();
 		if (!rmOpt.isPresent()) {
 			return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("RouteManager not present").build();
@@ -102,6 +126,7 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/startroute/{id}")
+	@ApiOperation(value="Stops a route")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Result startRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
@@ -119,6 +144,7 @@ public class RouteApi {
 
 	@POST
 	@Path("/save/{id}")
+	@ApiOperation(value="Save changes to a route")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	public RouteResult saveRoute(@PathParam("id") String id, String routeDefinition) {
@@ -141,6 +167,7 @@ public class RouteApi {
 
 	@PUT
 	@Path("/add")
+	@ApiOperation(value="Adds a new route")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Result addRoute(String routeDefinition) {
@@ -166,6 +193,7 @@ public class RouteApi {
 	 */
 	@GET
 	@Path("/stoproute/{id}")
+	@ApiOperation(value="Stops a route")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Result stopRoute(@PathParam("id") String id) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
@@ -185,6 +213,7 @@ public class RouteApi {
 	 * Get runtime metrics of a route
 	 */
 	@GET
+	@ApiOperation(value="Get runtime metrics of a route")
 	@Path("/metrics/{id}")
 	public RouteMetrics getMetrics(@PathParam("id") String routeId) {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
@@ -203,6 +232,7 @@ public class RouteApi {
 	 * Get aggregated runtime metrics of all routes
 	 */
 	@GET
+	@ApiOperation(value="Get aggregated runtime metrics of all routes")
 	@Path("/metrics")
 	public RouteMetrics getMetrics() {
 		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
