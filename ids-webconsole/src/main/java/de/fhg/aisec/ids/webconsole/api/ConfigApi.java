@@ -71,15 +71,15 @@ public class ConfigApi {
 	@ApiOperation(value="Sets the configuration", response=ConnectorConfig.class)
 	@ApiResponses(@ApiResponse(code=500, message="_No valid preferences received_: If incorrect configuration parameter is provided"))
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response set(ConnectorConfig config) {
+	public String set(ConnectorConfig config) {
 		if (config == null) {
-			return Response.serverError().entity("No valid preferences received!").build();
+			throw new BadRequestException("No valid preferences received!");
 		}
 
 		Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
 		settings.setConnectorConfig(config);
 
-		return Response.ok().build();
+		return "OK";
 	}
 
 	/**

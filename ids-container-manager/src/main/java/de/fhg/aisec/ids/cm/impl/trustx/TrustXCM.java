@@ -105,18 +105,12 @@ public class TrustXCM implements ContainerManager {
 			for (ContainerStatus cs : containerStats) {
 				ApplicationContainer container;
 				if (!onlyRunning || ContainerState.RUNNING.equals(cs.getState())){
-					container = new ApplicationContainer(cs.getUuid(), 
-							null, 
-							formatter.format(Instant.ofEpochSecond(cs.getCreated())), 
-							cs.getState().name(), 
-							null, 
-							cs.getName(), 
-							null,
-							formatDuration(Duration.ofSeconds(cs.getUptime())),
-							null, 
-							null, 
-							null, 
-							null);
+					container = new ApplicationContainer();
+					container.setId(cs.getUuid());
+					container.setCreated(formatter.format(Instant.ofEpochSecond(cs.getCreated())));
+					container.setStatus(cs.getState().name());
+					container.setName(cs.getName());
+					container.setUptime(formatDuration(Duration.ofSeconds(cs.getUptime())));
 					result.add(container);
 				}
 			}
@@ -172,7 +166,7 @@ public class TrustXCM implements ContainerManager {
 	}
 
 	@Override
-	public Optional<String>  pullImage(String imageID) {
+	public Optional<String>  pullImage(ApplicationContainer imageID) {
 		// TODO Auto-generated method stub
 		return Optional.<String>empty();
 

@@ -28,15 +28,18 @@ export class AppCardComponent implements OnInit {
             this.statusIcon = 'stop';
             this.statusColor = '';
             this.appService.startApp(containerId)
-                .subscribe(result => undefined);
+              .subscribe(result => undefined);
             this.app.status = 'Up 1 seconds ago';
-
         } else {
             this.statusIcon = 'play_arrow';
             this.statusColor = 'card-dark';
             this.appService.stopApp(containerId)
-                .subscribe(result => undefined);
+              .subscribe(result => undefined);
             this.app.status = 'Exited(0) 1 seconds ago';
         }
+    }
+
+    trackPorts(index: number, item: string): string {
+        return item;
     }
 }

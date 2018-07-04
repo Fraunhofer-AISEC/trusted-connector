@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
-import { App, DockerHubApp } from './app';
+import { App } from './app';
 import { AppService } from './app.service';
 
 declare var componentHandler: any;
@@ -40,7 +40,7 @@ export class AppsSearchComponent implements OnInit, AfterViewInit {
     myForm: FormGroup;
     submitted: boolean;
     saved: boolean;
-    searchResults: Array<DockerHubApp> = [];
+    searchResults: Array<App> = [];
 
     constructor(private _fb: FormBuilder, private _appService: AppService) {
         this.saved = true;
@@ -60,13 +60,9 @@ export class AppsSearchComponent implements OnInit, AfterViewInit {
 
     save(model: any, isValid: boolean): void {
       this.submitted = true;
-
       this._appService
-        .getAllTags(model.apps_search)
-        .subscribe(
-          res => {
-            this.searchResults = res;
-          });
+        .searchApps(model['apps_search'])
+        .subscribe(res => { this.searchResults = res; });
     }
 
     trackApps(index: number, item: App): string {

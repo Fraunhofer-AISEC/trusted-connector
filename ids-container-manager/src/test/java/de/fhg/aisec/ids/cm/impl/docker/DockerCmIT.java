@@ -80,7 +80,9 @@ public class DockerCmIT {
 		DockerCM d = new DockerCM();
 		
 		// Pull the smallest possible image. Blocks. (must be online)
-		Optional<String> oContainerID = d.pullImage("tianon/true");
+		ApplicationContainer app = new ApplicationContainer();
+		app.setImage("tianon/true");
+		Optional<String> oContainerID = d.pullImage(app);
 		
 		// We expect a new container to be created 
 		assertTrue(oContainerID.isPresent());
@@ -100,7 +102,9 @@ public class DockerCmIT {
 		DockerCM d = new DockerCM();
 		
 		// Pull an image we can actually start. (must be online)
-		Optional<String> oContainerID = d.pullImage("nginx");
+		ApplicationContainer app = new ApplicationContainer();
+		app.setImage("nginx");
+		Optional<String> oContainerID = d.pullImage(app);
 		
 		// We expect a new container to be created 
 		assertTrue(oContainerID.isPresent());

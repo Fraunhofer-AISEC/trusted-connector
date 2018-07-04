@@ -19,19 +19,29 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -126,16 +136,17 @@ public class AppApi {
 	@ApiResponses( {@ApiResponse(code=200, message="If the app has been requested to be installed. The actual installation takes place asynchronously in the background and will terminate after a timeout of 20 minutes", response=Boolean.class),
 					@ApiResponse(code=500, message="_No cmld_: If no container management layer is available", response=String.class),
 					@ApiResponse(code=500, message="_Null image_: If imageID not given", response=String.class)})
-	@Produces("application/json")
-	public String install(@ApiParam(value="String with imageID", collectionFormat="Map")Map<String, String> app) {
-		LOG.debug("Request to load {}", app);
-		final Optional<ContainerManager> cml = WebConsoleComponent.getContainerManager();
-		if (!cml.isPresent()) {
-			throw new ServiceUnavailableException("No cmld available");
+	@Produces(MediaType.APPLICATION_JSON)
+	public String install(@ApiParam(value="String with imageID", collectionFormat="Map") Map<String, ApplicationContainer> apps) {
+		ApplicationContainer app = apps.get("app");
+		LOG.debug("Request to load {}", app.getImage());
+		final Optional<ContainerManager> cm = WebConsoleComponent.getContainerManager();
+		if (!cm.isPresent()) {
+			throw new ServiceUnavailableException("ContainerManager not available");
 		}
 
-		final String image = app.get("image");
-		if (image==null) {
+		final String image = app.getImage();
+		if (image == null) {
 			LOG.warn("Null image");
 			throw new InternalServerErrorException("Null image");
 		}
@@ -143,12 +154,9 @@ public class AppApi {
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
 		// Pull image asynchronously and create new container
-		final Future<String> handler = executor.submit(new Callable<String>() {
-			@Override
-			public String call() throws Exception {
-				Optional<String> containerId = cml.get().pullImage(image);
-				return containerId.orElse(null);
-			}
+		final Future<String> handler = executor.submit(() -> {
+			Optional<String> containerId = cm.get().pullImage(app);
+			return containerId.orElse(null);
 		});
 		// Cancel pulling after 20 minutes, just in case.
 		executor.schedule(() -> handler.cancel(true), 20, TimeUnit.MINUTES);
@@ -190,5 +198,41 @@ public class AppApi {
 
 		result.put("cml_version", cml.get().getVersion());
 		return result;
+	}
+
+	@POST
+	@Path("search")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<ApplicationContainer> search(AppSearchRequest searchRequest) {
+		String term = searchRequest.searchTerm;
+		try {
+			Client client = ClientBuilder.newBuilder().build();
+			String url = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig().getAppstoreUrl();
+
+			WebTarget webTarget = client.target(url);
+			Invocation.Builder invocationBuilder = webTarget.request(MediaType.TEXT_PLAIN);
+			Response response = invocationBuilder.get();
+			String r = response.readEntity(String.class);
+
+			ObjectMapper mapper = new ObjectMapper();
+			ApplicationContainer[] result = mapper.readValue(r, ApplicationContainer[].class);
+			if (term != null && !term.equals("")) {
+				return Arrays
+						.asList(result)
+						.parallelStream()
+						.filter(app -> (app.getName() != null && app.getName().contains(term))
+								|| (app.getDescription() != null && app.getDescription().contains(term))
+								|| (app.getImage() != null && app.getImage().contains(term))
+								|| (app.getId() != null && app.getId().contains(term))
+								|| (app.getCategories() != null && app.getCategories().contains(term))
+						)
+						.collect(Collectors.toList());
+			} else {
+				return Arrays.asList(result);
+			}
+		} catch (IOException e) {
+			throw new InternalServerErrorException(e);
+		}
 	}
 }

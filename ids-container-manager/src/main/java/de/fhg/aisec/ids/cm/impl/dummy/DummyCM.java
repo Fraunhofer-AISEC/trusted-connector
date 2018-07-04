@@ -19,20 +19,9 @@
  */
 package de.fhg.aisec.ids.cm.impl.dummy;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import de.fhg.aisec.ids.api.cm.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.Decision;
-import de.fhg.aisec.ids.api.cm.Direction;
-import de.fhg.aisec.ids.api.cm.Protocol;
+import java.util.*;
 
 /**
  * Dummy implementation of a null container manager which is used if no real CMLd is available.
@@ -41,7 +30,6 @@ import de.fhg.aisec.ids.api.cm.Protocol;
  *
  */
 public class DummyCM implements ContainerManager {
-	private static final Logger LOG = LoggerFactory.getLogger(DummyCM.class);
 
 	@Override
 	public List<ApplicationContainer> list(boolean onlyRunning) {
@@ -62,7 +50,7 @@ public class DummyCM implements ContainerManager {
 	public void restartContainer(final String containerID) { }
 
 	@Override
-	public Optional<String> pullImage(final String imageID) { return Optional.empty(); }
+	public Optional<String> pullImage(final ApplicationContainer app) { return Optional.empty(); }
 
 	@Override
 	public Map<String, String> getMetadata(String containerID) {

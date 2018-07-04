@@ -16,6 +16,11 @@
     </Match>
 
     <Match>
+        <Class name="~de\.fhg\.aisec\.ids\.webconsole\.api\.data\..*" />
+        <Bug pattern="UWF_UNWRITTEN_FIELD" />
+    </Match>
+
+    <Match>
         <Class name="de.fhg.aisec.ids.webconsole.api.helper.StreamGobbler" />
         <Bug pattern="RV_DONT_JUST_NULL_CHECK_READLINE" />
     </Match>

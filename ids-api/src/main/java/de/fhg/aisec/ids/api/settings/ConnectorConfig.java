@@ -22,6 +22,9 @@ package de.fhg.aisec.ids.api.settings;
 import java.io.Serializable;
 
 public final class ConnectorConfig implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private final String appstoreUrl;
     private final String brokerUrl;
     private final String ttpHost;
     private final int ttpPort;
@@ -31,13 +34,18 @@ public final class ConnectorConfig implements Serializable {
     private final boolean tosAcceptWebcon;
 
     public ConnectorConfig() {
+        appstoreUrl = "https://raw.githubusercontent.com/portainer/templates/master/templates.json";
         brokerUrl = "";
         ttpHost = "";
-        ttpPort = 0;
+        ttpPort = 443;
         acmeServerWebcon = "";
         acmeDnsWebcon = "";
         acmePortWebcon = 80;
         tosAcceptWebcon = false;
+    }
+
+    public String getAppstoreUrl() {
+    	return appstoreUrl;
     }
 
     public String getBrokerUrl() {

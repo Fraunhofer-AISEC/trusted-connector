@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 
-import { App, DockerHubApp } from './app';
+import { App } from './app';
 import { AppService } from './app.service';
 
 declare var componentHandler: any;
@@ -10,7 +10,7 @@ declare var componentHandler: any;
     templateUrl: './app-search-result-card.component.html'
 })
 export class AppSearchResultCardComponent implements AfterViewInit {
-    @Input() app: DockerHubApp;
+    @Input() app: App;
 
     constructor(private appService: AppService) { }
 
@@ -20,14 +20,17 @@ export class AppSearchResultCardComponent implements AfterViewInit {
         }, 10);
     }
 
-    onInstall(appName: string, tag: string): void {
+    onInstall(app: App): void {
         this.appService
-            .installApp(appName, tag)
+            .installApp(app)
             .subscribe(success => success);
     }
 
-    // Unused, just here to calm down the linter
     trackApps(index: number, item: App): string {
         return item.id;
+    }
+
+    trackCat(index: number, item: string): string {
+        return item;
     }
 }

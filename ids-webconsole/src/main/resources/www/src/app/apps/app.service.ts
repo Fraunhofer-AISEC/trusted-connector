@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { App, DockerHubApp, DockerHubTag } from './app';
+import { App, AppSearchTerm } from './app';
 import { Cml } from './cml';
 import { Result } from '../result';
 
 import { environment } from '../../environments/environment';
 
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 
 @Injectable()
 export class AppService {
-    private company = 'fhgaisec';
 
     constructor(private http: HttpClient) {
     }
@@ -29,46 +28,30 @@ export class AppService {
         return this.http.get<Result>(environment.apiURL + '/app/start/' + encodeURIComponent(appId));
     }
 
-    installApp(appId: string, tag: string): Observable<string> {
+    installApp(app: App): Observable<string> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
         return this.http.post<string>(environment.apiURL + '/app/install',
-            { image: this.company + '/' + appId + ':' + tag }, { headers })
+            { app }, { headers })
             .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
-    }
-
-    getTags(appName: string): Observable<Array<DockerHubTag>> {
-        const url: string = 'http://ids.aisec.fraunhofer.de/cors/https://hub.docker.com/v2/repositories/'
-            + this.company
-            + '/'
-            + appName
-            + '/tags/';
-        const result = this.http.get(url)
-            .pipe(map(resp => resp['results'] as Array<DockerHubTag>));
-
-        return result;
     }
 
     getCmlVersion(): Observable<Cml> {
         return this.http.get<Cml>(environment.apiURL + '/app/cml_version');
     }
 
-    searchApps(term: string): Observable<Array<DockerHubApp>> {
-        const limit = 100;
-        const url: string = 'http://ids.aisec.fraunhofer.de/cors/https://hub.docker.com/v2/repositories/'
-            + this.company
-            + '/\?page_size\='
-            + limit;
+    searchApps(term: string): Observable<Array<App>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        const searchTerm = new AppSearchTerm();
+        searchTerm.searchTerm = term;
+        const result = this.http.post<Array<App>>(environment.apiURL + '/app/search',
+                searchTerm, {headers});
 
-        return this.http.get(url)
-        .pipe(
-            map(res => res['results'] as Array<DockerHubApp>),
-            map(apps => apps.filter(app => app.name.match(term)))
-        );
+        return result;
     }
 
-    getAllTags(term: string): Observable<Array<DockerHubApp>> {
-        const searchedApps: Observable<Array<DockerHubApp>> = this.searchApps(term);
+    /*getAllTags(term: string): Observable<Array<App>> {
+        const searchedApps: Observable<Array<App>> = this.searchApps(term);
 
         return searchedApps.pipe(map(apps => {
             for (const app of apps) {
@@ -82,5 +65,5 @@ export class AppService {
 
             return apps;
         }));
-    }
+    }*/
 }

@@ -7,6 +7,13 @@
 			<form [formGroup]="settingsForm" (ngSubmit)="save()" class="mdl-cell--12-col mdl-grid">
 				<div class="mdl-cell--12-col">
 					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+						<input class="mdl-textfield__input" id="appstoreUrl" type="URL" formControlName="appstoreUrl" required minlength="5">
+						<label class="mdl-textfield__label" for="appstoreUrl">App Store URL</label>
+						<span class="mdl-textfield__error"> Valid App Store URL required </span>
+					</div>
+				</div>
+				<div class="mdl-cell--12-col">
+					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
 						<input class="mdl-textfield__input" id="brokerUrl"	type="URL" formControlName="brokerUrl"
 						required minlength="5">
 						<label class="mdl-textfield__label" for="brokerUrl">Broker	URL</label>
