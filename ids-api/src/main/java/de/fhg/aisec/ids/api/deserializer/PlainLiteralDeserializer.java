@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.deserializer;
+package de.fhg.aisec.ids.api.deserializer;
 
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -40,10 +40,7 @@ public class PlainLiteralDeserializer extends JsonDeserializer<PlainLiteral> {
         String value = node.has("value") ? node.get("value").asText() : EMPTY_STRING;
         String language = node.has("language") ? node.get("language").asText() : EMPTY_STRING;
 
-        if(language.equals(EMPTY_STRING))
-            return new PlainLiteral(value, language);
-        else
-            return new PlainLiteral(value);
+        return new PlainLiteral(value, language);
     }
 	
 }

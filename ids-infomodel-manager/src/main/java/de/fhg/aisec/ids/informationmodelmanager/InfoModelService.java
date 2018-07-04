@@ -32,15 +32,17 @@
  */
 package de.fhg.aisec.ids.informationmodelmanager;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
-import de.fhg.aisec.ids.api.ConnectionSettings;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
+import de.fhg.aisec.ids.api.deserializer.CustomObjectMapper;
 import de.fraunhofer.iais.eis.*;
 import de.fraunhofer.iais.eis.util.ConstraintViolationException;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
+import de.fraunhofer.iais.eis.util.VocabUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,12 +50,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-//import org.apache.commons.lang3.ObjectUtils;
-
-import de.fraunhofer.iais.eis.util.VocabUtil;
-
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -159,7 +155,13 @@ public class InfoModelService implements InfoModel {
 			
 	
 			if ((p = preferencesService.getUserPreferences(CONNECTOR_MODEL)) != null) {
-				return new Gson().fromJson(p.get("conn_entity", null), ArrayList.class);
+				CustomObjectMapper mapper = new CustomObjectMapper();
+				TypeReference<List<PlainLiteral>> typeRef = new TypeReference<List<PlainLiteral>>() {};
+				try {
+					return mapper.readValue(p.get("conn_entity", null), typeRef);
+				} catch (IOException e) {
+					LOG.error(e.getMessage(), e);
+				}
 			} else {
 				LOG.error("Couldn't get Connector Entity Names");
 				return null;
@@ -356,7 +358,12 @@ public class InfoModelService implements InfoModel {
 	
 				// Set Entity Names
 				if(entityNames!=null && !entityNames.isEmpty()) {
-					setPreference("conn_entity", new Gson().toJson(entityNames), p);
+					CustomObjectMapper mapper = new CustomObjectMapper();
+					try {
+						setPreference("conn_entity", mapper.writeValueAsString(entityNames), p);
+					} catch (JsonProcessingException e) {
+						LOG.error(e.getMessage(), e);
+					}
 				} else {
 					LOG.error("Entity Names can not be empty.");
 					return false;

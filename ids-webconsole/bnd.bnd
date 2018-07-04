@@ -4,7 +4,8 @@ Bundle-Description: A web console for the IDS Core Platform. The web console all
 Export-Package: \
 	de.fhg.aisec.ids.webconsole,\
 	de.fhg.aisec.ids.webconsole.api,\
-	de.fhg.aisec.ids.webconsole.api.data
+	de.fhg.aisec.ids.webconsole.api.data,\
+	de.fhg.aised.ids.webconsole.api.deserializer
 Import-Package: \
 	!org.checkerframework.checker.*,\
 	de.fraunhofer.iais.eis*,\
@@ -12,6 +13,7 @@ Import-Package: \
 	org.apache.cxf.interceptor.security,\
 	com.fasterxml.jackson.jaxrs.json,\
 	com.fasterxml.jackson.databind,\
+	de.fhg.aisec.ids.api.deserializer,\
 	!io.swagger.annotations,\
 	*
 Web-ContextPath: /

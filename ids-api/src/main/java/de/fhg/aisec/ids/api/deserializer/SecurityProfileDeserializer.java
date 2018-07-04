@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.deserializer;
+package de.fhg.aisec.ids.api.deserializer;
 
 import java.io.IOException;
 
