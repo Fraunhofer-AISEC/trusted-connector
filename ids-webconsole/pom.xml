@@ -265,20 +265,26 @@
 							</arguments>
 						</configuration>
 					</execution>
-    
-                    <!-- Generate nicely layouted static API HTML documentation from swagger.json -->
-                    <execution>
-                      <id>Generate static API doc HTML in generated/swagger-ui</id>
-                      <phase>process-classes</phase>
-                      <goals>
-                        <goal>exec</goal>
-                      </goals>
-                      <configuration>
-                        <executable>${project.basedir}/src/main/resources/www/generate_api_docs.sh</executable>
-                      </configuration>
-                    </execution>
-				</executions>
 
+					<!-- Generate nicely layouted static API HTML documentation from swagger.json -->
+					<!-- Disabled because this would need to run later, i.e. AFTER swagger.json is created but due
+					to weird maven behaviour we cannot set the phase of this execution to site because otherwise all the
+					previous exec tasks would be run again... -->
+					<!--<execution>
+						<id>yarn run apidocs</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<executable>yarn</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>apidocs</argument>
+							</arguments>
+						</configuration>
+					</execution>-->
+				</executions>
 				<configuration>
 					<workingDirectory>${project.build.resources[0].directory}/www</workingDirectory>
 					<skip>${skipAngular}</skip>
