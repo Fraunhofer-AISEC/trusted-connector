@@ -173,7 +173,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException ie) {
-                            LOG.error("Interrupt error during 3-seconds-delay", ie);
+                            LOG.error("Interrupt error during 10-seconds-delay", ie);
+                            Thread.currentThread().interrupt();
                         }
                     }
                 }
