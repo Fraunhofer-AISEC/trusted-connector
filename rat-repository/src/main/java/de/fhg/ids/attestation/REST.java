@@ -19,31 +19,25 @@
  */
 package de.fhg.ids.attestation;
 
-import java.sql.SQLException;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.sql.SQLException;
+
 @Path("/")
 public class REST {
 
 	private Database db;
 	private Gson gson = new Gson();
-	private final String PROTOBUF_URL = "/configurations/check";
+	private static final String PROTOBUF_URL = "/configurations/check";
 	private boolean corsEnabled = true;
 	protected @Context HttpServletResponse response;
 	
@@ -55,7 +49,7 @@ public class REST {
 	@Path(PROTOBUF_URL)
 	@Produces(MediaTypeExt.APPLICATION_PROTOBUF)
 	@Consumes(MediaTypeExt.APPLICATION_PROTOBUF)
-	public ConnectorMessage checkConfiguration(ConnectorMessage msg) throws SQLException {
+	public ConnectorMessage checkConfiguration(ConnectorMessage msg) {
 		if(msg.getType().equals(ConnectorMessage.Type.RAT_REPO_REQUEST)) {
 			try {
 				AttestationRepositoryRequest request = msg.getAttestationRepositoryRequest();
@@ -148,7 +142,7 @@ public class REST {
 	@DELETE
 	@Path("/json/configurations/{cid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String deleteConfiguration(@PathParam("cid") String cid) throws NumberFormatException, SQLException {
+	public String deleteConfiguration(@PathParam("cid") String cid) throws SQLException {
 		this.setCORSHeader(response, corsEnabled);
 		if(isInteger(cid)) {
 			if(this.db.deleteConfigurationById(Integer.parseInt(cid))) {
