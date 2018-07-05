@@ -20,5 +20,13 @@
 package de.fhg.aisec.ids.webconsole.api.data;
 
 public class AppSearchRequest {
-	public String searchTerm;
+	private final String searchTerm;
+
+	public AppSearchRequest() {
+		searchTerm = "";
+	}
+
+	public String getSearchTerm() {
+		return searchTerm;
+	}
 }

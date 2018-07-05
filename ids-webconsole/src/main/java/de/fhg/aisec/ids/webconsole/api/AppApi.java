@@ -205,7 +205,7 @@ public class AppApi {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<ApplicationContainer> search(AppSearchRequest searchRequest) {
-		String term = searchRequest.searchTerm;
+		String term = searchRequest.getSearchTerm();
 		try {
 			Client client = ClientBuilder.newBuilder().build();
 			String url = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig().getAppstoreUrl();
