@@ -131,10 +131,10 @@ public class AcmeClientService implements AcmeClient, Runnable {
                     KeyPair keyPair = KeyPairUtils.createKeyPair(4096);
                     try (Writer fileWriter = Files.newBufferedWriter(keyFilePath, StandardCharsets.UTF_8)) {
                         KeyPairUtils.writeKeyPair(keyPair, fileWriter);
-                        LOG.info("Successfully created RSA KeyPair: " + targetDirectory.resolve(keyFile).toAbsolutePath());
+                        LOG.info("Successfully created RSA KeyPair: {}", targetDirectory.resolve(keyFile).toAbsolutePath());
                     } catch (IOException e) {
                         LOG.error("Could not write key pair", e);
-                        throw new RuntimeException(e);
+                        throw new AcmeClientException(e);
                     }
                 }
             });
@@ -144,7 +144,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 acmeKeyPair = KeyPairUtils.readKeyPair(fileReader);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
-                throw new RuntimeException(e);
+                throw new AcmeClientException(e);
             }
 
             Account account;
@@ -156,7 +156,9 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 try {
                     Session session = new Session(acmeServerUri);
                     account = new AccountBuilder().agreeToTermsOfService().useKeyPair(acmeKeyPair).create(session);
-                    LOG.info(account.getLocation().toString());
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(account.getLocation().toString());
+                    }
                     break;
                 } catch (AcmeException e) {
                     // In case of ACME error, session creation has failed; return immediately.
@@ -203,15 +205,15 @@ public class AcmeClientService implements AcmeClient, Runnable {
                             LOG.info(challenge.getStatus().toString());
                         } while (challenge.getStatus() == Status.PENDING);
                         if (challenge.getStatus() != Status.VALID) {
-                            throw new RuntimeException("Failed to successfully solve challenge");
+                            throw new AcmeClientException("Failed to successfully solve challenge");
                         }
                     } catch (AcmeException e) {
-                        throw new RuntimeException(e);
+                        throw new AcmeClientException(e);
                     }
                 });
             } catch (AcmeException e) {
                 LOG.error("Error while placing certificate order", e);
-                throw new RuntimeException(e);
+                throw new AcmeClientException(e);
             }
 
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss.SSS"));
@@ -243,7 +245,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
                             certificate.getCertificateChain().toArray(new X509Certificate[0]));
                     store.store(jksOutputStream, "ids".toCharArray());
                     // If there is a SslContextFactoryReloader, make it refresh the TLS connections.
-                    LOG.info(String.format("Reloading of %d SslContextFactoryReloader implementations...", reloader.size()));
+                    LOG.info("Reloading of {} SslContextFactoryReloader implementations...", reloader.size());
                     reloader.forEach(r -> r.reloadAll(keyStorePath.toString()));
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating new KeyStore!", e);
@@ -251,14 +253,14 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 Files.copy(keyStorePath, targetDirectory.resolve(KEYSTORE_LATEST), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
-                throw new RuntimeException(e);
+                throw new AcmeClientException(e);
             } catch (AcmeException e) {
                 LOG.error("Error while retrieving certificate", e);
-                throw new RuntimeException(e);
+                throw new AcmeClientException(e);
             }
         } catch (IOException e) {
             LOG.error("Failed to start HTTP server", e);
-            throw new RuntimeException(e);
+            throw new AcmeClientException(e);
         } finally {
             // Stop ACME challenge responder
             AcmeChallengeServer.stopServer();
@@ -274,10 +276,14 @@ public class AcmeClientService implements AcmeClient, Runnable {
             long notBeforeTime = cert.getNotBefore().getTime();
             long notAfterTime = cert.getNotAfter().getTime();
             double validityPercentile = 100. * (double) (notAfterTime - now) / (double) (notAfterTime - notBeforeTime);
-            LOG.info(String.format("Remaining relative validity span (%s): %.2f%%",
-                    targetDirectory.toString(), validityPercentile));
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Remaining relative validity span (%s): %.2f%%",
+                        targetDirectory.toString(), validityPercentile));
+            }
             if (validityPercentile < RENEWAL_THRESHOLD) {
-                LOG.info(String.format("%.2f < %.2f, requesting renewal", validityPercentile, RENEWAL_THRESHOLD));
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("%.2f < %.2f, requesting renewal", validityPercentile, RENEWAL_THRESHOLD));
+                }
                 // Do the renewal in a separate Thread such that other stuff can be executed in parallel.
                 // This is especially important if the ACME protocol implementations are missing upon boot.
                 Thread t = new Thread(() -> renewCertificate(targetDirectory, acmeServerUri, domains, challengePort));
@@ -293,7 +299,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
     @Activate
     @Override
     public void run() {
-        LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
+	    LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).");
         try {
             ConnectorConfig config = settings.getConnectorConfig();
             renewalCheck(FileSystems.getDefault().getPath("etc", "tls-webconsole"),
