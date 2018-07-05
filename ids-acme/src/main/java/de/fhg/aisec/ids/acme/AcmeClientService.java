@@ -63,7 +63,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
     private static Map<String, String> challengeMap = new HashMap<>();
 
-    private static Settings settings = null;
+    private Settings settings = null;
     /*
      * The following block subscribes this component to the Settings Service
      */
@@ -242,12 +242,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
                             certificate.getCertificateChain().toArray(new X509Certificate[0]));
                     store.store(jksOutputStream, "ids".toCharArray());
                     // If there is a SslContextFactoryReloader, make it refresh the TLS connections.
-                    LOG.info("Reloading of " + reloader.size() + " SslContextFactoryReloader implementations...");
+                    LOG.info(String.format("Reloading of %d SslContextFactoryReloader implementations...", reloader.size()));
                     reloader.forEach(r -> r.reloadAll(keyStorePath.toString()));
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating new KeyStore!", e);
                 }
-                Files.copy(keyStorePath, targetDirectory.resolve("keystore_latest.jks"), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(keyStorePath, targetDirectory.resolve(KEYSTORE_LATEST), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 LOG.error("Could not read ACME key pair", e);
                 throw new RuntimeException(e);
@@ -269,9 +269,9 @@ public class AcmeClientService implements AcmeClient, Runnable {
             KeyStore store = KeyStore.getInstance("JKS");
             store.load(jksInputStream, "ids".toCharArray());
             X509Certificate cert = (X509Certificate) store.getCertificateChain("ids")[0];
-            long now = new Date().getTime(),
-                    notBeforeTime = cert.getNotBefore().getTime(),
-                    notAfterTime = cert.getNotAfter().getTime();
+            long now = new Date().getTime();
+            long notBeforeTime = cert.getNotBefore().getTime();
+            long notAfterTime = cert.getNotAfter().getTime();
             double validityPercentile = 100. * (double) (notAfterTime - now) / (double) (notAfterTime - notBeforeTime);
             LOG.info(String.format("Remaining relative validity span (%s): %.2f%%",
                     targetDirectory.toString(), validityPercentile));
