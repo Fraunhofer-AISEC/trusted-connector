@@ -26,6 +26,7 @@
 	<name>IDS Core Platform API</name>
 
 	<dependencies>
+		<!-- Jackson -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -41,6 +42,12 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
+		</dependency>
+		<!-- OSGi Core -->
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>6.0.0</version>
 		</dependency>
 		<!-- logging -->
 		<dependency>

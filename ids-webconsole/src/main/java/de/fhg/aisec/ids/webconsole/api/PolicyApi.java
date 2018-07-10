@@ -19,26 +19,19 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.ws.Service;
-
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -58,14 +51,12 @@ public class PolicyApi {
 	@GET
 	@Path("list")
 	@ApiOperation(value="Lists active rules", responseContainer="List")
-	@ApiResponses(@ApiResponse(code=200, message="List of usage control rules", response=String.class, responseContainer="List"))
+	@ApiResponses(@ApiResponse(code=200, message="List of usage control rules",
+			response=String.class, responseContainer="List"))
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<String> list() {
 		// TODO JS->ML: Hier sollte vlt. eher eine Liste von Policy-Objekten zurückgegeben werden.
-		LOG.info("policy list");
-		List<String> result = new ArrayList<>();
-		WebConsoleComponent.getPolicyAdministrationPoint().ifPresent(pap -> result.addAll(pap.listRules()));
-		return result;
+		return WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE().listRules();
 	}
 
 	/**
@@ -76,28 +67,18 @@ public class PolicyApi {
 	@Path("policyProlog")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getPolicyProlog() {
-		return WebConsoleComponent.getPolicyAdministrationPoint().map(PAP::getPolicy)
-				.orElseThrow(() -> new ServerErrorException("Could not retrieve policy",
-						Response.Status.INTERNAL_SERVER_ERROR));
+		return WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE().getPolicy();
 	}
 	
 	@POST
 	@OPTIONS
-	@GET
 	@Path("install")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public String install(@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
 							@Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription, 
 							@Multipart(value = "policy_file") InputStream is) {
-		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
-		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
-		
-		// if pap service is not available at runtime, return error
-		if (!pap.isPresent()) {
-			throw new ServiceUnavailableException("PAP not available");
-		}
-				
-		pap.get().loadPolicy(is);
+		LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
+		WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE().loadPolicy(is);
 		return "OK";
 	}	
 	

@@ -19,38 +19,28 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.fhg.aisec.ids.api.Result;
-import de.fhg.aisec.ids.api.RouteResult;
 import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * REST API interface for "data pipes" in the connector.
  *
- * This implementation uses Camel Routes as data pipes, i.e. the API methods allow inspection of camel routes in different camel contexts.
+ * This implementation uses Camel Routes as data pipes, i.e. the API methods allow
+ * inspection of camel routes in different camel contexts.
  *
  * The API will be available at http://localhost:8181/cxf/api/v1/routes/<method>.
  *
@@ -67,20 +57,18 @@ public class RouteApi {
 	 *
 	 * Example:
 	 *
-	 * {"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]] -\u003e [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
+	 * {"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]]
+	 * -\u003e [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
 	 *
 	 * @return The resulting route objects
 	 */
 	@GET
 	@Path("list")
-	@ApiOperation(value="Returns map from camel context to list of camel routes.", response=RouteObject.class, responseContainer="List")
+	@ApiOperation(value="Returns map from camel context to list of camel routes.",
+			response=RouteObject.class, responseContainer="List")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<RouteObject> list() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return Collections.emptyList();
-		}
-		return rm.get().getRoutes();
+		return WebConsoleComponent.getRouteManagerOrThrowSUE().getRoutes();
 	}
 
 	@GET
@@ -88,11 +76,8 @@ public class RouteApi {
 	@ApiOperation(value="Get a Camel route", response=RouteObject.class)
 	@Produces(MediaType.APPLICATION_JSON)
 	public RouteObject get(@ApiParam(value="Route ID") @PathParam("id") String id) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			throw new ServiceUnavailableException("RouteManager not present");
-		}
-		RouteObject oRoute = rm.get().getRoute(id);
+		RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+		RouteObject oRoute = rm.getRoute(id);
 		if (oRoute == null) {
 			throw new NotFoundException("Route not found");
 		}
@@ -104,11 +89,8 @@ public class RouteApi {
 	@ApiOperation(value="Gets a textual representation of a Camel route.", response=RouteObject.class)
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getAsString(@ApiParam(value="Route ID") @PathParam("id") String id) {
-		Optional<RouteManager> rmOpt = WebConsoleComponent.getRouteManager();
-		if (!rmOpt.isPresent()) {
-			throw new ServiceUnavailableException("RouteManager not present");
-		}
-		String routeAsString = rmOpt.get().getRouteAsString(id);
+		RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+		String routeAsString = rm.getRouteAsString(id);
 		if (routeAsString == null) {
 			throw new NotFoundException("Route not found");
 		}
@@ -123,17 +105,13 @@ public class RouteApi {
 	@ApiOperation(value="Stops a route")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Result startRoute(@PathParam("id") String id) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				rm.get().startRoute(id);
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-				return new Result(false, e.getMessage());
-			}
+		try {
+			WebConsoleComponent.getRouteManagerOrThrowSUE().startRoute(id);
 			return new Result();
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			return new Result(false, e.getMessage());
 		}
-		return new Result();
 	}
 
 	@POST
@@ -141,22 +119,14 @@ public class RouteApi {
 	@ApiOperation(value="Save changes to a route")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-	public RouteResult saveRoute(@PathParam("id") String id, String routeDefinition) {
-		RouteResult result = new RouteResult();
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			result.setMessage("No Route Manager present!");
-			result.setSuccessful(false);
-			return result;
-		}
+	public Result saveRoute(@PathParam("id") String id, String routeDefinition) {
 		try {
-			result.setRoute(rm.get().saveRoute(id, routeDefinition));
+			WebConsoleComponent.getRouteManagerOrThrowSUE().saveRoute(id, routeDefinition);
+			return new Result();
 		} catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
-			result.setSuccessful(false);
-			result.setMessage(e.getMessage());
+			return new Result(false, e.getMessage());
 		}
-		return result;
 	}
 
 	@PUT
@@ -165,21 +135,13 @@ public class RouteApi {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Result addRoute(String routeDefinition) {
-		Result result = new Result();
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			result.setMessage("No Route Manager present!");
-			result.setSuccessful(false);
-			return result;
-		}
 		try {
-			rm.get().addRoute(routeDefinition);
+			WebConsoleComponent.getRouteManagerOrThrowSUE().addRoute(routeDefinition);
+			return new Result();
 		} catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
-			result.setSuccessful(false);
-			result.setMessage(e.getMessage());
+			return new Result(false, e.getMessage());
 		}
-		return result;
 	}
 
 	/**
@@ -190,17 +152,13 @@ public class RouteApi {
 	@ApiOperation(value="Stops a route")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Result stopRoute(@PathParam("id") String id) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				rm.get().stopRoute(id);
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-				return new Result(false, e.getMessage());
-			}
+		try {
+			WebConsoleComponent.getRouteManagerOrThrowSUE().stopRoute(id);
 			return new Result();
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			return new Result(false, e.getMessage());
 		}
-		return new Result(false, "No route manager");
 	}
 
 	/**
@@ -210,16 +168,7 @@ public class RouteApi {
 	@ApiOperation(value="Get runtime metrics of a route")
 	@Path("/metrics/{id}")
 	public RouteMetrics getMetrics(@PathParam("id") String routeId) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				return rm.get().getRouteMetrics().get(routeId);
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-				return null;
-			}
-		}
-		return null;
+		return WebConsoleComponent.getRouteManagerOrThrowSUE().getRouteMetrics().get(routeId);
 	}
 
 	/**
@@ -229,16 +178,7 @@ public class RouteApi {
 	@ApiOperation(value="Get aggregated runtime metrics of all routes")
 	@Path("/metrics")
 	public RouteMetrics getMetrics() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				Map<String, RouteMetrics> currentMetrics = rm.get().getRouteMetrics();
-				return aggregateMetrics(currentMetrics.values());
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-			}
-		}
-		return null;
+		return aggregateMetrics(WebConsoleComponent.getRouteManagerOrThrowSUE().getRouteMetrics().values());
 	}
 
 	/**
@@ -284,22 +224,15 @@ public class RouteApi {
 	@GET
 	@Path("/list_endpoints")
 	public Map<String, String> listEndpoints() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new HashMap<>();
-		}
-		return rm.get().listEndpoints();
+		return WebConsoleComponent.getRouteManagerOrThrowSUE().listEndpoints();
 	}
 
 	@GET
 	@Path("/validate/{routeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public ValidationInfo validate(@PathParam("routeId") String routeId) {
-		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
-		if (!pap.isPresent()) {
-		    throw new ServiceUnavailableException("PAP not available");
-		}
-		RouteVerificationProof rvp = pap.get().verifyRoute(routeId);
+		PAP pap = WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE();
+		RouteVerificationProof rvp = pap.verifyRoute(routeId);
 		ValidationInfo vi = new ValidationInfo();
 		vi.valid = rvp.isValid();
 		if (!rvp.isValid()) {
@@ -312,10 +245,6 @@ public class RouteApi {
 	@Path("/prolog/{routeId}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getRouteProlog(@PathParam("routeId") String routeId) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-            throw new ServiceUnavailableException("RouteManager not available");
-		}
-		return rm.get().getRouteAsProlog(routeId);
+		return WebConsoleComponent.getRouteManagerOrThrowSUE().getRouteAsProlog(routeId);
 	}
 }
