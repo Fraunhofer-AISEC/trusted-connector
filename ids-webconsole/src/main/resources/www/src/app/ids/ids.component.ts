@@ -33,7 +33,7 @@ export class IdsComponent implements OnInit {
                     ttpHost: response.ttpHost,
                     ttpPort: response.ttpPort,
                     acmeServerWebcon: [response.acmeServerWebcon, [], [control =>
-                        timer(3000)
+                        timer(500)
                             .pipe(
                                 switchMap(_ => this.settingsService.getToS(control.value)),
                                 map(tos => {
