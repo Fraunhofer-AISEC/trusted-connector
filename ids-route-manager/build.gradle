@@ -1,15 +1,3 @@
-jar {
-    manifest {
-        attributes 'Bundle-Name': 'IDS :: Route Manager'
-
-        // export the main package
-        attributes 'Export-Package': 'de.fhg.aisec.ids.rm'
-
-        // since Camel uses reflection to dynamically load classes for its components, we need to declare them as dynamic
-        attributes 'DynamicImport-Package': 'org.apache.camel.*'
-    }
-}
-
 dependencies {
     providedByBundle project(':ids-api')
 

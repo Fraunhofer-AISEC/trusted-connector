@@ -3,8 +3,6 @@ Bundle-Description: Manages data routes
 Export-Package: \
 	de.fhg.aisec.ids.rm
 Import-Package: \
-	org.osgi.framework.*,\
-	org.apache.camel.component.milo.converter,\
 	!org.checkerframework.checker*,\
 	*
 -contract: !org.apache.camel.CamelContext,*
