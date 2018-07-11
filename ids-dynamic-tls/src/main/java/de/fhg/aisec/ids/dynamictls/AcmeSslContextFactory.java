@@ -19,11 +19,13 @@
  */
 package de.fhg.aisec.ids.dynamictls;
 
+import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Consumer;
 
 /**
  * This SslContextFactory registers started instances to an OSGi service
@@ -31,27 +33,39 @@ import java.util.function.Consumer;
  *
  * @author Michael Lux
  */
-public class AcmeSslContextFactory extends SslContextFactory {
+public class AcmeSslContextFactory extends SslContextFactory implements SslContextFactoryReloadable {
 	private static final Logger LOG = LoggerFactory.getLogger(AcmeSslContextFactory.class);
+	private ServiceRegistration<SslContextFactoryReloadable> serviceRegistration;
 
 	@Override
 	protected void doStart() throws Exception {
-		LOG.debug("Start " + this.toString());
-		JettySslContextFactoryReloader.addFactory(this);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Starting {}", this);
+		}
+		BundleContext bundleContext = FrameworkUtil.getBundle(AcmeSslContextFactory.class).getBundleContext();
+		serviceRegistration = bundleContext.registerService(SslContextFactoryReloadable.class, this, null);
 		super.doStart();
 	}
 
 	@Override
 	protected void doStop() throws Exception {
-		LOG.debug("Stop " + this.toString());
-		JettySslContextFactoryReloader.removeFactory(this);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Stopping {}", this);
+		}
+		serviceRegistration.unregister();
 		super.doStop();
 	}
 
 	@Override
-	public void reload(Consumer<SslContextFactory> consumer) throws Exception {
-		LOG.info("Reload " + this.toString());
-		super.reload(consumer);
+	public void reload(String newKeyStorePath) {
+		try {
+			if (LOG.isInfoEnabled()) {
+				LOG.info("Reloading {}", this);
+			}
+			this.reload(f -> f.setKeyStorePath(newKeyStorePath));
+		} catch (Exception e) {
+			LOG.error("Error whilst reloading SslContextFactory: " + this.toString(), e);
+		}
 	}
 
 	@Override

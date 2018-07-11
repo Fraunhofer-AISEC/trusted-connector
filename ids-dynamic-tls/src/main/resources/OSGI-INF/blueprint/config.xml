@@ -1,7 +1,0 @@
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
-
-	<bean id="ssl-context-factory-reloader" class="de.fhg.aisec.ids.dynamictls.JettySslContextFactoryReloader"/>
-
-	<service ref="ssl-context-factory-reloader" interface="de.fhg.aisec.ids.api.acme.SslContextFactoryReloader"/>
-
-</blueprint>

@@ -19,9 +19,8 @@
  */
 package de.fhg.aisec.ids.api.acme;
 
-/**
- * Interface to manage and reload SslContextFactory instances.
- */
-public interface SslContextFactoryReloader {
-	void reloadAll(String newKeyStorePath);
+public interface SslContextFactoryReloadable {
+
+    public void reload(String newKeyStorePath);
+
 }

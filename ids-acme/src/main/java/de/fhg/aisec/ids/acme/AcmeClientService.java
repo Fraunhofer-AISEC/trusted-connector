@@ -23,7 +23,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
-import de.fhg.aisec.ids.api.acme.SslContextFactoryReloader;
+import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import org.apache.karaf.scheduler.Scheduler;
@@ -81,7 +81,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
         settings = null;
     }
 
-    private Set<SslContextFactoryReloader> reloader = Collections.synchronizedSet(new HashSet<>());
+    private Set<SslContextFactoryReloadable> sslReloadables = Collections.synchronizedSet(new HashSet<>());
     /*
      * The following block subscribes this component to any SslContextFactoryReloader.
      * 
@@ -89,17 +89,17 @@ public class AcmeClientService implements AcmeClient, Runnable {
      * certificates from the key store.
      */
 	@Reference(name = "dynamic-tls-reload-service",
-            service = SslContextFactoryReloader.class,
+            service = SslContextFactoryReloadable.class,
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC,
-            unbind = "unbindSslContextFactoryReloader")
-	protected void bindSslContextFactoryReloader(SslContextFactoryReloader reloader) {
-		LOG.info("Bound SslContextFactoryReloader in AcmeClientService");
-		this.reloader.add(reloader);
+            unbind = "unbindSslContextFactoryReloadable")
+	protected void bindSslContextFactoryReloadable(SslContextFactoryReloadable reloadable) {
+		LOG.info("Bound SslContextFactoryReloadable in AcmeClientService");
+		this.sslReloadables.add(reloadable);
 	}
 	@SuppressWarnings("unused")
-	protected void unbindSslContextFactoryReloader(SslContextFactoryReloader reloader) {
-		this.reloader.remove(reloader);
+	protected void unbindSslContextFactoryReloadable(SslContextFactoryReloadable factory) {
+		this.sslReloadables.remove(factory);
 	}
 
     public AcmeTermsOfService getTermsOfService(URI acmeServerUri) {
@@ -245,8 +245,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
                             certificate.getCertificateChain().toArray(new X509Certificate[0]));
                     store.store(jksOutputStream, "ids".toCharArray());
                     // If there is a SslContextFactoryReloader, make it refresh the TLS connections.
-                    LOG.info("Reloading of {} SslContextFactoryReloader implementations...", reloader.size());
-                    reloader.forEach(r -> r.reloadAll(keyStorePath.toString()));
+                    LOG.info("Reloading of {} SslContextFactoryReloadable implementations...", sslReloadables.size());
+                    sslReloadables.forEach(r -> r.reload(keyStorePath.toString()));
                 } catch (KeyStoreException|NoSuchAlgorithmException|CertificateException e) {
                     LOG.error("Error whilst creating new KeyStore!", e);
                 }
