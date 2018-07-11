@@ -7,16 +7,11 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>ids-api</module>
 		<module>ids-comm</module>
-		<module>ids-settings</module>
-		<module>ids-dynamic-tls</module>
 		<module>camel-ids</module>
 		<module>ids-route-manager</module>
 		<module>ids-container-manager</module>
 		<module>ids-webconsole</module>
-		<module>ids-dataflow-control</module>
-		<module>karaf-features-ids</module>
 		<module>karaf-assembly</module>
 		<module>rat-repository</module>
 	</modules>

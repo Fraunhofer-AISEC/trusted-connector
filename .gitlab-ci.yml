@@ -19,7 +19,7 @@ build:
   # install deps
   - apt update && apt install -y openjdk-8-jdk maven
   script: 
-  - ./gradlew --parallel clean install
+  - ./gradlew --parallel clean install check
   artifacts:
     when: always
     paths:
