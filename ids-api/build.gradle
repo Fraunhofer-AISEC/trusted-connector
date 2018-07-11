@@ -30,6 +30,8 @@ dependencies {
 
     providedByBundle group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
+    osgiCore group: 'org.osgi', name: 'org.osgi.core', version: libraryVersions.osgi
+
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
 }

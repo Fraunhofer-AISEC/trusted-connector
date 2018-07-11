@@ -1,4 +1,4 @@
-Bundle-Name: idscp
+Bundle-Name: IDS :: IDS Communication Protocol
 Bundle-Description: IDS Communication Protocol
 Export-Package: \
 	de.fhg.ids.comm,\

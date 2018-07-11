@@ -1,2 +1,2 @@
 #!/bin/bash
-karaf-assembly/target/assembly/bin/karaf clean debug
+karaf-assembly/build/assembly/bin/karaf clean debug

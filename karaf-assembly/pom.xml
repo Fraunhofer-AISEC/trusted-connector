@@ -9,8 +9,9 @@
     <name>IDS :: Karaf Assembly</name>
 
     <properties>
-        <karaf.version></karaf.version>
-        <artifact.version></artifact.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <karaf.version/>
+        <artifact.version/>
     </properties>
 
     <dependencies>

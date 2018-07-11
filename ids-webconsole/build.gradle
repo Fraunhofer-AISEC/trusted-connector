@@ -43,6 +43,7 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     implementation group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
     
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito

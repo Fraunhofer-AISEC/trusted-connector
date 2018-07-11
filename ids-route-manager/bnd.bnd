@@ -9,4 +9,3 @@ Import-Package: \
 	*
 -contract: !org.apache.camel.CamelContext,*
 DynamicImport-Package: org.apache.camel.*
-Private-Package: de.fhg.aisec.ids.rm.util

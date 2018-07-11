@@ -200,8 +200,7 @@ public class AppApi {
 			String url = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig().getAppstoreUrl();
 
 			WebTarget webTarget = client.target(url);
-			Invocation.Builder invocationBuilder = webTarget.request(MediaType.TEXT_PLAIN);
-			Response response = invocationBuilder.get();
+			Response response = webTarget.request(MediaType.TEXT_PLAIN).get();
 			String r = response.readEntity(String.class);
 
 			ObjectMapper mapper = new ObjectMapper();

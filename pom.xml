@@ -7,11 +7,9 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>tpm2j</module>
 		<module>ids-api</module>
 		<module>ids-comm</module>
 		<module>ids-settings</module>
-		<module>ids-acme</module>
 		<module>ids-dynamic-tls</module>
 		<module>camel-ids</module>
 		<module>ids-route-manager</module>

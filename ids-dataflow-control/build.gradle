@@ -1,11 +1,3 @@
-jar {
-    manifest {
-        attributes 'Bundle-Name': 'IDS :: Data Flow Control Engine'
-
-        attributes 'Export-Package': 'de.fhg.ids.dataflowcontrol'
-    }
-}
-
 dependencies {
     providedByBundle project(':ids-api')
 

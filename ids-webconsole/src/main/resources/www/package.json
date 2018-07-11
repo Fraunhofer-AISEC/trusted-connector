@@ -6,7 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "bundle": "ng build --prod",
+    "bundle": "ng build --prod --no-progress",
     "lint": "ng lint",
     "apidocs": "yarn run spectacle ../../../../generated/swagger-ui/swagger.json -t ../../../../generated/swagger-ui"
   },

@@ -20,6 +20,11 @@
 # Binary
 *.bin
 /target/
+/*/target/
+/build/
+/*/build/
+/*/bin/
+/*/generated/
 
 # Sonar
 /.sonarlint/

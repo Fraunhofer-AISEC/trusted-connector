@@ -7,8 +7,8 @@ Now this is tricky. We need to build a custom assembly of karaf with a few featu
 Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
 */
 
-task assembleKaraf(type: Exec) {
-  commandLine "mvn", "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
+task assembleKaraf(type: MavenExec) {
+  goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
 }
 
 jar.dependsOn(assembleKaraf)
