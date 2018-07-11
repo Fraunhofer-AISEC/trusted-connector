@@ -52,22 +52,22 @@ dependencies {
     testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client'
 }
 
-task yarnLint(type: YarnTask) {
+task yarnInstall(type: YarnTask) {
     workingDir = file('src/main/resources/www')
-
-    args = ['lint']
+    args = ['install']
+    onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
 task yarnBuild(type: YarnTask) {
     workingDir = file('src/main/resources/www')
-
     args = ['bundle']
+    onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
-task yarnInstall(type: YarnTask) {
+task yarnLint(type: YarnTask) {
     workingDir = file('src/main/resources/www')
-
-    args = ['install']
+    args = ['lint']
+    onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
 // make sure, yarn install is executed first
