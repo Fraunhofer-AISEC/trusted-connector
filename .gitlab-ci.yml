@@ -1,4 +1,5 @@
-image: node:8-stretch
+# make sure to use a Debian-based image, because otherwise you will run into issue with protoc because of missing glibc on alpine
+image: node:stretch
 
 stages:
 - build
@@ -19,19 +20,19 @@ build:
   # install deps
   - apt update && apt install -y openjdk-8-jdk maven
   script: 
-  - ./gradlew --parallel clean build docker
+  - ./gradlew --parallel clean build dockerize
   artifacts:
     when: always
     paths:
     - "*/build/reports"
 
-# apparently mvn does not push the core-platform image    
+# tag develop builds as latest and push them to the internal registry
 push:
   stage: push
   image: docker
   script:
-  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
-  - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop
+  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   only:
     - develop

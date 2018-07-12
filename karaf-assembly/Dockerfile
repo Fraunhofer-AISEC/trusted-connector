@@ -1,6 +1,6 @@
 FROM openjdk:8-alpine
 
-LABEL AUTHOR="Julian Schütte (julian.schuette@aisec.fraunhofer.de)"
+LABEL AUTHOR="Julian Schuette (julian.schuette@aisec.fraunhofer.de)"
 
 # Add some additional packages:
 # socat is not important, just for debugging and playing around with UNIX sockets

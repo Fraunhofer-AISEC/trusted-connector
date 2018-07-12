@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.2.51'
     id 'com.github.dkorotych.gradle-maven-exec' version '1.2.2.1'
     id 'com.benjaminsproule.swagger' version '1.0.4'
+    id 'com.bmuschko.docker-remote-api' version '3.4.3'
 }
 
 allprojects {
@@ -118,5 +119,6 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+        jcenter()
     }
 }

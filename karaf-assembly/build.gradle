@@ -1,3 +1,7 @@
+apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 /*
 Now this is tricky. We need to build a custom assembly of karaf with a few features:
 - included ids feature
@@ -6,6 +10,21 @@ Now this is tricky. We need to build a custom assembly of karaf with a few featu
 
 Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
 */
+
+static def gitCommit() {
+  def commit = 'HEAD'
+
+  if (System.getenv('CI_COMMIT_SHA')) {
+    commit = System.getenv('CI_COMMIT_SHA')
+  } else {
+    def proc = 'git rev-parse HEAD'.execute()
+    proc.in.eachLine { line -> commit = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+  }
+
+  commit.substring(0, 8)
+}
 
 task assembleKaraf(type: MavenExec) {
   goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
@@ -20,8 +39,9 @@ rootProject.subprojects.findAll() {
   }
 }
 
-task docker(type: Exec) {
-  commandLine 'docker', 'build', '-t', 'registry.netsec.aisec.fraunhofer.de/ids/core-platform:gradle', '.'
+task dockerize(type: DockerBuildImage) {
+    inputDir = project.projectDir
+    tag = 'registry.netsec.aisec.fraunhofer.de/ids/core-platform:' + gitCommit()
 }
 
-docker.dependsOn(assembleKaraf)
+dockerize.dependsOn(assembleKaraf)
