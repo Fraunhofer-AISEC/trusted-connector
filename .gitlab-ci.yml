@@ -18,8 +18,8 @@ build:
   - echo $M2_SETTINGS > ~/.m2/settings.xml
   - mkdir -p /cache/.m2
   # install deps
-  - apt update && apt install -y openjdk-8-jdk maven
-  script: 
+  - apt update && apt install -y --no-install-recommends openjdk-8-jdk-headless
+  script:
   - ./gradlew --parallel clean build dockerize
   artifacts:
     when: always

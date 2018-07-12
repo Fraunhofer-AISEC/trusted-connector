@@ -27,6 +27,7 @@ static def gitCommit() {
 }
 
 task assembleKaraf(type: MavenExec) {
+  mavenDir = projectDir
   goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
 }
 
