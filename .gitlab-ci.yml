@@ -19,12 +19,11 @@ build:
   # install deps
   - apt update && apt install -y openjdk-8-jdk maven
   script: 
-  - ./gradlew --parallel clean install check
+  - ./gradlew --parallel clean build docker
   artifacts:
     when: always
     paths:
-    - "*/target/surefire-reports"
-    - "target/site"
+    - "*/build/reports"
 
 # apparently mvn does not push the core-platform image    
 push:
