@@ -28,7 +28,7 @@ dependencies {
 
     providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson
 
-    providedByBundle group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     osgiCore group: 'org.osgi', name: 'org.osgi.core', version: libraryVersions.osgi
 

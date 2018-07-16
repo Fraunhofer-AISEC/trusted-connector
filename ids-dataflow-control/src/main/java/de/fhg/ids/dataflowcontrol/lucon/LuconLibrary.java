@@ -30,7 +30,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -45,12 +44,11 @@ public class LuconLibrary extends Library {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(LuconLibrary.class);
 
-    private LoadingCache<String, Pattern> regexCache = CacheBuilder.newBuilder()
+    private transient LoadingCache<String, Pattern> regexCache = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.DAYS)
             .maximumWeight((long) 1e6).weigher((k, v) -> ((String) k).length())
             .build(new CacheLoader<String, Pattern>() {
-                @ParametersAreNonnullByDefault
-                public Pattern load(String key) {
+                public Pattern load(@SuppressWarnings("NullableProblems") String key) {
                     return Pattern.compile(key);
                 }
             });

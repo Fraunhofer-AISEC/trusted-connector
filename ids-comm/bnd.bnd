@@ -11,4 +11,5 @@ Export-Package: \
 	de.fhg.ids.comm.ws.protocol.metadata,\
 	de.fhg.ids.comm.ws.protocol.rat
 Import-Package: \
+    !org.checkerframework.checker*,\
 	*

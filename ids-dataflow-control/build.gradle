@@ -1,14 +1,16 @@
 dependencies {
     providedByBundle project(':ids-api')
 
-    providedByBundle group: 'com.google.guava', name: 'guava', version: libraryVersions.guava
+    providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
+        transitive = false  // Avoid pulling in of checker framework and other annotation stuff
+    }
   
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     providedByBundle group: 'it.unibo.alice.tuprolog', name: 'tuprolog', version: libraryVersions.tuprolog
 
-    providedByBundle group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
 

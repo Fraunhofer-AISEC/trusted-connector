@@ -28,7 +28,10 @@ swagger {
             }
             description ='''This is the internal API of the Trusted Connector.
 
-The API provides an administrative interface to manage the Trusted Connector at runtime and is used by the default administration dashboard ("webconsole"). Please note that at the moment the Trusted Connector is in a prototype state and this API does not provide any authorization mechanism.
+The API provides an administrative interface to manage the Trusted Connector at runtime
+and is used by the default administration dashboard ("webconsole").
+Please note that at the moment the Trusted Connector is in a prototype state
+and this API does not provide any authorization mechanism.
 '''
         }
         swaggerDirectory = "${project.projectDir}/generated/swagger-ui"
@@ -54,6 +57,8 @@ dependencies {
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs'
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers'
 
+    providedByBundle group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+
     // use our specified version of jackson instead of the cxf-jackson feature
     providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: libraryVersions.jackson
     providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: libraryVersions.jackson
@@ -71,8 +76,7 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
-    implementation group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
-    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+    compileOnly group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
 
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
