@@ -32,10 +32,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -199,10 +196,7 @@ public class AppApi {
 			Client client = ClientBuilder.newBuilder().build();
 			String url = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig().getAppstoreUrl();
 
-			WebTarget webTarget = client.target(url);
-			Invocation.Builder invocationBuilder = webTarget.request(MediaType.TEXT_PLAIN);
-			Response response = invocationBuilder.get();
-			String r = response.readEntity(String.class);
+			String r = client.target(url).request(MediaType.TEXT_PLAIN).get(String.class);
 
 			ObjectMapper mapper = new ObjectMapper();
 			ApplicationContainer[] result = mapper.readValue(r, ApplicationContainer[].class);

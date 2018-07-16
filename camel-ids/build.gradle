@@ -1,0 +1,30 @@
+description = 'Camel IDS Component'
+
+dependencies {
+    providedByBundle project(':tpm2j')
+    providedByBundle project(':ids-api')
+    providedByBundle project(':ids-comm')
+
+    // Bill of Materials (BOM) for Camel
+    bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
+
+    providedByFeature group: 'org.apache.camel', name: 'camel-core'
+    providedByFeature group: 'org.apache.camel', name: 'camel-ahc'
+
+    providedByFeature group: 'org.eclipse.jetty', name: 'jetty-servlet', version: libraryVersions.jetty
+    providedByFeature group: 'org.eclipse.jetty', name: 'jetty-jmx', version: libraryVersions.jetty
+    providedByFeature group: 'org.eclipse.jetty', name: 'jetty-servlets', version: libraryVersions.jetty
+
+    providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: libraryVersions.jetty
+    providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+
+    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+
+    providedByFeature group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
+
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'org.apache.camel', name: 'camel-test'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+}

@@ -1,0 +1,14 @@
+apply plugin: 'kotlin'
+
+dependencies {
+    providedByBundle project(':ids-api')
+
+    providedByBundle "org.jetbrains.kotlin:kotlin-osgi-bundle:${libraryVersions.kotlin}"
+
+    implementation group: 'org.mapdb', name: 'mapdb', version: libraryVersions.mapdb
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+}

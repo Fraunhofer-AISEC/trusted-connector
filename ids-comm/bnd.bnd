@@ -1,4 +1,4 @@
-Bundle-Name: idscp
+Bundle-Name: IDS :: IDS Communication Protocol
 Bundle-Description: IDS Communication Protocol
 Export-Package: \
 	de.fhg.ids.comm,\
@@ -11,4 +11,5 @@ Export-Package: \
 	de.fhg.ids.comm.ws.protocol.metadata,\
 	de.fhg.ids.comm.ws.protocol.rat
 Import-Package: \
+    !org.checkerframework.checker*,\
 	*

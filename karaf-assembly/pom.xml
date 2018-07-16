@@ -1,72 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>de.fhg.ids</groupId>
     <artifactId>karaf-assembly</artifactId>
+    <version>${artifact.version}</version>
     <packaging>karaf-assembly</packaging>
-
-    <parent>
-        <groupId>de.fhg.ids</groupId>
-        <artifactId>core-platform</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
-    </parent>
-
-    <name>IDS Karaf Platform</name>
-    <description>IDS Karaf Platform</description>
+    <name>IDS :: Karaf Assembly</name>
 
     <properties>
-        <!-- Karaf Maven Plugin does not have to be same as Karaf Server version
-             For example, Karaf Maven Plugin 3.0.2 has bug uploading to password protected Nexus Repo
-             So I used Karaf Maven Plugin 3.0.3 to build a Karaf 3.0.2 Server -->
-        <karaf.plugin.version>${karaf.version}</karaf.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
-
-        <skipDocker>false</skipDocker>
+        <karaf.version/>
+        <artifact.version/>
     </properties>
-
-    <!-- Import Karaf POM to use the correct version of the Karaf dependencies -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.karaf</groupId>
-                <artifactId>karaf</artifactId>
-                <version>${karaf.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
-            <!-- scope is compile so all features (there is only one) are installed into startup.properties and
-                 the feature repo itself is not added in etc/org.apache.karaf.features.cfg file -->
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>framework</artifactId>
-            <type>kar</type>
             <version>${karaf.version}</version>
+            <type>kar</type>
         </dependency>
-
         <dependency>
-            <!-- Scope is runtime so the feature repo is listed in etc/org.apache.karaf.features.cfg file,
-                 and features will installed into the system directory.
-
-                 This imports the standard Karaf features described at
-                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml
-                 These features are installed in the karaf-maven-plugin configuration
-            -->
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>standard</artifactId>
             <classifier>features</classifier>
-            <type>xml</type>
             <version>${karaf.version}</version>
+            <type>xml</type>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- Needed for Camel feature dependency -->
-        <!-- NOTE: We need to include spring-legacy, because Spring 5 is now standard, however CXF needs Spring 4 -->
+        <!-- needed for camel-cxf -->
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>spring-legacy</artifactId>
@@ -75,18 +38,19 @@
             <type>xml</type>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- Repo for IDS feature -->
+        <!-- this is our IDS feature repo -->
         <dependency>
             <groupId>de.fhg.ids</groupId>
             <artifactId>karaf-features-ids</artifactId>
             <version>${project.version}</version>
-            <type>xml</type>
             <classifier>features</classifier>
+            <type>xml</type>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>           
     </dependencies>
+
     <build>
+        <directory>build</directory>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -105,6 +69,19 @@
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>process-resources</id>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
@@ -132,160 +109,6 @@
                     </bootFeatures>
                 </configuration>
             </plugin>
-
-            <!-- Build docker images for x86 and Raspberry Pi -->
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.23.0</version>
-                <configuration>
-                    <startParallel>false</startParallel>
-                    <showLogs>true</showLogs>
-                    <autoPull>once</autoPull>
-                    <skip>${skipDocker}</skip>
-                </configuration>
-
-                <!-- Register qemu in binfmt_misc to support cross-platform docker containers-->
-                <executions>
-                    <execution>
-                        <id>run-qemu-binfmt</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>multiarch/qemu-user-static:register</name>
-                                    <alias>qemu-registration</alias>
-                                    <run>
-                                        <privileged>true</privileged>
-                                        <wait>
-                                            <time>1000</time>
-                                        </wait>
-                                    </run>
-                                </image>
-                            </images>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>stop-qemu-binfmt</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-
-                    <!-- x86 -->
-                    <execution>
-                        <id>build-platform-x86</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</name>
-                                    <build>
-                                        <dockerFile>${basedir}/src/main/docker/Dockerfile</dockerFile>
-                                        <assembly>
-                                            <mode>dir</mode>
-                                            <targetDir>/root/</targetDir>
-                                            <inline>
-                                                <fileSet>
-                                                    <directory>${project.build.directory}/assembly</directory>
-                                                    <outputDirectory>.</outputDirectory>
-                                                </fileSet>
-                                            </inline>
-                                        </assembly>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                    </execution>
-
-                    <!-- Raspberry -->
-                    <execution>
-                        <id>build-platform-raspi</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop-raspi</name>
-                                    <build>
-                                        <dockerFile>${basedir}/src/main/docker-raspi/Dockerfile</dockerFile>
-                                        <assembly>
-                                            <mode>dir</mode>
-                                            <targetDir>/root/</targetDir>
-                                            <inline>
-                                                <fileSet>
-                                                    <directory>${project.build.directory}/assembly</directory>
-                                                    <outputDirectory>.</outputDirectory>
-                                                </fileSet>
-                                            </inline>
-                                        </assembly>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.apache.karaf.tooling</groupId>
-                                        <artifactId>karaf-maven-plugin</artifactId>
-                                        <versionRange>[${karaf.version},)</versionRange>
-                                        <goals>
-                                            <goal>assembly</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <execute>
-                                            <runOnIncremental>false</runOnIncremental>
-                                        </execute>
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-dependency-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [2.8,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>copy</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore/>
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>

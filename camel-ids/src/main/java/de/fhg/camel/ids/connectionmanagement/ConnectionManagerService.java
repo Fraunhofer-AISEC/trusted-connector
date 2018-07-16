@@ -26,17 +26,16 @@ import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.camel.ids.client.WsEndpoint;
 import de.fhg.camel.ids.server.WebsocketComponent;
 import de.fhg.camel.ids.server.WebsocketComponentServlet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Main entry point of the Connection Management Layer.

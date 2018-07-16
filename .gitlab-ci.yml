@@ -1,4 +1,5 @@
-image: maven
+# make sure to use a Debian-based image, because otherwise you will run into issue with protoc because of missing glibc on alpine
+image: node:stretch
 
 stages:
 - build
@@ -6,28 +7,32 @@ stages:
 
 build:
   stage: build
+  variables:
+    GRADLE_USER_HOME: "/cache/.gradle"
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   before_script:
+  # caching for gradle
+  - mkdir -p /cache/.gradle
+  # caching for mvn (used for karaf-assembly)
+  - mkdir -p /root/.m2
   - echo $M2_SETTINGS > ~/.m2/settings.xml
   - mkdir -p /cache/.m2
-  - curl -sL https://deb.nodesource.com/setup_8.x | bash -
-  - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-  - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-  - apt update && apt install -y nodejs yarn
-  script: 
-  - mvn clean -DskipITs install site --batch-mode
+  # install deps
+  - apt update && apt install -y --no-install-recommends openjdk-8-jdk-headless
+  script:
+  - ./gradlew --parallel clean build dockerize
   artifacts:
     when: always
     paths:
-    - "*/target/surefire-reports"
-    - "target/site"
+    - "*/build/reports"
 
-# apparently mvn does not push the core-platform image    
+# tag develop builds as latest and push them to the internal registry
 push:
   stage: push
   image: docker
   script:
-  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
-  - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop
+  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   only:
     - develop

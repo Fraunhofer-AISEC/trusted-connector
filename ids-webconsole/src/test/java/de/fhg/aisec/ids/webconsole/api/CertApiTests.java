@@ -135,7 +135,7 @@ public class CertApiTests extends Assert {
 		client.accept(MediaType.APPLICATION_JSON);
 		client.header("Content-type", MediaType.APPLICATION_JSON);
 		client.path("/certs/create_identity");
-		String alias = client.post(idSpec,String.class);
+		String alias = client.post(idSpec, String.class);
 		assertTrue(alias.length() > 5);
 	}
 
@@ -145,7 +145,8 @@ public class CertApiTests extends Assert {
 		WebClient client = newClient();
 		client.accept(MediaType.APPLICATION_JSON);
 		client.path("/certs/list_identities");
-		List<Cert> certs = client.get(new GenericType<List<Cert>>() { });
+		List<Cert> certs = client.get(new GenericType<List<Cert>>() {
+		});
 		assumeFalse(certs.isEmpty());
 
 		// Choose an identity and delete it
@@ -159,7 +160,8 @@ public class CertApiTests extends Assert {
 		// Confirm it has been deleted
 		client = newClient();
 		client.path("/certs/list_identities");
-		List<Cert> keys = client.get(new GenericType<List<Cert>>() { });
+		List<Cert> keys = client.get(new GenericType<List<Cert>>() {
+		});
 		boolean contained = false;
 		for (Cert k : keys) {
 			contained |= alias.equals(k.alias);

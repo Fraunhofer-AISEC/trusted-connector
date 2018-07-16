@@ -1,0 +1,37 @@
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+protobuf {
+    generatedFilesBaseDir = "$projectDir/generated"
+
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libraryVersions.protobuf}"
+    }
+}
+
+clean {
+    delete protobuf.generatedFilesBaseDir
+}
+
+idea {
+    module {
+        // mark as generated sources for IDEA
+        generatedSourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
+    }
+}
+
+dependencies {
+    providedByBundle project(':ids-api')
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    providedByBundle group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
+
+    providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
+
+    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+
+    testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+}

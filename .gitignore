@@ -20,6 +20,11 @@
 # Binary
 *.bin
 /target/
+/*/target/
+/build/
+/*/build/
+/*/bin/
+/*/generated/
 
 # Sonar
 /.sonarlint/
@@ -30,6 +35,8 @@
 /.recommenders/
 rat-repository/src/main/docker/jar/*
 .DS_Store
+bin
+out
 
 # Karaf Deploy
 /karaf-assembly/src/main/resources/deploy/*.xml

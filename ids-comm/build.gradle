@@ -1,0 +1,18 @@
+dependencies {
+    providedByBundle project(':ids-api')
+    providedByBundle project(':tpm2j')
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
+
+    providedByBundle group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
+
+    providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
+
+    providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: libraryVersions.jetty
+    providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
+
+    testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4    
+}
