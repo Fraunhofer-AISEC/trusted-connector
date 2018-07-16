@@ -108,6 +108,8 @@ task yarnApiDocs(type: YarnTask) {
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
+yarnBuild.dependsOn(yarnLint)
+
 // make sure, yarn install is executed first
 yarnBuild.dependsOn(yarnInstall)
 yarnApiDocs.dependsOn(yarnInstall)
@@ -116,9 +118,6 @@ yarnApiDocs.dependsOn(yarnInstall)
 // TODO: this also does not solve the wanted effect that yarn build should 
 // only be triggered if the contents of src/main/resources/www have changed :(
 processResources.dependsOn(yarnBuild)
-
-// lint on check task
-check.dependsOn(yarnLint)
 
 // yarnApiDocs depends on swagger generation
 yarnApiDocs.dependsOn(generateSwaggerDocumentation)
