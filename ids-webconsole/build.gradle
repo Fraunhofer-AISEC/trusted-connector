@@ -57,7 +57,8 @@ dependencies {
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs'
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers'
 
-    providedByBundle group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+    // This is required for compilation only, and provided by karaf automatically, likely by some included feature
+    compileOnly group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
 
     // use our specified version of jackson instead of the cxf-jackson feature
     providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: libraryVersions.jackson
