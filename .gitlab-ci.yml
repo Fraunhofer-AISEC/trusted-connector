@@ -20,7 +20,8 @@ build:
   # install deps
   - apt update && apt install -y --no-install-recommends openjdk-8-jdk-headless
   script:
-  - ./gradlew --parallel clean build dockerize
+  # yarnBuild is part of build, however this could speed up the process a little bit by prioritizing the long-running yarnBuild
+  - ./gradlew --parallel clean yarnBuild build dockerize
   artifacts:
     when: always
     paths:

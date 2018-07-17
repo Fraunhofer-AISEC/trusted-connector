@@ -115,10 +115,7 @@ yarnBuild.dependsOn(yarnLint)
 yarnBuild.dependsOn(yarnInstall)
 yarnApiDocs.dependsOn(yarnInstall)
 
-// yarn build on resources task
-// TODO: this also does not solve the wanted effect that yarn build should 
-// only be triggered if the contents of src/main/resources/www have changed :(
-processResources.dependsOn(yarnBuild)
+build.dependsOn(yarnBuild)
 
 // yarnApiDocs depends on swagger generation
 yarnApiDocs.dependsOn(generateSwaggerDocumentation)
