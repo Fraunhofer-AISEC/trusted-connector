@@ -43,7 +43,7 @@ allprojects {
             protobuf      : '3.5.1',
 
             // it seems not all jetty components are in our BOM so we need to specify it here as well
-            jetty         : '9.4.11.v20180605',
+            jetty         : '9.4.6.v20170531',
 
             // we will pull in a newer version of jackson because of security fixes
             jackson       : '2.9.5',
