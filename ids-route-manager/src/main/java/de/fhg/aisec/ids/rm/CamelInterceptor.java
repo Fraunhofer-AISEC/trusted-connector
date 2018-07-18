@@ -25,11 +25,6 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.InterceptStrategy;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/**
- * 
- * @author Mathias Morbitzer (mathias.morbitzer@aisec.fraunhofer.de)
- */
-
 public class CamelInterceptor implements InterceptStrategy {
 	private RouteManagerService rm;
 
@@ -39,8 +34,7 @@ public class CamelInterceptor implements InterceptStrategy {
 	
 	@Override
     public Processor wrapProcessorInInterceptors(final CamelContext context, final ProcessorDefinition<?> definition,
-                                                 final Processor target, final Processor nextTarget) throws Exception {
- 
+                                                 final Processor target, final Processor nextTarget) {
         return new PolicyEnforcementPoint(target, this.rm);
     }
 

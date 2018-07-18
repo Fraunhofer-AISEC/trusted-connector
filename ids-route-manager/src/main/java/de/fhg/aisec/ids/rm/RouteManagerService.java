@@ -19,30 +19,12 @@
  */
 package de.fhg.aisec.ids.rm;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
+import de.fhg.aisec.ids.api.policy.PDP;
+import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.api.router.graph.GraphData;
+import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
 import de.fhg.aisec.ids.rm.util.GraphProcessor;
+import de.fhg.aisec.ids.rm.util.PrologPrinter;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
@@ -51,7 +33,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
 import org.apache.camel.model.*;
 import org.apache.camel.spi.ManagementAgent;
-import org.apache.camel.util.CamelContextHelper;
 import org.apache.camel.util.RouteStatDump;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -60,22 +41,18 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.policy.PDP;
-import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteException;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
-import de.fhg.aisec.ids.rm.util.PrologPrinter;
+import javax.management.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Manages Camel routes.
@@ -83,7 +60,7 @@ import de.fhg.aisec.ids.rm.util.PrologPrinter;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
  */
-@Component(enabled=true, immediate=true, name="ids-routemanager")
+@Component(immediate=true, name="ids-routemanager")
 public class RouteManagerService implements RouteManager {
 	private static final Logger LOG = LoggerFactory.getLogger(RouteManagerService.class);
 	private PDP pdp;
@@ -327,10 +304,11 @@ public class RouteManagerService implements RouteManager {
 	}
 
 	/**
-	 * Creates a visualization of a Camel route in DOT (graphviz) format.
+	 * Creates a data representation of the passed RouteDefinition instance
+	 * for general-purpose graph applications
 	 *
 	 * @param rd The route definition to process
-	 * @return The string representation of the Camel route in DOT
+	 * @return The GraphData representation of the Camel route
 	 */
 	private GraphData routeToGraph(RouteDefinition rd) {
 		return GraphProcessor.processRoute(rd);
@@ -372,18 +350,21 @@ public class RouteManagerService implements RouteManager {
 		return Collections.emptyList();
 	}
 	
-	protected RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException, JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
+	protected RouteStatDump getRouteStats(CamelContext cCtx, RouteDefinition rd) throws MalformedObjectNameException,
+			JAXBException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
 		JAXBContext context = JAXBContext.newInstance(RouteStatDump.class);
 		 Unmarshaller unmarshaller = context.createUnmarshaller();
 		  ManagementAgent agent = cCtx.getManagementStrategy().getManagementAgent();
           if (agent != null) {
               MBeanServer mBeanServer = agent.getMBeanServer();
-              Set<ObjectName> set = mBeanServer.queryNames(new ObjectName(DefaultManagementAgent.DEFAULT_DOMAIN + ":type=routes,name=\"" + rd.getId() + "\",*"), null);
+              Set<ObjectName> set = mBeanServer.queryNames(new ObjectName(DefaultManagementAgent.DEFAULT_DOMAIN
+					  + ":type=routes,name=\"" + rd.getId() + "\",*"), null);
               for (ObjectName routeMBean : set) {
                   // the route must be part of the camel context
                   String camelId = (String) mBeanServer.getAttribute(routeMBean, "CamelId");
                   if (camelId != null && camelId.equals(cCtx.getName())) {
-                      String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml", new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
+                      String xml = (String) mBeanServer.invoke(routeMBean, "dumpRouteStatsAsXml",
+							  new Object[]{Boolean.FALSE, Boolean.TRUE}, new String[]{"boolean", "boolean"});
                       return (RouteStatDump) unmarshaller.unmarshal(new StringReader(xml));
                   }
               }
