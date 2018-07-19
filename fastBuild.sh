@@ -1,0 +1,1 @@
+./gradlew clean :ids-api:jar :ids-settings:jar install --parallel -PskipAngular
