@@ -109,13 +109,17 @@ task yarnApiDocs(type: YarnTask) {
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
+clean.doLast {
+    file('src/main/resources/www/dist').deleteDir()
+}
+
 yarnBuild.dependsOn(yarnLint)
 
 // make sure, yarn install is executed first
 yarnBuild.dependsOn(yarnInstall)
 yarnApiDocs.dependsOn(yarnInstall)
 
-build.dependsOn(yarnBuild)
+processResources.dependsOn(yarnBuild)
 
 // yarnApiDocs depends on swagger generation
 yarnApiDocs.dependsOn(generateSwaggerDocumentation)
