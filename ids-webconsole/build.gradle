@@ -110,7 +110,9 @@ task yarnApiDocs(type: YarnTask) {
 }
 
 clean.doLast {
-    file('src/main/resources/www/dist').deleteDir()
+    if (!rootProject.hasProperty("skipAngular")) {
+        file('src/main/resources/www/dist').deleteDir()
+    }
 }
 
 yarnBuild.dependsOn(yarnLint)
