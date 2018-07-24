@@ -62,7 +62,7 @@ public class UnixSocketThread implements Runnable {
 	private List<ChangeRequest> pendingChanges = new LinkedList<>();
 
 	// Maps a UnixSocketChannel to a list of ByteBuffer instances
-	private Map<UnixSocketChannel, List<ChangeRequest>> pendingData = new HashMap<>();
+	private final Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 	
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
 	private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponseHandler>());
@@ -102,11 +102,7 @@ public class UnixSocketThread implements Runnable {
 		this.rspHandlers.put(channel, handler);
 		// And queue the data we want written
 		synchronized (this.pendingData) {
-			List queue = (List) this.pendingData.get(channel);
-			if (queue == null) {
-				queue = new ArrayList();
-				this.pendingData.put(channel, queue);
-			}
+			List<ByteBuffer> queue = this.pendingData.computeIfAbsent(channel, ch -> new ArrayList<>());
 			queue.add(ByteBuffer.wrap(result));
 		}
 		// Finally, wake up our selecting thread so it can make the required changes
@@ -243,10 +239,10 @@ public class UnixSocketThread implements Runnable {
 	private void write(SelectionKey key) throws IOException {
 		final UnixSocketChannel channel = this.getChannel(key);
 		synchronized (this.pendingData) {
-			List queue = (List) this.pendingData.get(channel);
+			List<ByteBuffer> queue = this.pendingData.get(channel);
 			// Write until there's not more data
 			while (!queue.isEmpty()) {
-				ByteBuffer buf = (ByteBuffer) queue.get(0);
+				ByteBuffer buf = queue.get(0);
 				channel.write(buf);
 				if (buf.remaining() > 0) {
 					// ... or the socket's buffer fills up
