@@ -20,6 +20,9 @@
 package de.fhg.ids.comm.ws.protocol.fsm;
 
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
+import org.slf4j.LoggerFactory;
+
+import java.util.function.Function;
 
 /**
  * A Transition transfers the FSM from a start state to an end state and is
@@ -30,15 +33,15 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
  * 
  */
 public class Transition {
-	Object evtName;
-	String startState;
-	String endState;
-	TransitionListener before;
+	final Object event;
+	final String startState;
+	final String endState;
+	final Function<Event, Boolean> runBeforeTransition;
 
 	/**
 	 * Creates a new transition.
 	 * 
-	 * @param evtName
+	 * @param eventName
 	 *            the event triggering this transition.
 	 * @param startState
 	 *            the start state of this transition.
@@ -50,46 +53,45 @@ public class Transition {
 	 *            callable returns false, the transition will not take place and
 	 *            the FSM remains in startState.
 	 */
-	public Transition(String evtName, String startState, String endState, TransitionListener runBeforeTransition) {
-		this.evtName = evtName;
+	public Transition(String eventName, String startState, String endState, Function<Event, Boolean> runBeforeTransition) {
+		this.event = eventName;
 		this.startState = startState;
 		this.endState = endState;
-		this.before = runBeforeTransition;
+		this.runBeforeTransition = runBeforeTransition;
 	}
 
-	public Transition(Object evtKey, String startState, String endState, TransitionListener runBeforeTransition) {
-		this.evtName = evtKey;
+	public Transition(Object evtKey, String startState, String endState, Function<Event, Boolean> runBeforeTransition) {
+		this.event = evtKey;
 		this.startState = startState;
 		this.endState = endState;
-		this.before = runBeforeTransition;
+		this.runBeforeTransition = runBeforeTransition;
 	}
 
-	public Transition(Object evtKey, ProtocolState startState, ProtocolState endState, TransitionListener runBeforeTransition) {
-		this.evtName = evtKey;
+	public Transition(Object evtKey, ProtocolState startState, ProtocolState endState, Function<Event, Boolean> runBeforeTransition) {
+		this.event = evtKey;
 		this.startState = startState.id();
 		this.endState = endState.id();
-		this.before = runBeforeTransition;
+		this.runBeforeTransition = runBeforeTransition;
 	}
 
 	/**
 	 * Executes code associated with this transition.
 	 * 
 	 * This method returns the result of the executed Callable (true or false)
-	 * or false in case of any Throwables. No exceptions will be thrown from
+	 * or false in case of any Exceptions. No exceptions will be thrown from
 	 * this method.
 	 * 
-	 * @return
+	 * @return Whether
 	 */
 	protected boolean doBeforeTransition(Event event) {
-		boolean success = true;
-		if (before != null) {
+		if (runBeforeTransition != null) {
 			try {
-				success = before.transition(event);
+				runBeforeTransition.apply(event);
 			} catch (Throwable t) {
-				success = false;
-				t.printStackTrace();
+				LoggerFactory.getLogger(this.getClass().getName()).warn("Error in before-transition-procedure", t);
+				return false;
 			}
 		}
-		return success;
+		return true;
 	}
 }

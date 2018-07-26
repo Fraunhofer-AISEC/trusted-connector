@@ -65,7 +65,9 @@ public class WsProducer extends DefaultProducer {
         Message in = exchange.getIn();
         Object message = in.getBody();
         if (message != null) {
-            log.debug("Sending out {}", message);
+            if (log.isTraceEnabled()) {
+                log.debug("Sending out {}", message);
+            }
             if (message instanceof String) {
                 sendMessage(getWebSocket(), (String)message, getEndpoint().isUseStreaming());
             } else if (message instanceof byte[]) {
@@ -150,7 +152,7 @@ public class WsProducer extends DefaultProducer {
         }
     }
 
-    private WebSocket getWebSocket() throws Exception {
+    private WebSocket getWebSocket() {
         return getEndpoint().getWebSocket();
     }
 }

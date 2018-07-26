@@ -30,33 +30,44 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.protobuf.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 
+import javax.xml.bind.DatatypeConverter;
+
 public class Database {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Database.class);
 	private Connection connection;
 	private String sql;
-	private static final String ZERO = "0000000000000000000000000000000000000000000000000000000000000000";
-	private static final String FFFF =  "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+	private static final ByteString ZERO =
+			hexToByteString("0000000000000000000000000000000000000000000000000000000000000000");
+	private static final ByteString FFFF =
+			hexToByteString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+	public static ByteString hexToByteString(String hex) {
+		return ByteString.copyFrom(DatatypeConverter.parseHexBinary(hex));
+	}
+
+	public static String byteStringToHex(ByteString bs) {
+		return DatatypeConverter.printHexBinary(bs.toByteArray());
+	}
  
 	public Database() {
 		makeJDBCConnection();
 		try {
 			createTables();
 		} catch (SQLException e) {
-			LOG.debug("ERROR: could not create Tables !");
-			e.printStackTrace();
+			LOG.error("ERROR: could not create Tables !", e);
 		}
 		try {
 			insertDefaultConfiguration();
 		} catch (SQLException e) {
-			LOG.debug("ERROR: could not insert default Configuration !");
-			e.printStackTrace();
+			LOG.error("ERROR: could not insert default Configuration !", e);
 		}
 	}
 
@@ -78,8 +89,7 @@ public class Database {
 		for (int i = 0; i < numAll ; i++) {
 			if(i < numAdvanced || i == numAll - 1) {
 				all[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
-			}
-			else {
+			} else {
 				all[i] = Pcr.newBuilder().setNumber(i).setValue(FFFF).build();
 			}
 		}		
@@ -92,15 +102,14 @@ public class Database {
 		try {
 			Class.forName("org.sqlite.JDBC");
 		} catch (ClassNotFoundException e) {
-			LOG.debug("Sorry, couldn't found JDBC driver. Make sure you have added JDBC Maven Dependency Correctly");
-			e.printStackTrace();
+			LOG.error("Sorry, couldn't found JDBC driver. Make sure you have added JDBC Maven Dependency Correctly", e);
 			return;
 		}
 		try {
 			connection = DriverManager.getConnection("jdbc:sqlite:configuration.db");
 			LOG.debug("connection to sqlite db successful!");
 		} catch (SQLException e) {
-			LOG.debug("Failed to make connection to mysql db!", e);
+			LOG.error("Failed to make connection to mysql db!", e);
 		}
 
 	}
@@ -135,9 +144,11 @@ public class Database {
 			pStatement.setString(1, name);
 			pStatement.setString(2, type);
 			pStatement.executeUpdate();
-			long key = pStatement.getGeneratedKeys().getLong(1);
-			this.insertPcrs(values, key);
-			return key;
+			try (ResultSet keySet = pStatement.getGeneratedKeys()) {
+				long key = keySet.getLong(1);
+				this.insertPcrs(values, key);
+				return key;
+			}
 		}
 	}
 	
@@ -145,9 +156,9 @@ public class Database {
 		sql = "INSERT INTO PCR (SEQ, VALUE, CID) VALUES  (?,?,?)";
 		try (PreparedStatement pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			for (Pcr value : values) {
-				LOG.debug("INSERT PCR order:" + value.getNumber() + " value " + value.getValue());
+				LOG.debug("INSERT PCR order: {} value {}", value.getNumber(), value.getValue());
 				pStatement.setInt(1, value.getNumber());
-				pStatement.setString(2, value.getValue());
+				pStatement.setString(2, byteStringToHex(value.getValue()));
 				pStatement.setLong(3, key);
 				pStatement.executeUpdate();
 			}
@@ -155,31 +166,40 @@ public class Database {
 	}
 	
 	private Long[] getConfigurationIdSingle(Pcr value) throws SQLException {
-		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
+		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID " +
+				"WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
 		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
 			pStatement.setInt(1, value.getNumber());
-			pStatement.setString(2, value.getValue());
-			List<Long> result = new ArrayList<Long>();
+			pStatement.setString(2, byteStringToHex(value.getValue()));
+			List<Long> result = new ArrayList<>();
 			try (ResultSet rs = pStatement.executeQuery()) {
 				while (rs.next()) {
 					result.add(rs.getLong("ID"));
 				}
-				pStatement.close();
 			}
 			return result.toArray(new Long[result.size()]);
 		}
 	}
 	
-	public Long[] getConfigurationId(Pcr[] values) throws SQLException {
-		Long[] start = this.getConfigurationIdSingle(values[0]);
-		values = Arrays.copyOfRange(values, 1, values.length);
-		LOG.debug("\n#################################\nstart:" + Arrays.toString(start) + "\n#################################\n");
+	public Long[] getConfigurationId(List<Pcr> values) throws SQLException {
+		Long[] start = this.getConfigurationIdSingle(values.get(0));
+		values = values.subList(1, values.size());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("\n#################################\nstart:{}\n#################################\n",
+					Arrays.toString(start));
+		}
 		for(Pcr value: values){
 			Long[] now =  this.getConfigurationIdSingle(value);
-			LOG.debug("\n#################################\nnow:" + Arrays.toString(now) +"\n#################################\n");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("\n#################################\nnow:{}\n#################################\n",
+						Arrays.toString(now));
+			}
 			start = intersection(start, now);
 		}
-		LOG.debug("\n#################################\nfinal:" + Arrays.toString(start) +"\n#################################\n");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("\n#################################\nfinal:{}\n#################################\n",
+					Arrays.toString(start));
+		}
 		return start;
 	}
 	
@@ -208,7 +228,7 @@ public class Database {
 	}
 	
 	public Configuration[] getConfigurationList() throws SQLException {
-		List<Configuration> ll = new LinkedList<Configuration>();
+		List<Configuration> ll = new LinkedList<>();
 		try (Statement stmt = connection.createStatement();
 			 ResultSet rs = stmt.executeQuery("SELECT * FROM CONFIG")) {
 			while (rs.next()) {
@@ -220,7 +240,7 @@ public class Database {
 
 	public Configuration getConfiguration(long id) {
 		Configuration c;
-		List<Pcr> values = new ArrayList<Pcr>();
+		List<Pcr> values = new ArrayList<>();
 		String sql1 = "select * from CONFIG where ID = ?;";
 		String sql2 = "select * from PCR where CID = ?;";
 		try (PreparedStatement pStatement1 = connection.prepareStatement(sql1);
@@ -232,24 +252,22 @@ public class Database {
 				if(rs1.next()) {
 					while(rs2.next()) {
 						values.add(Pcr.newBuilder().setNumber(rs2.getInt("SEQ"))
-								.setValue(rs2.getString("VALUE")).build());
+								.setValue(hexToByteString(rs2.getString("VALUE"))).build());
 					}
-					if(values.size() > 0) {
+					if(values.isEmpty()) {
 						c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"),
 								rs1.getString("TYPE"), values.toArray(new Pcr[values.size()]));
-					}
-					else {
+					} else {
 						c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"),
 								rs1.getString("TYPE"));
 					}
 					return c;
-				}
-				else {
+				} else {
 					return null;
 				}
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			LOG.error("Error in getConfiguration()", e);
 			return null;
 		}
 	}
@@ -258,21 +276,19 @@ public class Database {
 	public boolean checkMessage(ConnectorMessage message) {
 		try {
 			List<Pcr> pcrList = message.getAttestationRepositoryRequest().getPcrValuesList();
-			Pcr[] values = pcrList.toArray(new Pcr[pcrList.size()]);
-			Long[] configIds = this.getConfigurationId(values);
+			Long[] configIds = this.getConfigurationId(pcrList);
 			if(configIds.length == 1) {
 				return true;
-			}
-			else if(configIds.length > 1) {
-				LOG.debug("found more than one matching configuration (" + Arrays.toString(configIds)
-						+ ") =( this shouldn't happen !");
+			} else if(configIds.length > 1) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("found more than one matching configuration ({}) =( this shouldn't happen !",
+							Arrays.toString(configIds));
+				}
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
-		}
-		catch(Exception ex) {
+		} catch (Exception ex) {
 			return false;
 		}
 	}

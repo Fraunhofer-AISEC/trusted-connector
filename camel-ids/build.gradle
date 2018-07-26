@@ -27,4 +27,5 @@ dependencies {
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.apache.camel', name: 'camel-test'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.ops4j', name: 'peaberry', version: libraryVersions.peaberry
 }

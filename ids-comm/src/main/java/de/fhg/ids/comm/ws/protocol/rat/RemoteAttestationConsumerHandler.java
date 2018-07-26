@@ -22,8 +22,10 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import com.google.protobuf.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,10 +46,12 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
+import javax.xml.bind.DatatypeConverter;
+
 public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	private final FSM fsm;
-	private String myNonce;
-	private String yourNonce;
+	private ByteString myNonce;
+	private ByteString yourNonce;
 	private IdsAttestationType aType;
 	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
 	private UnixSocketResponseHandler handler;
@@ -84,7 +88,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 	
 	public MessageLite enterRatRequest(Event e) {
 		// generate a new software nonce on the client and send it to server
-		this.myNonce = NonceGenerator.generate(40);
+		this.myNonce = ByteString.copyFrom(NonceGenerator.generate(20));
 		// get starting session id
 		this.sessionID = e.getMessage().getId();
 		return ConnectorMessage
@@ -95,23 +99,24 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 						AttestationRequest
 						.newBuilder()
 						.setAtype(this.aType)
-						.setQualifyingData(this.myNonce)
+						.setNonce(this.myNonce)
 						.build())
 				.build();			
 	}
 
 	public MessageLite sendTPM2Ddata(Event e) {
 		// get nonce from server msg
-		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData().toString();
+		this.yourNonce = e.getMessage().getAttestationRequest().getNonce();
 		if (++this.sessionID != e.getMessage().getId()) {
-			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, "Invalid session ID " + e.getMessage().getId());
+			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID,
+					"Invalid session ID " + e.getMessage().getId());
 		}
 		
 		String halg = "";
-		String quoted = "";
-		String signature = "";
-		List<Pcr> pcrValues = new ArrayList<>();
-		String certificateUrl = "";
+		ByteString quoted = ByteString.EMPTY;
+		ByteString signature = ByteString.EMPTY;
+		List<Pcr> pcrValues = Collections.emptyList();
+		ByteString aikCertificate = ByteString.EMPTY;
 		if (thread!=null && thread.isAlive()) {
 				try {
 					ControllerToTpm msg;
@@ -125,8 +130,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 								.setCode(Code.INTERNAL_ATTESTATION_REQ)
 								.setPcrs(this.attestationMask)
 								.build();
-					}
-					else {
+					} else {
 						// send msg to local unix socket
 						// construct protobuf message to send to local tpm2d via unix socket
 						msg = ControllerToTpm
@@ -144,7 +148,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 					quoted = response.getQuoted();
 					signature = response.getSignature();
 					pcrValues = response.getPcrValuesList();
-					certificateUrl = response.getCertificateUri();
+					aikCertificate = response.getAikCertificate();
 				} catch (IOException ex) {
 					lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
 					tpmClient.terminate();
@@ -161,18 +165,14 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 				.newBuilder()
 				.setId(++this.sessionID)
 				.setType(ConnectorMessage.Type.RAT_RESPONSE)
-				.setAttestationResponse(
-						AttestationResponse
-						.newBuilder()
+				.setAttestationResponse(AttestationResponse.newBuilder()
 						.setAtype(this.aType)
-						.setQualifyingData(this.yourNonce)
 						.setHalg(halg)
 						.setQuoted(quoted)
 						.setSignature(signature)
 						.addAllPcrValues(pcrValues)
-						.setCertificateUri(certificateUrl)
-						.build()
-						)
+						.setAikCertificate(aikCertificate)
+						.build())
 				.build();
 	}
 
@@ -185,7 +185,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
 			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);	
 		}
 		
-		if(    this.checkSignature(e.getMessage().getAttestationResponse(), this.myNonce)
+		if (this.checkSignature(e.getMessage().getAttestationResponse())
 			&& RemoteAttestationHandler.checkRepository(this.aType, e.getMessage().getAttestationResponse(), ttpUri)) {
 				this.mySuccess = true;				
 		} else {

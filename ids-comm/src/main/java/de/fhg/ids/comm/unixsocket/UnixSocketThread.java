@@ -118,7 +118,7 @@ public class UnixSocketThread implements Runnable {
 				synchronized (this.pendingChanges) {
 					Iterator<ChangeRequest> changes = this.pendingChanges.iterator();
 					while (changes.hasNext()) {
-						ChangeRequest change = (ChangeRequest) changes.next();
+						ChangeRequest change = changes.next();
 						switch (change.type) {
 							case ChangeRequest.CHANGEOPS:
 								SelectionKey key = change.channel.keyFor(this.selector);

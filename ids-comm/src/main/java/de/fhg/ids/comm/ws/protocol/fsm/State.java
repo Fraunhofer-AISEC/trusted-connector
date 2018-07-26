@@ -27,13 +27,12 @@ import java.util.Map;
  */
 class State {
 	// map from event key to transition
-	Map<Object, Transition> transitions;
+	Map<Object, Transition> transitions = new HashMap<>();
 	Runnable entryCode;
 	Runnable exitCode;
 	Runnable alwaysRunCode;
 
 	State(Runnable entryCode, Runnable exitCode, Runnable alwaysRunCode) {
-		transitions = new HashMap<Object, Transition>();
 		this.entryCode = entryCode;
 		this.exitCode = exitCode;
 		this.alwaysRunCode = alwaysRunCode;
@@ -41,10 +40,10 @@ class State {
 
 	public void addTransition(Transition trans) {
 		// Fail fast for duplicate transitions
-		if (transitions.containsKey(trans.evtName)) {
-			throw new IllegalArgumentException("Transition for event " + trans.evtName + " already exists.");
+		if (transitions.containsKey(trans.event)) {
+			throw new IllegalArgumentException("Transition for event " + trans.event + " already exists.");
 		}
-		transitions.put(trans.evtName, trans);
+		transitions.put(trans.event, trans);
 	}
 
 	public void runEntryCode() {

@@ -329,15 +329,18 @@ public class PolicyDecisionPoint implements PDP, PAP {
 	 * @param solveInfo A list of Prolog solutions
 	 */
 	private void debug(@NonNull List<SolveInfo> solveInfo) {
+		if (!LOG.isTraceEnabled()) {
+			return;
+		}
 	    try {
             for (SolveInfo i: solveInfo) {
                 if (i.isSuccess()) {
                     List<Var> vars = i.getBindingVars();
-                    vars.forEach(v -> LOG.debug(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
+                    vars.forEach(v -> LOG.trace(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
                 }
             }
         } catch (NoSolutionException nse) {
-	        LOG.debug("No solution found", nse);
+	        LOG.trace("No solution found", nse);
         }
 	}
 

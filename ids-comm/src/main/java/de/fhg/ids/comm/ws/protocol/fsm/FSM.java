@@ -38,24 +38,20 @@ public class FSM {
 
 	protected String currentState = null;
 	protected Map<String, State> states;
-	protected HashSet<ChangeListener> successFullChangeListeners;
-	protected HashSet<ChangeListener> failedChangeListeners;
+	protected HashSet<ChangeListener> successChangeListeners;
+	protected HashSet<ChangeListener> failChangeListeners;
 	private String initialState = null;
 	private RatResult ratResult;
 	private String metaData;
 
 	public FSM() {
 		this.states = new HashMap<>();
-		this.successFullChangeListeners = new HashSet<>();
-		this.failedChangeListeners = new HashSet<>();
+		this.successChangeListeners = new HashSet<>();
+		this.failChangeListeners = new HashSet<>();
 	}
 
 	public String getState() {
 		return currentState;
-	}
-
-	public void addState(String state) {
-		addState(state, null, null, null);
 	}
 
 	public void addState(ProtocolState state) {
@@ -76,7 +72,7 @@ public class FSM {
 	 * if it has been in that state before)
 	 * 
 	 * All three Runnables may be null. Their result has no impact on the FSM's
-	 * state, exceptions thrown are ignored.
+	 * state, Exceptions thrown are ignored.
 	 * 
 	 * @param state
 	 * @param entryCode
@@ -91,7 +87,7 @@ public class FSM {
 		if (!states.containsKey(state)) {
 			states.put(state, new State(entryCode, exitCode, alwaysRunCode));
 		} else {
-			throw new IllegalArgumentException("State already exists: " + state);
+			throw new NoSuchElementException("Missing state: " + state);
 		}
 	}
 
@@ -99,13 +95,12 @@ public class FSM {
 	 * Defines initial state of this FSM. If no initial state is defined
 	 * explicitly, the first added state is the initial state.
 	 * 
-	 * @param state
+	 * @param state The initial state of this FSM
 	 */
-	public void setInitialState(String state) {
-		this.initialState = state;
-	}
-	
 	public void setInitialState(ProtocolState state) {
+		if (!this.states.containsKey(state.id())) {
+			throw new NoSuchElementException("Missing state: " + state.id());
+		}
 		this.initialState = state.id();
 	}
 
@@ -127,8 +122,7 @@ public class FSM {
 			states.get(currentState).runEntryCode();
 		}
 
-		/* If event-less transition is defined for current node, trigger it
-		   immediately */
+		// If event-less transition is defined for current node, trigger it immediately
 		if (states.get(currentState).transitions.containsKey(null)) {
 			feedEvent(null);
 		}
@@ -137,35 +131,37 @@ public class FSM {
 	/**
 	 * Add a new transition to this FSM. 
 	 * 
-	 * @param trans
+	 * @param trans The transition to be added to this FSM
 	 */
 	public void addTransition(Transition trans) {
 		State st = states.get(trans.startState);
-		if (st == null || !states.containsKey(trans.endState)) {
-			throw new NoSuchElementException("Missing state: " + trans.startState);
+		if (st == null) {
+			throw new NoSuchElementException("Missing start state: " + trans.startState);
+		}
+		if (!states.containsKey(trans.endState)) {
+			throw new NoSuchElementException("Missing end state: " + trans.endState);
 		}
 		st.addTransition(trans);
 	}
 
-	public void addSuccessfulChangeListener(ChangeListener cl) {
-		successFullChangeListeners.add(cl);
+	public void addSuccessChangeListener(ChangeListener cl) {
+		successChangeListeners.add(cl);
 	}
 
-	public void addFailedChangeListener(ChangeListener cl) {
-		failedChangeListeners.add(cl);
+	public void addFailChangeListener(ChangeListener cl) {
+		failChangeListeners.add(cl);
 	}
 
 	public void feedEvent(Event event) {
 		Object evtKey = event.getKey();
 		State state = states.get(currentState);
-		if (state.transitions.containsKey(evtKey)) {
-			Transition trans = state.transitions.get(evtKey);
-
+		Transition trans = state.transitions.get(evtKey);
+		if (trans != null) {
 			if (trans.doBeforeTransition(event)) {
 				setState(trans.endState);
-				successFullChangeListeners.forEach(l -> l.stateChanged(this, event));
+				successChangeListeners.forEach(l -> l.stateChanged(this, event));
 			} else {
-				failedChangeListeners.forEach(l -> l.stateChanged(this, event));
+				failChangeListeners.forEach(l -> l.stateChanged(this, event));
 			}
 		}
 	}
@@ -178,8 +174,9 @@ public class FSM {
 		for (Entry<String, State> from : states.entrySet()) {
 			for (Object t : from.getValue().transitions.keySet()) {
 				String to = from.getValue().transitions.get(t).endState;
-				Object eventKey = from.getValue().transitions.get(t).evtName;
-				sb.append("    " + from.getKey().replace(':', '_') + " -> " + to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
+				Object eventKey = from.getValue().transitions.get(t).event;
+				sb.append("    " + from.getKey().replace(':', '_') + " -> "
+						+ to.replace(':', '_') + " [ label=\""+eventKey+"\" ];\n");
 			}
 		}
 		sb.append("			}");
@@ -194,7 +191,7 @@ public class FSM {
 		return ratResult;
 	}
 
-	public void setMetaResult(String metaData) {
+	public void setMetaData(String metaData) {
 		this.metaData = metaData;
 	}
 	

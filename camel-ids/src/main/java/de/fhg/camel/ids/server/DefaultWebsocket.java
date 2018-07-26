@@ -93,9 +93,6 @@ public class DefaultWebsocket {
         IdsAttestationType type;
         int attestationMask = 0;
         switch(this.consumer.getAttestationType()) {
-	    	case 0:            
-	    		type = IdsAttestationType.BASIC;
-	    		break;
 	    	case 1:
 	    		type = IdsAttestationType.ALL;
 	    		break;
@@ -103,9 +100,7 @@ public class DefaultWebsocket {
 	    		type = IdsAttestationType.ADVANCED;
 	    		attestationMask = this.consumer.getAttestationMask();
 	    		break;
-	    	case 3:
-	    		type = IdsAttestationType.ZERO;
-	    		break;
+			case 0:
 	    	default:
 	    		type = IdsAttestationType.BASIC;
         }

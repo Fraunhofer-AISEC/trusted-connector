@@ -19,18 +19,21 @@
  */
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
-public class NonceGenerator {
-	// generate a new software nonce in sha-1
-	public static String generate(int numchars) {
-		Random r = new Random();
-        StringBuffer sb = new StringBuffer();
-        while(sb.length() < numchars){
-            sb.append(Integer.toHexString(r.nextInt()));
-        }
+public final class NonceGenerator {
+	private static final SecureRandom sr = new SecureRandom();
 
-        return sb.toString().substring(0, numchars);
-	} 
+	private NonceGenerator() {}
 
+    /**
+     * Generate a crypto-secure random hex String of length numChars
+     * @param numBytes Desired String length
+     * @return The generated crypto-secure random hex String
+     */
+	public static byte[] generate(int numBytes) {
+		byte[] randBytes = new byte[numBytes];
+        sr.nextBytes(randBytes);
+        return randBytes;
+	}
 }

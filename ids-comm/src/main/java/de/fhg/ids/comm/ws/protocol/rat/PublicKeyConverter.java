@@ -32,16 +32,14 @@ public class PublicKeyConverter {
 	private static final String openSslFixedHeader = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA";
 	private byte[] midHeader = new byte[2];
 	private byte[] exponent = new byte[3];
-	private PublicKey key = null;
-	private KeyFactory kf;
-	private X509EncodedKeySpec spec;
+	private PublicKey key;
 	private byte[] keyBuffer;
 	private byte[] modulus;
 	
 	public PublicKeyConverter(TPM2B_PUBLIC publicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		keyBuffer  = this.setExponent(this.setMidHeader(this.setModulus(this.setFixedHeader(), publicKey)));
-		spec = new X509EncodedKeySpec(keyBuffer);
-		kf = KeyFactory.getInstance("RSA");
+		X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBuffer);
+		KeyFactory kf = KeyFactory.getInstance("RSA");
 		this.key = kf.generatePublic(spec);
 	}
 	

@@ -7,7 +7,7 @@ message ConnectorMessage {
 	enum Type {
 		REGISTRATION_REQUEST = 0;
 		REGISTRATION_RESPONSE = 1;
-		SERVICE_REQUEST = 2;          
+		SERVICE_REQUEST = 2;
 		SERVICE_RESPONSE = 3;
 		INTERNAL_PROPERTY_REQUEST = 4;
 		INTERNAL_PROPERTY_RESPONSE = 5;
@@ -24,40 +24,40 @@ message ConnectorMessage {
 		META_LEAVE = 16;
 		ERROR = 17;
 	}
-	
+
 	// Identifies which field is filled in.
 	optional Type type = 1;
-	
+
 	// Identifier of the message.
-	optional int64 id = 2;
-	
+	optional fixed64 id = 2;
+
 	// One of the following will be filled in.
 	oneof message {
 		//Service registrations
 		RegistrationRequest registrationRequest = 3;
 		RegistrationResponse registrationResponse = 4;
-		
+
 		//Requests to (external) services
 		ServiceRequest serviceRequest = 5;
 		ServiceResponse serviceResponse = 6;
-		
+
 		//Retrieval of properties from Core Platform
 		PropertyRequest propertyRequest = 7;
 		PropertyResponse propertyResponse = 8;
-		
+
 		// a remote attestation
 		AttestationRequest attestationRequest = 9;
 		AttestationResponse attestationResponse = 10;
 		AttestationResult attestationResult = 11;
 		AttestationLeave attestationLeave = 12;
-		
+
 		AttestationRepositoryRequest attestationRepositoryRequest = 13;
 		AttestationRepositoryResponse attestationRepositoryResponse = 14;
-		
+
 		// an error msg
 		Error error = 15;
 		//a metadata exchange
-		MedadataExchange metadataExchange= 16;
+		MedadataExchange metadataExchange = 16;
 	}
 }
 
@@ -101,9 +101,9 @@ message PropertyResponse {
 message MedadataExchange {
 	required string rdfdescription = 1;
 	// optional signature over values
-	optional string signature = 3;
+	optional bytes signature = 3;
 	// optional cert
-	optional string certificate_uri = 5;	
+	optional string certificate_uri = 5;
 }
 
 // -------------------------------
@@ -113,57 +113,49 @@ message MedadataExchange {
 //External Attestation Repository Request, sent to Repository
 message AttestationRepositoryRequest {
 	required IdsAttestationType atype = 1;
-	//nonce for attestation request
-	required string qualifyingData = 2;
 	// the explicit PCR values
-	repeated Pcr pcr_values = 3;	
+	repeated Pcr pcr_values = 2;
 }
 
 //External Attestation Repository Response, sent to Repository
 message AttestationRepositoryResponse {
 	required IdsAttestationType atype = 1;
-	//nonce for attestation request
-	required string qualifyingData = 2;
 	//boolean for result
-	required bool result = 3;
-	// optional signature
-	optional string signature = 4;
-	// optional cert
-	optional string certificate_uri = 5;
+	required bool result = 2;
 }
 
 //External Attestation Request, sent to other connector
 message AttestationRequest {
 	required IdsAttestationType atype = 1;
-	//nonce for attestation request
-	required string qualifyingData = 2;
+	// nonce for attestation request
+	required bytes nonce = 2;
+	// optional PCR indices
+	optional fixed32 pcr_indices = 3;
 }
 
 //External Attestation Response, coming from other connector
 //if Response is coming from second connector
 message AttestationResponse {
-
 	// type of attestation in the IDS context
 	required IdsAttestationType atype = 1;
-	
-	// nonce for the next attestation
-	required string qualifyingData = 2;	
 
 	// the hash algorith used to sign the quoted information
-	optional string halg = 3;
+	optional string halg = 2;
 
 	// the quoted information (a TPM2B_ATTEST data structure)
-	required string quoted = 4;
+	required bytes quoted = 3;
 
 	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
-	required string signature = 5;
+	required bytes signature = 4;
 
 	// the explicit PCR values
-	repeated Pcr pcr_values = 6;
-  
-	// an URI to a certificate that includes the public key
-	required string certificate_uri = 7;
+	repeated Pcr pcr_values = 5;
 
+	// AIK certificate that includes the public key
+	required bytes aik_certificate = 6;
+
+	// Measurement list
+	optional bytes measurement_list = 7;
 }
 
 //External Attestation Request, sent to other connector

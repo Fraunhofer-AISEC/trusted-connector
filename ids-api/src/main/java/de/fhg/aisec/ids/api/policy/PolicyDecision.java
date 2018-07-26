@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class PolicyDecision {
 	public enum Decision {
-		ALLOW, DENY, DON_T_CARE
+		ALLOW, DENY
 	}
 
 	private String reason;

@@ -22,8 +22,10 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import com.google.protobuf.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,8 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
+import javax.xml.bind.DatatypeConverter;
+
 /**
  * Implements the handling of individual protocol steps in the IDS remote
  * attestation protocol.
@@ -51,19 +55,19 @@ import de.fhg.ids.comm.ws.protocol.fsm.FSM;
  */
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
-	private String myNonce;
-	private String yourNonce;
+	private ByteString myNonce;
+	private ByteString yourNonce;
 	private IdsAttestationType aType;
 	private Thread thread;
 	private UnixSocketThread client;
 	private UnixSocketResponseHandler handler;
-	private ConnectorMessage msg;
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
 	private URI ttpUri;
 	private int attestationMask = 0;
 	private AttestationResponse resp;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
+	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri,
+											String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set current attestation type and mask (see attestation.proto)
@@ -80,7 +84,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			// responseHandler will be used to wait for messages
 			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
-			LOG.warn("could not write to/read from " + socket);
+			LOG.warn("could not write to/read from {}", socket);
 			if (client != null) {
 				this.client.terminate();
 			}
@@ -88,9 +92,9 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	}
 	
 	public MessageLite enterRatRequest(Event e) {
-		this.yourNonce = e.getMessage().getAttestationRequest().getQualifyingData();
+		this.yourNonce = e.getMessage().getAttestationRequest().getNonce();
 		// generate a new software nonce on the client and send it to server
-		this.myNonce = NonceGenerator.generate(40);
+		this.myNonce = ByteString.copyFrom(NonceGenerator.generate(20));
 		// get starting session id
 		this.sessionID = e.getMessage().getId();
 		return ConnectorMessage
@@ -101,7 +105,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 						AttestationRequest
 						.newBuilder()
 						.setAtype(this.aType)
-						.setQualifyingData(this.myNonce)
+						.setNonce(this.myNonce)
 						.build())
 				.build();			
 	}
@@ -111,14 +115,16 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 		this.resp = e.getMessage().getAttestationResponse();
 
 		if(++this.sessionID != e.getMessage().getId()) {
-			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")");
+			return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID,
+					"error: sessionID not correct ! (is " + e.getMessage().getId()
+							+ " but should have been " + (this.sessionID+1) + ")");
 		}
 		
 		String halg = "";
-		String quoted = "";
-		String signature = "";
-		List<Pcr> pcrValues = new ArrayList<>();
-		String certificateUri = "";
+		ByteString quoted = ByteString.EMPTY;
+		ByteString signature = ByteString.EMPTY;
+		List<Pcr> pcrValues = Collections.emptyList();
+		ByteString aikCertificate = ByteString.EMPTY;
 		if(thread!=null && thread.isAlive()) {
 				try {
 					ControllerToTpm msg;
@@ -151,7 +157,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 					quoted = response.getQuoted();
 					signature = response.getSignature();
 					pcrValues = response.getPcrValuesList();
-					certificateUri = response.getCertificateUri();
+					aikCertificate = response.getAikCertificate();
 				} catch (IOException ex) {
 					lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
 					client.terminate();
@@ -168,24 +174,20 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 				.newBuilder()
 				.setId(++this.sessionID)
 				.setType(ConnectorMessage.Type.RAT_RESPONSE)
-				.setAttestationResponse(
-						AttestationResponse
-						.newBuilder()
+				.setAttestationResponse(AttestationResponse.newBuilder()
 						.setAtype(this.aType)
-						.setQualifyingData(this.yourNonce)
 						.setHalg(halg)
 						.setQuoted(quoted)
 						.setSignature(signature)
 						.addAllPcrValues(pcrValues)
-						.setCertificateUri(certificateUri)
-						.build()
-						)
+						.setAikCertificate(aikCertificate)
+						.build())
 				.build();
 	}
 
 	public MessageLite sendResult(Event e) {
 		if(++this.sessionID == e.getMessage().getId()) {
-			if(this.checkSignature(this.resp, this.myNonce)) {
+			if(this.checkSignature(this.resp)) {
 				if(RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri)) {
 					this.mySuccess = true;					
 				}
@@ -204,7 +206,8 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 							.build())
 					.build();
 		} else {
-			lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+			lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()
+					+ " but should have been "+ (this.sessionID+1) + ")";
 		}
 		LOG.debug(lastError);
 		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
@@ -221,15 +224,13 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 					.newBuilder()
 					.setId(++this.sessionID)
 					.setType(ConnectorMessage.Type.RAT_LEAVE)
-					.setAttestationLeave(
-							AttestationLeave
-							.newBuilder()
+					.setAttestationLeave(AttestationLeave.newBuilder()
 							.setAtype(this.aType)
-							.build()
-							)
+							.build())
 					.build();
 		}
-		lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()+" but should have been "+ (this.sessionID+1) +")";
+		lastError = "error: sessionID not correct ! (is " + e.getMessage().getId()
+				+" but should have been "+ (this.sessionID+1) + ")";
 		LOG.debug(lastError);
 		return RemoteAttestationHandler.sendError(this.thread, ++this.sessionID, RemoteAttestationHandler.lastError);
 	}

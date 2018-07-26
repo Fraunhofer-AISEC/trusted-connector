@@ -360,7 +360,7 @@ public class LuconEngineTest {
 	}
 	
 	@Test
-	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	@Ignore("Not a regular unit test; for evaluating runtime performance.")
 	public void testPerformanceEvaluationScaleRules() throws Exception {
 		for (int i=10;i<=5000;i+=10) {
 			// Load n test rules into PDP 
@@ -391,7 +391,7 @@ public class LuconEngineTest {
 	}
 	
 	@Test
-	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	@Ignore("Not a regular unit test; for evaluating runtime performance.")
 	public void testPerformanceEvaluationScaleLabels() throws Exception {
 		for (int i=0;i<=5000;i+=10) {
 			// Load n test rules into PDP 
@@ -422,7 +422,7 @@ public class LuconEngineTest {
 	}
 
 	@Test
-	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	@Ignore("Not a regular unit test; for evaluating runtime performance.")
 	public void testmemoryEvaluationScaleRules() throws Exception {
 		for (int i=10;i<=5000;i+=10) {
 			// Load n test rules into PDP 
@@ -453,7 +453,7 @@ public class LuconEngineTest {
 	}
 	
 	@Test
-	@Ignore	// Not a regular unit test For evaluating runtime performance.
+	@Ignore("Not a regular unit test; for evaluating runtime performance.")
 	public void testmemoryEvaluationScaleLabels() throws Exception {
 		for (int i=10;i<=5000;i+=10) {
 			// Load n test rules into PDP 

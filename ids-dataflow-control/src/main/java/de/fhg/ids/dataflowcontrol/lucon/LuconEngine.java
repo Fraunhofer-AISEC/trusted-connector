@@ -125,12 +125,14 @@ public class LuconEngine {
 		LOG.debug("Running Prolog query: " + query);
 		@NonNull
 		List<SolveInfo> result = query(p, query, findAll);
-		try {
-			for (SolveInfo i: result) {
-				LOG.debug("Result is " + i.getSolution().toString());
+		if (LOG.isTraceEnabled()) {
+			try {
+				for (SolveInfo i : result) {
+					LOG.trace("Result is {}", i.getSolution().toString());
+				}
+			} catch (NoSolutionException e) {
+				e.printStackTrace();
 			}
-		} catch (NoSolutionException e) {
-			e.printStackTrace();
 		}
 		return result;
 	}
