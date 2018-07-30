@@ -19,20 +19,20 @@
  */
 package de.fhg.camel.ids.comm.ws.protocol;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Test;
-
+import com.google.protobuf.ByteString;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Integration tests against a TPM 2.0 daemon (tpmd) over a UNIX domain socket
@@ -52,7 +52,7 @@ public class UnixSocketIT {
     	UnixSocketThread client;
     	Thread thread;
     	UnixSocketResponseHandler handler;
-    	String quoted = NonceGenerator.generate(40);
+		byte[] quoted = NonceGenerator.generate(20);
     	IdsAttestationType type = IdsAttestationType.BASIC;
     	try {
 			// client will be used to send messages
@@ -67,7 +67,7 @@ public class UnixSocketIT {
 			ControllerToTpm msg = ControllerToTpm
 					.newBuilder()
 					.setAtype(type)
-					.setQualifyingData(quoted)
+					.setQualifyingData(ByteString.copyFrom(quoted))
 					.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
 					.build();
 			client.send(msg.toByteArray(), handler, true);
@@ -77,9 +77,8 @@ public class UnixSocketIT {
 			// and wait for response
 			TpmToController response = TpmToController.parseFrom(tpmData);
 			System.out.println(response.toString());
-			assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-			assertTrue(response.getAtype().equals(type));
-			
+			assertEquals(TpmToController.Code.INTERNAL_ATTESTATION_RES, response.getCode());
+			assertEquals(type, response.getAtype());
 		} catch (IOException e) {
 			System.out.println("could not write to/read from " + TPMD_SOCKET);
 			e.printStackTrace();
@@ -94,7 +93,7 @@ public class UnixSocketIT {
     	Thread thread;
     	String socket = "socket/control.sock";
     	UnixSocketResponseHandler handler;
-    	String quoted = NonceGenerator.generate(40);
+		byte[] quoted = NonceGenerator.generate(20);
     	IdsAttestationType type = IdsAttestationType.ALL;
 
 		// client will be used to send messages
@@ -109,7 +108,7 @@ public class UnixSocketIT {
 		ControllerToTpm msg = ControllerToTpm
 				.newBuilder()
 				.setAtype(type)
-				.setQualifyingData(quoted)
+				.setQualifyingData(ByteString.copyFrom(quoted))
 				.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
 				.build();
 		client.send(msg.toByteArray(), handler, true);
@@ -119,8 +118,8 @@ public class UnixSocketIT {
 		// and wait for response
 		TpmToController response = TpmToController.parseFrom(tpmData);
 		System.out.println(response.toString());
-		assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-		assertTrue(response.getAtype().equals(type));
+		assertEquals(TpmToController.Code.INTERNAL_ATTESTATION_RES, response.getCode());
+		assertEquals(type, response.getAtype());
     }
 
     @Test
@@ -130,7 +129,7 @@ public class UnixSocketIT {
     	UnixSocketThread client;
     	Thread thread;
     	UnixSocketResponseHandler handler;
-    	String quoted = NonceGenerator.generate(40);
+    	byte[] quoted = NonceGenerator.generate(20);
     	IdsAttestationType type = IdsAttestationType.ADVANCED;
 
     	// client will be used to send messages
@@ -145,7 +144,7 @@ public class UnixSocketIT {
 		ControllerToTpm msg = ControllerToTpm
 				.newBuilder()
 				.setAtype(type)
-				.setQualifyingData(quoted)
+				.setQualifyingData(ByteString.copyFrom(quoted))
 				.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
 				.setPcrs(24)
 				.build();
@@ -156,7 +155,7 @@ public class UnixSocketIT {
 		// and wait for response
 		TpmToController response = TpmToController.parseFrom(tpmData);
 		System.out.println(response.toString());
-		assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-		assertTrue(response.getAtype().equals(type));
+		assertEquals(TpmToController.Code.INTERNAL_ATTESTATION_RES, response.getCode());
+		assertEquals(type, response.getAtype());
     }
 }

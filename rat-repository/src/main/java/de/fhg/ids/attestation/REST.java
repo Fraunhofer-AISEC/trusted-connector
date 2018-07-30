@@ -31,6 +31,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 @Path("/")
 public class REST {
@@ -61,32 +63,29 @@ public class REST {
 						case BASIC:
 							if(numPcrValues == 11) {
 								return this.checkMessage(msg);
-							}
-							else {
-								return this.sendError("error: IdsAttestationType is BASIC, but number of PCR values (\""+numPcrValues+"\") send is not 11", msg.getId());
+							} else {
+								return this.sendError("error: IdsAttestationType is BASIC, " +
+										"but number of PCR values (\""+numPcrValues+"\") send is not 11", msg.getId());
 							}
 						case ADVANCED:
 							return this.checkMessage(msg);					
 						case ALL:
 							if(numPcrValues == 24) {
 								return this.checkMessage(msg);
-							}
-							else {
-								return this.sendError("error: IdsAttestationType is ALL, but number of PCR values (\""+numPcrValues+"\") send is not 24", msg.getId());
+							} else {
+								return this.sendError("error: IdsAttestationType is ALL, " +
+										"but number of PCR values (\""+numPcrValues+"\") send is not 24", msg.getId());
 							}
 						default:
 							return this.sendError("error: unknown IdsAttestationType", msg.getId());
 					}
-				}
-				else {
+				} else {
 					return this.sendError("there were no PCR values in the request", msg.getId());
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				return this.sendError(e.getMessage(), msg.getId());
 			}
-		}
-		else {
+		} else {
 			return this.sendError("request was not of type RAT_REPO_REQUEST", msg.getId());
 		}
 	}
@@ -127,8 +126,8 @@ public class REST {
 	public long addConfiguration(Configuration config) {
 		this.setCORSHeader(response, corsEnabled);
 		try {
-			Long[] existing = this.db.getConfigurationId(config.getValues());
-			if(existing.length == 0) {
+			List<Long> existing = this.db.getConfigurationId(Arrays.asList(config.getValues()));
+			if(existing.isEmpty()) {
 				return this.db.insertConfiguration(config.getName(), config.getType(), config.getValues());
 			} else {
 				throw new InternalServerErrorException();
@@ -156,13 +155,20 @@ public class REST {
 	}
 	
 	private static boolean isInteger(String s) {
-	    if(s.isEmpty()) return false;
+	    if(s.isEmpty()) {
+	    	return false;
+		}
 	    for(int i = 0; i < s.length(); i++) {
 	        if(i == 0 && s.charAt(i) == '-') {
-	            if(s.length() == 1) return false;
-	            else continue;
+	            if(s.length() == 1) {
+	            	return false;
+				} else {
+	            	continue;
+				}
 	        }
-	        if(Character.digit(s.charAt(i), 10) < 0) return false;
+	        if(Character.digit(s.charAt(i), 10) < 0) {
+	        	return false;
+			}
 	    }
 	    return true;
 	}
@@ -183,16 +189,10 @@ public class REST {
 				.newBuilder()
 				.setId(msg.getId() + 1)
 				.setType(ConnectorMessage.Type.RAT_REPO_RESPONSE)
-				.setAttestationRepositoryResponse(
-						AttestationRepositoryResponse
-		        		.newBuilder()
-		        		.setAtype(msg.getAttestationRepositoryRequest().getAtype())
-		        		.setResult(this.db.checkMessage(msg))
-		        		.setQualifyingData(msg.getAttestationRepositoryRequest().getQualifyingData())
-		        		.setSignature("")
-		        		.setCertificateUri("")
-		        		.build()
-						)
+				.setAttestationRepositoryResponse(AttestationRepositoryResponse.newBuilder()
+								.setAtype(msg.getAttestationRepositoryRequest().getAtype())
+								.setResult(this.db.checkMessage(msg))
+								.build())
 				.build();
 	}
 	
@@ -201,13 +201,10 @@ public class REST {
 				.newBuilder()
 				.setId(id + 1)
 				.setType(ConnectorMessage.Type.ERROR)
-				.setError(
-						Error
-						.newBuilder()
+				.setError(Error.newBuilder()
 						.setErrorCode("")
 						.setErrorMessage(error)
-						.build()
-						)
+						.build())
 				.build();
 	}
 }

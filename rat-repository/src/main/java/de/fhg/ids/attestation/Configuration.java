@@ -21,6 +21,9 @@ package de.fhg.ids.attestation;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class Configuration {
 	private long id;
 	private String name;
@@ -70,5 +73,27 @@ public class Configuration {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Configuration that = (Configuration) o;
+		return id == that.id &&
+				Objects.equals(name, that.name) &&
+				Objects.equals(type, that.type) &&
+				Arrays.equals(values, that.values);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(id, name, type);
+		result = 31 * result + Arrays.hashCode(values);
+		return result;
 	}
 }

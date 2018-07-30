@@ -19,55 +19,43 @@
  */
 package de.fhg.ids.attestation;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.google.protobuf.ByteString;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-
-import javax.xml.bind.DatatypeConverter;
 
 public class Database {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Database.class);
 	private Connection connection;
 	private String sql;
-	private static final ByteString ZERO =
-			hexToByteString("0000000000000000000000000000000000000000000000000000000000000000");
-	private static final ByteString FFFF =
-			hexToByteString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+	private static final int SHA256_BYTES_LEN = 32;
+	private static final ByteString ZERO;
+	private static final ByteString FFFF;
 
-	public static ByteString hexToByteString(String hex) {
-		return ByteString.copyFrom(DatatypeConverter.parseHexBinary(hex));
-	}
-
-	public static String byteStringToHex(ByteString bs) {
-		return DatatypeConverter.printHexBinary(bs.toByteArray());
+	static {
+		// Initialize example PCR constants
+		byte[] bytes = new byte[SHA256_BYTES_LEN];
+		Arrays.fill(bytes, (byte) 0x00);
+		ZERO = ByteString.copyFrom(bytes);
+		Arrays.fill(bytes, (byte) 0xff);
+		FFFF = ByteString.copyFrom(bytes);
 	}
  
 	public Database() {
-		makeJDBCConnection();
 		try {
+			makeJDBCConnection();
 			createTables();
-		} catch (SQLException e) {
-			LOG.error("ERROR: could not create Tables !", e);
-		}
-		try {
 			insertDefaultConfiguration();
-		} catch (SQLException e) {
-			LOG.error("ERROR: could not insert default Configuration !", e);
+		} catch(SQLException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -131,7 +119,7 @@ public class Database {
 			sql = "DROP TABLE IF EXISTS PCR; CREATE TABLE PCR ("
 					+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
 					+ "'SEQ' INTEGER DEFAULT '0',"
-					+ "'VALUE' CHAR(64) NOT NULL DEFAULT '" + ZERO + "',"
+					+ "'VALUE' BLOB NOT NULL,"
 					+ "'CID' INTEGER NOT NULL,"
 					+ "FOREIGN KEY (CID) REFERENCES 'CONFIG' ('ID'));";
 			statement.executeUpdate(sql);
@@ -154,60 +142,59 @@ public class Database {
 	
 	private void insertPcrs(Pcr[] values, long key) throws SQLException {
 		sql = "INSERT INTO PCR (SEQ, VALUE, CID) VALUES  (?,?,?)";
-		try (PreparedStatement pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
 			for (Pcr value : values) {
 				LOG.debug("INSERT PCR order: {} value {}", value.getNumber(), value.getValue());
 				pStatement.setInt(1, value.getNumber());
-				pStatement.setString(2, byteStringToHex(value.getValue()));
+				pStatement.setBytes(2, value.getValue().toByteArray());
 				pStatement.setLong(3, key);
 				pStatement.executeUpdate();
 			}
 		}
 	}
 	
-	private Long[] getConfigurationIdSingle(Pcr value) throws SQLException {
+	private List<Long> getConfigurationIdSingle(Pcr value) throws SQLException {
 		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID " +
 				"WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
 		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
 			pStatement.setInt(1, value.getNumber());
-			pStatement.setString(2, byteStringToHex(value.getValue()));
+			pStatement.setBytes(2, value.getValue().toByteArray());
 			List<Long> result = new ArrayList<>();
 			try (ResultSet rs = pStatement.executeQuery()) {
 				while (rs.next()) {
 					result.add(rs.getLong("ID"));
 				}
 			}
-			return result.toArray(new Long[result.size()]);
+			return result;
 		}
 	}
 	
-	public Long[] getConfigurationId(List<Pcr> values) throws SQLException {
-		Long[] start = this.getConfigurationIdSingle(values.get(0));
+	public List<Long> getConfigurationId(List<Pcr> values) throws SQLException {
+		List<Long> start = this.getConfigurationIdSingle(values.get(0));
 		values = values.subList(1, values.size());
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("\n#################################\nstart:{}\n#################################\n",
-					Arrays.toString(start));
+					Arrays.toString(start.toArray()));
 		}
 		for(Pcr value: values){
-			Long[] now =  this.getConfigurationIdSingle(value);
+			List<Long> now =  this.getConfigurationIdSingle(value);
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("\n#################################\nnow:{}\n#################################\n",
-						Arrays.toString(now));
+						Arrays.toString(now.toArray()));
 			}
 			start = intersection(start, now);
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("\n#################################\nfinal:{}\n#################################\n",
-					Arrays.toString(start));
+					Arrays.toString(start.toArray()));
 		}
 		return start;
 	}
-	
-	private Long[] intersection(Long[] a, Long[] b){
-		ArrayList<Long> listOne = new ArrayList<>(Arrays.asList(a));
-		ArrayList<Long> listTwo = new ArrayList<>(Arrays.asList(b));
-		listOne.retainAll(listTwo);
-		return listOne.toArray(new Long[listOne.size()]);
+
+	private List<Long> intersection(List<Long> a, List<Long> b){
+		ArrayList<Long> result = new ArrayList<>(a);
+		result.retainAll(b);
+		return result;
 	}
 
 	public boolean deleteConfigurationById(long id) throws SQLException {
@@ -227,15 +214,16 @@ public class Database {
 		return rowCount == 1;
 	}
 	
-	public Configuration[] getConfigurationList() throws SQLException {
+	public List<Configuration> getConfigurationList() throws SQLException {
 		List<Configuration> ll = new LinkedList<>();
 		try (Statement stmt = connection.createStatement();
 			 ResultSet rs = stmt.executeQuery("SELECT * FROM CONFIG")) {
 			while (rs.next()) {
-				ll.add(this.getConfiguration(rs.getLong("ID")));
+				long id = rs.getLong("ID");
+				ll.add(this.getConfiguration(id));
 			}
 		}
-		return ll.toArray(new Configuration[ll.size()]);
+		return ll;
 	}
 
 	public Configuration getConfiguration(long id) {
@@ -252,11 +240,11 @@ public class Database {
 				if(rs1.next()) {
 					while(rs2.next()) {
 						values.add(Pcr.newBuilder().setNumber(rs2.getInt("SEQ"))
-								.setValue(hexToByteString(rs2.getString("VALUE"))).build());
+								.setValue(ByteString.copyFrom(rs2.getBytes("VALUE"))).build());
 					}
-					if(values.isEmpty()) {
+					if(!values.isEmpty()) {
 						c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"),
-								rs1.getString("TYPE"), values.toArray(new Pcr[values.size()]));
+								rs1.getString("TYPE"), values.toArray(new Pcr[0]));
 					} else {
 						c = new Configuration(rs1.getLong("ID"), rs1.getString("NAME"),
 								rs1.getString("TYPE"));
@@ -276,13 +264,13 @@ public class Database {
 	public boolean checkMessage(ConnectorMessage message) {
 		try {
 			List<Pcr> pcrList = message.getAttestationRepositoryRequest().getPcrValuesList();
-			Long[] configIds = this.getConfigurationId(pcrList);
-			if(configIds.length == 1) {
+			List<Long> configIds = this.getConfigurationId(pcrList);
+			if(configIds.size() == 1) {
 				return true;
-			} else if(configIds.length > 1) {
+			} else if(configIds.size() > 1) {
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("found more than one matching configuration ({}) =( this shouldn't happen !",
-							Arrays.toString(configIds));
+					LOG.debug("found more than one matching configuration ({}) =( this shouldn't happen!",
+							Arrays.toString(configIds.toArray()));
 				}
 				return true;
 			} else {
