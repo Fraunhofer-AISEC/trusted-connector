@@ -66,8 +66,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 	private int attestationMask = 0;
 	private AttestationResponse resp;
 	
-	public RemoteAttestationProviderHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri,
-											String socket) {
+	public RemoteAttestationProviderHandler(IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
 		// set current attestation type and mask (see attestation.proto)
@@ -85,9 +84,6 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
 			this.handler = new UnixSocketResponseHandler();
 		} catch (IOException e) {
 			LOG.warn("could not write to/read from {}", socket);
-			if (client != null) {
-				this.client.terminate();
-			}
 		}		
 	}
 	

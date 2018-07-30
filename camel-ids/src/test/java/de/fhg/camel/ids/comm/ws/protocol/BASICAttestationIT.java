@@ -72,8 +72,8 @@ public class BASICAttestationIT {
 
 	@BeforeClass
 	public static void initRepo() throws URISyntaxException {
-        consumer = new RemoteAttestationConsumerHandler(new FSM(), aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
-		provider = new RemoteAttestationProviderHandler(new FSM(), aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
+        consumer = new RemoteAttestationConsumerHandler(aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
+		provider = new RemoteAttestationProviderHandler(aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
 	}
 	
     @Test

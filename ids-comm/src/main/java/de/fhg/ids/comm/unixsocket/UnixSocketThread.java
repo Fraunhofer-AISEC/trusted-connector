@@ -65,7 +65,8 @@ public class UnixSocketThread implements Runnable {
 	private final Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 	
 	// Maps a UnixSocketChannel to a UnixSocketResponseHandler
-	private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers = Collections.synchronizedMap(new HashMap<UnixSocketChannel, UnixSocketResponseHandler>());
+	private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers =
+			Collections.synchronizedMap(new HashMap<>());
 	private boolean stopped = false;
 	
 	// default constructor
@@ -84,7 +85,8 @@ public class UnixSocketThread implements Runnable {
 	}
 
 	// send some data to the unix socket 
-	public void send(byte[] data, UnixSocketResponseHandler handler, boolean withLengthHeader) throws IOException, InterruptedException {
+	public void send(byte[] data, UnixSocketResponseHandler handler, boolean withLengthHeader)
+			throws IOException, InterruptedException {
 		byte[] result = data;
 		// if message has to be sent with length header
 		if(withLengthHeader) {
@@ -139,7 +141,7 @@ public class UnixSocketThread implements Runnable {
 				// Iterate over the set of keys for which events are available
 				Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
 				while (selectedKeys.hasNext()) {
-					SelectionKey key = (SelectionKey) selectedKeys.next();
+					SelectionKey key = selectedKeys.next();
 					selectedKeys.remove();
 					if (!key.isValid()) {
 						continue;

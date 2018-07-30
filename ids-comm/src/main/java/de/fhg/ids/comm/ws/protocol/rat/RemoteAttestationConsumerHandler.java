@@ -19,54 +19,40 @@
  */
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.protobuf.MessageLite;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
-import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.*;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
-import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
-	private final FSM fsm;
+	private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
 	private ByteString myNonce;
 	private ByteString yourNonce;
 	private IdsAttestationType aType;
-	private Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
 	private UnixSocketResponseHandler handler;
 	private UnixSocketThread tpmClient;
 	private Thread thread;
 	private long sessionID = 0;		// used to count messages between ids connectors during attestation
-	private URI ttpUri;
-	private boolean repoCheck = false;
-	private int attestationMask = 0;
+	private final URI ttpUri;
+	private final int attestationMask;
 	
-	public RemoteAttestationConsumerHandler(FSM fsm, IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
+	public RemoteAttestationConsumerHandler(IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
 		// set ttp uri
 		this.ttpUri = ttpUri;
-		// set finite state machine
-		this.fsm = fsm;
 		// set current attestation type and mask (see attestation.proto)
 		this.aType = type;
 		this.attestationMask = attestationMask;

@@ -34,8 +34,6 @@ import java.util.List;
 public class Database {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Database.class);
-	private Connection connection;
-	private String sql;
 	private static final int SHA256_BYTES_LEN = 32;
 	private static final ByteString ZERO;
 	private static final ByteString FFFF;
@@ -48,6 +46,8 @@ public class Database {
 		Arrays.fill(bytes, (byte) 0xff);
 		FFFF = ByteString.copyFrom(bytes);
 	}
+
+	private Connection connection;
  
 	public Database() {
 		try {
@@ -95,7 +95,7 @@ public class Database {
 		}
 		try {
 			connection = DriverManager.getConnection("jdbc:sqlite:configuration.db");
-			LOG.debug("connection to sqlite db successful!");
+			LOG.trace("connection to sqlite db successful!");
 		} catch (SQLException e) {
 			LOG.error("Failed to make connection to mysql db!", e);
 		}
@@ -108,7 +108,7 @@ public class Database {
 	
 	public void createTables() throws SQLException {
 		try (Statement statement = connection.createStatement()) {
-			sql = "DROP TABLE IF EXISTS CONFIG; CREATE TABLE CONFIG ("
+			String sql = "DROP TABLE IF EXISTS CONFIG; CREATE TABLE CONFIG ("
 					+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
 					+ "'NAME' VARCHAR(255) NULL DEFAULT 'Configuration Name',"
 					+ "'TYPE' VARCHAR(255) NULL DEFAULT 'BASIC');";
@@ -116,7 +116,7 @@ public class Database {
 		}
 		
 		try (Statement statement = connection.createStatement()) {
-			sql = "DROP TABLE IF EXISTS PCR; CREATE TABLE PCR ("
+			String sql = "DROP TABLE IF EXISTS PCR; CREATE TABLE PCR ("
 					+ "'ID' INTEGER PRIMARY KEY AUTOINCREMENT,"
 					+ "'SEQ' INTEGER DEFAULT '0',"
 					+ "'VALUE' BLOB NOT NULL,"
@@ -127,7 +127,7 @@ public class Database {
 	}
 	
 	public long insertConfiguration(String name, String type, Pcr[] values) throws SQLException {
-		sql = "INSERT INTO CONFIG (NAME, TYPE) VALUES (?,?)";
+		String sql = "INSERT INTO CONFIG (NAME, TYPE) VALUES (?,?)";
 		try (PreparedStatement pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			pStatement.setString(1, name);
 			pStatement.setString(2, type);
@@ -141,7 +141,7 @@ public class Database {
 	}
 	
 	private void insertPcrs(Pcr[] values, long key) throws SQLException {
-		sql = "INSERT INTO PCR (SEQ, VALUE, CID) VALUES  (?,?,?)";
+		String sql = "INSERT INTO PCR (SEQ, VALUE, CID) VALUES  (?,?,?)";
 		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
 			for (Pcr value : values) {
 				LOG.debug("INSERT PCR order: {} value {}", value.getNumber(), value.getValue());
@@ -154,7 +154,7 @@ public class Database {
 	}
 	
 	private List<Long> getConfigurationIdSingle(Pcr value) throws SQLException {
-		sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID " +
+		String sql = "SELECT * FROM CONFIG INNER JOIN PCR ON PCR.CID = CONFIG.ID " +
 				"WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
 		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
 			pStatement.setInt(1, value.getNumber());
@@ -198,7 +198,7 @@ public class Database {
 	}
 
 	public boolean deleteConfigurationById(long id) throws SQLException {
-		sql = "DELETE FROM CONFIG WHERE ID = ?";
+		String sql = "DELETE FROM CONFIG WHERE ID = ?";
 		int rowCount;
 		try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
 			pStatement.setLong(1, id);
