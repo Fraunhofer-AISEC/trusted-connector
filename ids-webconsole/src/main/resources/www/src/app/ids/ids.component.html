@@ -40,7 +40,7 @@
 					<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group"
 					[ngClass]="{'is-invalid': settingsForm.controls.acmeServerWebcon.errors}">
 						<input class="mdl-textfield__input" id="acmeServerWebcon" type="URL" formControlName="acmeServerWebcon"
-						required minlength="5">
+						minlength="5">
 						<label class="mdl-textfield__label" for="acmeServerWebcon">ACME Server URL (Web Console)</label>
 						<span class="mdl-textfield__error">
 							<span *ngIf="settingsForm.controls.acmeServerWebcon.errors

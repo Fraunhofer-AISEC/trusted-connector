@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { SettingsService } from './settings.service';
 import { TermsOfService } from './terms-of-service.interface';
 import { map, switchMap, take } from 'rxjs/operators';
-import { timer } from 'rxjs';
+import { of, timer } from 'rxjs';
 
 @Component({
     selector: 'my-app',
@@ -35,14 +35,19 @@ export class IdsComponent implements OnInit {
                     acmeServerWebcon: [response.acmeServerWebcon, [], [control =>
                         timer(500)
                             .pipe(
-                                switchMap(_ => this.settingsService.getToS(control.value)),
+                                switchMap(() => {
+                                    const value: string = control.value;
+
+                                    return value === '' ? of(undefined) : this.settingsService.getToS(value);
+                                }),
                                 map(tos => {
                                     this.tosWebconsole = tos;
 
-                                    return tos.error ? { asyncError: tos.error } : undefined;
+                                    return tos && tos.error ? { asyncError: tos.error } : undefined;
                                 }),
                                 take(1)
-                            )]],
+                            )
+                    ]],
                     acmeDnsWebcon: response.acmeDnsWebcon,
                     acmePortWebcon: response.acmePortWebcon,
                     tosAcceptWebcon: response.tosAcceptWebcon
