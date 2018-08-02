@@ -102,6 +102,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
 		this.sslReloadables.remove(factory);
 	}
 
+	@Override
     public AcmeTermsOfService getTermsOfService(URI acmeServerUri) {
         try {
             Session session = new Session(acmeServerUri);
@@ -119,10 +120,12 @@ public class AcmeClientService implements AcmeClient, Runnable {
         }
     }
 
+    @Override
     public String getChallengeAuthorization(String challenge) {
         return challengeMap.get(challenge);
     }
 
+    @Override
     public void renewCertificate(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort) {
         try {
             Arrays.asList("acme.key", "domain.key").forEach(keyFile -> {
@@ -267,7 +270,11 @@ public class AcmeClientService implements AcmeClient, Runnable {
         }
     }
 
-    public void renewalCheck(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort) {
+    public void renewalCheck(Path targetDirectory, String acmeServerUrl, String[] domains, int challengePort) {
+        if (acmeServerUrl.isEmpty()) {
+            LOG.info("ACME server URL is empty, skipping renewal check.");
+            return;
+        }
         try (InputStream jksInputStream = Files.newInputStream(targetDirectory.resolve(KEYSTORE_LATEST))) {
             KeyStore store = KeyStore.getInstance("JKS");
             store.load(jksInputStream, "ids".toCharArray());
@@ -286,7 +293,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
                 }
                 // Do the renewal in a separate Thread such that other stuff can be executed in parallel.
                 // This is especially important if the ACME protocol implementations are missing upon boot.
-                Thread t = new Thread(() -> renewCertificate(targetDirectory, acmeServerUri, domains, challengePort));
+                Thread t = new Thread(() ->
+                        renewCertificate(targetDirectory, URI.create(acmeServerUrl), domains, challengePort));
                 t.setName("ACME Renewal Thread");
                 t.setDaemon(true);
                 t.start();
@@ -303,7 +311,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
         try {
             ConnectorConfig config = settings.getConnectorConfig();
             renewalCheck(FileSystems.getDefault().getPath("etc", "tls-webconsole"),
-                    URI.create(config.getAcmeServerWebcon()),
+                    config.getAcmeServerWebcon(),
                     config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"), config.getAcmePortWebcon());
         } catch (Exception e) {
             LOG.error("ACME Renewal task failed", e);
