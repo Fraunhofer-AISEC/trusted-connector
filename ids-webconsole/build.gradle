@@ -87,6 +87,11 @@ dependencies {
 }
 
 task yarnInstall(type: YarnTask) {
+    inputs.file("src/main/resources/www/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/resources/www/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir("src/main/resources/www/node_modules")
+    outputs.cacheIf { true }
+
     workingDir = file('src/main/resources/www')
     args = ['install']
 }
