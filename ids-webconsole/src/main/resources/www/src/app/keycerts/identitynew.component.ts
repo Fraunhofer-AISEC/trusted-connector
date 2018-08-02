@@ -10,7 +10,7 @@ import { CertificateService } from './keycert.service';
     templateUrl: './identitynew.component.html'
 })
 export class NewIdentityComponent implements OnInit {
-    @Output() changeTitle = new EventEmitter();
+    @Output() readonly changeTitle = new EventEmitter();
     myForm: FormGroup;
     data: Identity;
     events: Array<any> = [];

@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
-import { ConnectionReportService } from './connectionReport.service';
+import { ConnectionReportService } from './connection-report.service';
 import { delay, retryWhen, take } from 'rxjs/operators';
 
 @Component({
   selector: 'connections',
-  templateUrl: './connectionReport.component.html',
-  styleUrls: ['./connectionReport.component.css']
+  templateUrl: './connection-report.component.html',
+  styleUrls: ['./connection-report.component.css']
 })
 export class ConnectionReportComponent implements OnInit {
 

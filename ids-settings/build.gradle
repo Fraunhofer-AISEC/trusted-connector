@@ -3,9 +3,16 @@ apply plugin: 'kotlin'
 dependencies {
     providedByBundle project(':ids-api')
 
-    providedByBundle "org.jetbrains.kotlin:kotlin-osgi-bundle:${libraryVersions.kotlin}"
+    providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
 
-    implementation group: 'org.mapdb', name: 'mapdb', version: libraryVersions.mapdb
+    // Required by MapDB below
+    providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
+        transitive = false  // Avoid pulling in of checker framework and other annotation stuff
+    }
+    implementation (group: 'org.mapdb', name: 'mapdb', version: libraryVersions.mapdb) {
+        // Exclude guava dependency, which is provided by bundle
+        exclude group: 'com.google.guava', module: 'guava'
+    }
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j

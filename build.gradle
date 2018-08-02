@@ -33,7 +33,7 @@ allprojects {
             ahc           : '2.4.9',
             acme          : '2.0',
             checkerQual   : '2.5.2',
-            guava         : '25.1-jre',
+            guava         : '26.0-jre',
             kotlin        : '1.2.51',
             tuprolog      : '3.2.1',
             log4j         : '2.6.2',

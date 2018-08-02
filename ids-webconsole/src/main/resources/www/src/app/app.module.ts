@@ -27,7 +27,7 @@ import { SettingsService } from './ids/settings.service';
 import { KeycertsComponent } from './keycerts/keycerts.component';
 import { CertificateCardComponent } from './keycerts/certificate-card.component';
 import { CertificateService } from './keycerts/keycert.service';
-import { CertUploadComponent } from './keycerts/certUpload.component';
+import { CertUploadComponent } from './keycerts/cert-upload.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
 
 import { AppService } from './apps/app.service';
@@ -35,7 +35,7 @@ import { RouteService } from './routes/route.service';
 import { SensorService } from './sensor/sensor.service';
 import { PolicyService } from './dataflowpolicies/policy.service';
 
-import { ConnectionReportService } from './connectionReport/connectionReport.service';
+import { ConnectionReportService } from './connection-report/connection-report.service';
 import { ValuesPipe } from './values.pipe';
 
 import { routing } from './app.routing';
@@ -45,9 +45,9 @@ import { PrettifyPipe } from './prettify-json.pipe';
 import { ConfirmService } from './confirm/confirm.service';
 import { ConfirmComponent } from './confirm/confirm.component';
 
-import { ConnectionReportComponent } from './connectionReport/connectionReport.component';
-import { ConnectionConfigurationComponent } from './connectionConfiguration/connection-configuration.component';
-import { ConnectionConfigurationService } from './connectionConfiguration/connection-configuration.service';
+import { ConnectionReportComponent } from './connection-report/connection-report.component';
+import { ConnectionConfigurationComponent } from './connection-configuration/connection-configuration.component';
+import { ConnectionConfigurationService } from './connection-configuration/connection-configuration.service';
 
 import { HTTP_PROVIDER } from './application-http-client.service';
 

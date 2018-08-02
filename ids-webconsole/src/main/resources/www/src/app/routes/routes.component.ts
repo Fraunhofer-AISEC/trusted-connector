@@ -15,7 +15,7 @@ import { mergeMap, takeWhile } from 'rxjs/operators';
 
 export class RoutesComponent implements OnInit, OnDestroy {
     title = 'Current Routes';
-    @Output() changeTitle = new EventEmitter();
+    @Output() readonly changeTitle = new EventEmitter();
     routes: Array<Route>;
     selectedRoute: Route;
     routemetrics: RouteMetrics = new RouteMetrics();

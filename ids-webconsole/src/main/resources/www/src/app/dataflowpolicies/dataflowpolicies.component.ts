@@ -9,7 +9,7 @@ declare var componentHandler: any;
   templateUrl: './dataflowpolicies.component.html'
 })
 export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
-  @Output() changeTitle = new EventEmitter();
+  @Output() readonly changeTitle = new EventEmitter();
   private _policies?: Array<string>;
   private _isLoaded = false;
 

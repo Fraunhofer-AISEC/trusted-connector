@@ -13,7 +13,7 @@ export class KeycertsComponent implements OnInit {
     identities: Array<Certificate>;
     certificates: Array<Certificate>;
 
-    @Output() changeTitle = new EventEmitter();
+    @Output() readonly changeTitle = new EventEmitter();
 
     constructor(private titleService: Title, private certificateService: CertificateService, vcRef: ViewContainerRef) {
         this.titleService.setTitle('Identities');

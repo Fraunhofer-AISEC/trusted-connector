@@ -3,7 +3,7 @@ import { CertificateService } from './keycert.service';
 
 @Component({
     selector: 'file-uploading',
-    templateUrl: './certUpload.component.html'
+    templateUrl: './cert-upload.component.html'
 })
 export class CertUploadComponent {
     @Input() multiple = false;

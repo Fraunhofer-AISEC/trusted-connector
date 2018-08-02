@@ -15,4 +15,8 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     componentHandler.upgradeAllRegistered();
   }
+
+  get title(): string {
+    return this.titleService.getTitle();
+  }
 }

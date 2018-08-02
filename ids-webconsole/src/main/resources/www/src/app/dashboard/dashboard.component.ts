@@ -1,8 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import {  SubscriptionComponent } from '../subscription.component';
-
+import { SubscriptionComponent } from '../subscription.component';
 import { App } from '../apps/app';
 import { AppService } from '../apps/app.service';
 import { MetricService } from '../metric/metric.service';
@@ -15,7 +14,7 @@ import { RouteComponent } from '../routes/route';
   providers: []
 })
 export class DashboardComponent extends SubscriptionComponent implements OnInit {
-  @Output() changeTitle = new EventEmitter();
+  @Output() readonly changeTitle = new EventEmitter();
   camelComponents: Array<RouteComponent>;
   apps: Array<App>;
   cmlVersion: string;

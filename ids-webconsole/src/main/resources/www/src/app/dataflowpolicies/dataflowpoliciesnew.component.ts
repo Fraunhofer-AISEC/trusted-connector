@@ -10,7 +10,7 @@ import { AbstractControl } from '@angular/forms/src/model';
     templateUrl: './dataflowpoliciesnew.component.html'
 })
 export class NewDataflowPolicyComponent implements OnInit {
-    @Output() changeTitle = new EventEmitter();
+    @Output() readonly changeTitle = new EventEmitter();
     myForm: FormGroup;
     data: Policy;
     policyFileLabel = 'Select lucon file ...';
