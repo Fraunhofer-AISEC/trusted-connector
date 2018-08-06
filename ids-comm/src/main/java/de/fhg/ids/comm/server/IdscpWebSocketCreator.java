@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Communication Protocol
+ * ids-comm
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,23 +23,18 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
-/**
- * Creates a configurable WebSocket for the IDSCP protocol.
- * 
- *
- */
+/** Creates a configurable WebSocket for the IDSCP protocol. */
 public class IdscpWebSocketCreator implements WebSocketCreator {
-	private ServerConfiguration config;
-	private SocketListener socketListener;
-	
-	public IdscpWebSocketCreator(ServerConfiguration config, SocketListener socketListener) {
-		this.config = config;
-		this.socketListener = socketListener;
-	}
-	
-	@Override
-	public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
-		return new IdscpServerSocket(this.config, this.socketListener);
-	}
+  private ServerConfiguration config;
+  private SocketListener socketListener;
 
+  public IdscpWebSocketCreator(ServerConfiguration config, SocketListener socketListener) {
+    this.config = config;
+    this.socketListener = socketListener;
+  }
+
+  @Override
+  public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
+    return new IdscpServerSocket(this.config, this.socketListener);
+  }
 }

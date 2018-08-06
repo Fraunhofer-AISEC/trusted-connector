@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import java.nio.file.Path;
 
 public interface AcmeClient {
 
-    String getChallengeAuthorization(String challenge);
+  String getChallengeAuthorization(String challenge);
 
-    void renewCertificate(Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort);
+  void renewCertificate(
+      Path targetDirectory, URI acmeServerUri, String[] domains, int challengePort);
 
-    AcmeTermsOfService getTermsOfService(URI acmeServerUri);
-
+  AcmeTermsOfService getTermsOfService(URI acmeServerUri);
 }

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,53 +22,53 @@ package de.fhg.ids.attestation;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 
 public class Configuration {
-	private long id;
-	private String name;
-	private String type;
-	private Pcr[] values;
-	
-	public Configuration(long id, String name, String type, Pcr[] values) {
-		this.id = id;
-		this.name = name;
-		this.type = type;
-		this.values = values.clone();
-	}
-	
-	public Configuration(long id, String name, String type) {
-		this.id = id;
-		this.name = name;
-		this.type = type;
-	}	
-	
-	public Pcr[] getValues() {
-		return values.clone();
-	}
+  private long id;
+  private String name;
+  private String type;
+  private Pcr[] values;
 
-	public void setValues(Pcr[] values) {
-		this.values = values.clone();
-	}
+  public Configuration(long id, String name, String type, Pcr[] values) {
+    this.id = id;
+    this.name = name;
+    this.type = type;
+    this.values = values.clone();
+  }
 
-	public long getId() {
-		return id;
-	}
+  public Configuration(long id, String name, String type) {
+    this.id = id;
+    this.name = name;
+    this.type = type;
+  }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+  public Pcr[] getValues() {
+    return values.clone();
+  }
 
-	public String getName() {
-		return name;
-	}
+  public void setValues(Pcr[] values) {
+    this.values = values.clone();
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public long getId() {
+    return id;
+  }
 
-	public String getType() {
-		return type;
-	}
+  public void setId(long id) {
+    this.id = id;
+  }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
 }

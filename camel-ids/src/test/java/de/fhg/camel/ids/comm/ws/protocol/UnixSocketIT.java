@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * camel-ids
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,141 +22,141 @@ package de.fhg.camel.ids.comm.ws.protocol;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Test;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
+import java.io.File;
+import java.io.IOException;
+import org.junit.Test;
 
 /**
- * Integration tests against a TPM 2.0 daemon (tpmd) over a UNIX domain socket
- * at ./socket/control.sock.
- * 
- * These tests will only run if the respective UNIX domain socket is available.
- * Otherwise they will be ignored.
- * 
+ * Integration tests against a TPM 2.0 daemon (tpmd) over a UNIX domain socket at
+ * ./socket/control.sock.
+ *
+ * <p>These tests will only run if the respective UNIX domain socket is available. Otherwise they
+ * will be ignored.
  */
 public class UnixSocketIT {
-	private static final String TPMD_SOCKET = "socket/control.sock";
+  private static final String TPMD_SOCKET = "socket/control.sock";
 
-    @Test
-    public void testBASIC() throws Exception {
-		assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
-    	
-    	UnixSocketThread client;
-    	Thread thread;
-    	UnixSocketResponseHandler handler;
-    	String quoted = NonceGenerator.generate(40);
-    	IdsAttestationType type = IdsAttestationType.BASIC;
-    	try {
-			// client will be used to send messages
-			client = new UnixSocketThread(TPMD_SOCKET);
-			thread = new Thread(client);
-			thread.setDaemon(true);
-			thread.start();
-			// responseHandler will be used to wait for messages
-			handler = new UnixSocketResponseHandler();
-			
-	    	// construct protobuf message to send to local tpm2d via unix socket
-			ControllerToTpm msg = ControllerToTpm
-					.newBuilder()
-					.setAtype(type)
-					.setQualifyingData(quoted)
-					.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
-					.build();
-			client.send(msg.toByteArray(), handler, true);
-			System.out.println("waiting for socket response ....");
-			byte[] tpmData = handler.waitForResponse();
-			System.out.println("tpmData length : " + tpmData.length);
-			// and wait for response
-			TpmToController response = TpmToController.parseFrom(tpmData);
-			System.out.println(response.toString());
-			assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-			assertTrue(response.getAtype().equals(type));
-			
-		} catch (IOException e) {
-			System.out.println("could not write to/read from " + TPMD_SOCKET);
-			e.printStackTrace();
-		}
+  @Test
+  public void testBASIC() throws Exception {
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
+    UnixSocketThread client;
+    Thread thread;
+    UnixSocketResponseHandler handler;
+    String quoted = NonceGenerator.generate(40);
+    IdsAttestationType type = IdsAttestationType.BASIC;
+    try {
+      // client will be used to send messages
+      client = new UnixSocketThread(TPMD_SOCKET);
+      thread = new Thread(client);
+      thread.setDaemon(true);
+      thread.start();
+      // responseHandler will be used to wait for messages
+      handler = new UnixSocketResponseHandler();
+
+      // construct protobuf message to send to local tpm2d via unix socket
+      ControllerToTpm msg =
+          ControllerToTpm.newBuilder()
+              .setAtype(type)
+              .setQualifyingData(quoted)
+              .setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
+              .build();
+      client.send(msg.toByteArray(), handler, true);
+      System.out.println("waiting for socket response ....");
+      byte[] tpmData = handler.waitForResponse();
+      System.out.println("tpmData length : " + tpmData.length);
+      // and wait for response
+      TpmToController response = TpmToController.parseFrom(tpmData);
+      System.out.println(response.toString());
+      assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
+      assertTrue(response.getAtype().equals(type));
+
+    } catch (IOException e) {
+      System.out.println("could not write to/read from " + TPMD_SOCKET);
+      e.printStackTrace();
     }
+  }
 
-    @Test
-    public void testALL() throws Exception {
-		assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+  @Test
+  public void testALL() throws Exception {
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
-    	UnixSocketThread client;
-    	Thread thread;
-    	String socket = "socket/control.sock";
-    	UnixSocketResponseHandler handler;
-    	String quoted = NonceGenerator.generate(40);
-    	IdsAttestationType type = IdsAttestationType.ALL;
+    UnixSocketThread client;
+    Thread thread;
+    String socket = "socket/control.sock";
+    UnixSocketResponseHandler handler;
+    String quoted = NonceGenerator.generate(40);
+    IdsAttestationType type = IdsAttestationType.ALL;
 
-		// client will be used to send messages
-		client = new UnixSocketThread(socket);
-		thread = new Thread(client);
-		thread.setDaemon(true);
-		thread.start();
-		// responseHandler will be used to wait for messages
-		handler = new UnixSocketResponseHandler();
-		
-    	// construct protobuf message to send to local tpm2d via unix socket
-		ControllerToTpm msg = ControllerToTpm
-				.newBuilder()
-				.setAtype(type)
-				.setQualifyingData(quoted)
-				.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
-				.build();
-		client.send(msg.toByteArray(), handler, true);
-		System.out.println("waiting for socket response ....");
-		byte[] tpmData = handler.waitForResponse();
-		System.out.println("tpmData length : " + tpmData.length);
-		// and wait for response
-		TpmToController response = TpmToController.parseFrom(tpmData);
-		System.out.println(response.toString());
-		assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-		assertTrue(response.getAtype().equals(type));
-    }
+    // client will be used to send messages
+    client = new UnixSocketThread(socket);
+    thread = new Thread(client);
+    thread.setDaemon(true);
+    thread.start();
+    // responseHandler will be used to wait for messages
+    handler = new UnixSocketResponseHandler();
 
-    @Test
-    public void testADVANCED() throws Exception {
-		assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    // construct protobuf message to send to local tpm2d via unix socket
+    ControllerToTpm msg =
+        ControllerToTpm.newBuilder()
+            .setAtype(type)
+            .setQualifyingData(quoted)
+            .setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
+            .build();
+    client.send(msg.toByteArray(), handler, true);
+    System.out.println("waiting for socket response ....");
+    byte[] tpmData = handler.waitForResponse();
+    System.out.println("tpmData length : " + tpmData.length);
+    // and wait for response
+    TpmToController response = TpmToController.parseFrom(tpmData);
+    System.out.println(response.toString());
+    assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
+    assertTrue(response.getAtype().equals(type));
+  }
 
-    	UnixSocketThread client;
-    	Thread thread;
-    	UnixSocketResponseHandler handler;
-    	String quoted = NonceGenerator.generate(40);
-    	IdsAttestationType type = IdsAttestationType.ADVANCED;
+  @Test
+  public void testADVANCED() throws Exception {
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
-    	// client will be used to send messages
-		client = new UnixSocketThread(TPMD_SOCKET);
-		thread = new Thread(client);
-		thread.setDaemon(true);
-		thread.start();
-		// responseHandler will be used to wait for messages
-		handler = new UnixSocketResponseHandler();
-		
-    	// construct protobuf message to send to local tpm2d via unix socket
-		ControllerToTpm msg = ControllerToTpm
-				.newBuilder()
-				.setAtype(type)
-				.setQualifyingData(quoted)
-				.setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
-				.setPcrs(24)
-				.build();
-		client.send(msg.toByteArray(), handler, true);
-		System.out.println("waiting for socket response ....");
-		byte[] tpmData = handler.waitForResponse();
-		System.out.println("tpmData length : " + tpmData.length);
-		// and wait for response
-		TpmToController response = TpmToController.parseFrom(tpmData);
-		System.out.println(response.toString());
-		assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
-		assertTrue(response.getAtype().equals(type));
-    }
+    UnixSocketThread client;
+    Thread thread;
+    UnixSocketResponseHandler handler;
+    String quoted = NonceGenerator.generate(40);
+    IdsAttestationType type = IdsAttestationType.ADVANCED;
+
+    // client will be used to send messages
+    client = new UnixSocketThread(TPMD_SOCKET);
+    thread = new Thread(client);
+    thread.setDaemon(true);
+    thread.start();
+    // responseHandler will be used to wait for messages
+    handler = new UnixSocketResponseHandler();
+
+    // construct protobuf message to send to local tpm2d via unix socket
+    ControllerToTpm msg =
+        ControllerToTpm.newBuilder()
+            .setAtype(type)
+            .setQualifyingData(quoted)
+            .setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
+            .setPcrs(24)
+            .build();
+    client.send(msg.toByteArray(), handler, true);
+    System.out.println("waiting for socket response ....");
+    byte[] tpmData = handler.waitForResponse();
+    System.out.println("tpmData length : " + tpmData.length);
+    // and wait for response
+    TpmToController response = TpmToController.parseFrom(tpmData);
+    System.out.println(response.toString());
+    assertTrue(response.getCode().equals(TpmToController.Code.INTERNAL_ATTESTATION_RES));
+    assertTrue(response.getAtype().equals(type));
+  }
 }

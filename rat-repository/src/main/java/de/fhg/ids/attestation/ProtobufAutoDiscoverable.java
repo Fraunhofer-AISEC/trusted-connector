@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,17 @@
  */
 package de.fhg.ids.attestation;
 
-import org.glassfish.jersey.internal.spi.AutoDiscoverable;
-
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.core.FeatureContext;
+import org.glassfish.jersey.internal.spi.AutoDiscoverable;
 
 @Priority(Priorities.ENTITY_CODER)
 public class ProtobufAutoDiscoverable implements AutoDiscoverable {
 
-    public void configure(FeatureContext context) {
-        if (!context.getConfiguration().isRegistered(ProtobufFeature.class)) {
-            context.register(ProtobufFeature.class);
-        }
+  public void configure(FeatureContext context) {
+    if (!context.getConfiguration().isRegistered(ProtobufFeature.class)) {
+      context.register(ProtobufFeature.class);
     }
+  }
 }

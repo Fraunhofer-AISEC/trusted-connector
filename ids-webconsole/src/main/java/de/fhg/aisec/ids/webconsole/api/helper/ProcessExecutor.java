@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,25 @@
  */
 package de.fhg.aisec.ids.webconsole.api.helper;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 public class ProcessExecutor {
-    private static final Logger LOG = LoggerFactory.getLogger(ProcessExecutor.class);
-	
-	public int execute(String[] cmd, OutputStream stdout, OutputStream stderr) throws InterruptedException, IOException {
-		Runtime rt = Runtime.getRuntime();
-		Process proc = rt.exec(cmd);
+  private static final Logger LOG = LoggerFactory.getLogger(ProcessExecutor.class);
 
-		StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), stderr);
-		StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), stdout);
+  public int execute(String[] cmd, OutputStream stdout, OutputStream stderr)
+      throws InterruptedException, IOException {
+    Runtime rt = Runtime.getRuntime();
+    Process proc = rt.exec(cmd);
 
-		errorGobbler.start();
-		outputGobbler.start();
+    StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), stderr);
+    StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), stdout);
 
-		return proc.waitFor();
-	}
+    errorGobbler.start();
+    outputGobbler.start();
 
+    return proc.waitFor();
+  }
 }
-

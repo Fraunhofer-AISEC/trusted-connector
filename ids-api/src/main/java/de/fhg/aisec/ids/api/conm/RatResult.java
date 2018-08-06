@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,36 +24,32 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Result of a remote attestation between peers.
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-
 public class RatResult {
-	public enum Status {
-		FAILED,
-		SUCCESS
-	}
+  public enum Status {
+    FAILED,
+    SUCCESS
+  }
 
-	private @NonNull Status status;
-	private @Nullable String reason;
-	
-	public RatResult(@NonNull Status status, @Nullable String reason) {
-		this.status = status;
-		if (reason != null) {
-			this.reason = reason;
-		} else {
-			this.reason = "";
-		}
-	}
+  private @NonNull Status status;
+  private @Nullable String reason;
 
-	public Status getStatus() {
-		return status;
-	}
+  public RatResult(@NonNull Status status, @Nullable String reason) {
+    this.status = status;
+    if (reason != null) {
+      this.reason = reason;
+    } else {
+      this.reason = "";
+    }
+  }
 
-	public String getReason() {
-		return reason;
-	}
+  public Status getStatus() {
+    return status;
+  }
+
+  public String getReason() {
+    return reason;
+  }
 }
-
-

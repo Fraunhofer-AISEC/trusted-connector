@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,40 +23,41 @@ import java.util.List;
 
 /**
  * Bean representing the decision of a Policy Decision Point (PDP).
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 public class PolicyDecision {
-	public enum Decision {
-		ALLOW, DENY, DON_T_CARE
-	}
+  public enum Decision {
+    ALLOW,
+    DENY,
+    DON_T_CARE
+  }
 
-	private String reason;
-	private Decision decision;
-	private List<Obligation> obligations;
-	
-	public String getReason() {
-		return reason;
-	}
-	
-	public List<Obligation> getObligations() {
-		return obligations;
-	}
-	
-	public void setObligations(List<Obligation> obligation) {
-		this.obligations = obligation;
-	}
-	
-	public void setReason(String reason) {
-		this.reason = reason;
-	}
-	
-	public Decision getDecision() {
-		return decision;
-	}
-	
-	public void setDecision(Decision decision) {
-		this.decision = decision;
-	}
+  private String reason;
+  private Decision decision;
+  private List<Obligation> obligations;
+
+  public String getReason() {
+    return reason;
+  }
+
+  public List<Obligation> getObligations() {
+    return obligations;
+  }
+
+  public void setObligations(List<Obligation> obligation) {
+    this.obligations = obligation;
+  }
+
+  public void setReason(String reason) {
+    this.reason = reason;
+  }
+
+  public Decision getDecision() {
+    return decision;
+  }
+
+  public void setDecision(Decision decision) {
+    this.decision = decision;
+  }
 }

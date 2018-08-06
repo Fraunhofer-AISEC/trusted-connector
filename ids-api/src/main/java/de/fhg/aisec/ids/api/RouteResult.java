@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,20 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RouteResult extends Result {
-    private RouteObject route;
+  private RouteObject route;
 
-    public RouteResult() {}
+  public RouteResult() {}
 
-    public RouteResult(boolean success, @NonNull String msg, @Nullable RouteObject route) {
-        super(success, msg);
-        this.route = route;
-    }
+  public RouteResult(boolean success, @NonNull String msg, @Nullable RouteObject route) {
+    super(success, msg);
+    this.route = route;
+  }
 
-    public RouteObject getRoute() {
-        return route;
-    }
+  public RouteObject getRoute() {
+    return route;
+  }
 
-    public void setRoute(@Nullable RouteObject route) {
-        this.route = route;
-    }
+  public void setRoute(@Nullable RouteObject route) {
+    this.route = route;
+  }
 }

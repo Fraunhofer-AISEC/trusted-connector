@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,31 +20,31 @@
 package de.fhg.aisec.ids.api.policy;
 
 public class Obligation {
-	private String action;
-	private PolicyDecision.Decision alternativeDecision;
-	
-	public Obligation() {
-		super();
-	}
-	
-	public Obligation(String action, PolicyDecision.Decision alternativeDecision) {
-		this.action = action;
-		this.alternativeDecision = alternativeDecision;
-	}
-	
-	public String getAction() {
-		return action;
-	}
-	
-	public void setAction(String action) {
-		this.action = action;
-	}
-	
-	public PolicyDecision.Decision getAlternativeDecision() {
-		return alternativeDecision;
-	}
-	
-	public void setAlternativeDecision(PolicyDecision.Decision alternativeDecision) {
-		this.alternativeDecision = alternativeDecision;
-	}
+  private String action;
+  private PolicyDecision.Decision alternativeDecision;
+
+  public Obligation() {
+    super();
+  }
+
+  public Obligation(String action, PolicyDecision.Decision alternativeDecision) {
+    this.action = action;
+    this.alternativeDecision = alternativeDecision;
+  }
+
+  public String getAction() {
+    return action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
+  }
+
+  public PolicyDecision.Decision getAlternativeDecision() {
+    return alternativeDecision;
+  }
+
+  public void setAlternativeDecision(PolicyDecision.Decision alternativeDecision) {
+    this.alternativeDecision = alternativeDecision;
+  }
 }
