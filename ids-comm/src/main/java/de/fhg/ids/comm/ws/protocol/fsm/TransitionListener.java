@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,5 @@
 package de.fhg.ids.comm.ws.protocol.fsm;
 
 public interface TransitionListener {
-	boolean transition(Event event);
+  boolean transition(Event event);
 }

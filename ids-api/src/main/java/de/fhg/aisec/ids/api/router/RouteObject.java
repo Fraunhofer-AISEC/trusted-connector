@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,84 +21,92 @@ package de.fhg.aisec.ids.api.router;
 
 /**
  * Bean representing a "route" (e.g., an Apache Camel route)
- * 
+ *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 public class RouteObject {
-	private String status;
-	private long uptime;
-	private String context;
-	private String shortName;
-	private String dot;
-	private String description;
-	private String id;
+  private String status;
+  private long uptime;
+  private String context;
+  private String shortName;
+  private String dot;
+  private String description;
+  private String id;
 
-	public RouteObject() { /* Bean std c'tor */	}
-	
-	public RouteObject(String id, String description, String dot, String shortName, String context,
-                       long uptime, String status) {
-		this.id = id;
-		this.description = description;
-		this.dot = dot;
-		this.shortName = shortName;
-		this.context = context;
-		this.uptime = uptime;
-		this.status = status;
-	}
+  public RouteObject() {
+    /* Bean std c'tor */
+  }
 
-	public String getStatus() {
-		return status;
-	}
+  public RouteObject(
+      String id,
+      String description,
+      String dot,
+      String shortName,
+      String context,
+      long uptime,
+      String status) {
+    this.id = id;
+    this.description = description;
+    this.dot = dot;
+    this.shortName = shortName;
+    this.context = context;
+    this.uptime = uptime;
+    this.status = status;
+  }
 
-	public long getUptime() {
-		return uptime;
-	}
+  public String getStatus() {
+    return status;
+  }
 
-	public String getContext() {
-		return context;
-	}
+  public long getUptime() {
+    return uptime;
+  }
 
-	public String getShortName() {
-		return shortName;
-	}
+  public String getContext() {
+    return context;
+  }
 
-	public String getDot() {
-		return dot;
-	}
+  public String getShortName() {
+    return shortName;
+  }
 
-	public String getDescription() {
-		return description;
-	}
+  public String getDot() {
+    return dot;
+  }
 
-	public String getId() {
-		return id;
-	}
+  public String getDescription() {
+    return description;
+  }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+  public String getId() {
+    return id;
+  }
 
-	public void setUptime(long uptime) {
-		this.uptime = uptime;
-	}
+  public void setStatus(String status) {
+    this.status = status;
+  }
 
-	public void setContext(String context) {
-		this.context = context;
-	}
+  public void setUptime(long uptime) {
+    this.uptime = uptime;
+  }
 
-	public void setShortName(String shortName) {
-		this.shortName = shortName;
-	}
+  public void setContext(String context) {
+    this.context = context;
+  }
 
-	public void setDot(String dot) {
-		this.dot = dot;
-	}
+  public void setShortName(String shortName) {
+    this.shortName = shortName;
+  }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+  public void setDot(String dot) {
+    this.dot = dot;
+  }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
 }

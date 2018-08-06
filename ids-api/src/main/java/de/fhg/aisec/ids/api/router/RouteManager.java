@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,136 +19,136 @@
  */
 package de.fhg.aisec.ids.api.router;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Interface of internal routing manager inside the Core Platform.
- * 
- * The routing manager is responsible for forwarding messages between containers.
- * One implementation of this interface is based on Apache Camel, others might follow.
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
+ * <p>The routing manager is responsible for forwarding messages between containers. One
+ * implementation of this interface is based on Apache Camel, others might follow.
+ *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 public interface RouteManager {
 
-	/**
-	 * Returns a list of currently installed routes.
-	 * 
-	 * @return All installed rules
-	 */
-	public List<RouteObject> getRoutes();
+  /**
+   * Returns a list of currently installed routes.
+   *
+   * @return All installed rules
+   */
+  public List<RouteObject> getRoutes();
 
-	/**
-	 * Returns a list of currently installed routes.
-	 *
-	 * @return The queried route or null
-	 */
-	public RouteObject getRoute(String id);
-	
-	/**
-	 * Starts a route.
-	 * 
-	 * @param routeId
-	 */
-	public void startRoute(String routeId) throws RouteException;
-	
-	/**
-	 * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver pending exchanges.
-	 * 
-	 * @param routeId
-	 * @throws Exception 
-	 */
-	public void stopRoute(String routeId) throws RouteException;
-	
-	/**
-	 * List all supported components, i.e. supported endpoint protocols.
-	 * 
-	 * @return
-	 */
-	public List<RouteComponent> listComponents();
-	
-	/**
-	 * List all route endpoints, i.e. all URLs to which routes exist.
-	 * 
-	 * @return
-	 */
-	public Map<String, Collection<String>> getEndpoints();
-	
-	public Map<String,String> listEndpoints();
+  /**
+   * Returns a list of currently installed routes.
+   *
+   * @return The queried route or null
+   */
+  public RouteObject getRoute(String id);
 
-	/**
-	 * Save a route, replacing it with a new representation within the same context
-	 *
-	 * @param routeId ID of the route to save
-	 * @param routeRepresentation The new textual representation of the route (XML etc.)
-	 * @return The object representing the modified route
-	 * @throws RouteException If the route does not exist or some Exception was thrown during route replacement.
-	 */
-	RouteObject saveRoute(String routeId, String routeRepresentation) throws RouteException;
-	
-	/**
-	 * Adds a route and starts it.
-	 * 
-	 * Endpoint declarations must be supported by the underlying implementation.
-	 * 
-	 * If the route id already exists, this method will throw a RouteException 
-	 * and not overwrite the existing route. 
-	 * 
-	 * @param routeDefinition Textual representation of the route (XML etc.)
-	 * @throws RouteException if a route with the same id already exists or if any 
-	 * Exception is thrown during loading and starting the route.
-	 */
-	void addRoute(String routeDefinition) throws RouteException;
+  /**
+   * Starts a route.
+   *
+   * @param routeId
+   */
+  public void startRoute(String routeId) throws RouteException;
 
-	
-	/**
-	 * Removes a route from one endpoint to another.
-	 * 
-	 * The deletion becomes immediately effective.
-	 * 
-	 * Endpoint declarations must be supported by the underlying implementation.
-	 * 
-	 * @param routeId
-	 */
-	void delRoute(String routeId);
+  /**
+   * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver
+   * pending exchanges.
+   *
+   * @param routeId
+   * @throws Exception
+   */
+  public void stopRoute(String routeId) throws RouteException;
 
-	/**
-	 * Returns the given route in its original representation of the implementing engine.
-	 * 
-	 * Note that this method may return null if the implementing engine does not support a textual route configuration.
-	 * 
-	 * For Apache Camel, this method will return the XML-based Camel DSL configuration file.
-	 * 
-	 * @return String representation of the route
-	 */
-	String getRouteAsString(String routeId);
+  /**
+   * List all supported components, i.e. supported endpoint protocols.
+   *
+   * @return
+   */
+  public List<RouteComponent> listComponents();
 
-	/**
-	 * Returns a List of URIs of the given route's inputs (from definitions)
-	 *
-	 * @param routeId The identifier of the route
-	 * @return The from (input) URIs of the route
-	 */
-	@NonNull
-	public List<String> getRouteInputUris(@NonNull String routeId);
-	
-	/**
-	 * Returns aggregated runtime metrics of all installed routes.
-	 * 
-	 * @return map<k,v> where k is a string indicating the route id.
-	 */
-	Map<String,RouteMetrics> getRouteMetrics() ;
+  /**
+   * List all route endpoints, i.e. all URLs to which routes exist.
+   *
+   * @return
+   */
+  public Map<String, Collection<String>> getEndpoints();
 
-	/**
-	 * Returns the given route configuration in a Prolog representation.
-	 * 
-	 * @param routeId
-	 * @return
-	 */
-	String getRouteAsProlog(String routeId);
+  public Map<String, String> listEndpoints();
+
+  /**
+   * Save a route, replacing it with a new representation within the same context
+   *
+   * @param routeId ID of the route to save
+   * @param routeRepresentation The new textual representation of the route (XML etc.)
+   * @return The object representing the modified route
+   * @throws RouteException If the route does not exist or some Exception was thrown during route
+   *     replacement.
+   */
+  RouteObject saveRoute(String routeId, String routeRepresentation) throws RouteException;
+
+  /**
+   * Adds a route and starts it.
+   *
+   * <p>Endpoint declarations must be supported by the underlying implementation.
+   *
+   * <p>If the route id already exists, this method will throw a RouteException and not overwrite
+   * the existing route.
+   *
+   * @param routeDefinition Textual representation of the route (XML etc.)
+   * @throws RouteException if a route with the same id already exists or if any Exception is thrown
+   *     during loading and starting the route.
+   */
+  void addRoute(String routeDefinition) throws RouteException;
+
+  /**
+   * Removes a route from one endpoint to another.
+   *
+   * <p>The deletion becomes immediately effective.
+   *
+   * <p>Endpoint declarations must be supported by the underlying implementation.
+   *
+   * @param routeId
+   */
+  void delRoute(String routeId);
+
+  /**
+   * Returns the given route in its original representation of the implementing engine.
+   *
+   * <p>Note that this method may return null if the implementing engine does not support a textual
+   * route configuration.
+   *
+   * <p>For Apache Camel, this method will return the XML-based Camel DSL configuration file.
+   *
+   * @return String representation of the route
+   */
+  String getRouteAsString(String routeId);
+
+  /**
+   * Returns a List of URIs of the given route's inputs (from definitions)
+   *
+   * @param routeId The identifier of the route
+   * @return The from (input) URIs of the route
+   */
+  @NonNull
+  public List<String> getRouteInputUris(@NonNull String routeId);
+
+  /**
+   * Returns aggregated runtime metrics of all installed routes.
+   *
+   * @return map<k,v> where k is a string indicating the route id.
+   */
+  Map<String, RouteMetrics> getRouteMetrics();
+
+  /**
+   * Returns the given route configuration in a Prolog representation.
+   *
+   * @param routeId
+   * @return
+   */
+  String getRouteAsProlog(String routeId);
 }

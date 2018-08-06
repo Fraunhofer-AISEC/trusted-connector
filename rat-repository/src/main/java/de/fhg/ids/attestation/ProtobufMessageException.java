@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,17 @@ import javax.ws.rs.core.Response;
 
 public class ProtobufMessageException extends WebApplicationException {
 
-	private static final long serialVersionUID = 5346755086120085544L;
+  private static final long serialVersionUID = 5346755086120085544L;
 
-	public ProtobufMessageException(Throwable cause) {
-        super(cause);
-    }
+  public ProtobufMessageException(Throwable cause) {
+    super(cause);
+  }
 
-    @Override
-    public Response getResponse() {
-        return Response.status(Response.Status.BAD_REQUEST).entity(getCause().getMessage())
-                .type(MediaType.TEXT_PLAIN).build();
-    }
+  @Override
+  public Response getResponse() {
+    return Response.status(Response.Status.BAD_REQUEST)
+        .entity(getCause().getMessage())
+        .type(MediaType.TEXT_PLAIN)
+        .build();
+  }
 }

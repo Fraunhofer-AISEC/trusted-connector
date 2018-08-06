@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,13 @@ import java.util.Map;
 
 public interface Settings {
 
-    ConnectorConfig getConnectorConfig();
+  ConnectorConfig getConnectorConfig();
 
-    void setConnectorConfig(ConnectorConfig config);
+  void setConnectorConfig(ConnectorConfig config);
 
-    ConnectionSettings getConnectionSettings(String connection);
+  ConnectionSettings getConnectionSettings(String connection);
 
-    void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
+  void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
 
-    Map<String, ConnectionSettings> getAllConnectionSettings();
-
+  Map<String, ConnectionSettings> getAllConnectionSettings();
 }

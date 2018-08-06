@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,26 +22,26 @@ package de.fhg.aisec.ids.api.acme;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class AcmeTermsOfService {
-    final String tos;
-    final boolean isUri;
-    final String error;
+  final String tos;
+  final boolean isUri;
+  final String error;
 
-    public AcmeTermsOfService(String tos, boolean isUri, String error) {
-        this.tos = tos;
-        this.isUri = isUri;
-        this.error = error;
-    }
+  public AcmeTermsOfService(String tos, boolean isUri, String error) {
+    this.tos = tos;
+    this.isUri = isUri;
+    this.error = error;
+  }
 
-    public String getTos() {
-        return tos;
-    }
+  public String getTos() {
+    return tos;
+  }
 
-    @JsonProperty(value="isUri")
-    public boolean isUri() {
-        return isUri;
-    }
+  @JsonProperty(value = "isUri")
+  public boolean isUri() {
+    return isUri;
+  }
 
-    public String getError() {
-        return error;
-    }
+  public String getError() {
+    return error;
+  }
 }

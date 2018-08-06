@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Container Manager
+ * ids-container-manager
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ package de.fhg.ids.cm.impl.trustx;
 import jnr.unixsocket.UnixSocketChannel;
 
 class ServerDataEvent {
-	public TrustXMock server;
-	public UnixSocketChannel socket;
-	public byte[] data;
-	
-	public ServerDataEvent(TrustXMock server, UnixSocketChannel socket, byte[] data) {
-		this.server = server;
-		this.socket = socket;
-		this.data = data;
-	}
+  public TrustXMock server;
+  public UnixSocketChannel socket;
+  public byte[] data;
+
+  public ServerDataEvent(TrustXMock server, UnixSocketChannel socket, byte[] data) {
+    this.server = server;
+    this.socket = socket;
+    this.data = data;
+  }
 }

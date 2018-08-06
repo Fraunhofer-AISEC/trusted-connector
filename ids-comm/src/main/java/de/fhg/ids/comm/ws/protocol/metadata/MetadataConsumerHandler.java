@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,25 +20,19 @@
 package de.fhg.ids.comm.ws.protocol.metadata;
 
 import com.google.protobuf.MessageLite;
-
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 public class MetadataConsumerHandler extends MetadataHandler {
 
-	public MessageLite request(Event e) {
-		this.sessionID = e.getMessage().getId();
-		return ConnectorMessage
-				.newBuilder()
-				.setId(++this.sessionID)
-				.setType(ConnectorMessage.Type.META_REQUEST)
-				.setMetadataExchange(
-						MedadataExchange
-						.newBuilder()
-						.setRdfdescription(generateMetaDataRDF())
-						.build())
-				.build();
-	}
-
+  public MessageLite request(Event e) {
+    this.sessionID = e.getMessage().getId();
+    return ConnectorMessage.newBuilder()
+        .setId(++this.sessionID)
+        .setType(ConnectorMessage.Type.META_REQUEST)
+        .setMetadataExchange(
+            MedadataExchange.newBuilder().setRdfdescription(generateMetaDataRDF()).build())
+        .build();
+  }
 }

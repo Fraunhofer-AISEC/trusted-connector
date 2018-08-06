@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@
 package de.fhg.aisec.ids.webconsole.api.data;
 
 public class AppSearchRequest {
-	private final String searchTerm;
+  private final String searchTerm;
 
-	public AppSearchRequest() {
-		searchTerm = "";
-	}
+  public AppSearchRequest() {
+    searchTerm = "";
+  }
 
-	public String getSearchTerm() {
-		return searchTerm;
-	}
+  public String getSearchTerm() {
+    return searchTerm;
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.util.Random;
 
 public class NonceGenerator {
-	// generate a new software nonce in sha-1
-	public static String generate(int numchars) {
-		Random r = new Random();
-        StringBuffer sb = new StringBuffer();
-        while(sb.length() < numchars){
-            sb.append(Integer.toHexString(r.nextInt()));
-        }
+  // generate a new software nonce in sha-1
+  public static String generate(int numchars) {
+    Random r = new Random();
+    StringBuffer sb = new StringBuffer();
+    while (sb.length() < numchars) {
+      sb.append(Integer.toHexString(r.nextInt()));
+    }
 
-        return sb.toString().substring(0, numchars);
-	} 
-
+    return sb.toString().substring(0, numchars);
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Communication Protocol
+ * ids-comm
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,15 @@ import org.eclipse.jetty.websocket.api.Session;
 
 public interface SocketListener {
 
-	/**
-	 * This method is called on every incoming payload message.
-	 * 
-	 * Implementations of this interface should handle payloads here.
-	 * 
-	 * @param session
-	 * @param message
-	 */
-	void onMessage(Session session, byte[] message);
+  /**
+   * This method is called on every incoming payload message.
+   *
+   * <p>Implementations of this interface should handle payloads here.
+   *
+   * @param session
+   * @param message
+   */
+  void onMessage(Session session, byte[] message);
 
-	void notifyClosed(IdscpServerSocket idscpServerSocket);
-
+  void notifyClosed(IdscpServerSocket idscpServerSocket);
 }

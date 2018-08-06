@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,48 +24,53 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ServiceNode {
-	private String endpoint;
-	private Set<String> properties;
-	private Set<String> capabilities;
-	
-	public ServiceNode(String endpoint, Set<String> properties, Set<String> capabilities) {
-		super();
-		this.endpoint = endpoint;
-		this.properties = properties != null ? properties : Collections.emptySet();
-		this.capabilities = capabilities != null ? capabilities : Collections.emptySet();
-	}
-	
-	public String getEndpoint() {
-		return endpoint;
-	}
-	public void setEndpoint(String endpoint) {
-		this.endpoint = endpoint;
-	}
-	public Set<String> getProperties() {
-		return properties;
-	}
-	public void setProperties(Set<String> properties) {
-		this.properties = properties;
-	}
-	public Set<String> getCapabilties() {
-		return capabilities;
-	}
-	public void setCapabilities(Set<String> capabilities) {
-		this.capabilities = capabilities;
-	}
+  private String endpoint;
+  private Set<String> properties;
+  private Set<String> capabilities;
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		ServiceNode that = (ServiceNode) o;
-		return Objects.equals(endpoint, that.endpoint) &&
-				Objects.equals(properties, that.properties) &&
-				Objects.equals(capabilities, that.capabilities);
-	}
+  public ServiceNode(String endpoint, Set<String> properties, Set<String> capabilities) {
+    super();
+    this.endpoint = endpoint;
+    this.properties = properties != null ? properties : Collections.emptySet();
+    this.capabilities = capabilities != null ? capabilities : Collections.emptySet();
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(endpoint, properties, capabilities);
-	}
+  public String getEndpoint() {
+    return endpoint;
+  }
+
+  public void setEndpoint(String endpoint) {
+    this.endpoint = endpoint;
+  }
+
+  public Set<String> getProperties() {
+    return properties;
+  }
+
+  public void setProperties(Set<String> properties) {
+    this.properties = properties;
+  }
+
+  public Set<String> getCapabilties() {
+    return capabilities;
+  }
+
+  public void setCapabilities(Set<String> capabilities) {
+    this.capabilities = capabilities;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ServiceNode that = (ServiceNode) o;
+    return Objects.equals(endpoint, that.endpoint)
+        && Objects.equals(properties, that.properties)
+        && Objects.equals(capabilities, that.capabilities);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(endpoint, properties, capabilities);
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Route Manager
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,33 +22,32 @@ package de.fhg.aisec.ids.api.router.graph;
 import java.util.Objects;
 
 public class Edge {
-    private String source;
-    private String target;
+  private String source;
+  private String target;
 
-    public Edge(String source, String target) {
-        this.source = source;
-        this.target = target;
-    }
+  public Edge(String source, String target) {
+    this.source = source;
+    this.target = target;
+  }
 
-    public String getSource() {
-        return source;
-    }
+  public String getSource() {
+    return source;
+  }
 
-    public String getTarget() {
-        return target;
-    }
+  public String getTarget() {
+    return target;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Edge)) return false;
-        Edge edge = (Edge) o;
-        return Objects.equals(source, edge.source) &&
-                Objects.equals(target, edge.target);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Edge)) return false;
+    Edge edge = (Edge) o;
+    return Objects.equals(source, edge.source) && Objects.equals(target, edge.target);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(source, target);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(source, target);
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * camel-ids
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,14 @@ package de.fhg.camel.ids.server;
 
 public final class WebsocketConstants {
 
-    public static final int DEFAULT_PORT = 9292;
-    public static final String DEFAULT_HOST = "0.0.0.0";
+  public static final int DEFAULT_PORT = 9292;
+  public static final String DEFAULT_HOST = "0.0.0.0";
 
-    public static final String CONNECTION_KEY = "websocket.connectionKey";
-    public static final String SEND_TO_ALL = "websocket.sendToAll";
+  public static final String CONNECTION_KEY = "websocket.connectionKey";
+  public static final String SEND_TO_ALL = "websocket.sendToAll";
 
-    public static final String WS_PROTOCOL = "ws";
-    public static final String WSS_PROTOCOL = "wss";
+  public static final String WS_PROTOCOL = "ws";
+  public static final String WSS_PROTOCOL = "wss";
 
-    private WebsocketConstants() {
-    };
+  private WebsocketConstants() {};
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Container Manager
+ * ids-container-manager
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,6 @@
  */
 package de.fhg.aisec.ids.cm;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.Decision;
@@ -39,127 +28,142 @@ import de.fhg.aisec.ids.api.cm.Protocol;
 import de.fhg.aisec.ids.cm.impl.docker.DockerCM;
 import de.fhg.aisec.ids.cm.impl.dummy.DummyCM;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main entry point of the Container Management Layer.
- * 
- * This class is mainly a facade for the actual CML implementation, which can either be Docker or trust-X.
- * 
- * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *
+ * <p>This class is mainly a facade for the actual CML implementation, which can either be Docker or
+ * trust-X.
+ *
+ * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(enabled=true, immediate=true, name="ids-cml")
+@Component(enabled = true, immediate = true, name = "ids-cml")
 public class ContainerManagerService implements ContainerManager {
-	private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
-	private ContainerManager containerManager = null;
+  private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
+  private ContainerManager containerManager = null;
 
-	@Activate
-	protected void activate() {
-		LOG.info("Activating Container Manager");
-		// When activated, try to set container management instance
-		containerManager = getDefaultCM();
-		assert containerManager != null;
-		LOG.info("Default container management is " + containerManager);
-	}
-	
-	@Deactivate
-	protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
-		containerManager = null;		
-	}
-	
-	
-	private ContainerManager getDefaultCM() {
-		ContainerManager result;
-		if (TrustXCM.isSupported()) {
-			result = new TrustXCM();
-		} else if (DockerCM.isSupported()) {
-			result = new DockerCM();
-		} else {
-			LOG.warn("No supported container management layer found. Using dummy");
-			result = new DummyCM();
-		}
-		return result;
-	}
+  @Activate
+  protected void activate() {
+    LOG.info("Activating Container Manager");
+    // When activated, try to set container management instance
+    containerManager = getDefaultCM();
+    assert containerManager != null;
+    LOG.info("Default container management is " + containerManager);
+  }
 
-	@Override
-	public List<ApplicationContainer> list(boolean onlyRunning) {
-		return containerManager.list(onlyRunning);
-	}
+  @Deactivate
+  protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
+    containerManager = null;
+  }
 
-	@Override
-	public void wipe(String containerID) {
-		try {
-			containerManager.wipe(containerID);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-	}
+  private ContainerManager getDefaultCM() {
+    ContainerManager result;
+    if (TrustXCM.isSupported()) {
+      result = new TrustXCM();
+    } else if (DockerCM.isSupported()) {
+      result = new DockerCM();
+    } else {
+      LOG.warn("No supported container management layer found. Using dummy");
+      result = new DummyCM();
+    }
+    return result;
+  }
 
-	@Override
-	public void startContainer(String containerID) {
-		try {
-			containerManager.startContainer(containerID);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-	}
+  @Override
+  public List<ApplicationContainer> list(boolean onlyRunning) {
+    return containerManager.list(onlyRunning);
+  }
 
-	@Override
-	public void stopContainer(String containerID) {
-		try {
-			containerManager.stopContainer(containerID);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-	}
+  @Override
+  public void wipe(String containerID) {
+    try {
+      containerManager.wipe(containerID);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
 
-	@Override
-	public void restartContainer(String containerID) {
-		try {
-			containerManager.restartContainer(containerID);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-	}
+  @Override
+  public void startContainer(String containerID) {
+    try {
+      containerManager.startContainer(containerID);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
 
-	@Override
-	public Optional<String> pullImage(ApplicationContainer app) {
-		try {
-			return containerManager.pullImage(app);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return Optional.empty();
-	}
+  @Override
+  public void stopContainer(String containerID) {
+    try {
+      containerManager.stopContainer(containerID);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
 
-	@Override
-	public String inspectContainer(String containerID) {
-		try {
-			return containerManager.inspectContainer(containerID);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return "";
-	}
+  @Override
+  public void restartContainer(String containerID) {
+    try {
+      containerManager.restartContainer(containerID);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
 
-	@Override
-	public Object getMetadata(String containerID) {
-		try {
-			return containerManager.getMetadata(containerID);
-		} catch (NoContainerExistsException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return null;
-	}
+  @Override
+  public Optional<String> pullImage(ApplicationContainer app) {
+    try {
+      return containerManager.pullImage(app);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+    return Optional.empty();
+  }
 
-	@Override
-	public void setIpRule(String containerID, Direction direction, int srcPort, int dstPort, String srcDstRange,
-			Protocol protocol, Decision decision) {
-		containerManager.setIpRule(containerID, direction, srcPort, dstPort, srcDstRange, protocol, decision);
-	}
+  @Override
+  public String inspectContainer(String containerID) {
+    try {
+      return containerManager.inspectContainer(containerID);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+    return "";
+  }
 
-	@Override
-	public String getVersion() {
-		return containerManager.getVersion();
-	}
+  @Override
+  public Object getMetadata(String containerID) {
+    try {
+      return containerManager.getMetadata(containerID);
+    } catch (NoContainerExistsException e) {
+      LOG.error(e.getMessage(), e);
+    }
+    return null;
+  }
+
+  @Override
+  public void setIpRule(
+      String containerID,
+      Direction direction,
+      int srcPort,
+      int dstPort,
+      String srcDstRange,
+      Protocol protocol,
+      Decision decision) {
+    containerManager.setIpRule(
+        containerID, direction, srcPort, dstPort, srcDstRange, protocol, decision);
+  }
+
+  @Override
+  public String getVersion() {
+    return containerManager.getVersion();
+  }
 }
