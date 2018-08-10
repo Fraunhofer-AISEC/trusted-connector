@@ -1,0 +1,42 @@
+version: '2'
+services:
+
+  # Image for TPM simulator
+  ids-tpm2dsim-provider:
+    image: registry.netsec.aisec.fraunhofer.de/ids/tpm2dsim:latest
+    volumes:
+      - ./camel-ids/socket/:/data/cml/tpm2d/communication/
+    command: /tpm2d/cml-tpm2d
+
+  # Image for core platform, gets docker control socket mounted into the image
+  provider-core:
+    image: registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+    tty: true
+    stdin_open: true
+    hostname: provider-core
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./camel-ids/socket/:/var/run/tpm2d/
+      - ./system.properties:/root/etc/system.properties
+      - ./provider-client-truststore.jks:/root/etc/client-truststore.jks
+      - ./provider-client-keystore.jks:/root/etc/client-keystore.jks
+      - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
+    ports:
+      - "5006:5005"
+      - "8282:8181"
+    networks:
+      - ids-wide
+      - provider-internal
+
+  # Data App (MQTT consumer, publishes over REST)
+  provider-app:
+    image: fraunhoferaisec/example-client:develop
+    networks:
+      - provider-internal
+
+networks:
+  ids-wide:
+    driver: bridge
+  provider-internal:
+    driver: bridge
