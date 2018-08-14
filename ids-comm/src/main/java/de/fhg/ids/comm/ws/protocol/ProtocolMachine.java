@@ -194,7 +194,7 @@ public class ProtocolMachine {
   }
 
   public FSM initIDSProviderProtocol(
-      Session sess, IdsAttestationType type, int attestationMask, File tpmdSocket) {
+      Session sess, IdsAttestationType type, int attestationMask) {
     this.attestationType = type;
     this.serverSession = sess;
     FSM fsm = new FSM();

@@ -30,6 +30,5 @@ public interface WebSocketFactory {
       String protocol,
       String pathSpec,
       NodeSynchronization sync,
-      WebsocketConsumer consumer,
-      File tpmSocket);
+      WebsocketConsumer consumer);
 }

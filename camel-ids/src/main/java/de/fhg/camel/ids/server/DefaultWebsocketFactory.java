@@ -31,8 +31,7 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
       String protocol,
       String pathSpec,
       NodeSynchronization sync,
-      WebsocketConsumer consumer,
-      File tpmSocket) {
-    return new DefaultWebsocket(sync, pathSpec, consumer, tpmSocket);
+      WebsocketConsumer consumer) {
+    return new DefaultWebsocket(sync, pathSpec, consumer);
   }
 }

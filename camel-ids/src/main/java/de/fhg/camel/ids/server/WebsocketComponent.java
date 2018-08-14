@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.EnumSet;
@@ -54,7 +53,6 @@ import java.util.Map;
 public class WebsocketComponent extends DefaultComponent implements SSLContextParametersAware {
   protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
   protected static final Map<String, ConnectorRef> CONNECTORS = new HashMap<>();
-  private static final File TPM_SOCKET = new File("tpmd.sock");
 
   protected Map<String, WebSocketFactory> socketFactories;
 
@@ -215,8 +213,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       }
 
       NodeSynchronization sync = new DefaultNodeSynchronization(connectorRef.memoryStore);
-      WebsocketComponentServlet servlet =
-          addServlet(sync, prodcon, endpoint.getResourceUri(), TPM_SOCKET);
+      WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
       if (prodcon instanceof WebsocketConsumer) {
         WebsocketConsumer consumer = WebsocketConsumer.class.cast(prodcon);
         if (servlet.getConsumer() == null) {
@@ -409,8 +406,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
   protected WebsocketComponentServlet addServlet(
       NodeSynchronization sync,
       WebsocketProducerConsumer prodcon,
-      String resourceUri,
-      File tpmSocket)
+      String resourceUri)
       throws Exception {
 
     // Get Connector from one of the Jetty Instances to add WebSocket Servlet
@@ -426,7 +422,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       if (servlet == null) {
         // Retrieve Context
         ServletContextHandler context = (ServletContextHandler) connectorRef.server.getHandler();
-        servlet = createServlet(sync, pathSpec, servlets, context, tpmSocket);
+        servlet = createServlet(sync, pathSpec, servlets, context);
         connectorRef.servlet = servlet;
         LOG.debug(
             "WebSocket servlet added for the following path: {}, to the Jetty Server: {}",
@@ -444,10 +440,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       NodeSynchronization sync,
       String pathSpec,
       Map<String, WebsocketComponentServlet> servlets,
-      ServletContextHandler handler,
-      File tpmSocket) {
-    WebsocketComponentServlet servlet =
-        new WebsocketComponentServlet(sync, pathSpec, socketFactories, tpmSocket);
+      ServletContextHandler handler) {
+    WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, socketFactories);
     servlets.put(pathSpec, servlet);
     ServletHolder servletHolder = new ServletHolder(servlet);
     servletHolder.getInitParameters().putAll(handler.getInitParams());

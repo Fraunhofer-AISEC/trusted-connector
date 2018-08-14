@@ -65,13 +65,13 @@ public class IdscpServerSocket {
    */
   @OnWebSocketConnect
   public void onOpen(Session session) {
-    LOG.debug(
-        "Websocket opened "
-            + this
-            + " from "
-            + session.getRemoteAddress().toString()
-            + " to "
-            + session.getLocalAddress().toString());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(
+          "Websocket opened {} from {} to {}",
+          this,
+          session.getRemoteAddress(),
+          session.getLocalAddress());
+    }
 
     this.session = session;
 
@@ -81,8 +81,7 @@ public class IdscpServerSocket {
         machine.initIDSProviderProtocol(
             session,
             this.config.attestationType,
-            this.config.attestationMask,
-            this.config.tpmdSocket);
+            this.config.attestationMask);
   }
 
   @OnWebSocketClose

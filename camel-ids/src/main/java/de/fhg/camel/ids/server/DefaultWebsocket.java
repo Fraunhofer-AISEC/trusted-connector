@@ -27,7 +27,6 @@ import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 import org.eclipse.jetty.websocket.api.CloseStatus;
@@ -51,14 +50,12 @@ public class DefaultWebsocket {
   private String connectionKey;
   private String pathSpec;
   private FSM idsFsm;
-  private File tpmSocket;
 
   public DefaultWebsocket(
-      NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, File tpmSocket) {
+      NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer) {
     this.sync = sync;
     this.consumer = consumer;
     this.pathSpec = pathSpec;
-    this.tpmSocket = tpmSocket;
   }
 
   @OnWebSocketClose
@@ -88,7 +85,7 @@ public class DefaultWebsocket {
     }
     // Integrate server-side of IDS protocol
     machine = new ProtocolMachine();
-    idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask, tpmSocket);
+    idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
     sync.addSocket(this);
   }
 

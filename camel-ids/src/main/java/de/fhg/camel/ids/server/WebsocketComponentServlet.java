@@ -25,7 +25,6 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,7 +36,6 @@ public class WebsocketComponentServlet extends WebSocketServlet {
   private final NodeSynchronization sync;
   private final Map<String, WebSocketFactory> socketFactories;
   private final String pathSpec;
-  private final File tpmSocket;
 
   private WebsocketConsumer consumer;
   private static final ConcurrentMap<String, WebsocketConsumer> consumers =
@@ -46,12 +44,10 @@ public class WebsocketComponentServlet extends WebSocketServlet {
   public WebsocketComponentServlet(
       NodeSynchronization sync,
       String pathSpec,
-      Map<String, WebSocketFactory> socketFactories,
-      File tpmSocket) {
+      Map<String, WebSocketFactory> socketFactories) {
     this.sync = sync;
     this.socketFactories = socketFactories;
     this.pathSpec = pathSpec;
-    this.tpmSocket = tpmSocket;
   }
 
   public WebsocketConsumer getConsumer() {
@@ -90,10 +86,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
             ? WebsocketComponent.createPathSpec(consumer.getEndpoint().getResourceUri())
             : null,
         sync,
-
-  consumer,
-
-  tpmSocket);
+        consumer);
   }
 
   @Override
@@ -104,7 +97,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
             if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
               WebSocketFactory wsFactory = socketFactories.get(protocolKey);
               resp.setAcceptedSubProtocol(protocolKey);
-              return wsFactory.newInstance(req, protocolKey, pathSpec, sync, consumer, tpmSocket);
+              return wsFactory.newInstance(req, protocolKey, pathSpec, sync, consumer);
             } else {
               LOG.error(
                   "WS subprotocols not supported: {}", String.join(",", req.getSubProtocols()));
