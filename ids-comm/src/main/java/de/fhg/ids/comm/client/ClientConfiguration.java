@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Communication Protocol
+ * ids-comm
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,39 +20,36 @@
 package de.fhg.ids.comm.client;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-
 import java.io.File;
 
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
- * 
- * @author julian
  *
+ * @author julian
  */
 public class ClientConfiguration {
-	protected int port = 8080;
-	protected File tpmdSocket;
-	protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
-	protected int attestationMask = 0;
+  protected int port = 8080;
+  protected File tpmdSocket;
+  protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
+  protected int attestationMask = 0;
 
-	public ClientConfiguration port(int port) {
-		this.port = port;
-		return this;
-	}
-	
-	public ClientConfiguration tpmdSocket(File socket) {
-		this.tpmdSocket = socket;
-		return this;
-	}
-	
-	public ClientConfiguration attestationMask(int attestationMask) {
-		this.attestationMask = attestationMask;
-		return this;
-	}
-	
-	public ClientConfiguration attestationType(IdsAttestationType attestationType) {
-		this.attestationType = attestationType;
-		return this;
-	}
+  public ClientConfiguration port(int port) {
+    this.port = port;
+    return this;
+  }
 
+  public ClientConfiguration tpmdSocket(File socket) {
+    this.tpmdSocket = socket;
+    return this;
+  }
+
+  public ClientConfiguration attestationMask(int attestationMask) {
+    this.attestationMask = attestationMask;
+    return this;
+  }
+
+  public ClientConfiguration attestationType(IdsAttestationType attestationType) {
+    this.attestationType = attestationType;
+    return this;
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,35 +21,31 @@ package de.fhg.aisec.ids.api;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/**
- * Generic result of an API call.
- */
+/** Generic result of an API call. */
 public class Result {
-	private boolean successful = true;
-	private String message = "ok";
-	
-	public Result() {
-		
-	}
-	
-	public Result(boolean success, @NonNull String msg) {
-		this.setSuccessful(success);
-		this.setMessage(msg);
-	}
+  private boolean successful = true;
+  private String message = "ok";
 
-	public boolean isSuccessful() {
-		return successful;
-	}
+  public Result() {}
 
-	public void setSuccessful(boolean successful) {
-		this.successful = successful;
-	}
+  public Result(boolean success, @NonNull String msg) {
+    this.setSuccessful(success);
+    this.setMessage(msg);
+  }
 
-	public String getMessage() {
-		return message;
-	}
+  public boolean isSuccessful() {
+    return successful;
+  }
 
-	public void setMessage(@NonNull String message) {
-		this.message = message;
-	}
+  public void setSuccessful(boolean successful) {
+    this.successful = successful;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(@NonNull String message) {
+    this.message = message;
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Container Manager
+ * ids-container-manager
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,27 +23,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TrustmeUnixSocketResponseHandler {
-	private Logger LOG = LoggerFactory.getLogger(TrustmeUnixSocketResponseHandler.class);
-	private byte[] rsp = null;
-	
-	public synchronized boolean handleResponse(byte[] rsp) {
-		this.rsp = rsp.clone();
-		this.notify();
-		return true;
-	}
-	
-	public synchronized byte[] waitForResponse() {
-		while(this.rsp == null) {
-			try {
-				this.wait();
-			} catch (InterruptedException e) {
-				LOG.error(e.getMessage(),e);
-			}
-		}
-		byte[] result = rsp;
-		LOG.debug("received response byte length: {}", result.length);
-		this.rsp = null;
-		return result;
-	}
-}
+  private Logger LOG = LoggerFactory.getLogger(TrustmeUnixSocketResponseHandler.class);
+  private byte[] rsp = null;
 
+  public synchronized boolean handleResponse(byte[] rsp) {
+    this.rsp = rsp.clone();
+    this.notify();
+    return true;
+  }
+
+  public synchronized byte[] waitForResponse() {
+    while (this.rsp == null) {
+      try {
+        this.wait();
+      } catch (InterruptedException e) {
+        LOG.error(e.getMessage(), e);
+      }
+    }
+    byte[] result = rsp;
+    LOG.debug("received response byte length: {}", result.length);
+    this.rsp = null;
+    return result;
+  }
+}

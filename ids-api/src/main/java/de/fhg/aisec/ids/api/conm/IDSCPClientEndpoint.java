@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,42 +20,44 @@
 package de.fhg.aisec.ids.api.conm;
 
 /**
- * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle exposed endpoints of the IDSCP.
- * 
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle
+ * exposed endpoints of the IDSCP.
  *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
-	
 public class IDSCPClientEndpoint {
-	private String endpointIdentifier;
-	private RatResult attestationResult;
-	private String endpointKey;
+  private String endpointIdentifier;
+  private RatResult attestationResult;
+  private String endpointKey;
 
-	@Override
-	public String toString() {
-		return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
-	}
-	public String getEndpointIdentifier() {
-		return endpointIdentifier;
-	}
-	public void setEndpointIdentifier(String endpointIdentifier) {
-		this.endpointIdentifier = endpointIdentifier;
-	}
-	public RatResult getAttestationResult() {
-		return attestationResult;
-	}
-	public void setAttestationResult(RatResult attestationResult) {
-		this.attestationResult = attestationResult;
-	}
-	public void setEndpointKey(String endpointKey) {
-		this.endpointKey = endpointKey;
-	}
-	public String getEndpointKey() {
-		return endpointKey;
-	}
+  @Override
+  public String toString() {
+    return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
+  }
 
-	public IDSCPClientEndpoint() {
-	}
+  public String getEndpointIdentifier() {
+    return endpointIdentifier;
+  }
 
+  public void setEndpointIdentifier(String endpointIdentifier) {
+    this.endpointIdentifier = endpointIdentifier;
+  }
 
+  public RatResult getAttestationResult() {
+    return attestationResult;
+  }
+
+  public void setAttestationResult(RatResult attestationResult) {
+    this.attestationResult = attestationResult;
+  }
+
+  public void setEndpointKey(String endpointKey) {
+    this.endpointKey = endpointKey;
+  }
+
+  public String getEndpointKey() {
+    return endpointKey;
+  }
+
+  public IDSCPClientEndpoint() {}
 }

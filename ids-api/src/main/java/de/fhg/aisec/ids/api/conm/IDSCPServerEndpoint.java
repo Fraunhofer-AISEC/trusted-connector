@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,56 +20,53 @@
 package de.fhg.aisec.ids.api.conm;
 
 /**
- * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle exposed endpoints of the IDSCP.
- * 
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle
+ * exposed endpoints of the IDSCP.
  *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
-	
 public class IDSCPServerEndpoint {
-	private String endpointIdentifier;
-	private String defaultProtocol;
-	private String port;
-	private String host;
-	
-	public IDSCPServerEndpoint() {
-	}
-	
-	public String getDefaultProtocol() {
-		return defaultProtocol;
-	}
+  private String endpointIdentifier;
+  private String defaultProtocol;
+  private String port;
+  private String host;
 
-	public String getPort() {
-		return port;
-	}
+  public IDSCPServerEndpoint() {}
 
-	public String getHost() {
-		return host;
-	}
-	
-	public String getEndpointIdentifier() {
-		return endpointIdentifier;
-	}
-	public void setEndpointIdentifier(String endpointIdentifier) {
-		this.endpointIdentifier = endpointIdentifier;
-	}
-	@Override
-	public String toString() {
-		return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
-	}
+  public String getDefaultProtocol() {
+    return defaultProtocol;
+  }
 
-	public void setDefaultProtocol(String defaultProtocol) {
-		this.defaultProtocol = defaultProtocol;
-		
-	}
+  public String getPort() {
+    return port;
+  }
 
-	public void setPort(String port) {
-		this.port = port;
-		
-	}
+  public String getHost() {
+    return host;
+  }
 
-	public void setHost(String host) {
-		this.host = host;
-		
-	}
+  public String getEndpointIdentifier() {
+    return endpointIdentifier;
+  }
+
+  public void setEndpointIdentifier(String endpointIdentifier) {
+    this.endpointIdentifier = endpointIdentifier;
+  }
+
+  @Override
+  public String toString() {
+    return "IDSCPEndpoint [endpoint_identifier=" + endpointIdentifier + "]";
+  }
+
+  public void setDefaultProtocol(String defaultProtocol) {
+    this.defaultProtocol = defaultProtocol;
+  }
+
+  public void setPort(String port) {
+    this.port = port;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
 }

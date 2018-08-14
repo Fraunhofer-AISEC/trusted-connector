@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * ACME v2 client
+ * ids-acme
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@
 package de.fhg.aisec.ids.acme;
 
 public class AcmeClientException extends RuntimeException {
-    public AcmeClientException(String message) {
-        super(message);
-    }
+  public AcmeClientException(String message) {
+    super(message);
+  }
 
-    public AcmeClientException(Throwable cause) {
-        super(cause);
-    }
+  public AcmeClientException(Throwable cause) {
+    super(cause);
+  }
 }

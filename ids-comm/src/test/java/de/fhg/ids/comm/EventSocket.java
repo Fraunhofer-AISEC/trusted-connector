@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Communication Protocol
+ * ids-comm
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,33 +22,28 @@ package de.fhg.ids.comm;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
-public class EventSocket extends WebSocketAdapter
-{
-    @Override
-    public void onWebSocketConnect(Session sess)
-    {
-        super.onWebSocketConnect(sess);
-        System.out.println("Socket Connected: " + sess);
-    }
-    
-    @Override
-    public void onWebSocketText(String message)
-    {
-        super.onWebSocketText(message);
-        System.out.println("Received TEXT message: " + message);
-    }
-    
-    @Override
-    public void onWebSocketClose(int statusCode, String reason)
-    {
-        super.onWebSocketClose(statusCode,reason);
-        System.out.println("Socket Closed: [" + statusCode + "] " + reason);
-    }
-    
-    @Override
-    public void onWebSocketError(Throwable cause)
-    {
-        super.onWebSocketError(cause);
-        cause.printStackTrace(System.err);
-    }
+public class EventSocket extends WebSocketAdapter {
+  @Override
+  public void onWebSocketConnect(Session sess) {
+    super.onWebSocketConnect(sess);
+    System.out.println("Socket Connected: " + sess);
+  }
+
+  @Override
+  public void onWebSocketText(String message) {
+    super.onWebSocketText(message);
+    System.out.println("Received TEXT message: " + message);
+  }
+
+  @Override
+  public void onWebSocketClose(int statusCode, String reason) {
+    super.onWebSocketClose(statusCode, reason);
+    System.out.println("Socket Closed: [" + statusCode + "] " + reason);
+  }
+
+  @Override
+  public void onWebSocketError(Throwable cause) {
+    super.onWebSocketError(cause);
+    cause.printStackTrace(System.err);
+  }
 }

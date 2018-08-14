@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,9 +19,8 @@
  */
 /**
  * Internal OSGi service API of the Core Platform.
- * <p>
- * APIs in this package are exposed as OSGi services and accessible by all
- * bundles in the Core Platform. Components of the Connector must provide
- * implementations of these APIs.
+ *
+ * <p>APIs in this package are exposed as OSGi services and accessible by all bundles in the Core
+ * Platform. Components of the Connector must provide implementations of these APIs.
  */
 package de.fhg.aisec.ids.api;

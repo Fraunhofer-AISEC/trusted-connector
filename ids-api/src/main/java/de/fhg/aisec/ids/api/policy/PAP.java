@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,36 +19,35 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import java.io.InputStream;
 import java.util.List;
 
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-
 /**
  * Policy Administration Point Interface.
- * 
- * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *
+ * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public interface PAP {
-	
-	/**
-	 * Loads a policy into the registered PDPs.
-	 * 
-	 * @param is
-	 */
-	void loadPolicy(InputStream is);
-	
-	/**
-	 * Returns the currently active policy in its string representation.
-	 * 
-	 * The representation depends on the implementation and can be XML, JSON or any other serialization.
-	 * 
-	 * @return
-	 */
-	String getPolicy();
-	
-	List<String> listRules();
-	
-	RouteVerificationProof verifyRoute(String routeId);
+
+  /**
+   * Loads a policy into the registered PDPs.
+   *
+   * @param is
+   */
+  void loadPolicy(InputStream is);
+
+  /**
+   * Returns the currently active policy in its string representation.
+   *
+   * <p>The representation depends on the implementation and can be XML, JSON or any other
+   * serialization.
+   *
+   * @return
+   */
+  String getPolicy();
+
+  List<String> listRules();
+
+  RouteVerificationProof verifyRoute(String routeId);
 }

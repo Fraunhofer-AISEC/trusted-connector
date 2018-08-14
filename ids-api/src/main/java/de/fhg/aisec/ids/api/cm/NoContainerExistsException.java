@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,9 @@ package de.fhg.aisec.ids.api.cm;
 
 /**
  * Thrown if a container does not exist.
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 public class NoContainerExistsException extends Exception {
-	private static final long serialVersionUID = 3439666843047044252L;
-
+  private static final long serialVersionUID = 3439666843047044252L;
 }

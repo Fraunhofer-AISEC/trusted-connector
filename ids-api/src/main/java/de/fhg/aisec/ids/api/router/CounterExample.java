@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,27 +22,27 @@ package de.fhg.aisec.ids.api.router;
 import java.util.List;
 
 public abstract class CounterExample {
-	private String explanation;
-	private List<String> steps;
+  private String explanation;
+  private List<String> steps;
 
-	public String getExplanation() {
-		return explanation;
-	}
+  public String getExplanation() {
+    return explanation;
+  }
 
-	public List<String> getSteps() {
-		return steps;
-	}
-	
-	@Override
-	public String toString() {
-		return "Explanation: " + explanation + "\n" + String.join("\n|-- ", steps);
-	}
+  public List<String> getSteps() {
+    return steps;
+  }
 
-	protected void setExplanation(String explanation) {
-		this.explanation = explanation;
-	}
+  @Override
+  public String toString() {
+    return "Explanation: " + explanation + "\n" + String.join("\n|-- ", steps);
+  }
 
-	protected void setSteps(List<String> steps) {
-		this.steps = steps;
-	}
+  protected void setExplanation(String explanation) {
+    this.explanation = explanation;
+  }
+
+  protected void setSteps(List<String> steps) {
+    this.steps = steps;
+  }
 }

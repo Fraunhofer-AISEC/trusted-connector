@@ -1,15 +1,15 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,18 +26,20 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unused")
 public class ErrorHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(ErrorHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ErrorHandler.class);
 
-    public boolean handleError(Event e, ProtocolState state, boolean isConsumer) {
-        String entity = isConsumer ? "Consumer" : "Provider";
+  public boolean handleError(Event e, ProtocolState state, boolean isConsumer) {
+    String entity = isConsumer ? "Consumer" : "Provider";
 
-        LOG.debug("**************************************************************************************************");
-        LOG.debug("*  error handler during rat protocol execution ");
-        LOG.debug("*  -> state: " + state.description());
-        LOG.debug("*  -> side: " + entity + "");
-        LOG.debug("*  -> error: " + e.getMessage().getError().getErrorMessage());
-        LOG.debug("**************************************************************************************************");
+    LOG.debug(
+        "**************************************************************************************************");
+    LOG.debug("*  error handler during rat protocol execution ");
+    LOG.debug("*  -> state: " + state.description());
+    LOG.debug("*  -> side: " + entity + "");
+    LOG.debug("*  -> error: " + e.getMessage().getError().getErrorMessage());
+    LOG.debug(
+        "**************************************************************************************************");
 
-        return true;
-    }
+    return true;
+  }
 }

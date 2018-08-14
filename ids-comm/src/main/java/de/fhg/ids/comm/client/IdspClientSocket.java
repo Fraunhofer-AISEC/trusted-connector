@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Communication Protocol
+ * ids-comm
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,109 +28,106 @@ import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
 public class IdspClientSocket implements WebSocketListener {
-    private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
-    private FSM fsm;
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Condition idscpInProgress = lock.newCondition();
-    private final ConnectorMessage startMsg = Idscp.ConnectorMessage
-										    		.newBuilder()
-										    		.setType(ConnectorMessage.Type.RAT_START)
-										    		.setId(new java.util.Random().nextLong())
-										    		.build();
-	private ClientConfiguration config;
-	private boolean isTerminated = false;
+  private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
+  private FSM fsm;
+  private final ReentrantLock lock = new ReentrantLock();
+  private final Condition idscpInProgress = lock.newCondition();
+  private final ConnectorMessage startMsg =
+      Idscp.ConnectorMessage.newBuilder()
+          .setType(ConnectorMessage.Type.RAT_START)
+          .setId(new java.util.Random().nextLong())
+          .build();
+  private ClientConfiguration config;
+  private boolean isTerminated = false;
 
+  public IdspClientSocket(ClientConfiguration config) {
+    this.config = config;
+  }
 
-	
-	public IdspClientSocket(ClientConfiguration config) {
-		this.config = config;
-	}
+  @Override
+  public void onOpen(WebSocket websocket) {
+    Log.debug("Websocket opened");
+    IdsAttestationType type = config.attestationType;
 
-	@Override
-    public void onOpen(WebSocket websocket) {
-        Log.debug("Websocket opened");
-        IdsAttestationType type = config.attestationType;
+    // create Finite State Machine for IDS protocol
+    ProtocolMachine machine = new ProtocolMachine();
+    this.fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask);
+    // start the protocol with the first message
+    this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
+  }
 
-        // create Finite State Machine for IDS protocol
-        ProtocolMachine machine = new ProtocolMachine();
-        this.fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask);
-        // start the protocol with the first message
-        this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
+  @Override
+  public void onClose(WebSocket websocket, int code, String status) {
+    Log.debug("websocket closed - reconnecting");
+    fsm.reset();
+  }
+
+  @Override
+  public void onError(Throwable t) {
+    Log.debug("websocket on error", t);
+    if (fsm != null) {
+      fsm.reset();
     }
+  }
 
-    @Override
-    public void onClose(WebSocket websocket, int code, String status) {
-        Log.debug("websocket closed - reconnecting");
-        fsm.reset();
+  @Override
+  public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
+    Log.debug("Client websocket received binary message {}", new String(message));
+    try {
+      lock.lockInterruptibly();
+      try {
+        ConnectorMessage msg = ConnectorMessage.parseFrom(message);
+        Log.debug("Received in state " + fsm.getState() + ": " + new String(message));
+        fsm.feedEvent(new Event(msg.getType(), new String(message), msg));
+      } catch (InvalidProtocolBufferException e) {
+        Log.error(e.getMessage(), e);
+      }
+      if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+        Log.debug("Client is now terminating IDSCP");
+        this.isTerminated = true;
+        idscpInProgress.signalAll();
+      }
+    } catch (InterruptedException e) {
+      Log.warn(e.getMessage());
+      Thread.currentThread().interrupt();
+    } finally {
+      lock.unlock();
+      this.isTerminated = true;
     }
+  }
 
-    @Override
-    public void onError(Throwable t) {
-        Log.debug("websocket on error", t);
-        if (fsm!=null) {
-        	fsm.reset();
-        }
-    }
+  @Override
+  public void onTextFrame(String message, boolean finalFragment, int rsv) {
+    Log.debug("Client websocket received text message {}", message);
+    onBinaryFrame(message.getBytes(), finalFragment, rsv);
+  }
 
-    @Override
-    public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
-    	Log.debug("Client websocket received binary message {}", new String(message));
-    	try {
-    		lock.lockInterruptibly();
-    		try {
-    			ConnectorMessage msg = ConnectorMessage.parseFrom(message);
-    			Log.debug("Received in state " + fsm.getState() + ": " + new String(message));
-    			fsm.feedEvent(new Event(msg.getType(), new String(message), msg));
-    		} catch (InvalidProtocolBufferException e) {
-    			Log.error(e.getMessage(), e);
-    		}
-    		if (fsm.getState().equals(ProtocolState.IDSCP_END.id())) {
-    			Log.debug("Client is now terminating IDSCP");
-	    		this.isTerminated = true;
-    			idscpInProgress.signalAll();
-	    	}
-    	} catch (InterruptedException e) {
-			Log.warn(e.getMessage());
-			Thread.currentThread().interrupt();
-		} finally {
-			lock.unlock();
-			this.isTerminated = true;
-		}
-    }
+  public ReentrantLock semaphore() {
+    return lock;
+  }
 
-    @Override
-    public void onTextFrame(String message, boolean finalFragment, int rsv) {
-    	Log.debug("Client websocket received text message {}", message);
-    	onBinaryFrame(message.getBytes(), finalFragment, rsv);
-    }
-    
-    public ReentrantLock semaphore() {
-    	return lock;
-    }
+  public Condition idscpInProgressCondition() {
+    return idscpInProgress;
+  }
 
-    public Condition idscpInProgressCondition() {
-    	return idscpInProgress;
-    }
-    
-    public boolean isTerminated() {
-    	return this.isTerminated ;
-    }
-	
-    //get the result of the remote attestation
-	public RatResult getAttestationResult() {
-		return fsm.getRatResult();
-	}
+  public boolean isTerminated() {
+    return this.isTerminated;
+  }
 
-	public String getMetaResult() {
-		return fsm.getMetaData();
-	}
+  // get the result of the remote attestation
+  public RatResult getAttestationResult() {
+    return fsm.getRatResult();
+  }
+
+  public String getMetaResult() {
+    return fsm.getMetaData();
+  }
 }

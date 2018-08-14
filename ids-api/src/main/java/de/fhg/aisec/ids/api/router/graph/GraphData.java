@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Route Manager
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class GraphData {
-    private Set<Node> nodes = new LinkedHashSet<>();
-    private Set<Edge> links = new LinkedHashSet<>();
+  private Set<Node> nodes = new LinkedHashSet<>();
+  private Set<Edge> links = new LinkedHashSet<>();
 
-    public void addNode(Node node) {
-        nodes.add(node);
-    }
+  public void addNode(Node node) {
+    nodes.add(node);
+  }
 
-    public void addEdge(Edge edge) {
-        links.add(edge);
-    }
+  public void addEdge(Edge edge) {
+    links.add(edge);
+  }
 
-    public Set<Node> getNodes() {
-        return nodes;
-    }
+  public Set<Node> getNodes() {
+    return nodes;
+  }
 
-    public Set<Edge> getLinks() {
-        return links;
-    }
+  public Set<Edge> getLinks() {
+    return links;
+  }
 }

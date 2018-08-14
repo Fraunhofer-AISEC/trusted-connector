@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,16 @@ import jnr.unixsocket.UnixSocketChannel;
 
 public class ChangeRequest {
 
-	public static final int REGISTER = 1;
-	public static final int CHANGEOPS = 2;
-	
-	public UnixSocketChannel channel;
-	public int type;
-	public int ops;
-	
-	public ChangeRequest(UnixSocketChannel channel, int type, int ops) {
-		this.channel = channel;
-		this.type = type;
-		this.ops = ops;
-	}
+  public static final int REGISTER = 1;
+  public static final int CHANGEOPS = 2;
+
+  public UnixSocketChannel channel;
+  public int type;
+  public int ops;
+
+  public ChangeRequest(UnixSocketChannel channel, int type, int ops) {
+    this.channel = channel;
+    this.type = type;
+    this.ops = ops;
+  }
 }
-
-

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Route Manager
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,46 +22,46 @@ package de.fhg.aisec.ids.api.router.graph;
 import java.util.Objects;
 
 public class Node {
-    public enum NodeType {
-        EntryNode,
-        Node,
-        ChoiceNode
-    }
+  public enum NodeType {
+    EntryNode,
+    Node,
+    ChoiceNode
+  }
 
-    private String name;
-    private String action;
-    private NodeType type;
+  private String name;
+  private String action;
+  private NodeType type;
 
-    public Node(String name, String action, NodeType type) {
-        this.name = name;
-        this.action = action;
-        this.type = type;
-    }
+  public Node(String name, String action, NodeType type) {
+    this.name = name;
+    this.action = action;
+    this.type = type;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getAction() {
-        return action;
-    }
+  public String getAction() {
+    return action;
+  }
 
-    public NodeType getType() {
-        return type;
-    }
+  public NodeType getType() {
+    return type;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Node)) return false;
-        Node node = (Node) o;
-        return Objects.equals(name, node.name) &&
-                Objects.equals(action, node.action) &&
-                type == node.type;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Node)) return false;
+    Node node = (Node) o;
+    return Objects.equals(name, node.name)
+        && Objects.equals(action, node.action)
+        && type == node.type;
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, action, type);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, action, type);
+  }
 }

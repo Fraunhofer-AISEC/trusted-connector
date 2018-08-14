@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Communication Protocol
+ * ids-comm
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@
  */
 package de.fhg.ids.comm;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
@@ -32,117 +36,112 @@ import de.fhg.ids.comm.server.IdscpServer;
 import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.concurrent.ExecutionException;
 import org.asynchttpclient.ws.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.concurrent.ExecutionException;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class ProtocolTest {
 
-    @BeforeClass
-    public static void setupClass() {
-        InjectionManager.setInjector(Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {}
+  @BeforeClass
+  public static void setupClass() {
+    InjectionManager.setInjector(
+        Guice.createInjector(
+            new AbstractModule() {
+              @Override
+              protected void configure() {}
 
-            @Provides
-            public Settings provideSettingsMock() {
+              @Provides
+              public Settings provideSettingsMock() {
                 ConnectorConfig config = new ConnectorConfig();
                 try {
-                    Field hostField = ConnectorConfig.class.getDeclaredField("ttpHost");
-                    hostField.setAccessible(true);
-                    hostField.set(config, "ttp.host");
+                  Field hostField = ConnectorConfig.class.getDeclaredField("ttpHost");
+                  hostField.setAccessible(true);
+                  hostField.set(config, "ttp.host");
                 } catch (NoSuchFieldException | IllegalAccessException e) {
-                    e.printStackTrace();
+                  e.printStackTrace();
                 }
                 Settings s = mock(Settings.class);
                 when(s.getConnectorConfig()).thenReturn(config);
                 return s;
-            }
-        }));
-    }
+              }
+            }));
+  }
 
-	@Test
-	public void testFailureHandling() throws InterruptedException, ExecutionException {
-		MySocketListener listener = new MySocketListener();
-		
-		// Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
-		IdscpServer server = new IdscpServer()
-								.config(new ServerConfiguration()
-										.port(8081)
-										.tpmdSocket(new File("non-existing-tpmd-socket"))
-										.attestationMask(0)
-										.attestationType(IdsAttestationType.BASIC)
-								)
-								.setSocketListener(listener)
-								.start();
-		
-		// Configure and start client (blocks until IDSCP has finished)
-		IdscpClient client = new IdscpClient();
-		WebSocket wsClient = client
-								.config(new ClientConfiguration()
-										.port(8080))
-								.connect("localhost", 8081);
-		
-		
-		// --- IDSC protocol will run automatically now ---
-		
-		// Client web socket is now expected to be open
-		assertTrue(wsClient.isOpen());
-		
-		// Attestation result is expected to be not null and FAIL (because we did not connect to proper TPM above)
-		RatResult attestationResult = client.getAttestationResult();
-		assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
-		
-		// TODO Make server-side attestation result accessible
-		//AttestationResult serverAttestationRes = server.getAttestationResult();
-		
-		// Send some payload from client to server
-		wsClient.sendTextFrame("Hello");
-		
-		// Expect server to receive our payload
-		String serverReceived = listener.getLastMsg();
-		assertNotNull(serverReceived);
-		assertEquals("Hello", serverReceived);
-		
-		// This is how to let the server run forever:
-		//server.getServer().join();
-	}
+  @Test
+  public void testFailureHandling() throws InterruptedException, ExecutionException {
+    MySocketListener listener = new MySocketListener();
+
+    // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
+    IdscpServer server =
+        new IdscpServer()
+            .config(
+                new ServerConfiguration()
+                    .port(8081)
+                    .tpmdSocket(new File("non-existing-tpmd-socket"))
+                    .attestationMask(0)
+                    .attestationType(IdsAttestationType.BASIC))
+            .setSocketListener(listener)
+            .start();
+
+    // Configure and start client (blocks until IDSCP has finished)
+    IdscpClient client = new IdscpClient();
+    WebSocket wsClient =
+        client.config(new ClientConfiguration().port(8080)).connect("localhost", 8081);
+
+    // --- IDSC protocol will run automatically now ---
+
+    // Client web socket is now expected to be open
+    assertTrue(wsClient.isOpen());
+
+    // Attestation result is expected to be not null and FAIL (because we did not connect to proper
+    // TPM above)
+    RatResult attestationResult = client.getAttestationResult();
+    assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
+
+    // TODO Make server-side attestation result accessible
+    // AttestationResult serverAttestationRes = server.getAttestationResult();
+
+    // Send some payload from client to server
+    wsClient.sendTextFrame("Hello");
+
+    // Expect server to receive our payload
+    String serverReceived = listener.getLastMsg();
+    assertNotNull(serverReceived);
+    assertEquals("Hello", serverReceived);
+
+    // This is how to let the server run forever:
+    // server.getServer().join();
+  }
 }
 
-
 class MySocketListener implements SocketListener {
-	private String lastMsg = null;
-	
-	@Override
-	public synchronized void onMessage(Session session, byte[] msg) {
-	    // Wake Thread(s) that called getLastMsg()
-	    this.notifyAll();
-    	this.lastMsg = new String(msg);
-	}
-	
-	public synchronized String getLastMsg() {
-	    // If message is null, we wait for asynchronous delivery
-	    if (this.lastMsg == null) {
-            try {
-                this.wait(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-		return this.lastMsg;
-	}
+  private String lastMsg = null;
 
-	@Override
-	public void notifyClosed(IdscpServerSocket idscpServerSocket) {
-		// Nothing to do here. Socket is already closed.		
-	}
+  @Override
+  public synchronized void onMessage(Session session, byte[] msg) {
+    // Wake Thread(s) that called getLastMsg()
+    this.notifyAll();
+    this.lastMsg = new String(msg);
+  }
+
+  public synchronized String getLastMsg() {
+    // If message is null, we wait for asynchronous delivery
+    if (this.lastMsg == null) {
+      try {
+        this.wait(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    return this.lastMsg;
+  }
+
+  @Override
+  public void notifyClosed(IdscpServerSocket idscpServerSocket) {
+    // Nothing to do here. Socket is already closed.
+  }
 }

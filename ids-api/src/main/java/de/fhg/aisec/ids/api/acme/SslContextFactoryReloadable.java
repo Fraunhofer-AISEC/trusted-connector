@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,5 @@ package de.fhg.aisec.ids.api.acme;
 
 public interface SslContextFactoryReloadable {
 
-    public void reload(String newKeyStorePath);
-
+  public void reload(String newKeyStorePath);
 }

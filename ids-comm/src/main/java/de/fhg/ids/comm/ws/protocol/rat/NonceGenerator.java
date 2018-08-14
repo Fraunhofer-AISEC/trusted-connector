@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,19 @@ package de.fhg.ids.comm.ws.protocol.rat;
 import java.security.SecureRandom;
 
 public final class NonceGenerator {
-	private static final SecureRandom sr = new SecureRandom();
+  private static final SecureRandom sr = new SecureRandom();
 
-	private NonceGenerator() {}
+  private NonceGenerator() {}
 
-    /**
-     * Generate a crypto-secure random hex String of length numChars
-     * @param numBytes Desired String length
-     * @return The generated crypto-secure random hex String
-     */
-	public static byte[] generate(int numBytes) {
-		byte[] randBytes = new byte[numBytes];
-        sr.nextBytes(randBytes);
-        return randBytes;
-	}
+  /**
+   * Generate a crypto-secure random hex String of length numChars
+   *
+   * @param numBytes Desired String length
+   * @return The generated crypto-secure random hex String
+   */
+  public static byte[] generate(int numBytes) {
+    byte[] randBytes = new byte[numBytes];
+    sr.nextBytes(randBytes);
+    return randBytes;
+  }
 }

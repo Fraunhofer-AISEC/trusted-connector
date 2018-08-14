@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class Cert {
-	public String subjectC;
-	public String subjectS;
-	public String subjectL;
-	public String subjectO;
-	public String subjectOU;
-	public Collection<List<?>> subjectAltNames;
-	public String subjectCN;
-	public String alias;
-	public String file;
-	public String certificate;
+  public String subjectC;
+  public String subjectS;
+  public String subjectL;
+  public String subjectO;
+  public String subjectOU;
+  public Collection<List<?>> subjectAltNames;
+  public String subjectCN;
+  public String alias;
+  public String file;
+  public String certificate;
 }

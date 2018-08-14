@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-comm
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,45 +22,44 @@ package de.fhg.ids.comm.ws.protocol.fsm;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Represents a state with some number of associated transitions.
- */
+/** Represents a state with some number of associated transitions. */
 class State {
-	// map from event key to transition
-	Map<Object, Transition> transitions = new HashMap<>();
-	Runnable entryCode;
-	Runnable exitCode;
-	Runnable alwaysRunCode;
+  // map from event key to transition
+  Map<Object, Transition> transitions = new HashMap<>();
+  Runnable entryCode;
+  Runnable exitCode;
+  Runnable alwaysRunCode;
 
-	State(Runnable entryCode, Runnable exitCode, Runnable alwaysRunCode) {
-		this.entryCode = entryCode;
-		this.exitCode = exitCode;
-		this.alwaysRunCode = alwaysRunCode;
-	}
+  State(Runnable entryCode, Runnable exitCode, Runnable alwaysRunCode) {
+    this.entryCode = entryCode;
+    this.exitCode = exitCode;
+    this.alwaysRunCode = alwaysRunCode;
+  }
 
-	public void addTransition(Transition trans) {
-		// Fail fast for duplicate transitions
-		if (transitions.containsKey(trans.event)) {
-			throw new IllegalArgumentException("Transition for event " + trans.event + " already exists.");
-		}
-		transitions.put(trans.event, trans);
-	}
+  public void addTransition(Transition trans) {
+    // Fail fast for duplicate transitions
+    if (transitions.containsKey(trans.event)) {
+      throw new IllegalArgumentException(
+          "Transition for event " + trans.event + " already exists.");
+    }
+    transitions.put(trans.event, trans);
+  }
 
-	public void runEntryCode() {
-		if (entryCode != null) {
-			entryCode.run();
-		}
-	}
+  public void runEntryCode() {
+    if (entryCode != null) {
+      entryCode.run();
+    }
+  }
 
-	public void runExitCode() {
-		if (exitCode != null) {
-			exitCode.run();
-		}
-	}
+  public void runExitCode() {
+    if (exitCode != null) {
+      exitCode.run();
+    }
+  }
 
-	public void runAlwaysCode() {
-		if (alwaysRunCode != null) {
-			alwaysRunCode.run();
-		}
-	}
+  public void runAlwaysCode() {
+    if (alwaysRunCode != null) {
+      alwaysRunCode.run();
+    }
+  }
 }

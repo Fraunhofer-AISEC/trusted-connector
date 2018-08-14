@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,21 +24,19 @@ import de.fhg.aisec.ids.messages.Idscp.ServiceResponse;
 
 /**
  * Listener interface for notifications on data requests to a service.
- * 
- * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *
+ * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public interface ServiceRequestListener {
 
-	/**
-	 * Callback method to be called when a service is invoked.
-	 * 
-	 * Implementations are expected to handle the request and return a
-	 * <code>ServiceResponse</code> within an acceptable time (i.e., some
-	 * seconds, depending on the timeout accepted by client).
-	 * 
-	 * @param req
-	 * @return
-	 */
-	public ServiceResponse onServiceRequest(ServiceRequest req);
+  /**
+   * Callback method to be called when a service is invoked.
+   *
+   * <p>Implementations are expected to handle the request and return a <code>ServiceResponse</code>
+   * within an acceptable time (i.e., some seconds, depending on the timeout accepted by client).
+   *
+   * @param req
+   * @return
+   */
+  public ServiceResponse onServiceRequest(ServiceRequest req);
 }
