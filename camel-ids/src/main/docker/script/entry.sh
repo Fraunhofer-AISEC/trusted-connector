@@ -1,5 +1,5 @@
 #!/bin/sh
-USER_ID=$(stat -c "%u" /data/cml/tpm2d/)
+USER_ID=$(stat -c "%u" /data/cml/tpm2d/communication/)
 echo "Starting with UID : $USER_ID"
 useradd --shell /bin/sh -u $USER_ID -o -c "" -m tpm2d
 export HOME=/tpm2d
