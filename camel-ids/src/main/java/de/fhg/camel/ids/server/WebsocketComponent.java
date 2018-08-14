@@ -19,14 +19,6 @@
  */
 package de.fhg.camel.ids.server;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.DispatcherType;
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
@@ -50,12 +42,21 @@ import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
+import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class WebsocketComponent extends DefaultComponent implements SSLContextParametersAware {
   protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
-  protected static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<>();
+  protected static final Map<String, ConnectorRef> CONNECTORS = new HashMap<>();
   private static final File TPM_SOCKET = new File("tpmd.sock");
 
-  protected Map<String, WebSocketFactory> socketFactory;
+  protected Map<String, WebSocketFactory> socketFactories;
 
   @Metadata(label = "security")
   protected SSLContextParameters sslContextParameters;
@@ -143,9 +144,9 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
   public WebsocketComponent() {
     this.setUseGlobalSslContextParameters(true);
 
-    if (this.socketFactory == null) {
-      this.socketFactory = new HashMap<>();
-      this.socketFactory.put("ids", new DefaultWebsocketFactory());
+    if (this.socketFactories == null) {
+      this.socketFactories = new HashMap<>();
+      this.socketFactories.put("ids", new DefaultWebsocketFactory());
     }
   }
 
@@ -158,15 +159,11 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     synchronized (CONNECTORS) {
       ConnectorRef connectorRef = CONNECTORS.get(connectorKey);
       if (connectorRef == null) {
-        ServerConnector connector;
         // Create Server and add connector
         Server server = createServer();
 
-        if (endpoint.getSslContextParameters() != null) {
-          connector = getSslSocketConnector(server, endpoint.getSslContextParameters());
-        } else {
-          connector = new ServerConnector(server);
-        }
+        ServerConnector connector =
+            getSocketConnector(server, endpoint.getSslContextParameters());
 
         if (endpoint.getPort() != null) {
           connector.setPort(endpoint.getPort());
@@ -450,7 +447,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       ServletContextHandler handler,
       File tpmSocket) {
     WebsocketComponentServlet servlet =
-        new WebsocketComponentServlet(sync, pathSpec, socketFactory, tpmSocket);
+        new WebsocketComponentServlet(sync, pathSpec, socketFactories, tpmSocket);
     servlets.put(pathSpec, servlet);
     ServletHolder servletHolder = new ServletHolder(servlet);
     servletHolder.getInitParameters().putAll(handler.getInitParams());
@@ -499,58 +496,25 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  private ServerConnector getSslSocketConnector(
-      Server server, SSLContextParameters sslContextParameters) throws Exception {
-    ServerConnector sslSocketConnector;
+  private ServerConnector getSocketConnector(
+      Server server, SSLContextParameters sslContextParameters)
+      throws GeneralSecurityException, IOException {
+    if (sslContextParameters == null) {
+      sslContextParameters = retrieveGlobalSslContextParameters();
+    }
     if (sslContextParameters != null) {
-      SslContextFactory sslContextFactory = new WebSocketComponentSslContextFactory();
-      sslContextFactory.setSslContext(sslContextParameters.createSSLContext(getCamelContext()));
-      sslSocketConnector = new ServerConnector(server, sslContextFactory);
-    } else {
       SslContextFactory sslContextFactory = new SslContextFactory();
-      sslContextFactory.setKeyStorePassword(sslKeyPassword);
-      sslContextFactory.setKeyManagerPassword(sslPassword);
-      if (sslKeystore != null) {
-        sslContextFactory.setKeyStorePath(sslKeystore);
-      }
-      sslSocketConnector = new ServerConnector(server, sslContextFactory);
+      sslContextFactory.setSslContext(sslContextParameters.createSSLContext(getCamelContext()));
+      return new ServerConnector(server, sslContextFactory);
+    } else {
+      return new ServerConnector(server);
     }
-    return sslSocketConnector;
-  }
-
-  /**
-   * Override the key/trust store check method as it does not account for a factory that has a
-   * pre-configured {@link javax.net.ssl.SSLContext}.
-   */
-  private static final class WebSocketComponentSslContextFactory extends SslContextFactory {
-    // This method is for Jetty 7.0.x ~ 7.4.x
-    @SuppressWarnings("unused")
-    public boolean checkConfig() {
-      if (getSslContext() == null) {
-        return checkSSLContextFactoryConfig(this);
-      } else {
-        return true;
-      }
-    }
-  }
-
-  private static boolean checkSSLContextFactoryConfig(Object instance) {
-    try {
-      Method method = instance.getClass().getMethod("checkConfig");
-      return (Boolean) method.invoke(instance);
-    } catch (NoSuchMethodException
-        | IllegalArgumentException
-        | IllegalAccessException
-        | InvocationTargetException ex) {
-      // ignore
-    }
-    return false;
   }
 
   public static String createPathSpec(String remaining) {
     int index = remaining.indexOf('/');
     if (index != -1) {
-      return remaining.substring(index, remaining.length());
+      return remaining.substring(index);
     } else {
       return "/" + remaining;
     }
@@ -717,8 +681,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     this.useGlobalSslContextParameters = useGlobalSslContextParameters;
   }
 
-  public Map<String, WebSocketFactory> getSocketFactory() {
-    return socketFactory;
+  public Map<String, WebSocketFactory> getSocketFactories() {
+    return socketFactories;
   }
 
   /**
@@ -727,15 +691,15 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
    *
    * <p>The <tt>default</tt> key is reserved for the default implementation.
    */
-  public void setSocketFactory(Map<String, WebSocketFactory> socketFactory) {
-    this.socketFactory = socketFactory;
+  public void setSocketFactories(Map<String, WebSocketFactory> socketFactories) {
+    this.socketFactories = socketFactories;
 
-    if (!this.socketFactory.containsKey("ids")) {
-      this.socketFactory.put("ids", new DefaultWebsocketFactory());
+    if (!this.socketFactories.containsKey("ids")) {
+      this.socketFactories.put("ids", new DefaultWebsocketFactory());
     }
   }
 
-  public static HashMap<String, ConnectorRef> getConnectors() {
+  public static Map<String, ConnectorRef> getConnectors() {
     return CONNECTORS;
   }
 

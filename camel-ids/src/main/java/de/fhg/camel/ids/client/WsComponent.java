@@ -19,19 +19,22 @@
  */
 package de.fhg.camel.ids.client;
 
-import java.net.URI;
 import org.apache.camel.component.ahc.AhcComponent;
 import org.apache.camel.component.ahc.AhcEndpoint;
 
-/** */
+import java.net.URI;
+
+import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
+import static de.fhg.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
+
 public class WsComponent extends AhcComponent {
 
   @Override
   protected String createAddressUri(String uri, String remaining) {
     if (uri.startsWith("idsclientplain:")) {
-      return uri.replaceFirst("idsclientplain:", "ws:");
+      return uri.replaceFirst("idsclientplain", WS_PROTOCOL);
     } else if (uri.startsWith("idsclient:")) {
-      return uri.replaceFirst("idsclient:", "wss:");
+      return uri.replaceFirst("idsclient", WSS_PROTOCOL);
     }
     // Should not happen
     return uri;

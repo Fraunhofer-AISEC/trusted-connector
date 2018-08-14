@@ -19,38 +19,37 @@
  */
 package de.fhg.camel.ids.server;
 
-import java.io.File;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 public class WebsocketComponentServlet extends WebSocketServlet {
   private static final long serialVersionUID = 1L;
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final Logger LOG = LoggerFactory.getLogger(WebsocketComponentServlet.class);
 
   private final NodeSynchronization sync;
-  private WebsocketConsumer consumer;
-  private String pathSpec;
+  private final Map<String, WebSocketFactory> socketFactories;
+  private final String pathSpec;
+  private final File tpmSocket;
 
-  private ConcurrentMap<String, WebsocketConsumer> consumers =
-      new ConcurrentHashMap<String, WebsocketConsumer>();
-  private Map<String, WebSocketFactory> socketFactory;
-  private File tpmSocket;
+  private WebsocketConsumer consumer;
+  private static final ConcurrentMap<String, WebsocketConsumer> consumers =
+      new ConcurrentHashMap<>();
 
   public WebsocketComponentServlet(
       NodeSynchronization sync,
       String pathSpec,
-      Map<String, WebSocketFactory> socketFactory,
+      Map<String, WebSocketFactory> socketFactories,
       File tpmSocket) {
     this.sync = sync;
-    this.socketFactory = socketFactory;
+    this.socketFactories = socketFactories;
     this.pathSpec = pathSpec;
     this.tpmSocket = tpmSocket;
   }
@@ -64,26 +63,26 @@ public class WebsocketComponentServlet extends WebSocketServlet {
   }
 
   public void connect(WebsocketConsumer consumer) {
-    log.debug("Connecting consumer: {}", consumer);
+    LOG.debug("Connecting consumer: {}", consumer);
     consumers.put(consumer.getPath(), consumer);
   }
 
   public void disconnect(WebsocketConsumer consumer) {
-    log.debug("Disconnecting consumer: {}", consumer);
+    LOG.debug("Disconnecting consumer: {}", consumer);
     consumers.remove(consumer.getPath());
   }
 
   public DefaultWebsocket doWebSocketConnect(ServletUpgradeRequest request, String protocol) {
     String protocolKey = protocol;
 
-    if (protocol == null || !socketFactory.containsKey(protocol)) {
-      log.debug(
+    if (protocol == null || !socketFactories.containsKey(protocol)) {
+      LOG.debug(
           "No factory found for the socket protocol: {}, returning default implementation",
           protocol);
       protocolKey = "ids";
     }
 
-    WebSocketFactory factory = socketFactory.get(protocolKey);
+    WebSocketFactory factory = socketFactories.get(protocolKey);
     return factory.newInstance(
         request,
         protocolKey,
@@ -91,35 +90,27 @@ public class WebsocketComponentServlet extends WebSocketServlet {
             ? WebsocketComponent.createPathSpec(consumer.getEndpoint().getResourceUri())
             : null,
         sync,
-        consumer,
-        tpmSocket);
-  }
 
-  public Map<String, WebSocketFactory> getSocketFactory() {
-    return socketFactory;
-  }
+  consumer,
 
-  public void setSocketFactory(Map<String, WebSocketFactory> socketFactory) {
-    this.socketFactory = socketFactory;
+  tpmSocket);
   }
 
   @Override
   public void configure(WebSocketServletFactory factory) {
     factory.setCreator(
-        new WebSocketCreator() {
-          @Override
-          public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
+          (req, resp) -> {
             String protocolKey = "ids";
             if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
-              WebSocketFactory factory = socketFactory.get(protocolKey);
+              WebSocketFactory wsFactory = socketFactories.get(protocolKey);
               resp.setAcceptedSubProtocol(protocolKey);
-              return factory.newInstance(req, protocolKey, pathSpec, sync, consumer, tpmSocket);
+              return wsFactory.newInstance(req, protocolKey, pathSpec, sync, consumer, tpmSocket);
             } else {
-              log.error(
-                  "WS subprotocols not supported: " + String.join(",", req.getSubProtocols()));
+              LOG.error(
+                  "WS subprotocols not supported: {}", String.join(",", req.getSubProtocols()));
               return null;
             }
-          }
+
         });
   }
 }

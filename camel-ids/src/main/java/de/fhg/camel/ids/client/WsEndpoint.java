@@ -23,11 +23,6 @@ import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdspClientSocket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -40,6 +35,15 @@ import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
+import static de.fhg.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
 
 /**
  * This is the client-side implementation of a Camel endpoint for the IDS communication protocol
@@ -171,9 +175,9 @@ public class WsEndpoint extends AhcEndpoint {
   public void connect() {
     String uri = getHttpUri().toASCIIString();
     if (uri.startsWith("idsclient:")) {
-      uri = uri.replaceFirst("idsclient:", "wss:");
+      uri = uri.replaceFirst("idsclient", WSS_PROTOCOL);
     } else if (uri.startsWith("idsclientplain:")) {
-      uri = uri.replaceFirst("idsclientplain:", "ws:");
+      uri = uri.replaceFirst("idsclientplain", WS_PROTOCOL);
     }
 
     LOG.debug("Connecting to {}", uri);

@@ -30,5 +30,5 @@ public final class WebsocketConstants {
   public static final String WS_PROTOCOL = "ws";
   public static final String WSS_PROTOCOL = "wss";
 
-  private WebsocketConstants() {};
+  private WebsocketConstants() {}
 }
