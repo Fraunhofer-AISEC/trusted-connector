@@ -19,6 +19,7 @@
  */
 package de.fhg.camel.ids.server;
 
+import de.fhg.camel.ids.ProxyX509TrustManager;
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
@@ -490,13 +491,17 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  private ServerConnector getSocketConnector(
-      Server server, SSLContextParameters sslContextParameters)
+  private ServerConnector getSocketConnector(Server server, SSLContextParameters sslContextParameters)
       throws GeneralSecurityException, IOException {
     if (sslContextParameters == null) {
       sslContextParameters = retrieveGlobalSslContextParameters();
     }
     if (sslContextParameters != null) {
+      try {
+        ProxyX509TrustManager.patchSslContextParameters(sslContextParameters);
+      } catch (GeneralSecurityException | IOException e) {
+        LOG.error("Failed to patch TrustManager for WebsocketComponent", e);
+      }
       SslContextFactory sslContextFactory = new SslContextFactory();
       sslContextFactory.setSslContext(sslContextParameters.createSSLContext(getCamelContext()));
       return new ServerConnector(server, sslContextFactory);

@@ -21,6 +21,7 @@ package de.fhg.camel.ids.client;
 
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.camel.ids.ProxyX509TrustManager;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdspClientSocket;
 import org.apache.camel.Consumer;
@@ -29,17 +30,16 @@ import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.asynchttpclient.*;
 import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
@@ -66,7 +66,7 @@ public class WsEndpoint extends AhcEndpoint {
   private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<>();
 
   private final Set<WsConsumer> consumers = new HashSet<>();
-  private final WsListener listener = new WsListener();
+  private final WsListener listener = new WsListener(consumers, this);
   private WebSocket websocket;
 
   @UriParam(label = "producer")
@@ -93,6 +93,18 @@ public class WsEndpoint extends AhcEndpoint {
 
   public WsEndpoint(String endpointUri, WsComponent component) {
     super(endpointUri, component, null);
+  }
+
+  @Override
+  public void setSslContextParameters(SSLContextParameters sslContextParameters) {
+    if (sslContextParameters != null) {
+      try {
+        ProxyX509TrustManager.patchSslContextParameters(sslContextParameters);
+      } catch (GeneralSecurityException | IOException e) {
+        LOG.error("Failed to patch TrustManager for WsEndpoint", e);
+      }
+    }
+    super.setSslContextParameters(sslContextParameters);
   }
 
   @Override
@@ -162,14 +174,10 @@ public class WsEndpoint extends AhcEndpoint {
 
   @Override
   protected AsyncHttpClient createClient(AsyncHttpClientConfig config) {
-    AsyncHttpClient client;
     if (config == null) {
       config = new DefaultAsyncHttpClientConfig.Builder().build();
-      client = new DefaultAsyncHttpClient(config);
-    } else {
-      client = new DefaultAsyncHttpClient(config);
     }
-    return client;
+    return new DefaultAsyncHttpClient(config);
   }
 
   public void connect() {
@@ -260,50 +268,6 @@ public class WsEndpoint extends AhcEndpoint {
       String uri = getHttpUri().toASCIIString();
       LOG.info("Reconnecting websocket: {}", uri);
       connect();
-    }
-  }
-
-  class WsListener implements WebSocketListener {
-
-    @Override
-    public void onOpen(WebSocket websocket) {
-      LOG.debug("Websocket opened");
-    }
-
-    @Override
-    public void onClose(WebSocket websocket, int code, String status) {
-      LOG.debug("websocket closed - reconnecting");
-      try {
-        reConnect();
-      } catch (Exception e) {
-        LOG.warn("Error re-connecting to websocket", e);
-      }
-    }
-
-    @Override
-    public void onError(Throwable t) {
-      LOG.debug("websocket on error", t);
-      if (isSendMessageOnError()) {
-        for (WsConsumer consumer : consumers) {
-          consumer.sendMessage(t);
-        }
-      }
-    }
-
-    @Override
-    public void onBinaryFrame(byte[] message, boolean finalFragment, int rsv) {
-      LOG.debug("Received message --> {}", message);
-      for (WsConsumer consumer : consumers) {
-        consumer.sendMessage(message);
-      }
-    }
-
-    @Override
-    public void onTextFrame(String message, boolean finalFragment, int rsv) {
-      LOG.debug("Received message --> {}", message);
-      for (WsConsumer consumer : consumers) {
-        consumer.sendMessage(message);
-      }
     }
   }
 }
