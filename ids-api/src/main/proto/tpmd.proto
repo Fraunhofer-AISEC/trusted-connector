@@ -16,10 +16,10 @@ enum IdsAttestationType {
 
 message Pcr {
   // the PCR number (usually between 0 and 23)
-  required uint32 number = 1;
+  optional int32 number = 1;
 
   // the value of PCR<number>
-  required bytes value = 2;
+  optional string value = 2;
 }
 
 message ControllerToTpm {
@@ -33,12 +33,12 @@ message ControllerToTpm {
 	optional IdsAttestationType atype = 2 [default = BASIC];
 
 	// qualifingData (i.e. external data provided by the caller, such as a nonce)
-	optional bytes qualifyingData = 3;
+	optional string qualifyingData = 3;
 
 	// pcr bitmask for AttestationType ADVANCED only
 	//  - for BASIC, the default PCRs are PCRs 0 to 10
 	//  - for ALL  , the default PCRs are PCRs 0 to 23
-	optional fixed32 pcrs = 4;
+	optional int32 pcrs = 4;
 }
 
 message TpmToController {
@@ -55,14 +55,14 @@ message TpmToController {
 	optional string halg = 3;
 
 	// the quoted information (a TPM2B_ATTEST data structure)
-	optional bytes quoted = 4;
+	optional string quoted = 4;
 
 	// the signature over 'quoted' (a TPMT_SIGNATURE data structure)
-	optional bytes signature = 5;
+	optional string signature = 5;
 
 	// the explicit PCR values
 	repeated Pcr pcr_values = 6;
 
 	// an _optional_ URI to a certificate that includes the public key
-	optional bytes aik_certificate = 7;
+	optional string certificate_uri = 7;
 }

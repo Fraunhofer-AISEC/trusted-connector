@@ -19,7 +19,6 @@
  */
 package de.fhg.ids.attestation;
 
-import com.google.protobuf.ByteString;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import java.sql.*;
@@ -34,16 +33,19 @@ public class Database {
 
   private static final Logger LOG = LoggerFactory.getLogger(Database.class);
   private static final int SHA256_BYTES_LEN = 32;
-  private static final ByteString ZERO;
-  private static final ByteString FFFF;
+  private static final int PCRS_BASIC = 11;
+  private static final int PCRS_ADVANCED = 17;
+  private static final int PCRS_ALL = 24;
+  private static final String ZERO;
+  private static final String FFFF;
 
   static {
     // Initialize example PCR constants
     byte[] bytes = new byte[SHA256_BYTES_LEN];
     Arrays.fill(bytes, (byte) 0x00);
-    ZERO = ByteString.copyFrom(bytes);
+    ZERO = Converter.bytesToHex(bytes);
     Arrays.fill(bytes, (byte) 0xff);
-    FFFF = ByteString.copyFrom(bytes);
+    FFFF = Converter.bytesToHex(bytes);
   }
 
   private Connection connection;
@@ -59,27 +61,21 @@ public class Database {
   }
 
   private void insertDefaultConfiguration() throws SQLException {
-    int numBasic = 11;
-    int numAdvanced = 17;
-    int numAll = 24;
+    Pcr[] basic = new Pcr[PCRS_BASIC];
+    Pcr[] advanced = new Pcr[PCRS_ADVANCED];
+    Pcr[] all = new Pcr[PCRS_ALL];
 
-    Pcr[] basic = new Pcr[numBasic];
-    Pcr[] advanced = new Pcr[numAdvanced];
-    Pcr[] all = new Pcr[numAll];
-
-    for (int i = 0; i < numBasic; i++) {
+    for (int i = 0; i < PCRS_BASIC; i++) {
       basic[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
     }
-    for (int i = 0; i < numAdvanced; i++) {
+    for (int i = 0; i < PCRS_ADVANCED; i++) {
       advanced[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
+      all[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
     }
-    for (int i = 0; i < numAll; i++) {
-      if (i < numAdvanced || i == numAll - 1) {
-        all[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
-      } else {
-        all[i] = Pcr.newBuilder().setNumber(i).setValue(FFFF).build();
-      }
+    for (int i = PCRS_ADVANCED; i < PCRS_ALL; i++) {
+      all[i] = Pcr.newBuilder().setNumber(i).setValue(FFFF).build();
     }
+    all[PCRS_ALL - 1] = Pcr.newBuilder().setNumber(PCRS_ALL - 1).setValue(ZERO).build();
     this.insertConfiguration("default_basic", "BASIC", basic);
     this.insertConfiguration("default_advanced", "ADVANCED", advanced);
     this.insertConfiguration("default_all", "ALL", all);
@@ -149,7 +145,7 @@ public class Database {
       for (Pcr value : values) {
         LOG.debug("INSERT PCR order: {} value {}", value.getNumber(), value.getValue());
         pStatement.setInt(1, value.getNumber());
-        pStatement.setBytes(2, value.getValue().toByteArray());
+        pStatement.setBytes(2, Converter.hexToBytes(value.getValue()));
         pStatement.setLong(3, key);
         pStatement.executeUpdate();
       }
@@ -162,7 +158,7 @@ public class Database {
             + "WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
     try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
       pStatement.setInt(1, value.getNumber());
-      pStatement.setBytes(2, value.getValue().toByteArray());
+      pStatement.setBytes(2, Converter.hexToBytes(value.getValue()));
       List<Long> result = new ArrayList<>();
       try (ResultSet rs = pStatement.executeQuery()) {
         while (rs.next()) {
@@ -249,7 +245,7 @@ public class Database {
             values.add(
                 Pcr.newBuilder()
                     .setNumber(rs2.getInt("SEQ"))
-                    .setValue(ByteString.copyFrom(rs2.getBytes("VALUE")))
+                    .setValue(Converter.bytesToHex(rs2.getBytes("VALUE")))
                     .build());
           }
           if (!values.isEmpty()) {

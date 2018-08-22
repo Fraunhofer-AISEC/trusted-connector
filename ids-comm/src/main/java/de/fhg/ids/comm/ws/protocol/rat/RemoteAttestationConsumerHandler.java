@@ -27,6 +27,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
 import de.fhg.aisec.ids.messages.Idscp.*;
+import de.fhg.ids.comm.Converter;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -107,7 +108,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
           msg =
               ControllerToTpm.newBuilder()
                   .setAtype(this.aType)
-                  .setQualifyingData(this.yourNonce)
+                  .setQualifyingData(Converter.byteStringToHex(this.yourNonce))
                   .setCode(Code.INTERNAL_ATTESTATION_REQ)
                   .setPcrs(this.attestationMask)
                   .build();
@@ -117,7 +118,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
           msg =
               ControllerToTpm.newBuilder()
                   .setAtype(this.aType)
-                  .setQualifyingData(this.yourNonce)
+                  .setQualifyingData(Converter.byteStringToHex(this.yourNonce))
                   .setCode(Code.INTERNAL_ATTESTATION_REQ)
                   .build();
         }
@@ -126,10 +127,10 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
         byte[] toParse = this.handler.waitForResponse();
         TpmToController response = TpmToController.parseFrom(toParse);
         halg = response.getHalg();
-        quoted = response.getQuoted();
-        signature = response.getSignature();
+        quoted = Converter.hexToByteString(response.getQuoted());
+        signature = Converter.hexToByteString(response.getSignature());
         pcrValues = response.getPcrValuesList();
-        aikCertificate = response.getAikCertificate();
+        aikCertificate = Converter.hexToByteString(response.getCertificateUri());
       } catch (IOException ex) {
         lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
         tpmClient.terminate();
