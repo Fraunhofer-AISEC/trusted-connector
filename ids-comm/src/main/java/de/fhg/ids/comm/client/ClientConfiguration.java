@@ -20,36 +20,51 @@
 package de.fhg.ids.comm.client;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import java.io.File;
+import de.fhg.ids.comm.CertificatePair;
+import de.fhg.ids.comm.IdscpConfiguration;
 
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
  *
  * @author julian
  */
-public class ClientConfiguration {
-  protected int port = 8080;
-  protected File tpmdSocket;
-  protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
-  protected int attestationMask = 0;
+public class ClientConfiguration implements IdscpConfiguration {
+  private IdsAttestationType attestationType = IdsAttestationType.BASIC;
+  private int attestationMask = 0;
+  private CertificatePair certificatePair = new CertificatePair();
 
-  public ClientConfiguration port(int port) {
-    this.port = port;
-    return this;
+  public static class Builder {
+    private ClientConfiguration config = new ClientConfiguration();
+
+    public Builder attestationMask(int attestationMask) {
+      config.attestationMask = attestationMask;
+      return this;
+    }
+
+    public Builder attestationType(IdsAttestationType attestationType) {
+      config.attestationType = attestationType;
+      return this;
+    }
+
+    public Builder certificatePair(CertificatePair certificatePair) {
+      config.certificatePair = certificatePair;
+      return this;
+    }
+
+    public ClientConfiguration build() {
+      return config;
+    }
   }
 
-  public ClientConfiguration tpmdSocket(File socket) {
-    this.tpmdSocket = socket;
-    return this;
+  public IdsAttestationType getAttestationType() {
+    return attestationType;
   }
 
-  public ClientConfiguration attestationMask(int attestationMask) {
-    this.attestationMask = attestationMask;
-    return this;
+  public int getAttestationMask() {
+    return attestationMask;
   }
 
-  public ClientConfiguration attestationType(IdsAttestationType attestationType) {
-    this.attestationType = attestationType;
-    return this;
+  public CertificatePair getCertificatePair() {
+    return certificatePair;
   }
 }

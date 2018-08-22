@@ -19,11 +19,17 @@
  */
 package de.fhg.camel.ids.server;
 
-import java.io.File;
+import de.fhg.ids.comm.CertificatePair;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 
 /** Default websocket factory. Used when no custom websocket is needed. */
 public class DefaultWebsocketFactory implements WebSocketFactory {
+
+  private final CertificatePair certificatePair;
+
+  public DefaultWebsocketFactory(CertificatePair certificatePair) {
+    this.certificatePair = certificatePair;
+  }
 
   @Override
   public DefaultWebsocket newInstance(
@@ -32,6 +38,6 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
       String pathSpec,
       NodeSynchronization sync,
       WebsocketConsumer consumer) {
-    return new DefaultWebsocket(sync, pathSpec, consumer);
+    return new DefaultWebsocket(sync, pathSpec, consumer, certificatePair);
   }
 }

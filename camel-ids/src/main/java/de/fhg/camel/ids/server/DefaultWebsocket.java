@@ -23,6 +23,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.ids.comm.CertificatePair;
+import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
@@ -45,17 +47,18 @@ public class DefaultWebsocket {
 
   private final WebsocketConsumer consumer;
   private final NodeSynchronization sync;
-  private ProtocolMachine machine;
   private Session session;
   private String connectionKey;
-  private String pathSpec;
+  private final String pathSpec;
   private FSM idsFsm;
+  private final CertificatePair certificatePair;
 
   public DefaultWebsocket(
-      NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer) {
+      NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, CertificatePair certificatePair) {
     this.sync = sync;
     this.consumer = consumer;
     this.pathSpec = pathSpec;
+    this.certificatePair = certificatePair;
   }
 
   @OnWebSocketClose
@@ -84,8 +87,12 @@ public class DefaultWebsocket {
         type = IdsAttestationType.BASIC;
     }
     // Integrate server-side of IDS protocol
-    machine = new ProtocolMachine();
-    idsFsm = machine.initIDSProviderProtocol(session, type, attestationMask);
+    ServerConfiguration configuration = new ServerConfiguration.Builder()
+        .attestationType(type)
+        .attestationMask(attestationMask)
+        .certificatePair(certificatePair)
+        .build();
+    idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, configuration);
     sync.addSocket(this);
   }
 

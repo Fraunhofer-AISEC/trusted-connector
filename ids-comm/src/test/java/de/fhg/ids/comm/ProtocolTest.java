@@ -79,18 +79,17 @@ public class ProtocolTest {
     IdscpServer server =
         new IdscpServer()
             .config(
-                new ServerConfiguration()
+                new ServerConfiguration.Builder()
                     .port(8081)
-                    .tpmdSocket(new File("non-existing-tpmd-socket"))
                     .attestationMask(0)
-                    .attestationType(IdsAttestationType.BASIC))
+                    .attestationType(IdsAttestationType.BASIC)
+                    .build())
             .setSocketListener(listener)
             .start();
 
     // Configure and start client (blocks until IDSCP has finished)
     IdscpClient client = new IdscpClient();
-    WebSocket wsClient =
-        client.config(new ClientConfiguration().port(8080)).connect("localhost", 8081);
+    WebSocket wsClient = client.config(new ClientConfiguration()).connect("localhost", 8081);
 
     // --- IDSC protocol will run automatically now ---
 

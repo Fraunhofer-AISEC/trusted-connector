@@ -20,6 +20,7 @@
 package de.fhg.camel.ids.server;
 
 import de.fhg.camel.ids.ProxyX509TrustManager;
+import de.fhg.ids.comm.CertificatePair;
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
@@ -50,12 +51,14 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebsocketComponent extends DefaultComponent implements SSLContextParametersAware {
   protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
   protected static final Map<String, ConnectorRef> CONNECTORS = new HashMap<>();
 
   protected Map<String, WebSocketFactory> socketFactories;
+  private final CertificatePair certificatePair = new CertificatePair();
 
   @Metadata(label = "security")
   protected SSLContextParameters sslContextParameters;
@@ -101,7 +104,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     ServerConnector connector;
     WebsocketComponentServlet servlet;
     MemoryWebsocketStore memoryStore;
-    int refCount;
+    AtomicInteger refCount = new AtomicInteger(1);
 
     ConnectorRef(
         Server server,
@@ -112,19 +115,18 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       this.connector = connector;
       this.servlet = servlet;
       this.memoryStore = memoryStore;
-      increment();
     }
 
     public int increment() {
-      return ++refCount;
+      return refCount.incrementAndGet();
     }
 
     public int decrement() {
-      return --refCount;
+      return refCount.decrementAndGet();
     }
 
     public int getRefCount() {
-      return refCount;
+      return refCount.get();
     }
 
     public MemoryWebsocketStore getMemoryStore() {
@@ -142,11 +144,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
 
   public WebsocketComponent() {
     this.setUseGlobalSslContextParameters(true);
-
-    if (this.socketFactories == null) {
-      this.socketFactories = new HashMap<>();
-      this.socketFactories.put("ids", new DefaultWebsocketFactory());
-    }
+    // this will automatically set up the ids handler factory
+    this.setSocketFactories(new HashMap<>());
   }
 
   /** Connects the URL specified on the endpoint to the specified processor. */
@@ -498,7 +497,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
     if (sslContextParameters != null) {
       try {
-        ProxyX509TrustManager.patchSslContextParameters(sslContextParameters);
+        ProxyX509TrustManager.bindCertificatePair(sslContextParameters, true, certificatePair);
       } catch (GeneralSecurityException | IOException e) {
         LOG.error("Failed to patch TrustManager for WebsocketComponent", e);
       }
@@ -694,7 +693,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     this.socketFactories = socketFactories;
 
     if (!this.socketFactories.containsKey("ids")) {
-      this.socketFactories.put("ids", new DefaultWebsocketFactory());
+      this.socketFactories.put("ids", new DefaultWebsocketFactory(certificatePair));
     }
   }
 

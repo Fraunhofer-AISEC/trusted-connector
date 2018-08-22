@@ -55,11 +55,10 @@ public class IdspClientSocket implements WebSocketListener {
   @Override
   public void onOpen(WebSocket websocket) {
     Log.debug("Websocket opened");
-    IdsAttestationType type = config.attestationType;
 
     // create Finite State Machine for IDS protocol
     ProtocolMachine machine = new ProtocolMachine();
-    this.fsm = machine.initIDSConsumerProtocol(websocket, type, this.config.attestationMask);
+    this.fsm = machine.initIDSConsumerProtocol(websocket, this.config);
     // start the protocol with the first message
     this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
   }

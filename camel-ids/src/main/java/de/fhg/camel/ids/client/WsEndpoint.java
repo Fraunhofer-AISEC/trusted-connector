@@ -22,6 +22,7 @@ package de.fhg.camel.ids.client;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.camel.ids.ProxyX509TrustManager;
+import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdspClientSocket;
 import org.apache.camel.Consumer;
@@ -68,6 +69,7 @@ public class WsEndpoint extends AhcEndpoint {
   private final Set<WsConsumer> consumers = new HashSet<>();
   private final WsListener listener = new WsListener(consumers, this);
   private WebSocket websocket;
+  private CertificatePair certificatePair = new CertificatePair();
 
   @UriParam(label = "producer")
   private boolean useStreaming;
@@ -99,7 +101,7 @@ public class WsEndpoint extends AhcEndpoint {
   public void setSslContextParameters(SSLContextParameters sslContextParameters) {
     if (sslContextParameters != null) {
       try {
-        ProxyX509TrustManager.patchSslContextParameters(sslContextParameters);
+        ProxyX509TrustManager.bindCertificatePair(sslContextParameters, false, certificatePair);
       } catch (GeneralSecurityException | IOException e) {
         LOG.error("Failed to patch TrustManager for WsEndpoint", e);
       }
@@ -196,11 +198,12 @@ public class WsEndpoint extends AhcEndpoint {
     LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
 
     // Execute IDS protocol immediately after connect
-
     ClientConfiguration config =
-        new ClientConfiguration()
+        new ClientConfiguration.Builder()
+            .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
-            .attestationType(IdsAttestationType.forNumber(this.getAttestation()));
+            .certificatePair(certificatePair)
+            .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);
 
     try {

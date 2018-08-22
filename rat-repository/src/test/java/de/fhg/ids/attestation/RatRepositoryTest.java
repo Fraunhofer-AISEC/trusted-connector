@@ -32,6 +32,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -58,16 +59,16 @@ public class RatRepositoryTest {
   private static final Logger LOG = LoggerFactory.getLogger(RatRepositoryTest.class);
   private static final String sURL = "https://127.0.0.1:" + PORT + "/configurations/check";
   private static final int SHA256_BYTES_LEN = 32;
-  private static final ByteString ZERO;
-  private static final ByteString FFFF;
+  private static final String ZERO;
+  private static final String FFFF;
 
   static {
     // Initialize example PCR constants
     byte[] bytes = new byte[SHA256_BYTES_LEN];
     Arrays.fill(bytes, (byte) 0x00);
-    ZERO = ByteString.copyFrom(bytes);
+    ZERO = Converter.bytesToHex(bytes);
     Arrays.fill(bytes, (byte) 0xff);
-    FFFF = ByteString.copyFrom(bytes);
+    FFFF = Converter.bytesToHex(bytes);
   }
 
   @BeforeClass

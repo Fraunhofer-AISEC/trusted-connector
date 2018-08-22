@@ -52,7 +52,7 @@ public class IdscpServer {
   }
 
   public IdscpServer start() {
-    Server s = new Server(this.config.port);
+    Server s = new Server(this.config.getPort());
 
     // Setup the basic application "context" for this application at "/"
     // This is also known as the handler tree (in jetty speak)

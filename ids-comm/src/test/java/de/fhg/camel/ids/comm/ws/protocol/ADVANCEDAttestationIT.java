@@ -30,12 +30,6 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.camel.util.jsse.ClientAuthentication;
-import org.apache.camel.util.jsse.KeyManagersParameters;
-import org.apache.camel.util.jsse.KeyStoreParameters;
-import org.apache.camel.util.jsse.SSLContextParameters;
-import org.apache.camel.util.jsse.SSLContextServerParameters;
-import org.apache.camel.util.jsse.TrustManagersParameters;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -58,7 +52,7 @@ public class ADVANCEDAttestationIT {
   private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
 
   private ConnectorMessage msg0 =
-      Idscp.ConnectorMessage.newBuilder()
+      ConnectorMessage.newBuilder()
           .setType(ConnectorMessage.Type.RAT_START)
           .setId(id)
           .build();
@@ -183,38 +177,5 @@ public class ADVANCEDAttestationIT {
     assertTrue(msg8.getId() == id + 8);
     assertTrue(msg8.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     assertTrue(msg8.getAttestationLeave().getAtype().equals(aType));
-  }
-
-  public static SSLContextParameters defineClientSSLContextParameters() {
-    String PWD = "password";
-    String KEYSTORE = "jsse/client-keystore.jks";
-    String TRUSTSTORE = "jsse/client-truststore.jks";
-
-    KeyStoreParameters ksp = new KeyStoreParameters();
-    ksp.setResource(
-        Thread.currentThread().getContextClassLoader().getResource(KEYSTORE).toString());
-    ksp.setPassword(PWD);
-
-    KeyManagersParameters kmp = new KeyManagersParameters();
-    kmp.setKeyPassword(PWD);
-    kmp.setKeyStore(ksp);
-
-    KeyStoreParameters tsp = new KeyStoreParameters();
-    tsp.setResource(
-        Thread.currentThread().getContextClassLoader().getResource(TRUSTSTORE).toString());
-    tsp.setPassword(PWD);
-
-    TrustManagersParameters tmp = new TrustManagersParameters();
-    tmp.setKeyStore(tsp);
-
-    SSLContextServerParameters scsp = new SSLContextServerParameters();
-    scsp.setClientAuthentication(ClientAuthentication.NONE.name());
-
-    SSLContextParameters sslContextParameters = new SSLContextParameters();
-    sslContextParameters.setKeyManagers(kmp);
-    sslContextParameters.setTrustManagers(tmp);
-    sslContextParameters.setServerParameters(scsp);
-
-    return sslContextParameters;
   }
 }

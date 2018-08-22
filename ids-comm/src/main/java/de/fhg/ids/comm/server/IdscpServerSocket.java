@@ -77,11 +77,7 @@ public class IdscpServerSocket {
 
     // create Finite State Machine for IDS protocol
     ProtocolMachine machine = new ProtocolMachine();
-    fsm =
-        machine.initIDSProviderProtocol(
-            session,
-            this.config.attestationType,
-            this.config.attestationMask);
+    fsm = machine.initIDSProviderProtocol(session, this.config);
   }
 
   @OnWebSocketClose

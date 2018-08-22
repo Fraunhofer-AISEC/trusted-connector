@@ -26,6 +26,8 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.ids.comm.InjectionManager;
+import de.fhg.ids.comm.client.ClientConfiguration;
+import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.ws.protocol.error.ErrorHandler;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.ids.comm.ws.protocol.fsm.Transition;
@@ -60,7 +62,6 @@ public class ProtocolMachine {
   private Session serverSession;
 
   private String socket = "/var/run/tpm2d/control.sock";
-  private IdsAttestationType attestationType;
   private WebSocket clientSocket;
 
   protected Transition makeConsumerErrorTransition(ProtocolState state, ErrorHandler errorHandler) {
@@ -79,17 +80,19 @@ public class ProtocolMachine {
    *
    * @return a FSM implementing the IDSP protocol.
    */
-  public FSM initIDSConsumerProtocol(
-      WebSocket ws, IdsAttestationType attestationType, int attestationMask) {
+  public FSM initIDSConsumerProtocol(WebSocket ws, ClientConfiguration clientConfiguration) {
     this.clientSocket = ws;
-    this.attestationType = attestationType;
     FSM fsm = new FSM();
 
     // set trusted third party URL
     URI ttp = getTrustedThirdPartyURL();
     // all handler
     RemoteAttestationConsumerHandler ratConsumerHandler =
-        new RemoteAttestationConsumerHandler(attestationType, attestationMask, ttp, socket);
+        new RemoteAttestationConsumerHandler(
+            clientConfiguration.getAttestationType(),
+            clientConfiguration.getAttestationMask(),
+            ttp,
+            socket);
     ErrorHandler errorHandler = new ErrorHandler();
     MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();
 
@@ -194,8 +197,7 @@ public class ProtocolMachine {
   }
 
   public FSM initIDSProviderProtocol(
-      Session sess, IdsAttestationType type, int attestationMask) {
-    this.attestationType = type;
+      Session sess, ServerConfiguration serverConfiguration) {
     this.serverSession = sess;
     FSM fsm = new FSM();
 
@@ -204,7 +206,11 @@ public class ProtocolMachine {
 
     // all handler
     RemoteAttestationProviderHandler ratProviderHandler =
-        new RemoteAttestationProviderHandler(type, attestationMask, ttp, socket);
+        new RemoteAttestationProviderHandler(
+            serverConfiguration.getAttestationType(),
+            serverConfiguration.getAttestationMask(),
+            ttp,
+            socket);
     ErrorHandler errorHandler = new ErrorHandler();
     MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 
@@ -291,10 +297,6 @@ public class ProtocolMachine {
     fsm.setInitialState(ProtocolState.IDSCP_START);
 
     return fsm;
-  }
-
-  public IdsAttestationType getAttestationType() {
-    return attestationType;
   }
 
   private boolean replyProto(MessageLite message) {

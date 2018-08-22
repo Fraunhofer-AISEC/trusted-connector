@@ -22,7 +22,6 @@ package de.fhg.camel.ids.comm.ws.protocol;
 import static org.junit.Assert.assertTrue;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
@@ -30,12 +29,6 @@ import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.camel.util.jsse.ClientAuthentication;
-import org.apache.camel.util.jsse.KeyManagersParameters;
-import org.apache.camel.util.jsse.KeyStoreParameters;
-import org.apache.camel.util.jsse.SSLContextParameters;
-import org.apache.camel.util.jsse.SSLContextServerParameters;
-import org.apache.camel.util.jsse.TrustManagersParameters;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -44,22 +37,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-// BASIC test
-public class BASICAttestationIT {
+// ALL test with PCRS 0-23
+public class ALLAttestationIT {
+
   private static final String TPMD_SOCKET = "socket/control.sock";
   private static RemoteAttestationConsumerHandler consumer;
   private static RemoteAttestationProviderHandler provider;
-  private static Logger LOG = LoggerFactory.getLogger(BASICAttestationIT.class);
+  private static Logger LOG = LoggerFactory.getLogger(ALLAttestationIT.class);
   private long id = 87654321;
-  private static IdsAttestationType aType = IdsAttestationType.BASIC;
+  private static IdsAttestationType aType = IdsAttestationType.ALL;
+  private static Integer bitmask = 0;
+
   private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
 
   private ConnectorMessage msg0 =
-      Idscp.ConnectorMessage.newBuilder()
+      ConnectorMessage.newBuilder()
           .setType(ConnectorMessage.Type.RAT_START)
           .setId(id)
           .build();
-
   private static ConnectorMessage msg1;
   private static ConnectorMessage msg2;
   private static ConnectorMessage msg3;
@@ -74,9 +69,9 @@ public class BASICAttestationIT {
   @BeforeClass
   public static void initRepo() throws URISyntaxException {
     consumer =
-        new RemoteAttestationConsumerHandler(aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationConsumerHandler(aType, bitmask, new URI(ratRepoUri), TPMD_SOCKET);
     provider =
-        new RemoteAttestationProviderHandler(aType, 0, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationProviderHandler(aType, bitmask, new URI(ratRepoUri), TPMD_SOCKET);
   }
 
   @Test
@@ -115,7 +110,7 @@ public class BASICAttestationIT {
     assertTrue(msg3.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     assertTrue(msg3.getAttestationResponse().getAtype().equals(aType));
     assertTrue(msg3.getAttestationResponse().getHalg().equals(hAlg.name()));
-    assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 11);
+    assertTrue(msg3.getAttestationResponse().getPcrValuesCount() == 24);
   }
 
   @Test
@@ -130,7 +125,7 @@ public class BASICAttestationIT {
     assertTrue(msg4.getType().equals(ConnectorMessage.Type.RAT_RESPONSE));
     assertTrue(msg4.getAttestationResponse().getAtype().equals(aType));
     assertTrue(msg4.getAttestationResponse().getHalg().equals(hAlg.name()));
-    assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 11);
+    assertTrue(msg4.getAttestationResponse().getPcrValuesCount() == 24);
   }
 
   @Test
@@ -141,6 +136,7 @@ public class BASICAttestationIT {
     LOG.debug(msg5.toString());
     assertTrue(msg5.getId() == id + 5);
     assertTrue(msg5.getType().equals(ConnectorMessage.Type.RAT_RESULT));
+    //  commented out until tpm2d is fixed
     assertTrue(msg5.getAttestationResult().getResult());
     assertTrue(msg5.getAttestationResult().getAtype().equals(aType));
   }
@@ -153,6 +149,7 @@ public class BASICAttestationIT {
     LOG.debug(msg6.toString());
     assertTrue(msg6.getId() == id + 6);
     assertTrue(msg6.getType().equals(ConnectorMessage.Type.RAT_RESULT));
+    //  commented out until tpm2d is fixed
     assertTrue(msg6.getAttestationResult().getResult());
     assertTrue(msg6.getAttestationResult().getAtype().equals(aType));
   }
@@ -181,42 +178,5 @@ public class BASICAttestationIT {
     assertTrue(msg8.getId() == id + 8);
     assertTrue(msg8.getType().equals(ConnectorMessage.Type.RAT_LEAVE));
     assertTrue(msg8.getAttestationLeave().getAtype().equals(aType));
-  }
-
-  public static SSLContextParameters defineClientSSLContextParameters() {
-    String PWD = "password";
-    String KEYSTORE = "jsse/client-keystore.jks";
-    String TRUSTSTORE = "jsse/client-truststore.jks";
-
-    KeyStoreParameters ksp = new KeyStoreParameters();
-    ksp.setResource(
-        Thread.currentThread().getContextClassLoader().getResource(KEYSTORE).toString());
-    ksp.setPassword(PWD);
-
-    KeyManagersParameters kmp = new KeyManagersParameters();
-    kmp.setKeyPassword(PWD);
-    kmp.setKeyStore(ksp);
-
-    KeyStoreParameters tsp = new KeyStoreParameters();
-    tsp.setResource(
-        Thread.currentThread().getContextClassLoader().getResource(TRUSTSTORE).toString());
-    tsp.setPassword(PWD);
-    LOG.debug("------------------------------------------------------------------------------");
-    LOG.debug(tsp.toString());
-    LOG.debug("------------------------------------------------------------------------------");
-
-    TrustManagersParameters tmp = new TrustManagersParameters();
-    tmp.setKeyStore(tsp);
-
-    SSLContextServerParameters scsp = new SSLContextServerParameters();
-    // scsp.setClientAuthentication(ClientAuthentication.REQUIRE.name());
-    scsp.setClientAuthentication(ClientAuthentication.NONE.name());
-
-    SSLContextParameters sslContextParameters = new SSLContextParameters();
-    sslContextParameters.setKeyManagers(kmp);
-    sslContextParameters.setTrustManagers(tmp);
-    sslContextParameters.setServerParameters(scsp);
-
-    return sslContextParameters;
   }
 }

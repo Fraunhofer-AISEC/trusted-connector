@@ -26,6 +26,7 @@ import com.google.protobuf.ByteString;
 import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
+import de.fhg.ids.comm.Converter;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.rat.NonceGenerator;
@@ -66,7 +67,7 @@ public class UnixSocketIT {
       ControllerToTpm msg =
           ControllerToTpm.newBuilder()
               .setAtype(type)
-              .setQualifyingData(ByteString.copyFrom(quoted))
+              .setQualifyingData(Converter.bytesToHex(quoted))
               .setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
               .build();
       client.send(msg.toByteArray(), handler, true);
@@ -108,7 +109,7 @@ public class UnixSocketIT {
     ControllerToTpm msg =
         ControllerToTpm.newBuilder()
             .setAtype(type)
-            .setQualifyingData(ByteString.copyFrom(quoted))
+            .setQualifyingData(Converter.bytesToHex(quoted))
             .setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
             .build();
     client.send(msg.toByteArray(), handler, true);
@@ -145,7 +146,7 @@ public class UnixSocketIT {
     ControllerToTpm msg =
         ControllerToTpm.newBuilder()
             .setAtype(type)
-            .setQualifyingData(ByteString.copyFrom(quoted))
+            .setQualifyingData(Converter.bytesToHex(quoted))
             .setCode(ControllerToTpm.Code.INTERNAL_ATTESTATION_REQ)
             .setPcrs(24)
             .build();

@@ -8,11 +8,19 @@ public final class Converter {
 
   private Converter() {}
 
+  public static String bytesToHex(byte[] bytes) {
+    return DatatypeConverter.printHexBinary(bytes);
+  }
+
   public static String byteStringToHex(ByteString byteString) {
-    return DatatypeConverter.printHexBinary(byteString.toByteArray());
+    return bytesToHex(byteString.toByteArray());
+  }
+
+  public static byte[] hexToBytes(String hex) {
+    return DatatypeConverter.parseHexBinary(hex);
   }
 
   public static ByteString hexToByteString(String hex) {
-    return ByteString.copyFrom(DatatypeConverter.parseHexBinary(hex));
+    return ByteString.copyFrom(hexToBytes(hex));
   }
 }

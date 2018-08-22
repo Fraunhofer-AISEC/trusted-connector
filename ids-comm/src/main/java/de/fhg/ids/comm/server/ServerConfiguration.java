@@ -20,42 +20,63 @@
 package de.fhg.ids.comm.server;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import java.io.File;
+import de.fhg.ids.comm.CertificatePair;
+import de.fhg.ids.comm.IdscpConfiguration;
 
 /**
  * Configuration of the server-side (Provider) part of the IDSC protocol.
  *
  * @author julian
  */
-public class ServerConfiguration {
-  protected int port = 8080;
-  protected String basePath = "/";
-  protected IdsAttestationType attestationType = IdsAttestationType.BASIC;
-  protected File tpmdSocket;
-  protected int attestationMask;
+public class ServerConfiguration implements IdscpConfiguration {
+  public static final int DEFAULT_PORT = 8080;
 
-  public ServerConfiguration port(int port) {
-    this.port = port;
-    return this;
+  private int port = DEFAULT_PORT;
+  private IdsAttestationType attestationType = IdsAttestationType.BASIC;
+  private int attestationMask;
+  private CertificatePair certificatePair = new CertificatePair();
+
+  public static class Builder {
+    private ServerConfiguration config = new ServerConfiguration();
+
+    public Builder port(int port) {
+      config.port = port;
+      return this;
+    }
+
+    public Builder attestationType(IdsAttestationType attestationType) {
+      config.attestationType = attestationType;
+      return this;
+    }
+
+    public Builder attestationMask(int attestationMask) {
+      config.attestationMask = attestationMask;
+      return this;
+    }
+
+    public Builder certificatePair(CertificatePair certificatePair) {
+      config.certificatePair = certificatePair;
+      return this;
+    }
+
+    public ServerConfiguration build() {
+      return config;
+    }
   }
 
-  public ServerConfiguration basePath(String basePath) {
-    this.basePath = basePath;
-    return this;
+  public int getPort() {
+    return port;
   }
 
-  public ServerConfiguration tpmdSocket(File socket) {
-    this.tpmdSocket = socket;
-    return this;
+  public IdsAttestationType getAttestationType() {
+    return attestationType;
   }
 
-  public ServerConfiguration attestationMask(int mask) {
-    this.attestationMask = mask;
-    return this;
+  public int getAttestationMask() {
+    return attestationMask;
   }
 
-  public ServerConfiguration attestationType(IdsAttestationType type) {
-    this.attestationType = type;
-    return this;
+  public CertificatePair getCertificatePair() {
+    return certificatePair;
   }
 }
