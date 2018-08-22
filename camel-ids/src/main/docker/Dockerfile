@@ -6,7 +6,7 @@ LABEL de.fhg.aisec.ids.version="1.0"
 RUN apk update \
     && apk add su-exec shadow
 # make some directories
-RUN mkdir /tpm2d/ && mkdir -p /data/cml/tpm2d/ && mkdir -p /data/tpm2_simulator/
+RUN mkdir /tpm2d/ && mkdir -p /data/cml/tpm2d/communication/ && mkdir -p /data/tpm2_simulator/
 # copy data
 COPY bin/cml-tpm2d /tpm2d/
 COPY bin/tpm2_simulator /tpm2d/

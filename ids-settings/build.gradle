@@ -12,6 +12,7 @@ dependencies {
     implementation (group: 'org.mapdb', name: 'mapdb', version: libraryVersions.mapdb) {
         // Exclude guava dependency, which is provided by bundle
         exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
