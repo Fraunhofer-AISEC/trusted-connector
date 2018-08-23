@@ -8,8 +8,8 @@ dependencies {
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
-    providedByFeature group: 'org.apache.camel', name: 'camel-core'
-    providedByFeature group: 'org.apache.camel', name: 'camel-ahc'
+    providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
+    providedByFeature group: 'org.apache.camel', name: 'camel-ahc', version: libraryVersions.camel
 
     providedByFeature group: 'org.eclipse.jetty', name: 'jetty-servlet', version: libraryVersions.jetty
     providedByFeature group: 'org.eclipse.jetty', name: 'jetty-jmx', version: libraryVersions.jetty

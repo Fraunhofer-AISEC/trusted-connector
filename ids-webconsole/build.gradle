@@ -49,13 +49,13 @@ dependencies {
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
-    providedByFeature group: 'javax.servlet', name: 'javax.servlet-api'
+    providedByFeature group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
 
-    providedByFeature group: 'org.apache.camel', name: 'camel-core'
-    providedByFeature group: 'org.apache.camel', name: 'camel-core-osgi'
+    providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
+    providedByFeature group: 'org.apache.camel', name: 'camel-core-osgi', version: libraryVersions.camel
 
-    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs'
-    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers'
+    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs', version: libraryVersions.cxf
+    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers', version: libraryVersions.cxf
 
     // This is required for compilation only, and provided by karaf automatically, likely by some included feature
     compileOnly group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
