@@ -38,6 +38,10 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
       String pathSpec,
       NodeSynchronization sync,
       WebsocketConsumer consumer) {
-    return new DefaultWebsocket(sync, pathSpec, consumer, certificatePair);
+    // Create final, complete pair from the local (server) certificate ...
+    CertificatePair finalPair = new CertificatePair(certificatePair);
+    // ... plus the remote (client) certificate from the request
+    finalPair.setRemoteCertificate(request.getCertificates()[0]);
+    return new DefaultWebsocket(sync, pathSpec, consumer, finalPair);
   }
 }

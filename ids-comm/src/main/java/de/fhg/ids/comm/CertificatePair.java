@@ -7,6 +7,13 @@ public class CertificatePair {
   private Certificate localCertificate = null;
   private Certificate remoteCertificate = null;
 
+  public CertificatePair() {}
+
+  public CertificatePair(CertificatePair certificatePair) {
+    this.localCertificate = certificatePair.localCertificate;
+    this.remoteCertificate = certificatePair.remoteCertificate;
+  }
+
   public Certificate getLocalCertificate() {
     return localCertificate;
   }

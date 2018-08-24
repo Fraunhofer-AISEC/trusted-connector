@@ -16,6 +16,7 @@ public class ProxyX509TrustManager implements X509TrustManager {
   public static void bindCertificatePair(SSLContextParameters sslContextParameters,
                                          boolean isServer, CertificatePair certificatePair)
       throws GeneralSecurityException, IOException {
+    //TODO: Also retrieve own certificates from keystore
     if (isServer) {
       // Configure servers to ask for Client Certificates
       SSLContextServerParameters serverParameters = sslContextParameters.getServerParameters();
@@ -24,11 +25,13 @@ public class ProxyX509TrustManager implements X509TrustManager {
       }
       serverParameters.setClientAuthentication("WANT");
       sslContextParameters.setServerParameters(serverParameters);
+    } else {
+      // CLIENT ONLY! For server side, get certificate from request
+      // Replace X509TrustManager with proxy implementation to log certificates of communication partners
+      TrustManagersParameters tmParams = sslContextParameters.getTrustManagers();
+      X509TrustManager systemTrustManager = (X509TrustManager) tmParams.createTrustManagers()[0];
+      tmParams.setTrustManager(new ProxyX509TrustManager(systemTrustManager, certificatePair));
     }
-    // Replace X509TrustManager with proxy implementation to log certificates of communication partners
-    TrustManagersParameters tmParams = sslContextParameters.getTrustManagers();
-    X509TrustManager systemTrustManager = (X509TrustManager) tmParams.createTrustManagers()[0];
-    tmParams.setTrustManager(new ProxyX509TrustManager(systemTrustManager, certificatePair));
   }
 
   private final X509TrustManager trustManager;
@@ -41,8 +44,6 @@ public class ProxyX509TrustManager implements X509TrustManager {
 
   @Override
   public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-    // Save observed client certificate
-    certificatePair.setRemoteCertificate(chain[0]);
     trustManager.checkClientTrusted(chain, authType);
   }
 

@@ -30,6 +30,7 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
@@ -51,7 +52,7 @@ public class DefaultWebsocket {
   private String connectionKey;
   private final String pathSpec;
   private FSM idsFsm;
-  private final CertificatePair certificatePair;
+  private CertificatePair certificatePair;
 
   public DefaultWebsocket(
       NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, CertificatePair certificatePair) {
@@ -136,7 +137,7 @@ public class DefaultWebsocket {
         idsFsm.feedEvent(
             new Event(
                 msg.getType(),
-                new String(data),
+                new String(data, StandardCharsets.UTF_8),
                 msg)); // we need to de-protobuf here and split messages into cmd and payload
       } catch (IOException e) {
         // An invalid message has been received during IDS protocol. close connection

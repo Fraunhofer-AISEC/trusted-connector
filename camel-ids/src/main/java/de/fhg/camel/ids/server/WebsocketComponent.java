@@ -215,7 +215,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       NodeSynchronization sync = new DefaultNodeSynchronization(connectorRef.memoryStore);
       WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
       if (prodcon instanceof WebsocketConsumer) {
-        WebsocketConsumer consumer = WebsocketConsumer.class.cast(prodcon);
+        WebsocketConsumer consumer = (WebsocketConsumer) prodcon;
         if (servlet.getConsumer() == null) {
           servlet.setConsumer(consumer);
         }
@@ -223,7 +223,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
         servlet.connect(consumer);
       }
       if (prodcon instanceof WebsocketProducer) {
-        WebsocketProducer producer = WebsocketProducer.class.cast(prodcon);
+        WebsocketProducer producer = (WebsocketProducer) prodcon;
         producer.setStore(connectorRef.memoryStore);
       }
     }
@@ -441,7 +441,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       String pathSpec,
       Map<String, WebsocketComponentServlet> servlets,
       ServletContextHandler handler) {
-    WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, socketFactories);
+    WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, getSocketFactories());
     servlets.put(pathSpec, servlet);
     ServletHolder servletHolder = new ServletHolder(servlet);
     servletHolder.getInitParameters().putAll(handler.getInitParams());
