@@ -209,23 +209,25 @@ public class WsEndpoint extends AhcEndpoint {
       } finally {
         idspListener.semaphore().unlock();
       }
+	    // get remote address, get upgrade headers, instantiate ConnectionManagerService to register
+	    // websocket
+	    // When IDS protocol has finished, hand over to normal web socket listener
+	    websocket.addWebSocketListener(listener);
+	    websocket.removeWebSocketListener(idspListener);
+	
+	    // Add Client Endpoint information to static List
+	    IDSCPOutgoingConnection ce = new IDSCPOutgoingConnection();
+	    ce.setAttestationResult(idspListener.getAttestationResult());
+	    ce.setMetaData(idspListener.getMetaResult());
+	    ce.setEndpointIdentifier(this.getEndpointUri());
+	    ce.setEndpointKey(this.getEndpointKey());
+	    ce.setRemoteIdentity(websocket.getRemoteAddress().toString());
+	    outgoingConnections.add(ce);
     } catch (Exception t) {
-      LOG.error(t.getMessage(), t);
+        LOG.error(t.getMessage(), t);
+    } finally {
+        idspListener.semaphore().unlock();
     }
-    // get remote address, get upgrade headers, instantiate ConnectionManagerService to register
-    // websocket
-    // When IDS protocol has finished, hand over to normal web socket listener
-    websocket.addWebSocketListener(listener);
-    websocket.removeWebSocketListener(idspListener);
-
-    // Add Client Endpoint information to static List
-    IDSCPOutgoingConnection ce = new IDSCPOutgoingConnection();
-    ce.setAttestationResult(idspListener.getAttestationResult());
-    ce.setMetaData(idspListener.getMetaResult());
-    ce.setEndpointIdentifier(this.getEndpointUri());
-    ce.setEndpointKey(this.getEndpointKey());
-    ce.setRemoteIdentity(websocket.getRemoteAddress().toString());
-    outgoingConnections.add(ce);
   }
 
   @Override
