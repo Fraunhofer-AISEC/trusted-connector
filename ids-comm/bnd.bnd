@@ -12,7 +12,6 @@ Export-Package: \
 	de.fhg.ids.comm.ws.protocol.rat
 Import-Package: \
     !org.checkerframework.checker*,\
-    jnr.enxio.channels*,\
 	*
-Private-Package: \
-    jnr.enxio.channels*
+DynamicImport-Package: \
+	jnr.enxio.channels
