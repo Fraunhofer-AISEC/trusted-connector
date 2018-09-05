@@ -13,3 +13,5 @@ Export-Package: \
 Import-Package: \
     !org.checkerframework.checker*,\
 	*
+DynamicImport-Package: \
+	jnr.enxio.channels
