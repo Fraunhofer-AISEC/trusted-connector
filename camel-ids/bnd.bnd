@@ -6,5 +6,4 @@ Export-Package: de.fhg.camel.ids.server,\
 Import-Package: *
 DynamicImport-Package: \
 	org.asynchttpclient.netty.*,\
-	jnr.enxio.channels,\
 	com.typesafe.netty.*
