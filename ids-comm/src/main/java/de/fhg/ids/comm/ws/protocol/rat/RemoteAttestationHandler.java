@@ -27,17 +27,22 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
+import de.fhg.ids.comm.CertificatePair;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
 import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -95,7 +100,7 @@ public class RemoteAttestationHandler {
           && true); // TODO : signature check of repo answer ... !
 
     } catch (Exception ex) {
-      lastError = "Exception:" + ex.getMessage();
+      lastError = "Exception: " + ex.getMessage();
       LOG.debug(
           "//Exception///////////////////////////////////////////////////////////////////////////");
       LOG.debug(lastError);
@@ -105,8 +110,19 @@ public class RemoteAttestationHandler {
     }
   }
 
-  public boolean checkSignature(AttestationResponse response) {
-    Signature sig;
+  public static byte[] calculateHash(byte[] nonce, Certificate certificate) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-1");
+      digest.update(nonce);
+      digest.update(certificate.getEncoded());
+      return digest.digest();
+    } catch (Exception e1) {
+      LOG.error("Could not create hash of own nonce and local certificate", e1);
+      return nonce;
+    }
+  }
+
+  public boolean checkSignature(AttestationResponse response, byte[] hash) {
     byte[] byteSignature = response.getSignature().toByteArray();
     LOG.debug("signature: {}", ByteArrayUtil.toPrintableHexString(byteSignature));
     byte[] byteCert = response.getAikCertificate().toByteArray();
@@ -126,50 +142,49 @@ public class RemoteAttestationHandler {
         try {
           // construct a new TPMT_SIGNATURE from byteSignature bytes
           TPMT_SIGNATURE tpmtSignature = new TPMT_SIGNATURE(byteSignature);
-          // safe computation time and do NOT generate TPMS_ATTEST ..... just check bytes of
-          // TPMS_ATTEST in switch/case
-          // TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
+          // check hash value (extra data) against expected hash
+          TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
+          byte[] extraBytes = tpmsAttest.getExtraData().toBytes();
+          if (!Arrays.equals(extraBytes, hash)) {
+            LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!");
+            return false;
+          }
 
-          // check signature depending on HashAlg()
+          // check signature depending on used hash algortihm
+          final String sigAlg;
           switch (tpmtSignature.getSignature().getHashAlg()) {
             case TPM_ALG_SHA256:
-              sig = Signature.getInstance("SHA256withRSA");
-              sig.initVerify(publicKey);
-              sig.update(byteQuoted);
-              return sig.verify(tpmtSignature.getSignature().getSig());
+              sigAlg = "SHA256withRSA";
+              break;
             case TPM_ALG_SHA1:
-              sig = Signature.getInstance("SHA1withRSA");
-              sig.initVerify(publicKey);
-              sig.update(byteQuoted);
-              return sig.verify(tpmtSignature.getSignature().getSig());
+              sigAlg = "SHA1withRSA";
+              break;
             default:
               return false;
           }
+          Signature sig = Signature.getInstance(sigAlg);
+          sig.initVerify(publicKey);
+          sig.update(byteQuoted);
+          return sig.verify(tpmtSignature.getSignature().getSig());
         } catch (Exception ex) {
-          lastError =
-              "error: could not create a TPMT_SIGNATURE from bytes \""
-                  + ByteArrayUtil.toPrintableHexString(byteSignature)
-                  + "\":"
-                  + ex.getMessage();
-          LOG.warn(lastError, ex);
+          LOG.warn("error: could not create a TPMT_SIGNATURE from bytes \""
+              + ByteArrayUtil.toPrintableHexString(byteSignature)
+              + "\":"
+              + ex.getMessage(), ex);
           return false;
         }
       } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-        lastError =
-            "error: could not convert from TPM2B_PUBLIC (\""
-                + tpm2bPublickey
-                + "\") to a PublicKey :"
-                + ex.getMessage();
-        LOG.warn(lastError, ex);
+        LOG.warn("error: could not convert from TPM2B_PUBLIC (\""
+            + tpm2bPublickey
+            + "\") to a PublicKey :"
+            + ex.getMessage(), ex);
         return false;
       }
     } catch (Exception ex) {
-      lastError =
-          "error: could not create a TPM2B_PUBLIC (\""
-              + ByteArrayUtil.toPrintableHexString(byteSignature)
-              + "\") :"
-              + ex.getMessage();
-      LOG.warn(lastError, ex);
+      LOG.warn("error: could not create a TPM2B_PUBLIC (\""
+          + ByteArrayUtil.toPrintableHexString(byteSignature)
+          + "\") :"
+          + ex.getMessage(), ex);
       return false;
     }
   }

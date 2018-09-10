@@ -1,7 +1,13 @@
 package de.fhg.camel.ids;
 
 import de.fhg.ids.comm.CertificatePair;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Collections;
+import java.util.Scanner;
 import org.apache.camel.util.jsse.KeyManagersParameters;
+import org.apache.camel.util.jsse.KeyStoreParameters;
 import org.apache.camel.util.jsse.SSLContextParameters;
 import org.apache.camel.util.jsse.SSLContextServerParameters;
 import org.apache.camel.util.jsse.TrustManagersParameters;
@@ -23,12 +29,16 @@ public class ProxyX509TrustManager implements X509TrustManager {
     if (sslContextParameters.getKeyManagers() != null) {
       KeyManagersParameters keyManagers = sslContextParameters.getKeyManagers();
       if (keyManagers.getKeyStore() != null) {
-        KeyStore keyStore = keyManagers.getKeyStore().createKeyStore();
+        KeyStoreParameters keyStoreParameters = keyManagers.getKeyStore();
+        KeyStore keyStore = keyStoreParameters.createKeyStore();
         // If a certificate alias is set, use it
         String alias = sslContextParameters.getCertAlias();
+
         // Otherwise, the first alias with a private key is relevant for us
         if (alias == null) {
-          for (Enumeration<String> es = keyStore.aliases(); es.hasMoreElements(); alias = es.nextElement()) {
+          Enumeration<String> es = keyStore.aliases();
+          while (es.hasMoreElements()) {
+            alias = es.nextElement();
             if (keyStore.isKeyEntry(alias)) {
               break;
             }

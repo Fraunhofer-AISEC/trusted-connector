@@ -31,12 +31,15 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.Converter;
+import de.fhg.ids.comm.IdscpConfiguration;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import java.io.IOException;
 import java.net.URI;
+import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
@@ -45,24 +48,28 @@ import org.slf4j.LoggerFactory;
 /** Implements the handling of individual protocol steps in the IDS remote attestation protocol. */
 public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
-  private ByteString myNonce;
-  private ByteString yourNonce;
-  private IdsAttestationType aType;
+  private byte[] myNonce;
+  private byte[] yourNonce;
   private Thread thread;
   private UnixSocketThread client;
   private UnixSocketResponseHandler handler;
   private long sessionID = 0; // used to count messages between ids connectors during attestation
-  private URI ttpUri;
-  private int attestationMask = 0;
+  private final URI ttpUri;
+  private final int attestationMask;
+  private final IdsAttestationType aType;
+  private final CertificatePair certificatePair;
   private AttestationResponse resp;
 
   public RemoteAttestationProviderHandler(
-      IdsAttestationType type, int attestationMask, URI ttpUri, String socket) {
+      IdscpConfiguration serverConfiguration,
+      URI ttpUri,
+      String socket) {
     // set ttp uri
     this.ttpUri = ttpUri;
     // set current attestation type and mask (see attestation.proto)
-    this.aType = type;
-    this.attestationMask = attestationMask;
+    this.aType = serverConfiguration.getAttestationType();
+    this.attestationMask = serverConfiguration.getAttestationMask();
+    this.certificatePair = serverConfiguration.getCertificatePair();
     // try to start new Thread:
     // UnixSocketThread will be used to communicate with local TPM2d
     try {
@@ -79,22 +86,26 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
   }
 
   public MessageLite enterRatRequest(Event e) {
-    this.yourNonce = e.getMessage().getAttestationRequest().getNonce();
+    this.yourNonce = e.getMessage().getAttestationRequest().getNonce().toByteArray();
     // generate a new software nonce on the client and send it to server
-    this.myNonce = ByteString.copyFrom(NonceGenerator.generate(20));
+    this.myNonce = NonceGenerator.generate(20);
     // get starting session id
     this.sessionID = e.getMessage().getId();
     return ConnectorMessage.newBuilder()
         .setId(++this.sessionID)
         .setType(ConnectorMessage.Type.RAT_REQUEST)
         .setAttestationRequest(
-            AttestationRequest.newBuilder().setAtype(this.aType).setNonce(this.myNonce).build())
+            AttestationRequest.newBuilder()
+                .setAtype(this.aType)
+                .setNonce(ByteString.copyFrom(this.myNonce))
+                .build())
         .build();
   }
 
   public MessageLite sendTPM2Ddata(Event e) {
     // temporarily save attestation response in order to check it in the result phase
     this.resp = e.getMessage().getAttestationResponse();
+    final byte[] hash = calculateHash(this.yourNonce, certificatePair.getRemoteCertificate());
 
     if (++this.sessionID != e.getMessage().getId()) {
       return RemoteAttestationHandler.sendError(
@@ -114,27 +125,17 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
     ByteString aikCertificate = ByteString.EMPTY;
     if (thread != null && thread.isAlive()) {
       try {
-        ControllerToTpm msg;
+        ControllerToTpm.Builder msgBuilder = ControllerToTpm.newBuilder()
+            .setAtype(this.aType)
+            .setQualifyingData(Converter.bytesToHex(hash))
+            .setCode(Code.INTERNAL_ATTESTATION_REQ)
+            .setPcrs(this.attestationMask);
         if (this.aType.equals(IdsAttestationType.ADVANCED)) {
-          // send msg to local unix socket
+          // send msg to local unix socket with bitmask set
           // construct protobuf message to send to local tpm2d via unix socket
-          msg =
-              ControllerToTpm.newBuilder()
-                  .setAtype(this.aType)
-                  .setQualifyingData(Converter.byteStringToHex(this.yourNonce))
-                  .setCode(Code.INTERNAL_ATTESTATION_REQ)
-                  .setPcrs(this.attestationMask)
-                  .build();
-        } else {
-          // send msg to local unix socket
-          // construct protobuf message to send to local tpm2d via unix socket
-          msg =
-              ControllerToTpm.newBuilder()
-                  .setAtype(this.aType)
-                  .setQualifyingData(Converter.byteStringToHex(this.yourNonce))
-                  .setCode(Code.INTERNAL_ATTESTATION_REQ)
-                  .build();
+          msgBuilder.setPcrs(this.attestationMask);
         }
+        ControllerToTpm msg = msgBuilder.build();
         LOG.debug(msg.toString());
         client.send(msg.toByteArray(), this.handler, true);
         // and wait for response
@@ -173,11 +174,12 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
   }
 
   public MessageLite sendResult(Event e) {
+    final byte[] hash = calculateHash(this.myNonce, certificatePair.getLocalCertificate());
+
     if (++this.sessionID == e.getMessage().getId()) {
-      if (this.checkSignature(this.resp)) {
-        if (RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri)) {
-          this.mySuccess = true;
-        }
+      if (this.checkSignature(this.resp, hash) &&
+          RemoteAttestationHandler.checkRepository(this.aType, this.resp, ttpUri)) {
+        this.mySuccess = true;
       } else {
         lastError = "error: signature check not ok";
       }

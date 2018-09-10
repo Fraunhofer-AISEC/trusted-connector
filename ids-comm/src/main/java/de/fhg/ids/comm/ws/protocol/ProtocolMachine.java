@@ -86,11 +86,7 @@ public class ProtocolMachine {
     URI ttp = getTrustedThirdPartyURL();
     // all handler
     RemoteAttestationConsumerHandler ratConsumerHandler =
-        new RemoteAttestationConsumerHandler(
-            clientConfiguration.getAttestationType(),
-            clientConfiguration.getAttestationMask(),
-            ttp,
-            socket);
+        new RemoteAttestationConsumerHandler(clientConfiguration, ttp, socket);
     ErrorHandler errorHandler = new ErrorHandler();
     MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();
 
@@ -204,11 +200,7 @@ public class ProtocolMachine {
 
     // all handler
     RemoteAttestationProviderHandler ratProviderHandler =
-        new RemoteAttestationProviderHandler(
-            serverConfiguration.getAttestationType(),
-            serverConfiguration.getAttestationMask(),
-            ttp,
-            socket);
+        new RemoteAttestationProviderHandler(serverConfiguration, ttp, socket);
     ErrorHandler errorHandler = new ErrorHandler();
     MetadataProviderHandler metaHandler = new MetadataProviderHandler();
 
