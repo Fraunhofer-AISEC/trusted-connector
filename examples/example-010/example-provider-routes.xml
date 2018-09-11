@@ -27,7 +27,7 @@
 		<to uri="ahc:http://provider-app:8080/temp"/>
 		<convertBodyTo type="java.lang.String"/>
 		<log message="Got temperature ${body}"/>
-		<to uri="idsclient://consumer-core:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=0" />
+		<to uri="idsclient://consumer-core:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=2&amp;attestationMask=0" />
 	</route>
 </camelContext>
 </blueprint>
