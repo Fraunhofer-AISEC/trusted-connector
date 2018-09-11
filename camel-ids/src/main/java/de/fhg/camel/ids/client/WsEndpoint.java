@@ -25,6 +25,8 @@ import de.fhg.camel.ids.ProxyX509TrustManager;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdspClientSocket;
+import de.fhg.ids.comm.ws.protocol.IDSCPException;
+import java.util.concurrent.ExecutionException;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -207,7 +209,7 @@ public class WsEndpoint extends AhcEndpoint {
     IdspClientSocket idspListener = new IdspClientSocket(config);
 
     try {
-      // Block until ISCP has finished
+      // Block until IDSCP has finished
       idspListener.semaphore().lockInterruptibly();
 
       websocket =
@@ -216,16 +218,20 @@ public class WsEndpoint extends AhcEndpoint {
                   new WebSocketUpgradeHandler.Builder().addWebSocketListener(idspListener).build())
               .get();
 
-      try {
-        boolean unlocked;
-        do {
-          unlocked = idspListener.idscpInProgressCondition().await(30, TimeUnit.SECONDS);
-        } while (!idspListener.isTerminated() && !unlocked); // To handle sporadic wake ups
-      } finally {
-        idspListener.semaphore().unlock();
-      }
-    } catch (Exception t) {
-      LOG.error(t.getMessage(), t);
+      do {
+        try {
+          if (idspListener.idscpInProgressCondition().await(30, TimeUnit.SECONDS)) {
+            break;
+          }
+        } catch (InterruptedException ie) {
+          LOG.warn("Interrupt occurred whilst waiting for IDSCP handshake", ie);
+          Thread.currentThread().interrupt();
+        }
+      } while (!idspListener.isTerminated());  // To handle sporadic wake-ups
+    } catch (ExecutionException | InterruptedException e) {
+      throw new IDSCPException("Error in WebSocket connect", e);
+    } finally {
+      idspListener.semaphore().unlock();
     }
     // get remote address, get upgrade headers, instantiate ConnectionManagerService to register
     // websocket
