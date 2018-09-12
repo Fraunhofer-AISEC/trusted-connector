@@ -20,16 +20,23 @@
 package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.ids.comm.CertificatePair;
+import de.fhg.ids.comm.client.ClientConfiguration;
+import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -47,7 +54,7 @@ public class ADVANCEDAttestationIT {
   private static Logger LOG = LoggerFactory.getLogger(ADVANCEDAttestationIT.class);
   private long id = 87654321;
   private static IdsAttestationType aType = IdsAttestationType.ADVANCED;
-  private static Integer bitmask = 20;
+  private static int bitmask = 20;
 
   private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
 
@@ -65,14 +72,36 @@ public class ADVANCEDAttestationIT {
   private static ConnectorMessage msg6;
   private static ConnectorMessage msg7;
   private static ConnectorMessage msg8;
-  private static final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
 
   @BeforeClass
-  public static void initRepo() throws URISyntaxException {
+  public static void initHandlers() throws URISyntaxException, CertificateEncodingException {
+    // Certificate mocks for server and client
+    Certificate clientDummyCert = mock(Certificate.class);
+    when(clientDummyCert.getEncoded()).thenReturn(new byte[] {0x0});
+    Certificate serverDummyCert = mock(Certificate.class);
+    when(serverDummyCert.getEncoded()).thenReturn(new byte[] {0x1});
+    // Client IDSCP configuration
+    CertificatePair clientPair = new CertificatePair();
+    clientPair.setLocalCertificate(clientDummyCert);
+    clientPair.setRemoteCertificate(serverDummyCert);
+    ClientConfiguration clientConfiguration = new ClientConfiguration.Builder()
+        .attestationType(aType)
+        .certificatePair(clientPair)
+        .build();
+    // Server IDSCP configuration
+    CertificatePair serverPair = new CertificatePair();
+    serverPair.setLocalCertificate(serverDummyCert);
+    serverPair.setRemoteCertificate(clientDummyCert);
+    ServerConfiguration serverConfiguration = new ServerConfiguration.Builder()
+        .attestationType(aType)
+        .certificatePair(serverPair)
+        .attestationMask(bitmask)
+        .build();
+    final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
     consumer =
-        new RemoteAttestationConsumerHandler(aType, bitmask, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationConsumerHandler(clientConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
     provider =
-        new RemoteAttestationProviderHandler(aType, bitmask, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationProviderHandler(serverConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
   }
 
   @Test
