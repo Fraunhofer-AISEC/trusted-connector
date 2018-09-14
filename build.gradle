@@ -47,6 +47,7 @@ allprojects {
             log4j         : '2.6.2',
             junit4        : '4.12',
             mapdb         : '3.0.7',
+            // must be consistent with direct dependencies in jnr-unixsocket-wrapper
             jnrunix       : '0.18',
             protobuf      : '3.6.0',
 
@@ -62,24 +63,24 @@ allprojects {
     ]
 
     configurations {
-        // just to make boms easier to see in the dependency tree
+        // just to make bills of materials (bom) easier to see in the dependency tree
         bom
-        implementation.extendsFrom bom
-        testImplementation.extendsFrom bom
 
-        // an implementation dependency that will be provided through a feature in the OSGi environment        
+        // Dependencies that will be provided through a feature in the OSGi environment
         providedByFeature
-        implementation.extendsFrom providedByFeature
 
-        // an implementation dependency that will be provided by a bundle or wrapped in the OSGi environment
+        // Dependencies that will be provided through a bundle in the OSGi environment
         providedByBundle
-        implementation.extendsFrom providedByBundle
 
-        // osgi core dependencies only needed for compiling, they will just be there during runtime
+        // OSGi core dependencies which will just be there during runtime
         osgiCore
-        compileOnly.extendsFrom osgiCore
-        // but we need them in testing
-        testImplementation.extendsFrom osgiCore
+
+        // supporting dependencies for wrapper bundles, to prevent errors in IDE and unit tests
+        wrapperSupport
+
+        // All OSGi dependencies will be required at compile time and for unit tests
+        compileOnly.extendsFrom bom, providedByFeature, providedByBundle, osgiCore, wrapperSupport
+        testImplementation.extendsFrom bom, providedByFeature, providedByBundle, osgiCore, wrapperSupport
     }
 }
 

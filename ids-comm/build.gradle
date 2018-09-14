@@ -7,7 +7,8 @@ dependencies {
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 
-    providedByBundle group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
+    providedByBundle project(path: ':jnr-unixsocket-wrapper', configuration: 'providedByBundle')
+    wrapperSupport group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
 
     providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
 

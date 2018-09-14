@@ -2,6 +2,7 @@ enableFeaturePreview("IMPROVED_POM_SUPPORT")
 
 rootProject.name = 'core-platform'
 
+include ':jnr-unixsocket-wrapper'
 include ':camel-ids'
 include ':ids-acme'
 include ':ids-api'

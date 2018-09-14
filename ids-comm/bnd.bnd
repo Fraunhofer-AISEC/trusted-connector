@@ -13,8 +13,5 @@ Export-Package: \
 
 # Exclude jnr.enxio.channels from normal imports because it must be resolved dynamically due to duplicate exports by jnr.
 Import-Package: \
-    !org.checkerframework.checker*,\
-	!jnr.enxio.channels, \
+  !org.checkerframework.checker*,\
 	*
-DynamicImport-Package: \
-	jnr.enxio.channels

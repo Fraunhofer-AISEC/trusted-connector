@@ -1,4 +1,5 @@
-FROM openjdk:8-alpine
+#FROM openjdk:8-jdk-slim-stretch
+FROM frolvlad/alpine-oraclejdk8:cleaned
 
 LABEL AUTHOR="Julian Schuette (julian.schuette@aisec.fraunhofer.de)"
 

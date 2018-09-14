@@ -66,7 +66,7 @@ karaf {
 		    // to deploy Web Application Bundles, such as our WebConsole
             feature 'war'
 		
-            // Camel for routing		
+            // Camel for routing
 		    feature 'camel-jackson'
 		    feature 'camel-milo'
 		    feature 'camel-cxf'
