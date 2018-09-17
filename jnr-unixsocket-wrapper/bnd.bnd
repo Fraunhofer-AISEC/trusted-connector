@@ -2,11 +2,11 @@ Bundle-Name: JNR UnixSocket Wrapper
 Bundle-Description: JNR UnixSocket Wrapper Bundle
 # Merge package jnr.enxio.channels from jnr-enxio and jnr-unixsocket
 Import-Package: \
+  com.kenai.jffi*,\
+  jnr.ffi*,\
   !jnr*,\
-  !com.kenai.jffi*,\
   !sun.misc*,\
   *
 Export-Package: \
   jnr.enxio.channels*;-split-package:=merge-last,\
-  jnr*,\
-  com.kenai.jffi*
+  jnr*

@@ -1,3 +1,4 @@
 dependencies {
-    implementation(group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix)
+    implementation group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
+    providedByBundle group: 'com.github.jnr', name: 'jnr-ffi', version: '2.1.4'
 }
