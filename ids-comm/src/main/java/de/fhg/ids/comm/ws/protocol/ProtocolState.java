@@ -40,10 +40,8 @@ public final class ProtocolState {
       new ProtocolState("IDSCP:ERROR", "Idscp: error in protocol.");
   public static final ProtocolState IDSCP_END =
       new ProtocolState("IDSCP:END", "Idscp: end of protocol.");
-  public static final ProtocolState IDSCP_RAT_START =
-      new ProtocolState("IDSCP:RAT:START", "Idscp/RemoteAttestation: start of rat sub protocol.");
   public static final ProtocolState IDSCP_RAT_AWAIT_RESPONSE =
-      new ProtocolState("IDSCP:RAT:AWAIT_REPONSE", "Idscp/RemoteAttestation: awaiting response.");
+      new ProtocolState("IDSCP:RAT:AWAIT_RESPONSE", "Idscp/RemoteAttestation: awaiting response.");
   public static final ProtocolState IDSCP_RAT_AWAIT_REQUEST =
       new ProtocolState("IDSCP:RAT:AWAIT_REQUEST", "Idscp/RemoteAttestation: awaiting request.");
   public static final ProtocolState IDSCP_RAT_AWAIT_RESULT =

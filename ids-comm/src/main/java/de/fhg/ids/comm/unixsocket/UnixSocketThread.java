@@ -42,12 +42,12 @@ import org.slf4j.LoggerFactory;
 
 public class UnixSocketThread implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
-  private UnixSocketAddress address;
-  private UnixSocketChannel channel;
-  private String socket = "SOCKET";
+  private static final int SOCKET_FILE_RETRIES = 10;
+  private static final long HALF_SEC_MS = 500;
+  private final String socket;
 
   // The selector we'll be monitoring
-  private Selector selector;
+  private final Selector selector;
 
   // The buffer into which we'll read data when it's available
   private ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 1024);
@@ -56,7 +56,7 @@ public class UnixSocketThread implements Runnable {
   private byte[] readBufferLength = new byte[4];
 
   // A list of PendingChange instances
-  private List<ChangeRequest> pendingChanges = new LinkedList<>();
+  private final List<ChangeRequest> pendingChanges = new LinkedList<>();
 
   // Maps a UnixSocketChannel to a list of ByteBuffer instances
   private final Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
@@ -68,7 +68,7 @@ public class UnixSocketThread implements Runnable {
 
   // default constructor
   public UnixSocketThread() throws IOException {
-    this.selector = this.initSelector();
+    this("SOCKET");
   }
 
   // constructor setting another socket address
@@ -115,17 +115,12 @@ public class UnixSocketThread implements Runnable {
       try {
         // Process any pending changes
         synchronized (this.pendingChanges) {
-          Iterator<ChangeRequest> changes = this.pendingChanges.iterator();
-          while (changes.hasNext()) {
-            ChangeRequest change = changes.next();
-            switch (change.type) {
-              case ChangeRequest.CHANGEOPS:
-                SelectionKey key = change.channel.keyFor(this.selector);
-                key.interestOps(change.ops);
-                break;
-              case ChangeRequest.REGISTER:
-                change.channel.register(this.selector, change.ops);
-                break;
+          for (ChangeRequest change : this.pendingChanges) {
+            if (ChangeRequest.CHANGEOPS == change.type) {
+              SelectionKey key = change.channel.keyFor(this.selector);
+              key.interestOps(change.ops);
+            } else if (ChangeRequest.REGISTER == change.type) {
+              change.channel.register(this.selector, change.ops);
             }
           }
           this.pendingChanges.clear();
@@ -133,12 +128,13 @@ public class UnixSocketThread implements Runnable {
 
         // Wait for an event on one of the registered channels
         this.selector.select();
-        LOG.debug("Reading from socket " + this.socket);
+        LOG.trace("Reading from socket {}", this.socket);
 
         // Iterate over the set of keys for which events are available
         Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
         while (selectedKeys.hasNext()) {
           SelectionKey key = selectedKeys.next();
+          LOG.trace("Read key: {}", key);
           selectedKeys.remove();
           if (!key.isValid()) {
             continue;
@@ -153,7 +149,7 @@ public class UnixSocketThread implements Runnable {
           }
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("Error in UnixSocketThread", e);
       }
     }
   }
@@ -175,22 +171,19 @@ public class UnixSocketThread implements Runnable {
       channel.close();
       return;
     }
-    LOG.debug("bytes read: " + numRead);
+    LOG.debug("bytes read: {}", numRead);
     if (numRead == -1) {
       // Remote entity shut the socket down cleanly. Do the same from our end and cancel the
       // channel.
       key.channel().close();
       key.cancel();
-      return;
-    }
-    // buffer length comes alone
-    else if (numRead == 4) {
+    } else if (numRead == 4) {
+      // buffer length comes alone
       LOG.trace("Message header with length arrived!");
       System.arraycopy(
           Arrays.copyOfRange(this.readBuffer.array(), 0, 4), 0, this.readBufferLength, 0, 4);
-    }
-    // buffer length + protobuf message
-    else {
+    } else {
+      // buffer length + protobuf message
       if (this.bufferLengthIsAppended(this.readBuffer, numRead)) {
         int length = new BigInteger(this.readBufferLength).intValue();
         LOG.trace("Message (with header) of length " + length + " arrived!");
@@ -267,7 +260,7 @@ public class UnixSocketThread implements Runnable {
       // Cancel the channel's registration with our selector
       LOG.debug(e.getMessage(), e);
       key.cancel();
-      return;
+      throw e;
     }
 
     // Register an interest in writing on this channel
@@ -279,11 +272,11 @@ public class UnixSocketThread implements Runnable {
     File socketFile = new File(socket);
     // Try to open socket file 10 times
     int retries = 0;
-    while (!socketFile.getAbsoluteFile().exists() && retries < 10) {
+    while (!socketFile.getAbsoluteFile().exists() && retries < SOCKET_FILE_RETRIES) {
       ++retries;
-      TimeUnit.MILLISECONDS.sleep(500L);
+      TimeUnit.MILLISECONDS.sleep(HALF_SEC_MS);
       socketFile = new File(socket);
-      if (retries < 10) {
+      if (retries < SOCKET_FILE_RETRIES && LOG.isDebugEnabled()) {
         LOG.debug(
             String.format(
                 "error: socket \"%s\" does not exist after %s retry.",
@@ -294,15 +287,15 @@ public class UnixSocketThread implements Runnable {
       throw new IOException(
           "Could not connect to Unix socket after 10 retries: " + socketFile.getAbsoluteFile());
     }
-    this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());
-    this.channel = UnixSocketChannel.open(this.address);
-    this.channel.configureBlocking(false);
+    UnixSocketAddress address = new UnixSocketAddress(socketFile.getAbsoluteFile());
+    UnixSocketChannel channel = UnixSocketChannel.open(address);
+    channel.configureBlocking(false);
     // synchronize pending changes
     synchronized (this.pendingChanges) {
       this.pendingChanges.add(
           new ChangeRequest(channel, ChangeRequest.REGISTER, SelectionKey.OP_CONNECT));
     }
-    return this.channel;
+    return channel;
   }
 
   // initialize the selector

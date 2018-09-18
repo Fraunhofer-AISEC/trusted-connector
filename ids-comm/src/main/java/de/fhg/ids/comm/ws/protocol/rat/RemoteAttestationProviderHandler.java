@@ -39,7 +39,6 @@ import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import java.io.IOException;
 import java.net.URI;
-import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
@@ -136,11 +135,12 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
           msgBuilder.setPcrs(this.attestationMask);
         }
         ControllerToTpm msg = msgBuilder.build();
-        LOG.debug(msg.toString());
+        LOG.debug("ControllerToTpm message: {}", msg.toString());
         client.send(msg.toByteArray(), this.handler, true);
         // and wait for response
         byte[] toParse = this.handler.waitForResponse();
         TpmToController response = TpmToController.parseFrom(toParse);
+        LOG.debug("TpmToController message: {}", response.toString());
         halg = response.getHalg();
         quoted = Converter.hexToByteString(response.getQuoted());
         signature = Converter.hexToByteString(response.getSignature());

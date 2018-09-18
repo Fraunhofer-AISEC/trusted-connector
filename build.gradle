@@ -47,8 +47,8 @@ allprojects {
             log4j         : '2.6.2',
             junit4        : '4.12',
             mapdb         : '3.0.7',
-            // must be consistent with direct dependencies in jnr-unixsocket-wrapper
-            jnrunix       : '0.18',
+            // must be consistent with jnr-ffi version in jnr-unixsocket-wrapper
+            jnrunix       : '0.19',
             protobuf      : '3.6.0',
 
             // it seems not all jetty components are in our BOM so we need to specify it here as well
