@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns:camel="http://camel.apache.org/schema/blueprint"
- xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf"
- xmlns:cxfcore="http://cxf.apache.org/blueprint/core"
- xsi:schemaLocation="
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camel="http://camel.apache.org/schema/blueprint"
+  xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf"
+  xsi:schemaLocation="
  http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
  http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
 
@@ -31,7 +30,7 @@
  <!-- Retrieve temperature value from IDS protocol, setting remote attestation to most relaxed config (for
  			demo only. Use 1 in production). Forward to Data App 2 -->
 	<route id="receiveTemp">
-		<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=2&amp;attestationMask=0" />
+		<from uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=0" />
 		<log message="Received via IDS protocol: ${body}"/>
 		<to uri="testEndpoint"/>
 	</route>
