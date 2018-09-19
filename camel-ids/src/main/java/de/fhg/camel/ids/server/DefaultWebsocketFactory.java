@@ -19,11 +19,15 @@
  */
 package de.fhg.camel.ids.server;
 
-import de.fhg.ids.comm.CertificatePair;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.fhg.ids.comm.CertificatePair;
 
 /** Default websocket factory. Used when no custom websocket is needed. */
 public class DefaultWebsocketFactory implements WebSocketFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocketFactory.class);
 
   private final CertificatePair certificatePair;
 
@@ -41,7 +45,11 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
     // Create final, complete pair from the local (server) certificate ...
     CertificatePair finalPair = new CertificatePair(certificatePair);
     // ... plus the remote (client) certificate from the request
-    finalPair.setRemoteCertificate(request.getCertificates()[0]);
+    if (request.getCertificates()!=null && request.getCertificates().length>0) {
+    	finalPair.setRemoteCertificate(request.getCertificates()[0]);
+    } else {
+    	LOG.warn("Remote client did not present TLS certificate");
+    }
     return new DefaultWebsocket(sync, pathSpec, consumer, finalPair);
   }
 }
