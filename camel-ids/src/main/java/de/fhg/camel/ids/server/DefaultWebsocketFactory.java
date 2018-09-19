@@ -19,6 +19,8 @@
  */
 package de.fhg.camel.ids.server;
 
+import de.fhg.ids.comm.CertificatePair;
+import java.security.cert.X509Certificate;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +47,9 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
     // Create final, complete pair from the local (server) certificate ...
     CertificatePair finalPair = new CertificatePair(certificatePair);
     // ... plus the remote (client) certificate from the request
-    if (request.getCertificates()!=null && request.getCertificates().length>0) {
-    	finalPair.setRemoteCertificate(request.getCertificates()[0]);
+    X509Certificate[] certificates = request.getCertificates();
+    if (certificates != null && certificates.length>0) {
+      finalPair.setRemoteCertificate(certificates[0]);
     } else {
     	LOG.warn("Remote client did not present TLS certificate");
     }
