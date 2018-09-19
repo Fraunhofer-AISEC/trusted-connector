@@ -29,15 +29,18 @@ public class UnixSocketResponseHandler {
 
   public synchronized boolean handleResponse(byte[] rsp) {
     this.rsp = rsp;
-    this.notify();
+    this.notifyAll();
     return true;
   }
 
   public synchronized byte[] waitForResponse() {
-    while (this.rsp == null) {
+    long timeout = 10*1000;
+    long start = System.currentTimeMillis();
+	  while (this.rsp == null && System.currentTimeMillis()<(start+timeout)) {
       try {
-        this.wait();
+        this.wait(timeout);
       } catch (InterruptedException e) {
+    	  Thread.currentThread().interrupt();
       }
     }
     // int length = new BigInteger(pop(this.rsp, 4, true)).intValue();
