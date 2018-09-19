@@ -43,9 +43,10 @@ public class UnixSocketResponseHandler {
     	  Thread.currentThread().interrupt();
       }
     }
-    // int length = new BigInteger(pop(this.rsp, 4, true)).intValue();
-    // System.out.println("UnixSocketResponsHandler recieved : " + this.rsp.length + " bytes");
-    return slice(this.rsp, this.rsp.length, false);
+    if (this.rsp == null) {
+    	return new byte[0];
+    }
+	return slice(this.rsp, this.rsp.length, false);
   }
 
   static byte[] slice(byte[] original, int length, boolean fromLeft) {

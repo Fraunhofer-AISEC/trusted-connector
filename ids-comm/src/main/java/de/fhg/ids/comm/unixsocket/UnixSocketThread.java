@@ -127,7 +127,10 @@ public class UnixSocketThread implements Runnable {
         }
 
         // Wait for an event on one of the registered channels
-        this.selector.select();
+        int updates = this.selector.select();
+        if (updates == 0) {  // Throttle
+        	Thread.sleep(5);
+        }
         LOG.trace("Reading from socket {}", this.socket);
 
         // Iterate over the set of keys for which events are available
