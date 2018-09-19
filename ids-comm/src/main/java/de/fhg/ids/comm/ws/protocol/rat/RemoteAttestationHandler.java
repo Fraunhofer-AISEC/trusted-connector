@@ -19,19 +19,6 @@
  */
 package de.fhg.ids.comm.ws.protocol.rat;
 
-import com.google.protobuf.MessageLite;
-import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fhg.ids.comm.CertificatePair;
-import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
-import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
-import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
-import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -44,10 +31,26 @@ import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.MessageLite;
+
+import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.Error;
+import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
+import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
+import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationHandler {
   protected static final Logger LOG =
@@ -73,7 +76,11 @@ public class RemoteAttestationHandler {
 
   public static boolean checkRepository(
       IdsAttestationType aType, AttestationResponse response, URI ttpUri) {
-    List<Pcr> values = response.getPcrValuesList();
+    if (aType == null || response == null || ttpUri == null) {
+    	return false;
+    }
+	  
+	List<Pcr> values = response.getPcrValuesList();
     try {
       ConnectorMessage msgRepo =
           RemoteAttestationHandler.readRepositoryResponse(
