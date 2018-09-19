@@ -19,19 +19,12 @@
  */
 package de.fhg.camel.ids.server;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.ids.comm.CertificatePair;
-import de.fhg.ids.comm.server.ServerConfiguration;
-import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
-import de.fhg.ids.comm.ws.protocol.ProtocolState;
-import de.fhg.ids.comm.ws.protocol.fsm.Event;
-import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -41,6 +34,20 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
+import de.fhg.ids.comm.CertificatePair;
+import de.fhg.ids.comm.server.ServerConfiguration;
+import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
+import de.fhg.ids.comm.ws.protocol.ProtocolState;
+import de.fhg.ids.comm.ws.protocol.fsm.Event;
+import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 
 @WebSocket
 public class DefaultWebsocket {
@@ -88,10 +95,25 @@ public class DefaultWebsocket {
         type = IdsAttestationType.BASIC;
     }
     // Integrate server-side of IDS protocol
+    Settings settings = ConnectionManagerService.getSettings();
+    URI ttpUri = null;
+    try {
+	    if (settings != null) {
+	    	ttpUri = new URI(
+	                  "https://"
+	                  + settings.getConnectorConfig().getTtpHost()
+	                  + ":"
+	                  + settings.getConnectorConfig().getTtpPort()
+	                  + "/");
+	    }
+    } catch (URISyntaxException e) {
+    	LOG.error("incorrect TTP URI syntax", e);
+    }
     ServerConfiguration configuration = new ServerConfiguration.Builder()
         .attestationType(type)
         .attestationMask(attestationMask)
         .certificatePair(certificatePair)
+        .ttpUrl(ttpUri)
         .build();
     idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, configuration);
     sync.addSocket(this);

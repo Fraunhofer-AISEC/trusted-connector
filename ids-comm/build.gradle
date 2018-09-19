@@ -12,11 +12,6 @@ dependencies {
 
     providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
 
-    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
-    osgiCore group: 'org.osgi', name: 'org.osgi.core', version: libraryVersions.osgi
-
-    providedByBundle group: 'org.ops4j', name: 'peaberry', version: libraryVersions.peaberry
-
     providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: libraryVersions.jetty
     providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
 

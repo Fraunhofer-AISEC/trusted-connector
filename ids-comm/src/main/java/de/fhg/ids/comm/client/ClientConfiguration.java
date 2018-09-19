@@ -19,6 +19,8 @@
  */
 package de.fhg.ids.comm.client;
 
+import java.net.URI;
+
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
@@ -32,6 +34,7 @@ public class ClientConfiguration implements IdscpConfiguration {
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask = 0;
   private CertificatePair certificatePair = new CertificatePair();
+public URI ttpUri;
 
   public static class Builder {
     private ClientConfiguration config = new ClientConfiguration();
@@ -51,6 +54,11 @@ public class ClientConfiguration implements IdscpConfiguration {
       return this;
     }
 
+    public Builder ttpUrl(URI ttpUri) {
+    	config.ttpUri = ttpUri;
+    	return this;
+    }
+    
     public ClientConfiguration build() {
       return config;
     }
@@ -66,5 +74,9 @@ public class ClientConfiguration implements IdscpConfiguration {
 
   public CertificatePair getCertificatePair() {
     return certificatePair;
+  }
+
+  public URI getTrustedThirdPartyURI() {
+	  return ttpUri;
   }
 }

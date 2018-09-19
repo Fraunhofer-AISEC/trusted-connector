@@ -19,12 +19,21 @@
  */
 package de.fhg.ids.comm.ws.protocol;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
+import org.asynchttpclient.ws.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.protobuf.MessageLite;
-import de.fhg.aisec.ids.api.settings.ConnectorConfig;
-import de.fhg.aisec.ids.api.settings.Settings;
+
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fhg.ids.comm.InjectionManager;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.ws.protocol.error.ErrorHandler;
@@ -34,16 +43,6 @@ import de.fhg.ids.comm.ws.protocol.metadata.MetadataConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataProviderHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import org.asynchttpclient.ws.WebSocket;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class generates the Finite State Machine (FSM) for the IDS protocol.
@@ -83,7 +82,7 @@ public class ProtocolMachine {
     FSM fsm = new FSM();
 
     // set trusted third party URL
-    URI ttp = getTrustedThirdPartyURL();
+    URI ttp = clientConfiguration.getTrustedThirdPartyURI();
     // all handler
     RemoteAttestationConsumerHandler ratConsumerHandler =
         new RemoteAttestationConsumerHandler(clientConfiguration, ttp, socket);
@@ -196,7 +195,7 @@ public class ProtocolMachine {
     FSM fsm = new FSM();
 
     // set trusted third party URL
-    URI ttp = getTrustedThirdPartyURL();
+    URI ttp = serverConfiguration.getTrustedThirdPartyURI();
 
     // all handler
     RemoteAttestationProviderHandler ratProviderHandler =
@@ -336,36 +335,5 @@ public class ProtocolMachine {
       LOG.error(e.getMessage(), e);
     }
     return reply(bos.toByteArray());
-  }
-
-  // TODO: This two constants are just dummies, fill them with the real protocol when TTP is
-  // implemented
-  public static final String TTP_URI_PROTOCOL = "https";
-  public static final String TTP_URI_ENDPOINT_CHECK = "";
-
-  /**
-   * Return URI of trusted third party (ttp).
-   *
-   * <p>The URI is constructed from host and port settings in the settings service.
-   *
-   * @return The URI of the ttp
-   */
-  private URI getTrustedThirdPartyURL() {
-    Settings settings = InjectionManager.getInjector().getInstance(Settings.class);
-    if (settings == null) {
-      throw new IDSCPException("Could not retrieve TTP URI, Settings Service is not available!");
-    }
-    ConnectorConfig config = settings.getConnectorConfig();
-    try {
-      return new URI(
-          TTP_URI_PROTOCOL
-              + "://"
-              + config.getTtpHost()
-              + ":"
-              + config.getTtpPort()
-              + TTP_URI_ENDPOINT_CHECK);
-    } catch (URISyntaxException e) {
-      throw new IDSCPException("Malformed TTP URI", e);
-    }
   }
 }

@@ -19,6 +19,8 @@
  */
 package de.fhg.ids.comm.server;
 
+import java.net.URI;
+
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
@@ -26,7 +28,7 @@ import de.fhg.ids.comm.IdscpConfiguration;
 /**
  * Configuration of the server-side (Provider) part of the IDSC protocol.
  *
- * @author julian
+ * @author Julian Schuette
  */
 public class ServerConfiguration implements IdscpConfiguration {
   public static final int DEFAULT_PORT = 8080;
@@ -35,6 +37,7 @@ public class ServerConfiguration implements IdscpConfiguration {
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask;
   private CertificatePair certificatePair = new CertificatePair();
+  private URI ttpUri = null;
 
   public static class Builder {
     private ServerConfiguration config = new ServerConfiguration();
@@ -59,6 +62,11 @@ public class ServerConfiguration implements IdscpConfiguration {
       return this;
     }
 
+    public Builder ttpUrl(URI ttpUri) {
+    	config.ttpUri = ttpUri;
+    	return this;
+    }
+    
     public ServerConfiguration build() {
       return config;
     }
@@ -78,5 +86,9 @@ public class ServerConfiguration implements IdscpConfiguration {
 
   public CertificatePair getCertificatePair() {
     return certificatePair;
+  }
+  
+  public URI getTrustedThirdPartyURI() {
+	  return ttpUri;
   }
 }

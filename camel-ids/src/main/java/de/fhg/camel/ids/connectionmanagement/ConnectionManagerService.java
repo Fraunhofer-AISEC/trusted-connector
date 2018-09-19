@@ -19,23 +19,29 @@
  */
 package de.fhg.camel.ids.connectionmanagement;
 
-import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
-import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
-import de.fhg.camel.ids.client.WsEndpoint;
-import de.fhg.camel.ids.server.WebsocketComponent;
-import de.fhg.camel.ids.server.WebsocketComponentServlet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.camel.ids.client.WsEndpoint;
+import de.fhg.camel.ids.server.WebsocketComponent;
+import de.fhg.camel.ids.server.WebsocketComponentServlet;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -48,6 +54,7 @@ import org.slf4j.LoggerFactory;
 @Component(enabled = true, immediate = true, name = "ids-conm")
 public class ConnectionManagerService implements ConnectionManager {
   private static final Logger LOG = LoggerFactory.getLogger(ConnectionManagerService.class);
+  private static Settings settings = null;
 
   @Activate
   protected void activate() {
@@ -58,7 +65,30 @@ public class ConnectionManagerService implements ConnectionManager {
   protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
     LOG.info("Deactivating Connection Manager");
   }
+  
+  /*
+   * The following block subscribes this component to the Settings Service
+   */
+  @Reference(
+    name = "conm.service",
+    service = Settings.class,
+    cardinality = ReferenceCardinality.OPTIONAL,
+    policy = ReferencePolicy.DYNAMIC,
+    unbind = "unbindSettingsService"
+  )
+  @SuppressWarnings("squid:S2696")
+  public void bindSettingsService(Settings s) {
+    ConnectionManagerService.settings = s;
+  }
+  @SuppressWarnings("squid:S2696")
+  public void unbindSettingsService(Settings s) {
+	    ConnectionManagerService.settings = null;
+  }
 
+  public static Settings getSettings() {
+	  return settings;
+  }
+  
   @Override
   public List<IDSCPServerEndpoint> listAvailableEndpoints() {
     return WebsocketComponent.getConnectors()

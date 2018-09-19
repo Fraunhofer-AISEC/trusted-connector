@@ -19,63 +19,22 @@
  */
 package de.fhg.camel.ids.both;
 
-import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
-import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.api.settings.ConnectorConfig;
-import de.fhg.aisec.ids.api.settings.Settings;
-import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
-import de.fhg.ids.comm.InjectionManager;
+import java.util.List;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Provides;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.util.List;
+import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
 
 /** These tests send messages over the IDSC protocol (via localhost). */
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
   protected static final String TEST_MESSAGE = "Hello World!";
   protected static final String TEST_MESSAGE_2 = "Hello Again!";
-
-  /**
-   * Guice injector must currently be set as otherwise IDSCP will not be able to resolve TTP URL and
-   * fail silently, blocking the client.
-   */
-  @BeforeClass
-  public static void setupClass() {
-    InjectionManager.setInjector(
-        Guice.createInjector(
-            new AbstractModule() {
-              @Override
-              protected void configure() {}
-
-              @Provides
-              public Settings provideSettingsMock() {
-                ConnectorConfig config = new ConnectorConfig();
-                try {
-                  Field hostField = ConnectorConfig.class.getDeclaredField("ttpHost");
-                  hostField.setAccessible(true);
-                  hostField.set(config, "ttp.host");
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                  e.printStackTrace();
-                }
-                Settings s = mock(Settings.class);
-                when(s.getConnectorConfig()).thenReturn(config);
-                return s;
-              }
-            }));
-  }
 
   /**
    * Creates a route from a client to a server and verifies that 

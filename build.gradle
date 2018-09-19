@@ -35,9 +35,6 @@ allprojects {
             osgi          : '6.0.0',
             felixFramework: '5.4.0',
 
-            // OSGi DI tool
-            peaberry      : '1.3',
-
             ahc           : '2.4.9',
             acme          : '2.0',
             checkerQual   : '2.5.2',

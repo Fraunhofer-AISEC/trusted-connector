@@ -19,16 +19,19 @@
  */
 package de.fhg.ids.comm;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Provides;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+
+import org.asynchttpclient.ws.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.junit.Test;
+
 import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.api.settings.ConnectorConfig;
-import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdscpClient;
@@ -36,43 +39,11 @@ import de.fhg.ids.comm.server.IdscpServer;
 import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.concurrent.ExecutionException;
-import org.asynchttpclient.ws.WebSocket;
-import org.eclipse.jetty.websocket.api.Session;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class ProtocolTest {
 
-  @BeforeClass
-  public static void setupClass() {
-    InjectionManager.setInjector(
-        Guice.createInjector(
-            new AbstractModule() {
-              @Override
-              protected void configure() {}
-
-              @Provides
-              public Settings provideSettingsMock() {
-                ConnectorConfig config = new ConnectorConfig();
-                try {
-                  Field hostField = ConnectorConfig.class.getDeclaredField("ttpHost");
-                  hostField.setAccessible(true);
-                  hostField.set(config, "ttp.host");
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                  e.printStackTrace();
-                }
-                Settings s = mock(Settings.class);
-                when(s.getConnectorConfig()).thenReturn(config);
-                return s;
-              }
-            }));
-  }
-
   @Test
-  public void testFailureHandling() throws InterruptedException, ExecutionException {
+  public void testFailureHandling() throws InterruptedException, ExecutionException, URISyntaxException {
     MySocketListener listener = new MySocketListener();
 
     // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
@@ -83,6 +54,7 @@ public class ProtocolTest {
                     .port(8081)
                     .attestationMask(0)
                     .attestationType(IdsAttestationType.BASIC)
+                    .ttpUrl(new URI("https://localhost/nonexistingdummy_ttp"))
                     .build())
             .setSocketListener(listener)
             .start();
