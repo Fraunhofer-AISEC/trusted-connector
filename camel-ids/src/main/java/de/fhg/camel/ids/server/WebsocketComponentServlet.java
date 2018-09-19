@@ -19,15 +19,13 @@
  */
 package de.fhg.camel.ids.server;
 
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class WebsocketComponentServlet extends WebSocketServlet {
   private static final long serialVersionUID = 1L;
@@ -66,27 +64,6 @@ public class WebsocketComponentServlet extends WebSocketServlet {
   public void disconnect(WebsocketConsumer consumer) {
     LOG.debug("Disconnecting consumer: {}", consumer);
     consumers.remove(consumer.getPath());
-  }
-
-  public DefaultWebsocket doWebSocketConnect(ServletUpgradeRequest request, String protocol) {
-    String protocolKey = protocol;
-
-    if (protocol == null || !socketFactories.containsKey(protocol)) {
-      LOG.debug(
-          "No factory found for the socket protocol: {}, returning default implementation",
-          protocol);
-      protocolKey = "ids";
-    }
-
-    WebSocketFactory factory = socketFactories.get(protocolKey);
-    return factory.newInstance(
-        request,
-        protocolKey,
-        (consumer != null && consumer.getEndpoint() != null)
-            ? WebsocketComponent.createPathSpec(consumer.getEndpoint().getResourceUri())
-            : null,
-        sync,
-        consumer);
   }
 
   @Override
