@@ -19,7 +19,9 @@
  */
 package de.fhg.ids.comm;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +38,6 @@ import de.fhg.ids.comm.server.IdscpServer;
 import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutionException;
 import org.asynchttpclient.ws.WebSocket;
@@ -52,7 +53,9 @@ public class ProtocolTest {
         Guice.createInjector(
             new AbstractModule() {
               @Override
-              protected void configure() {}
+              protected void configure() {
+                // no configuration required
+              }
 
               @Provides
               public Settings provideSettingsMock() {

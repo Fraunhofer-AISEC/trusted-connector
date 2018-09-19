@@ -19,11 +19,13 @@ dependencies {
     providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
 
     providedByFeature group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.apache.camel', name: 'camel-test'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito

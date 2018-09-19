@@ -20,6 +20,7 @@
 package de.fhg.camel.ids.server;
 
 import de.fhg.ids.comm.CertificatePair;
+import java.security.cert.X509Certificate;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 
 /** Default websocket factory. Used when no custom websocket is needed. */
@@ -41,7 +42,10 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
     // Create final, complete pair from the local (server) certificate ...
     CertificatePair finalPair = new CertificatePair(certificatePair);
     // ... plus the remote (client) certificate from the request
-    finalPair.setRemoteCertificate(request.getCertificates()[0]);
+    X509Certificate[] certificates = request.getCertificates();
+    if (certificates != null) {
+      finalPair.setRemoteCertificate(certificates[0]);
+    }
     return new DefaultWebsocket(sync, pathSpec, consumer, finalPair);
   }
 }
