@@ -229,6 +229,7 @@ public class WsEndpoint extends AhcEndpoint {
         }
       } while (!idspListener.isTerminated());  // To handle sporadic wake-ups
     } catch (ExecutionException | InterruptedException e) {
+        Thread.currentThread().interrupt();
       throw new IDSCPException("Error in WebSocket connect", e);
     } finally {
       idspListener.semaphore().unlock();
