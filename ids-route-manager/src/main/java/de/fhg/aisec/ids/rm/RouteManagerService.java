@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 public class RouteManagerService implements RouteManager {
   private static final Logger LOG = LoggerFactory.getLogger(RouteManagerService.class);
 
-  @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL)
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private PDP pdp;
   private ComponentContext ctx;
 
@@ -71,7 +71,7 @@ public class RouteManagerService implements RouteManager {
     this.ctx = ctx;
   }
 
-  @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
+  @Reference(cardinality = ReferenceCardinality.MULTIPLE)
   public void bindCamelContext(@NonNull CamelContext cCtx) {
     try {
       cCtx.stop();

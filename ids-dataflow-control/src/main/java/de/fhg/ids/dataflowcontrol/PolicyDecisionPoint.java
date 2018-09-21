@@ -58,7 +58,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
   @NonNull
   private LuconEngine engine = new LuconEngine(System.out);
 
-  @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL)
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   @Nullable
   private RouteManager routeManager;
   

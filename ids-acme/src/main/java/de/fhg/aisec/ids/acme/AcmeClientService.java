@@ -68,7 +68,7 @@ public class AcmeClientService implements AcmeClient, Runnable {
   /*
    * The following block subscribes this component to the Settings Service
    */
-  @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private Settings settings = null;
 
   private Set<SslContextFactoryReloadable> sslReloadables =
@@ -83,7 +83,6 @@ public class AcmeClientService implements AcmeClient, Runnable {
     name = "dynamic-tls-reload-service",
     service = SslContextFactoryReloadable.class,
     cardinality = ReferenceCardinality.MULTIPLE,
-    policy = ReferencePolicy.DYNAMIC,
     unbind = "unbindSslContextFactoryReloadable"
   )
   protected void bindSslContextFactoryReloadable(SslContextFactoryReloadable reloadable) {
