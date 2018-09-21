@@ -61,6 +61,8 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true, name = "ids-routemanager")
 public class RouteManagerService implements RouteManager {
   private static final Logger LOG = LoggerFactory.getLogger(RouteManagerService.class);
+
+  @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL)
   private PDP pdp;
   private ComponentContext ctx;
 
@@ -69,11 +71,7 @@ public class RouteManagerService implements RouteManager {
     this.ctx = ctx;
   }
 
-  @Reference(
-    name = "routemanager-camelcontext",
-    policy = ReferencePolicy.DYNAMIC,
-    cardinality = ReferenceCardinality.MULTIPLE
-  )
+  @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.MULTIPLE)
   public void bindCamelContext(@NonNull CamelContext cCtx) {
     try {
       cCtx.stop();
@@ -100,21 +98,6 @@ public class RouteManagerService implements RouteManager {
 
   public void unbindCamelContext(@NonNull CamelContext cCtx) {
     LOG.info("unbound from CamelContext " + cCtx);
-  }
-
-  @Reference(
-    name = "routemanager-pdp",
-    policy = ReferencePolicy.DYNAMIC,
-    cardinality = ReferenceCardinality.OPTIONAL
-  )
-  public void bindPdp(@NonNull PDP pdp) {
-    LOG.info("Bound to pdp " + pdp);
-    this.pdp = pdp;
-  }
-
-  public void unbindPdp(@NonNull PDP pdp) {
-    LOG.warn("Policy decision point disappeared. All events will pass through uncontrolled.");
-    this.pdp = null;
   }
 
   public PDP getPdp() {

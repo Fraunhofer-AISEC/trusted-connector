@@ -31,7 +31,7 @@ allprojects {
             cxf           : '3.2.4',
 
             // OSGI libraries
-            osgiCompendium: '5.0.0',
+            osgiCompendium: '6.0.0',
             osgi          : '6.0.0',
             felixFramework: '5.4.0',
 

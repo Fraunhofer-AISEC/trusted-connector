@@ -12,7 +12,7 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
-    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito

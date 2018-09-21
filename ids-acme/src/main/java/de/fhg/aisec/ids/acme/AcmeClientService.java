@@ -65,26 +65,11 @@ public class AcmeClientService implements AcmeClient, Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(AcmeClientService.class);
   private static Map<String, String> challengeMap = new HashMap<>();
 
-  private Settings settings = null;
   /*
    * The following block subscribes this component to the Settings Service
    */
-  @Reference(
-    name = "config.service",
-    service = Settings.class,
-    cardinality = ReferenceCardinality.OPTIONAL,
-    policy = ReferencePolicy.DYNAMIC,
-    unbind = "unbindSettingsService"
-  )
-  public void bindSettingsService(Settings s) {
-    LOG.info("Bound to configuration service");
-    settings = s;
-  }
-
-  @SuppressWarnings("unused")
-  public void unbindSettingsService(Settings s) {
-    settings = null;
-  }
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+  private Settings settings = null;
 
   private Set<SslContextFactoryReloadable> sslReloadables =
       Collections.synchronizedSet(new HashSet<>());

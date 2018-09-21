@@ -31,7 +31,7 @@ dependencies {
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 
-    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito

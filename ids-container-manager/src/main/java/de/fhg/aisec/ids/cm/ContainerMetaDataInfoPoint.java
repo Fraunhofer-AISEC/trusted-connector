@@ -19,19 +19,19 @@
  */
 package de.fhg.aisec.ids.cm;
 
-import de.fhg.aisec.ids.api.MetaDataInfoPoint;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import java.util.HashMap;
 import java.util.Map;
-import org.osgi.service.component.annotations.Activate;
+
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.fhg.aisec.ids.api.MetaDataInfoPoint;
+import de.fhg.aisec.ids.api.cm.ContainerManager;
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 
 /**
  * Provides meta data (= information) about running applications (= containers).
@@ -44,24 +44,9 @@ import org.slf4j.LoggerFactory;
 @Component(enabled = true, immediate = true, name = "ids-metadata")
 public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
   private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
-  private ContainerManager cm;
-
-  /** Just for logging. */
-  @Activate
-  protected void activate() {
-    LOG.debug("Container Meta Data Info Point activating");
-  }
-
-  /** Just for logging. */
-  @Deactivate
-  protected void deactivate() {
-    LOG.debug("Container Meta Data Info Point deactivating");
-  }
 
   /**
-   * Called by OSGi declarative service framework when a ContainerManager service becomes available.
-   *
-   * @param cm
+   * Injected by OSGi declarative service framework when a ContainerManager service becomes available.
    */
   @Reference(
     name = "container.service",
@@ -70,18 +55,7 @@ public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
     policy = ReferencePolicy.STATIC,
     unbind = "unbindConfigurationService"
   )
-  protected void bindContainerManager(ContainerManager cm) {
-    this.cm = cm;
-  }
-
-  /**
-   * Called by OSGi DS when the ContainerManager service has been removed.
-   *
-   * @param cm
-   */
-  protected void unbindContainerManager(ContainerManager cm) {
-    this.cm = null;
-  }
+  private ContainerManager cm;
 
   @Override
   public Map<String, String> getContainerLabels(String containerID) {

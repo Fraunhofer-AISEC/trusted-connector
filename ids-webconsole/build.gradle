@@ -68,7 +68,7 @@ dependencies {
     providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
 
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
-    osgiCore group: 'org.osgi', name: 'org.osgi.compendium', version: libraryVersions.osgiCompendium
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     providedByBundle(group: 'org.apache.felix', name: 'org.apache.felix.prefs', version: '1.1.0') {
         transitive = false

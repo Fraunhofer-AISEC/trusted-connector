@@ -55,8 +55,13 @@ public class PolicyDecisionPoint implements PDP, PAP {
   private static final Logger LOG = LoggerFactory.getLogger(PolicyDecisionPoint.class);
   private static final String LUCON_FILE_EXTENSION = ".pl";
 
-  @NonNull private LuconEngine engine = new LuconEngine(System.out);
-  @Nullable private RouteManager routeManager;
+  @NonNull
+  private LuconEngine engine = new LuconEngine(System.out);
+
+  @Reference(policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL)
+  @Nullable
+  private RouteManager routeManager;
+  
   private Cache<ServiceNode, TransformationDecision> transformationCache =
       CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(1, TimeUnit.DAYS).build();
 
@@ -148,23 +153,6 @@ public class PolicyDecisionPoint implements PDP, PAP {
   @Activate
   protected void activate(@NonNull ComponentContext ctx) throws IOException {
     loadPolicies();
-  }
-
-  @Reference(
-    name = "pdp-routemanager",
-    policy = ReferencePolicy.DYNAMIC,
-    cardinality = ReferenceCardinality.OPTIONAL
-  )
-  protected void bindRouteManager(@NonNull RouteManager routeManager) {
-    LOG.debug("RouteManager bound. Camel routes can be analyzed");
-    this.routeManager = routeManager;
-  }
-
-  @SuppressWarnings("unused")
-  protected void unbindRouteManager(@NonNull RouteManager routeManager) {
-    LOG.debug(
-        "RouteManager unbound. Will not be able to verify Camel routes against policies anymore");
-    this.routeManager = null;
   }
 
   protected void loadPolicies() throws FileNotFoundException {

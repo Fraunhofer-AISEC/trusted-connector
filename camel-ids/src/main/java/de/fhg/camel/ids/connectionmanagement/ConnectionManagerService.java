@@ -19,7 +19,14 @@
  */
 package de.fhg.camel.ids.connectionmanagement;
 
-import de.fhg.aisec.ids.api.OsgiServiceManager;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
@@ -28,11 +35,6 @@ import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.camel.ids.client.WsEndpoint;
 import de.fhg.camel.ids.server.WebsocketComponent;
 import de.fhg.camel.ids.server.WebsocketComponentServlet;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.osgi.service.component.annotations.Component;
-import org.slf4j.LoggerFactory;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -44,16 +46,9 @@ import org.slf4j.LoggerFactory;
  */
 @Component(name = "ids-connection-manager", immediate = true)
 public class ConnectionManagerService implements ConnectionManager {
-  private static Settings settings = null;
 
-  static {
-    try {
-      new OsgiServiceManager(ConnectionManagerService.class).bindService(
-          Settings.class, settingsService -> settings = settingsService, () -> settings = null);
-    } catch (NoClassDefFoundError cnf) {
-      LoggerFactory.getLogger(ConnectionManagerService.class).warn("No OSGi environment");
-    }
-  }
+  @Reference(cardinality=ReferenceCardinality.OPTIONAL)
+  private static Settings settings = null;
 
   public static Settings getSettings() {
 	  return settings;

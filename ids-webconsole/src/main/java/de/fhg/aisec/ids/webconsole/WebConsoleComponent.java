@@ -19,14 +19,17 @@
  */
 package de.fhg.aisec.ids.webconsole;
 
-import de.fhg.aisec.ids.api.OsgiServiceManager;
+import javax.ws.rs.ServiceUnavailableException;
+
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.settings.Settings;
-import javax.ws.rs.ServiceUnavailableException;
 
 /**
  * IDS management console, reachable at http://localhost:8181/ids/ids.html.
@@ -45,34 +48,22 @@ import javax.ws.rs.ServiceUnavailableException;
  */
 public class WebConsoleComponent {
 
-  private static OsgiServiceManager serviceManager =
-      new OsgiServiceManager(WebConsoleComponent.class);
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  private static Settings settings = null;
 
-  private static Settings settings;
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private static ContainerManager cml = null;
+
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private static AcmeClient acmeClient = null;
+
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private static RouteManager rm = null;
+
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private static ConnectionManager connectionManager = null;
+
   private static PAP pap = null;
-
-  static {
-    serviceManager.bindService(
-        Settings.class, settingsService -> settings = settingsService, () -> settings = null);
-    serviceManager.bindService(
-        ContainerManager.class, containerManager -> cml = containerManager, () -> cml = null);
-    serviceManager.bindService(
-        AcmeClient.class,
-        acmeClientService -> acmeClient = acmeClientService,
-        () -> acmeClient = null);
-    serviceManager.bindService(
-        RouteManager.class, routeManager -> rm = routeManager, () -> rm = null);
-    serviceManager.bindService(
-        ConnectionManager.class,
-        connectionManagerService -> connectionManager = connectionManagerService,
-        () -> connectionManager = null);
-    serviceManager.bindService(PAP.class, papService -> pap = papService, () -> pap = null);
-  }
-
   public static ContainerManager getContainerManagerOrThrowSUE() {
     if (cml != null) {
       return cml;
