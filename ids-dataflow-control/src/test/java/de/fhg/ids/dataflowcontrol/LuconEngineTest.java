@@ -19,25 +19,41 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import alice.tuprolog.*;
-import de.fhg.aisec.ids.api.policy.*;
-import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Ignore;
 import org.junit.Test;
+
+import alice.tuprolog.InvalidTheoryException;
+import alice.tuprolog.MalformedGoalException;
+import alice.tuprolog.NoMoreSolutionException;
+import alice.tuprolog.NoSolutionException;
+import alice.tuprolog.SolveInfo;
+import de.fhg.aisec.ids.api.policy.DecisionRequest;
+import de.fhg.aisec.ids.api.policy.Obligation;
+import de.fhg.aisec.ids.api.policy.PDP;
+import de.fhg.aisec.ids.api.policy.PolicyDecision;
+import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
+import de.fhg.aisec.ids.api.policy.ServiceNode;
+import de.fhg.aisec.ids.api.policy.TransformationDecision;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -343,7 +359,13 @@ public class LuconEngineTest {
     // Create policy decision point and attach to route manager
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
-    pdp.bindRouteManager(rm);
+    
+    // Manually inject routemanager into PDP
+    Field f1 = pdp.getClass().getDeclaredField("routeManager");
+    f1.setAccessible(true);
+    f1.set(pdp, rm);
+
+    // Load policy
     pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
 
     // Verify VERIFIABLE_ROUTE against EXAMPLE_POLICY
