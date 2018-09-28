@@ -59,7 +59,7 @@ public class ConfigApi {
   @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig.class)
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectorConfig get() {
-    Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
+    Settings settings = WebConsoleComponent.getSettings();
     return settings.getConnectorConfig();
   }
 
@@ -78,7 +78,7 @@ public class ConfigApi {
       throw new BadRequestException("No valid preferences received!");
     }
 
-    Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
+    Settings settings = WebConsoleComponent.getSettings();
     settings.setConnectorConfig(config);
 
     return "OK";
@@ -106,7 +106,7 @@ public class ConfigApi {
       Response.serverError().entity("No valid connection settings received!").build();
     }
 
-    Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
+    Settings settings = WebConsoleComponent.getSettings();
     settings.setConnectionSettings(connection, conSettings);
 
     return Response.ok().build();
@@ -123,7 +123,7 @@ public class ConfigApi {
   @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings.class)
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
-    Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
+    Settings settings = WebConsoleComponent.getSettings();
     return settings.getConnectionSettings(connection);
   }
 
@@ -144,8 +144,8 @@ public class ConfigApi {
       ))
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
-    Settings settings = WebConsoleComponent.getSettingsOrThrowSUE();
-    ConnectionManager connectionManager = WebConsoleComponent.getConnectionManagerOrThrowSUE();
+    Settings settings = WebConsoleComponent.getSettings();
+    ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();
     RouteManager routeManager = WebConsoleComponent.getRouteManagerOrThrowSUE();
 
     // Set of all connection configurations, properly ordered

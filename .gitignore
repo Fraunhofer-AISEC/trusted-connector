@@ -40,3 +40,4 @@ out
 
 # Karaf Deploy
 /karaf-assembly/src/main/resources/deploy/*.xml
+*.sock

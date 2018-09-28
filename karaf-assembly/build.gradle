@@ -53,7 +53,7 @@ rootProject.subprojects.findAll() {
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    tag = 'registry.netsec.aisec.fraunhofer.de/ids/core-platform:' + gitCommit()
+    tag = 'fraunhoferaisec/iot-connector-core-platform:' + gitCommit()
 }
 
 dockerize.dependsOn(assembleKaraf)

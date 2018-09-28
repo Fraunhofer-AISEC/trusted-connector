@@ -58,8 +58,7 @@ public class PolicyApi {
       ))
   @Produces(MediaType.APPLICATION_JSON)
   public List<String> list() {
-    // TODO JS->ML: Hier sollte vlt. eher eine Liste von Policy-Objekten zurückgegeben werden.
-    return WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE().listRules();
+    return WebConsoleComponent.getPolicyAdministrationPoint().listRules();
   }
 
   /**
@@ -71,7 +70,7 @@ public class PolicyApi {
   @Path("policyProlog")
   @Produces(MediaType.TEXT_PLAIN)
   public String getPolicyProlog() {
-    return WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE().getPolicy();
+    return WebConsoleComponent.getPolicyAdministrationPoint().getPolicy();
   }
 
   @POST
@@ -83,10 +82,7 @@ public class PolicyApi {
       @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,
       @Multipart(value = "policy_file") InputStream is) {
     LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
-    WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE().loadPolicy(is);
+    WebConsoleComponent.getPolicyAdministrationPoint().loadPolicy(is);
     return "OK";
   }
-
-  // TODO JS->ML: Endpoints für policy modification, ggf. weitere
-
 }

@@ -21,7 +21,7 @@ package de.fhg.ids.attestation;
 
 public class Start {
   private static RemoteAttestationServer ratServer;
-  private static String version = "1.1.0-SNAPSHOT";
+  private static String version = "1.1.0";
   private static String host = "127.0.0.1";
   private static String url = "configurations/check";
   private static int port = 31337;
@@ -41,9 +41,9 @@ public class Start {
         System.out.println("IDS: Remote Attestation Repository v" + version);
         System.out.println("-----------------------------------------");
         System.out.println(
-            "usage:\n\tjava -jar rat-repository-1.1.0-SNAPSHOT.jar [-p Port] [-h Host]");
+            "usage:\n\tjava -jar rat-repository-1.1.0.jar [-p Port] [-h Host]");
         System.out.println(
-            "example:\n\tjava -jar rat-repository-1.1.0-SNAPSHOT.jar -p 31337 -h 127.0.0.1");
+            "example:\n\tjava -jar rat-repository-1.1.0.jar -p 31337 -h 127.0.0.1");
         System.out.println("");
         break;
     }

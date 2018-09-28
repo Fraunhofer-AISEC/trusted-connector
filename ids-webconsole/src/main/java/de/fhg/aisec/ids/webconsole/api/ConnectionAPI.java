@@ -51,7 +51,7 @@ public class ConnectionAPI {
   )
   @Produces(MediaType.APPLICATION_JSON)
   public List<IDSCPIncomingConnection> getIncoming() {
-    return WebConsoleComponent.getConnectionManagerOrThrowSUE().listIncomingConnections();
+    return WebConsoleComponent.getConnectionManager().listIncomingConnections();
   }
 
   @GET
@@ -63,7 +63,7 @@ public class ConnectionAPI {
   )
   @Produces(MediaType.APPLICATION_JSON)
   public List<IDSCPOutgoingConnection> getOutgoing() {
-    return WebConsoleComponent.getConnectionManagerOrThrowSUE().listOutgoingConnections();
+    return WebConsoleComponent.getConnectionManager().listOutgoingConnections();
   }
 
   @GET
@@ -75,6 +75,6 @@ public class ConnectionAPI {
   )
   @Produces(MediaType.APPLICATION_JSON)
   public List<IDSCPServerEndpoint> getAvailableEndpoints() {
-    return WebConsoleComponent.getConnectionManagerOrThrowSUE().listAvailableEndpoints();
+    return WebConsoleComponent.getConnectionManager().listAvailableEndpoints();
   }
 }

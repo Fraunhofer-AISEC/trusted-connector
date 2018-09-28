@@ -75,7 +75,7 @@ public class CertApi {
           )
           @PathParam("target")
           String target) {
-    ConnectorConfig config = WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig();
+    ConnectorConfig config = WebConsoleComponent.getSettings().getConnectorConfig();
     if ("webconsole".equals(target)) {
       WebConsoleComponent.getAcmeClient()
           .renewCertificate(

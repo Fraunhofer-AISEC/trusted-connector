@@ -19,8 +19,10 @@
  */
 package de.fhg.aisec.ids.webconsole;
 
-import javax.ws.rs.ServiceUnavailableException;
-
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 
@@ -32,7 +34,7 @@ import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.settings.Settings;
 
 /**
- * IDS management console, reachable at http://localhost:8181/ids/ids.html.
+ * IDS management console, reachable at http://localhost:8181.
  *
  * <p>This OSGi component registers a web application, as soon as it is bound to an <code>
  * HttpService</code> interface. The web application will allow to control and configure the IDS
@@ -46,71 +48,94 @@ import de.fhg.aisec.ids.api.settings.Settings;
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
+@Component(name = "ids-webconsole")
 public class WebConsoleComponent {
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private static Settings settings = null;
+  private Settings settings = null;
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private static ContainerManager cml = null;
+  private ContainerManager cml = null;
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private static AcmeClient acmeClient = null;
+  private AcmeClient acmeClient = null;
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private static RouteManager rm = null;
+  private RouteManager rm = null;
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private static ConnectionManager connectionManager = null;
+  private ConnectionManager connectionManager = null;
 
-  private static PAP pap = null;
-  public static ContainerManager getContainerManagerOrThrowSUE() {
-    if (cml != null) {
-      return cml;
-    } else {
-      throw new ServiceUnavailableException("ConnectionManager is currently not available");
-    }
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  private PAP pap = null;
+  
+  private static WebConsoleComponent instance;
+  
+  @Activate
+  @SuppressWarnings("squid:S2696")
+  protected void activate() {
+	  instance = this;
+  }
+  
+  @Deactivate
+  @SuppressWarnings("squid:S2696")
+  protected void deactivate() {
+	  instance = null;
+  }
+  
+  @Nullable
+  public static ContainerManager getContainerManager() {
+    WebConsoleComponent in = instance;
+	if (in != null) {
+      return in.cml;
+	}
+	return null;
   }
 
+  @Nullable
   public static AcmeClient getAcmeClient() {
-    if (acmeClient != null) {
-      return acmeClient;
-    } else {
-      throw new ServiceUnavailableException("ACME client is not available");
-    }
+    WebConsoleComponent in = instance;
+	if (in != null) {
+      return in.acmeClient;
+	}
+	return null;
   }
 
-  public static ConnectionManager getConnectionManagerOrThrowSUE() {
-    if (connectionManager != null) {
-      return connectionManager;
-    } else {
-      throw new ServiceUnavailableException("ConnectionManager is currently not available");
-    }
+  @Nullable
+  public static ConnectionManager getConnectionManager() {
+    WebConsoleComponent in = instance;
+	if (in != null) {
+      return in.connectionManager;
+	}
+	return null;
+
   }
 
-  public static Settings getSettingsOrThrowSUE() {
-    if (settings != null) {
-      return settings;
-    } else {
-      throw new ServiceUnavailableException("Settings are currently not available");
-    }
+  @Nullable
+  public static Settings getSettings() {
+    WebConsoleComponent in = instance;
+	if (in != null) {
+      return in.settings;
+	}
+	return null;
   }
 
+  @Nullable
   public static RouteManager getRouteManagerOrThrowSUE() {
-    if (rm != null) {
-      return rm;
-    } else {
-      throw new ServiceUnavailableException("RouteManager is currently not available");
-    }
+    WebConsoleComponent in = instance;
+	if (in != null) {
+      return in.rm;
+	}
+	return null;
   }
 
-  public static PAP getPolicyAdministrationPointOrThrowSUE() {
-    if (pap != null) {
-      return pap;
-    } else {
-      throw new ServiceUnavailableException("PAP is currently not available");
-    }
+  @Nullable
+  public static PAP getPolicyAdministrationPoint() {
+    WebConsoleComponent in = instance;
+	if (in != null) {
+      return in.pap;
+	}
+	return null;
   }
 
-  private WebConsoleComponent() {}
 }
