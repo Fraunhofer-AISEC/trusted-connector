@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,34 +21,62 @@ package de.fhg.aisec.ids.api.conm;
 
 /**
  * Bean representing an "IDSCP Connection" .
- * 
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
-	
 public class IDSCPIncomingConnection {
-	private String endpointIdentifier;
-	private AttestationResult attestationResult;
-	
-	public IDSCPIncomingConnection() {
-	}
-	
-	public String getEndpointIdentifier() {
-		return endpointIdentifier;
-	}
-	public void setEndpointIdentifier(String endpointIdentifier) {
-		this.endpointIdentifier = endpointIdentifier;
-	}
-	public AttestationResult getAttestationResult() {
-		return attestationResult;
-	}
-	public void setAttestationResult(AttestationResult result) {
-		this.attestationResult = result;
-	}	
-	
-	@Override
-	public String toString() {
-		return "IDSCPConnection [endpoint_identifier=" + endpointIdentifier 
-				+ ", attestationResult=" + attestationResult + "]";
-	}
+  private String endpointIdentifier;
+  private RatResult attestationResult;
+  private String endpointKey;
+  private String remoteHostName;
+  private String metaData;
+
+  public String getEndpointIdentifier() {
+    return endpointIdentifier;
+  }
+
+  public void setEndpointIdentifier(String endpointIdentifier) {
+    this.endpointIdentifier = endpointIdentifier;
+  }
+
+  public RatResult getAttestationResult() {
+    return attestationResult;
+  }
+
+  public void setAttestationResult(RatResult result) {
+    this.attestationResult = result;
+  }
+
+  @Override
+  public String toString() {
+    return "IDSCPConnection [endpoint_identifier="
+        + endpointIdentifier
+        + ", attestationResult="
+        + attestationResult
+        + "]";
+  }
+
+  public void setEndpointKey(String connectionKey) {
+    this.endpointKey = connectionKey;
+  }
+
+  public String getEndpointKey() {
+    return endpointKey;
+  }
+
+  public String getRemoteHostName() {
+    return remoteHostName;
+  }
+
+  public void setRemoteHostName(String remoteHostname) {
+    this.remoteHostName = remoteHostname;
+  }
+
+  public void setMetaData(String metaResult) {
+    this.metaData = metaResult;
+  }
+
+  public String getMetaData() {
+    return this.metaData;
+  }
 }

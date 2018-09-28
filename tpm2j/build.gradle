@@ -1,0 +1,10 @@
+version = '1.0.4'
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
+}
+
+test {
+    // TODO: maven seems to exclude all tests in this project and there seem to be missing files. why?
+    exclude '*'
+}

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 public class ProtobufFeature implements Feature {
-    
-    public boolean configure(final FeatureContext context) {
-        final Configuration config = context.getConfiguration();
 
-        if (!config.isRegistered(ProtobufProvider.class)) {
-            context.register(ProtobufProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
-        }
-        return true;
+  public boolean configure(final FeatureContext context) {
+    final Configuration config = context.getConfiguration();
+
+    if (!config.isRegistered(ProtobufProvider.class)) {
+      context.register(ProtobufProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
     }
+    return true;
+  }
 }

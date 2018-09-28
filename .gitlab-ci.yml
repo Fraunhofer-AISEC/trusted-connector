@@ -1,0 +1,29 @@
+# make sure to use a Debian-based image, because otherwise you will run into issue with protoc because of missing glibc on alpine
+image: node:stretch
+
+stages:
+- build
+- push
+
+build:
+  stage: build
+  variables:
+    GRADLE_USER_HOME: "/cache/.gradle"
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  before_script:
+  # caching for gradle
+  - mkdir -p /cache/.gradle
+  # caching for mvn (used for karaf-assembly)
+  - mkdir -p /root/.m2
+  - echo $M2_SETTINGS > ~/.m2/settings.xml
+  - mkdir -p /cache/.m2
+  # install deps
+  - apt update && apt install -y --no-install-recommends openjdk-8-jdk-headless
+  script:
+  # yarnBuild is part of build, however this could speed up the process a little bit by prioritizing the long-running yarnBuild
+  - ./gradlew --parallel clean yarnBuild build dockerize
+  artifacts:
+    when: always
+    paths:
+    - "*/build/reports"
+

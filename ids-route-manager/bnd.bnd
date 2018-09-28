@@ -1,20 +1,9 @@
-src: src/main/java
-bin: target/classes
-testsrc: src/test/java
-testbin: target/test-classes
--sources: false 
-Bundle-Version: 1.1.0
+Bundle-Name: IDS :: Route Manager
+Bundle-Description: Manages data routes
 Export-Package: \
 	de.fhg.aisec.ids.rm
-Bundle-Name: ids-routemanager
-Bundle-Description: Manages data routes
-Bundle-Copyright: Fraunhofer 2017
-Bundle-Vendor: Fraunhofer AISEC
-Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
 Import-Package: \
-	org.osgi.framework.*,\
+	!org.checkerframework.checker*,\
 	*
--noee=true
--dsannotations: *
 -contract: !org.apache.camel.CamelContext,*
-Private-Package: de.fhg.aisec.ids.rm.util
+DynamicImport-Package: org.apache.camel.*

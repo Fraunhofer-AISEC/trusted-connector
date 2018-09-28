@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@
  * =========================LICENSE_END==================================
  */
 package de.fhg.ids.attestation;
+
 import javax.ws.rs.core.MediaType;
 
 public class MediaTypeExt extends MediaType {
-    /**
-     * A {@code String} constant representing "{@value #APPLICATION_PROTOBUF}" media type.
-     */
-    public final static String APPLICATION_PROTOBUF = "application/x-protobuf";
-    /**
-     * A {@link javax.ws.rs.core.MediaType} constant representing "{@value #APPLICATION_PROTOBUF}" media type.
-     */
-    public final static MediaType APPLICATION_PROTOBUF_TYPE = new MediaType("application", "x-protobuf");
+  /** A {@code String} constant representing "{@value #APPLICATION_PROTOBUF}" media type. */
+  public static final String APPLICATION_PROTOBUF = "application/x-protobuf";
+  /**
+   * A {@link javax.ws.rs.core.MediaType} constant representing "{@value #APPLICATION_PROTOBUF}"
+   * media type.
+   */
+  public static final MediaType APPLICATION_PROTOBUF_TYPE =
+      new MediaType("application", "x-protobuf");
 }

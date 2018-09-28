@@ -1,0 +1,496 @@
+body {
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+}
+
+text {
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  pointer-events: none;
+}
+
+i.connect-icons {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.mdl-layout-title {
+  font-size: 24px;
+}
+
+.mdl-card__title {
+  color: white!important;
+  font-size: 24px;
+  font-weight: 400;
+  background: rgb(0, 150, 136);
+}
+
+.mdl-card__supporting-text {
+	width:100% !important;	/* This is a fix for older mdl versions. Newer have 100% set anyway */ 	
+}
+
+.card-good > .mdl-card__title,
+.card-good > .mdl-card__actions {
+  background: rgb(115, 191, 0);
+}
+
+.card-warn > .mdl-card__title,
+.card-warn > .mdl-card__actions {
+  background: rgb(255, 191, 0);
+}
+
+.card-error > .mdl-card__title,
+.card-error > .mdl-card__actions {
+  background: rgb(145, 0, 0);
+}
+
+.card-overview.mdl-card {
+  width: 100%;
+}
+
+.card-overview > .mdl-card__actions {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card-overview > .mdl-card__title {
+  align-items: flex-start;
+}
+
+.card-overview > .mdl-card__title > h4 {
+  margin-top: 0;
+}
+.card-overview > .mdl-card__actions {
+  display: flex;
+  box-sizing:border-box;
+  align-items: center;
+}
+.card-overview > .mdl-card__actions > .material-icons {
+  padding-right: 10px;
+}
+
+.card-overview > .mdl-card__actions,
+.card-overview > .mdl-card__actions > .mdl-button {
+  color: #fff;
+}
+
+.test-results-card .mdl-card__actions a {
+  color: #00BCD4;
+  text-decoration: none;
+}
+
+.test-results-card .mdl-card__supporting-text {
+  width: auto;
+}
+
+.workflow-card .mdl-card__actions a {
+  color: #00BCD4;
+  text-decoration: none;
+}
+
+.workflow-card .mdl-card__supporting-text {
+  width: 98%;
+}
+
+.test-case-card .mdl-card__actions a {
+  color: #00BCD4;
+  text-decoration: none;
+}
+
+.test-case-card .mdl-card__supporting-text {
+  width: 98%;
+}
+
+.test-policy-card .mdl-card__actions a {
+  color: #00BCD4;
+  text-decoration: none;
+}
+
+.test-policy-card .mdl-card__supporting-text {
+  width: 98%;
+}
+
+.test-case-parameter ul {
+  margin-top: 5px;
+}
+
+.test-overview-heatmap-test {
+  min-width: 180px;
+}
+
+.test-overview-heatmap-test a {
+  font-weight: bold;
+  color: rgb(117, 117, 117);
+  text-decoration: none;
+}
+
+.iot-connector-drawer {
+  border: none;
+  box-shadow: none;
+}
+
+/* iOS Safari specific workaround */
+.iot-connector-drawer .mdl-menu__container {
+  z-index: -1;
+}
+
+.iot-connector-drawer .iot-connector-navigation {
+  z-index: -2;
+}
+
+/* END iOS Safari specific workaround */
+.iot-connector-drawer .mdl-menu .mdl-menu__item {
+  display: flex;
+  align-items: center;
+}
+
+.iot-connector-drawer-header {
+  box-sizing: border-box;
+  flex-direction: column;
+  background-color: #1C2B36;
+  text-align: center;
+}
+
+.iot-connector-avatar {
+  width: 225px;
+  margin: 0 auto;
+  padding: 5px 0px 5px 0px;
+}
+
+.iot-connector-product-title {
+  color: #209e91;
+}
+
+.iot-connector-aisec-logo {
+  height: 45px;
+  padding-top: 20px;
+}
+
+.iot-connector-layout .iot-connector-header .mdl-textfield {
+  padding: 0px;
+  margin-top: 41px;
+}
+.iot-connector-layout .iot-connector-header .mdl-textfield .mdl-textfield__expandable-holder {
+  bottom: 19px;
+}
+
+header.iot-connector-header.mdl-layout__header {
+  background-color: #1C2B36;
+}
+
+.iot-connector-layout .mdl-layout__header .mdl-layout__drawer-button {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+@media screen and (max-width:1025px) {
+  .iot-connector-layout .mdl-layout__header-row {
+    padding-left: 52px !important;
+  }
+}
+
+@media screen and (min-width:1025px) {
+  .iot-connector-layout .mdl-layout__header-row {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+.mdl-layout__drawer {
+  width: 240px;
+}
+
+.iot-connector-avatar-dropdown {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.iot-connector-navigation {
+  flex-grow: 1;
+  background-color: #1C2B36;
+}
+
+.iot-connector-layout .iot-connector-navigation .mdl-navigation__link {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  color: #ffffff;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.iot-connector-layout .iot-connector-navigation .mdl-navigation__link:hover {
+  background-color: #209e91;
+  color: #fff;
+  text-decoration: none;
+}
+
+.iot-connector-navigation .mdl-navigation__link .material-icons {
+  font-size: 24px;
+  margin-right: 22px;
+}
+
+.workflow-fsm {
+  text-align: center
+}
+
+.workflow-fsm .node text {
+  fill: white;
+}
+
+.workflow-fsm ellipse {
+  stroke: none;
+  fill: rgb(184, 192, 192);
+}
+
+#cal-heatmap {
+  float: right;
+}
+
+.network line {
+  stroke: rgb(184, 192, 192);
+}
+
+.network text {
+  fill: white;
+  pointer-events: none;
+  font-size: 12pt;
+}
+
+.network rect {
+  fill: rgb(184, 192, 192);
+}
+
+.network .node.good rect {
+  fill: rgb(115, 191, 0);
+}
+
+.network .node.warn rect {
+  fill: rgb(255, 191, 0);
+}
+
+.network .node.error rect {
+  fill: rgb(145, 0, 0);
+}
+
+.network .node.selected rect {
+  stroke: #555555;
+  stroke-width: 2px;
+}
+
+.score {
+  font-size: 60pt;
+  min-height: 140px;
+  text-align: center;
+  line-height: 140px;
+  margin-top: 10px;
+}
+
+.score.good {
+  background: rgb(115, 191, 0);
+  color: white;
+}
+
+.score.warn {
+  background: rgb(255, 191, 0);
+  color: white;
+}
+
+.score.error {
+  background: rgb(145, 0, 0);
+  color: white;
+}
+
+.bold {
+  font-weight: 800;
+}
+
+.card-dark > .mdl-card__title {
+  color: #fff;
+  background: rgb(28, 43, 54);
+}
+
+.card-dark > .mdl-card__menu > button {
+  color: #fff;
+}
+
+.axis {
+  stroke-width: 1;
+}
+
+.axis .tick line {
+  stroke: #c0c0c0;
+}
+
+.axis .tick text {
+  fill: #c0c0c0;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+}
+
+.axis .domain {
+  fill: none;
+  stroke: #c0c0c0;
+}
+
+.group {
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5;
+}
+
+.area {
+  fill: rgb(32, 158, 145);
+  stroke-width: 0;
+}
+
+.chart-filled
+{
+  fill: rgb(32, 158, 145);
+}
+
+.chart-filled-error
+{
+  fill: rgb(255, 0, 0) !important;
+}
+
+.chart-empty
+{
+  fill: #dedede;
+}
+
+.needle, .needle-center
+{
+  fill: #464A4F;
+}
+
+.activity-card .mdl-card__supporting-text {
+  width: 98%;
+}
+
+.mdl-button--file input {
+  cursor: pointer;
+  height: 100%;
+  right: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 300px;
+  z-index: 4;
+}
+
+.mdl-textfield--file .mdl-textfield__input {
+  box-sizing: border-box;
+  width: calc(100% - 32px);
+}
+
+.mdl-textfield--file .mdl-button--file {
+  right: 0;
+}
+
+label.input-custom-file input[type=file] {
+  display: none;
+}
+
+table.table.table-striped thead tr th {
+	background-color: #cfd8dc;
+	color: #000000;
+	font-weight: normal;
+}
+
+.create-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+}
+
+.ace_text-input {
+  font-family: "Helvetica","Arial",sans-serif!important;
+  font-size:16px!important; 
+  color: rgb(51, 51, 51);
+}
+
+.mdl-layout__header--waterfall{
+    overflow: visible;
+}
+
+/* Clearfix, credits: https://css-tricks.com/all-about-floats/ */
+.clearfix:after { 
+   content: "."; 
+   visibility: hidden; 
+   display: block; 
+   height: 0; 
+   clear: both;
+}
+
+.color-warning {
+	color: #f09020;
+}
+
+.bg-gray7 {
+	background-color: #495057;
+}
+
+.bg-gray5 {
+	background-color: #798089;
+}
+
+.bn {
+	border-style: none;
+	border-width: 0;
+}
+
+.br4 {
+	border-radius: 1rem;
+}
+
+.ph2 {
+	padding-left: .5rem;
+	padding-right: .5rem;
+}
+
+.pv1 {
+	padding-top: .25rem;
+	padding-bottom: .25rem;
+}
+
+.fg-white {
+	color: #ffffff;
+}
+
+/* Checkbox sliders */
+.switch input {
+ display:none
+}
+.checkbox i {
+ margin-left:21px
+}
+.checkbox i,.switch i {
+ display:inline-block;
+ vertical-align:middle;
+ cursor:pointer;
+ padding-right:24px;
+ transition:all .2s ease;
+ -webkit-transition:all .2s ease;
+ -moz-transition:all ease .2s;
+ -o-transition:all ease .2s;
+ border-radius:24px;
+ -webkit-box-shadow:inset 0 0 1px 1px rgba(0,0,0,.5);
+ box-shadow:inset 0 0 1px 1px rgba(0,0,0,.5)
+}
+.checkbox i:before,.switch i:before {
+ display:block;
+ content:"";
+ width:24px;
+ height:24px;
+ border-radius:24px;
+ background:#fff;
+ -webkit-box-shadow:0 0 1px 1px rgba(0,0,0,.5);
+ box-shadow:0 0 1px 1px rgba(0,0,0,.5)
+}
+.checkbox :checked~i,.switch :checked+i {
+ padding-right:0;
+ padding-left:24px;
+ -webkit-box-shadow:inset 0 0 1px rgba(0,0,0,.5),inset 0 0 40px #337ab7;
+ box-shadow:inset 0 0 1px rgba(0,0,0,.5),inset 0 0 40px #337ab7
+}

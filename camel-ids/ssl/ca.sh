@@ -4,8 +4,6 @@
 cleanup(){
 echo "Cleanup unnecessary files"
 [[ -f ${SUBCA_CSR} ]] && rm ${SUBCA_CSR}
-[[ -f ${INDEX_FILE} ]] && rm ${INDEX_FILE}
-[[ -f ${SERIAL_FILE} ]] && rm ${SERIAL_FILE}
 [[ -f ${INDEX_FILE}.attr ]] && rm ${INDEX_FILE}.attr
 [[ -f ${INDEX_FILE}.old ]] && rm ${INDEX_FILE}.old
 [[ -f ${SERIAL_FILE}.old ]] && rm ${SERIAL_FILE}.old
@@ -21,14 +19,14 @@ fi
 }
 
 assert_file_exists(){
-if [ ! -f $1 ]; then 
+if [ ! -f $1 ]; then
   echo "Error: Missing file $1"
   exit 1
 fi
 }
 
 assert_file_not_exists(){
-if [ -f $1 ]; then 
+if [ -f $1 ]; then
   echo "Error: File $1 exists. Precautional exit"
   exit 1
 fi
@@ -87,13 +85,13 @@ assert_file_exists ${SUBCA_CONFIG}
 echo "Successfully found requrired files"
 
 
-########## ROOT CA CERT ########## 
+########## ROOT CA CERT ##########
 # -nodes option omits passphrase
 echo "Create self-signed root CA certificate"
 openssl req -batch -x509 -config ${ROOTCA_CONFIG} -newkey rsa:2048 -sha1 -nodes -out ${ROOTCA_CERT} -outform PEM -days 7300 -keyout ${ROOTCA_KEY}
 error_check $? "Failed to create self signed root CA certificate"
 
-########## SUB CA CERT ########## 
+########## SUB CA CERT ##########
 # -nodes option omits passphrase
 echo "Create sub CA CSR"
 openssl req -batch -config ${SUBCA_CONFIG} -newkey rsa:2048 -sha1 -nodes -out ${SUBCA_CSR} -outform PEM -keyout ${SUBCA_KEY}

@@ -1,0 +1,113 @@
+<div class="mdl-grid">
+
+  <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">Exposed Endpoints</h2>
+    </div>
+    <div class="tbl-content">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th width="25%" style="padding-left:16px;">
+              Endpoint
+            </th>
+            <th width="25%">
+              Protocol
+            </th>
+            <th width="25%">
+              Host
+            </th>
+            <th width="25%">
+              Port
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let endp of endpoints; trackBy: trackEndpoints">
+            <td style="padding-left:16px;">
+              {{ endp.endpointIdentifier }}
+            </td>
+            <td>
+              {{ endp.defaultProtocol }}
+            </td>
+            <td>
+              {{ endp.host }}
+            </td>
+            <td>
+              {{ endp.port }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">Incoming Connections</h2>
+    </div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="60%" style="padding-left:16px;">
+            Endpoint
+          </th>
+          <th width="20%">
+            Attestation Result
+          </th>
+          <th width="20%">
+            Remote Host Name
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let conn of incomingConnections; trackBy: trackIncoming">
+          <td style="padding-left:16px;">
+            {{ conn.endpointIdentifier }}
+          </td>
+          <td>
+            <span class="color-warning text-bold">{{ conn.attestationResult.status }}</span> <span *ngIf="conn.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{ conn.attestationResult.reason }}</span>
+          </td>
+          <td>
+            {{ conn.remoteHostName }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">Outgoing Connections</h2>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="60%" style="padding-left:16px;">
+            Endpoint
+          </th>
+          <th width="20%">
+            Attestation Result
+          </th>
+          <th width="20%">
+            Remote Host Name
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let connOut of outgoingConnections; trackBy: trackOutgoing">
+          <td style="padding-left:16px;">
+            {{ connOut.endpointIdentifier }}
+          </td>
+          <td>
+            <span class="color-warning text-bold">{{ connOut.attestationResult.status }}</span> <span *ngIf="connOut.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{ connOut.attestationResult.reason }}</span>
+          </td>
+          <td>
+            {{ connOut.remoteIdentity }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

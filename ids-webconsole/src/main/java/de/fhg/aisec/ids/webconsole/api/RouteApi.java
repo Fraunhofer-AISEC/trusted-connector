@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,263 +19,234 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
-
+import de.fhg.aisec.ids.api.Result;
+import de.fhg.aisec.ids.api.policy.PAP;
+import de.fhg.aisec.ids.api.router.*;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 
 /**
  * REST API interface for "data pipes" in the connector.
  *
- * This implementation uses Camel Routes as data pipes, i.e. the API methods allow inspection of camel routes in different camel contexts.
+ * <p>This implementation uses Camel Routes as data pipes, i.e. the API methods allow inspection of
+ * camel routes in different camel contexts.
  *
- * The API will be available at http://localhost:8181/cxf/api/v1/routes/<method>.
+ * <p>The API will be available at http://localhost:8181/cxf/api/v1/routes/<method>.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
- *
  */
 @Path("/routes")
+@Api("Routes")
 public class RouteApi {
-	private static final Logger LOG = LoggerFactory.getLogger(RouteApi.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RouteApi.class);
 
-	/**
-	 * Returns map from camel context to list of camel routes.
-	 *
-	 * Example:
-	 *
-	 * {"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]] -\u003e [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
-	 *
-	 * @return
-	 */
-	@GET
-	@Path("list")
-	@Produces("application/json")
-	public List<RouteObject> list() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new ArrayList<>();
-		}
-		
-		return rm.get().getRoutes();
-	}
+  /**
+   * Returns map from camel context to list of camel routes.
+   *
+   * <p>Example:
+   *
+   * <p>{"camel-1":["Route(demo-route)[[From[timer://simpleTimer?period\u003d10000]] -\u003e
+   * [SetBody[simple{This is a demo body!}], Log[The message contains ${body}]]]"]}
+   *
+   * @return The resulting route objects
+   */
+  @GET
+  @Path("list")
+  @ApiOperation(
+    value = "Returns map from camel context to list of camel routes.",
+    response = RouteObject.class,
+    responseContainer = "List"
+  )
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<RouteObject> list() {
+    return WebConsoleComponent.getRouteManagerOrThrowSUE().getRoutes();
+  }
 
-	@GET
-	@Path("/get/{id}")
-	@Produces("application/json")
-	public Response get(String id) {		
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return Response.serverError().entity("RouteManager not present").build();
-		}
-		Optional<RouteObject> oRoute = rm.get().getRoutes().stream().filter(r -> id.equals(r.getId())).findAny();
-		if (!oRoute.isPresent()) {
-			return Response.serverError().entity("Routenot present").build();
-		}
-		return Response.ok(oRoute.get()).build();
-	}
+  @GET
+  @Path("/get/{id}")
+  @ApiOperation(value = "Get a Camel route", response = RouteObject.class)
+  @Produces(MediaType.APPLICATION_JSON)
+  public RouteObject get(@ApiParam(value = "Route ID") @PathParam("id") String id) {
+    RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+    RouteObject oRoute = rm.getRoute(id);
+    if (oRoute == null) {
+      throw new NotFoundException("Route not found");
+    }
+    return oRoute;
+  }
 
-	/**
-	 * Stop a route based on an id.
-	 */
-	@GET
-	@Path("/startroute/{id}")
-	public String startRoute(@PathParam("id") String id) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				rm.get().startRoute(id);
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-				return "{\"status:\": \"error\"}";
-			}
-			return "{\"status\": \"ok\"}";	
-		}
-		return "{\"status:\": \"error\"}";
-	}
+  @GET
+  @Path("/getAsString/{id}")
+  @ApiOperation(
+    value = "Gets a textual representation of a Camel route.",
+    response = RouteObject.class
+  )
+  @Produces(MediaType.TEXT_PLAIN)
+  public String getAsString(@ApiParam(value = "Route ID") @PathParam("id") String id) {
+    RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+    String routeAsString = rm.getRouteAsString(id);
+    if (routeAsString == null) {
+      throw new NotFoundException("Route not found");
+    }
+    return routeAsString;
+  }
 
-	/**
-	 * Stop a route based on its id.
-	 */
-	@GET
-	@Path("/stoproute/{id}")
-	public boolean stopRoute(@PathParam("id") String id) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				rm.get().stopRoute(id);
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-				return false;
-			}
-			return true;	
-		}
-		return false;
-	}
+  /** Stop a route based on an id. */
+  @GET
+  @Path("/startroute/{id}")
+  @ApiOperation(value = "Stops a route")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Result startRoute(@PathParam("id") String id) {
+    try {
+      WebConsoleComponent.getRouteManagerOrThrowSUE().startRoute(id);
+      return new Result();
+    } catch (Exception e) {
+      LOG.warn(e.getMessage(), e);
+      return new Result(false, e.getMessage());
+    }
+  }
 
-	/**
-	 * Get runtime metrics of a route
-	 */
-	@GET
-	@Path("/metrics/{id}")
-	public RouteMetrics getMetrics(@PathParam("id") String routeId) {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				return rm.get().getRouteMetrics().get(routeId);
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-				return null;
-			}
-		}
-		return null;
-	}
+  @POST
+  @Path("/save/{id}")
+  @ApiOperation(value = "Save changes to a route")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Result saveRoute(@PathParam("id") String id, String routeDefinition) {
+    try {
+      WebConsoleComponent.getRouteManagerOrThrowSUE().saveRoute(id, routeDefinition);
+      return new Result();
+    } catch (Exception e) {
+      LOG.warn(e.getMessage(), e);
+      return new Result(false, e.getMessage());
+    }
+  }
 
-	/**
-	 * Get aggregated runtime metrics of all routes
-	 */
-	@GET
-	@Path("/metrics")
-	public RouteMetrics getMetrics() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (rm.isPresent()) {
-			try {
-				Map<String, RouteMetrics> currentMetrics = rm.get().getRouteMetrics();
-				return aggregateMetrics(currentMetrics.values());
-			} catch (Exception e) {
-				LOG.debug(e.getMessage(), e);
-			}
-		}
-		return null;
-	}
+  @PUT
+  @Path("/add")
+  @ApiOperation(value = "Adds a new route")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Result addRoute(String routeDefinition) {
+    try {
+      WebConsoleComponent.getRouteManagerOrThrowSUE().addRoute(routeDefinition);
+      return new Result();
+    } catch (Exception e) {
+      LOG.warn(e.getMessage(), e);
+      return new Result(false, e.getMessage());
+    }
+  }
 
-	/**
-	 * Aggregates metrics of several rules
-	 * 
-	 * @param currentMetrics
-	 * @return
-	 */
-	private RouteMetrics aggregateMetrics(Collection<RouteMetrics> currentMetrics) {
-		RouteMetrics metrics = new RouteMetrics();
-		currentMetrics.parallelStream().forEach(m -> {
-			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
-			metrics.setFailed(metrics.getFailed() + m.getFailed());
-			metrics.setFailuresHandled(metrics.getFailuresHandled() + m.getFailuresHandled());
-			metrics.setInflight(metrics.getInflight() + m.getInflight());
-			metrics.setMaxProcessingTime(Math.max(metrics.getMaxProcessingTime(), m.getMaxProcessingTime()));
-			metrics.setMeanProcessingTime(metrics.getMeanProcessingTime() + m.getMeanProcessingTime());
-			metrics.setMinProcessingTime(Math.min(metrics.getMinProcessingTime(), m.getMinProcessingTime()));
-			metrics.setCompleted(metrics.getCompleted() + m.getCompleted());
-		});
-		metrics.setMeanProcessingTime(metrics.getMeanProcessingTime()/currentMetrics.size());
-		return metrics;
-	}
+  /** Stop a route based on its id. */
+  @GET
+  @Path("/stoproute/{id}")
+  @ApiOperation(value = "Stops a route")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Result stopRoute(@PathParam("id") String id) {
+    try {
+      WebConsoleComponent.getRouteManagerOrThrowSUE().stopRoute(id);
+      return new Result();
+    } catch (Exception e) {
+      LOG.warn(e.getMessage(), e);
+      return new Result(false, e.getMessage());
+    }
+  }
 
-	/**
-	 * Returns map from camel contexts to list of camel components.
-	 *
-	 * Example:
-	 *
-	 * {"camel-1":["timer","properties"]}
-	 *
-	 * @return
-	 */
-	@GET
-	@Path("components")
-	@Produces("application/json")
-	public List<RouteComponent> getComponents() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new ArrayList<>();
-		}
-		return rm.get().listComponents();
-	}
+  /** Get runtime metrics of a route */
+  @GET
+  @ApiOperation(value = "Get runtime metrics of a route")
+  @Path("/metrics/{id}")
+  public RouteMetrics getMetrics(@PathParam("id") String routeId) {
+    return WebConsoleComponent.getRouteManagerOrThrowSUE().getRouteMetrics().get(routeId);
+  }
 
-	/**
-	 * Returns map from camel contexts to list of endpoint URIs.
-	 *
-	 * Example:
-	 *
-	 * {"camel-1":["timer://simpleTimer?period\u003d10000"]}
-	 *
-	 * @return
-	 */
-	@GET
-	@Path("endpoints")
-	@Produces("application/json")
-	public Map<String, Collection<String>> getEndpoints() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new HashMap<>();
-		}
-		return rm.get().getEndpoints();
-	}
+  /** Get aggregated runtime metrics of all routes */
+  @GET
+  @ApiOperation(value = "Get aggregated runtime metrics of all routes")
+  @Path("/metrics")
+  public RouteMetrics getMetrics() {
+    return aggregateMetrics(
+        WebConsoleComponent.getRouteManagerOrThrowSUE().getRouteMetrics().values());
+  }
 
-	/**
-	 * Retrieve list of supported components (aka protocols which can be addressed by Camel)
-	 */
-	@GET
-	@Path("/list_components")
-	public List<Map<String, String>> listComponents() {
-		List<Map<String, String>> componentNames = new ArrayList<>();
-		BundleContext bCtx = FrameworkUtil.getBundle(WebConsoleComponent.class).getBundleContext();
-		if (bCtx == null) {		
-			return componentNames;			
-		}
+  /**
+   * Aggregates metrics of several rules
+   *
+   * @param currentMetrics List of RouteMetrics to process
+   * @return The aggregated RouteMetrics object
+   */
+  private RouteMetrics aggregateMetrics(Collection<RouteMetrics> currentMetrics) {
+    RouteMetrics metrics = new RouteMetrics();
+    metrics.setCompleted(currentMetrics.stream().mapToLong(RouteMetrics::getCompleted).sum());
+    metrics.setFailed(currentMetrics.stream().mapToLong(RouteMetrics::getFailed).sum());
+    metrics.setFailuresHandled(
+        currentMetrics.stream().mapToLong(RouteMetrics::getFailuresHandled).sum());
+    metrics.setInflight(currentMetrics.stream().mapToLong(RouteMetrics::getInflight).sum());
+    metrics.setMaxProcessingTime(
+        currentMetrics.stream().mapToLong(RouteMetrics::getMaxProcessingTime).max().orElse(0));
+    // This is technically nonsense, as average values of average values are not really
+    // the average values of the single elements, but it's the best aggregation we can get.
+    metrics.setMeanProcessingTime(
+        (long)
+            currentMetrics
+                .stream()
+                .mapToLong(RouteMetrics::getMeanProcessingTime)
+                .filter(i -> i >= 0)
+                .average()
+                .orElse(.0));
+    metrics.setMinProcessingTime(
+        currentMetrics.stream().mapToLong(RouteMetrics::getMinProcessingTime).min().orElse(0));
+    metrics.setCompleted(currentMetrics.stream().mapToLong(RouteMetrics::getCompleted).sum());
+    return metrics;
+  }
 
-		try {
-			ServiceReference<?>[] services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null);
-			for (ServiceReference<?> sr : services) {
-				String bundle = sr.getBundle().getHeaders().get("Bundle-Name");
-				if (bundle==null || "".equals(bundle)) {
-					bundle = sr.getBundle().getSymbolicName();
-				}
-				String description = sr.getBundle().getHeaders().get("Bundle-Description");
-				if (description==null) {
-					description = "";
-				}
-				Map<String, String> component = new HashMap<>();
-				component.put("name", bundle);
-				component.put("description", description);
-				componentNames.add(component);
-			}
-		} catch (InvalidSyntaxException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return componentNames;			
-	}
+  /**
+   * Retrieve list of supported components (aka protocols which can be addressed by Camel)
+   *
+   * @return List of supported protocols
+   */
+  @GET
+  @Path("/components")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<RouteComponent> getComponents() {
+    RouteManager rm = WebConsoleComponent.getRouteManagerOrThrowSUE();
+    return rm.listComponents();
+  }
 
-	/**
-	 * Retrieve list of currently installed endpoints (aka URIs to/from which routes exist)
-	 */
-	@GET
-	@Path("/list_endpoints")
-	public Map<String, String> listEndpoints() {
-		Optional<RouteManager> rm = WebConsoleComponent.getRouteManager();
-		if (!rm.isPresent()) {
-			return new HashMap<>();
-		}
-		return rm.get().listEndpoints();
-	}
+  /** Retrieve list of currently installed endpoints (aka URIs to/from which routes exist) */
+  @GET
+  @Path("/list_endpoints")
+  public Map<String, String> listEndpoints() {
+    return WebConsoleComponent.getRouteManagerOrThrowSUE().listEndpoints();
+  }
+
+  @GET
+  @Path("/validate/{routeId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public ValidationInfo validate(@PathParam("routeId") String routeId) {
+    PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
+    RouteVerificationProof rvp = pap.verifyRoute(routeId);
+    ValidationInfo vi = new ValidationInfo();
+    vi.valid = rvp.isValid();
+    if (!rvp.isValid()) {
+      vi.counterExamples = rvp.getCounterExamples();
+    }
+    return vi;
+  }
+
+  @GET
+  @Path("/prolog/{routeId}")
+  @Produces(MediaType.TEXT_PLAIN)
+  public String getRouteProlog(@PathParam("routeId") String routeId) {
+    return WebConsoleComponent.getRouteManagerOrThrowSUE().getRouteAsProlog(routeId);
+  }
 }

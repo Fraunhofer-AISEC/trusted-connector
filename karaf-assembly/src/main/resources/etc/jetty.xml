@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+
+<!-- Jetty configuration for TLS w/ POODLE-protection and a custom SslContextFactory -->
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+  <New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
+    <Set name="secureScheme">https</Set>
+    <Set name="securePort">
+      <Property name="jetty.secure.port" default="8443" />
+    </Set>
+  </New>
+ 
+  <!-- Just nice to have: Customizer that extracts the attribute from an SSLContext and sets them on the ServletRequest so application layer can access them-->
+ <New id="sslHttpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
+    <Arg>
+      <Ref refid="httpConfig"/>
+    </Arg>
+    <Call name="addCustomizer">
+      <Arg>
+        <New class="org.eclipse.jetty.server.SecureRequestCustomizer"/>
+      </Arg>
+    </Call>
+  </New>
+
+  <!-- Use our own Acme-enhanced SslContextFacctory instead of the standard org.eclipse.jetty.util.ssl.SslContextFactory -->
+  <New id="sslContextFactory" class="de.fhg.aisec.ids.dynamictls.AcmeSslContextFactory">
+    <Set name="KeyStorePath">
+      <SystemProperty name="karaf.home"/>/etc/tls-webconsole/keystore_latest.jks
+    </Set>
+    <Set name="KeyStorePassword">ids</Set>
+    <Set name="KeyManagerPassword">ids</Set>
+    <Set name="EndpointIdentificationAlgorithm"/>
+
+    <!-- Disable SSLv3 to protect against POODLE bug -->
+    <Set name="ExcludeProtocols">
+      <Array type="java.lang.String">
+        <Item>SSLv3</Item>
+      </Array>
+    </Set>
+    <Set name="ExcludeCipherSuites">
+      <Array type="String">
+        <Item>SSL_RSA_WITH_DES_CBC_SHA</Item>
+        <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
+        <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
+        <Item>SSL_RSA_EXPORT_WITH_RC4_40_MD5</Item>
+        <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+        <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+        <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
+      </Array>
+    </Set>
+  </New>
+
+  <Call id="httpsConnector" name="addConnector">
+    <Arg>
+      <New class="org.eclipse.jetty.server.ServerConnector">
+        <Arg name="server"><Ref refid="Server" /></Arg>
+        <Arg name="acceptors" type="int">
+          <Property name="ssl.acceptors" default="-1"/>
+        </Arg>
+        <Arg name="selectors" type="int">
+          <Property name="ssl.selectors" default="-1"/>
+        </Arg>
+        <Arg name="factories">
+          <Array type="org.eclipse.jetty.server.ConnectionFactory">
+            <Item>
+              <New class="org.eclipse.jetty.server.SslConnectionFactory">
+                <Arg name="next">http/1.1</Arg>
+                <Arg name="sslContextFactory">
+                  <Ref refid="sslContextFactory"/>
+                </Arg>
+              </New>
+            </Item>
+            <Item>
+              <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                <Arg name="config"><Ref refid="sslHttpConfig"/></Arg>
+              </New>
+            </Item>
+          </Array>
+        </Arg>
+        <Set name="name">0.0.0.0:8443</Set>
+        <Set name="host"><Property name="jetty.host" /></Set>
+        <Set name="port">
+          <Property name="https.port" default="8443" />
+        </Set>
+      </New>
+    </Arg>
+  </Call>
+
+</Configure>

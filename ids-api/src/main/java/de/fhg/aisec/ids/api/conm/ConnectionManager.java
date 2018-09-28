@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,17 @@ package de.fhg.aisec.ids.api.conm;
 
 import java.util.List;
 
-
-
 /**
  * List and interacts with open connections over the IDS communication protocol
- * 
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
 public interface ConnectionManager {
-	
-	/**
-	 * List currently installed connections.
-	 * 
 
-	 */
-	public List<IDSCPIncomingConnection> listIncomingConnections();
-	public List<IDSCPOutgoingConnection> listOutgoingConnections();
+  /** List currently installed connections. */
+  public List<IDSCPIncomingConnection> listIncomingConnections();
+
+  public List<IDSCPOutgoingConnection> listOutgoingConnections();
+
+  public List<IDSCPServerEndpoint> listAvailableEndpoints();
 }

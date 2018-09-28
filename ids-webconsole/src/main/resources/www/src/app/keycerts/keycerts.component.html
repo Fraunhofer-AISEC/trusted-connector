@@ -5,10 +5,10 @@
         <h2 class="mdl-card__title-text">My Identities</h2>
       </div>
       <div class="mdl-card__supporting-text">
-	 	<certificate-card [certificates]="identities" [ondelete]="deleteIdentity"></certificate-card>
+	 	<certificate-card [certificates]="identities" [onDeleteCallback]="deleteIdentity"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
- 			 <button routerLink="/identitynew" class="mdl-button mdl-js-button mdl-button--icon">
+ 			 <button routerLink="/identitynew" class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black">
  			 	<i class="material-icons">add</i>
  			 </button>
       </div>
@@ -20,7 +20,7 @@
         <h2 class="mdl-card__title-text">Trusted Certificates</h2>
       </div>
       <div class="mdl-card__supporting-text">
-	 	<certificate-card [certificates]="certificates" [ondelete]="deleteCert"></certificate-card>
+	 	<certificate-card [certificates]="certificates" [onDeleteCallback]="deleteCert"></certificate-card>
 	  </div>
 	  <div class="mdl-card__menu">
 		 <file-uploading #cu2 (change)="cu2.upload()" [multiple]="true"></file-uploading>

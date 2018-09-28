@@ -1,236 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
-    <artifactId>offline-karaf</artifactId>
+
+    <groupId>de.fhg.ids</groupId>
+    <artifactId>karaf-assembly</artifactId>
+    <version>${artifact.version}</version>
     <packaging>karaf-assembly</packaging>
-    
-    <parent>
-      <groupId>de.fhg.ids</groupId>
-      <artifactId>core-platform</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
-    </parent>    
-    
-    <name>IDS Karaf Platform</name>
-    <description>Offline Karaf server</description>
-    <scm>
-        <connection>
-            scm:git:https://github.com/juttayaya/karaf.git
-        </connection>
-        <developerConnection>
-            scm:git:https://github.com/juttayaya/karaf.git
-        </developerConnection>
-    </scm>
-    <prerequisites>
-        <maven>3.0.3</maven>
-    </prerequisites>
+    <name>IDS :: Karaf Assembly</name>
 
     <properties>
-        <activemq.version>5.13.3</activemq.version>
-        <cxf.version>3.1.5</cxf.version>
-        <!-- maven-compiler-plugin setting.
-             Karaf 4 runs on Java 7 or later -->
-        <!-- Specific Maven Plugin Versions -->
-        <!-- Karaf Maven Plugin does not have to be same as Karaf Server version
-             For example, Karaf Maven Plugin 3.0.2 has bug uploading to password protected Nexus Repo
-             So I used Karaf Maven Plugin 3.0.3 to build a Karaf 3.0.2 Server -->
-        <karaf.plugin.version>${karaf.version}</karaf.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
+        <karaf.version/>
+        <artifact.version/>
     </properties>
-
-        <!-- Import Karaf POM to use the correct version of the Karaf dependencies -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.karaf</groupId>
-                <artifactId>karaf</artifactId>
-                <version>${karaf.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
-            <!-- scope is compile so all features (there is only one) are installed into startup.properties and
-                 the feature repo itself is not added in etc/org.apache.karaf.features.cfg file -->
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>framework</artifactId>
-            <type>kar</type>
             <version>${karaf.version}</version>
-            <!-- <scope>compile</scope> -->
+            <type>kar</type>
         </dependency>
-
         <dependency>
-            <!-- Scope is runtime so the feature repo is listed in etc/org.apache.karaf.features.cfg file,
-                 and features will installed into the system directory.
-
-                 This imports the standard Karaf features described at
-                 https://repo1.maven.org/maven2/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml
-                 These features are installed in the karaf-maven-plugin configuration
-            -->
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>standard</artifactId>
             <classifier>features</classifier>
-            <type>xml</type>
             <version>${karaf.version}</version>
- 			<!-- <scope>runtime</scope>  http://stackoverflow.com/questions/35433552/karaf-4-0-4-custom-distribution-karaf-maven-plugin -->
-         </dependency>
-
-        <!--
-            https://repo1.maven.org/maven2/org/apache/karaf/features/enterprise/${karaf.version}/enterprise-${karaf.version}-features.xml
-        -->
+            <type>xml</type>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- needed for camel-cxf -->
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
-            <artifactId>enterprise</artifactId>
-            <classifier>features</classifier>
-            <type>xml</type>
+            <artifactId>spring-legacy</artifactId>
             <version>${karaf.version}</version>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-
-        <!-- https://repo1.maven.org/maven2/org/apache/karaf/features/spring/${karaf.version}/spring-${karaf.version}-features.xml
-             Needed for Camel feature dependency
-        -->
-        <dependency>
-            <groupId>org.apache.karaf.features</groupId>
-            <artifactId>spring</artifactId>
-            <version>${karaf.version}</version>
-            <classifier>features</classifier>
-            <type>xml</type>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-
-        <!-- https://repo1.maven.org/maven2/org/apache/activemq/activemq-karaf/5.13.4/activemq-karaf-5.13.4-features.xml
-        -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-karaf</artifactId>
-            <version>${activemq.version}</version>
-            <classifier>features</classifier>
-            <type>xml</type>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-
-        <!-- https://repo1.maven.org/maven2/org/apache/camel/karaf/apache-camel/${karaf.version}/apache-camel-${karaf.version}-features.xml -->
-        <dependency>
-            <groupId>org.apache.camel.karaf</groupId>
-            <artifactId>apache-camel</artifactId>
-            <version>${camel-version}</version>
-            <classifier>features</classifier>
-            <type>xml</type>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-        <!-- https://repo1.maven.org/maven2/org/apache-extras/camel-extra/karaf/camel-extra/${karaf.version}/camel-extra-${karaf.version}-features.xml -->
-        <!--<dependency>
-            <groupId>org.apache-extras.camel-extra.karaf</groupId>
-            <artifactId>camel-extra</artifactId>
-            <version>${camel-version}</version>
             <classifier>features</classifier>
             <type>xml</type>
             <scope>runtime</scope>
-        </dependency> -->
-
-        <dependency>
-            <groupId>org.apache.cxf.karaf</groupId>
-            <artifactId>apache-cxf</artifactId>
-            <type>xml</type>
-            <version>${cxf.version}</version>
-            <classifier>features</classifier>
-            <!-- <scope>runtime</scope> -->
         </dependency>
-
-        <!-- Apache ServiceMix -->
-        <dependency>
-            <groupId>org.apache.servicemix.features</groupId>
-            <artifactId>servicemix-features</artifactId>
-            <version>7.0.0.M2</version>
-            <classifier>features</classifier>
-            <type>xml</type>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.servicemix.features</groupId>
-            <artifactId>servicemix-examples</artifactId>
-            <version>7.0.0.M2</version>
-            <classifier>features</classifier>
-            <type>xml</type>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.servicemix.features</groupId>
-            <artifactId>servicemix-kie</artifactId>
-            <version>7.0.0.M2</version>
-            <classifier>features</classifier>
-            <type>xml</type>
-            <!-- <scope>runtime</scope> -->
-        </dependency>
-
-        <!-- Repo for IDS feature -->
+        <!-- this is our IDS feature repo -->
         <dependency>
             <groupId>de.fhg.ids</groupId>
-            <artifactId>ids</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
-            <type>xml</type>
+            <artifactId>karaf-features-ids</artifactId>
+            <version>${project.version}</version>
             <classifier>features</classifier>
+            <type>xml</type>
             <scope>runtime</scope>
-		</dependency>
+        </dependency>           
     </dependencies>
-    <build>
-        <plugins>
-           <plugin>
-            <groupId>org.apache.karaf.tooling</groupId>
-            <artifactId>features-maven-plugin</artifactId>
-            <version>2.2.1</version>
-          </plugin>
 
+    <build>
+        <directory>build</directory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/template-resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>process-resources</id>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
-                <!-- Plugin requires at minimum 3.0.3 version for dependency=true bug fix
-                     https://issues.apache.org/jira/browse/KARAF-2596 -->
-                <version>${karaf.plugin.version}</version>
                 <extensions>true</extensions>
+                <version>${karaf.version}</version>
                 <configuration>
-                    <ignoreDependencyFlag>false</ignoreDependencyFlag>
-                    <installedFeatures>
-                        <feature>wrapper</feature>
-                    </installedFeatures>
-                    <startupFeatures>
-                        <feature>eventadmin</feature>
-                    </startupFeatures>
-                    <!-- bootFeatures starts up these features when Karaf first boots up.
-                         The feature names are obtained from the features.xml in the
-                         dependencies section.
-
-                         CAUTION: The actual boot features are set by karaf-assembly/src/main/resources/etc/org.apache.karaf.features.cfg which overwrites anything defined herein.
-
-                         The purpose of the following list is to pull required bundles into the offline 
-                         repository so they are available at runtime and can be installed in Karaf. Either 
-                         as a boot feature or at a later time manually.
-                     -->
                     <bootFeatures>
-                        <!-- <feature>standard</feature> -->
-                        <!-- The following features are the same like "standard".
-                                In a productive version we might want to exclude "management" and "ssh" -->
-                        
-                        <!-- Allow deployment of kar archives at runtime -->
-                        <feature>kar</feature>
-
-                        <!-- Auto-wrap stuff into OSGi bundles (needed for picking up route XMLs and some non-OSGi libs) -->
                         <feature>wrap</feature>
-
                         <feature>management</feature>
+                        <feature>ssh</feature>
                         <feature>aries-blueprint</feature>
                         <feature>shell</feature>
                         <feature>shell-compat</feature>
@@ -244,179 +105,10 @@
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
-                        <feature>camel-core</feature>
-			            <feature>camel-http</feature>
-                        <feature>camel-restlet</feature>
-                        <feature>camel-jetty</feature>
-                        <feature>camel-spring</feature>
-                        <feature>camel-stream</feature>
-                        <!-- camel-jms is needed to avoid infamous warning -->
-                        <feature>camel-jms</feature>
-                        <feature>camel-sjms</feature>
-                        <!-- ActiveMQ with web console -->
-                        <!--<feature>activemq-broker</feature>-->
-                        <!-- Use this in production instead (no web console)-->
-                        <!-- <feature>activemq-broker-noweb</feature> -->
-                        <feature>camel</feature>
-                        <feature>cxf-core</feature>
-                        <feature>cxf-jaxrs</feature>
-                        <feature>camel-cxf</feature>
-                        <feature>camel-hdfs2</feature>
-                        <feature>camel-blueprint</feature>
-                        <feature>camel-http</feature>
-                        <!--<feature>activemq-camel</feature> -->
-                        <!--<feature>activemq-service</feature> -->
-                        <feature>camel-xstream</feature>
-                        <!-- <feature>spring</feature>
-                        <feature>spring-tx</feature> -->
-                        <feature>war</feature>
-						<feature>ids</feature>
-
-                        <!-- Not needed, but nice to have in repository -->
-                        <feature>camel-amqp</feature>
-                        <feature>camel-paho</feature>
+                        <feature>ids</feature>
                     </bootFeatures>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <!-- Not all runtime library dependencies are listed in features.xml (bug?)
-                                     We have to help offline Karaf by manually downloading the missing dependencies
-                                 -->
-                                <!--<artifactItem>
-                                    <groupId>org.apache.karaf.diagnostic</groupId>
-                                    <artifactId>org.apache.karaf.diagnostic.boot</artifactId>
-                                    <version>${karaf.version}</version>
-                                    <outputDirectory>target/assembly/system/org/apache/karaf/diagnostic/org.apache.karaf.diagnostic.boot/${karaf.version}</outputDirectory>
-                                </artifactItem>-->
-                                <!--<artifactItem>
-                                    <groupId>org.apache.karaf.jaas</groupId>
-                                    <artifactId>org.apache.karaf.jaas.boot</artifactId>
-                                    <version>${karaf.version}</version>
-                                    <outputDirectory>target/assembly/system/org/apache/karaf/jaas/org.apache.karaf.jaas.boot/${karaf.version}</outputDirectory>
-                                </artifactItem> -->
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                  <execution>
-                    <id>copy</id>
-                    <phase>generate-resources</phase>
-                    <goals>
-                     <goal>copy</goal>
-                    </goals>
-                    <configuration>
-                     <artifactItems>
-                          <artifactItem>
-                              <groupId>org.jledit</groupId>
-                              <artifactId>core</artifactId>
-                              <version>0.2.1</version>
-                              <outputDirectory>target/assembly/system/org/jledit/core/0.2.1</outputDirectory>
-                          </artifactItem>
-                         </artifactItems>
-                    </configuration>
-                  </execution>
-                </executions>
-            </plugin>
-
-            <!-- create a docker image for core platform -->
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.13</version>
-				<configuration>
-					<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
-					<dockerDirectory>${basedir}/src/main/docker/</dockerDirectory>
-					<resources>
-						<resource>
-							<targetPath>/root</targetPath>
-							<directory>${project.build.directory}/assembly</directory>
-						</resource>
-					</resources>
-				</configuration>
-				<executions>
-					<execution>
-						<id>build-image</id>
-						<phase>install</phase>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<!-- <execution>
-						<id>tag-image</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>tag</goal>
-						</goals>
-						<configuration>
-							<image>ids/ttpsim:develop</image>
-							<newName>registry.netsec.aisec.fraunhofer.de/ids/ttpsim:develop</newName>
-						</configuration>
-					</execution> -->
-					<execution>
-						<id>push-image</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>push</goal>
-						</goals>
-						<configuration>
-							<imageName>registry.netsec.aisec.fraunhofer.de/ids/core-platform:develop</imageName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-
-
-
         </plugins>
-
-        <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>org.apache.karaf.tooling</groupId>
-        								<artifactId>karaf-maven-plugin</artifactId>
-        								<versionRange>[${karaf.version},)</versionRange>
-        								<goals>
-        									<goal>assembly</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-						               <execute>
-						                 <runOnIncremental>false</runOnIncremental>
-						               </execute >
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
-        </pluginManagement>
     </build>
 </project>

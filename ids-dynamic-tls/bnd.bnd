@@ -1,0 +1,8 @@
+Bundle-Name: IDS :: ACME SslContextFactory Provider for Pax Web Jetty
+Import-Package: \
+	org.eclipse.jetty.util.ssl.*,\
+	*
+# The following line makes this bundle a "Fragment" to pax-web-jetty,
+# i.e. its classes will simply be added to the class path of pax-web-jetty.
+Fragment-Host: org.ops4j.pax.web.pax-web-jetty
+Export-Package: de.fhg.aisec.ids.dynamictls

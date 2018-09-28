@@ -1,4 +1,9 @@
-.land { fill:#EEEEEE;
-		stroke: #616161; }
-.states { fill:#EEEEEE;
-		 stroke: #CFD8DC; }
+.land {
+  fill:#EEEEEE;
+  stroke: #616161;
+}
+
+.states {
+  fill:#EEEEEE;
+  stroke: #CFD8DC;
+}

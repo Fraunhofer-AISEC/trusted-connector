@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ package de.fhg.aisec.ids.api.internal;
 
 /**
  * Listener interface for notifications on failed service registration attempts.
- * 
- * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  *
+ * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public interface RegistrationSuccessfulListener {
-	
-	/**
-	 * Callback method to be called when a service registration has succeeded.
-	 * 
-	 * TODO Provide information about the registered service (IDS-42).
-	 */
-	public void onRegistrationSuccessful();
+
+  /**
+   * Callback method to be called when a service registration has succeeded.
+   *
+   * <p>TODO Provide information about the registered service (IDS-42).
+   */
+  public void onRegistrationSuccessful();
 }

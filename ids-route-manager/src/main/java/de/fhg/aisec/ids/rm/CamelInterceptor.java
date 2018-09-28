@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Container Manager
+ * ids-route-manager
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,24 +23,21 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.InterceptStrategy;
-
-/**
- * 
- * @author Mathias Morbitzer (mathias.morbitzer@aisec.fraunhofer.de)
- */
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CamelInterceptor implements InterceptStrategy {
-	private RouteManagerService rm;
+  private RouteManagerService rm;
 
-	public CamelInterceptor(RouteManagerService rm) {
-		this.rm = rm;
-	}
-	
-	@Override
-    public Processor wrapProcessorInInterceptors(final CamelContext context, final ProcessorDefinition<?> definition,
-                                                 final Processor target, final Processor nextTarget) throws Exception {
- 
-        return new PolicyEnforcementPoint(target, this.rm);
-    }
+  public CamelInterceptor(@Nullable RouteManagerService rm) {
+    this.rm = rm;
+  }
 
+  @Override
+  public Processor wrapProcessorInInterceptors(
+      final CamelContext context,
+      final ProcessorDefinition<?> definition,
+      final Processor target,
+      final Processor nextTarget) {
+    return new PolicyEnforcementPoint(target, this.rm);
+  }
 }

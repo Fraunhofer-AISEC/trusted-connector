@@ -23,6 +23,9 @@ ADD . .
 # set environment to production
 ENV NODE_ENV production
 
+# ng lint before bundling
+RUN npm run lint
+
 # build everything for production
 RUN npm run bundle
 

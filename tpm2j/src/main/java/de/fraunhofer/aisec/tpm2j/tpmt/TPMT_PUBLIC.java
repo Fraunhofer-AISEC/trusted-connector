@@ -120,7 +120,7 @@ public class TPMT_PUBLIC extends StandardTPMStruct {
         brw.readStruct(this.objectAttributes);
         this.authPolicy = new TPM2B_DIGEST();
         brw.readStruct(this.authPolicy);
-        ALG_ID hashId = this.nameAlg.getHashId().getAlgId();
+        //ALG_ID hashId = this.nameAlg.getHashId().getAlgId();
         switch(this.type.getAlgId().getAlgId()) {
         	case TPM_ALG_FIRST:
         			this.parameters = new TPMS_RSA_PARMS();

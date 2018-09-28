@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,52 +19,62 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
+import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import java.util.List;
-import java.util.Optional;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-
-import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
-import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import javax.ws.rs.core.MediaType;
 
 /**
  * REST API interface for managing connections from and to the connector.
- * 
- * The API will be available at st/<method>.
- *                              
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
+ * <p>The API will be available at st/<method>.
+ *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
-@Path("/incomingconnections")
+@Path("/connections")
+@Api("Connections")
 public class ConnectionAPI {
-	
-	@GET
-	@Path("listincoming")
-	@Produces("application/json")
-	public List<IDSCPIncomingConnection> listincoming() {
-		List<IDSCPIncomingConnection> result = new ArrayList<>();
-		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listIncomingConnections();
-		}
-		return result;
-	}
-	
-	@GET
-	@Path("listoutgoing")
-	@Produces("application/json")
-	public List<IDSCPOutgoingConnection> listoutgoing() {
-		List<IDSCPOutgoingConnection> result = new ArrayList<>();		
-		Optional<ConnectionManager> connectionManager = WebConsoleComponent.getConnectionManager();
-		if (connectionManager.isPresent()) {
-			result = connectionManager.get().listOutgoingConnections();
-		}
-		return result;
-	}
-}
 
+  @GET
+  @Path("/incoming")
+  @ApiOperation(
+    value = "Returns a list of all inbound connections",
+    response = IDSCPIncomingConnection.class,
+    responseContainer = "List"
+  )
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<IDSCPIncomingConnection> getIncoming() {
+    return WebConsoleComponent.getConnectionManager().listIncomingConnections();
+  }
+
+  @GET
+  @Path("/outgoing")
+  @ApiOperation(
+    value = "Returns a list of all outbound connections",
+    response = IDSCPOutgoingConnection.class,
+    responseContainer = "List"
+  )
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<IDSCPOutgoingConnection> getOutgoing() {
+    return WebConsoleComponent.getConnectionManager().listOutgoingConnections();
+  }
+
+  @GET
+  @Path("/endpoints")
+  @ApiOperation(
+    value = "Returns a list of all endpoints provided by this connector",
+    response = IDSCPServerEndpoint.class,
+    responseContainer = "List"
+  )
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<IDSCPServerEndpoint> getAvailableEndpoints() {
+    return WebConsoleComponent.getConnectionManager().listAvailableEndpoints();
+  }
+}

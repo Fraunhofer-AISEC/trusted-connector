@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,95 +19,186 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-
-import org.osgi.service.prefs.BackingStoreException;
-import org.osgi.service.prefs.Preferences;
-import org.osgi.service.prefs.PreferencesService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.Constants;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * REST API interface for configurations in the connector.
- * 
- * The API will be available at http://localhost:8181/cxf/api/v1/config/<method>.
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
+ * <p>The API will be available at http://localhost:8181/cxf/api/v1/config/<method>.
+ *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 @Path("/config")
+@Api(value = "Config")
 public class ConfigApi {
-	private static final Logger LOG = LoggerFactory.getLogger(ConfigApi.class);
-	
-	@GET()
-	@Path("list")
-	public Map<String,String> get() {
-		Optional<PreferencesService> cO = WebConsoleComponent.getConfigService();
-		
-		// if config service is not available at runtime, return empty map
-		if (!cO.isPresent()) {
-			return new HashMap<>();
-		}
-		
-		Preferences prefs = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
-		HashMap<String, String> pMap = new HashMap<>();
-		try {
-			for (String key : prefs.keys()) {
-				pMap.put(key, prefs.get(key,null));
-			}
-		} catch (BackingStoreException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return pMap;
-	}
+  public static final String GENERAL_CONFIG = "General Configuration";
 
-	@POST
-	@OPTIONS
-	@Path("set")
-	@Consumes("application/json")
-	public Response set(Map<String,String> settings) {
-		Optional<PreferencesService> cO = WebConsoleComponent.getConfigService();
-		
-		if (settings==null) {
-			return Response.status(Response.Status.BAD_REQUEST).build();
-		}
-		
-		// if preferences service is not available at runtime, return empty map
-		if (!cO.isPresent()) {
-			return Response.serverError().encoding("no preferences service").build();
-		}
-		
-		// Store into preferences service
-		Preferences idsConfig = cO.get().getUserPreferences(Constants.PREFERENCES_ID);
-		if (idsConfig==null) {
-			return Response.serverError().entity("no preferences registered for pid " + Constants.PREFERENCES_ID).build();
-		}
-		
-		for (Iterator<String> iterator = settings.keySet().iterator(); iterator.hasNext();) {
-			String key = iterator.next();
-			String value = settings.get(key);
-			idsConfig.put(key, value);
-		}
-		
-		try {
-			idsConfig.flush();
-			return Response.ok("ok").build();
-		} catch (BackingStoreException e) {
-			LOG.error(e.getMessage(), e);
-			return Response.serverError().entity(e.getMessage()).build();
-		}		
-	}
+  @GET
+  @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig.class)
+  @Produces(MediaType.APPLICATION_JSON)
+  public ConnectorConfig get() {
+    Settings settings = WebConsoleComponent.getSettings();
+    return settings.getConnectorConfig();
+  }
+
+  @POST
+  @OPTIONS
+  @ApiOperation(value = "Sets the configuration", response = ConnectorConfig.class)
+  @ApiResponses(
+      @ApiResponse(
+        code = 500,
+        message =
+            "_No valid preferences received_: If incorrect configuration parameter is provided"
+      ))
+  @Consumes(MediaType.APPLICATION_JSON)
+  public String set(ConnectorConfig config) {
+    if (config == null) {
+      throw new BadRequestException("No valid preferences received!");
+    }
+
+    Settings settings = WebConsoleComponent.getSettings();
+    settings.setConnectorConfig(config);
+
+    return "OK";
+  }
+
+  /**
+   * Save connection configuration of a particular connection.
+   *
+   * @param connection The name of the connection
+   * @param conSettings The connection configuration of the connection
+   */
+  @POST
+  @Path("/connectionConfigs/{con}")
+  @ApiOperation(value = "Save connection configuration of a particular connection")
+  @ApiResponses(
+      @ApiResponse(
+        code = 500,
+        message =
+            "_No valid connection settings received!_: If incorrect connection settings parameter is provided"
+      ))
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response setConnectionConfigurations(
+      @PathParam("con") String connection, ConnectionSettings conSettings) {
+    if (conSettings == null) {
+      Response.serverError().entity("No valid connection settings received!").build();
+    }
+
+    Settings settings = WebConsoleComponent.getSettings();
+    settings.setConnectionSettings(connection, conSettings);
+
+    return Response.ok().build();
+  }
+
+  /**
+   * Sends configuration of a connection
+   *
+   * @param connection Connection identifier
+   * @return The connection configuration of the requested connection
+   */
+  @GET
+  @Path("/connectionConfigs/{con}")
+  @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings.class)
+  @Produces(MediaType.APPLICATION_JSON)
+  public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
+    Settings settings = WebConsoleComponent.getSettings();
+    return settings.getConnectionSettings(connection);
+  }
+
+  /**
+   * Sends configurations of all connections
+   *
+   * @return Map of connection names/configurations
+   */
+  @GET
+  @Path("/connectionConfigs")
+  @ApiOperation(value = "Retrieves configurations of all connections")
+  @ApiResponses(
+      @ApiResponse(
+        code = 200,
+        message = "Map of connections and configurations",
+        response = ConnectionSettings.class,
+        responseContainer = "Map"
+      ))
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
+    Settings settings = WebConsoleComponent.getSettings();
+    ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();
+    RouteManager routeManager = WebConsoleComponent.getRouteManagerOrThrowSUE();
+
+    // Set of all connection configurations, properly ordered
+    Map<String, ConnectionSettings> allSettings =
+        new TreeMap<>(
+            (o1, o2) -> {
+              if (ConfigApi.GENERAL_CONFIG.equals(o1)) {
+                return -1;
+              } else if (ConfigApi.GENERAL_CONFIG.equals(o2)) {
+                return 1;
+              } else {
+                return o1.compareTo(o2);
+              }
+            });
+    // Load all existing entries
+    allSettings.putAll(settings.getAllConnectionSettings());
+    // Assert global configuration entry
+    allSettings.putIfAbsent(ConfigApi.GENERAL_CONFIG, new ConnectionSettings());
+
+    Map<String, List<String>> routeInputs =
+        routeManager
+            .getRoutes()
+            .stream()
+            .map(RouteObject::getId)
+            .collect(Collectors.toMap(Function.identity(), routeManager::getRouteInputUris));
+
+    for (IDSCPServerEndpoint endpoint : connectionManager.listAvailableEndpoints()) {
+      // For every currently available endpoint, go through all preferences and check
+      // if the id is already there. If not, create empty config.
+      String hostIdentifier = endpoint.getHost() + ":" + endpoint.getPort();
+      String serverUri = "idsserver://" + hostIdentifier;
+      List<String> endpointIdentifiers =
+          routeInputs
+              .entrySet()
+              .stream()
+              .filter(e -> e.getValue().stream().anyMatch(u -> u.startsWith(serverUri)))
+              .map(e -> e.getKey() + " - " + hostIdentifier)
+              .collect(Collectors.toList());
+
+      if (endpointIdentifiers.isEmpty()) {
+        endpointIdentifiers =
+            Collections.singletonList("<no route found>" + " - " + hostIdentifier);
+      }
+
+      // Create missing endpoint configurations
+      endpointIdentifiers.forEach(
+          endpointIdentifier -> {
+            if (allSettings.keySet().stream().noneMatch(endpointIdentifier::equals)) {
+              allSettings.put(endpointIdentifier, new ConnectionSettings());
+            }
+          });
+    }
+
+    return allSettings;
+  }
 }

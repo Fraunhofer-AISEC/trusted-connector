@@ -1,12 +1,43 @@
+# Gradle
 .gradle/
+
+# Eclipse
 .metadata
 .project
 .settings
-rat-repository/src/main/docker/jar/*
+.classpath
+*.launch
+/RemoteSystemsTempFiles/
+
+# IDEA
+*.iml
+/.idea
+
+# VSCode
+.vscode
+.factorypath
+
+# Binary
 *.bin
+/target/
+/*/target/
+/build/
+/*/build/
+/*/bin/
+/*/generated/
+
+# Sonar
 /.sonarlint/
 /dist-docker/
+
+# Other
 *.log
-/target/
 /.recommenders/
-/RemoteSystemsTempFiles/
+rat-repository/src/main/docker/jar/*
+.DS_Store
+bin
+out
+
+# Karaf Deploy
+/karaf-assembly/src/main/resources/deploy/*.xml
+*.sock

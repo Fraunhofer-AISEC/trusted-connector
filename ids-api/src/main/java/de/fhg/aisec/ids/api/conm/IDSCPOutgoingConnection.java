@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,62 +21,67 @@ package de.fhg.aisec.ids.api.conm;
 
 /**
  * Bean representing an "IDSCP Connection" .
- * 
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
 public class IDSCPOutgoingConnection {
-	private String endpoint_identifier;
-	private String lastProtocolState;
-	private String remoteAuthentication;
-	private String remoteIdentity;
-	private AttestationResult attestationResult;
-	
-	
-	public IDSCPOutgoingConnection(String endpoint_identifier, String lastProtocolState) {
-		this.endpoint_identifier = endpoint_identifier;
-		this.lastProtocolState = lastProtocolState;
-	}
-	
-	public IDSCPOutgoingConnection() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	public String getRemoteAuthentication() {
-		return remoteAuthentication;
-	}
-	public void setRemoteAuthentication(String state) {
-		this.remoteAuthentication = state;
-	}
-	public String getRemoteIdentity() {
-		return remoteIdentity;
-	}
-	public void setRemoteIdentity(String hostname) {
-		this.remoteIdentity = hostname;
-	}
+  private String endpointIdentifier;
+  private String remoteAuthentication;
+  private String remoteIdentity;
+  private String endpointKey;
+  private RatResult attestationResult;
+  private String metaData;
 
-	public String getEndpointIdentifier() {
-		return endpoint_identifier;
-	}
-	public void setEndpointIdentifier(String endpoint_identifier) {
-		this.endpoint_identifier = endpoint_identifier;
-	}
-	public AttestationResult getAttestationResult() {
-		return this.attestationResult;
-	}
-	public void setAttestationResult(AttestationResult attestationResult) {
-		this.attestationResult = attestationResult;
-	}
-	public String getLastProtocolState() {
-		return lastProtocolState;
-	}
-	public void setLastProtocolState(String lastProtocolState) {
-		this.lastProtocolState = lastProtocolState;
-	}	
-	@Override
-	public String toString() {
-		return "IDSCPOutgoingConnection [endpoint_identifier=" + endpoint_identifier + ", lastProtocolState=" + lastProtocolState + "]";
-	}
-	
-	
+  public String getEndpointKey() {
+    return endpointKey;
+  }
+
+  public void setEndpointKey(String endpointKey) {
+    this.endpointKey = endpointKey;
+  }
+
+  public String getRemoteAuthentication() {
+    return remoteAuthentication;
+  }
+
+  public void setRemoteAuthentication(String state) {
+    this.remoteAuthentication = state;
+  }
+
+  public String getRemoteIdentity() {
+    return remoteIdentity;
+  }
+
+  public void setRemoteIdentity(String hostname) {
+    this.remoteIdentity = hostname;
+  }
+
+  public String getEndpointIdentifier() {
+    return endpointIdentifier;
+  }
+
+  public void setEndpointIdentifier(String endpointIdentifier) {
+    this.endpointIdentifier = endpointIdentifier;
+  }
+
+  public RatResult getAttestationResult() {
+    return this.attestationResult;
+  }
+
+  public void setAttestationResult(RatResult attestationResult) {
+    this.attestationResult = attestationResult;
+  }
+
+  @Override
+  public String toString() {
+    return "IDSCPOutgoingConnection [endpoint_identifier=" + endpointIdentifier + "]";
+  }
+
+  public void setMetaData(String metaResult) {
+    this.metaData = metaResult;
+  }
+
+  public String getMetaData() {
+    return this.metaData;
+  }
 }

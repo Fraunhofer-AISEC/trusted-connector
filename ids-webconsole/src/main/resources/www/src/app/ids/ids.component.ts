@@ -1,77 +1,71 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
-import { Headers, Http, Response, RequestOptions } from '@angular/http';
-import { CanDeactivate } from '@angular/router';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { SettingsService } from './settings.service';
-import { Settings } from './settings.interface';
-import { environment } from '../../environments/environment';
-import { MDLTextFieldDirective } from '../mdl-textfield-directive';
+import { TermsOfService } from './terms-of-service.interface';
+import { map, switchMap, take } from 'rxjs/operators';
+import { of, timer } from 'rxjs';
 
 @Component({
     selector: 'my-app',
     templateUrl: './ids.component.html',
+    styleUrls: ['./ids.component.css'],
+    providers: [SettingsService]
 })
-export class IdsComponent implements OnInit, CanDeactivate<IdsComponent> {
-    public myForm: FormGroup;
-    public data: Settings;
-    public submitted: boolean;
-    public saved: boolean;
-    public events: any[] = [];
+export class IdsComponent implements OnInit {
+    settingsForm?: FormGroup;
+    saved = true;
+    tosWebconsole?: TermsOfService;
 
-    constructor(private _fb: FormBuilder, private _http: Http, private _settingsService: SettingsService) {
-        this.saved = true;
+    constructor(private settingsService: SettingsService, private formBuilder: FormBuilder) { }
+
+    canDeactivate(target: IdsComponent): boolean {
+        return target.saved;
     }
 
-    canDeactivate(target: IdsComponent) {
-        return target.saved; // false stops navigation, true continue navigation
+    ngOnInit(): void {
+        // Pull settings from server
+        this.settingsService.getSettings()
+            .subscribe(response => {
+                // Initialize form
+                this.settingsForm = this.formBuilder.group({
+                    appstoreUrl: response.appstoreUrl,
+                    brokerUrl: response.brokerUrl,
+                    ttpHost: response.ttpHost,
+                    ttpPort: response.ttpPort,
+                    acmeServerWebcon: [response.acmeServerWebcon, [], [control =>
+                        timer(500)
+                            .pipe(
+                                switchMap(() => {
+                                    const value: string = control.value;
+
+                                    return value === '' ? of(undefined) : this.settingsService.getToS(value);
+                                }),
+                                map(tos => {
+                                    this.tosWebconsole = tos;
+
+                                    return tos && tos.error ? { asyncError: tos.error } : undefined;
+                                }),
+                                take(1)
+                            )
+                    ]],
+                    acmeDnsWebcon: response.acmeDnsWebcon,
+                    acmePortWebcon: response.acmePortWebcon,
+                    tosAcceptWebcon: response.tosAcceptWebcon
+                });
+                this.subscribeToFormChanges();
+            });
     }
 
-    ngOnInit() {
-        // the short way
-        this.myForm = this._fb.group({
-            broker_url: ['', [<any>Validators.required, <any>Validators.minLength(5)]],
-            ttp_host: ['', [<any>Validators.required, <any>Validators.minLength(3)]],
-            ttp_port: ['', [<any>Validators.required, <any>Validators.maxLength(5)]],
+    subscribeToFormChanges(): void {
+        this.settingsForm.valueChanges.subscribe(_ => {
+            this.saved = false;
         });
-
-        // subscribe to form changes
-        this.subcribeToFormChanges();
-
-        this._settingsService.getSettings().subscribe(
-            response => {
-                this.data = response;
-                (<FormControl>this.myForm.controls['broker_url']).setValue(this.data.broker_url, { onlySelf: true });
-                (<FormControl>this.myForm.controls['ttp_host']).setValue(this.data.ttp_host, { onlySelf: true });
-                (<FormControl>this.myForm.controls['ttp_port']).setValue(this.data.ttp_port, { onlySelf: true });
-            }
-        );
-
-    }
-    
-    subcribeToFormChanges() {
-        const myFormStatusChanges$ = this.myForm.statusChanges;
-        const myFormValueChanges$ = this.myForm.valueChanges;
-
-        myFormStatusChanges$.subscribe(x => this.events.push({ event: 'STATUS_CHANGED', object: x }));
-        myFormValueChanges$.subscribe(x => {
-        this.saved = false;
-            this.events.push({ event: 'VALUE_CHANGED', object: x })
-        });
     }
 
-    save(model: Settings, isValid: boolean) {
-        this.submitted = true;
-        console.log(model, isValid);
-
-        // Call REST POST to store settings
-        let storePromise = this._settingsService.store(model);
-        storePromise.subscribe(
-            () => {
-                // If saved successfully, user may leave the route (=saved=true)
-                this.saved = true;
-            },
-            err => console.log("Did not save form " + err.json().message)
-        );
-
+    save(): void {
+        if (this.settingsForm.valid) {
+            this.settingsService.store(this.settingsForm.value)
+                .subscribe(() => this.saved = true);
+        }
     }
 }

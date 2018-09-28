@@ -1,0 +1,137 @@
+apply plugin: 'com.moowork.node'
+apply plugin: 'com.benjaminsproule.swagger'
+
+description = 'IDS Core Platform Webconsole'
+
+sourceSets {
+    main {
+        // only include the OSGI blueprint and the built angular app
+        resources {
+            include 'OSGI-INF/blueprint/*'
+        }
+    }
+}
+
+swagger {    
+    apiSource {
+        springmvc = false
+        locations = [ 'de.fhg.aisec.ids.webconsole.api' ]
+        schemes = ['http']
+        host = 'localhost:8181'
+        basePath = '/'
+        info {
+            title = 'Trusted Connector API'
+            version = project.version
+            license {
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.html'
+                name = 'Apache 2.0'
+            }
+            description ='''This is the internal API of the Trusted Connector.
+
+The API provides an administrative interface to manage the Trusted Connector at runtime
+and is used by the default administration dashboard ("webconsole").
+Please note that at the moment the Trusted Connector is in a prototype state
+and this API does not provide any authorization mechanism.
+'''
+        }
+        swaggerDirectory = "${project.projectDir}/generated/swagger-ui"
+        outputFormats = ['json','yaml']
+        /* the plugin could theoretically also generate the html files, however it currently only allows 
+        for the generation of html OR swagger.json, not both. Therefore we still need to use spectacle using yarn */
+        // templatePath = "${project.projectDir}/src/test/resources/strapdown.html.hbs"
+        // outputPath = "${project.projectDir}/generated/document.html"   
+    }
+}
+
+dependencies {
+    providedByBundle project(':ids-api')
+
+    // Bill of Materials (BOM) for Camel
+    bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
+
+    providedByFeature group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+
+    providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
+    providedByFeature group: 'org.apache.camel', name: 'camel-core-osgi', version: libraryVersions.camel
+
+    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs', version: libraryVersions.cxf
+    providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers', version: libraryVersions.cxf
+
+    // This is required for compilation only, and provided by karaf automatically, likely by some included feature
+    compileOnly group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+
+    // use our specified version of jackson instead of the cxf-jackson feature
+    providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: libraryVersions.jackson
+    providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
+
+    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+
+    providedByBundle(group: 'org.apache.felix', name: 'org.apache.felix.prefs', version: '1.1.0') {
+        transitive = false
+    }
+    
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    compileOnly group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
+
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+
+    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local'
+    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client'
+}
+
+task yarnInstall(type: YarnTask) {
+    inputs.file("src/main/resources/www/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/resources/www/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir("src/main/resources/www/node_modules")
+    outputs.cacheIf { true }
+
+    workingDir = file('src/main/resources/www')
+    args = ['install']
+}
+
+task yarnBuild(type: YarnTask) {
+    workingDir = file('src/main/resources/www')
+    args = ['bundle']
+    onlyIf { !rootProject.hasProperty("skipAngular") }
+}
+
+task yarnLint(type: YarnTask) {
+    workingDir = file('src/main/resources/www')
+    args = ['lint']
+    onlyIf { !rootProject.hasProperty("skipAngular") }
+}
+
+task yarnApiDocs(type: YarnTask) {
+    workingDir = file('src/main/resources/www')
+    args = ['apidocs']
+    onlyIf { !rootProject.hasProperty("skipAngular") }
+}
+
+clean.doLast {
+    if (!rootProject.hasProperty("skipAngular")) {
+        file('src/main/resources/www/dist').deleteDir()
+    }
+}
+
+yarnBuild.dependsOn(yarnLint)
+
+// make sure, yarn install is executed first
+yarnBuild.dependsOn(yarnInstall)
+yarnApiDocs.dependsOn(yarnInstall)
+
+processResources.dependsOn(yarnBuild)
+
+// yarnApiDocs depends on swagger generation
+yarnApiDocs.dependsOn(generateSwaggerDocumentation)
+
+// build apidocs during build
+build.dependsOn(yarnApiDocs)

@@ -1,0 +1,59 @@
+apply plugin: DockerRemoteApiPlugin
+
+import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+/*
+Now this is tricky. We need to build a custom assembly of karaf with a few features:
+- included ids feature
+- deactivated all other repos, basically it beeing 'offline'
+- add a bunch of configuration files in etc (although we need to re-verify, which of them are really necessary
+
+Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
+*/
+
+static def gitCommit() {
+    String commit = 'HEAD'
+
+    if (System.getenv('CI_COMMIT_SHA')) {
+        commit = System.getenv('CI_COMMIT_SHA')
+    } else {
+        String commandLine
+        if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+            commandLine = 'cmd /c '
+        } else {
+            commandLine = ''
+        }
+        def proc = (commandLine + 'git rev-parse HEAD').execute()
+        proc.in.eachLine { line -> commit = line }
+        proc.err.eachLine { line -> println line }
+        proc.waitFor()
+    }
+
+    if (commit == 'HEAD') {
+        commit
+    } else {
+        commit.substring(0, 8)
+    }
+}
+
+task assembleKaraf(type: MavenExec) {
+    mavenDir = projectDir
+    goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
+}
+
+jar.dependsOn(assembleKaraf)
+
+// make sure, all sub projects have finished their install task
+rootProject.subprojects.findAll() {
+    if (it.name != project.name) {
+        assembleKaraf.dependsOn(it.tasks.install)
+    }
+}
+
+task dockerize(type: DockerBuildImage) {
+    inputDir = project.projectDir
+    tag = 'fraunhoferaisec/iot-connector-core-platform:' + gitCommit()
+}
+
+dockerize.dependsOn(assembleKaraf)

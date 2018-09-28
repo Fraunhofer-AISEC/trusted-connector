@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 declare var componentHandler: any;
@@ -10,11 +10,13 @@ declare var componentHandler: any;
 })
 export class AppComponent implements AfterViewInit {
 
-  constructor(private titleService: Title) {
+  constructor(public titleService: Title) {}
 
+  ngAfterViewInit(): void {
+    componentHandler.upgradeAllRegistered();
   }
 
-  ngAfterViewInit() {
-    componentHandler.upgradeAllRegistered();
+  get title(): string {
+    return this.titleService.getTitle();
   }
 }

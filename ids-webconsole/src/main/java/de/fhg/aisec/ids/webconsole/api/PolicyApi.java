@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,74 +19,70 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-
 /**
  * REST API interface for managing "apps" in the connector.
- * 
- * In this implementation, apps are either docker or trustX containers. 
- * 
- * The API will be available at http://localhost:8181/cxf/api/v1/policies/<method>.
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  *
+ * <p>In this implementation, apps are either docker or trustX containers.
+ *
+ * <p>The API will be available at http://localhost:8181/cxf/api/v1/policies/<method>.
+ *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/policies")
+@Api("Policies")
 public class PolicyApi {
-	private static final Logger LOG = LoggerFactory.getLogger(PolicyApi.class);
-	
-	@GET
-	@Path("list")
-	@Produces("application/json")
-	public List<String> list() {
-		LOG.info("policy list");
-		List<String> result = new ArrayList<>();
-		
-		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
-		if (!pap.isPresent()) {
-			return result;
-		}		
-		result = pap.get().listRules();
-		return result;
-	}
-	
-	@POST
-	@OPTIONS
-	@GET
-	@Path("install")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response install(	@Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName, 
-							@Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription, 
-							@Multipart(value = "policy_file") InputStream is) {
-		LOG.info("Received policy file. name: " + policyName + " desc: " + policyDescription);
-		Optional<PAP> pap = WebConsoleComponent.getPolicyAdministrationPoint();
-		
-		// if pap service is not available at runtime, return error
-		if (!pap.isPresent()) {
-			return Response.serverError().entity("no PAP").build();
-		}
-				
-		pap.get().loadPolicy(is);
-		return Response.ok("OK").build();
-	}	
+  private static final Logger LOG = LoggerFactory.getLogger(PolicyApi.class);
+
+  @GET
+  @Path("list")
+  @ApiOperation(value = "Lists active rules", responseContainer = "List")
+  @ApiResponses(
+      @ApiResponse(
+        code = 200,
+        message = "List of usage control rules",
+        response = String.class,
+        responseContainer = "List"
+      ))
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<String> list() {
+    return WebConsoleComponent.getPolicyAdministrationPoint().listRules();
+  }
+
+  /**
+   * Returns the Prolog theory of all policies. Could be removed in later version.
+   *
+   * @return Policy Prolog
+   */
+  @GET
+  @Path("policyProlog")
+  @Produces(MediaType.TEXT_PLAIN)
+  public String getPolicyProlog() {
+    return WebConsoleComponent.getPolicyAdministrationPoint().getPolicy();
+  }
+
+  @POST
+  @OPTIONS
+  @Path("install")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  public String install(
+      @Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
+      @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,
+      @Multipart(value = "policy_file") InputStream is) {
+    LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
+    WebConsoleComponent.getPolicyAdministrationPoint().loadPolicy(is);
+    return "OK";
+  }
 }

@@ -1,0 +1,19 @@
+dependencies {
+    providedByBundle project(':ids-api')
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
+        transitive = false  // Avoid pulling in of checker framework and other annotation stuff
+    }
+
+    providedByFeature group: 'org.eclipse.jetty', name: 'jetty-util', version: libraryVersions.jetty
+    providedByFeature group: 'org.apache.karaf.scheduler', name: 'org.apache.karaf.scheduler.core', version: libraryVersions.karaf
+
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+
+    implementation group: 'org.shredzone.acme4j', name: 'acme4j-client', version: libraryVersions.acme
+    implementation group: 'org.shredzone.acme4j', name: 'acme4j-utils', version: libraryVersions.acme
+    implementation group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'
+}

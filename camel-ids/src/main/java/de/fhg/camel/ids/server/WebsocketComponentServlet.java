@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * camel-ids
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,109 +17,70 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package de.fhg.camel.ids.server;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WebsocketComponentServlet extends WebSocketServlet {
-    private static final long serialVersionUID = 1L;
-    private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final long serialVersionUID = 1L;
+  private static final Logger LOG = LoggerFactory.getLogger(WebsocketComponentServlet.class);
 
-    private final NodeSynchronization sync;
-    private WebsocketConsumer consumer;
-    private String pathSpec;
+  private final NodeSynchronization sync;
+  private final Map<String, WebSocketFactory> socketFactories;
+  private final String pathSpec;
 
-    private ConcurrentMap<String, WebsocketConsumer> consumers = new ConcurrentHashMap<String, WebsocketConsumer>();
-    private Map<String, WebSocketFactory> socketFactory;
+  private WebsocketConsumer consumer;
+  private static final ConcurrentMap<String, WebsocketConsumer> consumers =
+      new ConcurrentHashMap<>();
 
-    public WebsocketComponentServlet(NodeSynchronization sync, String pathSpec, Map<String, WebSocketFactory> socketFactory) {
-        this.sync = sync;
-        this.socketFactory = socketFactory;
-        this.pathSpec = pathSpec;
-    }
+  public WebsocketComponentServlet(
+      NodeSynchronization sync,
+      String pathSpec,
+      Map<String, WebSocketFactory> socketFactories) {
+    this.sync = sync;
+    this.socketFactories = socketFactories;
+    this.pathSpec = pathSpec;
+  }
 
-    public WebsocketConsumer getConsumer() {
-        return consumer;
-    }
+  public WebsocketConsumer getConsumer() {
+    return consumer;
+  }
 
-    public void setConsumer(WebsocketConsumer consumer) {
-        this.consumer = consumer;
-    }
+  public void setConsumer(WebsocketConsumer consumer) {
+    this.consumer = consumer;
+  }
 
-    public void connect(WebsocketConsumer consumer) {
-        log.debug("Connecting consumer: {}", consumer);
-        consumers.put(consumer.getPath(), consumer);
-    }
+  public void connect(WebsocketConsumer consumer) {
+    LOG.debug("Connecting consumer: {}", consumer);
+    consumers.put(consumer.getPath(), consumer);
+  }
 
-    public void disconnect(WebsocketConsumer consumer) {
-        log.debug("Disconnecting consumer: {}", consumer);
-        consumers.remove(consumer.getPath());
-    }
+  public void disconnect(WebsocketConsumer consumer) {
+    LOG.debug("Disconnecting consumer: {}", consumer);
+    consumers.remove(consumer.getPath());
+  }
 
-    public DefaultWebsocket doWebSocketConnect(ServletUpgradeRequest request, String protocol) {
-        String protocolKey = protocol;
-
-        if (protocol == null || !socketFactory.containsKey(protocol)) {
-            log.debug("No factory found for the socket protocol: {}, returning default implementation", protocol);
-            protocolKey = "ids";
-        }
-
-        WebSocketFactory factory = socketFactory.get(protocolKey);
-        return factory.newInstance(request, protocolKey, 
-                (consumer != null && consumer.getEndpoint() != null) ? WebsocketComponent.createPathSpec(consumer.getEndpoint().getResourceUri()) : null,
-                sync, consumer);
-    }
-
-    public Map<String, WebSocketFactory> getSocketFactory() {
-        return socketFactory;
-    }
-
-    public void setSocketFactory(Map<String, WebSocketFactory> socketFactory) {
-        this.socketFactory = socketFactory;
-    }
-
-    @Override
-    public void configure(WebSocketServletFactory factory) {
-        factory.setCreator(new WebSocketCreator() {
-            @Override
-            public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
-                String protocolKey = "ids";
-            	if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
-                    WebSocketFactory factory = socketFactory.get(protocolKey);
-                    resp.setAcceptedSubProtocol(protocolKey);
-                    return factory.newInstance(req, protocolKey, pathSpec, sync, consumer);
-                } else {
-                	log.error("WS subprotocols not supported: " + String.join(",", req.getSubProtocols()));
-                	return null;
-                }
-            	
+  @Override
+  public void configure(WebSocketServletFactory factory) {
+    factory.setCreator(
+          (req, resp) -> {
+            String protocolKey = "ids";
+            if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
+              WebSocketFactory wsFactory = socketFactories.get(protocolKey);
+              resp.setAcceptedSubProtocol(protocolKey);
+              return wsFactory.newInstance(req, protocolKey, pathSpec, sync, consumer);
+            } else {
+              LOG.error(
+                  "WS subprotocols not supported: {}", String.join(",", req.getSubProtocols()));
+              return null;
             }
+
         });
-    }
+  }
 }

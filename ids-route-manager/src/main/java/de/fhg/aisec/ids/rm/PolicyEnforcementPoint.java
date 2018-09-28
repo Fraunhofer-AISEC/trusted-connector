@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Container Manager
+ * ids-route-manager
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,137 +19,159 @@
  */
 package de.fhg.aisec.ids.rm;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
+import de.fhg.aisec.ids.api.policy.*;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.management.InstrumentationProcessor;
+import org.apache.camel.processor.DelegateAsyncProcessor;
 import org.apache.camel.processor.LogProcessor;
 import org.apache.camel.processor.SendProcessor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.api.policy.DecisionRequest;
-import de.fhg.aisec.ids.api.policy.PDP;
-import de.fhg.aisec.ids.api.policy.PolicyDecision;
-import de.fhg.aisec.ids.api.policy.ServiceNode;
-import de.fhg.aisec.ids.api.policy.TransformationDecision;
-
-/**
- * 
- * @author Mathias Morbitzer (mathias.morbitzer@aisec.fraunhofer.de)
- *
- */
 public class PolicyEnforcementPoint implements AsyncProcessor {
-    private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);  
-    private Processor target;
-	private RouteManagerService rm;
-    
-    public PolicyEnforcementPoint(Processor target, RouteManagerService rm) {
-    	this.target = target;
-    	this.rm = rm;
+  private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);
+  private Processor target, effectiveTarget;
+  private RouteManagerService rm;
+
+  public PolicyEnforcementPoint(@Nullable Processor target, @Nullable RouteManagerService rm) {
+    this.target = target;
+    if (target instanceof DelegateAsyncProcessor) {
+      this.effectiveTarget = ((DelegateAsyncProcessor) target).getProcessor();
+    } else {
+      this.effectiveTarget = target;
     }
-    
-    @Override
-    public void process(Exchange exchange) throws Exception {
-    	// Check if environment is usable as expected
-    	if (target==null || exchange==null || !(target instanceof InstrumentationProcessor)) {
-			LOG.warn("Cannot check data flow policy. Null or no InstrumentationProcessor");
-			return;
-		}
-		
-		if (rm==null || rm.getPdp()==null) {
-    		target.process(exchange);
-			return;
-		}
+    this.rm = rm;
+  }
 
-		// Log statements may pass through immediately
-    	if (((InstrumentationProcessor) target).getProcessor() instanceof LogProcessor) {
-    		target.process(exchange);
-    		return;
-    	}
-    	
-    	// We expect a SendProcessor to retrieve the endpoint URL from
-		if (! (((InstrumentationProcessor) target).getProcessor() instanceof SendProcessor) ) {
-				LOG.warn("Not a SendProcessor or LogProcessor. Skipping. " + ((InstrumentationProcessor) target).getProcessor().getClass());
-				return;
-		}
-		
-		// Figure out where the message comes from and where it should go to
-		SendProcessor sendprocessor = (SendProcessor) ((InstrumentationProcessor) target).getProcessor();
-		String destination = sendprocessor.getEndpoint().getEndpointUri();
-		String source = exchange.getFromEndpoint().getEndpointUri();
-		
-		LOG.info("START: Check if label(s) exist in allow rules for destination " + destination);
-		
-		// If no PDP is available at runtime -> skip
-		PDP pdp = rm.getPdp();
-		if (pdp == null) {
-			return;
-		}
-		
-		/* TODO Nodes currently have no capabilities and properties. They should be retrieved from
-		*  a) either the prolog knowledge base (a respective query must be created)
-		*  b) from service meta data provided by the ConnectionManagerService(?)
-		*/
-		ServiceNode sourceNode = new ServiceNode(source, null, null);
-		ServiceNode destNode = new ServiceNode(destination, null, null);
-		
-		// Call PDP to transform labels and decide whether we may forward the Exchange
-		applyLabelTransformation(pdp.requestTranformations(sourceNode), exchange);
-		PolicyDecision decision = pdp.requestDecision(new DecisionRequest(sourceNode, destNode, exchange.getProperties(), null));
-
-		switch (decision.getDecision()) {
-		case DON_T_CARE:
-		case ALLOW:
-			// forward the Exchange
-			target.process(exchange);
-			break;
-		case DENY:
-		default:
-			LOG.info("Exchange blocked by data flow policy. Target was " + exchange.getFromEndpoint().getEndpointUri());
-			exchange.setException(new Exception("Exchange blocked by policy"));
-		}
-		
-		// TODO Run obligation
-
+  /**
+   * The method performs flow control and calls Exchange.setException() when necessary
+   *
+   * @param exchange The exchange object to check
+   * @return Whether target.process() is to be called for this exchange object
+   */
+  public boolean processFlowControl(Exchange exchange) {
+    if (exchange == null) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Cannot check data flow policy. Exchange object is null.");
+      }
+      return false;
     }
 
-	/**
-	 * Removes and adds labels to an exchange object.
-	 * 
-	 * @param requestTranformations
-	 * @param msg
-	 */
-    private void applyLabelTransformation(TransformationDecision requestTranformations, Exchange msg) {
-		Map<String, Object> props = msg.getProperties();
-		
-		// Remove labels from exchange
-		for (Entry<String, Object> e : props.entrySet()) {
-			if (e.getKey().startsWith(PDP.LABEL_PREFIX)) {
-				String label = e.getKey().replaceFirst(PDP.LABEL_PREFIX, "");
-				if (requestTranformations.getLabelsToRemove().contains(label)) {
-					msg.removeProperty(label);
-				}
-			}
-		}
-		
-		// Add labels to exchange
-		for (String label : requestTranformations.getLabelsToAdd()) {
-			msg.setProperty(PDP.LABEL_PREFIX+label, "");
-		}
-	}
+    if (target == null) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Cannot check data flow policy. The target is null.");
+      }
+      return false;
+    }
 
-	@Override
-	public boolean process(Exchange exchange, AsyncCallback callback) {
-		try {
-			process(exchange);
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return true;
-	}
+    // Log statements may pass through immediately
+    if (effectiveTarget instanceof LogProcessor) {
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Passing through LogProcessor...");
+      }
+      return true;
+    }
+
+    // We expect a SendProcessor to retrieve the endpoint URL from
+    if (!(effectiveTarget instanceof SendProcessor)) {
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Not a SendProcessor. Ignoring {}", target.getClass().getName());
+      }
+      return true;
+    }
+
+    // Strict policy: If no PDP is available, block every checked data flow
+    PDP pdp;
+    if (rm == null) {
+      LOG.error("RouteManager is not available, aborting...");
+      return false;
+    }
+    pdp = rm.getPdp();
+    if (pdp == null) {
+      LOG.error("PDP is not available, aborting...");
+      return false;
+    }
+
+    String source = exchange.getFromEndpoint().getEndpointUri();
+    String destination = ((SendProcessor) effectiveTarget).getEndpoint().getEndpointUri();
+
+    /*
+     * TODO:
+     * Nodes currently have no properties or capabilities. They should be retrieved from
+     * a) either the prolog knowledge base (a respective query must be created)
+     * b) or from service meta data provided by the ConnectionManagerService(?)
+     */
+    ServiceNode sourceNode = new ServiceNode(source, null, null);
+    ServiceNode destNode = new ServiceNode(destination, null, null);
+
+    // Call PDP to transform labels and decide whether to forward the Exchange
+    applyLabelTransformation(pdp.requestTranformations(sourceNode), exchange);
+    PolicyDecision decision =
+        pdp.requestDecision(
+            new DecisionRequest(sourceNode, destNode, exchange.getProperties(), null));
+
+    switch (decision.getDecision()) {
+      case ALLOW:
+        // forward the Exchange
+        return true;
+      case DENY:
+      default:
+        if (LOG.isWarnEnabled()) {
+          LOG.warn(
+              "Exchange blocked by data flow policy. Source: {}, Target: {}", sourceNode, destNode);
+        }
+        exchange.setException(new Exception("Exchange blocked by data flow policy"));
+        return false;
+    }
+
+    // TODO: Obligation Implementation
+  }
+
+  /**
+   * Removes and adds labels to an exchange object.
+   *
+   * @param requestTransformations The request transformations to be performed
+   * @param msg Message to process
+   */
+  private void applyLabelTransformation(
+      TransformationDecision requestTransformations, Exchange msg) {
+    // Remove labels from exchange
+    requestTransformations
+        .getLabelsToRemove()
+        .stream()
+        .map(l -> PDP.LABEL_PREFIX + l)
+        .forEach(msg::removeProperty);
+
+    // Add labels to exchange
+    requestTransformations
+        .getLabelsToAdd()
+        .stream()
+        .map(l -> PDP.LABEL_PREFIX + l)
+        .forEach(l -> msg.setProperty(l, ""));
+  }
+
+  @Override
+  public void process(Exchange exchange) throws Exception {
+    if (processFlowControl(exchange)) {
+      target.process(exchange);
+    }
+  }
+
+  @Override
+  public boolean process(Exchange exchange, AsyncCallback callback) {
+    if (processFlowControl(exchange)) {
+      try {
+        target.process(exchange);
+        callback.done(true);
+        return true;
+      } catch (Exception e) {
+        LOG.error(e.getMessage(), e);
+      }
+    }
+    callback.done(false);
+    return false;
+  }
 }

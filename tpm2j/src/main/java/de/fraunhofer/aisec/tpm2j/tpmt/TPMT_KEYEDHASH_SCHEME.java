@@ -38,7 +38,7 @@ public class TPMT_KEYEDHASH_SCHEME extends StandardTPMStruct {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
+
 }

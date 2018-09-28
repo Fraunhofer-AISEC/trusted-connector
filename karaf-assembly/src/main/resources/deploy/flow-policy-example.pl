@@ -1,9 +1,17 @@
-regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.
 rule(allowAll).
-has_target(allowAll, serviceAll).
+rule_priority(allowAll,1).
+has_decision(allowAll,allow).
+receives_label(allowAll).
+has_target(allowAll,serviceAll).
+
+service(serviceURI).
+has_endpoint(serviceURI,'^[a-z]+://.*').
+
+service(serviceLog).
+has_endpoint(serviceLog,'^log$').
+
+service(serviceCall).
+has_endpoint(serviceCall,'^[a-zA-Z]+\[.*\]$').
+
 service(serviceAll).
-has_endpoint(serviceAll,".*").
-creates_label(serviceAll, any).
-removes_label(_,none).
-receives_label(allowAll,_).
-has_decision(allowAll, allow).
+has_endpoint(serviceAll,'.*').

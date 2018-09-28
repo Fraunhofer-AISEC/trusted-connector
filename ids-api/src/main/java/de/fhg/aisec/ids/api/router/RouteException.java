@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform API
+ * ids-api
  * %%
- * Copyright (C) 2017 Fraunhofer AISEC
+ * Copyright (C) 2018 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@
  */
 package de.fhg.aisec.ids.api.router;
 
-/**
- * 
- * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
- *
- */
+/** @author Julian Schuette (julian.schuette@aisec.fraunhofer.de) */
 public class RouteException extends Exception {
-	private static final long serialVersionUID = 3684021422039489488L;
-	
-	public RouteException(Throwable cause) {
-		super(cause);
-	}
+  private static final long serialVersionUID = 3684021422039489488L;
 
+  public RouteException(Throwable cause) {
+    super(cause);
+  }
+
+  public RouteException(String msg) {
+    super(msg);
+  }
 }

@@ -1,42 +1,9 @@
-src=src/main/java
-bin=target/classes
-Bundle-Version: 1.0.0
-Bundle-Name: camel-ids
-Bundle-Description: Camel support for the IDS protocol
-Bundle-Copyright: Fraunhofer 2017
-Bundle-Vendor: Fraunhofer Gesellschaft
-Bundle-ContactAddress: julian.schuette@aisec.fraunhofer.de
--includeresource: src/main/resources
+Bundle-Name: IDS :: Camel IDSCP Support
+Bundle-Description: Camel IDS protocol support
 Export-Package: de.fhg.camel.ids.server,\
 	de.fhg.camel.ids.connectionmanagement,\
 	de.fhg.camel.ids.client
-Import-Package: \
-	de.fhg.aisec.ids.messages,\
-	com.ning.http.client.ws;resolution:=optional,\
-	de.fraunhofer.aisec.tpm2j,\
-	de.fraunhofer.aisec.tpm2j.struct,\
-	de.fraunhofer.aisec.tpm2j.tools,\
-	de.fraunhofer.aisec.tpm2j.tpm,\
-	de.fraunhofer.aisec.tpm2j.tpm2b,\
-	de.fraunhofer.aisec.tpm2j.tpma,\
-	de.fraunhofer.aisec.tpm2j.tpmi,\
-	de.fraunhofer.aisec.tpm2j.tpml,\
-	de.fraunhofer.aisec.tpm2j.tpms,\
-	de.fraunhofer.aisec.tpm2j.tpmt,\
-	de.fraunhofer.aisec.tpm2j.tpmu,\
-	jnr.unixsocket;version=0.9.0,\
-	jnr.posix;version=0.9.0,\
-	jnr.enxio;version=0.9.0,\
-	jnr.enxio.channels;version=0.9.0,\
-	!org.glassfish.jersey.*,\
-	io.netty.handler.ssl;resolution:=optional,\
-	io.netty.channel,\
-	org.asynchttpclient.netty,\
-	org.asynchttpclient.netty.handler,\
-	org.asynchttpclient.netty.util,\
-	io.netty.resolver;resolution:=optional,\
-	io.netty.handler.codec,\
-	io.netty.handler.codec.http,\
-	*
--noee=true
--dsannotations: *
+Import-Package: *
+DynamicImport-Package: \
+	org.asynchttpclient.netty.*,\
+	com.typesafe.netty.*

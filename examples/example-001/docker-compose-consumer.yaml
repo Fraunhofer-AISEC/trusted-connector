@@ -3,14 +3,14 @@ services:
 
   # Image for TPM simulator
   consumer-tpm2dsim:
-    image: app-store.isst.fraunhofer.de:5000/ids/tpm2dsim:0.1
+    image: fhgaisec/tpm2dsim:develop
     volumes:
       - ./camel-ids/socket/:/data/cml/tpm2d/communication/
     command: /tpm2d/cml-tpm2d
 
   # Image for core platform, gets docker control socket and route definition mounted into the image
   consumer-core:
-    image: app-store.isst.fraunhofer.de:5000/ids/core-platform:0.1
+    image: fhgaisec/iot-connector:develop
     hostname: consumer-core
     volumes:
       - /tmp/ids/log/:/root/data/log/
@@ -21,17 +21,14 @@ services:
       - ./ids-example-001-consumer.xml:/root/deploy/ids-example-001-consumer.xml
     ports:
       - "5005:5005"
-      - "9292:9292"
       - "8181:8181"
-    environment:
-      - "HOST=consumer-core"
     networks:
       - ids-wide
       - consumer-internal
 
   # Data App (REST consumer, displays web page)
   consumer-app:
-    image: app-store.isst.fraunhofer.de:5000/ids/example-001/example-001-server:0.1
+    image: fhgaisec/example-001-server:develop
     ports:
       - "8081:8081"
     networks:

@@ -1,5 +1,5 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -10,29 +10,31 @@ import { CertificateService } from './keycert.service';
     templateUrl: './identitynew.component.html'
 })
 export class NewIdentityComponent implements OnInit {
-    @Output() changeTitle = new EventEmitter();
-    public myForm: FormGroup;
-    public data: Identity;
-    public events: any[] = [];
+    @Output() readonly changeTitle = new EventEmitter();
+    myForm: FormGroup;
+    data: Identity;
+    events: Array<any> = [];
 
-    constructor(private _fb: FormBuilder, private titleService: Title, private certService: CertificateService, private router: Router) {
+    constructor(private _fb: FormBuilder, private titleService: Title, private certService: CertificateService,
+                private router: Router) {
         this.titleService.setTitle('New Identity');
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         // the short way to create a FormGroup
         this.myForm = this._fb.group({
-            s: ['', <any>Validators.required],
-            cn: ['', <any>Validators.required],
+            s: ['', Validators.required as any],
+            cn: ['', Validators.required as any],
             o: '',
             ou: '',
-            l: '',
+            l: ''
         });
     }
 
-    save(identity: Identity, fileInputElement: any, isValid: boolean) {        
+    save(identity: Identity, /*fileInputElement: any,*/ isValid: boolean): void {
          // Call REST to create identity
-        this.certService.createIdentity(identity).subscribe();
+        this.certService.createIdentity(identity)
+            .subscribe(() => undefined);
         this.router.navigate(['/certificates']);
     }
 }

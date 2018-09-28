@@ -1,27 +1,26 @@
-import { Injectable } from '@angular/core';
-import { Headers, Http, Response, RequestOptions } from '@angular/http';
-import {Observable} from 'rxjs/Rx';
+import { Inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 import { Settings } from './settings.interface';
-import { environment } from '../../environments/environment';
+import { TermsOfService } from './terms-of-service.interface';
+import { ApplicationHttpClient, HTTP_INJECTION_TOKEN } from '../application-http-client.service';
 
 @Injectable()
-export class SettingsService {  
-  constructor(private http: Http) { }
-  
-  getSettings() {
-    return this.http.get(environment.apiURL + '/config/list/')
-               .map(response => {
-                 return response.json() as Settings;
-               });
+export class SettingsService {
+  constructor(@Inject(HTTP_INJECTION_TOKEN) private http: ApplicationHttpClient) { }
+
+  getSettings(): Observable<Settings> {
+    return this.http.get<Settings>('/config');
   }
-  
-  store(model: Settings): Observable<Response> {
-    	let headers = new Headers({ 'Content-Type': 'application/json' });
-    	let options = new RequestOptions({ headers: headers });
-  
-        let result = this.http.post(environment.apiURL + '/config/set', model, options);
-        return result;
-	}
-  
+
+  getToS(uri: string): Observable<TermsOfService> {
+    return this.http.get<TermsOfService>('/certs/acme_tos', {
+      cacheTTL: 60,
+      params: {uri}
+    });
+  }
+
+  store(model: Settings): Observable<string> {
+    return this.http.post('/config', model, { responseType: 'text' });
+  }
 }

@@ -1,5 +1,8 @@
 <div class="mdl-grid">
-	<div class="mdl-cell mdl-cell--6-col" *ngFor="let app of apps">
+	<div class="mdl-cell mdl-cell--6-col" *ngFor="let app of apps; trackBy: trackApps">
 		<app-card [app]="app"></app-card>
 	</div>
 </div>
+<button [routerLink]="['/appsearch']" class="create-button mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+  <i class="material-icons">add</i>
+</button>

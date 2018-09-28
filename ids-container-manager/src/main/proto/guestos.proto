@@ -1,0 +1,109 @@
+/*
+ * This file is part of trust|me
+ * Copyright(c) 2013 - 2017 Fraunhofer AISEC
+ * Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2 (GPL 2), as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GPL 2 license for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, see <http://www.gnu.org/licenses/>
+ *
+ * The full GNU General Public License is included in this distribution in
+ * the file called "COPYING".
+ *
+ * Contact Information:
+ * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+ */
+syntax = "proto2";
+
+option java_package = "de.fraunhofer.aisec.trustme";
+
+// (English) string with optional translations in other languages
+message I18NString {
+	required string en = 1;
+	optional string de = 2;
+	optional string fr = 3;
+	// TODO: add other languages as necessary...
+}
+
+// Represents a single mount point/image provided by the GuestOS
+message GuestOSMount {
+	// Path for the image files is derived from guestos_path/guestos_name.
+	required string image_file = 1; // name of the image file, e.g. system
+	required string mount_point = 2; // mountpoint inside the container
+	required string fs_type = 3; // file system type, e.g. "ext4"
+
+	enum Type {
+		SHARED = 1; // image shared by all containers of same OS type
+		DEVICE = 2; // image file is copied from a device partition
+		DEVICE_RW = 3; // image file is copied from a device partition
+		EMPTY = 4;  // empty, created when a corresponding container is first instantiated
+		COPY = 5;   // deprecated
+		FLASH = 6;	// image to be flashed to a partition (e.g. boot.img; base system updates only for now)
+		SHARED_DATA = 7; // image shared between different containers and OSs
+		OVERLAY_RO = 8; // read only overlay images e.g. for system features
+		SHARED_RW = 9; // image shared by all containers of same OS type (writable tmpfs as overlay)
+	}
+	required Type mount_type = 4;   // type of the image file
+
+	// The following three fields are only used for EMPTY mount types:
+	optional uint32 min_size = 6 [default = 10];	// required minimum size (MBytes) for EMPTY partition
+	optional uint32 max_size = 7 [default = 16384]; // allowed maximum size (MBytes) for EMPTY partition
+	optional uint32 def_size = 8 [default = 1024];  // default size (MBytes) for EMPTY partition
+
+	// The following two fields are only used when an actual image file is provided:
+	optional uint64 image_size = 10;     // size (bytes) of the image
+	// hash(es) of image file
+	optional string image_sha1 = 11;
+	optional string image_sha2_256 = 12;
+	// TODO add further hashes as necessary
+
+	optional string mount_data = 13;  // mount_data used for mount syscall, e.g. "context=" for selinux
+}
+
+
+message GuestOSConfig {
+	// The following three fields together should UNIQUELY identify the actual guestos image files and config:
+	required string name = 1;       // unique name of the operating system
+	required string hardware = 2;   // target hardware; must match hardware_get_name(), e.g. "i9505", etc.
+	// TODO version string OR major.minor-suffix? ("RC1", "beta", etc.)
+	required uint64 version = 3;    // version string for the guest OS
+
+	//optional string min_cml_version = 4;  // minimum version of cml daemon
+
+	repeated GuestOSMount mounts = 5;      // list of mounts inside the container
+	optional string init_path = 6 [default = "/init"];  // path to the init binary, e.g. "/init"
+	repeated string init_param = 7; // parameters (argv) for init
+	repeated string init_env = 8;	// environment variables
+
+	// Flags indicating the features supported by the OS:
+	optional bool feature_phone = 20 [default = false];
+	optional bool feature_bluetooth = 21 [default = false];
+	optional bool feature_wifi = 22 [default = false];
+	optional bool feature_mobile_data = 23 [default = false];
+	optional bool feature_sensors = 24 [default = false];
+	optional bool feature_camera = 25 [default = false];
+	optional bool feature_audio = 26 [default = false];
+	optional bool feature_bg_booting = 27 [default = false];
+	optional bool feature_vpn = 28 [default = false];
+	optional bool feature_devtmpfs = 29 [default = false];
+	// TODO: add further features as necessary
+
+	// TODO: Determine RAM limit policy...
+	optional uint32 min_ram_limit = 30 [default = 128];    // required minimum RAM size (MBytes)
+	optional uint32 def_ram_limit = 32 [default = 1024];   // default RAM size (MBytes)
+
+	// Descriptive information (for GUI):
+	required I18NString description = 10;    // description/full name
+	optional I18NString description_long = 11;    // help text
+	optional string upstream_version = 12;  // upstream version
+	optional bytes icon = 13;         // name of icon file
+	optional string build_date = 14;        // build date
+
+}

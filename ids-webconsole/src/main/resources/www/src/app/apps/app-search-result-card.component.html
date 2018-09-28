@@ -1,0 +1,37 @@
+<div class="app-card mdl-card card-dark mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__title mdl-card--expand">
+        <h2 class="mdl-card__title-text">{{ app.title }}</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--2-col">
+                <img src="{{ app.logo }}" />
+            </div>
+            <div class="mdl-cell mdl-cell--8-col">
+                <span style="display:block;font-size:20pt;font-weight:500;padding-bottom:20px">{{ app.title }}</span>
+                {{ app.description }}<br>
+                {{ app.note }}
+            </div>
+            <div class="mdl-cell mdl-cell--2-col">			
+				<div>
+					<span *ngIf="app.platform == 'windows'" style="padding-right:10px"><i class="fab fa-windows fa-2x"></i></span>
+					<span *ngIf="app.platform == 'linux'"  style="padding-right:10px"><i class="fab fa-linux fa-2x"></i></span>
+					<span *ngIf="app.privileged" style="padding-right:10px;color:#a04040"><i class="fas fa-exclamation-triangle fa-2x"></i></span>
+					<span *ngIf="app.type == 'stack'" style="padding-right:10px"><i class="fas fa-cubes fa-2x"></i></span>
+					<span *ngIf="app.type == 'container'" style="padding-right:10px"><i class="fas fa-cube fa-2x" ></i></span>
+				</div>
+				<div style="margin-top:15px;" *ngFor="let cat of app.categories; trackBy: trackCat">
+					<span class="br4 bn bg-gray5 fg-white pv1 ph2">{{ cat }}</span>
+				</div>
+			</div>
+            <div class="mdl-cell mdl-cell--12-col">
+                
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+
+				<button *ngIf="app.type == 'container'" [attr.id]="'menu_' + app.name" class="mdl-button mdl-js-button mdl-button--colored" (click)="onInstall(app)">Install</button>
+				<button *ngIf="app.type == 'stack'" [attr.id]="'menu_' + app.name" class="mdl-button mdl-button--disabled mdl-js-button mdl-button--colored" (click)="onInstall(app)">Stacks cannot be installed</button>
+            </div>
+        </div>
+    </div>
+</div>

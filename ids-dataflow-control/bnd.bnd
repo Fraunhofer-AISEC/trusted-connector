@@ -1,22 +1,6 @@
-src: src/main/java
-bin: target/classes
-testsrc: src/test/java,src/test/resources
-testbin: target/test-classes
-Bundle-Name: ids-dataflow-control
-Bundle-Version: 1.1.0
-Export-Package: de.fhg.ids.dataflowcontrol
-Bundle-ClassPath: ., META-INF/lib/tuprolog.jar
--dsannotations: *
--includeresource: META-INF/lib/tuprolog.jar=tuprolog-[0-9]*.jar;lib:=true
-Bundle-Vendor: Fraunhofer
--noee=true
+Bundle-Name: IDS :: Dataflow Control Engine
+Export-Package: \
+    de.fhg.ids.dataflowcontrol
 Import-Package: \
-	!org.apache.commons.lang3,\
-	!javax.tools,\
-	!javax.script,\
-	!cli.System.Reflection,\
-	!com.google.gson,\
-	!ikvm.runtime,\
-	!alice.tuprolog*,\
+    !org.checkerframework.checker*,\
 	*
-Private-Package: de.fhg.ids.dataflowcontrol.lucon

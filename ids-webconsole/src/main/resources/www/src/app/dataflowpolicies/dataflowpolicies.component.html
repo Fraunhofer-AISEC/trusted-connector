@@ -15,18 +15,20 @@
 			</ul>
 		</div>
 		<div class="mdl-card__supporting-text">
-			<span *ngIf=!isLoaded>No policy installed. All routes are allowed.</span>
-			<ul class="mdl-list" *ngFor="let rule of policies">
-				<li class="mdl-list__item mdl-list__item--two-line">
-					<span class="mdl-list__item-primary-content">
-						<span>{{rule}}</span>
-						<span class="mdl-list__item-sub-title">Rule</span>
-					</span>
-					<span class="mdl-list__item-secondary-content">
-						<span class="mdl-list__item-secondary-info">Active</span><a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--teal">done</i></a>
-					</span>
-				</li>
-			</ul>
+			<span *ngIf="!isLoaded">No policy installed. All routes are allowed.</span>
+			<div *ngIf="isLoaded">
+				<ul class="mdl-list" *ngFor="let rule of policies; trackBy: trackRules">
+					<li class="mdl-list__item mdl-list__item--two-line">
+						<span class="mdl-list__item-primary-content">
+							<span>{{ rule }}</span>
+							<span class="mdl-list__item-sub-title">Rule</span>
+						</span>
+						<span class="mdl-list__item-secondary-content">
+							<span class="mdl-list__item-secondary-info">Active</span><a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--teal">done</i></a>
+						</span>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </div>

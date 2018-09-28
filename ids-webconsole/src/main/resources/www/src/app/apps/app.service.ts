@@ -1,44 +1,69 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http, Response } from '@angular/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import 'rxjs/add/operator/map';
+import { App, AppSearchTerm } from './app';
+import { Cml } from './cml';
+import { Result } from '../result';
 
-import { App } from './app';
+import { environment } from '../../environments/environment';
 
-import { environment } from '../../environments/environment';
+import { catchError } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
 
 @Injectable()
 export class AppService {
-  constructor(private http: Http) {
-    console.log("constructor AppService");
-  }
 
-  getApps() {
-    return this.http.get(environment.apiURL + '/apps/list/')
-               .map(response => {
-                 return response.json() as App[];
-               });
-  }
+    constructor(private http: HttpClient) {
+    }
 
-  stopApp(appId: string) {
-      return this.http.get(environment.apiURL + '/apps/stop?containerId=' + appId)
-                 .map(response => {
-                   return response.json() as string;
-                 });
-  }
+    getApps(): Observable<Array<App>> {
+        return this.http.get<Array<App>>(environment.apiURL + '/app/list/');
+    }
 
-  startApp(appId: string) {
-      return this.http.get(environment.apiURL + '/apps/start?containerId=' + appId)
-                 .map(response => {
-                  return response.json() as string;
-                 });
-  }
+    stopApp(appId: string): Observable<Result> {
+        return this.http.get<Result>(environment.apiURL + '/app/stop/' + encodeURIComponent(appId));
+    }
 
-  getCmlVersion() {
-    return this.http.get(environment.apiURL + '/apps/cml_version')
-               .map(response => {
-                 return response.json() as string;
-               });
-  }
+    startApp(appId: string): Observable<Result> {
+        return this.http.get<Result>(environment.apiURL + '/app/start/' + encodeURIComponent(appId));
+    }
 
+    installApp(app: App): Observable<string> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+        return this.http.post<string>(environment.apiURL + '/app/install',
+            { app }, { headers })
+            .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
+    }
+
+    getCmlVersion(): Observable<Cml> {
+        return this.http.get<Cml>(environment.apiURL + '/app/cml_version');
+    }
+
+    searchApps(term: string): Observable<Array<App>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        const searchTerm = new AppSearchTerm();
+        searchTerm.searchTerm = term;
+        const result = this.http.post<Array<App>>(environment.apiURL + '/app/search',
+                searchTerm, {headers});
+
+        return result;
+    }
+
+    /*getAllTags(term: string): Observable<Array<App>> {
+        const searchedApps: Observable<Array<App>> = this.searchApps(term);
+
+        return searchedApps.pipe(map(apps => {
+            for (const app of apps) {
+                this.getTags(app.name)
+                    .forEach(x => {
+                        app.tags = x;
+
+                        return app;
+                    });
+            }
+
+            return apps;
+        }));
+    }*/
 }
