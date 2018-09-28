@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 
@@ -47,11 +49,27 @@ import de.fhg.camel.ids.server.WebsocketComponentServlet;
 @Component(name = "ids-connection-manager", immediate = true)
 public class ConnectionManagerService implements ConnectionManager {
 
+  private static ConnectionManagerService instance = null;
+
   @Reference(cardinality=ReferenceCardinality.OPTIONAL)
-  private static Settings settings = null;
+  private Settings settings = null;
+
+  @Activate
+  protected void activate() {
+	  ConnectionManagerService.instance = this;	  
+  }
+  
+  @Deactivate
+  protected void deactivate() {
+	  ConnectionManagerService.instance = null;	  
+  }
 
   public static Settings getSettings() {
-	  return settings;
+	  ConnectionManagerService in = ConnectionManagerService.instance;
+	  if (in!=null) {
+		  return in.settings;  
+	  }
+	  return null;
   }
   
   @Override

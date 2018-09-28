@@ -67,7 +67,7 @@ public class AppApi {
   @ApiResponses(@ApiResponse(code = 200, message = "List of apps"))
   @Produces(MediaType.APPLICATION_JSON)
   public List<ApplicationContainer> list() {
-    ContainerManager cml = WebConsoleComponent.getContainerManagerOrThrowSUE();
+    ContainerManager cml = WebConsoleComponent.getContainerManager();
 
     List<ApplicationContainer> result = cml.list(false);
     result.sort(
@@ -107,7 +107,7 @@ public class AppApi {
   public boolean start(
       @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId) {
     try {
-      ContainerManager cml = WebConsoleComponent.getContainerManagerOrThrowSUE();
+      ContainerManager cml = WebConsoleComponent.getContainerManager();
       cml.startContainer(containerId);
       return true;
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
@@ -130,7 +130,7 @@ public class AppApi {
   public boolean stop(
       @ApiParam(value = "ID of the app to stop") @PathParam("containerId") String containerId) {
     try {
-      ContainerManager cml = WebConsoleComponent.getContainerManagerOrThrowSUE();
+      ContainerManager cml = WebConsoleComponent.getContainerManager();
       cml.stopContainer(containerId);
       return true;
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
@@ -173,7 +173,7 @@ public class AppApi {
           Map<String, ApplicationContainer> apps) {
     ApplicationContainer app = apps.get("app");
     LOG.debug("Request to load {}", app.getImage());
-    final ContainerManager cm = WebConsoleComponent.getContainerManagerOrThrowSUE();
+    final ContainerManager cm = WebConsoleComponent.getContainerManager();
 
     final String image = app.getImage();
     if (image == null) {
@@ -206,7 +206,7 @@ public class AppApi {
   public String wipe(
       @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") String containerId) {
     try {
-      ContainerManager cml = WebConsoleComponent.getContainerManagerOrThrowSUE();
+      ContainerManager cml = WebConsoleComponent.getContainerManager();
       cml.wipe(containerId);
     } catch (NoContainerExistsException e) {
       LOG.error(e.getMessage(), e);
@@ -223,7 +223,7 @@ public class AppApi {
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, String> getCml() {
     try {
-      ContainerManager cml = WebConsoleComponent.getContainerManagerOrThrowSUE();
+      ContainerManager cml = WebConsoleComponent.getContainerManager();
       Map<String, String> result = new HashMap<>();
       result.put("cml_version", cml.getVersion());
       return result;
@@ -241,7 +241,7 @@ public class AppApi {
     try {
       Client client = ClientBuilder.newBuilder().build();
       String url =
-          WebConsoleComponent.getSettingsOrThrowSUE().getConnectorConfig().getAppstoreUrl();
+          WebConsoleComponent.getSettings().getConnectorConfig().getAppstoreUrl();
 
       String r = client.target(url).request(MediaType.TEXT_PLAIN).get(String.class);
 

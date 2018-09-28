@@ -6,6 +6,7 @@ Export-Package: \
 	de.fhg.aisec.ids.webconsole.api,\
 	de.fhg.aisec.ids.webconsole.api.data
 Import-Package: \
+	!org.checkerframework.checker.*,\
 	org.apache.cxf.jaxrs.security,\
 	org.apache.cxf.interceptor.security,\
 	com.fasterxml.jackson.jaxrs.json,\

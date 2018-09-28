@@ -14,7 +14,7 @@ import java.nio.file.FileSystems
 import java.util.*
 import java.util.concurrent.ConcurrentMap
 
-@Component(immediate = true)
+@Component(immediate = true, name="ids-settings")
 class SettingsComponent : Settings {
     @Activate
     fun activate() {

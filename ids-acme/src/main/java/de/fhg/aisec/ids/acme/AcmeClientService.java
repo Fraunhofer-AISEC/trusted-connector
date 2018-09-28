@@ -47,6 +47,7 @@ import org.osgi.service.component.annotations.*;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 @Component(
   immediate = true,
+  name = "ids-acme-client",
   property = {
     Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?" // Every day at 3:00 (3 am)
   }
@@ -166,6 +168,10 @@ public class AcmeClientService implements AcmeClient, Runnable {
             LOG.info(account.getLocation().toString());
           }
           break;
+        } catch (AcmeNetworkException e) {
+            // In case of ACME error, session creation has failed; return immediately.
+            LOG.warn("Could not connect to ACME server " + acmeServerUri + ". Will not create certificate");
+            return;
         } catch (AcmeException e) {
           // In case of ACME error, session creation has failed; return immediately.
           LOG.error("Error while accessing/creating ACME account", e);

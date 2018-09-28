@@ -233,7 +233,7 @@ public class RouteApi {
   @Path("/validate/{routeId}")
   @Produces(MediaType.APPLICATION_JSON)
   public ValidationInfo validate(@PathParam("routeId") String routeId) {
-    PAP pap = WebConsoleComponent.getPolicyAdministrationPointOrThrowSUE();
+    PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     RouteVerificationProof rvp = pap.verifyRoute(routeId);
     ValidationInfo vi = new ValidationInfo();
     vi.valid = rvp.isValid();
