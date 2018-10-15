@@ -170,7 +170,8 @@ public class AcmeClientService implements AcmeClient, Runnable {
           break;
         } catch (AcmeNetworkException e) {
             // In case of ACME error, session creation has failed; return immediately.
-            LOG.warn("Could not connect to ACME server " + acmeServerUri + ". Will not create certificate");
+            LOG.warn("Could not connect to ACME server {}. Will not create certificate.",
+                acmeServerUri);
             return;
         } catch (AcmeException e) {
           // In case of ACME error, session creation has failed; return immediately.
