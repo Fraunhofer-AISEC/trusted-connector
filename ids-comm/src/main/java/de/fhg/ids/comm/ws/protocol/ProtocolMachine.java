@@ -19,19 +19,7 @@
  */
 package de.fhg.ids.comm.ws.protocol;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
-import org.asynchttpclient.ws.WebSocket;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.protobuf.MessageLite;
-
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.ids.comm.client.ClientConfiguration;
@@ -43,6 +31,14 @@ import de.fhg.ids.comm.ws.protocol.metadata.MetadataConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataProviderHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import org.asynchttpclient.ws.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class generates the Finite State Machine (FSM) for the IDS protocol.
@@ -129,8 +125,10 @@ public class ProtocolMachine {
             ProtocolState.IDSCP_RAT_AWAIT_RESULT,
             ProtocolState.IDSCP_RAT_AWAIT_LEAVE,
             e -> {
+              // leaveRatRequest() MUST be called FIRST!
+              MessageLite message = ratConsumerHandler.leaveRatRequest(e);
               fsm.setRatResult(ratConsumerHandler.getAttestationResult());
-              return replyProto(ratConsumerHandler.leaveRatRequest(e));
+              return replyProto(message);
             }));
 
     // Metadata Exchange Protocol
@@ -167,7 +165,8 @@ public class ProtocolMachine {
 
     // Add listener to log state transitions
     fsm.addSuccessChangeListener(
-        (f, e) -> LOG.debug("Consumer State change: " + e.getKey() + " -> " + f.getState()));
+        (f, e) -> LOG.debug(
+            String.format("Consumer State change: %s -> %s", e.getKey(), f.getState())));
 
     //        String graph = fsm.toDot();
     //        System.out.println(graph);
@@ -243,8 +242,10 @@ public class ProtocolMachine {
             ProtocolState.IDSCP_RAT_AWAIT_LEAVE,
             ProtocolState.IDSCP_META_REQUEST,
             e -> {
+              // leaveRatRequest() MUST be called FIRST!
+              MessageLite message = ratProviderHandler.leaveRatRequest(e);
               fsm.setRatResult(ratProviderHandler.getAttestationResult());
-              return replyProto(ratProviderHandler.leaveRatRequest(e));
+              return replyProto(message);
             }));
 
     // Metadata Exchange Protocol
@@ -277,7 +278,8 @@ public class ProtocolMachine {
 
     /* Add listener to log state transitions */
     fsm.addSuccessChangeListener(
-        (f, e) -> LOG.debug("Provider State change: " + e.getKey() + " -> " + f.getState()));
+        (f, e) -> LOG.debug(
+            String.format("Provider State change: %s -> %s", e.getKey(), f.getState())));
 
     //        String graph = fsm.toDot();
     //        System.out.println(graph);
@@ -289,19 +291,13 @@ public class ProtocolMachine {
   }
 
   private boolean replyProto(MessageLite message) {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    try {
-      message.writeTo(bos);
-    } catch (IOException e) {
-      LOG.error(e.getMessage(), e);
-    }
-    return reply(bos.toByteArray());
+    return reply(message.toByteArray());
   }
 
   /**
    * Sends a response over the websocket session.
    *
-   * @param text
+   * @param text Bytes to send to client
    * @return true if successful, false if not.
    */
   private boolean reply(byte[] text) {
@@ -313,6 +309,7 @@ public class ProtocolMachine {
         serverSession.getRemote().flush();
       } catch (IOException e) {
         LOG.error(e.getMessage(), e);
+        return false;
       }
     } else if (this.clientSocket != null) {
       this.clientSocket.sendBinaryFrame(text);
@@ -321,19 +318,17 @@ public class ProtocolMachine {
   }
 
   private boolean replyAbort() {
-    LOG.debug("{} sending abort", (this.serverSession == null ? "Server" : "Client"));
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    if (this.serverSession != null) {
+      LOG.debug("Client sending abort");
+    } else {
+      LOG.debug("Server sending abort");
+    }
     MessageLite abortMessage =
         ConnectorMessage.newBuilder()
             .setId(0)
             .setType(ConnectorMessage.Type.ERROR)
             .setError(Error.newBuilder().setErrorCode("").setErrorMessage("Abort").build())
             .build();
-    try {
-      abortMessage.writeTo(bos);
-    } catch (IOException e) {
-      LOG.error(e.getMessage(), e);
-    }
-    return reply(bos.toByteArray());
+    return reply(abortMessage.toByteArray());
   }
 }
