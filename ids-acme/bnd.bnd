@@ -1,14 +1,14 @@
 Bundle-Name: IDS :: ACME Client Service
 Require-Capability: osgi.extender; filter:="(osgi.extender=osgi.serviceloader.registrar)",\
-    osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",\
-    osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"
+  osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",\
+  osgi.serviceloader; cardinality:=multiple; filter:="(osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider)"
 Provide-Capability: osgi.serviceloader; osgi.serviceloader=org.shredzone.acme4j.provider.AcmeProvider
 # Packages that should be included in the resulting jar file, but *not* exported
 Private-Package: \
-    fi.iki.elonen*,\
-    org.shredzone.acme4j*,\
-    org.bouncycastle*,\
-    org.jose4j*
+  fi.iki.elonen*,\
+  org.shredzone.acme4j*,\
+  org.bouncycastle*,\
+  org.jose4j*
 Import-Package: \
-	*
+  *
 Export-Package: de.fhg.aisec.ids.acme

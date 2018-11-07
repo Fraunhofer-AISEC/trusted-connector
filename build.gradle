@@ -22,8 +22,8 @@ allprojects {
 
     ext.libraryVersions = [
             // basically, the first requirement, all other libraries depend on this version
-            karaf         : '4.2.0',
-            pax           : '7.0.0',
+            karaf         : '4.2.1',
+            pax           : '7.2.3',
 
             camel         : '2.21.1',
 
@@ -33,23 +33,23 @@ allprojects {
             // OSGI libraries
             osgiCompendium: '6.0.0',
             osgi          : '6.0.0',
-            felixFramework: '5.4.0',
+            felixFramework: '5.6.10',
 
             ahc           : '2.4.9',
-            acme          : '2.0',
+            acme          : '2.3',
             checkerQual   : '2.5.2',
-            guava         : '26.0-jre',
-            kotlin        : '1.2.61',
-            tuprolog      : '3.2.1',
+            guava         : '27.0-jre',
+            kotlin        : '1.2.70',
+            tuprolog      : '3.3.0',
             log4j         : '2.6.2',
             junit4        : '4.12',
             mapdb         : '3.0.7',
             // must be consistent with jnr-ffi version in jnr-unixsocket-wrapper
-            jnrunix       : '0.19',
+            jnrunix       : '0.20',
             protobuf      : '3.6.0',
 
             // it seems not all jetty components are in our BOM so we need to specify it here as well
-            jetty         : '9.4.6.v20170531',
+            jetty         : '9.4.11.v20180605',
 
             // we will pull in a newer version of jackson because of security fixes
             jackson       : '2.9.5',

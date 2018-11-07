@@ -5,8 +5,13 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
-        transitive = false  // Avoid pulling in of checker framework and other annotation stuff
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'org.checkerframework', module: 'checker-qual'
+        exclude group: 'com.google.errorprone', module: 'error_prone_annotations'
+        exclude group: 'com.google.j2objc', module: 'j2objc-annotations'
+        exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
     }
+    compileOnly group: 'com.google.guava', name: 'guava', version: libraryVersions.guava
 
     providedByFeature group: 'org.eclipse.jetty', name: 'jetty-util', version: libraryVersions.jetty
     providedByFeature group: 'org.apache.karaf.scheduler', name: 'org.apache.karaf.scheduler.core', version: libraryVersions.karaf
