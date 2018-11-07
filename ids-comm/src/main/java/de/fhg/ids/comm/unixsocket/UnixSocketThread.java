@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
 public class UnixSocketThread implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
   private static final int SOCKET_FILE_RETRIES = 10;
-  private static final long HALF_SEC_MS = 500;
+  private static final long SOCKET_FILE_RETRY_DELAY_MS = 500;
+  private static final long SELECT_THROTTLE_MS = 5;
   private final String socket;
 
   // The selector we'll be monitoring
@@ -129,26 +130,31 @@ public class UnixSocketThread implements Runnable {
         // Wait for an event on one of the registered channels
         int updates = this.selector.select();
         if (updates == 0) {  // Throttle
-        	Thread.sleep(5);
-        }
-        LOG.trace("Reading from socket {}", this.socket);
-
-        // Iterate over the set of keys for which events are available
-        Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
-        while (selectedKeys.hasNext()) {
-          SelectionKey key = selectedKeys.next();
-          LOG.trace("Read key: {}", key);
-          selectedKeys.remove();
-          if (!key.isValid()) {
-            continue;
+          try {
+            TimeUnit.MILLISECONDS.sleep(SELECT_THROTTLE_MS);
+          } catch (InterruptedException ie) {
+            // Re-interrupt the thread, but prevent error output
+            Thread.currentThread().interrupt();
           }
-          // Check what event is available and deal with it
-          if (key.isConnectable()) {
-            this.finishConnection(key);
-          } else if (key.isReadable()) {
-            this.read(key);
-          } else if (key.isWritable()) {
-            this.write(key);
+        } else {
+          LOG.trace("Reading from socket {}", this.socket);
+          // Iterate over the set of keys for which events are available
+          Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
+          while (selectedKeys.hasNext()) {
+            SelectionKey key = selectedKeys.next();
+            LOG.trace("Processing SelectionKey: {}", key);
+            selectedKeys.remove();
+            if (!key.isValid()) {
+              continue;
+            }
+            // Check what event is available and deal with it
+            if (key.isConnectable()) {
+              this.finishConnection(key);
+            } else if (key.isReadable()) {
+              this.read(key);
+            } else if (key.isWritable()) {
+              this.write(key);
+            }
           }
         }
       } catch (Exception e) {
@@ -189,12 +195,12 @@ public class UnixSocketThread implements Runnable {
       // buffer length + protobuf message
       if (this.bufferLengthIsAppended(this.readBuffer, numRead)) {
         int length = new BigInteger(this.readBufferLength).intValue();
-        LOG.trace("Message (with header) of length " + length + " arrived!");
+        LOG.trace("Message (with header) of length {} arrived!", length);
         // Handle the read data
         this.handleResponse(channel, Arrays.copyOfRange(this.readBuffer.array(), 4, numRead));
       } else {
         int length = new BigInteger(this.readBufferLength).intValue();
-        LOG.trace("Message (without header) of length " + length + " arrived!");
+        LOG.trace("Message (without header) of length {} arrived!", length);
         // Handle the read data
         this.handleResponse(channel, this.readBuffer.array());
       }
@@ -277,7 +283,7 @@ public class UnixSocketThread implements Runnable {
     int retries = 0;
     while (!socketFile.getAbsoluteFile().exists() && retries < SOCKET_FILE_RETRIES) {
       ++retries;
-      TimeUnit.MILLISECONDS.sleep(HALF_SEC_MS);
+      TimeUnit.MILLISECONDS.sleep(SOCKET_FILE_RETRY_DELAY_MS);
       socketFile = new File(socket);
       if (retries < SOCKET_FILE_RETRIES && LOG.isDebugEnabled()) {
         LOG.debug(
