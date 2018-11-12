@@ -19,6 +19,18 @@
  */
 package de.fhg.ids.comm.ws.protocol.rat;
 
+import com.google.protobuf.MessageLite;
+import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.Error;
+import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
+import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
+import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
+import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -31,26 +43,10 @@ import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.protobuf.MessageLite;
-
-import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.ids.messages.Idscp.Error;
-import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
-import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
-import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
-import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 
 public class RemoteAttestationHandler {
   protected static final Logger LOG =
@@ -77,10 +73,10 @@ public class RemoteAttestationHandler {
   public static boolean checkRepository(
       IdsAttestationType aType, AttestationResponse response, URI ttpUri) {
     if (aType == null || response == null || ttpUri == null) {
-    	return false;
+      return false;
     }
-	  
-	List<Pcr> values = response.getPcrValuesList();
+
+    List<Pcr> values = response.getPcrValuesList();
     try {
       ConnectorMessage msgRepo =
           RemoteAttestationHandler.readRepositoryResponse(
@@ -108,11 +104,7 @@ public class RemoteAttestationHandler {
 
     } catch (Exception ex) {
       lastError = "Exception: " + ex.getMessage();
-      LOG.debug(
-          "//Exception///////////////////////////////////////////////////////////////////////////");
-      LOG.debug(lastError);
-      LOG.debug(
-          "//Exception///////////////////////////////////////////////////////////////////////////");
+      LOG.error("Exception in checkRepository(): ", ex);
       return false;
     }
   }
@@ -131,13 +123,16 @@ public class RemoteAttestationHandler {
 
   public boolean checkSignature(AttestationResponse response, byte[] hash) {
     byte[] byteSignature = response.getSignature().toByteArray();
-    LOG.debug("signature: {}", ByteArrayUtil.toPrintableHexString(byteSignature));
     byte[] byteCert = response.getAikCertificate().toByteArray();
-    LOG.debug("cert: {}", ByteArrayUtil.toPrintableHexString(byteCert));
     byte[] byteQuoted = response.getQuoted().toByteArray();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("signature: {}", ByteArrayUtil.toPrintableHexString(byteSignature));
+      LOG.debug("cert: {}", ByteArrayUtil.toPrintableHexString(byteCert));
+      LOG.debug("quoted: {}", ByteArrayUtil.toPrintableHexString(byteQuoted));
+    }
 
     if (byteCert.length == 0 || byteQuoted.length == 0) {
-      LOG.debug("Response did not contain signature ");
+      LOG.warn("Response did not contain signature!");
       return false;
     }
     try {
@@ -151,9 +146,14 @@ public class RemoteAttestationHandler {
           TPMT_SIGNATURE tpmtSignature = new TPMT_SIGNATURE(byteSignature);
           // check hash value (extra data) against expected hash
           TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
-          byte[] extraBytes = tpmsAttest.getExtraData().toBytes();
+          byte[] extraBytes = tpmsAttest.getExtraData().getBuffer();
           if (!Arrays.equals(extraBytes, hash)) {
-            LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!");
+            if (LOG.isWarnEnabled()) {
+              LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!"
+                  + "\nextra data: {}\nhash: {}",
+                  ByteArrayUtil.toPrintableHexString(extraBytes),
+                  ByteArrayUtil.toPrintableHexString(hash));
+            }
             return false;
           }
 
@@ -211,6 +211,7 @@ public class RemoteAttestationHandler {
       throws IOException, GeneralSecurityException {
     HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
     SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+    sslContext.init(null, null, null);
     urlc.setSSLSocketFactory(sslContext.getSocketFactory());
     urlc.setUseCaches(false);
     urlc.setDoInput(true);

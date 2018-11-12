@@ -29,7 +29,15 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
@@ -38,7 +46,7 @@ public class REST {
 
   private Database db;
   private Gson gson = new Gson();
-  private static final String PROTOBUF_URL = "/configurations/check";
+  private static final String PROTOBUF_URL = "/rat-verify";
   private boolean corsEnabled = true;
   protected @Context HttpServletResponse response;
 

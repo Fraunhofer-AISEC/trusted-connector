@@ -19,7 +19,10 @@
  */
 package de.fhg.ids.attestation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,7 +35,6 @@ import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +43,11 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.apache.camel.test.AvailablePortFinder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -55,9 +61,10 @@ public class RatRepositoryTest {
   private static RemoteAttestationServer ratServer;
   private static Pcr[] values;
   private static final int PORT = AvailablePortFinder.getNextAvailable();
+  private static final String PATH = "rat-verify";
   private static HostnameVerifier hv;
   private static final Logger LOG = LoggerFactory.getLogger(RatRepositoryTest.class);
-  private static final String sURL = "https://127.0.0.1:" + PORT + "/configurations/check";
+  private static final String sURL = "https://127.0.0.1:" + PORT + "/" + PATH;
   private static final int SHA256_BYTES_LEN = 32;
   private static final String ZERO;
   private static final String FFFF;
@@ -73,7 +80,7 @@ public class RatRepositoryTest {
 
   @BeforeClass
   public static void initRepo() {
-    ratServer = new RemoteAttestationServer("127.0.0.1", "configurations/check", PORT);
+    ratServer = new RemoteAttestationServer("127.0.0.1", PATH, PORT);
     ratServer.start();
 
     // Create a trust manager that does not validate certificate chains
@@ -93,7 +100,7 @@ public class RatRepositoryTest {
         };
     try {
       SSLContext sc = SSLContext.getInstance("SSL");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      sc.init(null, trustAllCerts, null);
       HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     } catch (Exception e) {
       System.out.println("Error" + e);
