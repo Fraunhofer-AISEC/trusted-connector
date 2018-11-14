@@ -120,7 +120,7 @@ public class DockerCmIT {
     assertEquals("Created", container.get().getStatus());
 
     // Start container
-    d.startContainer(containerID);
+    d.startContainer(containerID, null);
 
     // We now expect it in list of running containers
     containers = d.list(true);

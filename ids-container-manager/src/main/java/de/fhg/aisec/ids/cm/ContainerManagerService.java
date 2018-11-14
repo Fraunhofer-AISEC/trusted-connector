@@ -93,9 +93,9 @@ public class ContainerManagerService implements ContainerManager {
   }
 
   @Override
-  public void startContainer(String containerID) {
+  public void startContainer(String containerID, String key) {
     try {
-      containerManager.startContainer(containerID);
+      containerManager.startContainer(containerID, key);
     } catch (NoContainerExistsException e) {
       LOG.error(e.getMessage(), e);
     }

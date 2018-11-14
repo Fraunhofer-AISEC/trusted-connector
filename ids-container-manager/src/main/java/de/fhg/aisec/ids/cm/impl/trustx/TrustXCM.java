@@ -61,8 +61,7 @@ public class TrustXCM implements ContainerManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrustXCM.class);
 
-  private static final String A0_CONTAINER = "a0";
-  private static final String SOCKET = "/dev/socket/cml-control";
+  private static final String SOCKET = "/run/socket/cml-control";
   private TrustmeUnixSocketThread socketThread;
   private TrustmeUnixSocketResponseHandler responseHandler;
   private DateTimeFormatter formatter =
@@ -120,25 +119,26 @@ public class TrustXCM implements ContainerManager {
   }
 
   @Override
-  public void startContainer(String containerID) {
+  public void startContainer(String containerID, String key) {
     LOG.debug("Starting start container with ID {}", containerID);
     ControllerToDaemon.Builder ctdmsg = ControllerToDaemon.newBuilder();
     ctdmsg.setCommand(Command.CONTAINER_START);
     ctdmsg.addContainerUuids(containerID);
     ContainerStartParams.Builder cspbld = ContainerStartParams.newBuilder();
-    cspbld.setKey("trustme");
+    if (key != null) {
+      cspbld.setKey(key);
+    }
     cspbld.setNoSwitch(true);
 
     ctdmsg.setContainerStartParams(cspbld.build());
     try {
       DaemonToController dtc = parseResponse(sendProtobufAndWaitForResponse(ctdmsg.build()));
       if (!Response.CONTAINER_START_OK.equals(dtc.getResponse())) {
-        // TODO
-        LOG.error("Container start failed, response was " + dtc.getResponse());
+        LOG.error("Container start failed, response was {}", dtc.getResponse());
       }
-      LOG.error("Container start ok, response was " + dtc.getResponse());
+      LOG.error("Container start ok, response was {}", dtc.getResponse());
     } catch (InvalidProtocolBufferException e) {
-      e.printStackTrace();
+      LOG.error("Protobuf error", e);
     }
   }
 
@@ -218,10 +218,10 @@ public class TrustXCM implements ContainerManager {
    * More flexible than the sendCommand method. Required when other parameters need to be set than
    * the Command
    *
-   * @param ControllerToDaemon the control command
+   * @param ctd the control command
    */
   private void sendProtobuf(ControllerToDaemon ctd) {
-    LOG.debug("sending message " + ctd.getCommand());
+    LOG.debug("sending message {}", ctd.getCommand());
     LOG.debug(ctd.toString());
     byte[] encodedMessage = ctd.toByteArray();
     try {
@@ -239,20 +239,18 @@ public class TrustXCM implements ContainerManager {
    */
   private byte[] sendCommandAndWaitForResponse(Command command) {
     sendCommand(command);
-    byte[] response = responseHandler.waitForResponse();
-    return response;
+    return responseHandler.waitForResponse();
   }
 
   /**
    * Used for sending control commands to a device.
    *
-   * @param command The command to be sent.
+   * @param ctd The command to be sent.
    * @return Success state.
    */
   private byte[] sendProtobufAndWaitForResponse(ControllerToDaemon ctd) {
     sendProtobuf(ctd);
-    byte[] response = responseHandler.waitForResponse();
-    return response;
+    return responseHandler.waitForResponse();
   }
 
   private DaemonToController parseResponse(byte[] response) throws InvalidProtocolBufferException {

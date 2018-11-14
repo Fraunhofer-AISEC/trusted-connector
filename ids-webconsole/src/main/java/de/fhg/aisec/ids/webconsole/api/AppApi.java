@@ -25,16 +25,35 @@ import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -92,6 +111,26 @@ public class AppApi {
   @GET
   @Path("start/{containerId}")
   @ApiOperation(
+      value = "Start an app",
+      notes = "Requests to start an app.",
+      response = Boolean.class
+  )
+  @ApiResponses(
+      @ApiResponse(
+          code = 200,
+          message =
+              "true if the app has been requested to be started. "
+                  + "false if no container management layer is available"
+      ))
+  @Produces(MediaType.APPLICATION_JSON)
+  public boolean start(
+      @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId) {
+    return start(containerId, null);
+  }
+
+  @GET
+  @Path("start/{containerId}/{key}")
+  @ApiOperation(
     value = "Start an app",
     notes = "Requests to start an app.",
     response = Boolean.class
@@ -105,13 +144,14 @@ public class AppApi {
       ))
   @Produces(MediaType.APPLICATION_JSON)
   public boolean start(
-      @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId) {
+      @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId,
+      @ApiParam(value = "Key for user token") @PathParam("key") String key) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
-      cml.startContainer(containerId);
+      cml.startContainer(containerId, key);
       return true;
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
-      LOG.error(e.getMessage(), e);
+      LOG.error("Error starting container", e);
       return false;
     }
   }

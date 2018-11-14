@@ -156,7 +156,7 @@ public class DockerCM implements ContainerManager {
   }
 
   @Override
-  public void startContainer(final String containerID) {
+  public void startContainer(final String containerID, final String key) {
     try {
       ProcessBuilder pb =
           new ProcessBuilder()
