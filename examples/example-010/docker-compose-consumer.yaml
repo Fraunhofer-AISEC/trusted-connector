@@ -21,8 +21,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./camel-ids/socket/:/var/run/tpm2d/
       - ./system.properties:/root/etc/system.properties
-      - ./consumer-server-keystore.jks:/root/etc/server-keystore.jks
-      - ./consumer-server-truststore.jks:/root/etc/server-truststore.jks
+      - ./consumer-server-keystore.jks:/root/etc/consumer-server-keystore.jks
+      - ./consumer-server-truststore.jks:/root/etc/consumer-server-truststore.jks
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
     ports:
       - "5005:5005"
