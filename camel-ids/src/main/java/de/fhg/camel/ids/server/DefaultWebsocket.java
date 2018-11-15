@@ -97,7 +97,7 @@ public class DefaultWebsocket {
     try {
 	    if (settings != null) {
 	      ttpUri = new URI(String.format(
-	          "https://%s:%s/",
+	          "https://%s:%d/rat-verify",
             settings.getConnectorConfig().getTtpHost(),
             settings.getConnectorConfig().getTtpPort()
         ));
