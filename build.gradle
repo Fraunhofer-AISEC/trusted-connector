@@ -16,6 +16,35 @@ licenseReport {
     configurations = ['compile', 'providedByFeature', 'providedByBundle']
 }
 
+def getDockerTag() {
+    String commit = 'HEAD'
+
+    if (hasProperty('dockerTag')) {
+        return findProperty('dockerTag')
+    }
+
+    if (System.getenv('CI_COMMIT_SHA')) {
+        commit = System.getenv('CI_COMMIT_SHA')
+    } else {
+        String commandLine
+        if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+            commandLine = 'cmd /c '
+        } else {
+            commandLine = ''
+        }
+        def proc = (commandLine + 'git rev-parse HEAD').execute()
+        proc.in.eachLine { line -> commit = line }
+        proc.err.eachLine { line -> println line }
+        proc.waitFor()
+    }
+
+    if (commit == 'HEAD') {
+        commit
+    } else {
+        commit.substring(0, 8)
+    }
+}
+
 allprojects {
     group = 'de.fhg.ids'
     version = '1.2.0-SNAPSHOT'
