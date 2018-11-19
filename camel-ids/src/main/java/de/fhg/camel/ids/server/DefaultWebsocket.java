@@ -27,8 +27,8 @@ import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.server.ServerConfiguration;
-import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
+import de.fhg.ids.comm.ws.protocol.ServerProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import java.io.IOException;
@@ -111,7 +111,7 @@ public class DefaultWebsocket {
         .certificatePair(certificatePair)
         .ttpUrl(ttpUri)
         .build();
-    idsFsm = new ProtocolMachine().initIDSProviderProtocol(session, configuration);
+    idsFsm = new ServerProtocolMachine(session, configuration);
     sync.addSocket(this);
   }
 

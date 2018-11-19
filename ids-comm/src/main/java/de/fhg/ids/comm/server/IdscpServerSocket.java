@@ -22,14 +22,18 @@ package de.fhg.ids.comm.server;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
+import de.fhg.ids.comm.ws.protocol.ServerProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.*;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketFrame;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.extensions.Frame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +80,7 @@ public class IdscpServerSocket {
     this.session = session;
 
     // create Finite State Machine for IDS protocol
-    ProtocolMachine machine = new ProtocolMachine();
-    fsm = machine.initIDSProviderProtocol(session, this.config);
+    fsm = new ServerProtocolMachine(session, this.config);
   }
 
   @OnWebSocketClose

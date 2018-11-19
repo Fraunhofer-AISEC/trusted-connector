@@ -21,10 +21,9 @@ package de.fhg.ids.comm.client;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
+import de.fhg.ids.comm.ws.protocol.ClientProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
@@ -57,8 +56,7 @@ public class IdspClientSocket implements WebSocketListener {
     Log.debug("Websocket opened");
 
     // create Finite State Machine for IDS protocol
-    ProtocolMachine machine = new ProtocolMachine();
-    this.fsm = machine.initIDSConsumerProtocol(websocket, this.config);
+    this.fsm = new ClientProtocolMachine(websocket, this.config);
     // start the protocol with the first message
     this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
   }

@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * <p>Simply call <code>start()</code> and use the registered <code>SocketListener</code> to
  * handling incoming WebSocket connections.
  *
- * <p>Make sure to check <code>getAttestationResult()</code> and <code>getMetaData()</code> to
+ * <p>Make sure to check <code>handleAttestationResult()</code> and <code>getMetaData()</code> to
  * assess trustworthiness of the remote endpoint and the self description returned by it.
  */
 public class IdscpServer {

@@ -29,8 +29,8 @@ import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 public class ALLAttestationIT {
 
   private static final String TPMD_SOCKET = "socket/control.sock";
-  private static RemoteAttestationConsumerHandler consumer;
-  private static RemoteAttestationProviderHandler provider;
+  private static RemoteAttestationClientHandler consumer;
+  private static RemoteAttestationServerHandler provider;
   private static Logger LOG = LoggerFactory.getLogger(ALLAttestationIT.class);
   private long id = 87654321;
   private static IdsAttestationType aType = IdsAttestationType.ALL;
@@ -95,9 +95,9 @@ public class ALLAttestationIT {
         .build();
     final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
     consumer =
-        new RemoteAttestationConsumerHandler(clientConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationClientHandler(clientConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
     provider =
-        new RemoteAttestationProviderHandler(serverConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationServerHandler(serverConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
   }
 
   @Test

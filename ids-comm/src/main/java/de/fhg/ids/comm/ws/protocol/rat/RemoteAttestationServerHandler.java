@@ -45,8 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Implements the handling of individual protocol steps in the IDS remote attestation protocol. */
-public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationProviderHandler.class);
+public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
+  private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationServerHandler.class);
   private byte[] myNonce;
   private byte[] yourNonce;
   private Thread thread;
@@ -59,7 +59,7 @@ public class RemoteAttestationProviderHandler extends RemoteAttestationHandler {
   private final CertificatePair certificatePair;
   private AttestationResponse resp;
 
-  public RemoteAttestationProviderHandler(
+  public RemoteAttestationServerHandler(
       IdscpConfiguration serverConfiguration,
       URI ttpUri,
       String socket) {

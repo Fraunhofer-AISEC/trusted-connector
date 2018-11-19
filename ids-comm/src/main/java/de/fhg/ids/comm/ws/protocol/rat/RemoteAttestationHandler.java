@@ -25,6 +25,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
@@ -49,15 +50,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RemoteAttestationHandler {
+  public static final String CONTROL_SOCKET = "/var/run/tpm2d/control.sock";
   protected static final Logger LOG =
-      LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
+      LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
   protected static String lastError = "";
   // used to count messages between ids connector and attestation repository
   protected static long privateID = new java.util.Random().nextLong();
   protected boolean mySuccess = false;
   protected boolean yourSuccess = false;
 
-  public RatResult getAttestationResult() {
+  public RatResult handleAttestationResult(AttestationResult result) {
+    this.yourSuccess = result.getResult();
+
     LOG.debug("your success: {}    my success: {}", this.yourSuccess, this.mySuccess);
     if (!this.mySuccess) {
       return new RatResult(RatResult.Status.FAILED, "Could not verify");

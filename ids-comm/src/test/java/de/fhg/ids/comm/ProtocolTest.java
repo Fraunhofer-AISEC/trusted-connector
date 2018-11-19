@@ -23,14 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
-
-import org.asynchttpclient.ws.WebSocket;
-import org.eclipse.jetty.websocket.api.Session;
-import org.junit.Test;
-
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
@@ -39,6 +31,12 @@ import de.fhg.ids.comm.server.IdscpServer;
 import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+import org.asynchttpclient.ws.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.junit.Test;
 
 public class ProtocolTest {
 
@@ -74,7 +72,7 @@ public class ProtocolTest {
     assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
 
     // TODO Make server-side attestation result accessible
-    // AttestationResult serverAttestationRes = server.getAttestationResult();
+    // AttestationResult serverAttestationRes = server.handleAttestationResult();
 
     // Send some payload from client to server
     wsClient.sendTextFrame("Hello");

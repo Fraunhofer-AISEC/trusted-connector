@@ -19,15 +19,14 @@
  */
 package de.fhg.ids.comm.client;
 
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
 import de.fhg.aisec.ids.api.conm.RatResult;
+import java.net.URI;
+import java.util.concurrent.ExecutionException;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
-
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
-
-import static org.asynchttpclient.Dsl.asyncHttpClient;
 
 /**
  * A standalone client implementation for the IDSCP protocol.
@@ -35,7 +34,7 @@ import static org.asynchttpclient.Dsl.asyncHttpClient;
  * <p>Simply call <code>connect()</code> and use the returned WebSocket object for bidirectional
  * text/binary web socket communication with the remote endpoint.
  *
- * <p>Make sure to check <code>getAttestationResult()</code> and <code>getMetaData()</code> to
+ * <p>Make sure to check <code>handleAttestationResult()</code> and <code>getMetaData()</code> to
  * assess trustworthiness of the remote endpoint and the self description returned by it.
  */
 public class IdscpClient {

@@ -26,26 +26,26 @@ import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
-import de.fhg.aisec.ids.messages.Idscp.*;
+import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
+import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
+import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
+import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.Converter;
 import de.fhg.ids.comm.IdscpConfiguration;
-import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.unixsocket.UnixSocketResponseHandler;
 import de.fhg.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import java.io.IOException;
 import java.net.URI;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationConsumerHandler.class);
+public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
+  private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
   private byte[] myNonce;
   private byte[] yourNonce;
   private IdsAttestationType aType;
@@ -57,7 +57,7 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
   private final int attestationMask;
   private final CertificatePair certificatePair;
 
-  public RemoteAttestationConsumerHandler(
+  public RemoteAttestationClientHandler(
       IdscpConfiguration clientConfiguration,
       URI ttpUri,
       String socket) {
@@ -199,7 +199,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
   }
 
   public MessageLite leaveRatRequest(Event e) {
-    this.yourSuccess = e.getMessage().getAttestationResult().getResult();
     if (this.thread != null) {
       this.thread.interrupt();
     }
@@ -221,14 +220,6 @@ public class RemoteAttestationConsumerHandler extends RemoteAttestationHandler {
         .setId(++this.sessionID)
         .setType(ConnectorMessage.Type.RAT_LEAVE)
         .setAttestationLeave(AttestationLeave.newBuilder().setAtype(this.aType).build())
-        .build();
-  }
-
-  public MessageLite sendNoAttestation(Event e) {
-    LOG.debug("we are skipping remote attestation");
-    return ConnectorMessage.newBuilder()
-        .setType(ConnectorMessage.Type.RAT_REQUEST)
-        .setId(e.getMessage().getId() + 1)
         .build();
   }
 }
