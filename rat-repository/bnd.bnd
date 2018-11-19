@@ -1,6 +1,5 @@
 Bundle-Name: rat-repository
 Bundle-Description: attestation repository for the IDS protocol
-Export-Package: de.fhg.ids.attestation
 Import-Package: \
 	de.fhg.aisec.ids.messages, \
 	*
