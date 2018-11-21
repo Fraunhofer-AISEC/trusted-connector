@@ -44,7 +44,7 @@ public class UnixSocketThread implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(UnixSocketThread.class);
   private static final int SOCKET_FILE_RETRIES = 10;
   private static final long SOCKET_FILE_RETRY_DELAY_MS = 500;
-  private static final long SELECT_THROTTLE_MS = 5;
+  private static final long SELECT_THROTTLE_MS = 100;
   private final String socket;
 
   // The selector we'll be monitoring
@@ -66,11 +66,6 @@ public class UnixSocketThread implements Runnable {
   private Map<UnixSocketChannel, UnixSocketResponseHandler> rspHandlers =
       Collections.synchronizedMap(new HashMap<>());
   private boolean stopped = false;
-
-  // default constructor
-  public UnixSocketThread() throws IOException {
-    this("SOCKET");
-  }
 
   // constructor setting another socket address
   public UnixSocketThread(String socket) throws IOException {
@@ -112,7 +107,7 @@ public class UnixSocketThread implements Runnable {
   // thread run method
   @Override
   public void run() {
-    while (!stopped) {
+    while (!Thread.interrupted()) {
       try {
         // Process any pending changes
         synchronized (this.pendingChanges) {
@@ -128,33 +123,24 @@ public class UnixSocketThread implements Runnable {
         }
 
         // Wait for an event on one of the registered channels
-        int updates = this.selector.select();
-        if (updates == 0) {  // Throttle
-          try {
-            TimeUnit.MILLISECONDS.sleep(SELECT_THROTTLE_MS);
-          } catch (InterruptedException ie) {
-            // Re-interrupt the thread, but prevent error output
-            Thread.currentThread().interrupt();
+        this.selector.select();
+        LOG.trace("Reading from socket {}", this.socket);
+        // Iterate over the set of keys for which events are available
+        Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
+        while (selectedKeys.hasNext()) {
+          SelectionKey key = selectedKeys.next();
+          LOG.trace("Processing SelectionKey: {}", key);
+          selectedKeys.remove();
+          if (!key.isValid()) {
+            continue;
           }
-        } else {
-          LOG.trace("Reading from socket {}", this.socket);
-          // Iterate over the set of keys for which events are available
-          Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
-          while (selectedKeys.hasNext()) {
-            SelectionKey key = selectedKeys.next();
-            LOG.trace("Processing SelectionKey: {}", key);
-            selectedKeys.remove();
-            if (!key.isValid()) {
-              continue;
-            }
-            // Check what event is available and deal with it
-            if (key.isConnectable()) {
-              this.finishConnection(key);
-            } else if (key.isReadable()) {
-              this.read(key);
-            } else if (key.isWritable()) {
-              this.write(key);
-            }
+          // Check what event is available and deal with it
+          if (key.isConnectable()) {
+            this.finishConnection(key);
+          } else if (key.isReadable()) {
+            this.read(key);
+          } else if (key.isWritable()) {
+            this.write(key);
           }
         }
       } catch (Exception e) {
@@ -226,8 +212,8 @@ public class UnixSocketThread implements Runnable {
     System.arraycopy(data, 0, rspData, 0, length);
 
     // Look up the handler for this channel
-    UnixSocketResponseHandler handler = (UnixSocketResponseHandler) this.rspHandlers.get(channel);
-    LOG.trace("Unixsocketthread received: " + rspData.length);
+    UnixSocketResponseHandler handler = this.rspHandlers.get(channel);
+    LOG.trace("Unixsocketthread received: {}", rspData.length);
 
     // And pass the response to it
     if (handler.handleResponse(rspData)) {
