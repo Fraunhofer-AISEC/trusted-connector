@@ -4,6 +4,9 @@ plugins {
 
 dependencies {
     providedByBundle project(':ids-api')
+    providedByBundle project(':ids-webconsole')
+
+    providedByFeature group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
 
     providedByBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
 

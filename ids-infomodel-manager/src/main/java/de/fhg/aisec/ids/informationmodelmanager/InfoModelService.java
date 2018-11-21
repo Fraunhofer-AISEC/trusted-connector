@@ -1,48 +1,24 @@
-/*-
- * ========================LICENSE_START=================================
- * InfoModelService
- * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package de.fhg.aisec.ids.informationmodelmanager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
-import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.deserializer.CustomObjectMapper;
-import de.fraunhofer.iais.eis.*;
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
+import de.fraunhofer.iais.eis.AppExecutionResources;
+import de.fraunhofer.iais.eis.AuditLogging;
+import de.fraunhofer.iais.eis.AuthenticationSupport;
+import de.fraunhofer.iais.eis.Connector;
+import de.fraunhofer.iais.eis.DataUsageControlSupport;
+import de.fraunhofer.iais.eis.IntegrityProtectionScope;
+import de.fraunhofer.iais.eis.PredefinedSecurityProfile;
+import de.fraunhofer.iais.eis.SecurityProfile;
+import de.fraunhofer.iais.eis.SecurityProfileBuilder;
+import de.fraunhofer.iais.eis.ServiceIsolationSupport;
 import de.fraunhofer.iais.eis.util.ConstraintViolationException;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
-import de.fraunhofer.iais.eis.util.VocabUtil;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;

@@ -173,6 +173,13 @@ subprojects {
         mavenLocal()
         mavenCentral()
         jcenter()
+//        maven {
+//            url "https://mvn.isst.fraunhofer.de/nexus/"
+//            credentials {
+//                username isstUser
+//                password isstPassword
+//            }
+//        }
     }
 }
 
