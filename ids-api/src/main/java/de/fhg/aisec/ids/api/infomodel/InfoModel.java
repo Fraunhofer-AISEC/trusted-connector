@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,67 +37,70 @@ package de.fhg.aisec.ids.api.infomodel;
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.SecurityProfile;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
-
 import java.net.URL;
-import java.util.Collection;
+import java.util.List;
 
 /**
- *
  * @author toni
  */
 public interface InfoModel {
-    
-	
-		/**
-	     * retrieve Connector description
-	     * @return RDF Connector description
-	     */
-		public String getRDF();
-    
-        /**
-         * create empty Connector object
-         * @return empty Connector object to be filled
-         */
-        //public Connector getEmptyConnector();
-        
-        /**
-         * retrieve Connector object based on currently stored preferences
-         * @return currently stored Connector object
-         */
-        public Connector getConnector();
-        
-        /**
-         * save/update Connector object to preferences
-         * @param connector filled Connector object
-         * @return update success
-         */
-        //public boolean setConnector(Connector connector);
-        
-        /**
-         * save/update Connector object to preferences
-         * @param conn_url Connector id
-         * @param op_url Operator id
-         * @param entityNames Connector entity names
-         * @param profile Connector security profile
-         * @return update success
-         */
-        public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames, SecurityProfile profile);
 
-        /**
-         * save/update Connector object to preferences
-         * @param conn_url Connector id
-         * @param op_url Operator id
-         * @param entityNames Connector entity names
-         * @return update success
-         */
-        public boolean setConnector(URL conn_url, URL op_url, Collection<PlainLiteral> entityNames);
-        
-        /**
-         * save/update Connector object to preferences
-         * @param op_url Operator id
-         * @param entityNames Connector entity names
-         * @return update success
-         */
-        public boolean setConnector(URL op_url, Collection<PlainLiteral> entityNames);
-    
+  /**
+   * retrieve Connector description
+   *
+   * @return RDF Connector description
+   */
+  String getRDF();
+
+  /**
+   * create empty Connector object
+   * @return empty Connector object to be filled
+   */
+  //Connector getEmptyConnector();
+
+  /**
+   * retrieve Connector object based on currently stored preferences
+   *
+   * @return currently stored Connector object
+   */
+  Connector getConnector();
+
+  /**
+   * save/update Connector object to preferences
+   * @param connector filled Connector object
+   * @return update success
+   */
+  //boolean setConnector(Connector connector);
+
+  /**
+   * save/update Connector object to preferences
+   *
+   * @param connUrl Connector id
+   * @param opUrl Operator id
+   * @param entityNames Connector entity names
+   * @param profile Connector security profile
+   * @return update success
+   */
+  boolean setConnector(URL connUrl, URL opUrl, List<PlainLiteral> entityNames,
+      SecurityProfile profile);
+
+  /**
+   * save/update Connector object to preferences
+   *
+   * @param connUrl Connector id
+   * @param opUrl Operator id
+   * @param entityNames Connector entity names
+   * @return update success
+   */
+  boolean setConnector(URL connUrl, URL opUrl, List<PlainLiteral> entityNames);
+
+  /**
+   * save/update Connector object to preferences
+   *
+   * @param opUrl Operator id
+   * @param entityNames Connector entity names
+   * @return update success
+   */
+  boolean setConnector(URL opUrl, List<PlainLiteral> entityNames);
+
 }

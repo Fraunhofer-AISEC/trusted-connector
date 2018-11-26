@@ -17,22 +17,19 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.deserializer;
+package de.fhg.aisec.ids.informationmodelmanager.deserializer
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.module.SimpleModule
 
-import de.fraunhofer.iais.eis.SecurityProfile;
-import de.fraunhofer.iais.eis.util.PlainLiteral;
+import de.fraunhofer.iais.eis.SecurityProfile
 
 // allows Jackson to deserialize custom object types
-public class CustomModule extends SimpleModule {
-
-    private static final long serialVersionUID = 1L;
-
-    public CustomModule() {
-        super("CustomModule");
-        this.addDeserializer(PlainLiteral.class, new PlainLiteralDeserializer());
-        this.addDeserializer(SecurityProfile.class, new SecurityProfileDeserializer());
+class CustomModule : SimpleModule("CustomModule") {
+    init {
+        this.addDeserializer(SecurityProfile::class.java, SecurityProfileDeserializer())
     }
 
+    companion object {
+        const val serialVersionUID = 1L
+    }
 }

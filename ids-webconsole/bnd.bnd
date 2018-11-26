@@ -7,13 +7,13 @@ Export-Package: \
 	de.fhg.aisec.ids.webconsole.api.data,\
 	de.fhg.aised.ids.webconsole.api.deserializer
 Import-Package: \
+	de.fhg.aisec.ids.informationmodelmanager.deserializer,\
 	!org.checkerframework.checker.*,\
 	de.fraunhofer.iais.eis*,\
 	org.apache.cxf.jaxrs.security,\
 	org.apache.cxf.interceptor.security,\
 	com.fasterxml.jackson.jaxrs.json,\
 	com.fasterxml.jackson.databind,\
-	de.fhg.aisec.ids.api.deserializer,\
 	!io.swagger.annotations,\
 	*
 Web-ContextPath: /

@@ -17,18 +17,17 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.deserializer;
+package de.fhg.aisec.ids.informationmodelmanager.deserializer
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper
 
 // use CostumModule allows Jackson to deserialize custom object types
-public class CustomObjectMapper extends ObjectMapper {
+class CustomObjectMapper : ObjectMapper() {
+    init {
+        this.registerModule(CustomModule())
+    }
 
-	private static final long serialVersionUID = 1L;
-
-	public CustomObjectMapper() {
-		super();
-		this.registerModule(new CustomModule());
-	}
-	
+    companion object {
+        const val serialVersionUID = 1L
+    }
 }

@@ -19,14 +19,11 @@
  */
 package de.fhg.aisec.ids.api.infomodel;
 
-import java.io.Serializable;
-
-import java.util.Collection;
-
-import java.net.URL;
-
 import de.fraunhofer.iais.eis.SecurityProfile;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.List;
 
 public final class ConnectorProfile implements Serializable {
 
@@ -35,7 +32,7 @@ public final class ConnectorProfile implements Serializable {
     private final SecurityProfile securityProfile;
     private final URL connectorURL;
     private final URL operatorURL;
-    private final Collection<PlainLiteral> connectorEntityNames;
+    private final List<PlainLiteral> connectorEntityNames;
 
     public ConnectorProfile() {
         this.securityProfile = null;
@@ -45,7 +42,7 @@ public final class ConnectorProfile implements Serializable {
     }
 
     public ConnectorProfile(SecurityProfile profile, URL connectorURL, URL operatorURL,
-                            Collection<PlainLiteral> connectorEntityNames) {
+                            List<PlainLiteral> connectorEntityNames) {
         super();
         this.securityProfile = profile;
         this.connectorURL = connectorURL;
@@ -65,7 +62,7 @@ public final class ConnectorProfile implements Serializable {
         return operatorURL;
     }
 
-    public Collection<PlainLiteral> getConnectorEntityNames() {
+    public List<PlainLiteral> getConnectorEntityNames() {
         return connectorEntityNames;
     }
 

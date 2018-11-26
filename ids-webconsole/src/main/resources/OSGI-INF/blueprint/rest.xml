@@ -37,8 +37,8 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
         </jaxrs:providers>
     </jaxrs:server>
 
-    <!--   <bean id="jacksonMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/> -->
-    <bean id="jacksonMapper" class="de.fhg.aisec.ids.api.deserializer.CustomObjectMapper"/>
+    <!-- <bean id="jacksonMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/> -->
+    <bean id="jacksonMapper" class="de.fhg.aisec.ids.informationmodelmanager.deserializer.CustomObjectMapper"/>
 
     <bean id="authenticationFilter" class="org.apache.cxf.jaxrs.security.JAASAuthenticationFilter">
         <property name="contextName" value="karaf"/>

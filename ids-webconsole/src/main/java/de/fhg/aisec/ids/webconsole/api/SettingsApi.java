@@ -19,22 +19,21 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.Collection;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import de.fraunhofer.iais.eis.ConnectorBuilder;
-import de.fraunhofer.iais.eis.util.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
+import java.util.List;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -43,43 +42,43 @@ import de.fraunhofer.iais.eis.util.PlainLiteral;
  * The API will be available at http://localhost:8181/cxf/api/v1/settings/<method>.
  */
 
-
 //ConnectorProfile will be processed by custom Jackson deserializer
 @Path("/settings")
 public class SettingsApi {
-    private static final Logger LOG = LoggerFactory.getLogger(SettingsApi.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SettingsApi.class);
 
-
-    @POST
-    @Path("/connectorProfile")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response postConnectorProfile(ConnectorProfile cP) {
-
-        InfoModel im = WebConsoleComponent.getInfoModelManagerOrThrowSUE();
-        if (im.setConnector(cP.getConnectorURL(), cP.getOperatorURL(), cP.getConnectorEntityNames(), cP.getSecurityProfile()))
-            return Response.status(200).entity("Connector object successfully stored.").build();
-        else
-            return Response.status(500).entity("Connector object couldn't be stored.").build();
+  @POST
+  @Path("/connectorProfile")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public String postConnectorProfile(ConnectorProfile cP) {
+    InfoModel im = WebConsoleComponent.getInfoModelManagerOrThrowSUE();
+    if (im.setConnector(cP.getConnectorURL(), cP.getOperatorURL(), cP.getConnectorEntityNames(),
+        cP.getSecurityProfile())) {
+      return "ConnectorProfile successfully stored.";
+    } else {
+      throw new InternalServerErrorException("Error while storing ConnectorProfile");
     }
+  }
 
-    // returns Connector profile based on currently stored preferences or empty Connector profile
-    @GET
-    @Path("/connectorProfile")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ConnectorProfile getConnectorProfile() {
-
-        InfoModel im = WebConsoleComponent.getInfoModelManagerOrThrowSUE();
-        Connector c = im.getConnector();
-        if (c != null) {
-            return new ConnectorProfile(
-                    c.getSecurityProfile(),
-                    c.getId(),
-                    c.getOperator(),
-                    (Collection<PlainLiteral>) c.getEntityNames());
-        } else {
-            LOG.debug("Building empty connector description.");
-            return new ConnectorProfile();
-        }
+  /**
+   * Returns Connector profile based on currently stored preferences or empty Connector profile
+   */
+  @GET
+  @Path("/connectorProfile")
+  @Produces(MediaType.APPLICATION_JSON)
+  public ConnectorProfile getConnectorProfile() {
+    InfoModel im = WebConsoleComponent.getInfoModelManagerOrThrowSUE();
+    try {
+      Connector c = im.getConnector();
+      return new ConnectorProfile(
+          c.getSecurityProfile(),
+          c.getId(),
+          c.getMaintainer(),
+          (List<PlainLiteral>) c.getDescriptions());
+    } catch (NullPointerException e) {
+      LOG.warn("Connector description build failed, building empty description.", e);
+      return new ConnectorProfile();
     }
+  }
 
 }

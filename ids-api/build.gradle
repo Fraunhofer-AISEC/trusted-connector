@@ -30,11 +30,9 @@ dependencies {
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
-    // Needed for deserializer package
-    providedByFeature group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
-
     // Info model
-    providedByBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
+    implementation files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
+    providedByBundle group: 'javax.validation', name: 'validation-api', version: '1.0.0.GA'
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito

@@ -49,7 +49,6 @@ import javax.ws.rs.ServiceUnavailableException;
  */
 @Component(name = "ids-webconsole")
 public class WebConsoleComponent {
-
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private Settings settings = null;
 
@@ -110,7 +109,6 @@ public class WebConsoleComponent {
       return in.connectionManager;
     }
     return null;
-
   }
 
   @Nullable
@@ -140,13 +138,12 @@ public class WebConsoleComponent {
     return null;
   }
 
-	@Nullable
-	public static InfoModel getInfoModelManagerOrThrowSUE() {
-		WebConsoleComponent in = instance;
-		if (in != null) {
-			return in.im;
-		} else {
-			throw new ServiceUnavailableException("InfoModelManager is currently not available");
-		}
-	}
+  @Nullable
+  public static InfoModel getInfoModelManagerOrThrowSUE() {
+    WebConsoleComponent in = instance;
+    if (in != null) {
+      return in.im;
+    }
+    return null;
+  }
 }
