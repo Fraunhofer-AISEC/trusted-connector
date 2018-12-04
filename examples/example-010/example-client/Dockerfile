@@ -1,11 +1,11 @@
-FROM alpine
+FROM node:alpine
 
 WORKDIR /app
-ADD . /app
-RUN apk update \
-	&& apk upgrade \
-	&& apk add nodejs \
-	&& npm install
+
+ADD package.json /app
+RUN npm install
+
+ADD app.js /app
 
 EXPOSE 8080
 

@@ -7,56 +7,30 @@
 
 	(C) Fraunhofer AISEC, 2017
 */
-var temp = 0
-
-// Start REST server
-var express = require('express');
-var app = express();
 
 // Start MQTT client
-const mqtt = require('mqtt')
-const client = mqtt.connect('mqtt://iot.eclipse.org')
+const mqtt = require('mqtt');
+const client = mqtt.connect('mqtt://mqtt-broker');
+const TEMP_TOPIC = 'ids-example-010/temp';
 
 // React on MQTT connection
 client.on('connect', () => {
     console.log("Connected to MQTT broker")
-    client.subscribe('ids-example-001/temp')
+    client.subscribe(TEMP_TOPIC)
 })
 
 // React on received MQTT messages
 client.on('message', (topic, message) => {
   switch (topic) {
-    case 'ids-example-001/temp':
-      return handleTemperature(message)
+    case TEMP_TOPIC:
+      console.log('Published and Received temp %s', message);
+      break;
+    default:
+      console.log('No handler for topic %s', topic);
   }
-  console.log('No handler for topic %s', topic)
 })
 
-// Handle a temp value received over MQTT
-function handleTemperature (message) {
-  console.log('Received temp %s', message)
-  temp = message
-}
-
-// Publish MQTT event
-function publishEvent () {  
-    value = Math.random() * (35 - 10) + 10
-    console.log('Publishing temp %s', value)
-    client.publish('ids-example-001/temp',  String(value))
-}
-
-// simulate sensor data by publishing random data to MQTT broker
+// simulate sensor data by publishing random temperature data to MQTT broker
 setInterval(() => {
-  publishEvent()
+    client.publish(TEMP_TOPIC,  String(Math.random() * (35 - 10) + 10));
 }, 1000)
-
-// Start REST endpoint /temp
-app.get('/temp', function (req, res) {
-   res.end(temp)
-})
-
-var server = app.listen(8080, function () {
-  var host = server.address().address
-  var port = server.address().port
-  console.log("REST API listening at http://%s:%s", host, port)
-})

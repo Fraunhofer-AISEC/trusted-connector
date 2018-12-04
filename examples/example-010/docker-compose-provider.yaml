@@ -29,6 +29,12 @@ services:
       - ids-wide
       - provider-internal
 
+  # Mosquitto MQTT broker
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    networks:
+      - provider-internal
+
   # Data App (MQTT consumer, publishes over REST)
   provider-app:
     image: fraunhoferaisec/example-client:develop
