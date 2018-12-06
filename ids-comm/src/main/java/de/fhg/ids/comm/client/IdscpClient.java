@@ -35,6 +35,8 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig.Builder;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import de.fhg.aisec.ids.api.conm.RatResult;
 import io.netty.handler.ssl.ClientAuth;
@@ -86,11 +88,11 @@ public class IdscpClient {
  * @throws NoSuchAlgorithmException 
  * @throws KeyManagementException 
    */
-  public WebSocket connect(String host, int port) throws InterruptedException, ExecutionException, NoSuchAlgorithmException, KeyManagementException {
+  public WebSocket connect(@NonNull String host, int port) throws InterruptedException, ExecutionException, NoSuchAlgorithmException, KeyManagementException {
 	AsyncHttpClient c = null;    
 	if (this.config.isDisableServerVerification()) {
 		System.err.println("TLS Server verification has been switched off! TLS connections are not secure. If this message appears in production, your data is at risk! Switch on server verification again and make sure to maintain a proper truststore for trusted server certificates!");
-		SSLContext ctx = SSLContext.getInstance("TLS");
+		SSLContext ctx = SSLContext.getInstance("TLSv1.2");
 		ctx.init(null, new X509TrustManager[] { new X509TrustManager() {
 			@Override
 			public void checkServerTrusted(X509Certificate[] certs, String str) throws CertificateException {	}
@@ -144,8 +146,11 @@ public class IdscpClient {
    * @param config
    * @return
    */
-  public IdscpClient config(ClientConfiguration config) {
-    this.config = config;
+  @NonNull
+  public IdscpClient config(@Nullable ClientConfiguration config) {
+    if (config != null) {
+    	this.config = config;
+    }
     return this;
   }
 
@@ -153,6 +158,7 @@ public class IdscpClient {
    * Returns null if attestation has not yet finished, or status code of remote attestation
    * otherwise.
    */
+  @Nullable
   public RatResult getAttestationResult() {
     return this.attestationResult;
   }
@@ -163,6 +169,7 @@ public class IdscpClient {
    *
    * @return
    */
+  @Nullable
   public String getMetaData() {
     return this.metaData;
   }

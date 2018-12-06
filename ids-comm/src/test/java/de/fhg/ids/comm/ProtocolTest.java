@@ -47,6 +47,7 @@ public class ProtocolTest {
     MySocketListener listener = new MySocketListener();
 
     // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
+    @SuppressWarnings("unused")
     IdscpServer server =
         new IdscpServer()
             .config(
@@ -71,6 +72,7 @@ public class ProtocolTest {
     // Attestation result is expected to be not null and FAIL (because we did not connect to proper
     // TPM above)
     RatResult attestationResult = client.getAttestationResult();
+    assertNotNull(attestationResult);
     assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
 
     // TODO Make server-side attestation result accessible

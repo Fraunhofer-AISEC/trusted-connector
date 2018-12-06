@@ -47,6 +47,8 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +62,7 @@ public class RemoteAttestationHandler {
   protected boolean mySuccess = false;
   protected boolean yourSuccess = false;
 
-  public RatResult handleAttestationResult(AttestationResult result) {
+  public RatResult handleAttestationResult(@NonNull AttestationResult result) {
     this.yourSuccess = result.getResult();
 
     LOG.debug("your success: {}    my success: {}", this.yourSuccess, this.mySuccess);
@@ -76,13 +78,14 @@ public class RemoteAttestationHandler {
   }
 
   public static boolean checkRepository(
-      IdsAttestationType aType, AttestationResponse response, URI ttpUri) {
+      @Nullable IdsAttestationType aType, @Nullable AttestationResponse response, @Nullable URI ttpUri) {
     if (aType == null || response == null || ttpUri == null) {
       return false;
     }
 
     List<Pcr> values = response.getPcrValuesList();
     try {
+      @SuppressWarnings("null")
       ConnectorMessage msgRepo =
           RemoteAttestationHandler.readRepositoryResponse(
               ConnectorMessage.newBuilder()
@@ -121,7 +124,7 @@ public class RemoteAttestationHandler {
    * @param certificate
    * @return
    */
-  public static byte[] calculateHash(byte[] nonce, Certificate certificate) {
+  public static byte[] calculateHash(byte[] nonce, @Nullable Certificate certificate) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-1");
       digest.update(nonce);
@@ -137,7 +140,7 @@ public class RemoteAttestationHandler {
     }
   }
 
-  public boolean checkSignature(AttestationResponse response, byte[] hash) {
+  public boolean checkSignature(@NonNull AttestationResponse response, byte[] hash) {
     byte[] byteSignature = response.getSignature().toByteArray();
     byte[] byteCert = response.getAikCertificate().toByteArray();
     byte[] byteQuoted = response.getQuoted().toByteArray();
@@ -212,9 +215,12 @@ public class RemoteAttestationHandler {
     }
   }
 
-  public static MessageLite sendError(Thread t, long id, String error) {
+  public static MessageLite sendError(@Nullable Thread t, long id, @Nullable String error) {
     if (t != null && t.isAlive()) {
       t.interrupt();
+    }
+    if (error == null) {
+    	error = "";
     }
     return ConnectorMessage.newBuilder()
         .setId(id)
@@ -223,7 +229,7 @@ public class RemoteAttestationHandler {
         .build();
   }
 
-  public static ConnectorMessage readRepositoryResponse(ConnectorMessage msg, URL adr)
+  public static ConnectorMessage readRepositoryResponse(@NonNull ConnectorMessage msg, URL adr)
       throws IOException, GeneralSecurityException {
     HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
     SSLContext sslContext = SSLContext.getInstance("TLSv1.2");

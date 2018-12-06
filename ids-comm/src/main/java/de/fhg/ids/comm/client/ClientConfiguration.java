@@ -21,6 +21,9 @@ package de.fhg.ids.comm.client;
 
 import java.net.URI;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
@@ -28,17 +31,22 @@ import de.fhg.ids.comm.IdscpConfiguration;
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
  *
- * @author julian
+ * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public class ClientConfiguration implements IdscpConfiguration {
+  @NonNull
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask = 0;
+  @NonNull
   private CertificatePair certificatePair = new CertificatePair();
+  @NonNull
   private String endpoint = "";
   private boolean disableServerVerification = false;
+  @Nullable
   protected URI ttpUri;
   
   public static class Builder {
+	@NonNull
     private ClientConfiguration config = new ClientConfiguration();
 
     public Builder attestationMask(int attestationMask) {
@@ -46,22 +54,32 @@ public class ClientConfiguration implements IdscpConfiguration {
       return this;
     }
 
-    public Builder attestationType(IdsAttestationType attestationType) {
-      config.attestationType = attestationType;
+    @NonNull
+    public Builder attestationType(@Nullable IdsAttestationType attestationType) {
+      if (attestationType != null) {
+    	config.attestationType = attestationType;
+      }
       return this;
     }
 
-    public Builder certificatePair(CertificatePair certificatePair) {
-      config.certificatePair = certificatePair;
+    @NonNull
+    public Builder certificatePair(@Nullable CertificatePair certificatePair) {
+      if (certificatePair != null) {
+    	config.certificatePair = certificatePair;
+      }
       return this;
     }
 
-    public Builder ttpUrl(URI ttpUri) {
-    	config.ttpUri = ttpUri;
+    @NonNull
+    public Builder ttpUrl(@Nullable URI ttpUri) {
+    	if (ttpUri != null) {
+    	  config.ttpUri = ttpUri;
+    	}
     	return this;
     }
 
-    public Builder endpoint(String endpoint) {
+    @NonNull
+    public Builder endpoint(@Nullable String endpoint) {
     	if (endpoint != null) {
     		config.endpoint = endpoint;
     	}
@@ -73,11 +91,13 @@ public class ClientConfiguration implements IdscpConfiguration {
     	return this;
     }
     
+    @NonNull
     public ClientConfiguration build() {
       return config;
     }
   }
 
+  @NonNull
   public IdsAttestationType getAttestationType() {
     return attestationType;
   }
@@ -85,15 +105,18 @@ public class ClientConfiguration implements IdscpConfiguration {
   public int getAttestationMask() {
     return attestationMask;
   }
-
+  
+  @Nullable
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
 
+  @Nullable
   public URI getTrustedThirdPartyURI() {
 	  return ttpUri;
   }
 
+  @NonNull
   public String getEndpoint() {
 	  return endpoint;
   }

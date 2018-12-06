@@ -41,6 +41,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +61,9 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
   private final CertificatePair certificatePair;
 
   public RemoteAttestationClientHandler(
-      IdscpConfiguration clientConfiguration,
-      URI ttpUri,
-      String socket) {
+      @NonNull IdscpConfiguration clientConfiguration,
+      @Nullable URI ttpUri,
+      @Nullable String socket) {
     // set ttp uri
     this.ttpUri = ttpUri;
     // set current attestation type and mask (see attestation.proto)
@@ -83,7 +86,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
     }
   }
 
-  public MessageLite enterRatRequest(Event e) {
+  public MessageLite enterRatRequest(@NonNull Event e) {
     // generate a new software nonce on the client and send it to server
     this.myNonce = NonceGenerator.generate(20);
     // get starting session id
@@ -99,7 +102,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
         .build();
   }
 
-  public MessageLite sendTPM2Ddata(Event e) {
+  public MessageLite sendTPM2Ddata(@NonNull Event e) {
     // get nonce from server msg
     this.yourNonce = e.getMessage().getAttestationRequest().getNonce().toByteArray();
     final byte[] hash = calculateHash(this.yourNonce, certificatePair.getRemoteCertificate());
@@ -164,9 +167,10 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
         .build();
   }
 
-  public MessageLite sendResult(Event e) {
+  public MessageLite sendResult(@NonNull Event e) {
     final byte[] hash = calculateHash(this.myNonce, certificatePair.getLocalCertificate());
     AttestationResponse response = e.getMessage().getAttestationResponse();
+    assert response != null;
 
     // Abort on wrong session ID
     if (++this.sessionID != e.getMessage().getId()) {
@@ -198,7 +202,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
         .build();
   }
 
-  public MessageLite leaveRatRequest(Event e) {
+  public MessageLite leaveRatRequest(@NonNull Event e) {
     if (this.thread != null) {
       this.thread.interrupt();
     }

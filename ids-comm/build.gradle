@@ -8,6 +8,9 @@ dependencies {
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 
     providedByBundle project(path: ':jnr-unixsocket-wrapper', configuration: 'providedByBundle')
+    
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+    
     wrapperSupport group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
 
     providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
