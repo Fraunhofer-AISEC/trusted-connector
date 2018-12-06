@@ -35,6 +35,7 @@ public class ClientConfiguration implements IdscpConfiguration {
   private int attestationMask = 0;
   private CertificatePair certificatePair = new CertificatePair();
   private String endpoint = "";
+  private boolean disableServerVerification = false;
   protected URI ttpUri;
   
   public static class Builder {
@@ -67,6 +68,11 @@ public class ClientConfiguration implements IdscpConfiguration {
     	return this;
     }
     
+    public Builder setDisableServerVerification(boolean disableServerVerification) {
+    	config.disableServerVerification = disableServerVerification;
+    	return this;
+    }
+    
     public ClientConfiguration build() {
       return config;
     }
@@ -90,5 +96,9 @@ public class ClientConfiguration implements IdscpConfiguration {
 
   public String getEndpoint() {
 	  return endpoint;
+  }
+  
+  public boolean isDisableServerVerification() {
+	  return disableServerVerification;
   }
 }

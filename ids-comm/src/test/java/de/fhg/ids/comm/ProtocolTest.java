@@ -33,6 +33,8 @@ import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 import org.asynchttpclient.ws.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
@@ -41,7 +43,7 @@ import org.junit.Test;
 public class ProtocolTest {
 
   @Test
-  public void testFailureHandling() throws InterruptedException, ExecutionException, URISyntaxException {
+  public void testFailureHandling() throws InterruptedException, ExecutionException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
     MySocketListener listener = new MySocketListener();
 
     // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.

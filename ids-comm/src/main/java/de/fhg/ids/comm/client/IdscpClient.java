@@ -21,12 +21,25 @@ package de.fhg.ids.comm.client;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
-import de.fhg.aisec.ids.api.conm.RatResult;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.ExecutionException;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+
 import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig.Builder;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
+
+import de.fhg.aisec.ids.api.conm.RatResult;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.JdkSslContext;
+import io.netty.handler.ssl.SslContext;
 
 /**
  * A standalone client implementation for the IDSCP protocol.
@@ -51,11 +64,13 @@ public class IdscpClient {
    * @return
    * @throws InterruptedException
    * @throws ExecutionException
+   * @throws NoSuchAlgorithmException 
    * 
    * Use <code>connect(String host, int port)</code> instead.
+ * @throws KeyManagementException 
    */
   @Deprecated
-  public WebSocket connect(URI uri) throws InterruptedException, ExecutionException {
+  public WebSocket connect(URI uri) throws InterruptedException, ExecutionException, NoSuchAlgorithmException, KeyManagementException {
     return connect(uri.getHost(), uri.getPort());
   }
 
@@ -68,12 +83,36 @@ public class IdscpClient {
    * @return
    * @throws InterruptedException
    * @throws ExecutionException
+ * @throws NoSuchAlgorithmException 
+ * @throws KeyManagementException 
    */
-  public WebSocket connect(String host, int port) throws InterruptedException, ExecutionException {
-    AsyncHttpClient c = asyncHttpClient();
+  public WebSocket connect(String host, int port) throws InterruptedException, ExecutionException, NoSuchAlgorithmException, KeyManagementException {
+	AsyncHttpClient c = null;    
+	if (this.config.isDisableServerVerification()) {
+		System.err.println("TLS Server verification has been switched off! TLS connections are not secure. If this message appears in production, your data is at risk! Switch on server verification again and make sure to maintain a proper truststore for trusted server certificates!");
+		SSLContext ctx = SSLContext.getInstance("TLS");
+		ctx.init(null, new X509TrustManager[] { new X509TrustManager() {
+			@Override
+			public void checkServerTrusted(X509Certificate[] certs, String str) throws CertificateException {	}
+			@Override
+			public void checkClientTrusted(X509Certificate[] certs, String str) throws CertificateException {	}
+			@Override
+			public X509Certificate[] getAcceptedIssuers() { return null; }
+		}}, null);
+	    SslContext sslContext = new JdkSslContext(ctx, true, ClientAuth.NONE);
+		Builder builder = new Builder();
+		builder.setDisableHttpsEndpointIdentificationAlgorithm(true);
+		builder.setUseInsecureTrustManager(true);
+		builder.setSslContext(sslContext);
+		c = asyncHttpClient(builder);
+	  } else {
+		  c = asyncHttpClient();
+	  }
+	assert c != null;
 
     // Connect to web socket
     IdspClientSocket wsListener = new IdspClientSocket(this.config);
+    
     WebSocket ws =
         c.prepareGet("wss://" + host + ":" + port + "/" + this.config.getEndpoint())
             .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(wsListener).build())
