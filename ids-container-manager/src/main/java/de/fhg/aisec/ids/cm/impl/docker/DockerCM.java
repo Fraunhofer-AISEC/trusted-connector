@@ -54,6 +54,7 @@ public class DockerCM implements ContainerManager {
 
   @Override
   public List<ApplicationContainer> list(boolean onlyRunning) {
+    Pattern pattern = Pattern.compile("@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@");
     List<ApplicationContainer> result = new ArrayList<>();
     ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
     ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
@@ -67,7 +68,7 @@ public class DockerCM implements ContainerManager {
       }
       cmd.add("--format");
       cmd.add(
-          "{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}");
+          "@@{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}@@");
 
       ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
       Process p = pb.start();
@@ -89,19 +90,19 @@ public class DockerCM implements ContainerManager {
       throw new RuntimeException(e);
     }
     for (String line : lines) {
-      String[] columns = line.split("@@");
-      if (columns.length != 8) {
-        LOG.error("Unexpected number of columns in docker ps: " + columns.length + ": " + line);
+	  Matcher m = pattern.matcher(line);
+      if (!m.matches() || m.groupCount() != 8) {
+        LOG.error("Unexpected number of columns in docker ps: " + m.groupCount() + ": " + line);
         break;
       }
-      String id = columns[0];
-      String image = columns[1];
-      String created = columns[2];
-      String uptime = columns[3];
-      String ports = columns[4];
-      String status = columns[5];
-      String size = columns[6];
-      String names = columns[7];
+      String id = m.group(1);
+      String image = m.group(2);
+      String created = m.group(3);
+      String uptime = m.group(4);
+      String ports = m.group(5);
+      String status = m.group(6);
+      String size = m.group(7);
+      String names = m.group(8);
 
       // Extract owner, signature, description from container labels
       Map<String, Object> labels = getMetadata(id);
@@ -259,6 +260,7 @@ public class DockerCM implements ContainerManager {
       }
 
       createCmd.add(app.getImage());
+      LOG.debug(String.join(" ", createCmd));
       pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(createCmd);
       p = pb.start();
       p.waitFor(600, TimeUnit.SECONDS);
