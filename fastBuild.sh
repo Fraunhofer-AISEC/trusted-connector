@@ -1,1 +1,2 @@
-./gradlew clean :ids-api:jar :ids-settings:jar install --parallel -PskipAngular
+#!/bin/bash
+./gradlew :ids-settings:jar :ids-webconsole:jar install --parallel
