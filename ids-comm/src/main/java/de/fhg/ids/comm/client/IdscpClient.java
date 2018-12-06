@@ -51,7 +51,10 @@ public class IdscpClient {
    * @return
    * @throws InterruptedException
    * @throws ExecutionException
+   * 
+   * Use <code>connect(String host, int port)</code> instead.
    */
+  @Deprecated
   public WebSocket connect(URI uri) throws InterruptedException, ExecutionException {
     return connect(uri.getHost(), uri.getPort());
   }
@@ -72,7 +75,7 @@ public class IdscpClient {
     // Connect to web socket
     IdspClientSocket wsListener = new IdspClientSocket(this.config);
     WebSocket ws =
-        c.prepareGet("ws://" + host + ":" + port + "/")
+        c.prepareGet("wss://" + host + ":" + port + "/" + this.config.getEndpoint())
             .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(wsListener).build())
             .get();
 

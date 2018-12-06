@@ -34,8 +34,9 @@ public class ClientConfiguration implements IdscpConfiguration {
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask = 0;
   private CertificatePair certificatePair = new CertificatePair();
-public URI ttpUri;
-
+  private String endpoint = "";
+  protected URI ttpUri;
+  
   public static class Builder {
     private ClientConfiguration config = new ClientConfiguration();
 
@@ -58,6 +59,13 @@ public URI ttpUri;
     	config.ttpUri = ttpUri;
     	return this;
     }
+
+    public Builder endpoint(String endpoint) {
+    	if (endpoint != null) {
+    		config.endpoint = endpoint;
+    	}
+    	return this;
+    }
     
     public ClientConfiguration build() {
       return config;
@@ -78,5 +86,9 @@ public URI ttpUri;
 
   public URI getTrustedThirdPartyURI() {
 	  return ttpUri;
+  }
+
+  public String getEndpoint() {
+	  return endpoint;
   }
 }
