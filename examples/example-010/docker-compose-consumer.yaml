@@ -1,14 +1,14 @@
 version: '2'
 services:
 
-  # Image for TPM simulator
+  # TPM simulator
   ids-tpm2dsim-consumer:
     image: fraunhoferaisec/tpm2dsim:develop
     volumes:
       - ./camel-ids/socket/:/data/cml/tpm2d/communication/
     command: /tpm2d/cml-tpm2d
 
-  # Image for core platform, gets docker control socket and route definition mounted into the image
+  # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
     image: fraunhoferaisec/iot-connector-core-platform:example-010
     tty: true
