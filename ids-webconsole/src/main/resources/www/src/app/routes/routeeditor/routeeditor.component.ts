@@ -32,6 +32,10 @@ export class RouteeditorComponent implements OnInit {
     this.titleService.setTitle('Edit Message Route');
   }
 
+  get routeUpMinutes(): string {
+    return (this.route.uptime / 1000 / 60).toFixed();
+  }
+
   get route(): Route {
     return this._route;
   }

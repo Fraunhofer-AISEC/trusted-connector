@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { NetworkGraphComponent } from './dashboard/network-graph.component';
 import { MetricCardComponent } from './dashboard/metric-card.component';
 
 import { AppsComponent, AppsSearchComponent } from './apps/apps.component';
@@ -58,9 +57,6 @@ import { ZoomVizComponent } from './routes/zoom-viz/zoom-viz.component';
 
 import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
 
-// import { D3Service } from 'd3-ng2-service';
-// import { D3Component } from './d3/d3.component';
-
 @NgModule({
   imports: [
     AceEditorModule,
@@ -77,7 +73,6 @@ import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
     AppComponent,
     AppsSearchComponent,
     DashboardComponent,
-    NetworkGraphComponent,
     MetricCardComponent,
     AppsComponent,
     AppCardComponent,
@@ -100,7 +95,6 @@ import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
     ZoomVizComponent,
     ConnectionReportComponent,
     MDLUpgradeElementDirective
-    // D3Component,
   ],
   providers: [
     HTTP_PROVIDER,
@@ -116,7 +110,6 @@ import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
     ConnectionConfigurationService,
     MetricService,
     Title
-    // D3Service,
   ],
   bootstrap: [
     AppComponent

@@ -14,4 +14,4 @@ Import-Package: \
 	!io.swagger.annotations,\
 	*
 Web-ContextPath: /
--wab: src/main/resources/www/dist/
+-wab: build/resources/main/www/

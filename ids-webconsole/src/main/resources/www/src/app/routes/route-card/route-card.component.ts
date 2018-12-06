@@ -24,6 +24,10 @@ export class RouteCardComponent implements OnInit {
     return this.route.status === 'Started';
   }
 
+  get routeUpMinutes(): string {
+    return (this.route.uptime / 1000 / 60).toFixed();
+  }
+
   ngOnInit(): void {
     this.statusIcon = this.route.status === 'Started' ? 'stop' : 'play_arrow';
     this.dotSubject.next(this.route.dot);
