@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,11 +114,22 @@ public class RemoteAttestationHandler {
     }
   }
 
+  /**
+   * Calculate SHA-1 hash of (nonce|certificate).
+   * 
+   * @param nonce
+   * @param certificate
+   * @return
+   */
   public static byte[] calculateHash(byte[] nonce, Certificate certificate) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-1");
       digest.update(nonce);
-      digest.update(certificate.getEncoded());
+      if (certificate != null) {
+    	  digest.update(certificate.getEncoded());
+      } else {
+    	  LOG.warn("No client certificate available. Cannot bind nonce to public key to prevent masquerading attack. TLS misconfiguration!");
+      }
       return digest.digest();
     } catch (Exception e1) {
       LOG.error("Could not create hash of own nonce and local certificate", e1);
