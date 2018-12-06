@@ -73,8 +73,8 @@ karaf {
 		    feature 'camel-ahc'
             feature 'camel-http'
             feature 'camel-jetty'
-            feature 'camel-mqtt'
-            //feature 'camel-paho'
+            feature 'camel-paho'
+            //feature 'camel-mqtt'
 
             // start our bundles a lit bit later
             bundle ('de.fhg.ids') {

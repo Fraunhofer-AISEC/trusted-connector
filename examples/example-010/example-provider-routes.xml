@@ -21,9 +21,9 @@
     <!-- Retrieve temperature value from Data App via HTTP GET request and forward it over secure IDS protocol,
           setting remote attestation to most relaxed config (for demo only. Use 1 in production )-->
     <route id="sendTemp">
-      <from uri="mqtt:temp?host=tcp://mqtt-broker:1883&amp;subscribeTopicName=ids-example-010/temp"/>
-      <!-- Alternative MQTT client, requires camel-paho feature in karaf-features-ids/build.gradle! -->
-      <!-- <from uri="paho:ids-example-010/temp?brokerUrl=tcp://mqtt-broker:1883"/> -->
+      <!-- Alternative MQTT client, requires camel-mqtt feature in karaf-features-ids/build.gradle! -->
+      <!--<from uri="mqtt:temp?host=tcp://mqtt-broker:1883&amp;subscribeTopicName=ids-example-010/temp"/>-->
+      <from uri="paho:ids-example-010/temp?brokerUrl=tcp://mqtt-broker:1883"/>
       <convertBodyTo type="java.lang.String"/>
       <log message="Got temperature ${body}"/>
       <to

@@ -1,5 +1,6 @@
-Example-010 demonstrates the connection between two REST services and the conversion of MQTT messages using the Trusted IoT Connector.
+Example-010 demonstrates the conversion of MQTT messages (using Eclipse Paho)
+and publishing via a web interface using the Trusted Connector.
 
-Documentation is located at https://fraunhofer-aisec.github.io/trusted-iot-connector-documentation/
+Documentation is located at https://industrial-data-space.github.io/trusted-connector-documentation/docs/rest/
 
-(C)) Fraunhofer AISEC 2017
+(c) Fraunhofer AISEC 2018
