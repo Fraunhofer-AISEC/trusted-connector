@@ -60,6 +60,9 @@ public class ConfigApi {
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectorConfig get() {
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return null;
+    }
     return settings.getConnectorConfig();
   }
 
@@ -79,6 +82,9 @@ public class ConfigApi {
     }
 
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return "No settings available";
+    }
     settings.setConnectorConfig(config);
 
     return "OK";
@@ -107,6 +113,9 @@ public class ConfigApi {
     }
 
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return Response.serverError().build();
+    }
     settings.setConnectionSettings(connection, conSettings);
 
     return Response.ok().build();
@@ -124,6 +133,9 @@ public class ConfigApi {
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return null;
+    }
     return settings.getConnectionSettings(connection);
   }
 
@@ -146,7 +158,11 @@ public class ConfigApi {
   public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
     Settings settings = WebConsoleComponent.getSettings();
     ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();
-    RouteManager routeManager = WebConsoleComponent.getRouteManagerOrThrowSUE();
+    RouteManager routeManager = WebConsoleComponent.getRouteManager();
+    
+    if (settings == null || connectionManager == null || routeManager == null) {
+    	return Collections.emptyMap();
+    }
 
     // Set of all connection configurations, properly ordered
     Map<String, ConnectionSettings> allSettings =

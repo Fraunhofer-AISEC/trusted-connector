@@ -19,19 +19,9 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -44,6 +34,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -57,8 +48,23 @@ import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.fhg.aisec.ids.api.cm.ApplicationContainer;
+import de.fhg.aisec.ids.api.cm.ContainerManager;
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
+import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -87,6 +93,9 @@ public class AppApi {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ApplicationContainer> list() {
     ContainerManager cml = WebConsoleComponent.getContainerManager();
+    if (cml == null) {
+    	return new ArrayList<>();
+    }
 
     List<ApplicationContainer> result = cml.list(false);
     result.sort(
@@ -148,8 +157,13 @@ public class AppApi {
       @ApiParam(value = "Key for user token") @PathParam("key") String key) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
-      cml.startContainer(containerId, key);
-      return true;
+      if (cml!=null) {
+    	  cml.startContainer(containerId, key);
+    	  return true;
+      } else {
+          LOG.warn("Container manager not available");
+    	  return false;
+      }
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
       LOG.error("Error starting container", e);
       return false;
@@ -171,8 +185,13 @@ public class AppApi {
       @ApiParam(value = "ID of the app to stop") @PathParam("containerId") String containerId) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
-      cml.stopContainer(containerId);
-      return true;
+      if (cml != null) {
+	      cml.stopContainer(containerId);
+	      return true;
+      } else {
+    	  LOG.warn("Container manager not available");
+    	  return false;
+      }
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
       LOG.error(e.getMessage(), e);
       return false;
@@ -214,6 +233,10 @@ public class AppApi {
     ApplicationContainer app = apps.get("app");
     LOG.debug("Request to load {}", app.getImage());
     final ContainerManager cm = WebConsoleComponent.getContainerManager();
+    if (cm == null) {
+    	LOG.warn("Container manager not available");
+        throw new InternalServerErrorException("Null image");
+    }
 
     final String image = app.getImage();
     if (image == null) {
@@ -247,8 +270,11 @@ public class AppApi {
       @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") String containerId) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
+      if (cml == null) {
+    	  return "No container manager";
+      }
       cml.wipe(containerId);
-    } catch (NoContainerExistsException e) {
+    } catch (NullPointerException | NoContainerExistsException e) {
       LOG.error(e.getMessage(), e);
     }
     return "OK";
@@ -264,6 +290,9 @@ public class AppApi {
   public Map<String, String> getCml() {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
+      if (cml == null) {
+    	  return Collections.emptyMap();
+      }
       Map<String, String> result = new HashMap<>();
       result.put("cml_version", cml.getVersion());
       return result;
@@ -280,8 +309,12 @@ public class AppApi {
     String term = searchRequest.getSearchTerm();
     try {
       Client client = ClientBuilder.newBuilder().build();
-      String url =
-          WebConsoleComponent.getSettings().getConnectorConfig().getAppstoreUrl();
+      Settings settings = WebConsoleComponent.getSettings();
+      if (settings == null) {
+    	  LOG.warn("No settings available");
+    	  return new ArrayList<>();
+      }
+      String url = settings.getConnectorConfig().getAppstoreUrl();
 
       String r = client.target(url).request(MediaType.TEXT_PLAIN).get(String.class);
 

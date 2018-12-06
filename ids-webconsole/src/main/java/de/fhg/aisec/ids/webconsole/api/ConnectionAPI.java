@@ -19,12 +19,15 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
+import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -51,7 +54,11 @@ public class ConnectionAPI {
   )
   @Produces(MediaType.APPLICATION_JSON)
   public List<IDSCPIncomingConnection> getIncoming() {
-    return WebConsoleComponent.getConnectionManager().listIncomingConnections();
+	ConnectionManager cm = WebConsoleComponent.getConnectionManager();
+    if (cm == null) {
+    	return new ArrayList<>();
+    }
+	return cm.listIncomingConnections();
   }
 
   @GET
@@ -63,7 +70,11 @@ public class ConnectionAPI {
   )
   @Produces(MediaType.APPLICATION_JSON)
   public List<IDSCPOutgoingConnection> getOutgoing() {
-    return WebConsoleComponent.getConnectionManager().listOutgoingConnections();
+	 ConnectionManager cm = WebConsoleComponent.getConnectionManager();
+	 if (cm == null) {
+	   	return new ArrayList<>();
+	 }
+	 return cm.listOutgoingConnections();
   }
 
   @GET
@@ -75,6 +86,10 @@ public class ConnectionAPI {
   )
   @Produces(MediaType.APPLICATION_JSON)
   public List<IDSCPServerEndpoint> getAvailableEndpoints() {
-    return WebConsoleComponent.getConnectionManager().listAvailableEndpoints();
+    ConnectionManager cm = WebConsoleComponent.getConnectionManager();
+    if (cm == null) {
+    	return new ArrayList<>();
+    }
+	return cm.listAvailableEndpoints();
   }
 }

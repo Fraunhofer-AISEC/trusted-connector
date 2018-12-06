@@ -19,8 +19,10 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
@@ -75,9 +77,14 @@ public class CertApi {
           )
           @PathParam("target")
           String target) {
-    ConnectorConfig config = WebConsoleComponent.getSettings().getConnectorConfig();
-    if ("webconsole".equals(target)) {
-      WebConsoleComponent.getAcmeClient()
+	Settings settings = WebConsoleComponent.getSettings();
+	if (settings == null) {
+		return;
+	}
+    ConnectorConfig config = settings.getConnectorConfig();
+    AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
+    if ("webconsole".equals(target) && acmeClient!=null) {
+      acmeClient
           .renewCertificate(
               FileSystems.getDefault().getPath("etc", "tls-webconsole"),
               URI.create(config.getAcmeServerWebcon()),
@@ -96,7 +103,11 @@ public class CertApi {
   @Path("acme_tos")
   public AcmeTermsOfService getAcmeTermsOfService(
       @ApiParam(value = "URI to retrieve the TOS from") @QueryParam("uri") String uri) {
-    return WebConsoleComponent.getAcmeClient().getTermsOfService(URI.create(uri.trim()));
+    AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
+	if (acmeClient == null) {
+		return null;
+	}
+    return acmeClient.getTermsOfService(URI.create(uri.trim()));
   }
 
   @GET
