@@ -121,7 +121,7 @@ public class WebConsoleComponent {
   }
 
   @Nullable
-  public static RouteManager getRouteManagerOrThrowSUE() {
+  public static RouteManager getRouteManager() {
     WebConsoleComponent in = instance;
 	if (in != null) {
       return in.rm;

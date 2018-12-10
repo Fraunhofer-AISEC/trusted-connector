@@ -19,9 +19,15 @@
  */
 package de.fhg.ids.comm.server;
 
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +58,20 @@ public class IdscpServer {
   }
 
   public IdscpServer start() {
-    Server s = new Server(this.config.getPort());
+    Server s = new Server();
+    HttpConfiguration https = new HttpConfiguration();
+    https.addCustomizer(new SecureRequestCustomizer());
+    
+    SslContextFactory sslContextFactory = new SslContextFactory();
+    sslContextFactory.setKeyStore(config.getKeyStore());
+    sslContextFactory.setKeyStorePassword("password");
+    sslContextFactory.setCertAlias("1");
+    sslContextFactory.setKeyManagerPassword("password");
+    
+    ServerConnector sslConnector = new ServerConnector(s, sslContextFactory,
+        new HttpConnectionFactory(https));
+    sslConnector.setPort(this.config.getPort());
+    s.setConnectors(new Connector[] {sslConnector});
 
     // Setup the basic application "context" for this application at "/"
     // This is also known as the handler tree (in jetty speak)
@@ -67,10 +86,11 @@ public class IdscpServer {
 
     try {
       s.start();
+      this.server = s;
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
-    this.server = s;
+
     return this;
   }
 
@@ -85,7 +105,6 @@ public class IdscpServer {
     if (this.server == null) {
       throw new IllegalArgumentException("Wrong order: must call start() before addServlet()");
     }
-    assert this.server != null;
 
     ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     context.setContextPath("/");

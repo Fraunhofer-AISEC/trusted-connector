@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,27 +21,27 @@ package de.fhg.ids.comm.client;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import de.fhg.aisec.ids.api.conm.RatResult;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.JdkSslContext;
+import io.netty.handler.ssl.SslContext;
 import java.net.URI;
 import java.security.KeyManagementException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-
+import javax.xml.bind.DatatypeConverter;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig.Builder;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import de.fhg.aisec.ids.api.conm.RatResult;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.JdkSslContext;
-import io.netty.handler.ssl.SslContext;
 
 /**
  * A standalone client implementation for the IDSCP protocol.
@@ -62,55 +62,56 @@ public class IdscpClient {
    * Connects to a remote endpoint, executes the IDSCP handshake and returns the ready-to-use
    * WebSocket object.
    *
-   * @param uri
-   * @return
-   * @throws InterruptedException
-   * @throws ExecutionException
-   * @throws NoSuchAlgorithmException 
-   * 
-   * Use <code>connect(String host, int port)</code> instead.
- * @throws KeyManagementException 
+   * @throws NoSuchAlgorithmException Use <code>connect(String host, int port)</code> instead.
    */
   @Deprecated
-  public WebSocket connect(URI uri) throws InterruptedException, ExecutionException, NoSuchAlgorithmException, KeyManagementException {
+  public WebSocket connect(URI uri) throws InterruptedException, ExecutionException,
+      KeyManagementException, NoSuchAlgorithmException {
     return connect(uri.getHost(), uri.getPort());
   }
 
   /**
    * Connects to a remote endpoint, executes the IDSCP handshake and returns the ready-to-use
    * WebSocket object.
-   *
-   * @param host
-   * @param port
-   * @return
-   * @throws InterruptedException
-   * @throws ExecutionException
- * @throws NoSuchAlgorithmException 
- * @throws KeyManagementException 
    */
-  public WebSocket connect(@NonNull String host, int port) throws InterruptedException, ExecutionException, NoSuchAlgorithmException, KeyManagementException {
-	AsyncHttpClient c = null;    
-	if (this.config.isDisableServerVerification()) {
-		System.err.println("TLS Server verification has been switched off! TLS connections are not secure. If this message appears in production, your data is at risk! Switch on server verification again and make sure to maintain a proper truststore for trusted server certificates!");
-		SSLContext ctx = SSLContext.getInstance("TLSv1.2");
-		ctx.init(null, new X509TrustManager[] { new X509TrustManager() {
-			@Override
-			public void checkServerTrusted(X509Certificate[] certs, String str) throws CertificateException {	}
-			@Override
-			public void checkClientTrusted(X509Certificate[] certs, String str) throws CertificateException {	}
-			@Override
-			public X509Certificate[] getAcceptedIssuers() { return null; }
-		}}, null);
-	    SslContext sslContext = new JdkSslContext(ctx, true, ClientAuth.NONE);
-		Builder builder = new Builder();
-		builder.setDisableHttpsEndpointIdentificationAlgorithm(true);
-		builder.setUseInsecureTrustManager(true);
-		builder.setSslContext(sslContext);
-		c = asyncHttpClient(builder);
-	  } else {
-		  c = asyncHttpClient();
-	  }
-	assert c != null;
+  public WebSocket connect(@NonNull String host, int port)
+      throws InterruptedException, ExecutionException, KeyManagementException,
+      NoSuchAlgorithmException {
+    final Builder builder = new Builder();
+    if (!this.config.getSha256CertificateHashes().isEmpty()) {
+      SSLContext ctx = SSLContext.getInstance("TLS");
+      ctx.init(null, new X509TrustManager[]{new X509TrustManager() {
+        @Override
+        public void checkServerTrusted(X509Certificate[] certs, String str)
+            throws CertificateException {
+          try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] digestBytes = digest.digest(certs[0].getEncoded());
+            if (config.getSha256CertificateHashes().stream()
+                .noneMatch(hash -> Arrays.equals(digestBytes, hash))) {
+              throw new CertificateException("Did not find pinned SHA256 certificate hash: "
+                  + DatatypeConverter.printHexBinary(digestBytes));
+            }
+          } catch (Exception x) {
+            throw new CertificateException("Error during hash calculation", x);
+          }
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] certs, String str)
+            throws CertificateException {
+          throw new CertificateException("Must not be called by client implementation!");
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+          return new X509Certificate[0];
+        }
+      }}, null);
+      SslContext sslContext = new JdkSslContext(ctx, true, ClientAuth.NONE);
+      builder.setSslContext(sslContext);
+    }
+    final AsyncHttpClient c = asyncHttpClient(builder.build());
 
     // Connect to web socket
     IdspClientSocket wsListener = new IdspClientSocket(this.config);
@@ -142,15 +143,10 @@ public class IdscpClient {
    * <pre>
    * new IdscpClient().config(config).connect(url);
    * </pre>
-   *
-   * @param config
-   * @return
    */
   @NonNull
-  public IdscpClient config(@Nullable ClientConfiguration config) {
-    if (config != null) {
-    	this.config = config;
-    }
+  public IdscpClient config(@NonNull ClientConfiguration config) {
+    this.config = config;
     return this;
   }
 
@@ -166,8 +162,6 @@ public class IdscpClient {
   /**
    * Returns meta data about the remote endpoint or <code>null</code> if no meta data has been
    * exchanged.
-   *
-   * @return
    */
   @Nullable
   public String getMetaData() {
