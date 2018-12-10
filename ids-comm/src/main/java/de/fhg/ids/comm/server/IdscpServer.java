@@ -19,9 +19,16 @@
  */
 package de.fhg.ids.comm.server;
 
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +59,30 @@ public class IdscpServer {
   }
 
   public IdscpServer start() {
-    Server s = new Server(this.config.getPort());
+    Server s = new Server();
+    HttpConfiguration https = new HttpConfiguration();
+    https.addCustomizer(new SecureRequestCustomizer());
+    
+    SslContextFactory sslContextFactory = null; 
+    if (config.isDisableClientCertificateValidation()) {
+	    sslContextFactory = new SslContextFactory(true);
+	    sslContextFactory.setNeedClientAuth(false);
+	    sslContextFactory.setWantClientAuth(false);
+    } else {
+	    sslContextFactory = new SslContextFactory();
+    }
+    sslContextFactory.setKeyStore(config.getKeyStore());
+    sslContextFactory.setKeyStorePassword("password");
+    sslContextFactory.setCertAlias("jetty");
+    sslContextFactory.setKeyManagerPassword("password");
+    sslContextFactory.setExcludeProtocols(new String[0]);
+    sslContextFactory.setExcludeCipherSuites(new String[0]);
+    
+    ServerConnector sslConnector = new ServerConnector(s, sslContextFactory, new HttpConnectionFactory(https));
+    sslConnector.setIdleTimeout(30000);
+    sslConnector.setPort(this.config.getPort());
+    sslConnector.dumpStdErr();
+    s.setConnectors(new Connector[] {sslConnector});
 
     // Setup the basic application "context" for this application at "/"
     // This is also known as the handler tree (in jetty speak)

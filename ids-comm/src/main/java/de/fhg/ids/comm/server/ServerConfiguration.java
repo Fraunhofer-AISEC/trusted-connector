@@ -20,6 +20,10 @@
 package de.fhg.ids.comm.server;
 
 import java.net.URI;
+import java.security.KeyStore;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
@@ -34,12 +38,16 @@ public class ServerConfiguration implements IdscpConfiguration {
   public static final int DEFAULT_PORT = 8080;
 
   private int port = DEFAULT_PORT;
+  @NonNull
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask;
   private CertificatePair certificatePair = new CertificatePair();
+  private boolean disableClientCertificateValidation = false;
+  private KeyStore keystore = null;
   private URI ttpUri = null;
 
   public static class Builder {
+	@NonNull
     private ServerConfiguration config = new ServerConfiguration();
 
     public Builder port(int port) {
@@ -47,26 +55,43 @@ public class ServerConfiguration implements IdscpConfiguration {
       return this;
     }
 
-    public Builder attestationType(IdsAttestationType attestationType) {
+    @NonNull
+    public Builder attestationType(@NonNull IdsAttestationType attestationType) {
       config.attestationType = attestationType;
       return this;
     }
 
+    @NonNull
     public Builder attestationMask(int attestationMask) {
       config.attestationMask = attestationMask;
       return this;
     }
 
-    public Builder certificatePair(CertificatePair certificatePair) {
+    @NonNull
+    public Builder certificatePair(@NonNull CertificatePair certificatePair) {
       config.certificatePair = certificatePair;
       return this;
     }
 
-    public Builder ttpUrl(URI ttpUri) {
-    	config.ttpUri = ttpUri;
+    @NonNull
+    public Builder ttpUrl(@Nullable URI ttpUri) {
+    	if (ttpUri != null) {
+    		config.ttpUri = ttpUri;
+    	}
     	return this;
     }
     
+    public Builder setDisableClientCertificateValidation(boolean disable) {
+    	config.disableClientCertificateValidation = disable;
+    	return this;
+    }
+    
+    public Builder setKeyStore(KeyStore keystore) {
+    	config.keystore = keystore;
+    	return this;
+    }
+    
+    @NonNull
     public ServerConfiguration build() {
       return config;
     }
@@ -76,6 +101,7 @@ public class ServerConfiguration implements IdscpConfiguration {
     return port;
   }
 
+  @NonNull
   public IdsAttestationType getAttestationType() {
     return attestationType;
   }
@@ -84,11 +110,22 @@ public class ServerConfiguration implements IdscpConfiguration {
     return attestationMask;
   }
 
+  @Nullable
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
   
+  @Nullable
   public URI getTrustedThirdPartyURI() {
 	  return ttpUri;
+  }
+  
+  public boolean isDisableClientCertificateValidation() {
+	  return disableClientCertificateValidation;
+  }
+
+  @Nullable
+  public KeyStore getKeyStore(){
+	  return keystore;
   }
 }

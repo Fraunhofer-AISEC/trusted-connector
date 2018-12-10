@@ -92,7 +92,7 @@ public class IdscpClient {
 	AsyncHttpClient c = null;    
 	if (this.config.isDisableServerVerification()) {
 		System.err.println("TLS Server verification has been switched off! TLS connections are not secure. If this message appears in production, your data is at risk! Switch on server verification again and make sure to maintain a proper truststore for trusted server certificates!");
-		SSLContext ctx = SSLContext.getInstance("TLSv1.2");
+		SSLContext ctx = SSLContext.getInstance("TLS");
 		ctx.init(null, new X509TrustManager[] { new X509TrustManager() {
 			@Override
 			public void checkServerTrusted(X509Certificate[] certs, String str) throws CertificateException {	}
