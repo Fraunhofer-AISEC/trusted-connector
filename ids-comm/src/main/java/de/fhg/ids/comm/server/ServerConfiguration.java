@@ -19,15 +19,13 @@
  */
 package de.fhg.ids.comm.server;
 
-import java.net.URI;
-import java.security.KeyStore;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
+import java.net.URI;
+import java.security.KeyStore;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Configuration of the server-side (Provider) part of the IDSC protocol.
@@ -41,15 +39,18 @@ public class ServerConfiguration implements IdscpConfiguration {
   @NonNull
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask;
+  @NonNull
   private CertificatePair certificatePair = new CertificatePair();
-  private boolean disableClientCertificateValidation = false;
-  private KeyStore keystore = null;
+  @Nullable
+  private KeyStore keyStore = null;
+  @Nullable
   private URI ttpUri = null;
 
   public static class Builder {
-	@NonNull
+	  @NonNull
     private ServerConfiguration config = new ServerConfiguration();
 
+	  @NonNull
     public Builder port(int port) {
       config.port = port;
       return this;
@@ -74,20 +75,14 @@ public class ServerConfiguration implements IdscpConfiguration {
     }
 
     @NonNull
-    public Builder ttpUrl(@Nullable URI ttpUri) {
-    	if (ttpUri != null) {
-    		config.ttpUri = ttpUri;
-    	}
+    public Builder ttpUrl(@NonNull URI ttpUri) {
+    	config.ttpUri = ttpUri;
     	return this;
     }
-    
-    public Builder setDisableClientCertificateValidation(boolean disable) {
-    	config.disableClientCertificateValidation = disable;
-    	return this;
-    }
-    
-    public Builder setKeyStore(KeyStore keystore) {
-    	config.keystore = keystore;
+
+    @NonNull
+    public Builder setKeyStore(@NonNull KeyStore keyStore) {
+    	config.keyStore = keyStore;
     	return this;
     }
     
@@ -110,7 +105,7 @@ public class ServerConfiguration implements IdscpConfiguration {
     return attestationMask;
   }
 
-  @Nullable
+  @NonNull
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
@@ -119,13 +114,9 @@ public class ServerConfiguration implements IdscpConfiguration {
   public URI getTrustedThirdPartyURI() {
 	  return ttpUri;
   }
-  
-  public boolean isDisableClientCertificateValidation() {
-	  return disableClientCertificateValidation;
-  }
 
   @Nullable
   public KeyStore getKeyStore(){
-	  return keystore;
+	  return keyStore;
   }
 }

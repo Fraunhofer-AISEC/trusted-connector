@@ -23,21 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.concurrent.ExecutionException;
-
-import org.asynchttpclient.ws.WebSocket;
-import org.eclipse.jetty.websocket.api.Session;
-import org.junit.Test;
-
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
@@ -46,15 +31,36 @@ import de.fhg.ids.comm.server.IdscpServer;
 import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.server.SocketListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import javax.xml.bind.DatatypeConverter;
+import org.asynchttpclient.ws.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.junit.Test;
 
 public class ProtocolTest {
 	
   @Test
-  public void testFailureHandling() throws InterruptedException, ExecutionException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, CertificateException, IOException {
-    MySocketListener listener = new MySocketListener();
+  public void testFailureHandling() throws InterruptedException, ExecutionException,
+      URISyntaxException, NoSuchAlgorithmException, KeyStoreException, CertificateException,
+      IOException, KeyManagementException {
+    final MySocketListener listener = new MySocketListener();
+    final Path jssePath = FileSystems.getDefault().getPath("src/test/resources/jsse");
 
-    KeyStore ks = KeyStore.getInstance("JKS");
-    ks.load(this.getClass().getResourceAsStream("jsse/server-keystore.jks"), "password".toCharArray());
+    final KeyStore ks = KeyStore.getInstance("JKS");
+    ks.load(Files.newInputStream(jssePath.resolve("server-keystore.jks")),
+        "password".toCharArray());
     // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
     @SuppressWarnings("unused")
     IdscpServer server =
@@ -62,8 +68,6 @@ public class ProtocolTest {
             .config(
                 new ServerConfiguration.Builder()
                     .port(8081)
-                    .attestationMask(0)
-                    .setDisableClientCertificateValidation(false)
                     .attestationType(IdsAttestationType.BASIC)
                     .setKeyStore(ks)
                     .ttpUrl(new URI("https://localhost/nonexistingdummy_ttp"))
@@ -71,11 +75,14 @@ public class ProtocolTest {
             .setSocketListener(listener)
             .start();
 
-    Thread.sleep(200000);
-    
     // Configure and start client (blocks until IDSCP has finished)
-    IdscpClient client = new IdscpClient();
-    WebSocket wsClient = client.config(new ClientConfiguration.Builder().setDisableServerVerification(true).build()).connect("localhost", 8081);
+    IdscpClient client = new IdscpClient().config(
+        new ClientConfiguration.Builder()
+            .setSha256CertificateHashes(Collections.singletonList(
+                DatatypeConverter.parseHexBinary(
+                    "4439DA49F320E3786319A5CF8D69F3A0831C4801B5CE3A14570EA84E0ECD82B0")))
+            .build());
+    WebSocket wsClient = client.connect("localhost", 8081);
 
     // --- IDSC protocol will run automatically now ---
 

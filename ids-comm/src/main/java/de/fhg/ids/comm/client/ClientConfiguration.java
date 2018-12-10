@@ -19,14 +19,14 @@
  */
 package de.fhg.ids.comm.client;
 
-import java.net.URI;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
@@ -41,12 +41,13 @@ public class ClientConfiguration implements IdscpConfiguration {
   private CertificatePair certificatePair = new CertificatePair();
   @NonNull
   private String endpoint = "";
-  private boolean disableServerVerification = false;
+  @NonNull
+  private List<byte[]> sha256CertificateHashes = Collections.emptyList();
   @Nullable
   protected URI ttpUri;
   
   public static class Builder {
-	@NonNull
+	  @NonNull
     private ClientConfiguration config = new ClientConfiguration();
 
     public Builder attestationMask(int attestationMask) {
@@ -55,40 +56,33 @@ public class ClientConfiguration implements IdscpConfiguration {
     }
 
     @NonNull
-    public Builder attestationType(@Nullable IdsAttestationType attestationType) {
-      if (attestationType != null) {
-    	config.attestationType = attestationType;
-      }
+    public Builder attestationType(@NonNull IdsAttestationType attestationType) {
+      config.attestationType = attestationType;
       return this;
     }
 
     @NonNull
-    public Builder certificatePair(@Nullable CertificatePair certificatePair) {
-      if (certificatePair != null) {
-    	config.certificatePair = certificatePair;
-      }
+    public Builder certificatePair(@NonNull CertificatePair certificatePair) {
+      config.certificatePair = certificatePair;
       return this;
     }
 
     @NonNull
-    public Builder ttpUrl(@Nullable URI ttpUri) {
-    	if (ttpUri != null) {
-    	  config.ttpUri = ttpUri;
-    	}
+    public Builder ttpUrl(@NonNull URI ttpUri) {
+      config.ttpUri = ttpUri;
     	return this;
     }
 
     @NonNull
-    public Builder endpoint(@Nullable String endpoint) {
-    	if (endpoint != null) {
-    		config.endpoint = endpoint;
-    	}
+    public Builder endpoint(@NonNull String endpoint) {
+    	config.endpoint = endpoint;
     	return this;
     }
-    
-    public Builder setDisableServerVerification(boolean disableServerVerification) {
-    	config.disableServerVerification = disableServerVerification;
-    	return this;
+
+    @NonNull
+    public Builder setSha256CertificateHashes(@NonNull List<byte[]> hashes) {
+      config.sha256CertificateHashes = hashes;
+      return this;
     }
     
     @NonNull
@@ -106,7 +100,7 @@ public class ClientConfiguration implements IdscpConfiguration {
     return attestationMask;
   }
   
-  @Nullable
+  @NonNull
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
@@ -120,8 +114,9 @@ public class ClientConfiguration implements IdscpConfiguration {
   public String getEndpoint() {
 	  return endpoint;
   }
-  
-  public boolean isDisableServerVerification() {
-	  return disableServerVerification;
+
+  @NonNull
+  public List<byte[]> getSha256CertificateHashes(){
+    return sha256CertificateHashes;
   }
 }

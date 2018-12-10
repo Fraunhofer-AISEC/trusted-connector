@@ -25,7 +25,6 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -63,25 +62,15 @@ public class IdscpServer {
     HttpConfiguration https = new HttpConfiguration();
     https.addCustomizer(new SecureRequestCustomizer());
     
-    SslContextFactory sslContextFactory = null; 
-    if (config.isDisableClientCertificateValidation()) {
-	    sslContextFactory = new SslContextFactory(true);
-	    sslContextFactory.setNeedClientAuth(false);
-	    sslContextFactory.setWantClientAuth(false);
-    } else {
-	    sslContextFactory = new SslContextFactory();
-    }
+    SslContextFactory sslContextFactory = new SslContextFactory();
     sslContextFactory.setKeyStore(config.getKeyStore());
     sslContextFactory.setKeyStorePassword("password");
-    sslContextFactory.setCertAlias("jetty");
+    sslContextFactory.setCertAlias("1");
     sslContextFactory.setKeyManagerPassword("password");
-    sslContextFactory.setExcludeProtocols(new String[0]);
-    sslContextFactory.setExcludeCipherSuites(new String[0]);
     
-    ServerConnector sslConnector = new ServerConnector(s, sslContextFactory, new HttpConnectionFactory(https));
-    sslConnector.setIdleTimeout(30000);
+    ServerConnector sslConnector = new ServerConnector(s, sslContextFactory,
+        new HttpConnectionFactory(https));
     sslConnector.setPort(this.config.getPort());
-    sslConnector.dumpStdErr();
     s.setConnectors(new Connector[] {sslConnector});
 
     // Setup the basic application "context" for this application at "/"
@@ -97,10 +86,11 @@ public class IdscpServer {
 
     try {
       s.start();
+      this.server = s;
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
-    this.server = s;
+
     return this;
   }
 
@@ -115,7 +105,6 @@ public class IdscpServer {
     if (this.server == null) {
       throw new IllegalArgumentException("Wrong order: must call start() before addServlet()");
     }
-    assert this.server != null;
 
     ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     context.setContextPath("/");
