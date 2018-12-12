@@ -158,7 +158,7 @@ subprojects {
     }
 }
 
-configure(subprojects.findAll { !it.name.contains('tpm2j') }) {
+configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
     apply plugin: 'com.diffplug.gradle.spotless'
 
     spotless {
