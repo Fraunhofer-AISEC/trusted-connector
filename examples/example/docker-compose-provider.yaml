@@ -5,7 +5,7 @@ services:
   ids-tpm2dsim-provider:
     image: fraunhoferaisec/tpm2dsim:develop
     volumes:
-      - ./camel-ids/socket/:/data/cml/tpm2d/communication/
+      - ./tpm2d-provider/:/data/cml/tpm2d/communication/
     command: /tpm2d/cml-tpm2d
 
   # The core platform, mounts docker control socket and route definition into the image
@@ -17,7 +17,7 @@ services:
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./camel-ids/socket/:/var/run/tpm2d/
+      - ./tpm2d-provider/:/var/run/tpm2d/
       - ./system.properties:/root/etc/system.properties
       - ./provider-client-truststore.jks:/root/etc/provider-client-truststore.jks
       - ./provider-client-keystore.jks:/root/etc/provider-client-keystore.jks
