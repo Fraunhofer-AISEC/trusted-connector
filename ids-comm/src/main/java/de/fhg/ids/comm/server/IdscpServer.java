@@ -64,9 +64,9 @@ public class IdscpServer {
     
     SslContextFactory sslContextFactory = new SslContextFactory();
     sslContextFactory.setKeyStore(config.getKeyStore());
-    sslContextFactory.setKeyStorePassword("password");
-    sslContextFactory.setCertAlias("1");
-    sslContextFactory.setKeyManagerPassword("password");
+    sslContextFactory.setKeyStorePassword(this.config.getKeyStorePassword());
+    sslContextFactory.setCertAlias(this.config.getCertAlias());
+    sslContextFactory.setKeyManagerPassword(this.config.getKeyManagerPassword());
     
     ServerConnector sslConnector = new ServerConnector(s, sslContextFactory,
         new HttpConnectionFactory(https));

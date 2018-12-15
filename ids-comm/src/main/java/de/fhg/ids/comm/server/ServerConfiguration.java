@@ -45,6 +45,12 @@ public class ServerConfiguration implements IdscpConfiguration {
   private KeyStore keyStore = null;
   @Nullable
   private URI ttpUri = null;
+  @NonNull
+  private String keyStorePassword = "password";
+  @NonNull
+  private String keyManagerPassword = "password";
+  @NonNull
+  private String certAlias = "1";
 
   public static class Builder {
 	  @NonNull
@@ -87,6 +93,24 @@ public class ServerConfiguration implements IdscpConfiguration {
     }
     
     @NonNull
+    public Builder setKeyStorePassword(@NonNull String keyStorePassword) {
+      config.keyStorePassword = keyStorePassword;
+      return this;
+    }
+    
+    @NonNull
+    public Builder setKeyPassword(@NonNull String keyPassword) {
+      config.keyManagerPassword = keyPassword;
+      return this;
+    }
+    
+    @NonNull
+    public Builder setCertAlias(@NonNull String certAlias) {
+      config.certAlias = certAlias;
+      return this;
+    }
+    
+    @NonNull
     public ServerConfiguration build() {
       return config;
     }
@@ -116,7 +140,19 @@ public class ServerConfiguration implements IdscpConfiguration {
   }
 
   @Nullable
-  public KeyStore getKeyStore(){
+  public KeyStore getKeyStore() {
 	  return keyStore;
+  }
+
+  public String getKeyStorePassword() {
+    return keyStorePassword ;
+  }
+
+  public String getKeyManagerPassword() {
+	    return keyManagerPassword ;
+ }
+
+  public String getCertAlias() {
+    return certAlias ;
   }
 }
