@@ -226,9 +226,11 @@ public class DockerCM implements ContainerManager {
       createCmd.add("create");
 
       // Set exposed ports
-      for (String port : app.getPorts()) {
-        createCmd.add("-p");
-        createCmd.add(port);
+      if (app.getPorts()!=null) {
+        for (String port : app.getPorts()) {
+          createCmd.add("-p");
+          createCmd.add(port);
+        }
       }
 
       // Set environment variables
@@ -265,8 +267,10 @@ public class DockerCM implements ContainerManager {
       p = pb.start();
       p.waitFor(600, TimeUnit.SECONDS);
       return Optional.<String>of(containerID);
-    } catch (IOException | InterruptedException | RuntimeException e) {
+    } catch (IOException | RuntimeException e) {
       LOG.error(e.getMessage(), e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
     return Optional.<String>empty();
   }
