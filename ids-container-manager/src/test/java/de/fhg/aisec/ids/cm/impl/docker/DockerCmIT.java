@@ -42,7 +42,7 @@ public class DockerCmIT {
 
     // Skip all tests if docker is not supported on the current platform
     if (!DockerCM.isSupported()) {
-      Assume.assumeTrue(true);
+      Assume.assumeTrue(false);
     }
   }
 
