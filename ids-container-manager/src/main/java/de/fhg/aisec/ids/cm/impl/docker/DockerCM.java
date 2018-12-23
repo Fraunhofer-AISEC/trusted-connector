@@ -304,11 +304,11 @@ public class DockerCM implements ContainerManager {
       // Attempt to invoke some docker command. If it fails, return false
       Process p = new ProcessBuilder().command(Arrays.asList(DOCKER_CLI, "info")).start();
       p.waitFor(10, TimeUnit.SECONDS);
+      return (p.exitValue() == 0);
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
-      return false;
     }
-    return true;
+    return false;
   }
 
   @Override
