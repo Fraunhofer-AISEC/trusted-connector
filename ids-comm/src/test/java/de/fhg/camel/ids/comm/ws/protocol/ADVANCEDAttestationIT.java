@@ -20,6 +20,7 @@
 package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +33,8 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
+
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.Certificate;
@@ -129,6 +132,8 @@ public class ADVANCEDAttestationIT {
 
   @Test
   public void test3() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg3 =
         ConnectorMessage.parseFrom(
             consumer
@@ -144,6 +149,8 @@ public class ADVANCEDAttestationIT {
 
   @Test
   public void test4() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg4 =
         ConnectorMessage.parseFrom(
             provider
@@ -159,6 +166,8 @@ public class ADVANCEDAttestationIT {
 
   @Test
   public void test5() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg5 =
         ConnectorMessage.parseFrom(
             consumer.sendResult(new Event(msg4.getType(), msg4.toString(), msg4)).toByteString());
@@ -171,6 +180,8 @@ public class ADVANCEDAttestationIT {
 
   @Test
   public void test6() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg6 =
         ConnectorMessage.parseFrom(
             provider.sendResult(new Event(msg5.getType(), msg5.toString(), msg5)).toByteString());
@@ -183,6 +194,8 @@ public class ADVANCEDAttestationIT {
 
   @Test
   public void test7() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg7 =
         ConnectorMessage.parseFrom(
             consumer
@@ -196,6 +209,8 @@ public class ADVANCEDAttestationIT {
 
   @Test
   public void test8() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg8 =
         ConnectorMessage.parseFrom(
             provider
