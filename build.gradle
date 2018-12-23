@@ -85,7 +85,10 @@ allprojects {
 
             // needed for rat-repository, should be seperated 
             jersey        : '2.26',
-            mockito       : '1.10.19'
+            mockito       : '1.10.19',
+
+            // for OSGi integration tests
+            paxExam : '4.6.0'
     ]
 
     configurations {
@@ -126,6 +129,8 @@ subprojects {
         include '**/*IT.*'
     }
 
+    check.dependsOn integrationTest
+
     // define some Bill of Materials (BOM) for all subprojects
     dependencies {
         // BOM from Karaf, sets common version for OSGi libraries
@@ -133,6 +138,13 @@ subprojects {
 
         // BOM for pax, for jetty, etc.
         bom group: 'org.ops4j.pax', name: 'web', version: libraryVersions.pax
+
+        testCompile "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
+        testCompile "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"
+        testCompile "org.ops4j.pax.exam:pax-exam:${libraryVersions.paxExam}"
+        testCompile "org.ops4j.pax.url:pax-url-aether:2.4.3"
+        testCompile "javax.inject:javax.inject:1"
+        testCompile "org.slf4j:slf4j-simple:1.7.12"
     }
 
     tasks.withType(JavaCompile) {
