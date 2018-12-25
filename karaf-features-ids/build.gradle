@@ -10,6 +10,7 @@ dependencies {
     providedByBundle project(path: ':ids-settings', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-dynamic-tls', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-container-manager', configuration: 'providedByBundle')
+    providedByBundle project(path: ':ids-infomodel-manager', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-dataflow-control', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-route-manager', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-webconsole', configuration: 'providedByBundle')

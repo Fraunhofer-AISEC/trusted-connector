@@ -1,0 +1,6 @@
+Bundle-Name: IDS :: Information Model Manager
+Export-Package: \
+  de.fhg.ids.infomodel*
+Import-Package: \
+	de.fraunhofer.iais.eis*,\
+	*
