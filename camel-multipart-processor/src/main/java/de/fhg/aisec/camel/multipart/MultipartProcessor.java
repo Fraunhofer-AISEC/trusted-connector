@@ -21,7 +21,6 @@ package de.fhg.aisec.camel.multipart;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -29,6 +28,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.StringBody;
+
+import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 
 /**
  * The MultipartProcessor will read the Exchange's header "ids" (if present) and
@@ -102,34 +103,29 @@ Content-Disposition: form-data; name="payload"
  *
  */
 public class MultipartProcessor implements Processor {
-	private static final String FIXED_HEADER = "{\n" + 
-			"  \"@type\" : \"ids:ConnectorAvailableMessage\",\n" + 
-			"  \"id\" : \"http://industrialdataspace.org/connectorAvailableMessage/34d761cf-5ca4-4a77-a7f4-b14d8f75636a\",\n" + 
-			"  \"issued\" : \"2018-10-25T11:37:08.245Z\",\n" + 
-			"  \"modelVersion\" : \"1.0.1-SNAPSHOT\",\n" + 
-			"  \"issuerConnector\" : \"https://companyA.com/connector/59a68243-dd96-4c8d-88a9-0f0e03e13b1b\",\n" + 
-			"  \"securityToken\" : {\n" + 
-			"    \"@type\" : \"ids:Token\",\n" + 
-			"    \"id\" : \"http://industrialdataspace.org/token/e43c08e1-157b-4207-94a8-754e53f48839\",\n" + 
-			"    \"tokenFormat\" : \"https://w3id.org/idsa/code/tokenformat/JWT\",\n" + 
-			"    \"tokenValue\" : \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJEQVBTIERDIiwiYXVkIjoiSURTX0RDX0FTIiwic3ViIjoiREFQUyByZXNwb25zZSB0b2tlbiIsIm5hbWUiOiJEeW5hbWljIEF0dHJpYnV0ZXMgUHJvdmlzaW9uIFNlcnZpY2UgJ0RBUFMnIChlZGl0aW9uICdEZXZlbG9wZXJzIENvbW11bml0eScpIiwiZXhwIjoxNTQwMzkyMzU1MDI2LCJASURTIjp7IkBjb250ZXh0Ijp7IlNlY3VyaXR5UHJvZmlsZSI6Imh0dHBzOi8vc2NoZW1hLmluZHVzdHJpYWxkYXRhc3BhY2Uub3JnL3NlY3VyaXR5UHJvZmlsZS8iLCJEYXRhVXNhZ2VDb250cm9sIjoiaHR0cHM6Ly9zY2hlbWEuaW5kdXN0cmlhbGRhdGFzcGFjZS5vcmcvc2VjdXJpdHlQcm9maWxlL2RhdGFVc2FnZUNvbnRyb2xTdXBwb3J0In0sIkB0eXBlIjoicHJvZmlsZSIsInByb2ZpbGUiOnsiaWRzaWQiOiJodHRwOi8vd3d3Lm5pY29zLXJkLmNvbS9JRFMvQ29ubmVjdG9ycy9icm8tZGMiLCJAdHlwZSI6IlNlY3VyaXR5UHJvZmlsZSIsIlNlY3VyaXR5UHJvZmlsZSI6eyJpbnRlZ3JpdHlQcm90ZWN0aW9uQW5kVmVyaWZpY2F0aW9uU3VwcG9ydCI6Ik5PTkUiLCJhdXRoZW50aWNhdGlvblN1cHBvcnQiOiJOT05FIiwic2VydmljZUlzb2xhdGlvblN1cHBvcnQiOiJOT05FIiwiaW50ZWdyaXR5UHJvdGVjdGlvblNjb3BlIjoiTk9ORSIsImFwcEV4ZWN1dGlvblJlc291cmNlcyI6Ik5PTkUiLCJkYXRhVXNhZ2VDb250cm9sU3VwcG9ydCI6Ik5PTkUiLCJhdWRpdExvZ2dpbmciOiJOT05FIiwibG9jYWxEYXRhQ29uZmlkZW50aWFsaXR5IjoiTk9ORSJ9fX0sImlhdCI6MTU0MDM4ODc1NX0.3gEV3OB-Gf_Z4Hv6H5iQpC7OEoBvcEV887uOFjgC7jb1vBujT_qyVk3ETtZSEKUd2izChlE4MjskbhW-7I6dNvYfZz_6Hif9iH0dMsncPair5aph7vsPpH4V0AjiKXBqJrDqDGZeZxZuqcD6RmQjTvSDpVKj120xRbG_GgQg5jVJa427fkIS792vg078d7BlBfWUeYT3HBLE-fFNpQ6FIGA559O70TyXbxk-POkUWDE2cRm_fk-qvpTVDr79YYpPNuLc_0HgSzZJtXuT_Hn2hScrkYKCFJivsqI6f3Z1SvsGGIX5aTE_YSIEULScaRcq5M0u4ze1ynnnbtL4r59tig\"\n" + 
-			"  }\n" + 
-			"}\n";
-	
+
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
 		multipartEntityBuilder.setMode(HttpMultipartMode.STRICT);
+		
+		// Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
+		// will be sent as a multipart "header"
+		InfoModelManager infoModel = MultipartComponent.infoModel;
+		String rdfHeader = "";
+		if (infoModel != null) {
+			rdfHeader = infoModel.getConnectorAsJsonLd();
+		}
 
-		// Get the Exchange header named "ids" and turn it into the first part named
-		// "header"
-		String header = exchange.getIn().getHeader("ids", String.class);
+		// If the Exchange header contains an attribute named "ids.connector.selfdescription", use it for 
+		// the first part named "header".
+		String header = exchange.getIn().getHeader("ids.connector.selfdescription", String.class);
 		if (header != null && header != "") {
 			multipartEntityBuilder.addPart("header", new StringBody(header, ContentType.APPLICATION_JSON))
 					.setContentType(ContentType.APPLICATION_JSON);
 		} else {
-			// TODO Instead of FIXED_HEADER, retrieve values from TokenService (=securityToken) and SettingsService (=issuerConnector)
-			multipartEntityBuilder.addPart("header", new StringBody(FIXED_HEADER, ContentType.APPLICATION_JSON));
+			// Otherwise just use the self-description provided by the InfoModelManager
+			multipartEntityBuilder.addPart("header", new StringBody(rdfHeader, ContentType.APPLICATION_JSON));
 		}
 
 		// Get the Exchange body and turn it into the second part named "payload"
