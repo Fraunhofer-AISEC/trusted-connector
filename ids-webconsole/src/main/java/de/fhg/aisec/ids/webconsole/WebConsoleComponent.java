@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,19 +19,18 @@
  */
 package de.fhg.aisec.ids.webconsole;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.settings.Settings;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 /**
  * IDS management console, reachable at http://localhost:8181.
@@ -68,74 +67,74 @@ public class WebConsoleComponent {
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private PAP pap = null;
-  
+
   private static WebConsoleComponent instance;
-  
+
   @Activate
   @SuppressWarnings("squid:S2696")
   protected void activate() {
-	  instance = this;
+    instance = this;
   }
-  
+
   @Deactivate
   @SuppressWarnings("squid:S2696")
   protected void deactivate() {
-	  instance = null;
+    instance = null;
   }
-  
+
   @Nullable
   public static ContainerManager getContainerManager() {
     WebConsoleComponent in = instance;
-	if (in != null) {
+    if (in != null) {
       return in.cml;
-	}
-	return null;
+    }
+    return null;
   }
 
   @Nullable
   public static AcmeClient getAcmeClient() {
     WebConsoleComponent in = instance;
-	if (in != null) {
+    if (in != null) {
       return in.acmeClient;
-	}
-	return null;
+    }
+    return null;
   }
 
   @Nullable
   public static ConnectionManager getConnectionManager() {
     WebConsoleComponent in = instance;
-	if (in != null) {
+    if (in != null) {
       return in.connectionManager;
-	}
-	return null;
+    }
+    return null;
 
   }
 
   @Nullable
   public static Settings getSettings() {
     WebConsoleComponent in = instance;
-	if (in != null) {
+    if (in != null) {
       return in.settings;
-	}
-	return null;
+    }
+    return null;
   }
 
   @Nullable
   public static RouteManager getRouteManager() {
     WebConsoleComponent in = instance;
-	if (in != null) {
+    if (in != null) {
       return in.rm;
-	}
-	return null;
+    }
+    return null;
   }
 
   @Nullable
   public static PAP getPolicyAdministrationPoint() {
     WebConsoleComponent in = instance;
-	if (in != null) {
+    if (in != null) {
       return in.pap;
-	}
-	return null;
+    }
+    return null;
   }
 
 }
