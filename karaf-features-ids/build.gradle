@@ -15,6 +15,7 @@ dependencies {
     providedByBundle project(path: ':ids-route-manager', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-webconsole', configuration: 'providedByBundle')
     providedByBundle project(path: ':camel-ids', configuration: 'providedByBundle')
+    providedByBundle project(path: ':camel-multipart-processor', configuration: 'providedByBundle')
     providedByBundle project(path: ':tpm2j', configuration: 'providedByBundle')
 }
 

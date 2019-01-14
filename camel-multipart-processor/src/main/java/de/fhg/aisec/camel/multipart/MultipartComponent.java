@@ -1,10 +1,10 @@
 package de.fhg.aisec.camel.multipart;
 
+import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
-
-import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 
 /**
  * The only purpose of this OSGi component is to connect to the InfoModelManager.
@@ -19,5 +19,18 @@ import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 public class MultipartComponent {
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY)
-	protected static InfoModelManager infoModel;
+	private InfoModelManager infoModel = null;
+
+	private static MultipartComponent instance;
+
+	@Activate
+	@SuppressWarnings("squid:S2696")
+	protected void activate() {
+		instance = this;
+	}
+
+	public static InfoModelManager getInfoModelManager() {
+		return instance.infoModel;
+	}
+
 }

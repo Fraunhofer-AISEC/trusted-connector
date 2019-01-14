@@ -19,17 +19,15 @@
  */
 package de.fhg.aisec.camel.multipart;
 
+import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.StringBody;
-
-import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 
 /**
  * The MultipartProcessor will read the Exchange's header "ids" (if present) and
@@ -111,7 +109,7 @@ public class MultipartProcessor implements Processor {
 		
 		// Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
 		// will be sent as a multipart "header"
-		InfoModelManager infoModel = MultipartComponent.infoModel;
+		InfoModelManager infoModel = MultipartComponent.getInfoModelManager();
 		String rdfHeader = "";
 		if (infoModel != null) {
 			rdfHeader = infoModel.getConnectorAsJsonLd();
