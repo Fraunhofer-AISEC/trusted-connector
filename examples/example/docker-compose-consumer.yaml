@@ -10,7 +10,7 @@ services:
 
   # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
-    image: fraunhoferaisec/iot-connector-core-platform:example-010
+    image: fraunhoferaisec/iot-connector-core-platform:example
     tty: true
     stdin_open: true
     hostname: consumer-core
@@ -35,7 +35,7 @@ services:
 
   # Data App (REST consumer, displays web page)
   consumer-app:
-    image: fraunhoferaisec/example-server:develop
+    image: fraunhoferaisec/example-server:example
     ports:
       - "8081:8081"
     networks:
