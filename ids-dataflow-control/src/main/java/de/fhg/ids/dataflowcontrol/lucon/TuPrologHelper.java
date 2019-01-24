@@ -43,7 +43,10 @@ public final class TuPrologHelper {
   }
 
   @NonNull
-  public static String escape(@NonNull String s) {
+  public static String escape(@Nullable String s) {
+	if (s == null) {
+	  return "";
+	}
     StringBuilder sb = new StringBuilder();
     sb.append('\'');
     int charLength = s.length();
