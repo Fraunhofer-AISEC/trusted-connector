@@ -132,7 +132,36 @@ public class LuconEngineTest {
           + "service(testQueueService).\n"
           + "has_endpoint(testQueueService, \"^amqp:.*?:test\").";
 
-  // Route from LUCON paper with path searching logic
+  // Policy with extended labels, i.e. "purpose(green)"
+  private static final String EXTENDED_LABELS_POLICY = "" +
+  		"%%%%%%%% Rules %%%%%%%%%%%%\n"
+        + "rule(denyAll).\n"
+        + "rule_priority(denyAll, 0).\n"
+        + "has_decision(denyAll, drop).\n"
+        + "receives_label(denyAll).\n"
+        + "has_target(denyAll, serviceAll).\n"
+        + "\n"
+        + "rule(demo).\n"
+        + "rule_priority(demo, 1).\n"
+  		+ "has_target(demo, service473016340).\n" 
+  		+ "service(service473016340).\n"
+  		+ "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n" 
+  		+ "receives_label(demo) :- label(purpose(green)).\n"  // Note that Prolog does not support nested predicates.
+  		+ "has_decision(demo, allow).\n" 
+  		+ "\n"
+  		+ "%%%%% Services %%%%%%%%%%%%\n" 
+        + "service(serviceAll).\n"
+        + "has_endpoint(serviceAll,'.*').\n"
+        + "\n"
+  		+ "service(sanitizedata).\n"
+  		+ "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" 
+  		+ "creates_label(sanitizedata, public).\n"
+  		+ "creates_label(sanitizedata, purpose(blue)).\n" 
+  		+ "removes_label(sanitizedata, private).\n";
+  
+
+		  
+		  // Route from LUCON paper with path searching logic
   public static final String VERIFIABLE_ROUTE =
       "%\n"
           + "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n"
@@ -280,6 +309,33 @@ public class LuconEngineTest {
     assertEquals(3, dec.getObligations().size());
     Obligation obl = dec.getObligations().get(0);
     assertEquals("delete_after_days(30)", obl.getAction());
+  }
+
+  /**
+   * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
+   *
+   * @throws IOException If something fails
+   */
+  @Test
+  public void testPolicyDecisionWithExtendedLabels() throws IOException {
+    PolicyDecisionPoint pdp = new PolicyDecisionPoint();
+    pdp.loadPolicies();
+    pdp.loadPolicy(new ByteArrayInputStream(EXTENDED_LABELS_POLICY.getBytes()));
+
+    // Simple message context with nonsense attributes
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("some_message_key", "some_message_value");
+    attributes.put(PDP.LABEL_PREFIX + "1", "purpose(green)");
+
+    // Simple source and dest nodes
+    ServiceNode source = new ServiceNode("seda:test_source", null, null);
+    ServiceNode dest = new ServiceNode("ahc://some_url", null, null);
+
+    PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
+    assertEquals(Decision.ALLOW, dec.getDecision());
+
+    // Check obligation
+    assertEquals(0, dec.getObligations().size());
   }
 
   /**
