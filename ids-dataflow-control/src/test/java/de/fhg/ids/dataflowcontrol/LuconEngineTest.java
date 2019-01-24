@@ -152,11 +152,11 @@ public class LuconEngineTest {
   		+ "%%%%% Services %%%%%%%%%%%%\n" 
         + "service(serviceAll).\n"
         + "has_endpoint(serviceAll,'.*').\n"
+  		+ "creates_label(serviceAll, purpose(green)).\n" 
         + "\n"
   		+ "service(sanitizedata).\n"
   		+ "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" 
   		+ "creates_label(sanitizedata, public).\n"
-  		+ "creates_label(sanitizedata, purpose(blue)).\n" 
   		+ "removes_label(sanitizedata, private).\n";
   
 
