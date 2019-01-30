@@ -51,8 +51,8 @@ allprojects {
 
     ext.libraryVersions = [
             // basically, the first requirement, all other libraries depend on this version
-            karaf         : '4.2.1',
-            pax           : '7.2.3',
+            karaf         : '4.2.2',
+            pax           : '7.2.5',
 
             camel         : '2.21.1',
 
@@ -78,10 +78,10 @@ allprojects {
             protobuf      : '3.6.0',
 
             // it seems not all jetty components are in our BOM so we need to specify it here as well
-            jetty         : '9.4.11.v20180605',
+            jetty         : '9.4.12.v20180830',
 
             // we will pull in a newer version of jackson because of security fixes
-            jackson       : '2.9.5',
+            jackson       : '2.9.8',
 
             // needed for rat-repository, should be seperated 
             jersey        : '2.26',
