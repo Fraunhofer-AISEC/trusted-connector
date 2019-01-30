@@ -14,7 +14,7 @@ Since gradle still has no karaf-assembly plugin we need to do this using maven (
 
 task assembleKaraf(type: MavenExec) {
     mavenDir = projectDir
-    goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
+    goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "clean", "package"
 }
 
 jar.dependsOn(assembleKaraf)
