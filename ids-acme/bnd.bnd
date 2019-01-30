@@ -11,4 +11,3 @@ Private-Package: \
   org.jose4j*
 Import-Package: \
   *
-Export-Package: de.fhg.aisec.ids.acme

@@ -17,14 +17,10 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.acme;
+package de.fhg.aisec.ids.acme
 
-public class AcmeClientException extends RuntimeException {
-  public AcmeClientException(String message) {
-    super(message);
-  }
+class AcmeClientException : RuntimeException {
+    constructor(message: String) : super(message)
 
-  public AcmeClientException(Throwable cause) {
-    super(cause);
-  }
+    constructor(cause: Throwable) : super(cause)
 }
