@@ -20,6 +20,7 @@
  * Contact Information:
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
+
 syntax = "proto2";
 
 option java_package = "de.fraunhofer.aisec.trustme";
@@ -37,6 +38,7 @@ message ContainerStartParams {
 	// Note: This message may change in the future!
 	optional string key = 1 [ default = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" ];
 	optional bool no_switch = 2 [default = false];
+	optional bool setup = 3 [default = false];
 }
 
 message AssignInterfaceParams {
@@ -76,15 +78,13 @@ message ControllerToDaemon {
 		//This is a debugging feature!
 		GET_LAST_LOG = 5;
 
+		// Returns a namespace PID for the given container UUID
+		GET_CONTAINER_PID = 6;
+
 		// Starts or stops observing the status.
 		// TODO not implemented yet
 		OBSERVE_STATUS_START = 10;
 		OBSERVE_STATUS_STOP = 11;
-
-		// Starts or stops observing notifications.
-		// TODO not implemented yet
-		OBSERVE_NOTIFICATIONS_START = 12;
-		OBSERVE_NOTIFICATIONS_STOP = 13;
 
 		// Starts or stops observing log messages.
 		OBSERVE_LOG_START = 14;
@@ -98,7 +98,16 @@ message ControllerToDaemon {
 		// Images will be updated later.
 		PUSH_GUESTOS_CONFIG = 20;
 
-		// TODO (optional) REMOVE_CONTAINER, REMOVE_GUESTOS
+		// Reloads containers from config files, e.g. if a new container should be created
+		RELOAD_CONTAINERS = 21;
+
+		// Creates a container, answers with CONTAINER_CONFIGS
+		CREATE_CONTAINER = 22;
+
+		// Removes container config and destroys created container image files
+		REMOVE_CONTAINER = 23;
+
+		// TODO (optional) REMOVE_GUESTOS
 		// How to remove? Send same package_info as during install and delete list of files?
 		// TODO: Are there other files/settings/configs to be managed remotely (install/update/remove)?
 
@@ -144,6 +153,7 @@ message ControllerToDaemon {
 
 		// List network interfaces assigned to a container
 		CONTAINER_LIST_IFACES = 112;
+
 	}
 	required Command command = 1;
 
@@ -156,6 +166,7 @@ message ControllerToDaemon {
 	repeated string container_uuids = 10;		// container UUID(s) for GET_CONTAINER_* and CONTAINER_*
 	optional ContainerStartParams container_start_params = 11;	// start parameters for CONTAINER_START
 	optional AssignInterfaceParams assign_iface_params = 12;	// parameter for CONTAINER_ASSIGNIFACE / CONTAINER_UNASSIGNIFACE
+	optional bytes container_config_file = 13;		// new container config for CREATE_CNTAINER
 
 	// Daemon
 	optional bytes guestos_config_file = 20;	// new/updated GuestOS config for PUSH_GUESTOS_CONFIG
@@ -183,6 +194,7 @@ message DaemonToController {
 		CONTAINER_CONFIG = 4;		// -> [container_config], [container_uuids]
 
 		CONTAINER_IFACES = 5;		// -> [container_ifaces]
+		CONTAINER_PID = 6;		// -> [container_pid]
 
 		STATUS_CHANGED = 10;		// -> [log_message]
 		NOTIFICATION = 11;		// -> [log_message]
@@ -212,8 +224,8 @@ message DaemonToController {
 	repeated ContainerStatus container_status = 7;		// ContainerStatus(es) for GET_CONTAINER_STATUS
 	repeated ContainerConfig container_configs = 8;		// ContainerConfig(s) for GET_CONTAINER_CONFIG
 	repeated string container_ifaces = 9;			// Container network interface(s) for CONTAINER_LIST_IFACES
+	optional uint32 container_pid = 10;			// PID of the container's namespace
 
-	optional string notification_text = 11;
 	optional LogMessage log_message = 12;				// log message received because of OBSERVE_LOG_START
 
 	optional Response response = 13;
@@ -225,3 +237,4 @@ message DaemonToController {
 	optional string logon_mac_address = 204;			// MAC address for LOGON_DEVICE
 	optional string logon_phone_number = 205;			// Phone number for LOGON_DEVICE
 }
+

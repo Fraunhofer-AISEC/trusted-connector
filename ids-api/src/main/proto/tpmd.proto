@@ -1,3 +1,26 @@
+/*
+ * This file is part of trust|me
+ * Copyright(c) 2013 - 2017 Fraunhofer AISEC
+ * Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2 (GPL 2), as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GPL 2 license for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, see <http://www.gnu.org/licenses/>
+ *
+ * The full GNU General Public License is included in this distribution in
+ * the file called "COPYING".
+ *
+ * Contact Information:
+ * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+ */
+
 syntax = "proto2";
 option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "AttestationProtos";
@@ -14,6 +37,12 @@ enum IdsAttestationType {
   ADVANCED = 2;
 }
 
+enum HashAlgLen {
+  SHA1   = 20;
+  SHA256 = 32;
+  SHA384 = 48;
+}
+
 message Pcr {
   // the PCR number (usually between 0 and 23)
   optional int32 number = 1;
@@ -25,6 +54,14 @@ message Pcr {
 message ControllerToTpm {
 	enum Code {
 		INTERNAL_ATTESTATION_REQ = 1;
+		DMCRYPT_SETUP = 2;
+		EXIT = 3;
+		RANDOM_REQ = 4;
+		CLEAR = 5;
+		DMCRYPT_LOCK = 6;
+		CHANGE_OWNER_PWD = 7;
+		DMCRYPT_RESET = 8;
+		ML_APPEND = 9;
 	}
 
 	required Code code = 1;
@@ -36,14 +73,47 @@ message ControllerToTpm {
 	optional string qualifyingData = 3;
 
 	// pcr bitmask for AttestationType ADVANCED only
-	//  - for BASIC, the default PCRs are PCRs 0 to 10
+	//  - for BASIC, the default PCRs are PCRs 0 to 11
 	//  - for ALL  , the default PCRs are PCRs 0 to 23
 	optional int32 pcrs = 4;
+
+	// if command FDE_DM_SETUP this is the blk device which is used
+	// as pysical device for the mapping
+	optional string dmcrypt_device = 5;
+	// passphrase for for command, e.g., nv index auth of tpm
+	optional string password = 6;
+	// amount of random data requested
+	optional int32 rand_size = 7;
+
+	// new passphrase for auth changing commands, e.g., change owner auth of tpm
+	optional string password_new = 8;
+
+	// file to be measured, e.g., the container readonly filesystem images
+	optional string ml_filename = 9;
+	optional bytes ml_datahash = 10;
+	optional HashAlgLen ml_hashalg = 11;
 }
 
 message TpmToController {
 	enum Code {
 		INTERNAL_ATTESTATION_RES = 1;
+		GENERIC_RESPONSE = 2;			// -> [response]
+		FDE_RESPONSE = 3;
+		RANDOM_RESPONSE = 4;
+	}
+
+	enum GenericResponse {
+		CMD_OK = 1;
+		CMD_FAILED = 2;
+	}
+	enum FdeResponse {
+		FDE_OK = 1;
+		FDE_AUTH_FAILED = 2;
+		FDE_KEYGEN_FAILED = 3;
+		FDE_NO_DEVICE = 4;
+		FDE_KEY_ACCESS_LOCKED = 5;
+		FDE_RESET = 6;
+		FDE_UNEXPECTED_ERROR = 7;
 	}
 
 	required Code code = 1;
@@ -65,4 +135,13 @@ message TpmToController {
 
 	// an _optional_ URI to a certificate that includes the public key
 	optional string certificate_uri = 7;
+
+	optional GenericResponse response = 8;
+
+	optional FdeResponse fde_response = 9;
+
+	optional string rand_data = 10;
+
+	// the measurement list in ima style hex strings
+	repeated string ml_entry = 11;
 }

@@ -20,6 +20,7 @@
  * Contact Information:
  * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
  */
+
 syntax = "proto2";
 
 option java_package = "de.fraunhofer.aisec.trustme";
@@ -49,6 +50,7 @@ message GuestOSMount {
 		SHARED_DATA = 7; // image shared between different containers and OSs
 		OVERLAY_RO = 8; // read only overlay images e.g. for system features
 		SHARED_RW = 9; // image shared by all containers of same OS type (writable tmpfs as overlay)
+		OVERLAY_RW = 10; // similar to EMPTY image, however overlayed on given mount_point (writable persitent fs as overlay)
 	}
 	required Type mount_type = 4;   // type of the image file
 
@@ -81,6 +83,7 @@ message GuestOSConfig {
 	optional string init_path = 6 [default = "/init"];  // path to the init binary, e.g. "/init"
 	repeated string init_param = 7; // parameters (argv) for init
 	repeated string init_env = 8;	// environment variables
+	repeated GuestOSMount mounts_setup = 9;      // list of mounts for setup mode of a container
 
 	// Flags indicating the features supported by the OS:
 	optional bool feature_phone = 20 [default = false];
@@ -107,3 +110,4 @@ message GuestOSConfig {
 	optional string build_date = 14;        // build date
 
 }
+
