@@ -44,7 +44,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -87,16 +86,6 @@ public class TrustXCM implements ContainerManager {
     }
   }
 
-  private String stateToStatusString(ContainerState state) {
-     switch (state) {
-       case RUNNING:
-       case SETUP:
-         return "Up";
-       default:
-         return "Exited";
-     }
-  }
-
   @Override
   public List<ApplicationContainer> list(boolean onlyRunning) {
     LOG.debug("Starting list containers");
@@ -110,20 +99,10 @@ public class TrustXCM implements ContainerManager {
         if (!onlyRunning || ContainerState.RUNNING.equals(cs.getState())) {
           container = new ApplicationContainer();
           container.setId(cs.getUuid());
-          container.setImage("");
           container.setCreated(formatter.format(Instant.ofEpochSecond(cs.getCreated())));
-          //container.setStatus(cs.getState().name());
-          container.setStatus(stateToStatusString(cs.getState()));
-          container.setPorts(Arrays.asList("\n".split("\n")));
-          container.setNames(cs.getName());
+          container.setStatus(cs.getState().name());
           container.setName(cs.getName());
-          container.setSize("");
           container.setUptime(formatDuration(Duration.ofSeconds(cs.getUptime())));
-          container.setSignature("");
-          container.setOwner("");
-          container.setDescription("trustx container");
-          container.setLabels(null);
-          LOG.debug("List add Container: " + container);
           result.add(container);
         }
       }
