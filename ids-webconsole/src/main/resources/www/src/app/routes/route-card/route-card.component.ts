@@ -1,10 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
+import { ReplaySubject } from 'rxjs';
 
 import { Result } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
-import { ReplaySubject } from 'rxjs';
 
 @Component({
   selector: 'route-card',
@@ -18,7 +18,7 @@ export class RouteCardComponent implements OnInit {
   statusIcon: string;
   dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
-  constructor(private routeService: RouteService) {}
+  constructor(private readonly routeService: RouteService) {}
 
   get started(): boolean {
     return this.route.status === 'Started';

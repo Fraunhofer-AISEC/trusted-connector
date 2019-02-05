@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { App } from './app';
-import { AppService } from './app.service';
 import { PortDef } from './app.port.def';
+import { AppService } from './app.service';
 
 @Component({
     selector: 'app-card',
@@ -14,7 +14,7 @@ export class AppCardComponent implements OnInit {
     statusColor: string;
     private portDefs: Array<PortDef>;
 
-    constructor(private appService: AppService) { }
+    constructor(private readonly appService: AppService) { }
 
     get ports(): Array<PortDef> {
         if (!this.portDefs) {

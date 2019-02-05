@@ -1,14 +1,15 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 import { environment } from '../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+
+import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 
 @Injectable()
 export class ConnectionReportService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   getEndpoints(): Observable<Array<Endpoint>> {
     return this.http.get<Array<Endpoint>>(environment.apiURL + '/connections/endpoints');

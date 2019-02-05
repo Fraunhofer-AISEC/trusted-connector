@@ -1,15 +1,16 @@
-import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { Injectable, OnDestroy } from '@angular/core';
 import { interval, Observable } from 'rxjs';
 import { mergeMap, takeWhile } from 'rxjs/operators';
 
+import { environment } from '../../environments/environment';
+
 @Injectable()
 export class MetricService implements OnDestroy {
-    private metricObservable: Observable<Array<String>>;
+    private readonly metricObservable: Observable<Array<String>>;
     private alive = false;
 
-    constructor(private http: HttpClient) {
+    constructor(private readonly http: HttpClient) {
         this.metricObservable = interval(1000)
             .pipe(
                 takeWhile(() => this.alive),

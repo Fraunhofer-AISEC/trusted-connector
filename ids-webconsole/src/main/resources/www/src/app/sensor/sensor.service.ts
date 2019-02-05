@@ -1,16 +1,16 @@
 
-import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Observable, timer } from 'rxjs';
 import { map, mergeMap, takeWhile } from 'rxjs/operators';
 
 @Injectable()
 export class SensorService implements OnDestroy {
-  private powerObservable;
-  private rpmObservable;
+  private readonly powerObservable;
+  private readonly rpmObservable;
   private alive = true;
 
-  constructor(private http: HttpClient) {
+  constructor(private readonly http: HttpClient) {
     // console.log('constructor SensorService');
     this.powerObservable = timer(0, 1000)
       .pipe(

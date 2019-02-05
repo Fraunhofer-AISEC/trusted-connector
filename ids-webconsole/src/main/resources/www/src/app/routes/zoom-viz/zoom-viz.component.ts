@@ -1,7 +1,6 @@
 import { Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
-
-import 'svg-pan-zoom';
 import { Subject } from 'rxjs';
+import 'svg-pan-zoom';
 
 declare var Viz: any;
 
@@ -11,15 +10,15 @@ declare var Viz: any;
   styleUrls: ['./zoom-viz.component.css']
 })
 export class ZoomVizComponent implements OnInit {
-  @Input() private dotSubject: Subject<string>;
-  @ViewChild('vizCanvas') private vizCanvasRef: ElementRef;
+  @Input() private readonly dotSubject: Subject<string>;
+  @ViewChild('vizCanvas') private readonly vizCanvasRef: ElementRef;
   private vizCanvas: HTMLElement;
   private zoom?: SvgPanZoom.Instance;
   private isLocked = false;
   private removeMoveListener: () => void = (() => undefined);
   private isInitialized = false;
 
-  constructor(private renderer: Renderer2) {}
+  constructor(private readonly renderer: Renderer2) {}
 
   get locked(): boolean {
     return this.isLocked;
@@ -35,13 +34,13 @@ export class ZoomVizComponent implements OnInit {
       // replace old graph with new one
       container.innerHTML = Viz(dot);
       const svgElement = this.vizCanvas.getElementsByTagName('svg')[0];
-      let zoomFactor = 1.;
+      let zoomFactor = 1;
       const someNode = svgElement.querySelector('g.node');
       if (someNode !== null) {
         zoomFactor = 50 / (someNode as HTMLElement).getBoundingClientRect().height;
       }
       // tslint:disable-next-line:curly
-      if (zoomFactor > 1.) {
+      if (zoomFactor > 1) {
         // lazy init on first mouseenter event
         const mouseEnterListener = this.renderer.listen(this.vizCanvas, 'mouseenter', () => {
           // listener removes itself upon first invocation, equivalent to jQuery's once()

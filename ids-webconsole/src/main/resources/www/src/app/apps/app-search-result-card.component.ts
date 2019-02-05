@@ -13,7 +13,7 @@ declare var componentHandler: any;
 export class AppSearchResultCardComponent implements AfterViewInit {
     @Input() app: App;
 
-    constructor(private appService: AppService) { }
+    constructor(private readonly appService: AppService) { }
 
     ngAfterViewInit(): void {
         setTimeout(() => {

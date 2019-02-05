@@ -1,4 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+
 import { CertificateService } from './keycert.service';
 
 @Component({
@@ -9,7 +10,7 @@ export class CertUploadComponent {
     @Input() multiple = false;
     @ViewChild('fileIn') inputEl: ElementRef;
 
-    constructor(private certificateService: CertificateService) {}
+    constructor(private readonly certificateService: CertificateService) {}
 
     upload(): void {
         const inputEl: HTMLInputElement = this.inputEl.nativeElement;
