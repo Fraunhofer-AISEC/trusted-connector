@@ -10,6 +10,6 @@ To bundle the website for production mode, use `npm run bundle`. The final bundl
 
 # Run (docker)
 ```
-docker build -t fraunhoferaisec/iot-connector-dashboard .
-docker run fraunhoferaisec/iot-connector-dashboard
+docker build -t fraunhoferaisec/trusted-connector-ui .
+docker run fraunhoferaisec/trusted-connector-ui
 ```
