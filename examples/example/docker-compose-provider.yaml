@@ -11,6 +11,8 @@ services:
   # The core platform, mounts docker control socket and route definition into the image
   provider-core:
     image: fraunhoferaisec/iot-connector-core-platform:example
+    build:
+      context: '../../karaf-assembly'
     tty: true
     stdin_open: true
     hostname: provider-core
@@ -38,6 +40,8 @@ services:
   # Sensor data provider
   provider-app:
     image: fraunhoferaisec/example-client:example
+    build:
+      context: './example-client'
     networks:
       - provider-internal
 
