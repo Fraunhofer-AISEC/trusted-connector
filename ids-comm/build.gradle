@@ -6,12 +6,10 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
-
-    providedByBundle project(path: ':jnr-unixsocket-wrapper', configuration: 'providedByBundle')
-    
-    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
     
     wrapperSupport group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
+    
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
 
