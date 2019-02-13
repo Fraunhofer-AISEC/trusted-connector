@@ -16,5 +16,5 @@ dependencies {
 
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
-    testImplementation group: 'org.apache.camel', name: 'camel-test'
+    testImplementation group: 'org.apache.camel', name: 'camel-test', version: libraryVersions.camel
 }

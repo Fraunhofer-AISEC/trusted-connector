@@ -29,6 +29,6 @@ dependencies {
 
     testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     testImplementation group: 'junit', name: 'junit'
-    testImplementation group: 'org.apache.camel', name: 'camel-test'
+    testImplementation group: 'org.apache.camel', name: 'camel-test', version: libraryVersions.camel
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
 }
