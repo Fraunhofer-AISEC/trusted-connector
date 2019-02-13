@@ -8,8 +8,10 @@ dependencies {
 	providedByFeature group: 'org.apache.camel', name: 'camel-http4', version: libraryVersions.camel
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
-	
-	providedByBundle group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.5'
+
+    providedByBundle group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: libraryVersions.httpcore
+	providedByBundle group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: libraryVersions.httpclient
+
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 

@@ -1,5 +1,3 @@
-enableFeaturePreview("IMPROVED_POM_SUPPORT")
-
 rootProject.name = 'core-platform'
 
 include ':jnr-unixsocket-wrapper'

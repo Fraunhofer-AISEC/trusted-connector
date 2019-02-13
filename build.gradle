@@ -1,12 +1,12 @@
 plugins {
     id 'java'
-    id 'com.google.protobuf' version '0.8.5'
+    id 'com.google.protobuf' version '0.8.8'
     id 'com.moowork.node' version '1.2.0'
     id 'biz.aQute.bnd' version '4.1.0' apply false
     id 'com.github.lburgazzoli.karaf' version '0.5.1'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
     id 'com.github.dkorotych.gradle-maven-exec' version '1.2.2.1'
-    id 'com.benjaminsproule.swagger' version '1.0.4'
+    id 'com.benjaminsproule.swagger' version '1.0.6'
     id 'com.bmuschko.docker-remote-api' version '3.4.3'
     id 'com.diffplug.gradle.spotless' version '3.13.0'
     id 'com.github.jk1.dependency-license-report' version '1.2'
@@ -68,14 +68,16 @@ allprojects {
             acme          : '2.3',
             checkerQual   : '2.5.2',
             guava         : '27.0-jre',
-            kotlin        : '1.3.10',
+            kotlin        : '1.3.21',
             tuprolog      : '3.3.0',
             log4j         : '2.6.2',
             junit4        : '4.12',
             mapdb         : '3.0.7',
             // must be consistent with jnr-ffi version in jnr-unixsocket-wrapper
             jnrunix       : '0.20',
-            protobuf      : '3.6.0',
+            protobuf      : '3.6.1',
+            httpcore      : '4.4.11',
+            httpclient    : '4.5.7',
 
             // it seems not all jetty components are in our BOM so we need to specify it here as well
             jetty         : '9.4.12.v20180830',
