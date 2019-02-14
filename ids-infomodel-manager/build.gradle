@@ -3,20 +3,21 @@ plugins {
 }
 
 dependencies {
-    providedByBundle project(':ids-api')
+    infomodelBundle project(':ids-api')
 
-    providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
+    infomodelBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
     compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
-    providedByFeature group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
+    infomodelBundle group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: libraryVersions.jackson
 
-    providedByBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
+    infomodelBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
 
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
-    providedByBundle group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+    infomodelBundle group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 }
 
 compileKotlin {

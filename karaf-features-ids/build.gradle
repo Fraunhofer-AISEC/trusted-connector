@@ -10,7 +10,7 @@ dependencies {
     providedByBundle project(path: ':ids-settings', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-dynamic-tls', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-container-manager', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-infomodel-manager', configuration: 'providedByBundle')
+    infomodelBundle project(path: ':ids-infomodel-manager', configuration: 'infomodelBundle')
     providedByBundle project(path: ':ids-dataflow-control', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-route-manager', configuration: 'providedByBundle')
     providedByBundle project(path: ':ids-webconsole', configuration: 'providedByBundle')
@@ -38,7 +38,7 @@ karaf {
             description = 'IDS Feature'
 
             // only specifiy the dependencies that will be provided by bundles, the rest will be specified via features
-            configurations 'providedByBundle', 'unixSocketBundle'
+            configurations 'providedByBundle', 'infomodelBundle', 'unixSocketBundle'
 
             // standard feature, but we need to explicitly state it here so that it gets installed in our bare Karaf
             feature 'jetty'

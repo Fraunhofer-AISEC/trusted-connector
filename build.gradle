@@ -104,6 +104,7 @@ allprojects {
         // Separate configurations are required when two bundles depend on different versions of the same bundle!
         providedByBundle
         unixSocketBundle
+        infomodelBundle
 
         // OSGi core dependencies which will just be there during runtime
         osgiCore
@@ -112,9 +113,9 @@ allprojects {
         wrapperSupport
 
         // All OSGi dependencies will be required at compile time and for unit tests
-        compileOnly.extendsFrom bom, providedByFeature, providedByBundle, unixSocketBundle,
+        compileOnly.extendsFrom bom, providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle,
                 osgiCore, wrapperSupport
-        testImplementation.extendsFrom bom, providedByFeature, providedByBundle, unixSocketBundle,
+        testImplementation.extendsFrom bom, providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle,
                 osgiCore, wrapperSupport
     }
 }
