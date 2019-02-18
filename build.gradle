@@ -52,6 +52,10 @@ allprojects {
     ext.libraryVersions = [
             // basically, the first requirement, all other libraries depend on this version
             karaf         : '4.2.2',
+
+            // The used version of the infomodel from IESE
+            infomodel     : '1.0.2-20190211.170054-9',
+
             pax           : '7.2.5',
 
             camel         : '2.21.1',
@@ -174,11 +178,15 @@ subprojects {
         mavenLocal()
         mavenCentral()
         jcenter()
+        // References local copy of the private IAIS repository that contains the necessary artifacts
+        maven {
+            url 'file://' + new File(rootProject.projectDir, 'libs').absolutePath
+        }
 //        maven {
-//            url "https://mvn.isst.fraunhofer.de/nexus/"
+//            url "https://maven.iais.fraunhofer.de/artifactory/eis-ids-snapshot/"
 //            credentials {
-//                username isstUser
-//                password isstPassword
+//                username = isstUser
+//                password = isstPassword
 //            }
 //        }
     }

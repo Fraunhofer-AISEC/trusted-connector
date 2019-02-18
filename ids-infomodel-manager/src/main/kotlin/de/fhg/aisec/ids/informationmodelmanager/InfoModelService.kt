@@ -57,8 +57,8 @@ class InfoModelService : InfoModel {
 
     /**
      * Build current endpoints as given by connectionManager
-     * will not be stored in preferences, but freshly loaded each time
-     * multiple names for one connector allowed
+     * will not be stored in preferences, but freshly loaded each time.
+     * Multiple names for one connector allowed
      */
     private fun getEndpoints(): List<Endpoint> {
 //        Endpoint eP;
@@ -94,16 +94,15 @@ class InfoModelService : InfoModel {
             if (connectorModel != null) {
                 val securityProfileBuilder: SecurityProfileBuilder
                 try {
-                    val psp: PredefinedSecurityProfile?
-                    if (connectorModel?.get("basedOn", "") != "") {
-                        psp = PredefinedSecurityProfile.valueOf(connectorModel?.get("basedOn", "")!!)
+                    val psp = if (connectorModel?.get("basedOn", "") != "") {
+                        PredefinedSecurityProfile.valueOf(connectorModel?.get("basedOn", "")!!)
                     } else {
-                        psp = null
+                        null
                     }
-                    if (connectorModel?.get("sPID", null) != null) {
-                        securityProfileBuilder = SecurityProfileBuilder(URL(connectorModel?.get("sPID", null)))
+                    securityProfileBuilder = if (connectorModel?.get("sPID", null) != null) {
+                        SecurityProfileBuilder(URL(connectorModel?.get("sPID", null)))
                     } else {
-                        securityProfileBuilder = SecurityProfileBuilder()
+                        SecurityProfileBuilder()
                     }
                     return securityProfileBuilder._basedOn_(psp)
                             ._integrityProtectionAndVerificationSupport_(
@@ -263,7 +262,7 @@ class InfoModelService : InfoModel {
             if (entityNames != null && !entityNames.isEmpty()) {
                 val mapper = CustomObjectMapper()
                 try {
-                    val connectorEntities = mapper.writeValueAsString(entityNames);
+                    val connectorEntities = mapper.writeValueAsString(entityNames)
                     setPreference(CONNECTOR_ENTITIES, connectorEntities, connectorModel)
                     LOG.trace("Stored Connector Entities: {}", connectorEntities)
                 } catch (e: JsonProcessingException) {

@@ -10,7 +10,7 @@ dependencies {
 
     infomodelBundle group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: libraryVersions.jackson
 
-    infomodelBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
+    infomodelBundle group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
 
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 

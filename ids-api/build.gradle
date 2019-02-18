@@ -30,9 +30,7 @@ dependencies {
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
-    // Info model
-    implementation files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
-    providedByBundle group: 'javax.validation', name: 'validation-api', version: '1.0.0.GA'
+    infomodelBundle group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
