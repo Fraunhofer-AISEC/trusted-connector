@@ -52,6 +52,10 @@ allprojects {
     ext.libraryVersions = [
             // basically, the first requirement, all other libraries depend on this version
             karaf         : '4.2.2',
+
+            // The used version of the infomodel from IESE
+            infomodel     : '1.0.2-20190211.170054-9',
+
             pax           : '7.2.5',
 
             camel         : '2.21.1',
@@ -104,12 +108,13 @@ allprojects {
         // Separate configurations are required when two bundles depend on different versions of the same bundle!
         providedByBundle
         unixSocketBundle
+        infomodelBundle
 
         // OSGi core dependencies which will just be there during runtime
         osgiCore
 
         // All OSGi dependencies will be required at compile time and for unit tests
-        compileOnly.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, osgiCore
+        compileOnly.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
         // Make compileOnly dependencies available for tests
         testImplementation.extendsFrom compileOnly
     }
@@ -169,6 +174,17 @@ subprojects {
         mavenLocal()
         mavenCentral()
         jcenter()
+        // References local copy of the private IAIS repository that contains the necessary artifacts
+        maven {
+            url 'file://' + new File(rootProject.projectDir, 'libs').absolutePath
+        }
+//        maven {
+//            url "https://maven.iais.fraunhofer.de/artifactory/eis-ids-snapshot/"
+//            credentials {
+//                username = isstUser
+//                password = isstPassword
+//            }
+//        }
     }
 }
 

@@ -22,15 +22,15 @@ package de.fhg.aisec.ids.webconsole;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.settings.Settings;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.*;
+
+import javax.ws.rs.ServiceUnavailableException;
+
 
 /**
  * IDS management console, reachable at http://localhost:8181.
@@ -49,7 +49,6 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
  */
 @Component(name = "ids-webconsole")
 public class WebConsoleComponent {
-
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private Settings settings = null;
 
@@ -67,6 +66,9 @@ public class WebConsoleComponent {
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private PAP pap = null;
+
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  private InfoModel im = null;
 
   private static WebConsoleComponent instance;
 
@@ -107,7 +109,6 @@ public class WebConsoleComponent {
       return in.connectionManager;
     }
     return null;
-
   }
 
   @Nullable
@@ -137,4 +138,12 @@ public class WebConsoleComponent {
     return null;
   }
 
+  @Nullable
+  public static InfoModel getInfoModelManagerOrThrowSUE() {
+    WebConsoleComponent in = instance;
+    if (in != null) {
+      return in.im;
+    }
+    return null;
+  }
 }

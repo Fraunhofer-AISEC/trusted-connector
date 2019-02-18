@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>de.fraunhofer.iais.eis.ids.infomodel</groupId>
+        <artifactId>common</artifactId>
+        <version>1.0.2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>java</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>de.fraunhofer.iais.eis.ids.infomodel</groupId>
+            <artifactId>spi</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.6</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <!-- assemble the relevant templates into /tmp/templates -->
+                    <execution>
+                        <id>assemble-templates</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+
+                        <configuration>
+                            <outputDirectory>/tmp/templates</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/templates</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/../common/templates</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                    <!-- copy generated sources to package src directory -->
+                    <execution>
+                        <id>copy-java-beans</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <targetPath>${basedir}/src/main/java/de/fraunhofer/iais/eis</targetPath>
+                                    <directory>/tmp</directory>
+                                    <includes>
+                                        <include>**/*.java</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- execute the java bean generation based on the Infomodel files and the SPARQL templates -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-java-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <classpathScope>compile</classpathScope>
+                            <mainClass>de.fraunhofer.iais.eis.generate.Generator</mainClass>
+                            <arguments>
+                                <argument>-vd</argument><argument>${infomodel-sourcebase}</argument>
+                                <argument>-pp</argument><argument>**/model/*/*.ttl</argument>
+                                <argument>-vd</argument><argument>${infomodel-sourcebase}/codes</argument>
+                                <argument>-pp</argument><argument>**/*.ttl</argument>
+                                <argument>-vd</argument><argument>${infomodel-sourcebase}/taxonomies</argument>
+                                <argument>-pp</argument><argument>**/*.ttl</argument>
+                                <argument>-td</argument>
+                                <argument>/tmp/templates</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- cleanup generated java sources and temporary stuff in /tmp -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${basedir}/src/main/java/de/fraunhofer/iais/eis</directory>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>util/</exclude>
+                                <exclude>spi/</exclude>
+                                <exclude>annotation/</exclude>
+                            </excludes>
+                        </fileset>
+                        <fileset>
+                            <directory>/tmp/</directory>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>/tmp/templates</directory>
+                            <includes>
+                                <include>**/*.rq</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <!-- create a jar with sources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
