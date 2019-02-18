@@ -26,7 +26,8 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
-    wrapperSupport group: 'com.github.jnr', name: 'jnr-unixsocket', version: libraryVersions.jnrunix
+    // Causes wiring issues when included via wrapper bundle
+    compileOnly project(":jnr-unixsocket-wrapper")
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 

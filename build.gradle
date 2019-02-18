@@ -74,7 +74,7 @@ allprojects {
             junit4        : '4.12',
             mapdb         : '3.0.7',
             // must be consistent with jnr-ffi version in jnr-unixsocket-wrapper
-            jnrunix       : '0.20',
+            jnrunix       : '0.22',
             protobuf      : '3.6.1',
             httpcore      : '4.4.11',
             httpclient    : '4.5.7',
@@ -108,14 +108,10 @@ allprojects {
         // OSGi core dependencies which will just be there during runtime
         osgiCore
 
-        // supporting dependencies for wrapper bundles, to prevent errors in IDE and unit tests
-        wrapperSupport
-
         // All OSGi dependencies will be required at compile time and for unit tests
-        compileOnly.extendsFrom bom, providedByFeature, providedByBundle, unixSocketBundle,
-                osgiCore, wrapperSupport
-        testImplementation.extendsFrom bom, providedByFeature, providedByBundle, unixSocketBundle,
-                osgiCore, wrapperSupport
+        compileOnly.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, osgiCore
+        // Make compileOnly dependencies available for tests
+        testImplementation.extendsFrom compileOnly
     }
 }
 

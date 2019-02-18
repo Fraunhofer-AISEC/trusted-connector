@@ -5,8 +5,6 @@ plugins {
 dependencies {
     providedByBundle project(':ids-api')
 
-    providedByBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
-
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     providedByBundle group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
