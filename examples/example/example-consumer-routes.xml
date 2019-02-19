@@ -31,7 +31,7 @@
           demo only. Use 1 in production). Forward to Data App 2 -->
     <route id="receiveTemp">
       <from
-        uri="idsserver://0.0.0.0:9292/zero?sslContextParameters=#serverSslContext&amp;attestation=0"/>
+        uri="idsserver://0.0.0.0:9292/?sslContextParameters=#serverSslContext&amp;attestation=0"/>
       <log message="Received via IDS protocol: ${body}"/>
       <to uri="testEndpoint"/>
     </route>

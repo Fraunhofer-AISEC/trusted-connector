@@ -27,7 +27,7 @@
       <convertBodyTo type="java.lang.String"/>
       <log message="Got temperature ${body}"/>
       <to
-        uri="idsclient://consumer-core:9292/zero?sslContextParameters=#clientSslContext&amp;attestation=0"/>
+        uri="idsclient://consumer-core:9292/?sslContextParameters=#clientSslContext&amp;attestation=0"/>
     </route>
   </camelContext>
 </blueprint>
