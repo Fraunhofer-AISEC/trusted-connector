@@ -40,53 +40,79 @@ class SecurityProfileDeserializer : JsonDeserializer<SecurityProfile>() {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): SecurityProfile? {
         val node = p.readValueAsTree<JsonNode>()
 
-        val id = if (node.has("id")) node.get("id").asText() else ""
-        val basedOn = if (node.has("basedOn")) node.get("basedOn").asText() else null
-        val integrityProtectionAndVerification = if (node.has("integrityProtectionAndVerificationSupport"))
-            node.get("integrityProtectionAndVerificationSupport").asText()
-        else
-            NONE
-        val authenticationSupport = if (node.has("authenticationSupport"))
-            node.get("authenticationSupport").asText()
-        else
-            NONE
-        val serviceIsolationSupport = if (node.has("serviceIsolationSupport"))
-            node.get("serviceIsolationSupport").asText()
-        else
-            NONE
-        val integrityProtectionScope = if (node.has("integrityProtectionScope"))
-            node.get("integrityProtectionScope").asText()
-        else
-            NONE
-        val appExecutionResources = if (node.has("appExecutionResources"))
-            node.get("appExecutionResources").asText()
-        else
-            NONE
-        val dataUsageControlSupport = if (node.has("dataUsageControlSupport"))
-            node.get("dataUsageControlSupport").asText()
-        else
-            NONE
-        val auditLogging = if (node.has("auditLogging")) node.get("auditLogging").asText() else NONE
-        val localDataConfidentiality = if (node.has("localDataConfidentiality"))
-            node.get("localDataConfidentiality").asText()
-        else
-            NONE
-
-        val psp: PredefinedSecurityProfile?
-        if (basedOn != null) {
-            psp = PredefinedSecurityProfile.valueOf(basedOn)
+        val id = if (node.has("id")) {
+            node.get("id").asText()
         } else {
-            psp = null
+            ""
         }
 
-        try {
-            val securityProfileBuilder: SecurityProfileBuilder
-            if (!id.isEmpty()) {
-                securityProfileBuilder = SecurityProfileBuilder(URL(id))
+        val basedOn = if (node.has("basedOn")) {
+            node.get("basedOn").asText()
+        } else {
+            null
+        }
+
+        val integrityProtectionAndVerification = if (node.has("integrityProtectionAndVerificationSupport")) {
+            node.get("integrityProtectionAndVerificationSupport").asText()
+        } else {
+            NONE
+        }
+
+        val authenticationSupport = if (node.has("authenticationSupport")) {
+            node.get("authenticationSupport").asText()
+        } else {
+            NONE
+        }
+
+        val serviceIsolationSupport = if (node.has("serviceIsolationSupport")) {
+            node.get("serviceIsolationSupport").asText()
+        } else {
+            NONE
+        }
+
+        val integrityProtectionScope = if (node.has("integrityProtectionScope")) {
+            node.get("integrityProtectionScope").asText()
+        } else {
+            NONE
+        }
+
+        val appExecutionResources = if (node.has("appExecutionResources")) {
+            node.get("appExecutionResources").asText()
+        } else {
+            NONE
+        }
+
+        val dataUsageControlSupport = if (node.has("dataUsageControlSupport")) {
+            node.get("dataUsageControlSupport").asText()
+        } else {
+            NONE
+        }
+
+        val auditLogging = if (node.has("auditLogging")) {
+            node.get("auditLogging").asText()
+        } else {
+            NONE
+        }
+
+        val localDataConfidentiality = if (node.has("localDataConfidentiality")){
+            node.get("localDataConfidentiality").asText()
+        } else {
+            NONE
+        }
+
+        val psp: PredefinedSecurityProfile? = if (basedOn != null) {
+            PredefinedSecurityProfile.valueOf(basedOn)
+        } else {
+            null
+        }
+
+        return try {
+            val securityProfileBuilder: SecurityProfileBuilder = if (!id.isEmpty()) {
+                SecurityProfileBuilder(URL(id))
             } else {
-                securityProfileBuilder = SecurityProfileBuilder()
+                SecurityProfileBuilder()
             }
-            return securityProfileBuilder._basedOn_(psp)
+            securityProfileBuilder._basedOn_(psp)
                     ._integrityProtectionAndVerificationSupport_(
                             IntegrityProtectionAndVerificationSupport
                                     .valueOf(integrityProtectionAndVerification))
@@ -102,10 +128,10 @@ class SecurityProfileDeserializer : JsonDeserializer<SecurityProfile>() {
                     .build()
         } catch (ex: ConstraintViolationException) {
             LOG.error("Caught ConstraintViolationException while deserializing Security profile.", ex)
-            return null
+            null
         } catch (ex: MalformedURLException) {
             LOG.error("Caught MalformedURLException while deserializing Security profile.", ex)
-            return null
+            null
         }
 
     }

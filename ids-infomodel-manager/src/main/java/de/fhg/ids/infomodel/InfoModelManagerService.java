@@ -1,11 +1,10 @@
 package de.fhg.ids.infomodel;
 
+import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.prefs.PreferencesService;
-
-import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 
 /**
  * This is the most simple implementation of an infomodel-manager and likely to
@@ -24,7 +23,7 @@ public class InfoModelManagerService implements InfoModelManager {
 	 * via the standard OSGi preferences service.
 	 */
 	@Reference(cardinality = ReferenceCardinality.MANDATORY)
-	PreferencesService prefs;
+	private PreferencesService prefs;
 
 	@Override
 	public String getConnectorAsJsonLd() {

@@ -29,8 +29,6 @@ import de.fhg.aisec.ids.api.settings.Settings;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.annotations.*;
 
-import javax.ws.rs.ServiceUnavailableException;
-
 
 /**
  * IDS management console, reachable at http://localhost:8181.
@@ -139,7 +137,7 @@ public class WebConsoleComponent {
   }
 
   @Nullable
-  public static InfoModel getInfoModelManagerOrThrowSUE() {
+  public static InfoModel getInfoModelManager() {
     WebConsoleComponent in = instance;
     if (in != null) {
       return in.im;

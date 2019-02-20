@@ -24,16 +24,12 @@ import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
-import java.util.List;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.stream.Collectors;
 
 
 /**
@@ -51,9 +47,12 @@ public class SettingsApi {
   @Path("/connectorProfile")
   @Consumes(MediaType.APPLICATION_JSON)
   public String postConnectorProfile(ConnectorProfile cP) {
-    InfoModel im = WebConsoleComponent.getInfoModelManagerOrThrowSUE();
+    InfoModel im = WebConsoleComponent.getInfoModelManager();
+    if (im == null) {
+      throw new ServiceUnavailableException("InfoModel is not available");
+    }
     if (im.setConnector(cP.getConnectorURL(), cP.getOperatorURL(), cP.getConnectorEntityNames(),
-        cP.getSecurityProfile())) {
+            cP.getSecurityProfile())) {
       return "ConnectorProfile successfully stored.";
     } else {
       throw new InternalServerErrorException("Error while storing ConnectorProfile");
@@ -67,17 +66,39 @@ public class SettingsApi {
   @Path("/connectorProfile")
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectorProfile getConnectorProfile() {
-    InfoModel im = WebConsoleComponent.getInfoModelManagerOrThrowSUE();
+    InfoModel im = WebConsoleComponent.getInfoModelManager();
+    if (im == null) {
+      throw new ServiceUnavailableException("InfoModel is not available");
+    }
     try {
       Connector c = im.getConnector();
       return new ConnectorProfile(
-          c.getSecurityProfile(),
-          c.getId(),
-          c.getMaintainer(),
-          (List<PlainLiteral>) c.getDescriptions());
+              c.getSecurityProfile(),
+              c.getId(),
+              c.getMaintainer(),
+              c.getDescriptions().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
     } catch (NullPointerException e) {
       LOG.warn("Connector description build failed, building empty description.", e);
       return new ConnectorProfile();
+    }
+  }
+
+  /**
+   * Returns Connector profile based on currently stored preferences or empty Connector profile
+   */
+  @GET
+  @Path("/connectorJson")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Connector getConnectorJson() {
+    InfoModel im = WebConsoleComponent.getInfoModelManager();
+    if (im == null) {
+      throw new ServiceUnavailableException("InfoModel is not available");
+    }
+    try {
+      return im.getConnector();
+    } catch (NullPointerException e) {
+      LOG.warn("Connector description build failed, building empty description.", e);
+      return null;
     }
   }
 

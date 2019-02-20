@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.informationmodelmanager
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.informationmodelmanager.deserializer.CustomObjectMapper
@@ -42,7 +43,6 @@ class InfoModelService : InfoModel {
     private val connectorEntityNames: List<PlainLiteral>
         get() {
             if (connectorModel != null) {
-                val mapper = CustomObjectMapper()
                 val typeRef = object : TypeReference<List<PlainLiteral>>() {}
                 try {
                     return mapper.readValue(connectorModel?.get(CONNECTOR_ENTITIES, null), typeRef)
@@ -94,41 +94,39 @@ class InfoModelService : InfoModel {
             if (connectorModel != null) {
                 val securityProfileBuilder: SecurityProfileBuilder
                 try {
-                    val psp = if (connectorModel?.get("basedOn", "") != "") {
-                        PredefinedSecurityProfile.valueOf(connectorModel?.get("basedOn", "")!!)
-                    } else {
-                        null
+                    val psp = connectorModel?.get("basedOn", null)?.let {
+                        // For some reason, PredefinedSecurityProfile.valueOf() doesn't work, so we resort to
+                        // PredefinedSecurityProfile.deserialize() with temporary JsonNode
+                        PredefinedSecurityProfile.deserialize(mapper.createObjectNode().put("@id", it))
                     }
-                    securityProfileBuilder = if (connectorModel?.get("sPID", null) != null) {
-                        SecurityProfileBuilder(URL(connectorModel?.get("sPID", null)))
-                    } else {
-                        SecurityProfileBuilder()
-                    }
+                    securityProfileBuilder = connectorModel?.get("sPID", null)?.let {
+                        SecurityProfileBuilder(URL(it))
+                    } ?: SecurityProfileBuilder()
                     return securityProfileBuilder._basedOn_(psp)
                             ._integrityProtectionAndVerificationSupport_(
                                     IntegrityProtectionAndVerificationSupport
-                                            .valueOf(connectorModel?.get(INTEGRITY_PROTECTION_AND_VERIFICATION_SUPPORT,
-                                                    IntegrityProtectionAndVerificationSupport.NO_INTEGRITY_PROTECTION.name)!!))
+                                            .valueOf(connectorModel?.get(INTEGRITY_PROTECTION_AND_VERIFICATION_SUPPORT, null)
+                                                    ?: IntegrityProtectionAndVerificationSupport.NO_INTEGRITY_PROTECTION.name))
                             ._authenticationSupport_(
-                                    AuthenticationSupport.valueOf(connectorModel?.get(AUTHENTICATION_SUPPORT,
-                                            AuthenticationSupport.NO_AUTHENTICATION.name)!!))
+                                    AuthenticationSupport.valueOf(connectorModel?.get(AUTHENTICATION_SUPPORT, null)
+                                            ?: AuthenticationSupport.NO_AUTHENTICATION.name))
                             ._serviceIsolationSupport_(
-                                    ServiceIsolationSupport.valueOf(connectorModel?.get(SERVICE_ISOLATION_SUPPORT,
-                                            ServiceIsolationSupport.NO_SERVICE_ISOLATION.name)!!))
+                                    ServiceIsolationSupport.valueOf(connectorModel?.get(SERVICE_ISOLATION_SUPPORT, null)
+                                            ?: ServiceIsolationSupport.NO_SERVICE_ISOLATION.name))
                             ._integrityProtectionScope_(
-                                    IntegrityProtectionScope.valueOf(connectorModel?.get(INTEGRITY_PROTECTION_SCOPE,
-                                            IntegrityProtectionScope.UNKNOWN_INTEGRITY_PROTECTION_SCOPE.name)!!))
+                                    IntegrityProtectionScope.valueOf(connectorModel?.get(INTEGRITY_PROTECTION_SCOPE, null)
+                                            ?: IntegrityProtectionScope.UNKNOWN_INTEGRITY_PROTECTION_SCOPE.name))
                             ._appExecutionResources_(
-                                    AppExecutionResources.valueOf(connectorModel?.get(APP_EXECUTION_RESOURCES,
-                                            AppExecutionResources.NO_APP_EXECUTION.name)!!))
+                                    AppExecutionResources.valueOf(connectorModel?.get(APP_EXECUTION_RESOURCES, null)
+                                            ?: AppExecutionResources.NO_APP_EXECUTION.name))
                             ._dataUsageControlSupport_(
-                                    DataUsageControlSupport.valueOf(connectorModel?.get(DATA_USAGE_CONTROL_SUPPORT,
-                                            DataUsageControlSupport.NO_USAGE_CONTROL.name)!!))
+                                    DataUsageControlSupport.valueOf(connectorModel?.get(DATA_USAGE_CONTROL_SUPPORT, null)
+                                            ?: DataUsageControlSupport.NO_USAGE_CONTROL.name))
                             ._auditLogging_(AuditLogging
                                     .valueOf(connectorModel?.get(AUDIT_LOGGING, AuditLogging.NO_AUDIT_LOGGING.name)!!))
                             ._localDataConfidentiality_(
-                                    LocalDataConfidentiality.valueOf(connectorModel?.get(LOCAL_DATA_CONFIDENTIALITY,
-                                            LocalDataConfidentiality.NO_CONFIDENTIALITY.name)!!))
+                                    LocalDataConfidentiality.valueOf(connectorModel?.get(LOCAL_DATA_CONFIDENTIALITY, null)
+                                            ?: LocalDataConfidentiality.NO_CONFIDENTIALITY.name))
                             .build()
                 } catch (ex: ConstraintViolationException) {
                     LOG.error(
@@ -177,14 +175,14 @@ class InfoModelService : InfoModel {
      * @return
      */
     private fun generateRDF(c: Connector): Boolean {
-        if (connectorModel != null) {
+        return if (connectorModel != null) {
             val rdf = c.toRdf()
             connectorModel?.put("infomodel", rdf)
             LOG.debug("Generated RDF description: $rdf")
-            return true
+            true
         } else {
             LOG.debug("Couldn't get Preferences for generating RDF.")
-            return false
+            false
         }
     }
 
@@ -210,7 +208,7 @@ class InfoModelService : InfoModel {
         val maintainerUrl = getURL(MAINTAINER_URL)
         val entityNames = connectorEntityNames
 
-        LOG.debug("Connector URL: {}, Entity Names: {}", connectorUrl, entityNames)
+        LOG.debug("Maintainer URL: {}, Connector URL: {}, Entity Names: {}", maintainerUrl, connectorUrl, entityNames)
 
         if (maintainerUrl != null) {
             try {
@@ -240,9 +238,9 @@ class InfoModelService : InfoModel {
     }
 
     // store or update new Connector description to preferences
-    // creates random connector_url if null and succeeds only if opUrl and entityNames != null
+    // creates random connector_url if null and succeeds only if maintainerUrl and entityNames != null
     // generates RDF description from Connector object and returns building success
-    override fun setConnector(connUrl: URL?, opUrl: URL?, entityNames: List<PlainLiteral>?,
+    override fun setConnector(connUrl: URL?, maintainerUrl: URL?, entityNames: List<PlainLiteral>?,
                               profile: SecurityProfile?): Boolean {
         if (connectorModel != null) {
             // Set Connector URL ---> allowed to be empty from model
@@ -251,8 +249,8 @@ class InfoModelService : InfoModel {
             }
 
             // Set Operator URL
-            if (opUrl != null) {
-                setPreference(MAINTAINER_URL, opUrl.toString(), connectorModel)
+            if (maintainerUrl != null) {
+                setPreference(MAINTAINER_URL, maintainerUrl.toString(), connectorModel)
             } else {
                 LOG.error("Operator URL must not be empty!")
                 return false
@@ -260,7 +258,6 @@ class InfoModelService : InfoModel {
 
             // Set Entity Names
             if (entityNames != null && !entityNames.isEmpty()) {
-                val mapper = CustomObjectMapper()
                 try {
                     val connectorEntities = mapper.writeValueAsString(entityNames)
                     setPreference(CONNECTOR_ENTITIES, connectorEntities, connectorModel)
@@ -297,20 +294,17 @@ class InfoModelService : InfoModel {
                         profile.localDataConfidentiality.name, connectorModel)
             }
 
-            try {
-                return if (connUrl != null) {
-                    generateRDF(
-                            TrustedConnectorBuilder(connUrl)._maintainer_(opUrl)
+            return try {
+                if (connUrl != null) {
+                    generateRDF(TrustedConnectorBuilder(connUrl)._maintainer_(maintainerUrl)
                                     ._securityProfile_(profile).build())
                 } else {
-                    generateRDF(
-                            TrustedConnectorBuilder()._maintainer_(opUrl)
+                    generateRDF(TrustedConnectorBuilder()._maintainer_(maintainerUrl)
                                     ._securityProfile_(profile).build())
                 }
             } catch (ex: ConstraintViolationException) {
-                LOG.error(
-                        "ConstraintViolationException while building Connector to generate RDF description.", ex)
-                return false
+                LOG.error("ConstraintViolationException while building Connector to generate RDF description.", ex)
+                false
             }
         } else {
             LOG.debug("Couldn't load preferences to store connector object.")
@@ -328,6 +322,7 @@ class InfoModelService : InfoModel {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(InfoModelService::class.java)
+        private val mapper: ObjectMapper by lazy { CustomObjectMapper() }
         private const val CONNECTOR_MODEL = "ids.model"
         const val INTEGRITY_PROTECTION_AND_VERIFICATION_SUPPORT = "IntegrityProtectionAndVerificationSupport"
         const val AUTHENTICATION_SUPPORT = "AuthenticationSupport"

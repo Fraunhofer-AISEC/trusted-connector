@@ -19,8 +19,9 @@
  */
 package de.fhg.aisec.ids.api.infomodel;
 
-import de.fraunhofer.iais.eis.SecurityProfile;
+import de.fraunhofer.iais.eis.*;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
+
 import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
@@ -35,7 +36,18 @@ public final class ConnectorProfile implements Serializable {
     private final List<PlainLiteral> connectorEntityNames;
 
     public ConnectorProfile() {
-        this.securityProfile = null;
+        this.securityProfile = new SecurityProfileBuilder()
+                ._basedOn_(PredefinedSecurityProfile.LEVEL0SECURITYPROFILE)
+                ._appExecutionResources_(AppExecutionResources.NO_APP_EXECUTION)
+                ._auditLogging_(AuditLogging.NO_AUDIT_LOGGING)
+                ._authenticationSupport_(AuthenticationSupport.NO_AUTHENTICATION)
+                ._dataUsageControlSupport_(DataUsageControlSupport.NO_USAGE_CONTROL)
+                ._integrityProtectionAndVerificationSupport_(
+                        IntegrityProtectionAndVerificationSupport.NO_INTEGRITY_PROTECTION)
+                ._integrityProtectionScope_(IntegrityProtectionScope.UNKNOWN_INTEGRITY_PROTECTION_SCOPE)
+                ._localDataConfidentiality_(LocalDataConfidentiality.NO_CONFIDENTIALITY)
+                ._serviceIsolationSupport_(ServiceIsolationSupport.NO_SERVICE_ISOLATION)
+                .build();
         this.connectorURL = null;
         this.operatorURL = null;
         this.connectorEntityNames = null;
