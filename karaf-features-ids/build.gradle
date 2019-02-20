@@ -52,12 +52,15 @@ karaf {
             description = 'IDS Feature'
 
             // only specifiy the dependencies that will be provided by bundles, the rest will be specified via features
+            //noinspection GroovyAssignabilityCheck
             configurations(*project.ext.bundleConfigurations)
 
             // standard feature, but we need to explicitly state it here so that it gets installed in our bare Karaf
+            //noinspection GroovyAssignabilityCheck
             feature 'jetty'
 
             // CXF for REST APIs
+            //noinspection GroovyAssignabilityCheck
             feature 'cxf-jaxrs'
             //feature 'cxf-jackson'
 
@@ -66,19 +69,29 @@ karaf {
              TODO: this should actually be a conditional dependency, only if shell is available.
              however the karaf assemble plugin does not seem to resolve these conditions during packaging.
             */
+            //noinspection GroovyAssignabilityCheck
             feature 'cxf-commands'
 
 		    // to deploy Web Application Bundles, such as our WebConsole
+            //noinspection GroovyAssignabilityCheck
             feature 'war'
 
             // Camel for routing
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-jackson'
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-milo'
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-cxf'
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-ahc'
+            //noinspection GroovyAssignabilityCheck
             feature 'camel-http'
+            //noinspection GroovyAssignabilityCheck
             feature 'camel-jetty'
+            //noinspection GroovyAssignabilityCheck
             feature 'camel-paho'
+            //noinspection GroovyAssignabilityCheck
             //feature 'camel-mqtt'
 
             // start our bundles a lit bit later

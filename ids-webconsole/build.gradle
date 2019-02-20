@@ -46,6 +46,9 @@ and this API does not provide any authorization mechanism.
 dependencies {
     providedByBundle project(':ids-api')
 
+    // Actual implementation must be provided by ids-infomodel-manager
+    compileOnly group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
+
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
@@ -56,9 +59,6 @@ dependencies {
 
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs', version: libraryVersions.cxf
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers', version: libraryVersions.cxf
-
-    providedByBundle project(':ids-infomodel-manager')
-    providedByBundle files("${rootProject.projectDir}/libs/infomodel-1.0.0.jar")
 
     // This is required for compilation only, and provided by karaf automatically, likely by some included feature
     compileOnly group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'

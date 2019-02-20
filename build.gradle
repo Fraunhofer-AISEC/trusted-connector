@@ -56,6 +56,9 @@ allprojects {
             // The used version of the infomodel from IESE
             infomodel     : '1.0.2-20190211.170054-9',
 
+            // For javax.xml.bind support in newer java versions
+            jaxb          : "2.2.11",
+
             pax           : '7.2.5',
 
             camel         : '2.21.1',

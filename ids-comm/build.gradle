@@ -7,7 +7,6 @@ dependencies {
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
     
-    // Causes wiring issues when included via wrapper bundle
     compileOnly project(":jnr-unixsocket-wrapper")
     
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
