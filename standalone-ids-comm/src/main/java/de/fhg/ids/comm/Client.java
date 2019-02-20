@@ -5,6 +5,10 @@ import de.fhg.ids.comm.client.IdscpClient;
 import org.asynchttpclient.ws.WebSocket;
 
 import javax.xml.bind.DatatypeConverter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Arrays;
 
 public class Client {
@@ -21,8 +25,22 @@ public class Client {
                         .build());
         WebSocket wsClient = client.connect("consumer-core", 9292);
 
-        // Send some payload from client to server
-        wsClient.sendTextFrame("Hello world");
+        try (ServerSocket listener = new ServerSocket(4441)) {
+            System.out.println("Waiting for data connections on port 4441...");
+            try (Socket socket = listener.accept()) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                while(true) {
+                    if (in.ready()) {
+                        String msg = in.readLine();
+                        if (msg.equals("exit")) {
+                            System.out.println("Exiting...");
+                            System.exit(0);
+                        }
+                        wsClient.sendTextFrame(msg);
+                    }
+                }
+            }
+        }
     }
 
 }
