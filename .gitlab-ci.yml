@@ -27,3 +27,13 @@ build:
     paths:
     - "*/build/reports"
 
+# tag develop builds as latest and push them to the internal registry
+push:
+  stage: push
+  image: docker
+  script:
+  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
+  - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  only:
+    - develop
