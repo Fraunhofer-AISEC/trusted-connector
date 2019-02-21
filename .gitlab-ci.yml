@@ -21,7 +21,7 @@ build:
   - apt update && apt install -y --no-install-recommends openjdk-8-jdk-headless
   script:
   # yarnBuild is part of build, however this could speed up the process a little bit by prioritizing the long-running yarnBuild
-  - ./gradlew --parallel clean yarnBuild build dockerize
+  - ./gradlew --parallel -DdockerTag=${CI_COMMIT_SHA:0:8} clean yarnBuild build dockerize
   artifacts:
     when: always
     paths:
@@ -32,7 +32,8 @@ push:
   stage: push
   image: docker
   script:
-  - docker tag registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+  - docker tag fraunhoferaisec/iot-connector-core-platform::${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
+  - docker tag fraunhoferaisec/iot-connector-core-platform::${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
   - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
   only:
