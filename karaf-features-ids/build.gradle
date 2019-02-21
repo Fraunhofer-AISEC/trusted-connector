@@ -93,6 +93,8 @@ karaf {
             feature 'camel-paho'
             //noinspection GroovyAssignabilityCheck
             //feature 'camel-mqtt'
+            //noinspection GroovyAssignabilityCheck
+            feature 'camel-influxdb'            
 
             // start our bundles a lit bit later
             bundle ('de.fhg.ids') {
