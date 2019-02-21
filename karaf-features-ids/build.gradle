@@ -32,6 +32,7 @@ dependencies {
     project.ext.bundleDependencies.each {
         add("$it.configuration", project(path: ":$it.subproject", configuration: it.configuration))
     }
+    zmqFeature group: 'org.apache-extras.camel-extra', name: 'camel-zeromq', version: '2.22.0'
 }
 
 karaf {
@@ -106,6 +107,14 @@ karaf {
 
             //noinspection GroovyAssignabilityCheck
             configurations 'influxFeature'
+        }
+
+        feature {
+            name = 'camel-zeromq'
+            description = 'Camel ZeroMQ feature'
+
+            //noinspection GroovyAssignabilityCheck
+            configurations 'zmqFeature'
         }
     }
 }
