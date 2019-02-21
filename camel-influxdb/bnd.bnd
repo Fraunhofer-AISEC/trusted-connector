@@ -1,0 +1,3 @@
+Bundle-Name: IDS :: Camel Multipart Processor
+Bundle-Description: Mime/Multipart support for Camel messages
+Import-Package: *

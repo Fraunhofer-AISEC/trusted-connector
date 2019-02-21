@@ -66,13 +66,13 @@ karaf {
 
             // CXF commands for the shell
             /*
-             TODO: this should actually be a conditional dependency, only if shell is available.
+             Notice: This should actually be a conditional dependency, only if shell is available.
              however the karaf assemble plugin does not seem to resolve these conditions during packaging.
             */
             //noinspection GroovyAssignabilityCheck
             feature 'cxf-commands'
 
-		    // to deploy Web Application Bundles, such as our WebConsole
+		    // For Web Application Bundles, such as our WebConsole
             //noinspection GroovyAssignabilityCheck
             feature 'war'
 
@@ -93,13 +93,19 @@ karaf {
             feature 'camel-paho'
             //noinspection GroovyAssignabilityCheck
             //feature 'camel-mqtt'
-            //noinspection GroovyAssignabilityCheck
-            feature 'camel-influxdb'            
 
             // start our bundles a lit bit later
             bundle ('de.fhg.ids') {
                 attribute 'start-level', '90'
             }
+        }
+
+        feature {
+            name = 'camel-influxdb'
+            description = 'Correctly packed version of camel-influxdb'
+
+            //noinspection GroovyAssignabilityCheck
+            configurations 'influxFeature'
         }
     }
 }

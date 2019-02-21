@@ -105,8 +105,11 @@
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
-                        <feature>ids</feature>
                     </bootFeatures>
+                    <startupFeatures>
+                        <feature>ids</feature>
+                        <feature>camel-influxdb</feature>
+                    </startupFeatures>
                 </configuration>
             </plugin>
         </plugins>

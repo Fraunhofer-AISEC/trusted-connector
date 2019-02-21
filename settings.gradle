@@ -2,6 +2,7 @@ rootProject.name = 'core-platform'
 
 include ':jnr-unixsocket-wrapper'
 include ':camel-ids'
+include ':camel-influxdb'
 include ':camel-multipart-processor'
 include ':examples'
 include ':ids-acme'

@@ -61,7 +61,7 @@ allprojects {
 
             pax           : '7.2.5',
 
-            camel         : '2.21.1',
+            camel         : '2.23.1',
 
             // Camel ships with cxf, however it is slightly older so we want a newer version
             cxf           : '3.2.4',
@@ -112,6 +112,9 @@ allprojects {
         providedByBundle
         unixSocketBundle
         infomodelBundle
+
+        // Configurations for bundles grouped to dedicated features apart from the main ids feature
+        influxFeature
 
         // OSGi core dependencies which will just be there during runtime
         osgiCore
