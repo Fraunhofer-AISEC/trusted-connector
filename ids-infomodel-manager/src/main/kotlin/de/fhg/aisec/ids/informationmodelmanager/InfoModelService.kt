@@ -17,6 +17,7 @@ import org.osgi.service.prefs.Preferences
 import org.osgi.service.prefs.PreferencesService
 import org.slf4j.LoggerFactory
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
 import java.util.*
@@ -55,33 +56,24 @@ class InfoModelService : InfoModel {
             return emptyList()
         }
 
+    private fun getCatalog(): Catalog {
+        return CatalogBuilder()._offers_(ArrayList(getResources())).build()
+    }
+
     /**
      * Build current endpoints as given by connectionManager
      * will not be stored in preferences, but freshly loaded each time.
      * Multiple names for one connector allowed
      */
-    private fun getEndpoints(): List<Endpoint> {
-//        Endpoint eP;
-//        List<Endpoint> ePs = new ArrayList<>();
-//
-//        if (connectionManager!=null) {
-//
-//            List<IDSCPServerEndpoint> sePs = connectionManager.listAvailableEndpoints();
-//
-//            for (IDSCPServerEndpoint tempEP : sePs) {
-//                // http://industrialdataspace.org/connector1/endpoint1
-//                try {
-//                    eP = new EndpointBuilder()
-//                            .entityNames(Arrays.asList(new PlainLiteral(tempEP.getEndpointIdentifier()))).build();
-//                    ePs.add(eP);
-//                } catch (ConstraintViolationException ex) {
-//                    LOG.error("Caught ConstraintViolationException while building Endpoints", ex);
-//                }
-//            }
-//
-//            return ePs
-//        }
-        return emptyList()
+    private fun getResources(): List<Resource> {
+        return connectionManager?.let { cm ->
+            cm.listAvailableEndpoints().map {
+                val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
+                val host = HostBuilder()._accessUrl_(url)._protocol_(Protocol.IDSCP).build()
+                val endpoint = StaticEndpointBuilder()._endpointHost_(host).build()
+                ResourceBuilder()._resourceEndpoints_(arrayListOf(endpoint)).build()
+            }
+        } ?: emptyList()
     }
 
     /**
@@ -207,6 +199,7 @@ class InfoModelService : InfoModel {
         val connectorUrl = getURL(CONNECTOR_URL)
         val maintainerUrl = getURL(MAINTAINER_URL)
         val entityNames = connectorEntityNames
+        val catalog = getCatalog()
 
         LOG.debug("Maintainer URL: {}, Connector URL: {}, Entity Names: {}", maintainerUrl, connectorUrl, entityNames)
 
@@ -223,6 +216,7 @@ class InfoModelService : InfoModel {
                 }
                 return trustedConnectorBuilder._titles_(ArrayList(entityNames))
                         ._securityProfile_(securityProfile)
+                        ._catalog_(catalog)
                         ._descriptions_(ArrayList(entityNames)).build()
             } catch (ex: ConstraintViolationException) {
                 LOG.error("Caught ConstraintViolationException while building Connector", ex)
