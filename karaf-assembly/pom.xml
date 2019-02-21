@@ -108,7 +108,7 @@
                     </bootFeatures>
                     <startupFeatures>
                         <feature>ids</feature>
-                        <feature>camel-influxdb</feature>
+                        <feature>camel-influxdb-aisec</feature>
                         <feature>camel-zeromq</feature>
                     </startupFeatures>
                 </configuration>

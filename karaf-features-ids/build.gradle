@@ -13,7 +13,7 @@ rootProject.subprojects.findAll { it.name.matches("^(camel|ids|jnr)-.*") }.each 
     Boolean included = false
     // Include each sub-project declaring dependencies with a configuration ending on "Bundle",
     // using exactly that configuration for the dependency itself and selection of additional recursive dependencies.
-    p.configurations.findAll { it.name.endsWith("Bundle") }.each { c ->
+    p.configurations.findAll { it.name.endsWith("Bundle") || it.name.endsWith("Feature") }.each { c ->
         // Resolve the configuration to obtain dependencies
         c.resolve()
         if (c.dependencies.size() > 0) {
@@ -102,16 +102,18 @@ karaf {
         }
 
         feature {
-            name = 'camel-influxdb'
-            description = 'Correctly packed version of camel-influxdb'
+            name = 'camel-influxdb-aisec'
+            description = 'Correctly packed version of camel-influxdb feature'
+            version = libraryVersions.camel
 
             //noinspection GroovyAssignabilityCheck
             configurations 'influxFeature'
         }
 
         feature {
-            name = 'camel-zeromq'
+            name = 'camel-zeromq-aisec'
             description = 'Camel ZeroMQ feature'
+            version = '2.22.0'
 
             //noinspection GroovyAssignabilityCheck
             configurations 'zmqFeature'
