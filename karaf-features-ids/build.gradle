@@ -63,7 +63,7 @@ karaf {
             // CXF for REST APIs
             //noinspection GroovyAssignabilityCheck
             feature 'cxf-jaxrs'
-            //feature 'cxf-jackson'
+            feature 'cxf-jackson'
 
             // CXF commands for the shell
             /*
