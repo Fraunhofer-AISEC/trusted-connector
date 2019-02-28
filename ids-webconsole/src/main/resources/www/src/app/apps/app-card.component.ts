@@ -39,6 +39,13 @@ export class AppCardComponent implements OnInit {
         }
     }
 
+    onDeleteBtnClick(containerId: string): void {
+      this.statusColor = '';
+      this.appService.wipeApp(containerId)
+        .subscribe(result => undefined);
+      this.app.status = 'Deleted 1 second ago';
+    }
+
     trackPorts(index: number, item: string): string {
         return item;
     }

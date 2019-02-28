@@ -28,6 +28,10 @@ export class AppService {
         return this.http.get<Result>(environment.apiURL + '/app/start/' + encodeURIComponent(appId));
     }
 
+    wipeApp(appId: string): Observable<Result> {
+      return this.http.get<Result>(environment.apiURL + '/app/wipe?containerId=' + encodeURIComponent(appId));
+    }
+
     installApp(app: App): Observable<string> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
