@@ -12,10 +12,10 @@ LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 #  # Remove wget and git, Cleanup
 #  && apt-get remove --purge -y wget git && apt-get autoremove --purge -y
 
-ADD build/libs/rat-repository-latest.jar /root/
+ADD build/libs/rat-repository-1.2.0-SNAPSHOT.jar /root/
 
 WORKDIR "/root"
 
 EXPOSE 31337
 
-CMD ["java", "-jar", "rat-repository-latest.jar", "-p", "31337", "-h", "0.0.0.0"]
+CMD ["java", "-jar", "rat-repository-1.2.0-SNAPSHOT.jar", "-p", "31337", "-h", "0.0.0.0"]
