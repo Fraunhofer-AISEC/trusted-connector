@@ -29,7 +29,8 @@ export class AppService {
     }
 
     wipeApp(appId: string): Observable<Result> {
-      return this.http.get<Result>(environment.apiURL + '/app/wipe?containerId=' + encodeURIComponent(appId));
+        return this.http.get<Result>(environment.apiURL + '/app/wipe?containerId=' + encodeURIComponent(appId))
+            .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
     }
 
     installApp(app: App): Observable<string> {

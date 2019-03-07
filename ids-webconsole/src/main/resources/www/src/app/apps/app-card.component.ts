@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 
 import { App } from './app';
 import { AppService } from './app.service';
+import { AppsComponent } from './apps.component';
 
 @Component({
     selector: 'app-card',
@@ -12,7 +13,7 @@ export class AppCardComponent implements OnInit {
     statusIcon: string;
     statusColor: string;
 
-    constructor(private appService: AppService) { }
+    constructor(private appService: AppService, private appsComponent: AppsComponent) {}
     ngOnInit(): void {
         if (this.app.status.indexOf('Up') >= 0) {
             this.statusIcon = 'stop';
@@ -40,10 +41,10 @@ export class AppCardComponent implements OnInit {
     }
 
     onDeleteBtnClick(containerId: string): void {
-      this.statusColor = '';
       this.appService.wipeApp(containerId)
         .subscribe(result => undefined);
-      this.app.status = 'Deleted 1 second ago';
+      const index = this.appsComponent.apps.indexOf(this.app);
+      this.appsComponent.apps.splice(index, 1) ;
     }
 
     trackPorts(index: number, item: string): string {
