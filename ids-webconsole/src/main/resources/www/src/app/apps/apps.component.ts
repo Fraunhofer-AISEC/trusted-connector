@@ -14,7 +14,7 @@ declare var componentHandler: any;
 export class AppsComponent implements AfterViewInit {
   apps: Array<App>;
 
-  constructor(private appService: AppService, private titleService: Title) {
+  constructor(private readonly appService: AppService, private readonly titleService: Title) {
     this.titleService.setTitle('Apps');
 
     this.appService.getApps()
@@ -23,7 +23,7 @@ export class AppsComponent implements AfterViewInit {
       });
   }
 
-   ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
         componentHandler.upgradeAllRegistered();
    }
 
@@ -42,7 +42,7 @@ export class AppsSearchComponent implements OnInit, AfterViewInit {
     saved: boolean;
     searchResults: Array<App> = [];
 
-    constructor(private _fb: FormBuilder, private _appService: AppService) {
+    constructor(private readonly _fb: FormBuilder, private readonly _appService: AppService) {
         this.saved = true;
         this.submitted = false;
     }
@@ -61,7 +61,7 @@ export class AppsSearchComponent implements OnInit, AfterViewInit {
     save(model: any, isValid: boolean): void {
       this.submitted = true;
       this._appService
-        .searchApps(model['apps_search'])
+        .searchApps(model.apps_search)
         .subscribe(res => { this.searchResults = res; });
     }
 

@@ -1,23 +1,24 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { Result, RouteResult } from '../result';
+
 import { Route, RouteComponent } from './route';
 import { RouteMetrics } from './route-metrics';
 import { ValidationInfo } from './validation';
 
 @Injectable()
 export class RouteService {
-  constructor(private httpClient: HttpClient) { }
+  constructor(private readonly httpClient: HttpClient) { }
 
   getRoute(routeId: string): Observable<Route> {
     return this.httpClient.get(environment.apiURL + '/routes/get/' + routeId) as Observable<Route>;
   }
 
   getRouteAsString(routeId: string): Observable<string> {
-    return this.httpClient.get(environment.apiURL + '/routes/getAsString/' + routeId, { responseType: 'text' }) as Observable<string>;
+    return this.httpClient.get(environment.apiURL + '/routes/getAsString/' + routeId, { responseType: 'text' });
   }
 
   getValidationInfo(routeId: string): Observable<ValidationInfo> {

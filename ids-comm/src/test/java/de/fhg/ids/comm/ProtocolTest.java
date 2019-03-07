@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,100 +19,102 @@
  */
 package de.fhg.ids.comm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
-
-import org.asynchttpclient.ws.WebSocket;
-import org.eclipse.jetty.websocket.api.Session;
-import org.junit.Test;
-
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdscpClient;
 import de.fhg.ids.comm.server.IdscpServer;
-import de.fhg.ids.comm.server.IdscpServerSocket;
 import de.fhg.ids.comm.server.ServerConfiguration;
-import de.fhg.ids.comm.server.SocketListener;
+import org.asynchttpclient.ws.WebSocket;
+import org.junit.Test;
+
+import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.*;
 
 public class ProtocolTest {
 
-  @Test
-  public void testFailureHandling() throws InterruptedException, ExecutionException, URISyntaxException {
-    MySocketListener listener = new MySocketListener();
+    @Test
+    public void testFailureHandling() throws InterruptedException, ExecutionException,
+            URISyntaxException, NoSuchAlgorithmException, KeyStoreException, CertificateException,
+            IOException, KeyManagementException {
+        final MySocketListener listener = new MySocketListener();
+        final Path jssePath = FileSystems.getDefault().getPath("src/test/resources/jsse");
 
-    // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
-    IdscpServer server =
-        new IdscpServer()
-            .config(
-                new ServerConfiguration.Builder()
-                    .port(8081)
-                    .attestationMask(0)
-                    .attestationType(IdsAttestationType.BASIC)
-                    .ttpUrl(new URI("https://localhost/nonexistingdummy_ttp"))
-                    .build())
-            .setSocketListener(listener)
-            .start();
+        final KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(Files.newInputStream(jssePath.resolve("server-keystore.jks")),
+                "password".toCharArray());
+        // Configure and start Server in one fluent call chain and use NON-EXISTING TPM SOCKET.
+        @SuppressWarnings("unused")
+        IdscpServer server =
+                new IdscpServer()
+                        .config(
+                                new ServerConfiguration.Builder()
+                                        .port(8081)
+                                        .attestationType(IdsAttestationType.BASIC)
+                                        .setKeyStore(ks)
+                                        .ttpUrl(new URI("https://localhost/nonexistingdummy_ttp"))
+                                        .build())
+                        .setSocketListener(listener)
+                        .start();
 
-    // Configure and start client (blocks until IDSCP has finished)
-    IdscpClient client = new IdscpClient();
-    WebSocket wsClient = client.config(new ClientConfiguration()).connect("localhost", 8081);
+        // Configure and start client (blocks until IDSCP has finished)
+        IdscpClient client = new IdscpClient().config(
+                new ClientConfiguration.Builder()
+                        .setSha256CertificateHashes(Collections.singletonList(
+                                DatatypeConverter.parseHexBinary(
+                                        "4439DA49F320E3786319A5CF8D69F3A0831C4801B5CE3A14570EA84E0ECD82B0")))
+                        .build());
+        WebSocket wsClient = client.connect("localhost", 8081);
 
-    // --- IDSC protocol will run automatically now ---
+        // --- IDSC protocol will run automatically now ---
 
-    // Client web socket is now expected to be open
-    assertTrue(wsClient.isOpen());
+        // Client web socket is now expected to be open
+        assertTrue(wsClient.isOpen());
 
-    // Attestation result is expected to be not null and FAIL (because we did not connect to proper
-    // TPM above)
-    RatResult attestationResult = client.getAttestationResult();
-    assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
+        // Attestation result is expected to be not null and FAIL (because we did not connect to proper
+        // TPM above)
+        RatResult attestationResult = client.getAttestationResult();
+        assertNotNull(attestationResult);
+        assertEquals(RatResult.Status.FAILED, attestationResult.getStatus());
 
-    // TODO Make server-side attestation result accessible
-    // AttestationResult serverAttestationRes = server.getAttestationResult();
+        // TODO Make server-side attestation result accessible
+        // AttestationResult serverAttestationRes = server.handleAttestationResult();
 
-    // Send some payload from client to server
-    wsClient.sendTextFrame("Hello");
+        // Send some payload from client to server
+        wsClient.sendTextFrame("Hello");
 
-    // Expect server to receive our payload
-    String serverReceived = listener.getLastMsg();
-    assertNotNull(serverReceived);
-    assertEquals("Hello", serverReceived);
+        // Expect server to receive our payload
+        String serverReceived = listener.getLastMsg();
+        assertNotNull(serverReceived);
+        assertEquals("Hello", serverReceived);
 
-    // This is how to let the server run forever:
-    // server.getServer().join();
-  }
-}
+        try {
+            wsClient.sendCloseFrame(200, "Shutdown");
+        } catch (Exception e) {
+            //ignore
+        }
+        try {
+            server.getServer().stop();
+        } catch (Exception e) {
+            //ignore
+        }
 
-class MySocketListener implements SocketListener {
-  private String lastMsg = null;
-
-  @Override
-  public synchronized void onMessage(Session session, byte[] msg) {
-    // Wake Thread(s) that called getLastMsg()
-    this.notifyAll();
-    this.lastMsg = new String(msg);
-  }
-
-  public synchronized String getLastMsg() {
-    // If message is null, we wait for asynchronous delivery
-    if (this.lastMsg == null) {
-      try {
-        this.wait(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+        // This is how to let the server run forever:
+        // server.getServer().join();
     }
-    return this.lastMsg;
-  }
 
-  @Override
-  public void notifyClosed(IdscpServerSocket idscpServerSocket) {
-    // Nothing to do here. Socket is already closed.
-  }
 }

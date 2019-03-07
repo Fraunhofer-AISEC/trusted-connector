@@ -186,7 +186,7 @@ public class FSM {
     return sb.toString();
   }
 
-  public void setRatResult(RatResult attestationResult) {
+  public void handleRatResult(RatResult attestationResult) {
     this.ratResult = attestationResult;
   }
 

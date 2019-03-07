@@ -19,24 +19,35 @@
  */
 package de.fhg.ids.comm.client;
 
-import java.net.URI;
-
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
  *
- * @author julian
+ * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public class ClientConfiguration implements IdscpConfiguration {
+  @NonNull
   private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask = 0;
+  @NonNull
   private CertificatePair certificatePair = new CertificatePair();
-public URI ttpUri;
-
+  @NonNull
+  private String endpoint = "";
+  @NonNull
+  private List<byte[]> sha256CertificateHashes = Collections.emptyList();
+  @Nullable
+  protected URI ttpUri;
+  
   public static class Builder {
+	  @NonNull
     private ClientConfiguration config = new ClientConfiguration();
 
     public Builder attestationMask(int attestationMask) {
@@ -44,26 +55,43 @@ public URI ttpUri;
       return this;
     }
 
-    public Builder attestationType(IdsAttestationType attestationType) {
+    @NonNull
+    public Builder attestationType(@NonNull IdsAttestationType attestationType) {
       config.attestationType = attestationType;
       return this;
     }
 
-    public Builder certificatePair(CertificatePair certificatePair) {
+    @NonNull
+    public Builder certificatePair(@NonNull CertificatePair certificatePair) {
       config.certificatePair = certificatePair;
       return this;
     }
 
-    public Builder ttpUrl(URI ttpUri) {
-    	config.ttpUri = ttpUri;
+    @NonNull
+    public Builder ttpUrl(@NonNull URI ttpUri) {
+      config.ttpUri = ttpUri;
     	return this;
     }
+
+    @NonNull
+    public Builder endpoint(@NonNull String endpoint) {
+    	config.endpoint = endpoint;
+    	return this;
+    }
+
+    @NonNull
+    public Builder setSha256CertificateHashes(@NonNull List<byte[]> hashes) {
+      config.sha256CertificateHashes = hashes;
+      return this;
+    }
     
+    @NonNull
     public ClientConfiguration build() {
       return config;
     }
   }
 
+  @NonNull
   public IdsAttestationType getAttestationType() {
     return attestationType;
   }
@@ -71,12 +99,24 @@ public URI ttpUri;
   public int getAttestationMask() {
     return attestationMask;
   }
-
+  
+  @NonNull
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
 
+  @Nullable
   public URI getTrustedThirdPartyURI() {
 	  return ttpUri;
+  }
+
+  @NonNull
+  public String getEndpoint() {
+	  return endpoint;
+  }
+
+  @NonNull
+  public List<byte[]> getSha256CertificateHashes(){
+    return sha256CertificateHashes;
   }
 }

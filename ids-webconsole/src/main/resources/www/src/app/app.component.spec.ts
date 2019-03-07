@@ -1,6 +1,8 @@
-/* tslint:disable:no-unused-variable */
+// tslint:disable:no-unused-variable
+// tslint:disable:no-floating-promises
 
 import { async, TestBed } from '@angular/core/testing';
+
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {

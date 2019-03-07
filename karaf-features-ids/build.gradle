@@ -2,31 +2,37 @@ apply plugin: 'com.github.lburgazzoli.karaf'
 
 description = 'IDS Karaf Feature'
 
-dependencies {
-    // only pull in the dependencies that will be provided by bundles (or wrapped) from the other projects
-    providedByBundle project(path: ':ids-api', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-acme', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-comm', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-settings', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-dynamic-tls', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-container-manager', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-dataflow-control', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-route-manager', configuration: 'providedByBundle')
-    providedByBundle project(path: ':ids-webconsole', configuration: 'providedByBundle')
-    providedByBundle project(path: ':camel-ids', configuration: 'providedByBundle')
-    providedByBundle project(path: ':tpm2j', configuration: 'providedByBundle')
+ext {
+    bundleDependencies = []
+    bundleConfigurations = []
 }
 
-// Karaf 4.2 will default to a version 6 of the org.objectweb.asm package, which is not compatible with jnr-unixsocket
-// Therefore, force the version of the ow2.asm packages to be compatible with jnr-unixsocket so both versions will be shupped
-configurations.all {
-    resolutionStrategy {
-        force "org.ow2.asm:asm:5.0.3"
-        force "org.ow2.asm:asm-commons:5.0.3"
-        force "org.ow2.asm:asm-analysis:5.0.3"
-        force "org.ow2.asm:asm-tree:5.0.3"
-        force "org.ow2.asm:asm-util:5.0.3"
+rootProject.configurations.findAll { it.name.endsWith('Bundle') }.each { project.ext.bundleConfigurations.add(it.name) }
+
+rootProject.subprojects.findAll { it.name.matches("^(camel|ids|jnr)-.*") }.each { p ->
+    Boolean included = false
+    // Include each sub-project declaring dependencies with a configuration ending on "Bundle",
+    // using exactly that configuration for the dependency itself and selection of additional recursive dependencies.
+    p.configurations.findAll { it.name.endsWith("Bundle") || it.name.endsWith("Feature") }.each { c ->
+        // Resolve the configuration to obtain dependencies
+        c.resolve()
+        if (c.dependencies.size() > 0) {
+            included = true
+            project.ext.bundleDependencies.add([configuration: c.name, subproject: p.name])
+        }
     }
+    // If project has not been included, include it using "providedByBundle"
+    if (!included) {
+        project.ext.bundleDependencies.add([configuration: 'providedByBundle', subproject: p.name])
+    }
+}
+
+dependencies {
+    // Include the dependencies calculated above
+    project.ext.bundleDependencies.each {
+        add("$it.configuration", project(path: ":$it.subproject", configuration: it.configuration))
+    }
+    zmqFeature group: 'org.apache-extras.camel-extra', name: 'camel-zeromq', version: '2.22.0'
 }
 
 karaf {
@@ -47,37 +53,70 @@ karaf {
             description = 'IDS Feature'
 
             // only specifiy the dependencies that will be provided by bundles, the rest will be specified via features
-            configurations 'providedByBundle'
+            //noinspection GroovyAssignabilityCheck
+            configurations(*project.ext.bundleConfigurations)
 
             // standard feature, but we need to explicitly state it here so that it gets installed in our bare Karaf
+            //noinspection GroovyAssignabilityCheck
             feature 'jetty'
 
             // CXF for REST APIs
+            //noinspection GroovyAssignabilityCheck
             feature 'cxf-jaxrs'
-            //feature 'cxf-jackson'
+            feature 'cxf-jackson'
 
             // CXF commands for the shell
             /*
-             TODO: this should actually be a conditional dependency, only if shell is available.
+             Notice: This should actually be a conditional dependency, only if shell is available.
              however the karaf assemble plugin does not seem to resolve these conditions during packaging.
             */
+            //noinspection GroovyAssignabilityCheck
             feature 'cxf-commands'
-		
-		    // to deploy Web Application Bundles, such as our WebConsole
+
+		    // For Web Application Bundles, such as our WebConsole
+            //noinspection GroovyAssignabilityCheck
             feature 'war'
-		
+
             // Camel for routing
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-jackson'
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-milo'
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-cxf'
+            //noinspection GroovyAssignabilityCheck
 		    feature 'camel-ahc'
+            //noinspection GroovyAssignabilityCheck
             feature 'camel-http'
+            //noinspection GroovyAssignabilityCheck
             feature 'camel-jetty'
+            //noinspection GroovyAssignabilityCheck
+            feature 'camel-paho'
+            //noinspection GroovyAssignabilityCheck
+            //feature 'camel-mqtt'
 
             // start our bundles a lit bit later
             bundle ('de.fhg.ids') {
                 attribute 'start-level', '90'
             }
+        }
+
+        feature {
+            name = 'camel-influxdb-aisec'
+            description = 'Correctly packed version of camel-influxdb feature'
+            version = libraryVersions.camel
+
+            //noinspection GroovyAssignabilityCheck
+            configurations 'influxFeature'
+        }
+
+        feature {
+            name = 'camel-zeromq-aisec'
+            description = 'Camel ZeroMQ feature'
+            version = '2.22.0'
+
+            //noinspection GroovyAssignabilityCheck
+            configurations 'zmqFeature'
         }
     }
 }

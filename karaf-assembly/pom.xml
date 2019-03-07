@@ -105,8 +105,12 @@
                         <feature>package</feature>
                         <feature>service</feature>
                         <feature>system</feature>
-                        <feature>ids</feature>
                     </bootFeatures>
+                    <startupFeatures>
+                        <feature>ids</feature>
+                        <feature>camel-influxdb-aisec</feature>
+                        <feature>camel-zeromq</feature>
+                    </startupFeatures>
                 </configuration>
             </plugin>
         </plugins>

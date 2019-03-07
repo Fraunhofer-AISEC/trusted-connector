@@ -19,11 +19,11 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
@@ -37,7 +37,14 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -60,6 +67,9 @@ public class ConfigApi {
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectorConfig get() {
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return null;
+    }
     return settings.getConnectorConfig();
   }
 
@@ -79,6 +89,9 @@ public class ConfigApi {
     }
 
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return "No settings available";
+    }
     settings.setConnectorConfig(config);
 
     return "OK";
@@ -107,6 +120,9 @@ public class ConfigApi {
     }
 
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return Response.serverError().build();
+    }
     settings.setConnectionSettings(connection, conSettings);
 
     return Response.ok().build();
@@ -124,6 +140,9 @@ public class ConfigApi {
   @Produces(MediaType.APPLICATION_JSON)
   public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
     Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+    	return null;
+    }
     return settings.getConnectionSettings(connection);
   }
 
@@ -146,7 +165,11 @@ public class ConfigApi {
   public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
     Settings settings = WebConsoleComponent.getSettings();
     ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();
-    RouteManager routeManager = WebConsoleComponent.getRouteManagerOrThrowSUE();
+    RouteManager routeManager = WebConsoleComponent.getRouteManager();
+    
+    if (settings == null || connectionManager == null || routeManager == null) {
+    	return Collections.emptyMap();
+    }
 
     // Set of all connection configurations, properly ordered
     Map<String, ConnectionSettings> allSettings =

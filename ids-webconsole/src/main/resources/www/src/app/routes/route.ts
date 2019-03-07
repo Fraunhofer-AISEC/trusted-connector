@@ -1,5 +1,3 @@
-// import { GraphData } from "../d3/graph";
-
 export interface Route {
   id: string;
   description: string;

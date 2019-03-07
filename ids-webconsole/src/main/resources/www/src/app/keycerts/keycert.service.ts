@@ -1,15 +1,16 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { environment } from '../../environments/environment';
+
 import { Certificate } from './certificate';
 import { Identity } from './identity.interface';
 
 @Injectable()
 export class CertificateService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   getIdentities(): Observable<Array<Certificate>> {
     return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_identities');

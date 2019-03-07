@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(enabled = true, immediate = true, name = "ids-cml")
+@Component(name = "ids-cml", immediate = true)
 public class ContainerManagerService implements ContainerManager {
   private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
   private ContainerManager containerManager = null;
@@ -57,7 +57,7 @@ public class ContainerManagerService implements ContainerManager {
     // When activated, try to set container management instance
     containerManager = getDefaultCM();
     assert containerManager != null;
-    LOG.info("Default container management is " + containerManager);
+    LOG.info("Default container management is {}", containerManager);
   }
 
   @Deactivate
@@ -93,9 +93,9 @@ public class ContainerManagerService implements ContainerManager {
   }
 
   @Override
-  public void startContainer(String containerID) {
+  public void startContainer(String containerID, String key) {
     try {
-      containerManager.startContainer(containerID);
+      containerManager.startContainer(containerID, key);
     } catch (NoContainerExistsException e) {
       LOG.error(e.getMessage(), e);
     }

@@ -20,11 +20,9 @@
                 {{ app.uptime }}
             </div>
             <div class="mdl-cell mdl-cell--4-col">
-            	<span *ngFor="let port of app.ports; trackBy: trackPorts;">
-            		<span style="display:block" *ngFor="let p of port.split(','); trackBy: trackP;">
-	            		<a *ngIf="p.indexOf('->')>-1; else only_port" href="http://localhost:{{ p.substring(p.indexOf('->')+2, p.indexOf('/')) }}">{{ p }}</a>
-	            		<ng-template #only_port>{{ p }}</ng-template>
-            		</span>
+            	<span style="display:block" *ngFor="let p of ports; trackBy: trackPorts;">
+                    <a *ngIf="p.isLink" [href]="p.link">{{ p.text }}</a>
+                    <a *ngIf="!p.isLink">{{ p.text }}</a>
             	</span>
             </div>
             <div class="mdl-card__actions mdl-card--border">

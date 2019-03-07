@@ -65,8 +65,10 @@ public interface ContainerManager {
    * <p>The container must already exist, otherwise an exception will be thrown.
    *
    * @param containerID
+   * @param key
    */
-  public void startContainer(final String containerID) throws NoContainerExistsException;
+  public void startContainer(final String containerID, final String key)
+      throws NoContainerExistsException;
 
   /**
    * Stops a container.

@@ -20,6 +20,7 @@
 package de.fhg.camel.ids.comm.ws.protocol;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,9 +30,11 @@ import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.server.ServerConfiguration;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationConsumerHandler;
-import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationProviderHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
+import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
+
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.Certificate;
@@ -48,8 +51,8 @@ import org.slf4j.LoggerFactory;
 public class ALLAttestationIT {
 
   private static final String TPMD_SOCKET = "socket/control.sock";
-  private static RemoteAttestationConsumerHandler consumer;
-  private static RemoteAttestationProviderHandler provider;
+  private static RemoteAttestationClientHandler consumer;
+  private static RemoteAttestationServerHandler provider;
   private static Logger LOG = LoggerFactory.getLogger(ALLAttestationIT.class);
   private long id = 87654321;
   private static IdsAttestationType aType = IdsAttestationType.ALL;
@@ -95,9 +98,9 @@ public class ALLAttestationIT {
         .build();
     final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
     consumer =
-        new RemoteAttestationConsumerHandler(clientConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationClientHandler(clientConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
     provider =
-        new RemoteAttestationProviderHandler(serverConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
+        new RemoteAttestationServerHandler(serverConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
   }
 
   @Test
@@ -126,6 +129,8 @@ public class ALLAttestationIT {
 
   @Test
   public void test3() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg3 =
         ConnectorMessage.parseFrom(
             consumer
@@ -141,6 +146,8 @@ public class ALLAttestationIT {
 
   @Test
   public void test4() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg4 =
         ConnectorMessage.parseFrom(
             provider
@@ -156,6 +163,8 @@ public class ALLAttestationIT {
 
   @Test
   public void test5() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg5 =
         ConnectorMessage.parseFrom(
             consumer.sendResult(new Event(msg4.getType(), msg4.toString(), msg4)).toByteString());
@@ -169,6 +178,8 @@ public class ALLAttestationIT {
 
   @Test
   public void test6() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg6 =
         ConnectorMessage.parseFrom(
             provider.sendResult(new Event(msg5.getType(), msg5.toString(), msg5)).toByteString());
@@ -182,6 +193,8 @@ public class ALLAttestationIT {
 
   @Test
   public void test7() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg7 =
         ConnectorMessage.parseFrom(
             consumer
@@ -195,6 +208,8 @@ public class ALLAttestationIT {
 
   @Test
   public void test8() throws Exception {
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+
     msg8 =
         ConnectorMessage.parseFrom(
             provider

@@ -46,8 +46,7 @@ public class UnixSocketIT {
 
   @Test
   public void testBASIC() throws Exception {
-    assumeTrue(
-        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     UnixSocketThread client;
     Thread thread;

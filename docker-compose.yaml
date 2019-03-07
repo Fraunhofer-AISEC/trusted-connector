@@ -1,7 +1,7 @@
 version: '2'
 services:
 
-  # Image for TPM simulator
+  # TPM simulator
   ids-tpm2dsim:
     image: fraunhoferaisec/tpm2dsim:develop
     volumes:
@@ -9,14 +9,14 @@ services:
     command: /tpm2d/cml-tpm2d
     container_name: iot-connector-tpm
 
-  # Image for TPM trusted third party (RAT repository)
+  # Trusted third party (RAT repository) simulator
   ids-ttpsim:
     image: fraunhoferaisec/ttpsim:develop
     ports:
       - "31337:31337"
     container_name: iot-connector-ttpsim
 
-  # Image for core platform, gets docker control socket mounted into the image
+  # The core platform, mounts docker control socket into the image
   ids-core:
     image: fraunhoferaisec/iot-connector-core-platform:develop
     tty: true

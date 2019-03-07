@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { of, timer } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
+
 import { SettingsService } from './settings.service';
 import { TermsOfService } from './terms-of-service.interface';
-import { map, switchMap, take } from 'rxjs/operators';
-import { of, timer } from 'rxjs';
 
 @Component({
     selector: 'my-app',
@@ -16,7 +17,7 @@ export class IdsComponent implements OnInit {
     saved = true;
     tosWebconsole?: TermsOfService;
 
-    constructor(private settingsService: SettingsService, private formBuilder: FormBuilder) { }
+    constructor(private readonly settingsService: SettingsService, private readonly formBuilder: FormBuilder) { }
 
     canDeactivate(target: IdsComponent): boolean {
         return target.saved;

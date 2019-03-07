@@ -19,12 +19,14 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -58,7 +60,11 @@ public class PolicyApi {
       ))
   @Produces(MediaType.APPLICATION_JSON)
   public List<String> list() {
-    return WebConsoleComponent.getPolicyAdministrationPoint().listRules();
+    PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
+    if (pap == null) {
+    	return new ArrayList<>();
+    }
+	return pap.listRules();
   }
 
   /**
@@ -70,7 +76,11 @@ public class PolicyApi {
   @Path("policyProlog")
   @Produces(MediaType.TEXT_PLAIN)
   public String getPolicyProlog() {
-    return WebConsoleComponent.getPolicyAdministrationPoint().getPolicy();
+	  PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
+	  if (pap == null) {
+		  return "";
+	  }
+    return pap.getPolicy();
   }
 
   @POST
@@ -82,7 +92,11 @@ public class PolicyApi {
       @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,
       @Multipart(value = "policy_file") InputStream is) {
     LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
-    WebConsoleComponent.getPolicyAdministrationPoint().loadPolicy(is);
+    PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
+    if (pap == null) {
+    	return "No PAP available";
+    }
+    pap.loadPolicy(is);
     return "OK";
   }
 }

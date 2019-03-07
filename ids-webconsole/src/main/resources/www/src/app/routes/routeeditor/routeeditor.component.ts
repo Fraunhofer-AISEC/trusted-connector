@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReplaySubject } from 'rxjs';
 
 import { Result } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
 import { CounterExample, ValidationInfo } from '../validation';
-
-import { ReplaySubject } from 'rxjs';
 
 @Component({
   selector: 'routeeditor',
@@ -25,11 +24,15 @@ export class RouteeditorComponent implements OnInit {
   private _result: Result = new Result();
   private _saved = true;
   private statusIcon: string;
-  private _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
+  private readonly _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
-  constructor(private titleService: Title, private _fb: FormBuilder, private router: Router,
-              private navRoute: ActivatedRoute, private routeService: RouteService) {
+  constructor(private readonly titleService: Title, private readonly _fb: FormBuilder, private readonly router: Router,
+              private readonly navRoute: ActivatedRoute, private readonly routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
+  }
+
+  get routeUpMinutes(): string {
+    return (this.route.uptime / 1000 / 60).toFixed();
   }
 
   get route(): Route {
@@ -109,7 +112,7 @@ export class RouteeditorComponent implements OnInit {
   }
 
   trackCounterExamples(index: number, item: CounterExample): string {
-    return item.explanation + Number(index);
+    return `${item.explanation}${Number(index)}`;
   }
 
   trackSteps(index: number, item: string): string {
@@ -182,13 +185,13 @@ export class RouteeditorComponent implements OnInit {
     } else {
       this.routeService.addRoute(this._textRepresentation)
         .subscribe(
-          result => {
+          async result => {
             // If created successfully, redirect user to routes overview
             this._result = result;
             this._saved = true;
             if (result.successful) {
               // console.log('Route editor: Created route(s)');
-              this.router.navigate(['routes']);
+              return this.router.navigate(['routes']);
             }
           },
           error => {

@@ -54,6 +54,7 @@ public class DockerCM implements ContainerManager {
 
   @Override
   public List<ApplicationContainer> list(boolean onlyRunning) {
+    Pattern pattern = Pattern.compile("@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@");
     List<ApplicationContainer> result = new ArrayList<>();
     ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
     ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
@@ -67,7 +68,7 @@ public class DockerCM implements ContainerManager {
       }
       cmd.add("--format");
       cmd.add(
-          "{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}");
+          "@@{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}@@");
 
       ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
       Process p = pb.start();
@@ -89,19 +90,19 @@ public class DockerCM implements ContainerManager {
       throw new RuntimeException(e);
     }
     for (String line : lines) {
-      String[] columns = line.split("@@");
-      if (columns.length != 8) {
-        LOG.error("Unexpected number of columns in docker ps: " + columns.length + ": " + line);
+	  Matcher m = pattern.matcher(line);
+      if (!m.matches() || m.groupCount() != 8) {
+        LOG.error("Unexpected number of columns in docker ps: " + m.groupCount() + ": " + line);
         break;
       }
-      String id = columns[0];
-      String image = columns[1];
-      String created = columns[2];
-      String uptime = columns[3];
-      String ports = columns[4];
-      String status = columns[5];
-      String size = columns[6];
-      String names = columns[7];
+      String id = m.group(1);
+      String image = m.group(2);
+      String created = m.group(3);
+      String uptime = m.group(4);
+      String ports = m.group(5);
+      String status = m.group(6);
+      String size = m.group(7);
+      String names = m.group(8);
 
       // Extract owner, signature, description from container labels
       Map<String, Object> labels = getMetadata(id);
@@ -156,7 +157,7 @@ public class DockerCM implements ContainerManager {
   }
 
   @Override
-  public void startContainer(final String containerID) {
+  public void startContainer(final String containerID, final String key) {
     try {
       ProcessBuilder pb =
           new ProcessBuilder()
@@ -225,9 +226,11 @@ public class DockerCM implements ContainerManager {
       createCmd.add("create");
 
       // Set exposed ports
-      for (String port : app.getPorts()) {
-        createCmd.add("-p");
-        createCmd.add(port);
+      if (app.getPorts()!=null) {
+        for (String port : app.getPorts()) {
+          createCmd.add("-p");
+          createCmd.add(port);
+        }
       }
 
       // Set environment variables
@@ -259,12 +262,15 @@ public class DockerCM implements ContainerManager {
       }
 
       createCmd.add(app.getImage());
+      LOG.debug(String.join(" ", createCmd));
       pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(createCmd);
       p = pb.start();
       p.waitFor(600, TimeUnit.SECONDS);
       return Optional.<String>of(containerID);
-    } catch (IOException | InterruptedException | RuntimeException e) {
+    } catch (IOException | RuntimeException e) {
       LOG.error(e.getMessage(), e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
     return Optional.<String>empty();
   }
@@ -298,11 +304,11 @@ public class DockerCM implements ContainerManager {
       // Attempt to invoke some docker command. If it fails, return false
       Process p = new ProcessBuilder().command(Arrays.asList(DOCKER_CLI, "info")).start();
       p.waitFor(10, TimeUnit.SECONDS);
+      return (p.exitValue() == 0);
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
-      return false;
     }
-    return true;
+    return false;
   }
 
   @Override

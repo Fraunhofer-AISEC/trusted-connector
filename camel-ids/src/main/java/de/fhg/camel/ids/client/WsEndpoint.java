@@ -19,14 +19,28 @@
  */
 package de.fhg.camel.ids.client;
 
+import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
+import static de.fhg.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
+
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import de.fhg.camel.ids.CamelComponent;
 import de.fhg.camel.ids.ProxyX509TrustManager;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.client.ClientConfiguration;
 import de.fhg.ids.comm.client.IdspClientSocket;
 import de.fhg.ids.comm.ws.protocol.IDSCPException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -34,19 +48,15 @@ import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.util.jsse.SSLContextParameters;
-import org.asynchttpclient.*;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
-import static de.fhg.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
 
 /**
  * This is the client-side implementation of a Camel endpoint for the IDS communication protocol
@@ -200,11 +210,25 @@ public class WsEndpoint extends AhcEndpoint {
     LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
 
     // Execute IDS protocol immediately after connect
+    Settings settings = CamelComponent.getSettings();
+    URI ttpUri = null;
+    try {
+      if (settings != null) {
+        ttpUri = new URI(String.format(
+            "https://%s:%d/rat-verify",
+            settings.getConnectorConfig().getTtpHost(),
+            settings.getConnectorConfig().getTtpPort()
+        ));
+      }
+    } catch (URISyntaxException e) {
+      LOG.error("incorrect TTP URI syntax", e);
+    }
     ClientConfiguration config =
         new ClientConfiguration.Builder()
             .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
+            .ttpUrl(ttpUri)
             .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);
 

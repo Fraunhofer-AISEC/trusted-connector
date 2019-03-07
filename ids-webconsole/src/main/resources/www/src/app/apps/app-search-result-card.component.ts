@@ -7,12 +7,13 @@ declare var componentHandler: any;
 
 @Component({
     selector: 'app-search-result-card',
-    templateUrl: './app-search-result-card.component.html'
+    templateUrl: './app-search-result-card.component.html',
+    styleUrls: ['./app-search-result-card.component.css']
 })
 export class AppSearchResultCardComponent implements AfterViewInit {
     @Input() app: App;
 
-    constructor(private appService: AppService) { }
+    constructor(private readonly appService: AppService) { }
 
     ngAfterViewInit(): void {
         setTimeout(() => {

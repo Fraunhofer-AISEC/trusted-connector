@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/blueprint"
+	xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf"
+	xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+	<!-- Define a reference for our REST MIME-Multipart Processor -->
+	<bean id="myProcessor" class="de.fhg.aisec.camel.multipart.MultipartProcessor" />
+
+	<!-- Routes -->
+	<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+		<route id="multipartDemo">
+
+			<!--  Just do something every 4 seconds -->
+			<from uri="timer://foo?fixedRate=true&amp;period=4000" />
+
+			<!--  Timer creates an empty body, so we set some dummy data here -->
+			<setBody>
+				<simple>Test Message</simple>
+			</setBody>
+			
+			<!-- When setting an Exchange header "ids.connector.selfdescription", its value will be
+				 used instead of the auto-generated Connector self-description in JSON-LD format that 
+				 is provided by the info-model-manager.
+				 
+				 Uncomment the following block to test this behavior. 
+			 -->
+			<!--
+			<setHeader headerName="ids.connector.selfdescription">
+				<constant>test</constant>
+			</setHeader>
+			-->
+			
+			<!-- Now create a mime/multipart Exchange body. The body will contain one part "header" 
+				 and one part "payload" -->
+			<process ref="myProcessor" />
+
+			<!-- The logs should show the multipart message -->
+			<log message="Test message: ${body}" />
+			
+			<!-- Send it to some web server -->
+			<to uri="http://localhost:8000" />
+		</route>
+	</camelContext>
+</blueprint>

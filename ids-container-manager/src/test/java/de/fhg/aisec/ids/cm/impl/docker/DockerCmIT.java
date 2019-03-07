@@ -42,7 +42,7 @@ public class DockerCmIT {
 
     // Skip all tests if docker is not supported on the current platform
     if (!DockerCM.isSupported()) {
-      Assume.assumeTrue(true);
+      Assume.assumeTrue(false);
     }
   }
 
@@ -120,7 +120,7 @@ public class DockerCmIT {
     assertEquals("Created", container.get().getStatus());
 
     // Start container
-    d.startContainer(containerID);
+    d.startContainer(containerID, null);
 
     // We now expect it in list of running containers
     containers = d.list(true);

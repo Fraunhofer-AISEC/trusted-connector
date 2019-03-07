@@ -12,34 +12,9 @@ Now this is tricky. We need to build a custom assembly of karaf with a few featu
 Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
 */
 
-static def gitCommit() {
-    String commit = 'HEAD'
-
-    if (System.getenv('CI_COMMIT_SHA')) {
-        commit = System.getenv('CI_COMMIT_SHA')
-    } else {
-        String commandLine
-        if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-            commandLine = 'cmd /c '
-        } else {
-            commandLine = ''
-        }
-        def proc = (commandLine + 'git rev-parse HEAD').execute()
-        proc.in.eachLine { line -> commit = line }
-        proc.err.eachLine { line -> println line }
-        proc.waitFor()
-    }
-
-    if (commit == 'HEAD') {
-        commit
-    } else {
-        commit.substring(0, 8)
-    }
-}
-
 task assembleKaraf(type: MavenExec) {
     mavenDir = projectDir
-    goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "package"
+    goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "clean", "package"
 }
 
 jar.dependsOn(assembleKaraf)
@@ -53,7 +28,16 @@ rootProject.subprojects.findAll() {
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    tag = 'fraunhoferaisec/iot-connector-core-platform:' + gitCommit()
+    tag = 'fraunhoferaisec/iot-connector-core-platform:' + rootProject.getDockerTag()
 }
 
 dockerize.dependsOn(assembleKaraf)
+
+dependencies {
+    testImplementation project(':ids-api')
+    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+    testImplementation group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: libraryVersions.karaf
+}
+
+integrationTest.dependsOn(jar)

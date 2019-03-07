@@ -19,25 +19,29 @@
  */
 package de.fhg.ids.comm.client;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.ids.comm.ws.protocol.ProtocolMachine;
+import de.fhg.ids.comm.ws.protocol.ClientProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IdspClientSocket implements WebSocketListener {
   private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
   private FSM fsm;
+  @NonNull
   private final ReentrantLock lock = new ReentrantLock();
   private final Condition idscpInProgress = lock.newCondition();
   private final ConnectorMessage startMsg =
@@ -57,8 +61,7 @@ public class IdspClientSocket implements WebSocketListener {
     Log.debug("Websocket opened");
 
     // create Finite State Machine for IDS protocol
-    ProtocolMachine machine = new ProtocolMachine();
-    this.fsm = machine.initIDSConsumerProtocol(websocket, this.config);
+    this.fsm = new ClientProtocolMachine(websocket, this.config);
     // start the protocol with the first message
     this.fsm.feedEvent(new Event(startMsg.getType(), startMsg.toString(), startMsg));
   }
@@ -109,10 +112,12 @@ public class IdspClientSocket implements WebSocketListener {
     onBinaryFrame(message.getBytes(), finalFragment, rsv);
   }
 
+  @NonNull
   public ReentrantLock semaphore() {
     return lock;
   }
 
+  @NonNull
   public Condition idscpInProgressCondition() {
     return idscpInProgress;
   }
@@ -122,10 +127,12 @@ public class IdspClientSocket implements WebSocketListener {
   }
 
   // get the result of the remote attestation
+  @NonNull
   public RatResult getAttestationResult() {
     return fsm.getRatResult();
   }
 
+  @NonNull
   public String getMetaResult() {
     return fsm.getMetaData();
   }

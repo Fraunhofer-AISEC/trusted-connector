@@ -95,7 +95,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
               // QUERY structure must be: has_endpoint(rule, bla), assert(label(x)),
               // receives_label(rule).
               sb.append("assert(label(")
-                  .append(TuPrologHelper.escape(msgLabels.get(k).toString()))
+                  .append(msgLabels.get(k).toString())
                   .append(")), ");
             });
     sb.append("receives_label(X), ");

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+
 import { ConfirmService } from './confirm.service';
 
 const KEY_ESC = 27;
@@ -15,7 +16,7 @@ export class ConfirmComponent implements OnInit {
     okText: string;
     cancelText: string;
 
-    private _defaults = {
+    private readonly _defaults = {
         title: 'Confirmation',
         message: 'Do you want to cancel your changes?',
         cancelText: 'Cancel',
@@ -43,7 +44,7 @@ export class ConfirmComponent implements OnInit {
         this.cancelText = this._defaults.cancelText;
     }
 
-    activate(message = this._defaults.message, title = this._defaults.title): Promise<boolean> {
+    async activate(message = this._defaults.message, title = this._defaults.title): Promise<boolean> {
         this._setLabels(message, title);
 
         return new Promise<boolean>(resolve => {

@@ -34,7 +34,7 @@ public final class ConnectorConfig implements Serializable {
   private final boolean tosAcceptWebcon;
 
   public ConnectorConfig() {
-    appstoreUrl = "https://raw.githubusercontent.com/portainer/templates/master/templates.json";
+    appstoreUrl = "https://raw.githubusercontent.com/industrial-data-space/templates/master/templates.json";
     brokerUrl = "";
     ttpHost = "";
     ttpPort = 443;

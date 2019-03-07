@@ -1,0 +1,18 @@
+// Create ZIP archive with example if non-SNAPSHOT version
+task zipExample(type: Zip) {
+    from fileTree(dir: 'example', excludes: ['**/*.sock'])
+    archiveName "trusted-connector-examples_${rootProject.version}.zip"
+    destinationDir projectDir
+}
+zipExample.onlyIf { !rootProject.version.toString().endsWith("-SNAPSHOT") }
+processResources.dependsOn zipExample
+
+// Delete the redundant build directory after install or build, if executed
+gradle.taskGraph.whenReady {
+    Task task = (Task) [install, build].find({ gradle.taskGraph.hasTask((Task) it) })
+    if (task != null) {
+        task.doLast {
+            delete "$projectDir/build"
+        }
+    }
+}

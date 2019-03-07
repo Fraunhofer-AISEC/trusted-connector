@@ -6,7 +6,7 @@
 		</div>		
 		<div class="mdl-card__supporting-text">
 	
-		<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value, myForm.valid)" class="mdl-cell--12-col mdl-grid">
+		<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
 			<div class="mdl-cell--12-col">
 				<div mdl-textfield class="form-group mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell--10-col">
 					<label class="mdl-textfield__label" for="cn">Your IDS Domain Name*</label>

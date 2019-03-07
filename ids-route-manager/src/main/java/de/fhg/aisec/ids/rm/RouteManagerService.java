@@ -167,6 +167,7 @@ public class RouteManagerService implements RouteManager {
   }
 
   @Override
+  @NonNull
   public List<RouteComponent> listComponents() {
     List<RouteComponent> componentNames = new ArrayList<>();
     BundleContext bCtx = FrameworkUtil.getBundle(RouteManagerService.class).getBundleContext();
@@ -195,6 +196,7 @@ public class RouteManagerService implements RouteManager {
   }
 
   @Override
+  @NonNull
   public Map<String, Collection<String>> getEndpoints() {
     List<CamelContext> camelO = getCamelContexts();
     return camelO
@@ -210,6 +212,7 @@ public class RouteManagerService implements RouteManager {
   }
 
   @Override
+  @NonNull
   public Map<String, String> listEndpoints() {
     List<CamelContext> camelO = getCamelContexts();
     Map<String, String> epURIs = new HashMap<>();
@@ -224,6 +227,7 @@ public class RouteManagerService implements RouteManager {
   }
 
   @Override
+  @NonNull
   public Map<String, RouteMetrics> getRouteMetrics() {
     Map<String, RouteMetrics> rdump = new HashMap<>();
     List<CamelContext> cCtxs = getCamelContexts();
@@ -406,6 +410,7 @@ public class RouteManagerService implements RouteManager {
    * @param routeId The id of the route that is to be exported
    */
   @Override
+  @NonNull
   public String getRouteAsProlog(@NonNull String routeId) {
     Optional<CamelContext> c =
         getCamelContexts()
@@ -459,6 +464,7 @@ public class RouteManagerService implements RouteManager {
    *     replacement.
    */
   @Override
+  @NonNull
   public RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation)
       throws RouteException {
     LOG.debug("Save route \"" + routeId + "\": " + routeRepresentation);

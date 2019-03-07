@@ -11,6 +11,6 @@ The _Trusted Connector_ is an Apache Karaf-based platform for the Industrial Int
 
 Please see the [Github documentation page](https://industrial-data-space.github.io/trusted-connector-documentation/docs/dev_core/)
 
-# Code style
+# How to contribute 
 
-This project uses [Google Code style](https://github.com/google/google-java-format). Please make sure that you have an appropriate formatter installed for your IDE if you want to contribute.
+Please refer to the [contribution guide](https://github.com/industrial-data-space/trusted-connector/blob/develop/.github/CONTRIBUTING.md)

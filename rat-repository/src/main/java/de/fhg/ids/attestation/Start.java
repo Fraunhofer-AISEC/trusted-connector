@@ -21,9 +21,9 @@ package de.fhg.ids.attestation;
 
 public class Start {
   private static RemoteAttestationServer ratServer;
-  private static String version = "1.1.0";
+  private static String version = "1.2.0-SNAPSHOT";
   private static String host = "127.0.0.1";
-  private static String url = "configurations/check";
+  private static String url = "rat-verify";
   private static int port = 31337;
 
   public static void main(String[] args) throws Exception {
@@ -41,10 +41,10 @@ public class Start {
         System.out.println("IDS: Remote Attestation Repository v" + version);
         System.out.println("-----------------------------------------");
         System.out.println(
-            "usage:\n\tjava -jar rat-repository-1.1.0.jar [-p Port] [-h Host]");
+            "usage:\n\tjava -jar rat-repository-" + version + ".jar [-p Port] [-h Host]");
         System.out.println(
-            "example:\n\tjava -jar rat-repository-1.1.0.jar -p 31337 -h 127.0.0.1");
-        System.out.println("");
+            "example:\n\tjava -jar rat-repository-" + version + ".jar -p 31337 -h 127.0.0.1");
+        System.out.println();
         break;
     }
   }
@@ -80,9 +80,7 @@ public class Start {
   private static boolean isInteger(String s) {
     try {
       Integer.parseInt(s);
-    } catch (NumberFormatException e) {
-      return false;
-    } catch (NullPointerException e) {
+    } catch (NumberFormatException | NullPointerException e) {
       return false;
     }
     return true;

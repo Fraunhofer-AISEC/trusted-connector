@@ -1,0 +1,50 @@
+version: '2'
+services:
+
+  # TPM simulator
+  ids-tpm2dsim-consumer:
+    image: fraunhoferaisec/tpm2dsim:develop
+    volumes:
+      - ./tpm2d-consumer/:/data/cml/tpm2d/communication/
+    command: /tpm2d/cml-tpm2d
+
+  # The core platform, mounts docker control socket and route definition into the image
+  consumer-core:
+    image: fraunhoferaisec/iot-connector-core-platform:example
+    build:
+      context: '../../karaf-assembly'
+    tty: true
+    stdin_open: true
+    hostname: consumer-core
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tpm2d-consumer/:/var/run/tpm2d/
+      - ./system.properties:/root/etc/system.properties
+      - ./consumer-server-keystore.jks:/root/etc/consumer-server-keystore.jks
+      - ./consumer-server-truststore.jks:/root/etc/consumer-server-truststore.jks
+      - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
+    ports:
+      - "5005:5005"
+      - "8181:8181"
+      - "9292:9292"
+    networks:
+      - ids-wide
+      - consumer-internal
+
+
+  # Data App (REST consumer, displays web page)
+  consumer-app:
+    image: fraunhoferaisec/example-server:example
+    build:
+      context: './example-server'
+    ports:
+      - "8081:8081"
+    networks:
+      - consumer-internal
+
+networks:
+  ids-wide:
+    driver: bridge
+  consumer-internal:
+    driver: bridge

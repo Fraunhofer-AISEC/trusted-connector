@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { App } from './app';
+import { PortDef } from './app.port.def';
 import { AppService } from './app.service';
 import { AppsComponent } from './apps.component';
 
@@ -12,8 +13,25 @@ export class AppCardComponent implements OnInit {
     @Input() app: App;
     statusIcon: string;
     statusColor: string;
+    private portDefs: Array<PortDef>;
 
-    constructor(private appService: AppService, private appsComponent: AppsComponent) {}
+    constructor(private readonly appService: AppService, private appsComponent: AppsComponent) { }
+
+    get ports(): Array<PortDef> {
+        if (!this.portDefs) {
+            this.portDefs = this.app.ports
+                .map(list => list.split(',')
+                    .map(portDef => new PortDef(portDef.trim())))
+                .reduce((acc, x) => acc.concat(x), []);
+        }
+
+        return this.portDefs;
+    }
+
+    trackPorts(_: number, item: PortDef): string {
+        return item.text;
+    }
+
     ngOnInit(): void {
         if (this.app.status.indexOf('Up') >= 0) {
             this.statusIcon = 'stop';
@@ -39,15 +57,11 @@ export class AppCardComponent implements OnInit {
             this.app.status = 'Exited(0) 1 seconds ago';
         }
     }
-
+    
     onDeleteBtnClick(containerId: string): void {
       this.appService.wipeApp(containerId)
         .subscribe(result => undefined);
       const index = this.appsComponent.apps.indexOf(this.app);
       this.appsComponent.apps.splice(index, 1) ;
-    }
-
-    trackPorts(index: number, item: string): string {
-        return item;
     }
 }
