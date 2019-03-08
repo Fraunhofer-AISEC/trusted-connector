@@ -16,7 +16,7 @@ export class AppCardComponent implements OnInit {
     private portDefs: Array<PortDef>;
 
     constructor(private readonly appService: AppService, private readonly appsComponent: AppsComponent) { }
-	// the linter forces to mark 'appsComponent' as readonly which could be misleading; see method 'onDeleteBtnClick' below
+    // the linter forces to mark 'appsComponent' as readonly which could be misleading; see method 'onDeleteBtnClick' below
 
     get ports(): Array<PortDef> {
         if (!this.portDefs) {
