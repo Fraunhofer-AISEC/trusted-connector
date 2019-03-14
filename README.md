@@ -16,8 +16,8 @@ Please see the [Github documentation page](https://industrial-data-space.github.
 Please refer to the [contribution guide](https://github.com/industrial-data-space/trusted-connector/blob/develop/.github/CONTRIBUTING.md)
 
 # Project structure
-So the logical depedency graph (not the file system structure) is:
-.<br />
+So the logical depedency graph (not the file system structure) is:<br />
+.
 ├── _karaf-assembly //main module<br />
 &nbsp;|   ├── _camel-ids<br />
 &nbsp;|   ├── _camel-influxdb<br />
