@@ -17,24 +17,24 @@ Please refer to the [contribution guide](https://github.com/industrial-data-spac
 
 # Project structure
 So the logical depedency graph (not the file system structure) is:
-.
-├── _karaf-assembly //main module
-|   ├── _camel-ids
-|   ├── _camel-influxdb
-|   ├── _camel-multipart-processor
-|   ├── _ids-acme
-|   ├── _ids-api
-|   ├── _ids-comm
-|   ├── _ids-container-manager
-|   ├── _ids-dataflow-control
-|   ├── _ids-dynamic-tls
-|   ├── _ids-infomodel-manager
-|   ├── _ids-multipart-bean
-|   ├── _ids-route-manager
-|   ├── _ids-settings
-|   └── _ids-token-manager
-├── _ids-webconsole // webconsole can be run anywhere
-├── _jnr-unixsocket-wrapper //helper
-├── _karaf-features-ids //helper
-├── _rat_repository // can be run anywhere
-└── _tpm2j
+.<br />
+├── _karaf-assembly //main module<br />
+&nbsp;|   ├── _camel-ids<br />
+&nbsp;|   ├── _camel-influxdb<br />
+&nbsp;|   ├── _camel-multipart-processor<br />
+&nbsp;|   ├── _ids-acme<br />
+&nbsp;|   ├── _ids-api<br />
+&nbsp;|   ├── _ids-comm<br />
+&nbsp;|   ├── _ids-container-manager<br />
+&nbsp;|   ├── _ids-dataflow-control<br />
+&nbsp;|   ├── _ids-dynamic-tls<br />
+&nbsp;|   ├── _ids-infomodel-manager<br />
+&nbsp;|   ├── _ids-multipart-bean<br />
+&nbsp;|   ├── _ids-route-manager<br />
+&nbsp;|   ├── _ids-settings<br />
+&nbsp;|   └── _ids-token-manager<br />
+├── _ids-webconsole // webconsole can be run anywhere<br />
+├── _jnr-unixsocket-wrapper //helper<br />
+├── _karaf-features-ids //helper<br />
+├── _rat_repository // can be run anywhere<br />
+└── _tpm2j<br />
