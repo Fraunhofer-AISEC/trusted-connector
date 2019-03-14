@@ -17,7 +17,7 @@ Please refer to the [contribution guide](https://github.com/industrial-data-spac
 
 # Project structure
 So the logical depedency graph (not the file system structure) is:<br />
-.
+.<br />
 ├── _karaf-assembly //main module<br />
 &nbsp;|   ├── _camel-ids<br />
 &nbsp;|   ├── _camel-influxdb<br />
