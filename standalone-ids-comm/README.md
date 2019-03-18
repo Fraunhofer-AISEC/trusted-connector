@@ -1,0 +1,2 @@
+The _standalone-ids-comm_ module provides the basis for a standalone IDSCP client.
+It includes an example main method that starts a web server on TCP port 4441 and forwards received text messages to the consumer found in examples.
