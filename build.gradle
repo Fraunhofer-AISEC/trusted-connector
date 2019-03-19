@@ -54,7 +54,7 @@ allprojects {
             karaf         : '4.2.2',
 
             // The used version of the infomodel from IESE
-            infomodel     : '1.0.2-20190211.170054-9',
+            infomodel     : '1.0.2-20190313.131133-4',
 
             // For javax.xml.bind support in newer java versions
             jaxb          : "2.2.11",
@@ -183,7 +183,7 @@ subprojects {
         jcenter()
         // References local copy of the private IAIS repository that contains the necessary artifacts
         maven {
-            url 'file://' + new File(rootProject.projectDir, 'libs').absolutePath
+            url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
         }
 //        maven {
 //            url "https://maven.iais.fraunhofer.de/artifactory/eis-ids-snapshot/"
