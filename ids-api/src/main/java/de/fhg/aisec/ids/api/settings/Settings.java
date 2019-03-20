@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.api.settings;
 
+import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
+
 import java.util.Map;
 
 public interface Settings {
@@ -26,6 +28,10 @@ public interface Settings {
   ConnectorConfig getConnectorConfig();
 
   void setConnectorConfig(ConnectorConfig config);
+
+  ConnectorProfile getConnectorProfile();
+
+  void setConnectorProfile(ConnectorProfile profile);
 
   ConnectionSettings getConnectionSettings(String connection);
 

@@ -46,13 +46,12 @@ public class SettingsApi {
   @POST
   @Path("/connectorProfile")
   @Consumes(MediaType.APPLICATION_JSON)
-  public String postConnectorProfile(ConnectorProfile cP) {
+  public String postConnectorProfile(ConnectorProfile profile) {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
       throw new ServiceUnavailableException("InfoModel is not available");
     }
-    if (im.setConnector(cP.getConnectorURL(), cP.getOperatorURL(), cP.getConnectorEntityNames(),
-            cP.getSecurityProfile())) {
+    if (im.setConnector(profile)) {
       return "ConnectorProfile successfully stored.";
     } else {
       throw new InternalServerErrorException("Error while storing ConnectorProfile");

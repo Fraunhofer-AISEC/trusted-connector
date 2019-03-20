@@ -31,8 +31,8 @@ public final class ConnectorProfile implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final SecurityProfile securityProfile;
-    private final URL connectorURL;
-    private final URL operatorURL;
+    private final URL connectorUrl;
+    private final URL maintainerUrl;
     private final List<PlainLiteral> connectorEntityNames;
 
     public ConnectorProfile() {
@@ -48,17 +48,17 @@ public final class ConnectorProfile implements Serializable {
                 ._localDataConfidentiality_(LocalDataConfidentiality.NO_CONFIDENTIALITY)
                 ._serviceIsolationSupport_(ServiceIsolationSupport.NO_SERVICE_ISOLATION)
                 .build();
-        this.connectorURL = null;
-        this.operatorURL = null;
+        this.connectorUrl = null;
+        this.maintainerUrl = null;
         this.connectorEntityNames = null;
     }
 
-    public ConnectorProfile(SecurityProfile profile, URL connectorURL, URL operatorURL,
+    public ConnectorProfile(SecurityProfile profile, URL connectorUrl, URL maintainerUrl,
                             List<PlainLiteral> connectorEntityNames) {
         super();
         this.securityProfile = profile;
-        this.connectorURL = connectorURL;
-        this.operatorURL = operatorURL;
+        this.connectorUrl = connectorUrl;
+        this.maintainerUrl = maintainerUrl;
         this.connectorEntityNames = connectorEntityNames;
     }
 
@@ -66,12 +66,12 @@ public final class ConnectorProfile implements Serializable {
         return securityProfile;
     }
 
-    public URL getConnectorURL() {
-        return connectorURL;
+    public URL getConnectorUrl() {
+        return connectorUrl;
     }
 
-    public URL getOperatorURL() {
-        return operatorURL;
+    public URL getMaintainerUrl() {
+        return maintainerUrl;
     }
 
     public List<PlainLiteral> getConnectorEntityNames() {

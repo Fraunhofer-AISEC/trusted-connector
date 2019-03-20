@@ -35,72 +35,22 @@
 package de.fhg.aisec.ids.api.infomodel;
 
 import de.fraunhofer.iais.eis.Connector;
-import de.fraunhofer.iais.eis.SecurityProfile;
-import de.fraunhofer.iais.eis.util.PlainLiteral;
-import java.net.URL;
-import java.util.List;
 
-/**
- * @author toni
- */
 public interface InfoModel {
 
   /**
-   * retrieve Connector description
-   *
-   * @return RDF Connector description
-   */
-  String getRDF();
-
-  /**
-   * create empty Connector object
-   * @return empty Connector object to be filled
-   */
-  //Connector getEmptyConnector();
-
-  /**
-   * retrieve Connector object based on currently stored preferences
+   * Retrieve Connector object based on stored properties
    *
    * @return currently stored Connector object
    */
   Connector getConnector();
 
   /**
-   * save/update Connector object to preferences
-   * @param connector filled Connector object
-   * @return update success
-   */
-  //boolean setConnector(Connector connector);
-
-  /**
-   * save/update Connector object to preferences
+   * Save/Update Connector object to preferences
    *
-   * @param connUrl Connector id
-   * @param opUrl Operator id
-   * @param entityNames Connector entity names
-   * @param profile Connector security profile
+   * @param profile Basic connector profile from GUI
    * @return update success
    */
-  boolean setConnector(URL connUrl, URL opUrl, List<PlainLiteral> entityNames,
-      SecurityProfile profile);
-
-  /**
-   * save/update Connector object to preferences
-   *
-   * @param connUrl Connector id
-   * @param opUrl Operator id
-   * @param entityNames Connector entity names
-   * @return update success
-   */
-  boolean setConnector(URL connUrl, URL opUrl, List<PlainLiteral> entityNames);
-
-  /**
-   * save/update Connector object to preferences
-   *
-   * @param opUrl Operator id
-   * @param entityNames Connector entity names
-   * @return update success
-   */
-  boolean setConnector(URL opUrl, List<PlainLiteral> entityNames);
+  boolean setConnector(ConnectorProfile profile);
 
 }

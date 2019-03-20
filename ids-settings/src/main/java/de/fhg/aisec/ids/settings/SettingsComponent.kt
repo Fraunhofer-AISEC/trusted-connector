@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.settings
 
+import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
@@ -38,6 +39,15 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
+    override fun getConnectorProfile(): ConnectorProfile {
+        return settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
+    }
+
+    override fun setConnectorProfile(connectorProfile: ConnectorProfile) {
+        settingsStore[CONNECTOR_PROFILE_KEY] = connectorProfile
+        mapDB.commit()
+    }
+
     override fun getConnectionSettings(connection: String): ConnectionSettings {
         return connectionSettings.getOrElse(connection) { ConnectionSettings() }
     }
@@ -53,6 +63,7 @@ class SettingsComponent : Settings {
 
     companion object {
         internal const val CONNECTOR_SETTINGS_KEY = "main_config"
+        internal const val CONNECTOR_PROFILE_KEY = "connector_profile"
         internal val DB_PATH = FileSystems.getDefault().getPath("etc", "settings.mapdb")
         private val LOG = LoggerFactory.getLogger(SettingsComponent::class.java)
         private lateinit var mapDB: DB
