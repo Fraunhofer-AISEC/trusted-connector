@@ -1,7 +1,7 @@
 syntax = "proto2";
 option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "Idscp";
-import "tpmd.proto";
+import "attestation.proto";
 
 message ConnectorMessage {
 	enum Type {

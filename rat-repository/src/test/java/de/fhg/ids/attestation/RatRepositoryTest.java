@@ -19,11 +19,6 @@
  */
 package de.fhg.ids.attestation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -34,6 +29,14 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import org.apache.camel.test.AvailablePortFinder;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,17 +46,8 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import org.apache.camel.test.AvailablePortFinder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.*;
 
 /** Unit test for ratRepositoryTest */
 public class RatRepositoryTest {
@@ -66,16 +60,16 @@ public class RatRepositoryTest {
   private static final Logger LOG = LoggerFactory.getLogger(RatRepositoryTest.class);
   private static final String sURL = "https://127.0.0.1:" + PORT + "/" + PATH;
   private static final int SHA256_BYTES_LEN = 32;
-  private static final String ZERO;
-  private static final String FFFF;
+  private static final ByteString ZERO;
+  private static final ByteString FFFF;
 
   static {
     // Initialize example PCR constants
     byte[] bytes = new byte[SHA256_BYTES_LEN];
     Arrays.fill(bytes, (byte) 0x00);
-    ZERO = Converter.bytesToHex(bytes);
+    ZERO = ByteString.copyFrom(bytes);
     Arrays.fill(bytes, (byte) 0xff);
-    FFFF = Converter.bytesToHex(bytes);
+    FFFF = ByteString.copyFrom(bytes);
   }
 
   @BeforeClass
@@ -126,18 +120,6 @@ public class RatRepositoryTest {
   public void testDatabaseIsRunning() throws SQLException {
     assertFalse(ratServer.getDatabase().getConnection().isClosed());
   }
-
-  Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapter(
-              ByteString.class,
-              (JsonDeserializer<ByteString>)
-                  (json, typeOfT, context) -> {
-                    JsonObject jsonObject = json.getAsJsonObject();
-                    byte[] bytes = context.deserialize(jsonObject.get("bytes"), byte[].class);
-                    return ByteString.copyFrom(bytes);
-                  })
-          .create();
 
   @Test
   public void testDefaultConfiguration() throws SQLException, IOException {

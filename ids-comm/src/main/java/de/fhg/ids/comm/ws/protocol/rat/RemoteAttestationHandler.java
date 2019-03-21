@@ -56,11 +56,22 @@ public class RemoteAttestationHandler {
   public static final String CONTROL_SOCKET = "/var/run/tpm2d/control.sock";
   protected static final Logger LOG =
       LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
-  protected static String lastError = "";
+  static String lastError = "";
   // used to count messages between ids connector and attestation repository
-  protected static long privateID = new java.util.Random().nextLong();
-  protected boolean mySuccess = false;
-  protected boolean yourSuccess = false;
+  private static long privateID = new java.util.Random().nextLong();
+  boolean mySuccess = false;
+  boolean yourSuccess = false;
+  Tpm2dSocket tpm2dSocket;
+
+  RemoteAttestationHandler() {
+      // Tpm2dSocket used to communicate with local TPM2d
+      try {
+          tpm2dSocket = new Tpm2dSocket();
+      } catch (IOException e) {
+          lastError = "Could not create Tpm2dSocket. No TPM present?";
+          LOG.warn(lastError);
+      }
+  }
 
   public RatResult handleAttestationResult(@NonNull AttestationResult result) {
     this.yourSuccess = result.getResult();
@@ -77,8 +88,8 @@ public class RemoteAttestationHandler {
     return new RatResult(RatResult.Status.SUCCESS, null);
   }
 
-  public static boolean checkRepository(
-      @Nullable IdsAttestationType aType, @Nullable AttestationResponse response, @Nullable URI ttpUri) {
+  static boolean checkRepository(
+          @Nullable IdsAttestationType aType, @Nullable AttestationResponse response, @Nullable URI ttpUri) {
     if (aType == null || response == null || ttpUri == null) {
       return false;
     }
@@ -105,10 +116,10 @@ public class RemoteAttestationHandler {
       LOG.debug(msgRepo.toString());
       LOG.debug("/////////////////////////////////////////////////////////////////////////////");
 
+      // TODO : signature check of repo answer ... !
       return (msgRepo.getAttestationRepositoryResponse().getResult()
           && (msgRepo.getId() == privateID + 1)
-          && (msgRepo.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE))
-          && true); // TODO : signature check of repo answer ... !
+          && (msgRepo.getType().equals(ConnectorMessage.Type.RAT_REPO_RESPONSE)));
 
     } catch (Exception ex) {
       lastError = "Exception: " + ex.getMessage();
@@ -119,12 +130,12 @@ public class RemoteAttestationHandler {
 
   /**
    * Calculate SHA-1 hash of (nonce|certificate).
-   * 
+   *
    * @param nonce
    * @param certificate
    * @return
    */
-  public static byte[] calculateHash(byte[] nonce, @Nullable Certificate certificate) {
+  static byte[] calculateHash(byte[] nonce, @Nullable Certificate certificate) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-1");
       digest.update(nonce);
@@ -140,7 +151,7 @@ public class RemoteAttestationHandler {
     }
   }
 
-  public boolean checkSignature(@NonNull AttestationResponse response, byte[] hash) {
+  boolean checkSignature(@NonNull AttestationResponse response, byte[] hash) {
     byte[] byteSignature = response.getSignature().toByteArray();
     byte[] byteCert = response.getAikCertificate().toByteArray();
     byte[] byteQuoted = response.getQuoted().toByteArray();
@@ -215,10 +226,7 @@ public class RemoteAttestationHandler {
     }
   }
 
-  public static MessageLite sendError(@Nullable Thread t, long id, @Nullable String error) {
-    if (t != null && t.isAlive()) {
-      t.interrupt();
-    }
+  static MessageLite sendError(long id, @Nullable String error) {
     if (error == null) {
     	error = "";
     }
@@ -229,7 +237,7 @@ public class RemoteAttestationHandler {
         .build();
   }
 
-  public static ConnectorMessage readRepositoryResponse(@NonNull ConnectorMessage msg, URL adr)
+  private static ConnectorMessage readRepositoryResponse(@NonNull ConnectorMessage msg, URL adr)
       throws IOException, GeneralSecurityException {
     HttpsURLConnection urlc = (HttpsURLConnection) adr.openConnection();
     SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
