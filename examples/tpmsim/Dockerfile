@@ -51,6 +51,8 @@ RUN echo "/usr/lib/swtpm" > /etc/ld.so.conf.d/swtpm.conf && ldconfig
 
 # Working dir for tpm2d
 RUN mkdir -p /data/cml/tpm2d
+# TCP port for tpm2d communication
+EXPOSE 9505
 
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
