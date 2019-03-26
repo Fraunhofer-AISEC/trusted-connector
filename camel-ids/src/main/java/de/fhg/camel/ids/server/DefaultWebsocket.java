@@ -114,7 +114,10 @@ public class DefaultWebsocket {
         .attestationType(type)
         .attestationMask(attestationMask)
         .certificatePair(certificatePair)
-        .rdfDescription(infoModel.getConnectorAsJsonLd())
+        .rdfDescription(
+                infoModel == null
+                        ? "{\"message\":\"No InfomodelManager loaded\"}"
+                        : infoModel.getConnectorAsJsonLd())
         .ttpUrl(ttpUri)
         .build();
     idsFsm = new ServerProtocolMachine(session, configuration);

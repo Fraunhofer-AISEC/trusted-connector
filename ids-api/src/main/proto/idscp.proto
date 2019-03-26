@@ -100,7 +100,6 @@ message PropertyResponse {
 
 message MedadataExchange {
 	required string rdfdescription = 1;
-	required string daps_token = 2;
 	// optional signature over values
 	optional bytes signature = 3;
 	// optional cert

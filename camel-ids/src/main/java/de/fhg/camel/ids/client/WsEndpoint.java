@@ -230,7 +230,10 @@ public class WsEndpoint extends AhcEndpoint {
             .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
-            .rdfDescription(infoModel.getConnectorAsJsonLd())
+            .rdfDescription(
+                infoModel == null
+                    ? "{\"message\":\"No InfomodelManager loaded\"}"
+                    : infoModel.getConnectorAsJsonLd())
             .ttpUrl(ttpUri)
             .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);

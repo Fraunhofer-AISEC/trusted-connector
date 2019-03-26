@@ -60,7 +60,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     assertEquals(RatResult.Status.FAILED, ratResult.getStatus());
 
     // We expect some meta data about the remot endpoint
-    assertEquals("THIS IS SOME META DATA", incomingConnection.getMetaData());
+    assertEquals( "{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
 
     List<IDSCPOutgoingConnection> outgoings = conm.listOutgoingConnections();
     assertEquals(1, outgoings.size());
@@ -71,7 +71,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
 
     // ... and some meta data
     String meta = outgoingConnection.getMetaData();
-    assertEquals("THIS IS SOME META DATA", meta);
+    assertEquals("{\"message\":\"No InfomodelManager loaded\"}",meta);
   }
 
   @Test

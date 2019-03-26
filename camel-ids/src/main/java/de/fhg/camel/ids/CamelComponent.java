@@ -42,7 +42,11 @@ public class CamelComponent {
   }
 
   public static InfoModelManager getInfoModelManager() {
-    return instance.infoModelManager;
+    CamelComponent in = instance;
+    if (in != null) {
+      return in.infoModelManager;
+    }
+    return null;
   }
 
 
