@@ -26,6 +26,10 @@ import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 public class MetadataConsumerHandler extends MetadataHandler {
 
+  public MetadataConsumerHandler (String rdfSelfDescription) {
+    super(rdfSelfDescription);
+  }
+
   public MessageLite request(Event e) {
     this.sessionID = e.getMessage().getId();
     return ConnectorMessage.newBuilder()

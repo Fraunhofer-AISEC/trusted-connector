@@ -65,7 +65,7 @@ public class ClientProtocolMachine extends FSM {
         new RemoteAttestationClientHandler(clientConfiguration, ttp,
             RemoteAttestationHandler.CONTROL_SOCKET);
     ErrorHandler errorHandler = new ErrorHandler();
-    MetadataConsumerHandler metaHandler = new MetadataConsumerHandler();
+    MetadataConsumerHandler metaHandler = new MetadataConsumerHandler(clientConfiguration.getRDFDescription());
 
     // Standard protocol states
     this.addState(ProtocolState.IDSCP_START);

@@ -43,6 +43,7 @@ public class ServerConfiguration implements IdscpConfiguration {
   private CertificatePair certificatePair = new CertificatePair();
   @Nullable
   private KeyStore keyStore = null;
+  @NonNull String rdfDescription = "";
   @Nullable
   private URI ttpUri = null;
   @NonNull
@@ -79,6 +80,13 @@ public class ServerConfiguration implements IdscpConfiguration {
       config.certificatePair = certificatePair;
       return this;
     }
+
+    @NonNull
+    public Builder rdfDescription(@NonNull String rdfDescription) {
+      config.rdfDescription = rdfDescription;
+      return this;
+    }
+
 
     @NonNull
     public Builder ttpUrl(@NonNull URI ttpUri) {
@@ -133,7 +141,9 @@ public class ServerConfiguration implements IdscpConfiguration {
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
-  
+
+  @NonNull public String getRDFDescription() {return rdfDescription; }
+
   @Nullable
   public URI getTrustedThirdPartyURI() {
 	  return ttpUri;

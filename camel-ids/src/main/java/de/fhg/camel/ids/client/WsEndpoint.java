@@ -23,6 +23,7 @@ import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
 import static de.fhg.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
 
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.camel.ids.CamelComponent;
@@ -82,6 +83,7 @@ public class WsEndpoint extends AhcEndpoint {
   private final WsListener listener = new WsListener(consumers, this);
   private WebSocket websocket;
   private CertificatePair certificatePair = new CertificatePair();
+  InfoModelManager infoModel = CamelComponent.getInfoModelManager();
 
   @UriParam(label = "producer")
   private boolean useStreaming;
@@ -228,6 +230,7 @@ public class WsEndpoint extends AhcEndpoint {
             .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
+            .rdfDescription(infoModel.getConnectorAsJsonLd())
             .ttpUrl(ttpUri)
             .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);

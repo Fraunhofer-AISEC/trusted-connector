@@ -39,7 +39,7 @@ public class FSM {
   protected HashSet<ChangeListener> successChangeListeners;
   protected HashSet<ChangeListener> failChangeListeners;
   private String initialState = null;
-  private RatResult ratResult;
+  private RatResult  ratResult;
   private String metaData;
 
   public FSM() {
@@ -189,6 +189,7 @@ public class FSM {
   public void handleRatResult(RatResult attestationResult) {
     this.ratResult = attestationResult;
   }
+
 
   public RatResult getRatResult() {
     return ratResult;

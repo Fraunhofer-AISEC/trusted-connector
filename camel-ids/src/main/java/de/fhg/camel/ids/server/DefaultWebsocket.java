@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.camel.ids.CamelComponent;
 import de.fhg.camel.ids.connectionmanagement.ConnectionManagerService;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.server.ServerConfiguration;
@@ -31,6 +32,8 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.ServerProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
+import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -57,6 +60,8 @@ public class DefaultWebsocket {
   private final String pathSpec;
   private FSM idsFsm;
   private CertificatePair certificatePair;
+  InfoModelManager infoModel = CamelComponent.getInfoModelManager();
+
 
   public DefaultWebsocket(
       NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, CertificatePair certificatePair) {
@@ -109,6 +114,7 @@ public class DefaultWebsocket {
         .attestationType(type)
         .attestationMask(attestationMask)
         .certificatePair(certificatePair)
+        .rdfDescription(infoModel.getConnectorAsJsonLd())
         .ttpUrl(ttpUri)
         .build();
     idsFsm = new ServerProtocolMachine(session, configuration);
