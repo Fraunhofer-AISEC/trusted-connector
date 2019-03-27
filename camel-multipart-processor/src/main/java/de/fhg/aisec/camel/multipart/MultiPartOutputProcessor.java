@@ -19,18 +19,25 @@
  */
 package de.fhg.aisec.camel.multipart;
 
-import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.UUID;
+
+import static de.fhg.aisec.camel.multipart.MultiPartConstants.MULTIPART_HEADER;
+import static de.fhg.aisec.camel.multipart.MultiPartConstants.MULTIPART_PAYLOAD;
+
 /**
- * The MultipartProcessor will read the Exchange's header "ids" (if present) and
+ * The MultiPartOutputProcessor will read the Exchange's header "ids" (if present) and
  * the Exchange's body and emit a stream with a body that is a mime-multipart
  * message with two parts of content-type application/json: a "header" part
  * containing the "ids" header and a "payload" part containing the body.
@@ -98,42 +105,39 @@ Content-Disposition: form-data; name="payload"
  * </code>
  * 
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
- *
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
-public class MultipartProcessor implements Processor {
+public class MultiPartOutputProcessor implements Processor {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
+		String boundary = UUID.randomUUID().toString();
+
 		MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
 		multipartEntityBuilder.setMode(HttpMultipartMode.STRICT);
+		multipartEntityBuilder.setBoundary(boundary);
 		
 		// Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
 		// will be sent as a multipart "header"
-		InfoModelManager infoModel = MultipartComponent.getInfoModelManager();
+		InfoModel infoModel = MultiPartComponent.getInfoModelManager();
 		String rdfHeader = "";
 		if (infoModel != null) {
 			rdfHeader = infoModel.getConnectorAsJsonLd();
 		}
 
-		// If the Exchange header contains an attribute named "ids.connector.selfdescription", use it for 
-		// the first part named "header".
-		String header = exchange.getIn().getHeader("ids.connector.selfdescription", String.class);
-		if (header != null && header != "") {
-			multipartEntityBuilder.addPart("header", new StringBody(header, ContentType.APPLICATION_JSON))
-					.setContentType(ContentType.APPLICATION_JSON);
-		} else {
-			// Otherwise just use the self-description provided by the InfoModelManager
-			multipartEntityBuilder.addPart("header", new StringBody(rdfHeader, ContentType.APPLICATION_JSON));
-		}
+		// Use the self-description provided by the InfoModelManager as "header"
+		multipartEntityBuilder.addPart(MULTIPART_HEADER, new StringBody(rdfHeader, ContentType.APPLICATION_JSON));
 
 		// Get the Exchange body and turn it into the second part named "payload"
-		String payload = exchange.getIn().getBody(String.class);
+		InputStream payload = exchange.getIn().getBody(InputStream.class);
 		if (payload != null) {
-			multipartEntityBuilder.addTextBody("payload", payload, ContentType.APPLICATION_JSON);
+			multipartEntityBuilder.addPart(MULTIPART_PAYLOAD, new InputStreamBody(payload,
+					ContentType.create(exchange.getIn().getHeader("Content-Type").toString().split(";")[0])));
 		}
+
+		exchange.getOut().setHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
 		OutputStream os = new ByteArrayOutputStream();
 		multipartEntityBuilder.build().writeTo(os);
-
-		exchange.getOut().setBody(os);
+		exchange.getOut().setBody(multipartEntityBuilder.build());
 	}
 }
