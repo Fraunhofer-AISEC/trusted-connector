@@ -21,6 +21,7 @@ package de.fhg.camel.ids.server;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
@@ -32,22 +33,17 @@ import de.fhg.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.ids.comm.ws.protocol.ServerProtocolMachine;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.ids.comm.ws.protocol.fsm.FSM;
-import de.fhg.aisec.ids.api.infomodel.InfoModelManager;
+import org.eclipse.jetty.websocket.api.CloseStatus;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import org.eclipse.jetty.websocket.api.CloseStatus;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @WebSocket
 public class DefaultWebsocket {
@@ -60,8 +56,6 @@ public class DefaultWebsocket {
   private final String pathSpec;
   private FSM idsFsm;
   private CertificatePair certificatePair;
-  InfoModelManager infoModel = CamelComponent.getInfoModelManager();
-
 
   public DefaultWebsocket(
       NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, CertificatePair certificatePair) {
@@ -110,6 +104,7 @@ public class DefaultWebsocket {
     } catch (URISyntaxException e) {
     	LOG.error("incorrect TTP URI syntax", e);
     }
+    InfoModel infoModel = CamelComponent.getInfoModelManager();
     ServerConfiguration configuration = new ServerConfiguration.Builder()
         .attestationType(type)
         .attestationMask(attestationMask)
