@@ -9,6 +9,7 @@ dependencies {
 
     // MVN resolution problem workaround for infomodel until publicly released
     implementation group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
+    implementation group: 'de.fraunhofer.iais.eis.ids', name: 'infomodel-serializer', version: libraryVersions.infomodelSerializer
     infomodelBundle group: 'commons-cli', name: 'commons-cli', version: '1.4'
     infomodelBundle group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     infomodelBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson

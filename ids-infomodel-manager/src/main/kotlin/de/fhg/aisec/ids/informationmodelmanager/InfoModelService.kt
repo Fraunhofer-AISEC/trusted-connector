@@ -5,6 +5,7 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fraunhofer.iais.eis.*
+import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
 import de.fraunhofer.iais.eis.util.PlainLiteral
 import de.fraunhofer.iais.eis.util.Util
@@ -88,7 +89,10 @@ class InfoModelService : InfoModel {
         val connectorUrl = settings?.connectorProfile?.connectorUrl
         val entityNames = connectorEntityNames
 
-        LOG.debug("Maintainer URL: {}, Connector URL: {}, Entity Names: {}", maintainerUrl, connectorUrl, entityNames)
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Maintainer URL: {}, Connector URL: {}, Entity Names: {}",
+                    maintainerUrl, connectorUrl, entityNames)
+        }
 
         if (maintainerUrl != null) {
             try {
@@ -135,6 +139,11 @@ class InfoModelService : InfoModel {
             LOG.warn("Couldn't store connector object: Settings not available.")
             false
         }
+    }
+
+    override fun getConnectorAsJsonLd(): String? {
+        val serializer = Serializer()
+        return connector?.let { serializer.serialize(it) }
     }
 
     companion object {

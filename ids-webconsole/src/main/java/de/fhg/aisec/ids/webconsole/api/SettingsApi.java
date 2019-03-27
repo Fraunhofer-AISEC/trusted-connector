@@ -86,15 +86,15 @@ public class SettingsApi {
    * Returns Connector profile based on currently stored preferences or empty Connector profile
    */
   @GET
-  @Path("/connectorJson")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Connector getConnectorJson() {
+  @Path("/selfInformation")
+  @Produces("application/ld+json")
+  public String getSelfInformation() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
       throw new ServiceUnavailableException("InfoModel is not available");
     }
     try {
-      return im.getConnector();
+      return im.getConnectorAsJsonLd();
     } catch (NullPointerException e) {
       LOG.warn("Connector description build failed, building empty description.", e);
       return null;

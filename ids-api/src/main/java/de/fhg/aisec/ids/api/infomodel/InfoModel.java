@@ -53,4 +53,11 @@ public interface InfoModel {
    */
   boolean setConnector(ConnectorProfile profile);
 
+  /**
+   * Get connector self-description as JSON-LD
+   *
+   * @return Connector self-description as JSON-LD
+   */
+  String getConnectorAsJsonLd();
+
 }
