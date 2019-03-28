@@ -40,6 +40,8 @@ public class ClientConfiguration implements IdscpConfiguration {
   @NonNull
   private CertificatePair certificatePair = new CertificatePair();
   @NonNull
+  private String rdfDescription = "";
+  @NonNull
   private String endpoint = "";
   @NonNull
   private List<byte[]> sha256CertificateHashes = Collections.emptyList();
@@ -70,8 +72,15 @@ public class ClientConfiguration implements IdscpConfiguration {
     @NonNull
     public Builder ttpUrl(@NonNull URI ttpUri) {
       config.ttpUri = ttpUri;
-    	return this;
+      return this;
     }
+
+    @NonNull
+    public Builder rdfDescription(@NonNull String rdfDescription) {
+      config.rdfDescription = rdfDescription;
+      return this;
+    }
+
 
     @NonNull
     public Builder endpoint(@NonNull String endpoint) {
@@ -104,6 +113,12 @@ public class ClientConfiguration implements IdscpConfiguration {
   public CertificatePair getCertificatePair() {
     return certificatePair;
   }
+
+  @NonNull
+  public String getRDFDescription() {
+    return rdfDescription;
+  }
+
 
   @Nullable
   public URI getTrustedThirdPartyURI() {

@@ -23,6 +23,7 @@ import static de.fhg.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
 import static de.fhg.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
 
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.camel.ids.CamelComponent;
@@ -223,11 +224,16 @@ public class WsEndpoint extends AhcEndpoint {
     } catch (URISyntaxException e) {
       LOG.error("incorrect TTP URI syntax", e);
     }
+    InfoModel infoModel = CamelComponent.getInfoModelManager();
     ClientConfiguration config =
         new ClientConfiguration.Builder()
             .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
+            .rdfDescription(
+                infoModel == null
+                    ? "{\"message\":\"No InfomodelManager loaded\"}"
+                    : infoModel.getConnectorAsJsonLd())
             .ttpUrl(ttpUri)
             .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);

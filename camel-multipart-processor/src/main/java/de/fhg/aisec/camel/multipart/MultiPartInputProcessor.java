@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-api
+ * ids-route-manager
  * %%
  * Copyright (C) 2018 Fraunhofer AISEC
  * %%
@@ -17,25 +17,25 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.settings;
+package de.fhg.aisec.camel.multipart;
 
-import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
-import java.util.Map;
+import java.io.InputStream;
 
-public interface Settings {
+public class MultiPartInputProcessor implements Processor {
 
-  ConnectorConfig getConnectorConfig();
+	@Override
+	public void process(Exchange exchange) throws Exception {
+		// Parse Multipart message
+		MultiPartStringParser parser = new MultiPartStringParser(exchange.getIn().getBody(InputStream.class));
+		// Parser JSON Header (should be an InfoModel object)
+		exchange.getOut().setHeader("idsMultipartHeader", parser.getHeader());
+		// Copy Content-Type from payload part
+		exchange.getOut().setHeader("Content-Type", parser.getPayloadContentType());
+		// Populate body with extracted payload
+		exchange.getOut().setBody(parser.getPayload());
+	}
 
-  void setConnectorConfig(ConnectorConfig config);
-
-  ConnectorProfile getConnectorProfile();
-
-  void setConnectorProfile(ConnectorProfile profile);
-
-  ConnectionSettings getConnectionSettings(String connection);
-
-  void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
-
-  Map<String, ConnectionSettings> getAllConnectionSettings();
 }

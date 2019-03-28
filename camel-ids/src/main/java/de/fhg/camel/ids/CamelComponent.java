@@ -1,5 +1,6 @@
 package de.fhg.camel.ids;
 
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.Settings;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.annotations.Activate;
@@ -13,6 +14,9 @@ public class CamelComponent {
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private Settings settings = null;
+
+  @Reference(cardinality = ReferenceCardinality.MANDATORY)
+  private InfoModel infoModelManager = null;
 
   private static CamelComponent instance;
 
@@ -36,5 +40,14 @@ public class CamelComponent {
     }
     return null;
   }
+
+  public static InfoModel getInfoModelManager() {
+    CamelComponent in = instance;
+    if (in != null) {
+      return in.infoModelManager;
+    }
+    return null;
+  }
+
 
 }

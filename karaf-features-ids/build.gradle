@@ -33,6 +33,7 @@ dependencies {
         add("$it.configuration", project(path: ":$it.subproject", configuration: it.configuration))
     }
     zmqFeature group: 'org.apache-extras.camel-extra', name: 'camel-zeromq', version: '2.22.0'
+    providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
 }
 
 karaf {

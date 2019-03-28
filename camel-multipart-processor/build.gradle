@@ -11,6 +11,8 @@ dependencies {
 
     providedByBundle group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: libraryVersions.httpcore
 	providedByBundle group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: libraryVersions.httpclient
+    
+    providedByBundle group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j

@@ -25,7 +25,9 @@ import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
 
 public class MetadataProviderHandler extends MetadataHandler {
-
+  public MetadataProviderHandler (String rdfSelfDescription) {
+    super(rdfSelfDescription);
+  }
   public MessageLite response(Event e) {
     this.sessionID = e.getMessage().getId();
 

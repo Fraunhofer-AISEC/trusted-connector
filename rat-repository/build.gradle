@@ -41,11 +41,12 @@ task copyJar(type: Copy) {
     from "build/libs/rat-repository-${version}.jar"
     into "build/libs"
     rename '.*', 'rat-repository-latest.jar'
+    dependsOn jar
 }
-copyJar.dependsOn jar
+jar.finalizedBy copyJar
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
     tag = 'fraunhoferaisec/ttpsim:' + rootProject.getDockerTag()
 }
-dockerize.dependsOn copyJar
+dockerize.dependsOn jar
