@@ -3,9 +3,9 @@ FROM openjdk:8-jdk-slim-stretch
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 
 # Install socat for UNIX socket debugging and ps command for karaf scripts
-RUN apt-get update -qq && apt-get install -qq socat procps
+RUN apt-get update -qq && apt-get install -qq --allow-unauthenticated socat procps
 # Optional: Install oh-my-zsh for a better shell (~ 20 MiB overhead)
-RUN apt-get update -qq && apt-get install -qq wget git zsh fonts-powerline \
+RUN apt-get update -qq && apt-get install -qq --allow-unauthenticated wget git zsh fonts-powerline \
   && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
   # Set nice theme
   && sed -ie 's/^ZSH_THEME=".*"$/ZSH_THEME="agnoster"/' ~/.zshrc \
