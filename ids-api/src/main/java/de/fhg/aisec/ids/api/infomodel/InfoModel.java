@@ -35,6 +35,8 @@
 package de.fhg.aisec.ids.api.infomodel;
 
 import de.fraunhofer.iais.eis.Connector;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface InfoModel {
 
@@ -43,7 +45,7 @@ public interface InfoModel {
    *
    * @return currently stored Connector object
    */
-  Connector getConnector();
+  @Nullable Connector getConnector();
 
   /**
    * Save/Update Connector object to preferences
@@ -51,13 +53,19 @@ public interface InfoModel {
    * @param profile Basic connector profile from GUI
    * @return update success
    */
-  boolean setConnector(ConnectorProfile profile);
+  boolean setConnector(@NonNull ConnectorProfile profile);
 
   /**
    * Get connector self-description as JSON-LD
    *
    * @return Connector self-description as JSON-LD
    */
-  String getConnectorAsJsonLd();
+  @NonNull String getConnectorAsJsonLd();
+
+  /**
+   * Set static connector self-description as JSON-LD,
+   * or remove if "null" is passed
+   */
+  void setConnectorByJsonLd(@Nullable String jsonLd);
 
 }

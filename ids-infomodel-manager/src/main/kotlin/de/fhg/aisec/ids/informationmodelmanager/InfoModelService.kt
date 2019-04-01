@@ -85,6 +85,11 @@ class InfoModelService : InfoModel {
     // returns random connector_url if none is stored in preferences
     // op_url and entityNames can not be null
     override fun getConnector(): Connector? {
+        if (settings == null) {
+            LOG.warn("Couldn't create connector object: Settings not available.")
+            return null
+        }
+
         val maintainerUrl = settings?.connectorProfile?.maintainerUrl
         val connectorUrl = settings?.connectorProfile?.connectorUrl
         val entityNames = connectorEntityNames
@@ -104,11 +109,10 @@ class InfoModelService : InfoModel {
                             ._accessUrl_(connectorUrl.toURI()).build()))
                 }
                 trustedConnectorBuilder._maintainer_(maintainerUrl)
-                val res = trustedConnectorBuilder._titles_(ArrayList(entityNames))
+                return trustedConnectorBuilder._titles_(ArrayList(entityNames))
                         ._securityProfile_(securityProfile)
                         ._catalog_(catalog)
                         ._descriptions_(ArrayList(entityNames)).build()
-                return res
             } catch (ex: ConstraintViolationException) {
                 LOG.error("Caught ConstraintViolationException while building Connector", ex)
                 return null
@@ -141,13 +145,29 @@ class InfoModelService : InfoModel {
         }
     }
 
-    override fun getConnectorAsJsonLd(): String? {
-        val serializer = Serializer()
-        return connector?.let { serializer.serialize(it) }
+    override fun getConnectorAsJsonLd(): String {
+        return settings?.connectorJsonLd
+                ?: connector?.let { serializer.serialize(it) }
+                ?: throw NullPointerException("Connector is not available")
+    }
+
+    override fun setConnectorByJsonLd(jsonLd: String?) {
+        settings?.let { settings ->
+            if (jsonLd != null) {
+                try {
+                    serializer.deserialize(jsonLd, TrustedConnector::class.java)
+                } catch (ex: Exception) {
+                    LOG.error("Exception while parsing connector self-information.", ex)
+                    throw ex
+                }
+            }
+            settings.connectorJsonLd = jsonLd
+        } ?: LOG.warn("Couldn't store connector object: Settings not available.")
     }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(InfoModelService::class.java)
+        private val serializer: Serializer by lazy { Serializer() }
 //        const val INTEGRITY_PROTECTION_AND_VERIFICATION_SUPPORT = "IntegrityProtectionAndVerificationSupport"
 //        const val AUTHENTICATION_SUPPORT = "AuthenticationSupport"
 //        const val SERVICE_ISOLATION_SUPPORT = "ServiceIsolationSupport"

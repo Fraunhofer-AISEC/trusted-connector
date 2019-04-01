@@ -48,6 +48,18 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
+    override fun getConnectorJsonLd(): String? {
+        return settingsStore[CONNECTOR_JSON_LD_KEY] as String?
+    }
+
+    override fun setConnectorJsonLd(jsonLd: String?) {
+        if (jsonLd == null) {
+            settingsStore -= CONNECTOR_JSON_LD_KEY
+        } else {
+            settingsStore[CONNECTOR_JSON_LD_KEY] = jsonLd
+        }
+    }
+
     override fun getConnectionSettings(connection: String): ConnectionSettings {
         return connectionSettings.getOrElse(connection) { ConnectionSettings() }
     }
@@ -64,6 +76,7 @@ class SettingsComponent : Settings {
     companion object {
         internal const val CONNECTOR_SETTINGS_KEY = "main_config"
         internal const val CONNECTOR_PROFILE_KEY = "connector_profile"
+        internal const val CONNECTOR_JSON_LD_KEY = "connector_json_ld"
         internal val DB_PATH = FileSystems.getDefault().getPath("etc", "settings.mapdb")
         private val LOG = LoggerFactory.getLogger(SettingsComponent::class.java)
         private lateinit var mapDB: DB

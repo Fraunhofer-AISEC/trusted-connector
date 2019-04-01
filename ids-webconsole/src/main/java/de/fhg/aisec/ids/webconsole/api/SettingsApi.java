@@ -69,21 +69,21 @@ public class SettingsApi {
     if (im == null) {
       throw new ServiceUnavailableException("InfoModel is not available");
     }
-    try {
-      Connector c = im.getConnector();
+    Connector c = im.getConnector();
+    if (c == null) {
+      return new ConnectorProfile();
+    } else {
       return new ConnectorProfile(
               c.getSecurityProfile(),
               c.getId(),
               c.getMaintainer(),
               c.getDescriptions().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
-    } catch (NullPointerException e) {
-      LOG.warn("Connector description build failed, building empty description.", e);
-      return new ConnectorProfile();
     }
   }
 
   /**
-   * Returns Connector profile based on currently stored preferences or empty Connector profile
+   * Returns connector profile based on currently stored preferences or statically provided JSON-LD model,
+   * or empty connector profile if none of those are available.
    */
   @GET
   @Path("/selfInformation")
@@ -98,6 +98,42 @@ public class SettingsApi {
     } catch (NullPointerException e) {
       LOG.warn("Connector description build failed, building empty description.", e);
       return null;
+    }
+  }
+
+  /**
+   * Set static connector profile based on passed JSON-LD data
+   */
+  @POST
+  @Path("/selfInformation")
+  @Consumes("application/ld+json")
+  public void setSelfInformation(String selfInformation) {
+    InfoModel im = WebConsoleComponent.getInfoModelManager();
+    if (im == null) {
+      throw new ServiceUnavailableException("InfoModel is not available");
+    }
+    try {
+      im.setConnectorByJsonLd(selfInformation);
+    } catch (NullPointerException e) {
+      LOG.warn("Connector description build failed, building empty description.", e);
+    }
+  }
+
+  /**
+   * Remove static connector profile based on JSON-LD data
+   */
+  @DELETE
+  @Path("/selfInformation")
+  @Consumes("application/ld+json")
+  public void removeSelfInformation() {
+    InfoModel im = WebConsoleComponent.getInfoModelManager();
+    if (im == null) {
+      throw new ServiceUnavailableException("InfoModel is not available");
+    }
+    try {
+      im.setConnectorByJsonLd(null);
+    } catch (NullPointerException e) {
+      LOG.warn("Connector description build failed, building empty description.", e);
     }
   }
 

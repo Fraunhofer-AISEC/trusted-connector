@@ -33,6 +33,10 @@ public interface Settings {
 
   void setConnectorProfile(ConnectorProfile profile);
 
+  String getConnectorJsonLd();
+
+  void setConnectorJsonLd(String jsonLd);
+
   ConnectionSettings getConnectionSettings(String connection);
 
   void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
