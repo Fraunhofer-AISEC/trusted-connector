@@ -21,25 +21,22 @@ package de.fhg.ids.comm.ws.protocol.rat;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
-import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d;
-import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
+import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d;
+import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.Tpm2dToRemote;
-import de.fhg.aisec.ids.messages.Idscp.AttestationLeave;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import de.fhg.aisec.ids.messages.Idscp.*;
 import de.fhg.ids.comm.CertificatePair;
 import de.fhg.ids.comm.IdscpConfiguration;
 import de.fhg.ids.comm.ws.protocol.fsm.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Implements the handling of individual protocol steps in the IDS remote attestation protocol. */
 public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
@@ -101,7 +98,7 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
     ByteString quoted = ByteString.EMPTY;
     ByteString signature = ByteString.EMPTY;
     List<Pcr> pcrValues = Collections.emptyList();
-    ByteString aikCertificate = ByteString.EMPTY;
+    ByteString certificate = ByteString.EMPTY;
     if (tpm2dSocket != null) {
       try {
         RemoteToTpm2d.Builder msgBuilder = RemoteToTpm2d.newBuilder()
@@ -120,7 +117,7 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
         quoted = response.getQuoted();
         signature = response.getSignature();
         pcrValues = response.getPcrValuesList();
-        aikCertificate = response.getCertificate();
+        certificate = response.getCertificate();
       } catch (IOException ex) {
         lastError = "IOException during communication with tpm2d: " + ex.getMessage();
         LOG.error(lastError, ex);
@@ -140,7 +137,7 @@ public class RemoteAttestationServerHandler extends RemoteAttestationHandler {
                 .setQuoted(quoted)
                 .setSignature(signature)
                 .addAllPcrValues(pcrValues)
-                .setAikCertificate(aikCertificate)
+                .setCertificate(certificate)
                 .build())
         .build();
   }

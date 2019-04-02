@@ -23,34 +23,35 @@ import com.google.protobuf.MessageLite;
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResponse;
-import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
-import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
+import de.fhg.aisec.ids.messages.Idscp.*;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
-import de.fraunhofer.aisec.tpm2j.tpm2b.TPM2B_PUBLIC;
 import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.cert.Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
-import java.util.List;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
 
 public class RemoteAttestationHandler {
   public static final String CONTROL_SOCKET = "/var/run/tpm2d/control.sock";
@@ -66,7 +67,8 @@ public class RemoteAttestationHandler {
   RemoteAttestationHandler() {
       // Tpm2dSocket used to communicate with local TPM2d
       try {
-          tpm2dSocket = new Tpm2dSocket();
+          String host = System.getenv("TPM_HOST") != null ? System.getenv("TPM_HOST") : "localhost";
+          tpm2dSocket = new Tpm2dSocket(host);
       } catch (IOException e) {
           lastError = "Could not create Tpm2dSocket. No TPM present?";
           LOG.warn(lastError);
@@ -131,9 +133,9 @@ public class RemoteAttestationHandler {
   /**
    * Calculate SHA-1 hash of (nonce|certificate).
    *
-   * @param nonce
-   * @param certificate
-   * @return
+   * @param nonce The plain, initial nonce
+   * @param certificate The certificate to hash-combine with the nonce
+   * @return The new nonce, updated with the given certificate using SHA-1
    */
   static byte[] calculateHash(byte[] nonce, @Nullable Certificate certificate) {
     try {
@@ -153,7 +155,7 @@ public class RemoteAttestationHandler {
 
   boolean checkSignature(@NonNull AttestationResponse response, byte[] hash) {
     byte[] byteSignature = response.getSignature().toByteArray();
-    byte[] byteCert = response.getAikCertificate().toByteArray();
+    byte[] byteCert = response.getCertificate().toByteArray();
     byte[] byteQuoted = response.getQuoted().toByteArray();
     if (LOG.isDebugEnabled()) {
       LOG.debug("signature: {}", ByteArrayUtil.toPrintableHexString(byteSignature));
@@ -161,67 +163,91 @@ public class RemoteAttestationHandler {
       LOG.debug("quoted: {}", ByteArrayUtil.toPrintableHexString(byteQuoted));
     }
 
-    if (byteCert.length == 0 || byteQuoted.length == 0) {
-      LOG.warn("Response did not contain signature!");
+    if (byteSignature.length == 0 || byteCert.length == 0 || byteQuoted.length == 0) {
+      LOG.warn("Some required part (signature, cert or quoted) is empty!");
       return false;
     }
-    try {
-      // construct a new TPM2B_PUBLIC from byteCert bytes
-      TPM2B_PUBLIC tpm2bPublickey = new TPM2B_PUBLIC(byteCert);
-      try {
-        // and convert it into a java DER PublicKey key
-        PublicKey publicKey = new PublicKeyConverter(tpm2bPublickey).getPublicKey();
-        try {
-          // construct a new TPMT_SIGNATURE from byteSignature bytes
-          TPMT_SIGNATURE tpmtSignature = new TPMT_SIGNATURE(byteSignature);
-          // check hash value (extra data) against expected hash
-          TPMS_ATTEST tpmsAttest = new TPMS_ATTEST(byteQuoted);
-          byte[] extraBytes = tpmsAttest.getExtraData().getBuffer();
-          if (!Arrays.equals(extraBytes, hash)) {
-            if (LOG.isWarnEnabled()) {
-              LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!"
-                  + "\nextra data: {}\nhash: {}",
-                  ByteArrayUtil.toPrintableHexString(extraBytes),
-                  ByteArrayUtil.toPrintableHexString(hash));
-            }
-            return false;
-          }
 
-          // check signature depending on used hash algortihm
-          final String sigAlg;
-          switch (tpmtSignature.getSignature().getHashAlg()) {
-            case TPM_ALG_SHA256:
-              sigAlg = "SHA256withRSA";
-              break;
-            case TPM_ALG_SHA1:
-              sigAlg = "SHA1withRSA";
-              break;
-            default:
-              return false;
+    try {
+      CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+
+      // Load trust anchor certificate
+      final X509Certificate rootCertificate;
+      Path rootCertPath = FileSystems.getDefault().getPath("etc", "rootca-cert.pem");
+      try (BufferedReader reader = Files.newBufferedReader(rootCertPath, StandardCharsets.US_ASCII)) {
+        StringBuilder builder = new StringBuilder();
+        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+          if (!line.startsWith("-")) {
+            builder.append(line.trim());
           }
-          Signature sig = Signature.getInstance(sigAlg);
-          sig.initVerify(publicKey);
-          sig.update(byteQuoted);
-          return sig.verify(tpmtSignature.getSignature().getSig());
-        } catch (Exception ex) {
-          LOG.warn("error: could not create a TPMT_SIGNATURE from bytes \""
-              + ByteArrayUtil.toPrintableHexString(byteSignature)
-              + "\":"
-              + ex.getMessage(), ex);
-          return false;
         }
-      } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-        LOG.warn("error: could not convert from TPM2B_PUBLIC (\""
-            + tpm2bPublickey
-            + "\") to a PublicKey :"
-            + ex.getMessage(), ex);
+        byte[] rootCertBytes = Base64.getDecoder().decode(builder.toString());
+        rootCertificate = (X509Certificate) certFactory.generateCertificate(
+                new ByteArrayInputStream(rootCertBytes));
+      } catch (Exception e) {
+        LOG.error("Error parsing root certificate", e);
         return false;
       }
+
+      // Create X509Certificate instance from certBytes
+      final X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(
+              new ByteArrayInputStream(byteCert));
+      // TODO: Reactivate immediately when tpm certificate provisioning issue is solved!!!
+      // Verify the TPM certificate
+//      try {
+//        certificate.verify(rootCertificate.getPublicKey());
+//      } catch (Exception e) {
+//        LOG.error("TPM certificate is invalid", e);
+//        return false;
+//      }
+
+      // Construct a new TPMT_SIGNATURE instance from byteSignature bytes
+      final TPMT_SIGNATURE tpmtSignature;
+      try {
+        tpmtSignature = new TPMT_SIGNATURE(byteSignature);
+      } catch (Exception ex) {
+        LOG.warn("Could not create a TPMT_SIGNATURE from bytes:\n" + ByteArrayUtil.toPrintableHexString(byteSignature),
+                ex);
+        return false;
+      }
+
+      // Construct a new TPMS_ATTEST instance from byteQuoted bytes
+      final TPMS_ATTEST tpmsAttest;
+      try {
+        tpmsAttest = new TPMS_ATTEST(byteQuoted);
+      } catch (Exception ex) {
+        LOG.warn("Could not create a TPMS_ATTEST from bytes:\n" + ByteArrayUtil.toPrintableHexString(byteQuoted), ex);
+        return false;
+      }
+
+      // check hash value (extra data) against expected hash
+      byte[] extraBytes = tpmsAttest.getExtraData().getBuffer();
+      if (!Arrays.equals(extraBytes, hash)) {
+        if (LOG.isWarnEnabled()) {
+          LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!"
+                          + "\nextra data: {}\nhash: {}",
+                  ByteArrayUtil.toPrintableHexString(extraBytes),
+                  ByteArrayUtil.toPrintableHexString(hash));
+        }
+        return false;
+      }
+
+      // TODO: Reactivate immediately when tpm certificate provisioning issue is solved!!!
+      // Check signature of attestation
+//      final String sigAlg;
+//      if (tpmtSignature.getSignature().getHashAlg() == TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256) {
+//        sigAlg = "SHA256withRSA";
+//      } else {
+//        LOG.warn("Only SHA256withRSA TPM signature algorithm is allowed!");
+//        return false;
+//      }
+//      Signature sig = Signature.getInstance(sigAlg);
+//      sig.initVerify(certificate.getPublicKey());
+//      sig.update(byteQuoted);
+//      return sig.verify(tpmtSignature.getSignature().getSig());
+      return true;
     } catch (Exception ex) {
-      LOG.warn("error: could not create a TPM2B_PUBLIC (\""
-          + ByteArrayUtil.toPrintableHexString(byteSignature)
-          + "\") :"
-          + ex.getMessage(), ex);
+      LOG.warn("Error during attestation validation", ex);
       return false;
     }
   }

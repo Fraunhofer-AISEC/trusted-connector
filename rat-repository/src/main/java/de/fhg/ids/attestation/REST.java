@@ -25,21 +25,14 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 
 @Path("/")
 public class REST {
@@ -68,14 +61,14 @@ public class REST {
         if (numPcrValues > 0) {
           switch (type) {
             case BASIC:
-              if (numPcrValues == 11) {
+              if (numPcrValues == 12) {
                 return this.checkMessage(msg);
               } else {
                 return this.sendError(
                     "error: IdsAttestationType is BASIC, "
                         + "but number of PCR values (\""
                         + numPcrValues
-                        + "\") send is not 11",
+                        + "\") send is not 12",
                     msg.getId());
               }
             case ADVANCED:

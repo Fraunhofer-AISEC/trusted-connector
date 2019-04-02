@@ -13,8 +13,8 @@ public class Tpm2dSocket extends Socket {
     private final DataInputStream is;
     private final DataOutputStream os;
 
-    public Tpm2dSocket() throws IOException {
-        super("localhost", 9505);
+    public Tpm2dSocket(String host) throws IOException {
+        super(host, 9505);
         is = new DataInputStream(this.getInputStream());
         os = new DataOutputStream(this.getOutputStream());
     }

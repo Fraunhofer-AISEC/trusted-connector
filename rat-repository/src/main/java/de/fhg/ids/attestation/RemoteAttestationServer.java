@@ -19,16 +19,8 @@
  */
 package de.fhg.ids.attestation;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -37,29 +29,27 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public class RemoteAttestationServer {
   private Server server;
   private Database database;
-  private int PORT = 0;
-  private String host;
-  private String path;
   private URI uri;
-  private Logger LOG = LoggerFactory.getLogger(Database.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Database.class);
 
   public RemoteAttestationServer(String host, String path, int port) {
     this.database = new Database();
-    this.host = host;
-    this.path = path;
-    this.PORT = port;
     try {
-      this.uri = new URI(String.format("https://%s:%d/%s", this.host, this.PORT, this.path));
+      this.uri = new URI(String.format("https://%s:%d/%s", host, port, path));
       LOG.debug("Remote Attestation Repository starting on : " + this.uri.toURL().toString());
       server = new Server();
 
       // HTTP Configuration
       HttpConfiguration http_config = new HttpConfiguration();
       http_config.setSecureScheme("https");
-      http_config.setSecurePort(this.PORT);
+      http_config.setSecurePort(port);
 
       // === jetty-https.xml ===
       // SSL Context Factory
@@ -91,21 +81,19 @@ public class RemoteAttestationServer {
       https_config.addCustomizer(new SecureRequestCustomizer());
 
       // SSL Connector
-      ServerConnector sslConnector =
+      ServerConnector serverConnector =
           new ServerConnector(
               server,
               new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
               new HttpConnectionFactory(https_config));
-      sslConnector.setPort(this.PORT);
-      server.addConnector(sslConnector);
+//      ServerConnector serverConnector = new ServerConnector(server);
+      serverConnector.setPort(port);
+      server.addConnector(serverConnector);
       ServletContextHandler handler = new ServletContextHandler();
       handler.setContextPath("");
       handler.addServlet(new ServletHolder(new ServletContainer(resourceConfig())), "/*");
       server.setHandler(handler);
-    } catch (URISyntaxException e) {
-      LOG.debug("could not format URI !");
-      e.printStackTrace();
-    } catch (MalformedURLException e) {
+    } catch (URISyntaxException | MalformedURLException e) {
       LOG.debug("could not format URI !");
       e.printStackTrace();
     }
@@ -123,7 +111,7 @@ public class RemoteAttestationServer {
     return new ResourceConfig().register(ProtobufProvider.class).register(new REST(this.database));
   }
 
-  public void stop() {
+  void stop() {
     try {
       server.stop();
     } catch (Exception e) {
@@ -131,7 +119,7 @@ public class RemoteAttestationServer {
     }
   }
 
-  public void join() {
+  void join() {
     try {
       server.join();
     } catch (InterruptedException e) {

@@ -2,11 +2,14 @@ version: '2'
 services:
 
   # TPM simulator
-  ids-tpm2dsim-consumer:
-    image: fraunhoferaisec/tpm2dsim:develop
+  ids-tpmsim-consumer:
+    image: fraunhoferaisec/tpmsim:develop
     volumes:
-      - ./tpm2d-consumer/:/data/cml/tpm2d/communication/
-    command: /tpm2d/cml-tpm2d
+      - ./swtpm-consumer/:/swtpm/
+    build:
+      context: '../tpmsim'
+    networks:
+      - consumer-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
@@ -19,11 +22,13 @@ services:
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./tpm2d-consumer/:/var/run/tpm2d/
       - ./system.properties:/root/etc/system.properties
+      - ../tpmsim/swtpm/swtpm-localca-rootca-cert.pem:/root/etc/rootca-cert.pem
       - ./consumer-server-keystore.jks:/root/etc/consumer-server-keystore.jks
       - ./consumer-server-truststore.jks:/root/etc/consumer-server-truststore.jks
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
+    environment:
+      - TPM_HOST=ids-tpmsim-consumer
     ports:
       - "5005:5005"
       - "8181:8181"

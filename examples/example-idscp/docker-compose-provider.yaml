@@ -2,11 +2,14 @@ version: '2'
 services:
 
   # TPM simulator
-  ids-tpm2dsim-provider:
-    image: fraunhoferaisec/tpm2dsim:develop
+  ids-tpmsim-provider:
+    image: fraunhoferaisec/tpmsim:develop
     volumes:
-      - ./tpm2d-provider/:/data/cml/tpm2d/communication/
-    command: /tpm2d/cml-tpm2d
+      - ./swtpm-provider/:/swtpm/
+    build:
+      context: '../tpmsim'
+    networks:
+      - provider-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   provider-core:
@@ -19,11 +22,13 @@ services:
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./tpm2d-provider/:/var/run/tpm2d/
       - ./system.properties:/root/etc/system.properties
+      - ../tpmsim/swtpm/swtpm-localca-rootca-cert.pem:/root/etc/rootca-cert.pem
       - ./provider-client-truststore.jks:/root/etc/provider-client-truststore.jks
       - ./provider-client-keystore.jks:/root/etc/provider-client-keystore.jks
       - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
+    environment:
+      - TPM_HOST=ids-tpmsim-provider
     ports:
       - "5006:5005"
       - "8282:8181"

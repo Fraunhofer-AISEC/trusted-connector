@@ -147,8 +147,8 @@ public class RatRepositoryTest {
   public void testBASICConfiguration() {
     // this tests the BASIC pcr values configuration 0-10
     long id = new java.util.Random().nextLong();
-    values = new Pcr[11];
-    for (int i = 0; i < 11; i++) {
+    values = new Pcr[12];
+    for (int i = 0; i < 12; i++) {
       values[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
     }
     ConnectorMessage msg =

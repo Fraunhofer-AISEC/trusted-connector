@@ -152,7 +152,7 @@ message AttestationResponse {
 	repeated Pcr pcr_values = 5;
 
 	// AIK certificate that includes the public key
-	required bytes aik_certificate = 6;
+	required bytes certificate = 6;
 
 	// Measurement list
 	optional bytes measurement_list = 7;

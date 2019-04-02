@@ -20,10 +20,10 @@
 package de.fhg.ids.attestation;
 
 public class Start {
-  private static RemoteAttestationServer ratServer;
-  private static String version = "1.2.0-SNAPSHOT";
+  private static final String VERSION = "1.2.0-SNAPSHOT";
+  private static final String URL = "rat-verify";
+
   private static String host = "127.0.0.1";
-  private static String url = "rat-verify";
   private static int port = 31337;
 
   public static void main(String[] args) throws Exception {
@@ -38,12 +38,12 @@ public class Start {
         run();
         break;
       default:
-        System.out.println("IDS: Remote Attestation Repository v" + version);
+        System.out.println("IDS: Remote Attestation Repository v" + VERSION);
         System.out.println("-----------------------------------------");
         System.out.println(
-            "usage:\n\tjava -jar rat-repository-" + version + ".jar [-p Port] [-h Host]");
+            "usage:\n\tjava -jar rat-repository-" + VERSION + ".jar [-p Port] [-h Host]");
         System.out.println(
-            "example:\n\tjava -jar rat-repository-" + version + ".jar -p 31337 -h 127.0.0.1");
+            "example:\n\tjava -jar rat-repository-" + VERSION + ".jar -p 31337 -h 127.0.0.1");
         System.out.println();
         break;
     }
@@ -87,7 +87,7 @@ public class Start {
   }
 
   private static void run() {
-    ratServer = new RemoteAttestationServer(host, url, port);
+    RemoteAttestationServer ratServer = new RemoteAttestationServer(host, URL, port);
     try {
       ratServer.start();
       ratServer.join();
