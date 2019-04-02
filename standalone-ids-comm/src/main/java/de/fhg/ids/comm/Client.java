@@ -5,8 +5,6 @@ import de.fhg.ids.comm.client.IdscpClient;
 import org.asynchttpclient.ws.WebSocket;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -43,7 +41,8 @@ public class Client {
             try (ServerSocket listener = new ServerSocket(4441)) {
                 System.out.println("Waiting for data connection on port 4441...");
                 while (true) {
-                    try (Socket socket = listener.accept()) {
+                    try {
+                        Socket socket = listener.accept();
                         new SocketHandler(socket);
                     } catch (IOException e) {
                         System.err.println("Error creating SocketHandler");
@@ -57,33 +56,6 @@ public class Client {
         });
         listenerThread.setDaemon(true);
         listenerThread.start();
-
-        Thread demoThread = new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ie) {
-                // ignored
-            }
-            try (Socket clientSocket = new Socket("localhost", 4441);
-                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream())) {
-                int i = 0;
-                while (true) {
-                    try {
-                        outputStream.writeUTF(i + "\n");
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                        System.err.println("Demo sender error");
-                        e.printStackTrace();
-                        break;
-                    }
-                }
-            } catch (Exception x) {
-                System.err.println("Error creating client socket");
-                x.printStackTrace();
-            }
-        });
-        demoThread.setDaemon(true);
-        demoThread.start();
 
         long backoff = 1000;
 
