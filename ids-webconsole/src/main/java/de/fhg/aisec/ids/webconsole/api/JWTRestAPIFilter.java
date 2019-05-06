@@ -128,14 +128,7 @@ public class JWTRestAPIFilter implements ContainerRequestFilter {
     //endpointsMappingAccessRoles.put("GET-settings/selfInformation", "ROLE_SETTINGS_SELF_INFORMATION_GET");
     endpointsMappingAccessRoles.put("DELETE-settings/selfInformation", "ROLE_SETTINGS_SELF_INFORMATION_DELETE");
 
-    //Code for Key Retrieval DEBUGGING USAGE
-    String filePathPublicKey = "C:\\public_key.der";
-    PublicKey myPublicKey = null;
-    try {
-      myPublicKey = getPublicKey(filePathPublicKey);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+
 
     //Setting the JWT consumer
     jwtConsumerBuilder = new JwtConsumerBuilder()
@@ -143,12 +136,22 @@ public class JWTRestAPIFilter implements ContainerRequestFilter {
             .setRequireExpirationTime() // the JWT must have an expiration time
             .setAllowedClockSkewInSeconds(30) // allow some leeway in validating time based claims to account for clock skew
             .setExpectedIssuer(JWT_ISSUER) // whom the JWT needs to have been issued by
-            .setVerificationKey(myPublicKey) // verify the signature with the public key
             .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the given context
                     new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.WHITELIST, // which is only RS256 here
                             AlgorithmIdentifiers.RSA_USING_SHA256, AlgorithmIdentifiers.RSA_USING_SHA256))
             ; // create the JwtConsumer instance
+    //Code for Key Retrieval DEBUGGING USAGE
+/*    String filePathPublicKey = "C:\\public_key.der";
+    PublicKey myPublicKey = null;
+    try {
+      myPublicKey = getPublicKey(filePathPublicKey);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    jwtConsumerBuilder.setVerificationKey(myPublicKey) // verify the signature with the public key
     jwtConsumer = jwtConsumerBuilder.build();
+*/
+
     //Setting the firstPassJwtConsumer (used to crack open the JWT and read the issuer to get the JWKS from an endpoint)
     // it doesn't check signatures or does any validation.
     JwtConsumer firstPassJwtConsumer = new JwtConsumerBuilder()
@@ -172,7 +175,7 @@ public class JWTRestAPIFilter implements ContainerRequestFilter {
     {
     }
 
-/*  //Alternative JWKS: getting the public key from provided endpoint service
+    //JWKS: getting the public key from provided endpoint service / alternative to static public key setting above
     try {
       JwtContext firstPassJwtContext = firstPassJwtConsumer.process(jwt);
       String issuer = firstPassJwtContext.getJwtClaims().getIssuer();
@@ -180,13 +183,12 @@ public class JWTRestAPIFilter implements ContainerRequestFilter {
       HttpsJwksVerificationKeyResolver httpsJwksKeyResolver = new HttpsJwksVerificationKeyResolver(httpsJkws);
       jwtConsumerBuilder.setVerificationKeyResolver(httpsJwksKeyResolver);
       jwtConsumer = jwtConsumerBuilder.build();
-      //jwtConsumer.
     } catch (InvalidJwtException e) {
       e.printStackTrace();
     } catch (MalformedClaimException e) {
       e.printStackTrace();
     }
-*/
+
     //Getting HTTP Request path
     UriInfo uriInfo = requestContext.getUriInfo();
     String requestVerbAndPath = requestContext.getMethod() + "-" + uriInfo.getPath(); //TODO check if ASCII or string ok
