@@ -72,6 +72,7 @@ dependencies {
     providedByBundle group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: libraryVersions.jackson
     providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
 
+    providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
