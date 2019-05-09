@@ -8,4 +8,4 @@ cache:
   - $HOME/.m2
   - $HOME/.gradle
   sudo: required
-script: ./gradlew --parallel clean build dockerize
+install: ./gradlew --parallel clean build dockerize
