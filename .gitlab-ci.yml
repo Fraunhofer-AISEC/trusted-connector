@@ -1,5 +1,5 @@
 # make sure to use a Debian-based image, because otherwise you will run into issue with protoc because of missing glibc on alpine
-image: node:stretch
+image: node:11-stretch
 
 stages:
 - build
