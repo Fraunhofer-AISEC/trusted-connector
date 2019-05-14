@@ -62,12 +62,12 @@ processResources.dependsOn zipExample
 task dockerize(dependsOn: ['dockerizeClient', 'dockerizeServer'])
 
 task dockerizeClient(type: DockerBuildImage) {
-    inputDir = new File(project.projectDir.getPath() + '/example/example-client')
+    inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-client')
     tag = "fraunhoferaisec/example-client:${rootProject.getDockerTag()}"
 }
 
 task dockerizeServer(type: DockerBuildImage) {
-    inputDir = new File(project.projectDir.getPath() + '/example/example-server')
+    inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-server')
     tag = "fraunhoferaisec/example-server:${rootProject.getDockerTag()}"
 }
 
