@@ -31,8 +31,7 @@ def getCommitRefName() {
 // Copy example and example-localhost to build directory
 task copyExample(type: Copy) {
     from (project.projectDir) {
-        include 'example/**'
-        include 'example-localhost/**'
+        include 'example*/**'
         exclude '**/*.sock'
     }
     into project.buildDir
