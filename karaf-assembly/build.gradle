@@ -28,7 +28,7 @@ rootProject.subprojects.findAll() {
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    tag = 'fraunhoferaisec/iot-connector-core-platform:' + rootProject.getDockerTag()
+    tag = "fraunhoferaisec/trusted-connector-core:${rootProject.getDockerTag()}"
 }
 
 dockerize.dependsOn(assembleKaraf)

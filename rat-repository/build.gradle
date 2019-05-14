@@ -47,6 +47,6 @@ jar.finalizedBy copyJar
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    tag = 'fraunhoferaisec/ttpsim:' + rootProject.getDockerTag()
+    tag = "fraunhoferaisec/ttpsim:${rootProject.getDockerTag()}"
 }
 dockerize.dependsOn jar

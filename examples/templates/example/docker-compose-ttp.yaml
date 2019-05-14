@@ -3,7 +3,7 @@ services:
 
   # TPM trusted third party (RAT repository)
   repository.aisec.fraunhofer.de:
-    image: fraunhoferaisec/ttpsim:develop
+    image: fraunhoferaisec/ttpsim:${dockerTag}
     build:
       context: '../../rat-repository'
     ports:

@@ -10,7 +10,9 @@ services:
 
   # The core platform, mounts docker control socket and route definition into the image
   provider-core:
-    image: fraunhoferaisec/trusted-connector-core:develop
+    image: fraunhoferaisec/trusted-connector-core:${dockerTag}
+    build:
+      context: '../../karaf-assembly'
     tty: true
     stdin_open: true
     hostname: provider-core
@@ -28,8 +30,6 @@ services:
     networks:
       - ids-wide
       - provider-internal
-    extra_hosts:
-      - "consumer-core:172.17.0.1"
 
   # Mosquitto MQTT broker
   mqtt-broker:
@@ -39,7 +39,9 @@ services:
 
   # Sensor data provider
   provider-app:
-    image: fraunhoferaisec/example-client:develop
+    image: fraunhoferaisec/example-client:${dockerTag}
+    build:
+      context: './example-client'
     networks:
       - provider-internal
 
