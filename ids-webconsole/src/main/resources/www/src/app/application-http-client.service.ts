@@ -78,12 +78,12 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
       const val = this.cache.get(key);
       if (val && val[0] > Date.now() - options.cacheTTL * 1e3) {
         return of(val[1]);
-      } else {
-        return this.http.get(environment.apiURL + endPoint, options)
-          .pipe(
-            tap(res => this.cache.set(key, [Date.now(), res]))
-          );
       }
+
+      return this.http.get(environment.apiURL + endPoint, options)
+        .pipe(
+          tap(res => this.cache.set(key, [Date.now(), res]))
+        );
     }
 
     return this.http.get(environment.apiURL + endPoint, options);
