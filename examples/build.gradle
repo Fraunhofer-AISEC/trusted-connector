@@ -19,7 +19,7 @@ def getCommitRefName() {
 
     if (refName == 'develop') {
         return 'develop'
-    } else if (refName == 'master') {
+    } else if (refName == 'master' || refName == 'latest') {
         return 'latest'
     } else if (Pattern.compile('^v[0-9]+\\.[0-9]+\\.[0-9]+$').matcher(refName).matches()) {
         return refName.substring(1)
