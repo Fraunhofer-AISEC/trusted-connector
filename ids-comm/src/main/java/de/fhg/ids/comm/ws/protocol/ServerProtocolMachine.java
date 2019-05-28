@@ -30,13 +30,14 @@ import de.fhg.ids.comm.ws.protocol.fsm.Transition;
 import de.fhg.ids.comm.ws.protocol.metadata.MetadataProviderHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationHandler;
 import de.fhg.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
+import org.eclipse.jetty.websocket.api.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class generates the Finite State Machine (FSM) for the IDS protocol.
@@ -121,8 +122,6 @@ public class ServerProtocolMachine extends FSM {
             ProtocolState.IDSCP_META_REQUEST,
             ProtocolState.IDSCP_END,
             e -> {
-              System.out.println(
-                  "SETTING META: " + e.getMessage().getMetadataExchange().getRdfdescription());
               this.setMetaData(e.getMessage().getMetadataExchange().getRdfdescription());
               return replyProto(metaHandler.response(e));
             }));
@@ -154,7 +153,7 @@ public class ServerProtocolMachine extends FSM {
     this.setInitialState(ProtocolState.IDSCP_START);
   }
 
-  protected Transition makeProviderErrorTransition(ProtocolState state, ErrorHandler errorHandler) {
+  private Transition makeProviderErrorTransition(ProtocolState state, ErrorHandler errorHandler) {
     return new Transition(
         ConnectorMessage.Type.ERROR,
         state,
