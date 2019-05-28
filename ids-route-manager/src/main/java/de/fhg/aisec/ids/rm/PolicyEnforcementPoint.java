@@ -24,25 +24,26 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.processor.DelegateAsyncProcessor;
-import org.apache.camel.processor.LogProcessor;
-import org.apache.camel.processor.SendProcessor;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.apache.camel.model.ProcessorDefinition;
+import org.apache.camel.model.RouteDefinition;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class PolicyEnforcementPoint implements AsyncProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);
-  private Processor target, effectiveTarget;
+  private ProcessorDefinition<?> definition;
+  private Processor target;
   private RouteManagerService rm;
 
-  public PolicyEnforcementPoint(@Nullable Processor target, @Nullable RouteManagerService rm) {
+  PolicyEnforcementPoint(@NonNull ProcessorDefinition<?> definition,
+                         @NonNull Processor target,
+                         @NonNull RouteManagerService rm) {
+    this.definition = definition;
     this.target = target;
-    if (target instanceof DelegateAsyncProcessor) {
-      this.effectiveTarget = ((DelegateAsyncProcessor) target).getProcessor();
-    } else {
-      this.effectiveTarget = target;
-    }
     this.rm = rm;
   }
 
@@ -52,7 +53,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
    * @param exchange The exchange object to check
    * @return Whether target.process() is to be called for this exchange object
    */
-  public boolean processFlowControl(Exchange exchange) {
+  private boolean processFlowControl(Exchange exchange) {
     if (exchange == null) {
       if (LOG.isWarnEnabled()) {
         LOG.warn("Cannot check data flow policy. Exchange object is null.");
@@ -67,36 +68,27 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
       return false;
     }
 
-    // Log statements may pass through immediately
-    if (effectiveTarget instanceof LogProcessor) {
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("Passing through LogProcessor...");
-      }
-      return true;
-    }
-
-    // We expect a SendProcessor to retrieve the endpoint URL from
-    if (!(effectiveTarget instanceof SendProcessor)) {
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("Not a SendProcessor. Ignoring {}", target.getClass().getName());
-      }
-      return true;
-    }
-
     // Strict policy: If no PDP is available, block every checked data flow
-    PDP pdp;
     if (rm == null) {
       LOG.error("RouteManager is not available, aborting...");
       return false;
     }
-    pdp = rm.getPdp();
+    PDP pdp = rm.getPdp();
     if (pdp == null) {
       LOG.error("PDP is not available, aborting...");
       return false;
     }
 
-    String source = exchange.getFromEndpoint().getEndpointUri();
-    String destination = ((SendProcessor) effectiveTarget).getEndpoint().getEndpointUri();
+    String source = (String) exchange.getProperty("lastDestination");
+    if (source == null) {
+      source = ((RouteDefinition) definition.getParent()).getInputs().get(0).toString();
+    }
+    String destination = definition.toString();
+    exchange.setProperty("lastDestination", destination);
+
+    if (LOG.isTraceEnabled()) {
+        LOG.trace("{} -> {}", source, destination);
+    }
 
     /*
      * TODO:
@@ -133,24 +125,20 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
   /**
    * Removes and adds labels to an exchange object.
    *
-   * @param requestTransformations The request transformations to be performed
-   * @param msg Message to process
+   * @param requestTransformations The request transformations (label changes) to be performed
+   * @param exchange Exchange processed
    */
+  @SuppressWarnings("unchecked")
   private void applyLabelTransformation(
-      TransformationDecision requestTransformations, Exchange msg) {
+      TransformationDecision requestTransformations, Exchange exchange) {
+    Set<String> labels = (Set<String>) exchange.getProperties()
+            .computeIfAbsent(PDP.LABELS_KEY, k -> new HashSet<String>());
+
     // Remove labels from exchange
-    requestTransformations
-        .getLabelsToRemove()
-        .stream()
-        .map(l -> PDP.LABEL_PREFIX + l)
-        .forEach(msg::removeProperty);
+    labels.removeAll(requestTransformations.getLabelsToRemove());
 
     // Add labels to exchange
-    requestTransformations
-        .getLabelsToAdd()
-        .stream()
-        .map(l -> PDP.LABEL_PREFIX + l)
-        .forEach(l -> msg.setProperty(l, ""));
+    labels.addAll(requestTransformations.getLabelsToAdd());
   }
 
   @Override

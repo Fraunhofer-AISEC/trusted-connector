@@ -19,20 +19,11 @@
  */
 package de.fhg.aisec.ids.rm;
 
+import de.fhg.aisec.ids.api.ReferenceUnbind;
 import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.router.*;
-import de.fhg.aisec.ids.api.router.graph.GraphData;
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
-import de.fhg.aisec.ids.rm.util.GraphProcessor;
 import de.fhg.aisec.ids.rm.util.PrologPrinter;
-import java.io.*;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import javax.management.*;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
@@ -53,6 +44,16 @@ import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 /**
  * Manages Camel routes.
  *
@@ -62,8 +63,9 @@ import org.slf4j.LoggerFactory;
 public class RouteManagerService implements RouteManager {
   private static final Logger LOG = LoggerFactory.getLogger(RouteManagerService.class);
 
-  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private PDP pdp;
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+  private volatile PDP pdp;
+
   private ComponentContext ctx;
 
   @Activate
@@ -71,8 +73,8 @@ public class RouteManagerService implements RouteManager {
     this.ctx = ctx;
   }
 
-  @Reference(cardinality = ReferenceCardinality.MULTIPLE)
-  public void bindCamelContext(@NonNull CamelContext cCtx) {
+  @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+  public void bindCamelContext(CamelContext cCtx) {
     try {
       cCtx.stop();
     } catch (Exception e) {
@@ -96,11 +98,14 @@ public class RouteManagerService implements RouteManager {
     }
   }
 
-  public void unbindCamelContext(@NonNull CamelContext cCtx) {
-    LOG.info("unbound from CamelContext " + cCtx);
+  @ReferenceUnbind
+  public void unbindCamelContext(CamelContext cCtx) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Unbound from CamelContext " + cCtx);
+    }
   }
 
-  public PDP getPdp() {
+  PDP getPdp() {
     return pdp;
   }
 
@@ -321,17 +326,6 @@ public class RouteManagerService implements RouteManager {
   }
 
   /**
-   * Creates a data representation of the passed RouteDefinition instance for general-purpose graph
-   * applications
-   *
-   * @param rd The route definition to process
-   * @return The GraphData representation of the Camel route
-   */
-  private GraphData routeToGraph(RouteDefinition rd) {
-    return GraphProcessor.processRoute(rd);
-  }
-
-  /**
    * Creates a visualization of a Camel route in DOT (graphviz) format.
    *
    * @param rd The route definition to process
@@ -343,7 +337,7 @@ public class RouteManagerService implements RouteManager {
     try {
       CamelRouteToDot viz = new CamelRouteToDot();
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, "UTF-8"));
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8));
       viz.printSingleRoute(writer, rd);
       writer.flush();
       result = bos.toString("UTF-8");
@@ -491,7 +485,7 @@ public class RouteManagerService implements RouteManager {
     // Check for validity of route representation
     List<RouteDefinition> routes;
     try (ByteArrayInputStream bis =
-        new ByteArrayInputStream(routeRepresentation.getBytes("UTF-8"))) {
+        new ByteArrayInputStream(routeRepresentation.getBytes(StandardCharsets.UTF_8))) {
       // Load route(s) from XML
       RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
       routes = rd.getRoutes();
@@ -547,7 +541,7 @@ public class RouteManagerService implements RouteManager {
     // the route properly
     CamelContext cCtx = new DefaultCamelContext();
     try (ByteArrayInputStream bis =
-        new ByteArrayInputStream(routeRepresentation.getBytes("UTF-8"))) {
+        new ByteArrayInputStream(routeRepresentation.getBytes(StandardCharsets.UTF_8))) {
       // Load route(s) from XML
       RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
       List<RouteDefinition> routes = rd.getRoutes();

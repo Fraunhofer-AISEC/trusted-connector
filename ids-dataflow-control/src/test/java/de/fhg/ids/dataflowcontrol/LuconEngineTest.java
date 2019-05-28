@@ -19,14 +19,15 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import alice.tuprolog.*;
+import com.google.common.collect.Sets;
+import de.fhg.aisec.ids.api.policy.*;
+import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
+import de.fhg.aisec.ids.api.router.RouteManager;
+import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,24 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import alice.tuprolog.InvalidTheoryException;
-import alice.tuprolog.MalformedGoalException;
-import alice.tuprolog.NoMoreSolutionException;
-import alice.tuprolog.NoSolutionException;
-import alice.tuprolog.SolveInfo;
-import de.fhg.aisec.ids.api.policy.DecisionRequest;
-import de.fhg.aisec.ids.api.policy.Obligation;
-import de.fhg.aisec.ids.api.policy.PDP;
-import de.fhg.aisec.ids.api.policy.PolicyDecision;
-import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
-import de.fhg.aisec.ids.api.policy.ServiceNode;
-import de.fhg.aisec.ids.api.policy.TransformationDecision;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -162,7 +149,7 @@ public class LuconEngineTest {
 
 		  
 		  // Route from LUCON paper with path searching logic
-  public static final String VERIFIABLE_ROUTE =
+  private static final String VERIFIABLE_ROUTE =
       "%\n"
           + "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n"
           + "%\n"
@@ -296,7 +283,7 @@ public class LuconEngineTest {
     // Simple message context with nonsense attributes
     Map<String, Object> attributes = new HashMap<>();
     attributes.put("some_message_key", "some_message_value");
-    attributes.put(PDP.LABEL_PREFIX + "1", "private");
+    attributes.put(PDP.LABELS_KEY, Sets.newHashSet("private"));
 
     // Simple source and dest nodes
     ServiceNode source = new ServiceNode("seda:test_source", null, null);
@@ -325,7 +312,7 @@ public class LuconEngineTest {
     // Simple message context with nonsense attributes
     Map<String, Object> attributes = new HashMap<>();
     attributes.put("some_message_key", "some_message_value");
-    attributes.put(PDP.LABEL_PREFIX + "1", "purpose(green)");
+    attributes.put(PDP.LABELS_KEY, Sets.newHashSet("purpose(green)"));
 
     // Simple source and dest nodes
     ServiceNode source = new ServiceNode("seda:test_source", null, null);
@@ -606,7 +593,7 @@ public class LuconEngineTest {
     from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
     to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
     msgCtx = new HashMap<>();
-    msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
+    msgCtx.put(PDP.LABELS_KEY, Sets.newHashSet("public"));
     envCtx = new HashMap<>();
     req = new DecisionRequest(from, to, msgCtx, envCtx);
     dec = pdp.requestDecision(req);
@@ -620,8 +607,7 @@ public class LuconEngineTest {
     from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
     to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
     msgCtx = new HashMap<>();
-    msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
-    msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "filtered");
+    msgCtx.put(PDP.LABELS_KEY, Sets.newHashSet("public", "filtered"));
     envCtx = new HashMap<>();
     req = new DecisionRequest(from, to, msgCtx, envCtx);
     dec = pdp.requestDecision(req);
@@ -635,8 +621,7 @@ public class LuconEngineTest {
     from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
     to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
     msgCtx = new HashMap<>();
-    msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
-    msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "unusedlabel");
+    msgCtx.put(PDP.LABELS_KEY, Sets.newHashSet("public", "unusedlabel"));
     envCtx = new HashMap<>();
     req = new DecisionRequest(from, to, msgCtx, envCtx);
     dec = pdp.requestDecision(req);
@@ -650,9 +635,7 @@ public class LuconEngineTest {
     from = new ServiceNode("IAmMatchedByRuleThreeOnly", null, null);
     to = new ServiceNode("hdfs://IAmMatchedByBothRules", null, null);
     msgCtx = new HashMap<>();
-    msgCtx.put(PDP.LABEL_PREFIX + "somelabel", "public");
-    msgCtx.put(PDP.LABEL_PREFIX + "someotherlabel", "unusedlabel");
-    msgCtx.put(PDP.LABEL_PREFIX + "anotherlabel", "private");
+    msgCtx.put(PDP.LABELS_KEY, Sets.newHashSet("public", "unusedlabel", "private"));
     envCtx = new HashMap<>();
     req = new DecisionRequest(from, to, msgCtx, envCtx);
     dec = pdp.requestDecision(req);

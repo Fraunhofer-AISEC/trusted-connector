@@ -19,9 +19,6 @@
  */
 package de.fhg.ids.dataflowcontrol;
 
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
-import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
-
 import alice.tuprolog.*;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -30,18 +27,20 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
-import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
+import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
 
 /**
  * servicefactory=false is the default and actually not required. But we want to make clear that
@@ -58,7 +57,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
   @NonNull
   private LuconEngine engine = new LuconEngine(System.out);
 
-  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
   @Nullable
   private RouteManager routeManager;
   
@@ -74,42 +73,32 @@ public class PolicyDecisionPoint implements PDP, PAP {
    * (delete_after_days(_1354),_1354<30) 1 hiveMqttBroker drop Alt A
    *
    * @param target The target node of the transformation
-   * @param msgLabels The dynamically assigned message labels
+   * @param properties The exchange properties
    */
+  @SuppressWarnings("unchecked")
   private String createDecisionQuery(
-      @NonNull ServiceNode target, @NonNull Map<String, Object> msgLabels) {
+      @NonNull ServiceNode target, @NonNull Map<String, Object> properties) {
     StringBuilder sb = new StringBuilder();
     sb.append("rule(X), has_target(X, T), ");
     sb.append("has_endpoint(T, EP), ");
     sb.append("regex_match(EP, ").append(escape(target.getEndpoint())).append("), ");
-    msgLabels
-        .keySet()
-        .stream()
-        .filter(
-            k ->
-                k.startsWith(LABEL_PREFIX)
-                    && msgLabels.get(k) != null
-                    && !msgLabels.get(k).toString().equals(""))
-        .forEach(
-            k -> {
-              // QUERY structure must be: has_endpoint(rule, bla), assert(label(x)),
-              // receives_label(rule).
-              sb.append("assert(label(")
-                  .append(msgLabels.get(k).toString())
-                  .append(")), ");
-            });
+    ((Set<String>) properties.computeIfAbsent(PDP.LABELS_KEY, k -> new HashSet<String>()))
+        // QUERY structure must be: has_endpoint(rule, bla), assert(label(x)),
+        // receives_label(rule).
+        .forEach(k -> sb.append("assert(label(").append(k).append(")), "));
     sb.append("receives_label(X), ");
     sb.append("rule_priority(X, P), ");
-    if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-      List<String> capProp = new LinkedList<>();
-      for (String cap : target.getCapabilties()) {
-        capProp.add("has_capability(T, " + escape(cap) + ")");
-      }
-      for (String prop : target.getProperties()) {
-        capProp.add("has_property(T, " + escape(prop) + ")");
-      }
-      sb.append("(").append(capProp.stream().collect(Collectors.joining(", "))).append("), ");
-    }
+//    // Removed due to unclear relevance
+//    if (target.getCapabilties().size() + target.getProperties().size() > 0) {
+//      List<String> capProp = new LinkedList<>();
+//      for (String cap : target.getCapabilties()) {
+//        capProp.add("has_capability(T, " + escape(cap) + ")");
+//      }
+//      for (String prop : target.getProperties()) {
+//        capProp.add("has_property(T, " + escape(prop) + ")");
+//      }
+//      sb.append("(").append(String.join(", ", capProp)).append("), ");
+//    }
     sb.append(
         "(has_decision(X, D); (has_obligation(X, _O), has_alternativedecision(_O, Alt), "
             + "requires_prerequisite(_O, A))).");
@@ -127,23 +116,26 @@ public class PolicyDecisionPoint implements PDP, PAP {
    */
   private String createTransformationQuery(@NonNull ServiceNode target) {
     StringBuilder sb = new StringBuilder();
+    String plEndpoint;
     if (target.getEndpoint() != null) {
-      sb.append("dominant_allow_rules(").append(escape(target.getEndpoint())).append(", _T, _), ");
+      plEndpoint = escape(target.getEndpoint());
+      sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ");
     } else {
       throw new RuntimeException("No endpoint specified!");
     }
-    if (target.getCapabilties().size() + target.getProperties().size() > 0) {
-      List<String> capProp = new LinkedList<>();
-      for (String cap : target.getCapabilties()) {
-        capProp.add("has_capability(_T, " + escape(cap) + ")");
-      }
-      for (String prop : target.getProperties()) {
-        capProp.add("has_property(_T, " + escape(prop) + ")");
-      }
-      sb.append('(').append(capProp.stream().collect(Collectors.joining(", "))).append("),\n");
-    }
+//    // Removed due to unclear relevance
+//    if (target.getCapabilties().size() + target.getProperties().size() > 0) {
+//      List<String> capProp = new LinkedList<>();
+//      for (String cap : target.getCapabilties()) {
+//        capProp.add("has_capability(_T, " + escape(cap) + ")");
+//      }
+//      for (String prop : target.getProperties()) {
+//        capProp.add("has_property(_T, " + escape(prop) + ")");
+//      }
+//      sb.append('(').append(String.join(", ", capProp)).append("),\n");
+//    }
     sb.append("once(setof(S, action_service(")
-        .append(escape(target.getEndpoint()))
+        .append(plEndpoint)
         .append(", S), SC); SC = []),\n")
         .append("collect_creates_labels(SC, ACraw), set_of(ACraw, Adds),\n")
         .append("collect_removes_labels(SC, RCraw), set_of(RCraw, Removes).");
@@ -179,17 +171,16 @@ public class PolicyDecisionPoint implements PDP, PAP {
   }
 
   @Override
-  public TransformationDecision requestTranformations(@Nullable ServiceNode lastServiceNode) {
-    if (lastServiceNode == null) {
-      return new TransformationDecision();
-    }
+  public TransformationDecision requestTranformations(@NonNull ServiceNode lastServiceNode) {
     try {
       return transformationCache.get(
           lastServiceNode,
           () -> {
             // Query prolog for labels to remove or add from message
             String query = this.createTransformationQuery(lastServiceNode);
-            LOG.info("QUERY: " + query);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Query for uncached label transformation: " + query);
+            }
 
             TransformationDecision result = new TransformationDecision();
             try {
@@ -231,26 +222,23 @@ public class PolicyDecisionPoint implements PDP, PAP {
   }
 
   @Override
-  public PolicyDecision requestDecision(@Nullable DecisionRequest req) {
+  public PolicyDecision requestDecision(@NonNull DecisionRequest req) {
     PolicyDecision dec = new PolicyDecision();
     dec.setDecision(Decision.DENY); // Default value
-    if (req == null) {
-      dec.setReason("Null request");
-      return dec;
-    }
+
     LOG.debug(
         "Decision requested " + req.getFrom().getEndpoint() + " -> " + req.getTo().getEndpoint());
 
     try {
       // Query Prolog engine for a policy decision
       long startTime = System.nanoTime();
-      String query = this.createDecisionQuery(req.getTo(), req.getMessageCtx());
+      String query = this.createDecisionQuery(req.getTo(), req.getProperties());
       LOG.info("QUERY: " + query);
       List<SolveInfo> solveInfo = this.engine.query(query, true);
       long time = System.nanoTime() - startTime;
       LOG.info("Policy decision took " + time + " nanos");
 
-      // If there is no matching rule, allow by default
+      // If there is no matching rule, deny by default
       if (solveInfo.isEmpty()) {
         LOG.trace("No policy decision found. Returning " + dec.getDecision().toString());
         dec.setReason("No matching rule");
@@ -325,7 +313,7 @@ public class PolicyDecisionPoint implements PDP, PAP {
       dec.setObligations(obligations);
     } catch (NoMoreSolutionException | MalformedGoalException | NoSolutionException e) {
       LOG.error(e.getMessage(), e);
-      dec.setReason("Error " + e.getMessage());
+      dec.setReason("Error: " + e.getMessage());
       dec.setDecision(Decision.DENY);
     }
     return dec;
@@ -405,10 +393,6 @@ public class PolicyDecisionPoint implements PDP, PAP {
     }
 
     String routePl = rm.getRouteAsProlog(routeId);
-    if (routePl == null) {
-      LOG.warn("Could not obtain Prolog representation of route " + routeId);
-      return null;
-    }
 
     return engine.proofInvalidRoute(routeId, routePl);
   }

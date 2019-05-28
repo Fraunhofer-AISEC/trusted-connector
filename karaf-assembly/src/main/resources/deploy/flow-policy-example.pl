@@ -22,10 +22,11 @@
 regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.		
 %%%%%%%% Rules %%%%%%%%%%%%
 rule(allowall).
+rule_priority(allowall, 0).
 has_target(allowall, service1542799566).
 service(service1542799566).
 has_endpoint(service1542799566,".*").
-receives_label(allowall) :- label(_).
+receives_label(allowall).
 has_decision(allowall, allow).
 
 %%%%% Services %%%%%%%%%%%%

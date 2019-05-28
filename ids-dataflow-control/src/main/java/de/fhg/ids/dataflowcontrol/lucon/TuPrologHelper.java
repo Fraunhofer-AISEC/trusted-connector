@@ -22,19 +22,19 @@ package de.fhg.ids.dataflowcontrol.lucon;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.Struct;
 import alice.tuprolog.Term;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class TuPrologHelper {
 
   /**
    * Set with weak keys, such that unused VMs may be garbage-collected with the referencing thread
    */
-  private static final Set<Prolog> vms =
-      Collections.newSetFromMap(new WeakHashMap<Prolog, Boolean>());
+  private static final Set<Prolog> vms = Collections.newSetFromMap(new WeakHashMap<>());
 
   private static final ThreadLocal<Prolog> threadProlog = ThreadLocal.withInitial(Prolog::new);
 
@@ -71,11 +71,8 @@ public final class TuPrologHelper {
         Spliterators.spliteratorUnknownSize(listIterator, Spliterator.ORDERED), false);
   }
 
-  @Nullable
-  public static String unquote(@Nullable String s) {
-    if (s == null) {
-      return null;
-    }
+  @NonNull
+  static String unquote(@NonNull String s) {
     if (s.length() > 2 && s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\'') {
       return s.substring(1, s.length() - 1);
     } else if (s.length() == 2 && "''".equals(s)) {

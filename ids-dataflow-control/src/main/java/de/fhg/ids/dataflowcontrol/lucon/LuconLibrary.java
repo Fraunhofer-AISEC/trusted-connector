@@ -26,12 +26,13 @@ import alice.tuprolog.Var;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Plugins and default theories for tuProlog engine.
@@ -49,7 +50,7 @@ public class LuconLibrary extends Library {
           .weigher((k, v) -> ((String) k).length())
           .build(
               new CacheLoader<String, Pattern>() {
-                public Pattern load(@SuppressWarnings("NullableProblems") String key) {
+                public Pattern load(String key) {
                   return Pattern.compile(key);
                 }
               });
