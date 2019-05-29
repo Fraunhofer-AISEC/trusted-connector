@@ -40,23 +40,21 @@ public interface RouteManager {
    *
    * @return All installed rules
    */
-  @NonNull
-  public List<RouteObject> getRoutes();
+  @NonNull List<RouteObject> getRoutes();
 
   /**
    * Returns a list of currently installed routes.
    *
    * @return The queried route or null
    */
-  @Nullable
-  public RouteObject getRoute(@NonNull String id);
+  @Nullable RouteObject getRoute(@NonNull String id);
 
   /**
    * Starts a route.
    *
    * @param routeId
    */
-  public void startRoute(@NonNull String routeId) throws RouteException;
+  void startRoute(@NonNull String routeId) throws RouteException;
 
   /**
    * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver
@@ -65,26 +63,23 @@ public interface RouteManager {
    * @param routeId
    * @throws Exception
    */
-  public void stopRoute(@NonNull String routeId) throws RouteException;
+  void stopRoute(@NonNull String routeId) throws RouteException;
 
   /**
    * List all supported components, i.e. supported endpoint protocols.
    *
    * @return
    */
-  @NonNull
-  public List<RouteComponent> listComponents();
+  @NonNull List<RouteComponent> listComponents();
 
   /**
    * List all route endpoints, i.e. all URLs to which routes exist.
    *
    * @return
    */
-  @NonNull
-  public Map<String, Collection<String>> getEndpoints();
+  @NonNull Map<String, Collection<String>> getEndpoints();
 
-  @NonNull
-  public Map<String, String> listEndpoints();
+  @NonNull Map<String, String> listEndpoints();
 
   /**
    * Save a route, replacing it with a new representation within the same context
@@ -95,8 +90,7 @@ public interface RouteManager {
    * @throws RouteException If the route does not exist or some Exception was thrown during route
    *     replacement.
    */
-  @NonNull
-  public RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation) throws RouteException;
+  @NonNull RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation) throws RouteException;
 
   /**
    * Adds a route and starts it.
@@ -110,7 +104,7 @@ public interface RouteManager {
    * @throws RouteException if a route with the same id already exists or if any Exception is thrown
    *     during loading and starting the route.
    */
-  public void addRoute(@NonNull String routeDefinition) throws RouteException;
+  void addRoute(@NonNull String routeDefinition) throws RouteException;
 
   /**
    * Removes a route from one endpoint to another.
@@ -121,7 +115,7 @@ public interface RouteManager {
    *
    * @param routeId
    */
-  public void delRoute(@NonNull String routeId);
+  void delRoute(@NonNull String routeId);
 
   /**
    * Returns the given route in its original representation of the implementing engine.
@@ -133,7 +127,7 @@ public interface RouteManager {
    *
    * @return String representation of the route
    */
-  public String getRouteAsString(@NonNull String routeId);
+  String getRouteAsString(@NonNull String routeId);
 
   /**
    * Returns a List of URIs of the given route's inputs (from definitions)
@@ -141,23 +135,20 @@ public interface RouteManager {
    * @param routeId The identifier of the route
    * @return The from (input) URIs of the route
    */
-  @NonNull
-  public List<String> getRouteInputUris(@NonNull String routeId);
+  @NonNull List<String> getRouteInputUris(@NonNull String routeId);
 
   /**
    * Returns aggregated runtime metrics of all installed routes.
    *
    * @return map<k,v> where k is a string indicating the route id.
    */
-  @NonNull
-  public Map<String, RouteMetrics> getRouteMetrics();
+  @NonNull Map<String, RouteMetrics> getRouteMetrics();
 
   /**
    * Returns the given route configuration in a Prolog representation.
    *
-   * @param routeId
-   * @return
+   * @param routeId ID of route to retrieve prolog representation for
+   * @return Route represented as prolog
    */
-   @NonNull
-   public String getRouteAsProlog(@NonNull String routeId);
+   @NonNull String getRouteAsProlog(@NonNull String routeId);
 }

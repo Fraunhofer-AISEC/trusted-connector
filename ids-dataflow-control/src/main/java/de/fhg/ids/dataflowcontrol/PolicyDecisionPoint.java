@@ -38,6 +38,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape;
 import static de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream;
@@ -332,7 +333,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
       for (SolveInfo i : solveInfo) {
         if (i.isSuccess()) {
           List<Var> vars = i.getBindingVars();
-          vars.forEach(v -> LOG.trace(v.getName() + ":" + v.getTerm() + " bound: " + v.isBound()));
+          LOG.trace(vars.stream().map(v -> String.format("%s: %s (%s)", v.getName(), v.getTerm(),
+                  v.isBound() ? "bound" : "unbound")).collect(Collectors.joining(", ")));
         }
       }
     } catch (NoSolutionException nse) {
@@ -385,7 +387,8 @@ public class PolicyDecisionPoint implements PDP, PAP {
   }
 
   @Override
-  public RouteVerificationProof verifyRoute(String routeId) {
+  @Nullable
+  public RouteVerificationProof verifyRoute(@NonNull String routeId) {
     RouteManager rm = this.routeManager;
     if (rm == null) {
       LOG.warn("No RouteManager. Cannot verify Camel route " + routeId);

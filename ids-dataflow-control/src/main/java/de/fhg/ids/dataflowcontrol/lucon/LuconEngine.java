@@ -125,7 +125,9 @@ public class LuconEngine {
   @NonNull
   public List<SolveInfo> query(@Nullable String query, boolean findAll)
       throws NoMoreSolutionException, MalformedGoalException {
-    LOG.debug("Running Prolog query: " + query);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Running Prolog query: " + query);
+    }
     @NonNull List<SolveInfo> result = query(p, query, findAll);
     if (LOG.isTraceEnabled()) {
       try {
@@ -180,7 +182,7 @@ public class LuconEngine {
    * @return A list of counterexamples which violate the rule or empty, if no route violates the
    *     policy.
    */
-  public RouteVerificationProof proofInvalidRoute(@Nullable String id, @Nullable String routePl) {
+  public RouteVerificationProof proofInvalidRoute(@NonNull String id, @NonNull String routePl) {
     // The proof object we will return
     RouteVerificationProof proof = new RouteVerificationProof(id);
 

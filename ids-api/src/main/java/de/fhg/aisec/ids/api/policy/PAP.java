@@ -20,6 +20,9 @@
 package de.fhg.aisec.ids.api.policy;
 
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -33,7 +36,7 @@ public interface PAP {
   /**
    * Loads a policy into the registered PDPs.
    *
-   * @param is
+   * @param is Input stream to load policy from
    */
   void loadPolicy(InputStream is);
 
@@ -43,11 +46,12 @@ public interface PAP {
    * <p>The representation depends on the implementation and can be XML, JSON or any other
    * serialization.
    *
-   * @return
+   * @return Active policy as prolog
    */
   String getPolicy();
 
   List<String> listRules();
 
-  RouteVerificationProof verifyRoute(String routeId);
+  @Nullable
+  RouteVerificationProof verifyRoute(@NonNull String routeId);
 }
