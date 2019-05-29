@@ -25,16 +25,13 @@ import alice.tuprolog.Term;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class TuPrologHelper {
-
-  /**
-   * Set with weak keys, such that unused VMs may be garbage-collected with the referencing thread
-   */
-  private static final Set<Prolog> vms = Collections.newSetFromMap(new WeakHashMap<>());
 
   private static final ThreadLocal<Prolog> threadProlog = ThreadLocal.withInitial(Prolog::new);
 
@@ -81,4 +78,5 @@ public final class TuPrologHelper {
       return s;
     }
   }
+
 }
