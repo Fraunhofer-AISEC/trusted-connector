@@ -227,14 +227,20 @@ class PolicyDecisionPoint : PDP, PAP {
             // Query Prolog engine for a policy decision
             val startTime = System.nanoTime()
             val query = this.createDecisionQuery(req.to, req.properties)
-            LOG.info("QUERY: $query")
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Decision query: {}", query)
+            }
             val solveInfo = this.engine.query(query, true)
             val time = System.nanoTime() - startTime
-            LOG.info("Policy decision took $time nanos")
+            if (LOG.isInfoEnabled) {
+                LOG.debug("Decision query took {} nanos", time)
+            }
 
             // If there is no matching rule, deny by default
             if (solveInfo.isEmpty()) {
-                LOG.trace("No policy decision found. Returning " + dec.decision.toString())
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("No policy decision found. Returning " + dec.decision.toString())
+                }
                 dec.reason = "No matching rule"
                 return dec
             }

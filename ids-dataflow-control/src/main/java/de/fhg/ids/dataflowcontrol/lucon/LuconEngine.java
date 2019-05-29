@@ -24,16 +24,18 @@ import alice.tuprolog.event.LibraryEvent;
 import alice.tuprolog.event.LibraryListener;
 import de.fhg.aisec.ids.api.router.CounterExample;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.regex.Pattern;
 
 /**
  * LUCON (Logic based Usage Control) policy decision engine.
@@ -48,6 +50,7 @@ public class LuconEngine {
 
   // A Prolog query to compute a path from X to Y in a graph of statements (= a route)
   private static final String QUERY_ROUTE_VERIFICATION = "entrynode(X), stmt(Y), path(X, Y, T).";
+  private static final Pattern WARNING_FILTER = Pattern.compile("^WARNING: The predicate .* is unknown\\.$");
   private Prolog p;
 
   /**
@@ -76,9 +79,16 @@ public class LuconEngine {
         });
     p.addSpyListener(l -> LOG.trace(l.getMsg() + " " + l.getSource()));
     p.addWarningListener(
-        w -> {
-          if (!w.getMsg().contains("The predicate false/0 is unknown")) {
-            LOG.warn(w.getMsg());
+        warningEvent -> {
+          String w = warningEvent.getMsg();
+          if (WARNING_FILTER.matcher(w).matches()) {
+            if (LOG.isTraceEnabled()) {
+              LOG.trace(w);
+            }
+          } else {
+            if (LOG.isWarnEnabled()) {
+              LOG.warn(w);
+            }
           }
         });
     p.addOutputListener(
