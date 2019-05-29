@@ -218,7 +218,6 @@ class PolicyDecisionPoint : PDP, PAP {
 
     override fun requestDecision(req: DecisionRequest): PolicyDecision {
         val dec = PolicyDecision()
-        dec.decision = Decision.DENY // Default value
 
         LOG.debug(
                 "Decision requested " + req.from.endpoint + " -> " + req.to.endpoint)
@@ -233,7 +232,7 @@ class PolicyDecisionPoint : PDP, PAP {
             val solveInfo = this.engine.query(query, true)
             val time = System.nanoTime() - startTime
             if (LOG.isInfoEnabled) {
-                LOG.debug("Decision query took {} nanos", time)
+                LOG.debug("Decision query took {} ms", time / 1e6f)
             }
 
             // If there is no matching rule, deny by default
@@ -290,7 +289,6 @@ class PolicyDecisionPoint : PDP, PAP {
                         val decString = decision.term.toString()
                         if ("drop" == decString) {
                             dec.reason = rule.term.toString()
-                            dec.decision = Decision.DENY
                         } else if ("allow" == decString) {
                             dec.reason = rule.term.toString()
                             dec.decision = Decision.ALLOW
@@ -320,15 +318,12 @@ class PolicyDecisionPoint : PDP, PAP {
         } catch (e: NoMoreSolutionException) {
             LOG.error(e.message, e)
             dec.reason = "Error: " + e.message
-            dec.decision = Decision.DENY
         } catch (e: MalformedGoalException) {
             LOG.error(e.message, e)
             dec.reason = "Error: " + e.message
-            dec.decision = Decision.DENY
         } catch (e: NoSolutionException) {
             LOG.error(e.message, e)
             dec.reason = "Error: " + e.message
-            dec.decision = Decision.DENY
         }
 
         return dec
