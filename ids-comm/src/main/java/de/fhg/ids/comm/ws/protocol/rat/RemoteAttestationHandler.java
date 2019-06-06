@@ -26,6 +26,7 @@ import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.aisec.ids.messages.Idscp.*;
 import de.fraunhofer.aisec.tpm2j.tools.ByteArrayUtil;
+import de.fraunhofer.aisec.tpm2j.tpm.TPM_ALG_ID;
 import de.fraunhofer.aisec.tpm2j.tpms.TPMS_ATTEST;
 import de.fraunhofer.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -46,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -192,14 +194,13 @@ public class RemoteAttestationHandler {
       // Create X509Certificate instance from certBytes
       final X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(
               new ByteArrayInputStream(byteCert));
-      // TODO: Reactivate immediately when tpm certificate provisioning issue is solved!!!
       // Verify the TPM certificate
-//      try {
-//        certificate.verify(rootCertificate.getPublicKey());
-//      } catch (Exception e) {
-//        LOG.error("TPM certificate is invalid", e);
-//        return false;
-//      }
+      try {
+        certificate.verify(rootCertificate.getPublicKey());
+      } catch (Exception e) {
+        LOG.error("TPM certificate is invalid", e);
+        return false;
+      }
 
       // Construct a new TPMT_SIGNATURE instance from byteSignature bytes
       final TPMT_SIGNATURE tpmtSignature;
@@ -232,20 +233,22 @@ public class RemoteAttestationHandler {
         return false;
       }
 
-      // TODO: Reactivate immediately when tpm certificate provisioning issue is solved!!!
       // Check signature of attestation
-//      final String sigAlg;
-//      if (tpmtSignature.getSignature().getHashAlg() == TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256) {
-//        sigAlg = "SHA256withRSA";
-//      } else {
-//        LOG.warn("Only SHA256withRSA TPM signature algorithm is allowed!");
-//        return false;
-//      }
-//      Signature sig = Signature.getInstance(sigAlg);
-//      sig.initVerify(certificate.getPublicKey());
-//      sig.update(byteQuoted);
-//      return sig.verify(tpmtSignature.getSignature().getSig());
-      return true;
+      final String sigAlg;
+      if (tpmtSignature.getSignature().getHashAlg() == TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256) {
+        sigAlg = "SHA256withRSA";
+      } else {
+        LOG.warn("Only SHA256withRSA TPM signature algorithm is allowed!");
+        return false;
+      }
+      Signature sig = Signature.getInstance(sigAlg);
+      sig.initVerify(certificate.getPublicKey());
+      sig.update(byteQuoted);
+      boolean result = sig.verify(tpmtSignature.getSignature().getSig());
+      if (!result && LOG.isWarnEnabled()) {
+        LOG.warn("Attestation signature invalid!");
+      }
+      return result;
     } catch (Exception ex) {
       LOG.warn("Error during attestation validation", ex);
       return false;
