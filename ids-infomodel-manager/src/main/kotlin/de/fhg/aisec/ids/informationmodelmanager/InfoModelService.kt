@@ -24,7 +24,7 @@ import java.util.*
 @Component(name = "ids-infomodel-manager", immediate = true)
 class InfoModelService : InfoModel {
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     private var settings: Settings? = null
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     private var connectionManager: ConnectionManager? = null
