@@ -5,7 +5,8 @@ services:
   ids-tpmsim-consumer:
     image: fraunhoferaisec/tpmsim:develop
     volumes:
-      - ./swtpm-consumer/:/swtpm/
+      - ./tpmsim-consumer/swtpm:/swtpm/
+      - ./tpmsim-consumer/cml:/data/cml
     build:
       context: '../tpmsim'
     networks:
@@ -23,7 +24,7 @@ services:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
       - ./system.properties:/root/etc/system.properties
-      - ../tpmsim/swtpm/swtpm-localca-rootca-cert.pem:/root/etc/rootca-cert.pem
+      - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
       - ./consumer-server-keystore.jks:/root/etc/consumer-server-keystore.jks
       - ./consumer-server-truststore.jks:/root/etc/consumer-server-truststore.jks
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml

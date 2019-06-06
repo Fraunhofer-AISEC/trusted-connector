@@ -4,7 +4,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # Initialize tpm2d data directory if not existing
-if [ -z "$(ls /data)" ]; then
+if [ -d "/data/cml/tpm2d" ]; then
     mkdir -p /data/cml/tpm2d
 fi
 # Initialize TPM if not existing
