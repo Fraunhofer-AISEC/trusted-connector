@@ -46,7 +46,9 @@ import java.util.concurrent.TimeUnit
 @Component(immediate = true, name = "ids-dataflow-control")
 class PolicyDecisionPoint : PDP, PAP {
 
-    private val engine = LuconEngine(System.out)
+    // Convenience val for this thread's LuconEngine instance
+    private val engine: LuconEngine
+        get() = threadEngine.get()
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     @Volatile
@@ -410,5 +412,8 @@ class PolicyDecisionPoint : PDP, PAP {
     companion object {
         private val LOG = LoggerFactory.getLogger(PolicyDecisionPoint::class.java)
         private const val LUCON_FILE_EXTENSION = ".pl"
+
+        // Each thread creates a LuconEngine instance to prevent concurrency issues
+        val threadEngine: ThreadLocal<LuconEngine> = ThreadLocal.withInitial { LuconEngine(System.out) }
     }
 }
