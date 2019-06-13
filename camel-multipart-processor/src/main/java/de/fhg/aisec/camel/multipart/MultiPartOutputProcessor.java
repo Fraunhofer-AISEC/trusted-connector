@@ -28,9 +28,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.UUID;
 
 import static de.fhg.aisec.camel.multipart.MultiPartConstants.MULTIPART_HEADER;
@@ -135,9 +133,11 @@ public class MultiPartOutputProcessor implements Processor {
 					ContentType.create(exchange.getIn().getHeader("Content-Type").toString().split(";")[0])));
 		}
 
-		exchange.getOut().setHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
-		OutputStream os = new ByteArrayOutputStream();
-		multipartEntityBuilder.build().writeTo(os);
-		exchange.getOut().setBody(multipartEntityBuilder.build());
+		// Remove current Content-Type header before setting the new one
+		exchange.getIn().removeHeader("Content-Type");
+		// Set Content-Type for multipart message
+		exchange.getIn().setHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
+		// Using InputStream as source for the message body
+		exchange.getIn().setBody(multipartEntityBuilder.build().getContent());
 	}
 }

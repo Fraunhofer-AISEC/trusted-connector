@@ -31,11 +31,13 @@ public class MultiPartInputProcessor implements Processor {
 		// Parse Multipart message
 		MultiPartStringParser parser = new MultiPartStringParser(exchange.getIn().getBody(InputStream.class));
 		// Parser JSON Header (should be an InfoModel object)
-		exchange.getOut().setHeader("idsMultipartHeader", parser.getHeader());
+		exchange.getIn().setHeader("idsMultipartHeader", parser.getHeader());
+		// Remove current Content-Type header before setting the new one
+		exchange.getIn().removeHeader("Content-Type");
 		// Copy Content-Type from payload part
-		exchange.getOut().setHeader("Content-Type", parser.getPayloadContentType());
+		exchange.getIn().setHeader("Content-Type", parser.getPayloadContentType());
 		// Populate body with extracted payload
-		exchange.getOut().setBody(parser.getPayload());
+		exchange.getIn().setBody(parser.getPayload());
 	}
 
 }
