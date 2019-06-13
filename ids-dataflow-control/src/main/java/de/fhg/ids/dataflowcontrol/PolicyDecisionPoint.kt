@@ -84,18 +84,19 @@ class PolicyDecisionPoint : PDP, PAP {
         sb.append("receives_label(X), ")
         sb.append("rule_priority(X, P), ")
         // Removed due to unclear relevance
-        if (target.capabilties.size + target.properties.size > 0) {
-            val capProp = LinkedList<String>()
-            for (cap in target.capabilties) {
-                capProp.add("has_capability(T, " + escape(cap) + ")")
-            }
-            for (prop in target.properties) {
-                capProp.add("has_property(T, " + escape(prop) + ")")
-            }
-            sb.append("(").append(capProp.joinToString(", ")).append("), ")
-        }
+//        if (target.capabilties.size + target.properties.size > 0) {
+//            val capProp = LinkedList<String>()
+//            for (cap in target.capabilties) {
+//                capProp.add("has_capability(T, " + escape(cap) + ")")
+//            }
+//            for (prop in target.properties) {
+//                capProp.add("has_property(T, " + escape(prop) + ")")
+//            }
+//            sb.append("(").append(capProp.joinToString(", ")).append("), ")
+//        }
         sb.append("(has_decision(X, D); (has_obligation(X, _O), has_alternativedecision(_O, Alt), ")
-        sb.append("requires_prerequisite(_O, A))).")
+        sb.append("requires_prerequisite(_O, A))),")
+        sb.append("retractall(label(_)).")
         return sb.toString()
     }
 
@@ -114,21 +115,21 @@ class PolicyDecisionPoint : PDP, PAP {
         val plEndpoint: String
         if (target.endpoint != null) {
             plEndpoint = escape(target.endpoint)
-            sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ")
+//            sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ")
         } else {
             throw RuntimeException("No endpoint specified!")
         }
         // Removed due to unclear relevance
-        if (target.capabilties.size + target.properties.size > 0) {
-            val capProp = LinkedList<String>()
-            for (cap in target.capabilties) {
-                capProp.add("has_capability(_T, " + escape(cap) + ")")
-            }
-            for (prop in target.properties) {
-                capProp.add("has_property(_T, " + escape(prop) + ")")
-            }
-            sb.append('(').append(capProp.joinToString(", ")).append("),\n")
-        }
+//        if (target.capabilties.size + target.properties.size > 0) {
+//            val capProp = LinkedList<String>()
+//            for (cap in target.capabilties) {
+//                capProp.add("has_capability(_T, " + escape(cap) + ")")
+//            }
+//            for (prop in target.properties) {
+//                capProp.add("has_property(_T, " + escape(prop) + ")")
+//            }
+//            sb.append('(').append(capProp.joinToString(", ")).append("),\n")
+//        }
         sb.append("once(setof(S, action_service(")
                 .append(plEndpoint)
                 .append(", S), SC); SC = []),\n")
@@ -203,6 +204,7 @@ class PolicyDecisionPoint : PDP, PAP {
                             } catch (ignored: NoSolutionException) {}
                         }
                     }
+                    LOG.debug("Transformation: {}", result)
                 } catch (e: Throwable) {
                     LOG.error(e.message, e)
                 }
