@@ -46,7 +46,7 @@ def getDockerTag() {
 }
 
 allprojects {
-    group = 'de.fhg.ids'
+    group = 'de.fhg.aisec.ids'
     version = '1.2.0-SNAPSHOT'
 
     ext.libraryVersions = [

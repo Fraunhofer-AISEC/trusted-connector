@@ -31,7 +31,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes "Main-Class": "de.fhg.ids.comm.Client"
+        attributes "Main-Class": "de.fhg.aisec.ids.comm.app.Client"
     }
 
     from {

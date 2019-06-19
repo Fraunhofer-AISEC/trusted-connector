@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.ids.dataflowcontrol
+package de.fhg.aisec.ids.dataflowcontrol
 
 import alice.tuprolog.*
 import com.google.common.cache.CacheBuilder
@@ -25,13 +25,13 @@ import de.fhg.aisec.ids.api.policy.*
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision
 import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
-import de.fhg.ids.dataflowcontrol.lucon.LuconEngine
-import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.escape
-import de.fhg.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
+import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
+import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.escape
+import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
 import org.osgi.service.component.ComponentContext
 import org.osgi.service.component.annotations.*
 import org.slf4j.LoggerFactory
-import java.io.*
+import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -137,13 +137,11 @@ class PolicyDecisionPoint : PDP, PAP {
     }
 
     @Activate
-    @Throws(IOException::class)
     @Suppress("UNUSED_PARAMETER")
     private fun activate(ignored: ComponentContext) {
         loadPolicies()
     }
 
-    @Throws(FileNotFoundException::class)
     fun loadPolicies() {
         // Try to load existing policies from deploy dir at activation
         val dir = File(System.getProperty("karaf.base") + File.separator + "deploy")
@@ -158,7 +156,7 @@ class PolicyDecisionPoint : PDP, PAP {
             if (f.name.endsWith(LUCON_FILE_EXTENSION)) {
                 if (!loaded) {
                     LOG.info("Loading Lucon policy from " + f.absolutePath)
-                    loadPolicy(FileInputStream(f))
+                    loadPolicy(f.readText())
                     loaded = true
                 } else {
                     LOG.warn("Multiple policy files. Will load only one! " + f.absolutePath)
@@ -367,16 +365,10 @@ class PolicyDecisionPoint : PDP, PAP {
         transformationCache.invalidateAll()
     }
 
-    override fun loadPolicy(`is`: InputStream?) {
-        try {
-            // Load policy into engine, possibly overwriting the existing one.
-            this.engine.loadPolicy(`is`)
-        } catch (e: InvalidTheoryException) {
-            LOG.error("Error in " + e.line + " " + e.pos + ": " + e.clause + ": " + e.message, e)
-        } catch (e: IOException) {
-            LOG.error(e.message, e)
-        }
-
+    override fun loadPolicy(theory: String?) {
+        // Load policy into engine, possibly overwriting the existing one.
+        this.engine.loadPolicy(theory ?: "")
+        LuconEngine.setDefaultPolicy(theory ?: "")
     }
 
     override fun listRules(): List<String> {

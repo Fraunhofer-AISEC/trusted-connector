@@ -19,18 +19,10 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import static org.junit.Assert.assertNotNull;
-import static org.ops4j.pax.exam.CoreOptions.junitBundles;
-import static org.ops4j.pax.exam.CoreOptions.maven;
-import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
-import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDistributionConfiguration;
-import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.keepRuntimeFolder;
-
-import java.io.File;
-import java.net.MalformedURLException;
-
-import javax.inject.Inject;
-
+import de.fhg.aisec.ids.api.acme.AcmeClient;
+import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
 import org.apache.karaf.features.BootFinished;
 import org.apache.karaf.features.FeaturesService;
 import org.junit.Test;
@@ -46,14 +38,19 @@ import org.ops4j.pax.exam.spi.reactors.PerSuite;
 import org.ops4j.pax.exam.util.Filter;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-//import org.apache.karaf.shell.api.console.Session;
-//import org.apache.karaf.shell.api.console.SessionFactory;
 import org.osgi.service.cm.ConfigurationAdmin;
 
-import de.fhg.aisec.ids.api.acme.AcmeClient;
-import de.fhg.aisec.ids.api.conm.ConnectionManager;
-import de.fhg.aisec.ids.api.settings.ConnectorConfig;
-import de.fhg.aisec.ids.api.settings.Settings;
+import javax.inject.Inject;
+import java.io.File;
+import java.net.MalformedURLException;
+
+import static org.junit.Assert.assertNotNull;
+import static org.ops4j.pax.exam.CoreOptions.junitBundles;
+import static org.ops4j.pax.exam.CoreOptions.maven;
+import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.*;
+
+//import org.apache.karaf.shell.api.console.Session;
+//import org.apache.karaf.shell.api.console.SessionFactory;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerSuite.class)
@@ -96,7 +93,7 @@ public class AssemblyTestIT {
 				.type("xml")
 				.version("2.21.2");
 		MavenUrlReference idsRepo = maven()
-				.groupId("de.fhg.ids")
+				.groupId("de.fhg.aisec.ids")
 				.artifactId("karaf-features-ids")
 				.classifier("features")
 				.type("xml")

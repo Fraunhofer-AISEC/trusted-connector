@@ -17,25 +17,28 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.ids.dataflowcontrol;
+package de.fhg.aisec.ids.dataflowcontrol;
 
-import alice.tuprolog.*;
+import alice.tuprolog.InvalidTheoryException;
+import alice.tuprolog.MalformedGoalException;
+import alice.tuprolog.NoSolutionException;
+import alice.tuprolog.SolveInfo;
 import com.google.common.collect.Sets;
 import de.fhg.aisec.ids.api.policy.*;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
-import de.fhg.ids.dataflowcontrol.lucon.LuconEngine;
+import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -187,12 +190,11 @@ public class LuconEngineTest {
    * Loading a valid Prolog theory should not fail.
    *
    * @throws InvalidTheoryException If invalid theory is encountered
-   * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
    */
   @Test
-  public void testLoadingTheoryGood() throws InvalidTheoryException, IOException {
+  public void testLoadingTheoryGood() throws InvalidTheoryException {
     LuconEngine e = new LuconEngine(null);
-    e.loadPolicy(new ByteArrayInputStream(HANOI_THEORY.getBytes()));
+    e.loadPolicy(HANOI_THEORY);
     String json = e.getTheoryAsJSON();
     assertTrue(json.startsWith("{\"theory\":\"move(1,X,Y,"));
     String prolog = e.getTheory();
@@ -201,14 +203,12 @@ public class LuconEngineTest {
 
   /**
    * Loading an invalid Prolog theory is expected to throw an exception.
-   *
-   * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
    */
   @Test
-  public void testLoadingTheoryNotGood() throws IOException {
+  public void testLoadingTheoryNotGood() {
     LuconEngine e = new LuconEngine(System.out);
     try {
-      e.loadPolicy(new ByteArrayInputStream("This is invalid".getBytes()));
+      e.loadPolicy("This is invalid");
     } catch (InvalidTheoryException ex) {
       return; // Expected
     }
@@ -219,14 +219,12 @@ public class LuconEngineTest {
    * Solve a simple Prolog puzzle.
    *
    * @throws InvalidTheoryException If invalid theory is encountered
-   * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
-   * @throws NoMoreSolutionException If no Prolog solutions are found
    */
   @Test
   public void testSimplePrologQuery()
-      throws InvalidTheoryException, IOException, NoMoreSolutionException {
+      throws InvalidTheoryException {
     LuconEngine e = new LuconEngine(System.out);
-    e.loadPolicy(new ByteArrayInputStream(HANOI_THEORY.getBytes()));
+    e.loadPolicy(HANOI_THEORY);
     try {
       List<SolveInfo> solutions = e.query("move(3,left,right,center). ", true);
       assertEquals(1, solutions.size());
@@ -246,13 +244,11 @@ public class LuconEngineTest {
    * Run some simple queries against an actual policy.
    *
    * @throws InvalidTheoryException If invalid theory is encountered
-   * @throws IOException If something goes wrong with the theory loading from ByteArrayInputStream
-   * @throws NoMoreSolutionException If no Prolog solutions are found
    */
   @Test
-  public void testSolve2() throws InvalidTheoryException, IOException, NoMoreSolutionException {
+  public void testSolve2() throws InvalidTheoryException {
     LuconEngine e = new LuconEngine(System.out);
-    e.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+    e.loadPolicy(EXAMPLE_POLICY);
     try {
       List<SolveInfo> solutions =
           e.query("has_endpoint(X,Y),regex_match(Y, \"hdfs://myendpoint\").", true);
@@ -271,14 +267,12 @@ public class LuconEngineTest {
 
   /**
    * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
-   *
-   * @throws IOException If something fails
    */
   @Test
-  public void testPolicyDecision() throws IOException {
+  public void testPolicyDecision() {
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
-    pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+    pdp.loadPolicy(EXAMPLE_POLICY);
 
     // Simple message context with nonsense attributes
     Map<String, Object> attributes = new HashMap<>();
@@ -300,14 +294,12 @@ public class LuconEngineTest {
 
   /**
    * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
-   *
-   * @throws IOException If something fails
    */
   @Test
-  public void testPolicyDecisionWithExtendedLabels() throws IOException {
+  public void testPolicyDecisionWithExtendedLabels() {
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
-    pdp.loadPolicy(new ByteArrayInputStream(EXTENDED_LABELS_POLICY.getBytes()));
+    pdp.loadPolicy(EXTENDED_LABELS_POLICY);
 
     // Simple message context with nonsense attributes
     Map<String, Object> attributes = new HashMap<>();
@@ -327,11 +319,9 @@ public class LuconEngineTest {
 
   /**
    * List all rules of the currently loaded policy.
-   *
-   * @throws IOException If something fails
    */
   @Test
-  public void testListRules() throws IOException {
+  public void testListRules() {
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
 
@@ -341,7 +331,7 @@ public class LuconEngineTest {
     assertTrue(emptyList.isEmpty());
 
     // Load a policy
-    pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+    pdp.loadPolicy(EXAMPLE_POLICY);
 
     // We now expect 3 rules
     List<String> rules = pdp.listRules();
@@ -352,10 +342,10 @@ public class LuconEngineTest {
   }
 
   @Test
-  public void testTransformationsMatch() throws IOException {
+  public void testTransformationsMatch() {
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
-    pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+    pdp.loadPolicy(EXAMPLE_POLICY);
     ServiceNode node = new ServiceNode("paho:tcp://broker.hivemq.com:1883/blablubb", null, null);
     TransformationDecision trans = pdp.requestTranformations(node);
 
@@ -371,10 +361,10 @@ public class LuconEngineTest {
   }
 
   @Test
-  public void testTransformationsNomatch() throws IOException {
+  public void testTransformationsNomatch() {
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
-    pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+    pdp.loadPolicy(EXAMPLE_POLICY);
     ServiceNode node = new ServiceNode("someendpointwhichisnotmatchedbypolicy", null, null);
     TransformationDecision trans = pdp.requestTranformations(node);
 
@@ -409,7 +399,7 @@ public class LuconEngineTest {
     f1.set(pdp, rm);
 
     // Load policy
-    pdp.loadPolicy(new ByteArrayInputStream(EXAMPLE_POLICY.getBytes()));
+    pdp.loadPolicy(EXAMPLE_POLICY);
 
     // Verify VERIFIABLE_ROUTE against EXAMPLE_POLICY
     RouteVerificationProof proof = pdp.verifyRoute("mockId");
@@ -431,14 +421,14 @@ public class LuconEngineTest {
 
   @Test
   @Ignore("Not a regular unit test; for evaluating runtime performance.")
-  public void testPerformanceEvaluationScaleRules() throws Exception {
+  public void testPerformanceEvaluationScaleRules() {
     for (int i = 10; i <= 5000; i += 10) {
       // Load n test rules into PDP
       String theory = generateRules(i);
       PolicyDecisionPoint pdp = new PolicyDecisionPoint();
       pdp.loadPolicies();
       long start = System.nanoTime();
-      pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+      pdp.loadPolicy(theory);
       long stop = System.nanoTime();
       long loadTime = (stop - start);
 
@@ -462,14 +452,14 @@ public class LuconEngineTest {
 
   @Test
   @Ignore("Not a regular unit test; for evaluating runtime performance.")
-  public void testPerformanceEvaluationScaleLabels() throws Exception {
+  public void testPerformanceEvaluationScaleLabels() {
     for (int i = 0; i <= 5000; i += 10) {
       // Load n test rules into PDP
       String theory = generateLabels(i);
       PolicyDecisionPoint pdp = new PolicyDecisionPoint();
       pdp.loadPolicies();
       long start = System.nanoTime();
-      pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+      pdp.loadPolicy(theory);
       long stop = System.nanoTime();
       long loadTime = (stop - start);
 
@@ -493,13 +483,13 @@ public class LuconEngineTest {
 
   @Test
   @Ignore("Not a regular unit test; for evaluating runtime performance.")
-  public void testmemoryEvaluationScaleRules() throws Exception {
+  public void testmemoryEvaluationScaleRules() {
     for (int i = 10; i <= 5000; i += 10) {
       // Load n test rules into PDP
       String theory = generateRules(i);
       PolicyDecisionPoint pdp = new PolicyDecisionPoint();
       pdp.loadPolicies();
-      pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+      pdp.loadPolicy(theory);
 
       // Simple message context with nonsense attributes
       Map<String, Object> attributes = new HashMap<>();
@@ -528,13 +518,13 @@ public class LuconEngineTest {
 
   @Test
   @Ignore("Not a regular unit test; for evaluating runtime performance.")
-  public void testmemoryEvaluationScaleLabels() throws Exception {
+  public void testmemoryEvaluationScaleLabels() {
     for (int i = 10; i <= 5000; i += 10) {
       // Load n test rules into PDP
       String theory = generateLabels(i);
       PolicyDecisionPoint pdp = new PolicyDecisionPoint();
       pdp.loadPolicies();
-      pdp.loadPolicy(new ByteArrayInputStream(theory.getBytes()));
+      pdp.loadPolicy(theory);
 
       // Simple message context with nonsense attributes
       Map<String, Object> attributes = new HashMap<>();
@@ -567,7 +557,7 @@ public class LuconEngineTest {
     // Load test policy w/ two rules
     InputStream policy = this.getClass().getClassLoader().getResourceAsStream("policy-example.pl");
     assertNotNull(policy);
-    pdp.loadPolicy(policy);
+    pdp.loadPolicy(new Scanner(policy, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next());
     assertEquals(2, pdp.listRules().size());
 
     // Test order of specification in rule file

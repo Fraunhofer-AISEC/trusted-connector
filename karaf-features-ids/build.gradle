@@ -97,7 +97,7 @@ karaf {
             //feature 'camel-mqtt'
 
             // start our bundles a lit bit later
-            bundle ('de.fhg.ids') {
+            bundle ('de.fhg.aisec.ids') {
                 attribute 'start-level', '90'
             }
         }

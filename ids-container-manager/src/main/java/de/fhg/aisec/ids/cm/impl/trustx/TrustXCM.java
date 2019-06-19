@@ -20,13 +20,9 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.Decision;
-import de.fhg.aisec.ids.api.cm.Direction;
-import de.fhg.aisec.ids.api.cm.Protocol;
-import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
-import de.fhg.ids.comm.unixsocket.TrustmeUnixSocketThread;
+import de.fhg.aisec.ids.api.cm.*;
+import de.fhg.aisec.ids.comm.unixsocket.TrustmeUnixSocketResponseHandler;
+import de.fhg.aisec.ids.comm.unixsocket.TrustmeUnixSocketThread;
 import de.fraunhofer.aisec.trustme.Container.ContainerState;
 import de.fraunhofer.aisec.trustme.Container.ContainerStatus;
 import de.fraunhofer.aisec.trustme.Control.ContainerStartParams;
@@ -34,6 +30,9 @@ import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon;
 import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon.Command;
 import de.fraunhofer.aisec.trustme.Control.DaemonToController;
 import de.fraunhofer.aisec.trustme.Control.DaemonToController.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,13 +42,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  * ContainerManager implementation for trust-x containers.

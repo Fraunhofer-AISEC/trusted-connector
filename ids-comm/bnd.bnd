@@ -1,15 +1,15 @@
 Bundle-Name: IDS :: IDS Communication Protocol
 Bundle-Description: IDS Communication Protocol
 Export-Package: \
-	de.fhg.ids.comm,\
-	de.fhg.ids.comm.client,\
-	de.fhg.ids.comm.server,\
-	de.fhg.ids.comm.unixsocket,\
-	de.fhg.ids.comm.ws.protocol,\
-	de.fhg.ids.comm.ws.protocol.error,\
-	de.fhg.ids.comm.ws.protocol.fsm,\
-	de.fhg.ids.comm.ws.protocol.metadata,\
-	de.fhg.ids.comm.ws.protocol.rat
+	de.fhg.aisec.ids.comm,\
+	de.fhg.aisec.ids.comm.client,\
+	de.fhg.aisec.ids.comm.server,\
+	de.fhg.aisec.ids.comm.unixsocket,\
+	de.fhg.aisec.ids.comm.ws.protocol,\
+	de.fhg.aisec.ids.comm.ws.protocol.error,\
+	de.fhg.aisec.ids.comm.ws.protocol.fsm,\
+	de.fhg.aisec.ids.comm.ws.protocol.metadata,\
+	de.fhg.aisec.ids.comm.ws.protocol.rat
 
 # Exclude jnr.enxio.channels from normal imports because it must be resolved dynamically due to duplicate exports by jnr.
 Import-Package: \

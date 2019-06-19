@@ -30,7 +30,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes('Main-Class': 'de.fhg.ids.attestation.Start')
+        attributes('Main-Class': 'de.fhg.aisec.ids.attestation.Start')
     }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

@@ -25,14 +25,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -90,13 +90,13 @@ public class PolicyApi {
   public String install(
       @Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
       @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,
-      @Multipart(value = "policy_file") InputStream is) {
+      @Multipart(value = "policy_file") String policy) {
     LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
     	return "No PAP available";
     }
-    pap.loadPolicy(is);
+    pap.loadPolicy(policy);
     return "OK";
   }
 }

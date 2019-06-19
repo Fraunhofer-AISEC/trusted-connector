@@ -6,8 +6,8 @@
  http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
 
     <!-- Define a reference for our REST MIME-Multipart Processor -->
-    <bean id="mpOutProcessor" class="de.fhg.aisec.camel.multipart.MultiPartOutputProcessor" />
-    <bean id="mpInProcessor" class="de.fhg.aisec.camel.multipart.MultiPartInputProcessor" />
+    <bean id="mpOutProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartOutputProcessor" />
+    <bean id="mpInProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartInputProcessor" />
 
     <!-- Routes -->
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">

@@ -23,7 +23,6 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -36,9 +35,9 @@ public interface PAP {
   /**
    * Loads a policy into the registered PDPs.
    *
-   * @param is Input stream to load policy from
+   * @param theory The policy theory to load
    */
-  void loadPolicy(InputStream is);
+  void loadPolicy(@Nullable String theory);
 
   /**
    * Returns the currently active policy in its string representation.
