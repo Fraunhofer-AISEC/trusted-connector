@@ -2,32 +2,48 @@ version: '2'
 services:
 
   # TPM simulator
-  ids-tpm2dsim:
-    image: fraunhoferaisec/tpm2dsim:develop
+  ids-tpmsim:
+    image: fraunhoferaisec/tpmsim:develop
     volumes:
-      - ./tpm2d/:/data/cml/tpm2d/communication/
-    command: /tpm2d/cml-tpm2d
-    container_name: iot-connector-tpm
+      - ../tpmsim/tpmsim_data/swtpm:/swtpm/
+      - ../tpmsim/tpmsim_data/cml:/data/cml
+    build:
+      context: '../tpmsim'
+    networks:
+      - example-internal
 
   # Trusted third party (RAT repository) simulator
-  ids-ttpsim:
+  repository.aisec.fraunhofer.de:
     image: fraunhoferaisec/ttpsim:develop
+    build:
+      context: '../../rat-repository'
     ports:
       - "31337:31337"
-    container_name: iot-connector-ttpsim
+    networks:
+      - example-internal
 
   # The core platform, mounts docker control socket into the image
-  ids-core:
-    image: fraunhoferaisec/iot-connector-core-platform:develop
+  example-core:
+    image: fraunhoferaisec/trusted-connector-core:develop
     tty: true
     stdin_open: true
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./tpm2d/:/var/run/tpm2d/
-    container_name: iot-connector
+      - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
+      - ./example-idscp-localloop.xml:/root/deploy/example-idscp-localloop.xml
+    environment:
+      - TPM_HOST=ids-tpmsim
     ports:
       - "5005:5005"
       - "9292:9292"
       - "8181:8181"
       - "8443:8443"
+    networks:
+      example-internal:
+        aliases:
+          - consumer-core
+
+networks:
+  example-internal:
+    driver: bridge

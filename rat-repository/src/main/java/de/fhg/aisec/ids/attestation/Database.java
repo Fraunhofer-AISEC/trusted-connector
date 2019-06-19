@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.attestation;
 
+import com.google.protobuf.ByteString;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import org.slf4j.Logger;
@@ -37,16 +38,16 @@ public class Database {
   private static final int PCRS_BASIC = 11;
   private static final int PCRS_ADVANCED = 17;
   private static final int PCRS_ALL = 24;
-  private static final String ZERO;
-  private static final String FFFF;
+  private static final ByteString ZERO;
+  private static final ByteString FFFF;
 
   static {
     // Initialize example PCR constants
     byte[] bytes = new byte[SHA256_BYTES_LEN];
     Arrays.fill(bytes, (byte) 0x00);
-    ZERO = Converter.bytesToHex(bytes);
+    ZERO = ByteString.copyFrom(bytes);
     Arrays.fill(bytes, (byte) 0xff);
-    FFFF = Converter.bytesToHex(bytes);
+    FFFF = ByteString.copyFrom(bytes);
   }
 
   private Connection connection;
@@ -146,7 +147,7 @@ public class Database {
       for (Pcr value : values) {
         LOG.debug("INSERT PCR order: {} value {}", value.getNumber(), value.getValue());
         pStatement.setInt(1, value.getNumber());
-        pStatement.setBytes(2, Converter.hexToBytes(value.getValue()));
+        pStatement.setBytes(2, value.getValue().toByteArray());
         pStatement.setLong(3, key);
         pStatement.executeUpdate();
       }
@@ -159,7 +160,7 @@ public class Database {
             + "WHERE PCR.SEQ = ? AND PCR.VALUE = ? ORDER BY CONFIG.ID";
     try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
       pStatement.setInt(1, value.getNumber());
-      pStatement.setBytes(2, Converter.hexToBytes(value.getValue()));
+      pStatement.setBytes(2, value.getValue().toByteArray());
       List<Long> result = new ArrayList<>();
       try (ResultSet rs = pStatement.executeQuery()) {
         while (rs.next()) {
@@ -246,7 +247,7 @@ public class Database {
             values.add(
                 Pcr.newBuilder()
                     .setNumber(rs2.getInt("SEQ"))
-                    .setValue(Converter.bytesToHex(rs2.getBytes("VALUE")))
+                    .setValue(ByteString.copyFrom(rs2.getBytes("VALUE")))
                     .build());
           }
           if (!values.isEmpty()) {

@@ -22,16 +22,13 @@ package de.fhg.aisec.ids.comm.ws.protocol.rat;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 import de.fhg.aisec.ids.comm.CertificatePair;
-import de.fhg.aisec.ids.comm.Converter;
 import de.fhg.aisec.ids.comm.IdscpConfiguration;
-import de.fhg.aisec.ids.comm.unixsocket.UnixSocketResponseHandler;
-import de.fhg.aisec.ids.comm.unixsocket.UnixSocketThread;
 import de.fhg.aisec.ids.comm.ws.protocol.fsm.Event;
-import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm;
-import de.fhg.aisec.ids.messages.AttestationProtos.ControllerToTpm.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.AttestationProtos.TpmToController;
+import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d;
+import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d.Code;
+import de.fhg.aisec.ids.messages.AttestationProtos.Tpm2dToRemote;
 import de.fhg.aisec.ids.messages.Idscp.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -48,9 +45,6 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
   private byte[] myNonce;
   private byte[] yourNonce;
   private IdsAttestationType aType;
-  private UnixSocketResponseHandler handler;
-  private UnixSocketThread tpmClient;
-  private Thread thread;
   private long sessionID = 0; // used to count messages between ids connectors during attestation
   private final URI ttpUri;
   private final int attestationMask;
@@ -66,20 +60,6 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
     this.aType = clientConfiguration.getAttestationType();
     this.attestationMask = clientConfiguration.getAttestationMask();
     this.certificatePair = clientConfiguration.getCertificatePair();
-    // try to start new Thread:
-    // UnixSocketThread will be used to communicate with local TPM2d
-    try {
-      // client will be used to send messages
-      this.tpmClient = new UnixSocketThread(socket);
-      this.thread = new Thread(tpmClient);
-      this.thread.setDaemon(true);
-      this.thread.start();
-      // responseHandler will be used to wait for messages
-      this.handler = new UnixSocketResponseHandler();
-    } catch (IOException e) {
-      lastError = "could not write to/read from " + socket;
-      LOG.warn(lastError);
-    }
   }
 
   public MessageLite enterRatRequest(@NonNull Event e) {
@@ -104,48 +84,39 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
     final byte[] hash = calculateHash(this.yourNonce, certificatePair.getRemoteCertificate());
 
     if (++this.sessionID != e.getMessage().getId()) {
-      return sendError(
-          this.thread, ++this.sessionID, "Invalid session ID " + e.getMessage().getId());
+      return RemoteAttestationHandler.sendError(
+          ++this.sessionID, "Invalid session ID " + e.getMessage().getId());
     }
 
     String halg = "";
     ByteString quoted = ByteString.EMPTY;
     ByteString signature = ByteString.EMPTY;
     List<Pcr> pcrValues = Collections.emptyList();
-    ByteString aikCertificate = ByteString.EMPTY;
-    if (thread != null && thread.isAlive()) {
+    ByteString certificate = ByteString.EMPTY;
+    if (tpm2dSocket != null) {
       try {
-        ControllerToTpm.Builder msgBuilder = ControllerToTpm.newBuilder()
+        RemoteToTpm2d.Builder msgBuilder = RemoteToTpm2d.newBuilder()
             .setAtype(this.aType)
-            .setQualifyingData(Converter.bytesToHex(hash))
-            .setCode(Code.INTERNAL_ATTESTATION_REQ)
+            .setQualifyingData(ByteString.copyFrom(hash))
+            .setCode(Code.ATTESTATION_REQ)
             .setPcrs(this.attestationMask);
         if (this.aType.equals(IdsAttestationType.ADVANCED)) {
           // send msg to local unix socket with bitmask set
           // construct protobuf message to send to local tpm2d via unix socket
           msgBuilder.setPcrs(this.attestationMask);
         }
-        ControllerToTpm msg = msgBuilder.build();
-        LOG.debug(msg.toString());
-        tpmClient.send(msg.toByteArray(), this.handler, true);
-        // and wait for response
-        byte[] toParse = this.handler.waitForResponse();
-        TpmToController response = TpmToController.parseFrom(toParse);
-        halg = response.getHalg();
-        quoted = Converter.hexToByteString(response.getQuoted());
-        signature = Converter.hexToByteString(response.getSignature());
+        Tpm2dToRemote response = tpm2dSocket.requestAttestation(msgBuilder.build());
+        halg = response.getHalg().name();
+        quoted = response.getQuoted();
+        signature = response.getSignature();
         pcrValues = response.getPcrValuesList();
-        aikCertificate = Converter.hexToByteString(response.getCertificateUri());
+        certificate = response.getCertificate();
       } catch (IOException ex) {
-        lastError = "error: IOException when talking to tpm2d :" + ex.getMessage();
-        tpmClient.terminate();
-      } catch (InterruptedException ex) {
-        lastError = "error: InterruptedException when talking to tpm2d :" + ex.getMessage();
-        tpmClient.terminate();
-        Thread.currentThread().interrupt();
+        lastError = "IOException during communication with tpm2d: " + ex.getMessage();
+        LOG.error(lastError, ex);
       }
     } else {
-      LOG.warn("error: RAT client thread is not alive. No TPM present?");
+      LOG.warn("Tpm2dSocket is not available. No TPM present?");
     }
     // now return values from answer to provider
     return ConnectorMessage.newBuilder()
@@ -158,7 +129,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
                 .setQuoted(quoted)
                 .setSignature(signature)
                 .addAllPcrValues(pcrValues)
-                .setAikCertificate(aikCertificate)
+                .setCertificate(certificate)
                 .build())
         .build();
   }
@@ -177,8 +148,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
               + (this.sessionID + 1)
               + ")";
       LOG.debug(lastError);
-      return sendError(
-          this.thread, ++this.sessionID, lastError);
+      return RemoteAttestationHandler.sendError(++this.sessionID, RemoteAttestationHandler.lastError);
     }
 
     if (this.checkSignature(response, hash)
@@ -199,10 +169,6 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
   }
 
   public MessageLite leaveRatRequest(@NonNull Event e) {
-    if (this.thread != null) {
-      this.thread.interrupt();
-    }
-
     // Abort on wrong session ID
     if (++this.sessionID != e.getMessage().getId()) {
       lastError =
@@ -212,8 +178,7 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
               + (this.sessionID + 1)
               + ")";
       LOG.debug(lastError);
-      return sendError(
-          this.thread, ++this.sessionID, lastError);
+      return RemoteAttestationHandler.sendError(++this.sessionID, RemoteAttestationHandler.lastError);
     }
 
     return ConnectorMessage.newBuilder()

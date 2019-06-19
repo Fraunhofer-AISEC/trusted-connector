@@ -60,16 +60,16 @@ public class RatRepositoryTest {
   private static final Logger LOG = LoggerFactory.getLogger(RatRepositoryTest.class);
   private static final String sURL = "https://127.0.0.1:" + PORT + "/" + PATH;
   private static final int SHA256_BYTES_LEN = 32;
-  private static final String ZERO;
-  private static final String FFFF;
+  private static final ByteString ZERO;
+  private static final ByteString FFFF;
 
   static {
     // Initialize example PCR constants
     byte[] bytes = new byte[SHA256_BYTES_LEN];
     Arrays.fill(bytes, (byte) 0x00);
-    ZERO = Converter.bytesToHex(bytes);
+    ZERO = ByteString.copyFrom(bytes);
     Arrays.fill(bytes, (byte) 0xff);
-    FFFF = Converter.bytesToHex(bytes);
+    FFFF = ByteString.copyFrom(bytes);
   }
 
   @BeforeClass
@@ -121,18 +121,6 @@ public class RatRepositoryTest {
     assertFalse(ratServer.getDatabase().getConnection().isClosed());
   }
 
-  Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapter(
-              ByteString.class,
-              (JsonDeserializer<ByteString>)
-                  (json, typeOfT, context) -> {
-                    JsonObject jsonObject = json.getAsJsonObject();
-                    byte[] bytes = context.deserialize(jsonObject.get("bytes"), byte[].class);
-                    return ByteString.copyFrom(bytes);
-                  })
-          .create();
-
   @Test
   public void testDefaultConfiguration() throws SQLException, IOException {
     Gson gson =
@@ -159,8 +147,8 @@ public class RatRepositoryTest {
   public void testBASICConfiguration() {
     // this tests the BASIC pcr values configuration 0-10
     long id = new java.util.Random().nextLong();
-    values = new Pcr[11];
-    for (int i = 0; i < 11; i++) {
+    values = new Pcr[12];
+    for (int i = 0; i < 12; i++) {
       values[i] = Pcr.newBuilder().setNumber(i).setValue(ZERO).build();
     }
     ConnectorMessage msg =

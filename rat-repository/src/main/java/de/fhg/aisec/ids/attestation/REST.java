@@ -61,14 +61,14 @@ public class REST {
         if (numPcrValues > 0) {
           switch (type) {
             case BASIC:
-              if (numPcrValues == 11) {
+              if (numPcrValues == 12) {
                 return this.checkMessage(msg);
               } else {
                 return this.sendError(
                     "error: IdsAttestationType is BASIC, "
                         + "but number of PCR values (\""
                         + numPcrValues
-                        + "\") send is not 11",
+                        + "\") send is not 12",
                     msg.getId());
               }
             case ADVANCED:

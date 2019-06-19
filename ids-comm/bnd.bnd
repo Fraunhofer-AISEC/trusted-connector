@@ -10,8 +10,6 @@ Export-Package: \
 	de.fhg.aisec.ids.comm.ws.protocol.fsm,\
 	de.fhg.aisec.ids.comm.ws.protocol.metadata,\
 	de.fhg.aisec.ids.comm.ws.protocol.rat
-
-# Exclude jnr.enxio.channels from normal imports because it must be resolved dynamically due to duplicate exports by jnr.
 Import-Package: \
   !org.checkerframework.checker*,\
 	*

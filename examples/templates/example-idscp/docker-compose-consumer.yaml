@@ -2,11 +2,15 @@ version: '2'
 services:
 
   # TPM simulator
-  ids-tpm2dsim-consumer:
-    image: fraunhoferaisec/tpm2dsim:develop
+  ids-tpmsim-consumer:
+    image: fraunhoferaisec/tpmsim:${dockerTag}
     volumes:
-      - ./tpm2d-consumer/:/data/cml/tpm2d/communication/
-    command: /tpm2d/cml-tpm2d
+      - ./tpmsim-consumer/swtpm:/swtpm
+      - ./tpmsim-consumer/data:/data
+    build:
+      context: '../tpmsim'
+    networks:
+      - consumer-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
