@@ -5,8 +5,8 @@ services:
   ids-tpmsim-consumer:
     image: fraunhoferaisec/tpmsim:develop
     volumes:
-      - ./tpmsim-consumer/swtpm:/swtpm/
-      - ./tpmsim-consumer/cml:/data/cml
+      - ./tpmsim-consumer/swtpm:/swtpm
+      - ./tpmsim-consumer/data:/data
     build:
       context: '../tpmsim'
     networks:

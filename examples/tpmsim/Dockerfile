@@ -31,11 +31,11 @@ RUN git clone https://git.code.sf.net/p/ibmtpm20tss/tss ibmtpm20tss-tss && cd ib
   mkdir -p ${BUILD_DIR}/local/lib && cp libibmtss*.so ${BUILD_DIR}/local/lib
 # install protobuf-c-text
 RUN git clone https://github.com/trustm3/external_protobuf-c-text.git && cd external_protobuf-c-text && \
-  git checkout trustme-7.1.2_r33-github && autoreconf -f -i && ./configure --prefix=${BUILD_DIR} && make -j4 && \
+  git checkout master && autoreconf -f -i && \
+  CFLAGS="-pedantic -Wall -Wextra -Werror -O2 -DHAVE_PROTOBUF_C_MESSAGE_CHECK" ./configure --prefix=${BUILD_DIR} && \
+  make -j4 && \
   # Install protobuf-c-text to BUILD_DIR and the real user directory (for tpm2d build)
-  make install && make prefix=/usr install && \
-  # Copy headers to alternative location
-  cd /usr/include && mkdir protobuf-c-text && cp protobuf-c/protobuf-c-text.h protobuf-c-text/
+  make install && make prefix=/usr install
 # make tpm2d & scd
 RUN git clone https://github.com/trustm3/device_fraunhofer_common_cml && cd device_fraunhofer_common_cml/tpm2d && \
   ln -s /ibmtss1331/utils/ibmtss && ln -s /protobuf-c-text/protobuf-c-text && mkdir ${BUILD_DIR}/bin && \

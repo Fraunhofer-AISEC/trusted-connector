@@ -5,8 +5,8 @@ services:
   ids-tpmsim-provider:
     image: fraunhoferaisec/tpmsim:develop
     volumes:
-      - ./tpmsim-provider/swtpm:/swtpm/
-      - ./tpmsim-provider/cml:/data/cml
+      - ./tpmsim-provider/swtpm:/swtpm
+      - ./tpmsim-provider/data:/data
     build:
       context: '../tpmsim'
     networks:

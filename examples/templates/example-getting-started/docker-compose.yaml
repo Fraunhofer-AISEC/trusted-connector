@@ -2,11 +2,15 @@ version: '2'
 services:
 
   # TPM simulator
-  ids-tpm2dsim:
-    image: fraunhoferaisec/tpm2dsim:develop
+  ids-tpmsim:
+    image: fraunhoferaisec/tpmsim:${dockerTag}
     volumes:
-      - ./tpm2d/:/data/cml/tpm2d/communication/
-    command: /tpm2d/cml-tpm2d
+      - ../tpmsim/tpmsim_data/swtpm:/swtpm/
+      - ../tpmsim/tpmsim_data/cml:/data/cml
+    build:
+      context: '../tpmsim'
+    networks:
+      - example-internal
     container_name: iot-connector-tpm
 
   # Trusted third party (RAT repository) simulator
