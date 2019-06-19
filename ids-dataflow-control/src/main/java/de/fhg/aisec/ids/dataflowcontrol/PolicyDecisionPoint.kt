@@ -62,13 +62,6 @@ class PolicyDecisionPoint : PDP, PAP {
     /**
      * Creates a query to retrieve policy decision from Prolog knowledge base.
      *
-     *
-     * Result of query will be:
-     *
-     *
-     * Target Decision Alternative Obligation hadoopClusters D drop
-     * (delete_after_days(_1354),_1354<30) 1 hiveMqttBroker drop Alt A
-     *
      * @param target The target node of the transformation
      * @param properties The exchange properties
      */
@@ -78,11 +71,10 @@ class PolicyDecisionPoint : PDP, PAP {
         sb.append("rule(X), has_target(X, T), ")
         sb.append("has_endpoint(T, EP), ")
         sb.append("regex_match(EP, ").append(escape(target.endpoint)).append("), ")
+        // Assert labels for the duration of this query, must be done before receives_label(X)
         @Suppress("UNCHECKED_CAST")
-        (properties.computeIfAbsent(PDP.LABELS_KEY) { HashSet<String>() } as Set<String>)
-                // QUERY structure must be: has_endpoint(rule, bla), assert(label(x)),
-                // receives_label(rule).
-                .forEach { k -> sb.append("assert(label(").append(k).append(")), ") }
+        val labels = properties.computeIfAbsent(PDP.LABELS_KEY) { HashSet<String>() } as Set<String>
+        labels.forEach { k -> sb.append("assert(label(").append(k).append(")), ") }
         sb.append("receives_label(X), ")
         sb.append("rule_priority(X, P), ")
         // Removed due to unclear relevance
@@ -96,9 +88,13 @@ class PolicyDecisionPoint : PDP, PAP {
 //            }
 //            sb.append("(").append(capProp.joinToString(", ")).append("), ")
 //        }
-        sb.append("(has_decision(X, D); (has_obligation(X, _O), has_alternativedecision(_O, Alt), ")
-        sb.append("requires_prerequisite(_O, A))),")
-        sb.append("retractall(label(_)).")
+        sb.append("(has_decision(X, D) ; (has_obligation(X, _O), has_alternativedecision(_O, Alt), ")
+        sb.append("requires_prerequisite(_O, A)))")
+        if (labels.isNotEmpty()) {
+            // Cleanup prolog VM for next run
+            sb.append(", retractall(label(_))")
+        }
+        sb.append(".")
         return sb.toString()
     }
 
