@@ -5,12 +5,18 @@ NC='\033[0m'
 
 # Extract tpm2d/swtpm state archive, if existing
 if [ -f "/tpmsim_data.tar" ]; then
+    # If state came from tar and tar is mounted, delete state and extract again
+    if [ -f "/tar_data" ]; then
+        rm -r data swtpm
+    fi
     if [ -d "/data" ] || [ -d "/swtpm" ]; then
         echo "Error: /data and/or /swtpm and tpmsim_data.tar exist." >&2
         echo "Either provide tpmsim_data.tar or those volumes! Aborting..." >&2
         exit 1
     fi
     tar -xf /tpmsim_data.tar
+    # Create marker file for state extracted from tar
+    touch /tar_data
 else
     # Initialize tpm2d data directory if not existing
     if [ ! -d "/data/cml/tpm2d" ]; then
