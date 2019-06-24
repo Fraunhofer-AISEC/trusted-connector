@@ -3,18 +3,28 @@
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Initialize tpm2d data directory if not existing
-if [ ! -d "/data/cml/tpm2d" ]; then
-    mkdir -p /data/cml/tpm2d
-fi
-# Initialize TPM if not existing
-if [ -z "$(ls /swtpm/*.permall 2>/dev/null)" ]; then
-    echo "No .permall file found in /swtpm, initializing TPM..."
-    apt-get update -qq
-    apt-get install -qq gnutls-bin
-    swtpm_setup --tpm2 --tpmstate /swtpm --create-ek-cert
-    apt-get remove --purge gnutls-bin -qq
-    apt-get autoremove --purge -qq
+# Extract tpm2d/swtpm state archive, if existing
+if [ -f "/tpmsim_data.tar" ]; then
+    if [ -d "/data" ] || [ -d "/swtpm" ]; then
+        echo "Error: /data and/or /swtpm and tpmsim_data.tar exist." >&2
+        echo "Either provide tpmsim_data.tar or those volumes! Aborting..." >&2
+        exit 1
+    fi
+    tar -xf /tpmsim_data.tar
+else
+    # Initialize tpm2d data directory if not existing
+    if [ ! -d "/data/cml/tpm2d" ]; then
+        mkdir -p /data/cml/tpm2d
+    fi
+    # Initialize TPM if not existing
+    if [ -z "$(ls /swtpm/*.permall 2>/dev/null)" ]; then
+        echo "No .permall file found in /swtpm, initializing TPM..."
+        apt-get update -qq
+        apt-get install -qq gnutls-bin
+        swtpm_setup --tpm2 --tpmstate /swtpm --create-ek-cert
+        apt-get remove --purge gnutls-bin -qq
+        apt-get autoremove --purge -qq
+    fi
 fi
 
 # Old, unixsocket-based communication method
@@ -48,9 +58,9 @@ if [ ! -f "$DEV_CERT" ]; then
     n=0
     until [ $n == 3 ]
     do
-      scd && break  # substitute your command here
-      echo "Provisioning failed, possibly due to TPM_RC_RETRY. Retrying..."
-      n=$[$n+1]
+        scd && break  # substitute your command here
+        echo "Provisioning failed, possibly due to TPM_RC_RETRY. Retrying..."
+        n=$[$n+1]
     done
     if [ $n == 3 ]; then
         echo "scd execution failed $n times, aborting..."

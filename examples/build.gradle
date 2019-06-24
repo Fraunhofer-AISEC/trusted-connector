@@ -59,7 +59,12 @@ zipExample.dependsOn processTemplates
 zipExample.onlyIf { getCommitRefName() != null }
 processResources.dependsOn zipExample
 
-task dockerize(dependsOn: ['dockerizeClient', 'dockerizeServer'])
+task dockerize(dependsOn: ['dockerizeTpmSim', 'dockerizeClient', 'dockerizeServer'])
+
+task dockerizeTpmSim(type: DockerBuildImage) {
+    inputDir = new File(project.projectDir.getPath() + '/tpmsim')
+    tag = "fraunhoferaisec/tpmsim:${rootProject.getDockerTag()}"
+}
 
 task dockerizeClient(type: DockerBuildImage) {
     inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-client')
