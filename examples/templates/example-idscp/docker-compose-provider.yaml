@@ -5,32 +5,31 @@ services:
   ids-tpmsim-provider:
     image: fraunhoferaisec/tpmsim:${dockerTag}
     volumes:
-      - ./tpmsim-provider/swtpm:/swtpm
-      - ./tpmsim-provider/data:/data
-    build:
-      context: '../tpmsim'
+      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
+      - ../tpmsim_data.tar:/tpmsim_data.tar
     networks:
       - provider-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   provider-core:
     image: fraunhoferaisec/trusted-connector-core:${dockerTag}
-    build:
-      context: '../../karaf-assembly'
     tty: true
     stdin_open: true
-    hostname: provider-core
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./tpm2d-provider/:/var/run/tpm2d/
       - ./system.properties:/root/etc/system.properties
+      - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
       - ./provider-client-truststore.jks:/root/etc/provider-client-truststore.jks
       - ./provider-client-keystore.jks:/root/etc/provider-client-keystore.jks
       - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
-    ports:
-      - "5006:5005"
-      - "8282:8181"
+    environment:
+      - TPM_HOST=ids-tpmsim-provider
+    # Enable this lines for debugging or UI access from localhost
+#    ports:
+#      - "5005:5005"
+#      - "8181:8181"
+#      - "8443:8443"
     networks:
       - ids-wide
       - provider-internal
@@ -44,8 +43,6 @@ services:
   # Sensor data provider
   provider-app:
     image: fraunhoferaisec/example-client:${dockerTag}
-    build:
-      context: './example-client'
     networks:
       - provider-internal
 

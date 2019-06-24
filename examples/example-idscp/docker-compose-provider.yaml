@@ -4,11 +4,11 @@ services:
   # TPM simulator
   ids-tpmsim-provider:
     image: fraunhoferaisec/tpmsim:develop
-    volumes:
-      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
-      - ./tpmsim_data.tar:/tpmsim_data.tar
     build:
       context: '../tpmsim'
+    volumes:
+      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
+      - ../tpmsim_data.tar:/tpmsim_data.tar
     networks:
       - provider-internal
 
@@ -19,7 +19,6 @@ services:
       context: '../../karaf-assembly'
     tty: true
     stdin_open: true
-    hostname: provider-core
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
@@ -30,9 +29,11 @@ services:
       - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-provider
-    ports:
-      - "5006:5005"
-      - "8282:8181"
+    # Enable this lines for debugging or UI access from localhost
+#    ports:
+#      - "5005:5005"
+#      - "8181:8181"
+#      - "8443:8443"
     networks:
       - ids-wide
       - provider-internal

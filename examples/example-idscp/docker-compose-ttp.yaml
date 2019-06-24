@@ -2,14 +2,17 @@ version: '2'
 services:
 
   # TPM trusted third party (RAT repository)
-  repository.aisec.fraunhofer.de:
+  ids-ttpsim:
     image: fraunhoferaisec/ttpsim:develop
     build:
       context: '../../rat-repository'
-    ports:
-      - "31337:31337"
+    # Enable this port mapping to access TTP from outside the ids-wide network
+#    ports:
+#      - "31337:31337"
     networks:
-      - ids-wide
+      ids-wide:
+        aliases:
+          - repository.aisec.fraunhofer.de
 
 networks:
   ids-wide:

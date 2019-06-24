@@ -5,43 +5,40 @@ services:
   ids-tpmsim-consumer:
     image: fraunhoferaisec/tpmsim:${dockerTag}
     volumes:
-      - ./tpmsim-consumer/swtpm:/swtpm
-      - ./tpmsim-consumer/data:/data
-    build:
-      context: '../tpmsim'
+      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
+      - ../tpmsim_data.tar:/tpmsim_data.tar
     networks:
       - consumer-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
     image: fraunhoferaisec/trusted-connector-core:${dockerTag}
-    build:
-      context: '../../karaf-assembly'
     tty: true
     stdin_open: true
-    hostname: consumer-core
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./tpm2d-consumer/:/var/run/tpm2d/
       - ./system.properties:/root/etc/system.properties
+      - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
       - ./consumer-server-keystore.jks:/root/etc/consumer-server-keystore.jks
       - ./consumer-server-truststore.jks:/root/etc/consumer-server-truststore.jks
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
-    ports:
-      - "5005:5005"
-      - "8181:8181"
-      - "9292:9292"
+    environment:
+      - TPM_HOST=ids-tpmsim-consumer
+    # Enable this port mappings for debugging or UI access from localhost
+#    ports:
+#      - "5005:5005"
+#      - "8181:8181"
+#      - "8443:8443"
+    # Enable this port mapping (along with "ports:" above) to allow access to IDSCP from outside the ids-wide network
+#      - "9292:9292"
     networks:
       - ids-wide
       - consumer-internal
 
-
   # Data App (REST consumer, displays web page)
   consumer-app:
     image: fraunhoferaisec/example-server:${dockerTag}
-    build:
-      context: './example-server'
     ports:
       - "8081:8081"
     networks:

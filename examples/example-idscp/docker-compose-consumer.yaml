@@ -6,7 +6,7 @@ services:
     image: fraunhoferaisec/tpmsim:develop
     volumes:
       # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
-      - ./tpmsim_data.tar:/tpmsim_data.tar
+      - ../tpmsim_data.tar:/tpmsim_data.tar
     build:
       context: '../tpmsim'
     networks:
@@ -19,7 +19,6 @@ services:
       context: '../../karaf-assembly'
     tty: true
     stdin_open: true
-    hostname: consumer-core
     volumes:
       - /tmp/ids/log/:/root/data/log/
       - /var/run/docker.sock:/var/run/docker.sock
@@ -30,14 +29,16 @@ services:
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-consumer
-    ports:
-      - "5005:5005"
-      - "8181:8181"
-      - "9292:9292"
+    # Enable this port mappings for debugging or UI access from localhost
+#    ports:
+#      - "5005:5005"
+#      - "8181:8181"
+#      - "8443:8443"
+    # Enable this port mapping (along with "ports:" above) to allow access to IDSCP from outside the ids-wide network
+#      - "9292:9292"
     networks:
       - ids-wide
       - consumer-internal
-
 
   # Data App (REST consumer, displays web page)
   consumer-app:
