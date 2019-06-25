@@ -1,2 +1,3 @@
 #!/bin/bash
-./gradlew :ids-settings:jar :ids-webconsole:jar install --parallel
+docker-compose -f docker-build/docker-compose.yml pull
+docker-compose -f docker-build/docker-compose.yml run build-container yarnBuild install --parallel
