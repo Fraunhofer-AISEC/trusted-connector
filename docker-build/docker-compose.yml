@@ -1,0 +1,15 @@
+version: '2'
+services:
+
+  # TPM simulator
+  build-container:
+    image: fraunhoferaisec/docker-build:develop
+    tty: true
+    stdin_open: true
+    volumes:
+      - ..:/core-platform
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.gradle:/.gradle
+      - ~/.m2:/.m2
+    build:
+      context: '.'
