@@ -5,7 +5,7 @@ services:
   ids-tpmsim:
     image: fraunhoferaisec/tpmsim:${dockerTag}
     volumes:
-      - ../tpmsim_data.tar:/tpmsim_data.tar
+      - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
     networks:
       - example-internal
 

@@ -6,7 +6,7 @@ services:
     image: fraunhoferaisec/tpmsim:${dockerTag}
     volumes:
       # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
-      - ../tpmsim_data.tar:/tpmsim_data.tar
+      - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
     networks:
       - consumer-internal
 
