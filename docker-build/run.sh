@@ -25,7 +25,9 @@ userdel node
 TARGET_UID=$(ls -ld /core-platform | awk '{print $3}')
 DOCKER_GID=$(ls -ld /var/run/docker.sock | awk '{print $4}')
 addgroup --gid $DOCKER_GID --quiet docker
-adduser --uid $TARGET_UID --disabled-password --home / --ingroup docker --gecos 'Build User' --quiet build 2>/dev/null
+adduser --uid $TARGET_UID --disabled-password --ingroup docker --gecos 'Build User' --quiet build
+ln -s /.gradle /home/build/.gradle
+ln -s /.gradle /home/build/.m2
 
 echo "Running ./gradlew with UID $TARGET_UID..."
 # Run build using all arguments from CMD
