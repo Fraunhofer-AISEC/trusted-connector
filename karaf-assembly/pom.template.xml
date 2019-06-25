@@ -4,28 +4,26 @@
 
     <groupId>de.fhg.aisec.ids</groupId>
     <artifactId>karaf-assembly</artifactId>
-    <version>${artifact.version}</version>
+    <version>${projectVersion}</version>
     <packaging>karaf-assembly</packaging>
     <name>IDS :: Karaf Assembly</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <karaf.version/>
-        <artifact.version/>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>framework</artifactId>
-            <version>${karaf.version}</version>
+            <version>${karafVersion}</version>
             <type>kar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>standard</artifactId>
             <classifier>features</classifier>
-            <version>${karaf.version}</version>
+            <version>${karafVersion}</version>
             <type>xml</type>
             <scope>runtime</scope>
         </dependency>
@@ -33,7 +31,7 @@
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>spring-legacy</artifactId>
-            <version>${karaf.version}</version>
+            <version>${karafVersion}</version>
             <classifier>features</classifier>
             <type>xml</type>
             <scope>runtime</scope>
@@ -42,11 +40,11 @@
         <dependency>
             <groupId>de.fhg.aisec.ids</groupId>
             <artifactId>karaf-features-ids</artifactId>
-            <version>${project.version}</version>
+            <version>${projectVersion}</version>
             <classifier>features</classifier>
             <type>xml</type>
             <scope>runtime</scope>
-        </dependency>           
+        </dependency>
     </dependencies>
 
     <build>
@@ -86,7 +84,7 @@
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
                 <extensions>true</extensions>
-                <version>${karaf.version}</version>
+                <version>${karafVersion}</version>
                 <configuration>
                     <bootFeatures>
                         <feature>wrap</feature>

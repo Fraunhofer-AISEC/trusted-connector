@@ -6,17 +6,25 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 /*
 Now this is tricky. We need to build a custom assembly of karaf with a few features:
 - included ids feature
-- deactivated all other repos, basically it beeing 'offline'
+- deactivated all other repos, basically make it being 'offline'
 - add a bunch of configuration files in etc (although we need to re-verify, which of them are really necessary
 
 Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
 */
 
-task assembleKaraf(type: MavenExec) {
-    mavenDir = projectDir
-    goals "-Dartifact.version=${project.version}", "-Dkaraf.version=${libraryVersions.karaf}", "clean", "package"
+task parsePom(type: Copy) {
+    from (project.projectDir) {
+        include 'pom.template.xml'
+    }
+    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf)
+    rename '.*', 'pom.xml'
+    into project.projectDir
 }
 
+task assembleKaraf(type: CrossPlatformExec) {
+    commandLine "./mvnw", "clean", "package"
+}
+assembleKaraf.dependsOn(parsePom)
 jar.dependsOn(assembleKaraf)
 
 // make sure, all sub projects have finished their install task
