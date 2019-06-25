@@ -1,8 +1,5 @@
 #!/bin/bash
 
-RED='\033[0;31m'
-NC='\033[0m'
-
 # Extract tpm2d/swtpm state archive, if existing
 if [ -f "/tpmsim_data.tar" ]; then
     # If state came from tar and tar is mounted, delete state and extract again
