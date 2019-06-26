@@ -22,7 +22,7 @@ task parsePom(type: Copy) {
 }
 
 task assembleKaraf(type: CrossPlatformExec) {
-    commandLine "./mvnw", "clean", "package"
+    commandLine "./mvnw", "--no-transfer-progress", "clean", "package"
 }
 assembleKaraf.dependsOn(parsePom)
 jar.dependsOn(assembleKaraf)
