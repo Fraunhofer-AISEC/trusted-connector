@@ -6,6 +6,10 @@ services:
     image: fraunhoferaisec/docker-build:develop
     tty: true
     stdin_open: true
+    environment:
+      - 'PROJECT_DIR=/core-platform'
+      - 'GRADLE_DIR=/.gradle'
+      - 'M2_DIR=/.m2'
     volumes:
       - ..:/core-platform
       - /var/run/docker.sock:/var/run/docker.sock
