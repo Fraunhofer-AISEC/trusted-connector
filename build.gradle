@@ -121,9 +121,9 @@ allprojects {
         // OSGi core dependencies which will just be there during runtime
         osgiCore
 
-        // All OSGi dependencies will be required at compile time and for unit tests
-        compileOnly.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
-        // Make compileOnly dependencies available for tests
+        // The "compile" configuration needs to be extended for dependency resolution of maven-publish
+        compile.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
+        // Some compileOnly dependencies are also needed for unit tests
         testImplementation.extendsFrom compileOnly
     }
 }
@@ -132,6 +132,8 @@ subprojects {
     apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'java'
     apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8

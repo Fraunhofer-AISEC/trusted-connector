@@ -18,3 +18,34 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
 }
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        commLibrary(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'localRepo'
+            url = "file://${rootProject.buildDir}/repo"
+        }
+    }
+}
+
+//signing {
+//    sign publishing.publications.commLibrary
+//}

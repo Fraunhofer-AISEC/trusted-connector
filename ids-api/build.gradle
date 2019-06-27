@@ -1,5 +1,6 @@
 apply plugin: 'com.google.protobuf'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
 protobuf {
     generatedFilesBaseDir = "$projectDir/generated"
@@ -36,3 +37,32 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
 }
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        apiLibrary(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'localRepo'
+            url = "file://${rootProject.buildDir}/repo"
+        }
+    }
+}
+
+//signing {
+//    sign publishing.publications.apiLibrary
+//}
