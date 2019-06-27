@@ -1,0 +1,22 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+dependencies {
+    infomodelBundle project(':ids-api')
+
+    compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
+
+    // MVN resolution problem workaround for infomodel until publicly released
+    implementation group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
+    implementation group: 'de.fraunhofer.iais.eis.ids', name: 'infomodel-serializer', version: libraryVersions.infomodelSerializer
+    infomodelBundle group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    infomodelBundle group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+    infomodelBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson
+    infomodelBundle group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: libraryVersions.jackson
+
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+}

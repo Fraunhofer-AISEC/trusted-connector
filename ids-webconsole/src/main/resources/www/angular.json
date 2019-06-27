@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "iot-connector-dashboard": {
+    "trusted-connector-ui": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -31,6 +31,7 @@
             ],
             "scripts": [
               "node_modules/viz.js/viz.js",
+              "node_modules/viz.js/full.render.js",
               "node_modules/svg-pan-zoom/dist/svg-pan-zoom.js",
               "node_modules/vis/dist/vis.js",
               "node_modules/ace-builds/src-min/ace.js",
@@ -61,18 +62,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "iot-connector-dashboard:build"
+            "browserTarget": "trusted-connector-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "iot-connector-dashboard:build:production"
+              "browserTarget": "trusted-connector-ui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "iot-connector-dashboard:build"
+            "browserTarget": "trusted-connector-ui:build"
           }
         },
         "lint": {
@@ -88,13 +89,13 @@
         }
       }
     },
-    "iot-connector-dashboard-e2e": {
+    "trusted-connector-ui-e2e": {
       "root": "",
       "sourceRoot": "e2e",
       "projectType": "application"
     }
   },
-  "defaultProject": "iot-connector-dashboard",
+  "defaultProject": "trusted-connector-ui",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

@@ -1,17 +1,11 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../environments/environment';
-import { tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
-export const HTTP_INJECTION_TOKEN = 'ApplicationHttpClient';
-export const HTTP_PROVIDER = {
-  provide: HTTP_INJECTION_TOKEN,
-  useFactory: applicationHttpClientCreator,
-  deps: [HttpClient]
-};
+import { environment } from '../environments/environment';
 
-export interface IRequestOptions {
+export interface RequestOptions {
   headers?: HttpHeaders | {
     [header: string]: string | Array<string>;
   };
@@ -24,13 +18,13 @@ export interface IRequestOptions {
   withCredentials?: boolean;
 }
 
-export interface IRequestOptionsJson extends IRequestOptions {
+export interface RequestOptionsJson extends RequestOptions {
   responseType?: 'json';
 }
-export interface IRequestOptionsText extends IRequestOptions {
+export interface RequestOptionsText extends RequestOptions {
   responseType?: 'text';
 }
-export interface IRequestOptionsCached extends IRequestOptions {
+export interface RequestOptionsCached extends RequestOptions {
   cacheTTL?: number;
 }
 
@@ -40,7 +34,7 @@ export interface ApplicationHttpClient {
    * @param endPoint The endpoint, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
-  get<T>(endPoint: string, options?: IRequestOptionsCached): Observable<T>;
+  get<T>(endPoint: string, options?: RequestOptionsCached): Observable<T>;
 
   /**
    * POST request
@@ -48,8 +42,8 @@ export interface ApplicationHttpClient {
    * @param body Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  post<T>(endPoint: string, body: any | null, options?: IRequestOptionsJson): Observable<T>;
-  post(endPoint: string, body: any | null, options?: IRequestOptionsText): Observable<string>;
+  post<T>(endPoint: string, body: any | null, options?: RequestOptionsJson): Observable<T>;
+  post(endPoint: string, body: any | null, options?: RequestOptionsText): Observable<string>;
 
   /**
    * PUT request
@@ -57,25 +51,21 @@ export interface ApplicationHttpClient {
    * @param params Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  put<T>(endPoint: string, params: Object, options?: IRequestOptions): Observable<T>;
+  put<T>(endPoint: string, params: Object, options?: RequestOptions): Observable<T>;
 
   /**
    * DELETE request
    * @param endPoint The endpoint at the API, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
-  delete<T>(endPoint: string, options?: IRequestOptions): Observable<T>;
-}
-
-export function applicationHttpClientCreator(client: HttpClient): ApplicationHttpClient {
-  return new ApplicationHttpClientImpl(client);
+  delete<T>(endPoint: string, options?: RequestOptions): Observable<T>;
 }
 
 @Injectable()
 export class ApplicationHttpClientImpl implements ApplicationHttpClient {
-  private cache = new Map<string, [number, any]>();
+  private readonly cache = new Map<string, [number, any]>();
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   /**
    * GET request
@@ -88,12 +78,12 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
       const val = this.cache.get(key);
       if (val && val[0] > Date.now() - options.cacheTTL * 1e3) {
         return of(val[1]);
-      } else {
-        return this.http.get(environment.apiURL + endPoint, options)
-          .pipe(
-            tap(res => this.cache.set(key, [Date.now(), res]))
-          );
       }
+
+      return this.http.get(environment.apiURL + endPoint, options)
+        .pipe(
+          tap(res => this.cache.set(key, [Date.now(), res]))
+        );
     }
 
     return this.http.get(environment.apiURL + endPoint, options);
@@ -128,3 +118,12 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
     return this.http.delete<T>(environment.apiURL + endPoint, options);
   }
 }
+
+export const applicationHttpClientCreator =
+  (client: HttpClient): ApplicationHttpClient => new ApplicationHttpClientImpl(client);
+export const HTTP_INJECTION_TOKEN = 'ApplicationHttpClient';
+export const HTTP_PROVIDER = {
+  provide: HTTP_INJECTION_TOKEN,
+  useFactory: applicationHttpClientCreator,
+  deps: [HttpClient]
+};

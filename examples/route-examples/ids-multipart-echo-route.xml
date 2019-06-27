@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+    <!-- Define a reference for our REST MIME-Multipart Processor -->
+    <bean id="mpOutProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartOutputProcessor" />
+    <bean id="mpInProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartInputProcessor" />
+
+    <!-- Routes -->
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+        <restConfiguration component="jetty" host="0.0.0.0" port="1080" bindingMode="off" />
+
+        <rest>
+            <post uri="/echo">
+                <to uri="direct:echo" />
+            </post>
+        </rest>
+
+        <route id="echoRoute">
+
+            <from uri="direct:echo"/>
+
+            <process ref="mpInProcessor" />
+
+            <log message="Test message header:\n${headers.idsMultipartHeader}" />
+            <log message="Test message content type:\n${header[Content-Type]}" />
+            <!-- Enabling this will read the stream, causing the echo route to output no payload! -->
+            <!--<log message="Test message payload:\n${body}" />-->
+
+            <process ref="mpOutProcessor" />
+
+            <log message="Test message multipart body:\n${body}" />
+
+            <!-- Send it to some web server -->
+            <!--<to uri="http://localhost:8000" />-->
+
+        </route>
+
+    </camelContext>
+
+</blueprint>

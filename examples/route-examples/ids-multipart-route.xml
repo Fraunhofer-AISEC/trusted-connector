@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+		   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+	<!-- Define a reference for our REST MIME-Multipart Processor -->
+	<bean id="mpOutProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartOutputProcessor" />
+	<bean id="mpInProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartInputProcessor" />
+
+	<!-- Routes -->
+	<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+		<route id="multipartDemo">
+
+			<!--  Just do something every 4 seconds -->
+			<from uri="timer://foo?fixedRate=true&amp;period=4000" />
+
+			<!--  Timer creates an empty body, so we set some dummy data here -->
+			<setBody>
+				<simple>Test Message</simple>
+			</setBody>
+
+			<process ref="mpOutProcessor" />
+
+			<log message="Test message multipart body:\n${body}" />
+
+			<process ref="mpInProcessor" />
+
+			<log message="Test message header:\n${headers.idsMultipartHeader}" />
+			<log message="Test message content type:\n${header[Content-Type]}" />
+			<log message="Test message payload:\n${body}" />
+			
+			<!-- Send it to some web server -->
+			<!--<to uri="http://localhost:8000" />-->
+
+		</route>
+
+	</camelContext>
+
+</blueprint>

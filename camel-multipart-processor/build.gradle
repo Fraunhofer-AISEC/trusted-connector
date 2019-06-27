@@ -1,0 +1,26 @@
+dependencies {
+    providedByBundle project(':ids-api')
+
+    // Bill of Materials (BOM) for Camel
+    bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
+
+    providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
+	providedByFeature group: 'org.apache.camel', name: 'camel-http4', version: libraryVersions.camel
+
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+
+    providedByBundle group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: libraryVersions.httpcore
+	providedByBundle group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: libraryVersions.httpclient
+    
+    providedByBundle group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.apache.camel', name: 'camel-test', version: libraryVersions.camel
+}

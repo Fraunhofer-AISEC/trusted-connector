@@ -1,29 +1,87 @@
 # make sure to use a Debian-based image, because otherwise you will run into issue with protoc because of missing glibc on alpine
-image: node:stretch
+image: docker
 
 stages:
-- build
-- push
+  - build
+  - push
 
 build:
   stage: build
+  image:
+    name: fraunhoferaisec/docker-build:develop
+    entrypoint: [""]
   variables:
-    GRADLE_USER_HOME: "/cache/.gradle"
-    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    GRADLE_DIR: "/cache/.gradle"
+    M2_DIR: "/cache/.m2"
   before_script:
-  # caching for gradle
-  - mkdir -p /cache/.gradle
-  # caching for mvn (used for karaf-assembly)
-  - mkdir -p /root/.m2
-  - echo $M2_SETTINGS > ~/.m2/settings.xml
-  - mkdir -p /cache/.m2
-  # install deps
-  - apt update && apt install -y --no-install-recommends openjdk-8-jdk-headless
+    # defined here because of https://gitlab.com/gitlab-org/gitlab-runner/issues/1809
+    - export PROJECT_DIR="${CI_PROJECT_DIR}"
+    # caching for gradle
+    - mkdir -p /cache/.gradle
+    # caching for mvn (used for karaf-assembly)
+    - mkdir -p /cache/.m2
   script:
-  # yarnBuild is part of build, however this could speed up the process a little bit by prioritizing the long-running yarnBuild
-  - ./gradlew --parallel clean yarnBuild build dockerize
+    # yarnBuild is part of build, but we try to speed up the process a bit by prioritizing that long-running task
+    - /run.sh clean yarnBuild build check dockerize --parallel -PdockerTag=${CI_COMMIT_SHA:0:8}
   artifacts:
     when: always
     paths:
-    - "*/build/reports"
+      - "*/build/reports"
 
+# tag develop builds as latest and push them to the internal registry
+push:
+  stage: push
+  script:
+    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
+    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+    - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
+    - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
+    - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} fraunhoferaisec/trusted-connector-core:develop
+    - docker tag fraunhoferaisec/ttpsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/ttpsim:develop
+    - docker tag fraunhoferaisec/tpmsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/tpmsim:develop
+    - docker tag fraunhoferaisec/example-client:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-client:develop
+    - docker tag fraunhoferaisec/example-server:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-server:develop
+    - docker push fraunhoferaisec/trusted-connector-core:develop
+    - docker push fraunhoferaisec/ttpsim:develop
+    - docker push fraunhoferaisec/tpmsim:develop
+    - docker push fraunhoferaisec/example-client:develop
+    - docker push fraunhoferaisec/example-server:develop
+  only:
+    - develop
+
+# tag and push master to Docker Hub
+push_hub_master:
+  stage: push
+  script:
+    - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} fraunhoferaisec/trusted-connector-core:latest
+    - docker tag fraunhoferaisec/ttpsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/ttpsim:latest
+    - docker tag fraunhoferaisec/tpmsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/tpmsim:latest
+    - docker tag fraunhoferaisec/example-client:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-client:latest
+    - docker tag fraunhoferaisec/example-server:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-server:latest
+    - docker push fraunhoferaisec/trusted-connector-core:latest
+    - docker push fraunhoferaisec/ttpsim:latest
+    - docker push fraunhoferaisec/tpmsim:latest
+    - docker push fraunhoferaisec/example-client:latest
+    - docker push fraunhoferaisec/example-server:latest
+  only:
+    - master
+
+# tag and push release versions to Docker Hub
+push_hub_version:
+  stage: push
+  script:
+    - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} fraunhoferaisec/trusted-connector-core:${CI_COMMIT_TAG:1}
+    - docker tag fraunhoferaisec/ttpsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/ttpsim:${CI_COMMIT_TAG:1}
+    - docker tag fraunhoferaisec/tpmsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/tpmsim:${CI_COMMIT_TAG:1}
+    - docker tag fraunhoferaisec/example-client:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-client:${CI_COMMIT_TAG:1}
+    - docker tag fraunhoferaisec/example-server:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-server:${CI_COMMIT_TAG:1}
+    - docker push fraunhoferaisec/trusted-connector-core:${CI_COMMIT_TAG:1}
+    - docker push fraunhoferaisec/ttpsim:${CI_COMMIT_TAG:1}
+    - docker push fraunhoferaisec/tpmsim:${CI_COMMIT_TAG:1}
+    - docker push fraunhoferaisec/example-client:${CI_COMMIT_TAG:1}
+    - docker push fraunhoferaisec/example-server:${CI_COMMIT_TAG:1}
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+$/

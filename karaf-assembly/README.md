@@ -1,3 +1,6 @@
+The _karaf-assembly_ is the main module, containing the karaf instance. This creates the binary that launches the OSGi engine. All other modules run on top of this. 
+
+
 Create a custom Apache Karaf configuration including Camel.
 
 Built it:

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Interface of internal routing manager inside the Core Platform.
@@ -39,21 +40,21 @@ public interface RouteManager {
    *
    * @return All installed rules
    */
-  public List<RouteObject> getRoutes();
+  @NonNull List<RouteObject> getRoutes();
 
   /**
    * Returns a list of currently installed routes.
    *
    * @return The queried route or null
    */
-  public RouteObject getRoute(String id);
+  @Nullable RouteObject getRoute(@NonNull String id);
 
   /**
    * Starts a route.
    *
    * @param routeId
    */
-  public void startRoute(String routeId) throws RouteException;
+  void startRoute(@NonNull String routeId) throws RouteException;
 
   /**
    * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver
@@ -62,23 +63,23 @@ public interface RouteManager {
    * @param routeId
    * @throws Exception
    */
-  public void stopRoute(String routeId) throws RouteException;
+  void stopRoute(@NonNull String routeId) throws RouteException;
 
   /**
    * List all supported components, i.e. supported endpoint protocols.
    *
    * @return
    */
-  public List<RouteComponent> listComponents();
+  @NonNull List<RouteComponent> listComponents();
 
   /**
    * List all route endpoints, i.e. all URLs to which routes exist.
    *
    * @return
    */
-  public Map<String, Collection<String>> getEndpoints();
+  @NonNull Map<String, Collection<String>> getEndpoints();
 
-  public Map<String, String> listEndpoints();
+  @NonNull Map<String, String> listEndpoints();
 
   /**
    * Save a route, replacing it with a new representation within the same context
@@ -89,7 +90,7 @@ public interface RouteManager {
    * @throws RouteException If the route does not exist or some Exception was thrown during route
    *     replacement.
    */
-  RouteObject saveRoute(String routeId, String routeRepresentation) throws RouteException;
+  @NonNull RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation) throws RouteException;
 
   /**
    * Adds a route and starts it.
@@ -103,7 +104,7 @@ public interface RouteManager {
    * @throws RouteException if a route with the same id already exists or if any Exception is thrown
    *     during loading and starting the route.
    */
-  void addRoute(String routeDefinition) throws RouteException;
+  void addRoute(@NonNull String routeDefinition) throws RouteException;
 
   /**
    * Removes a route from one endpoint to another.
@@ -114,7 +115,7 @@ public interface RouteManager {
    *
    * @param routeId
    */
-  void delRoute(String routeId);
+  void delRoute(@NonNull String routeId);
 
   /**
    * Returns the given route in its original representation of the implementing engine.
@@ -126,7 +127,7 @@ public interface RouteManager {
    *
    * @return String representation of the route
    */
-  String getRouteAsString(String routeId);
+  String getRouteAsString(@NonNull String routeId);
 
   /**
    * Returns a List of URIs of the given route's inputs (from definitions)
@@ -134,21 +135,20 @@ public interface RouteManager {
    * @param routeId The identifier of the route
    * @return The from (input) URIs of the route
    */
-  @NonNull
-  public List<String> getRouteInputUris(@NonNull String routeId);
+  @NonNull List<String> getRouteInputUris(@NonNull String routeId);
 
   /**
    * Returns aggregated runtime metrics of all installed routes.
    *
    * @return map<k,v> where k is a string indicating the route id.
    */
-  Map<String, RouteMetrics> getRouteMetrics();
+  @NonNull Map<String, RouteMetrics> getRouteMetrics();
 
   /**
    * Returns the given route configuration in a Prolog representation.
    *
-   * @param routeId
-   * @return
+   * @param routeId ID of route to retrieve prolog representation for
+   * @return Route represented as prolog
    */
-  String getRouteAsProlog(String routeId);
+   @NonNull String getRouteAsProlog(@NonNull String routeId);
 }

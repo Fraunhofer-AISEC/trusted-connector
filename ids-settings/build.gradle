@@ -2,8 +2,8 @@ apply plugin: 'kotlin'
 
 dependencies {
     providedByBundle project(':ids-api')
-
-    providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
+    
+    compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
 
     // Required by MapDB below
     providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
@@ -12,7 +12,7 @@ dependencies {
     implementation (group: 'org.mapdb', name: 'mapdb', version: libraryVersions.mapdb) {
         // Exclude guava dependency, which is provided by bundle
         exclude group: 'com.google.guava', module: 'guava'
-        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
+        exclude group: 'org.jetbrains.kotlin', module: '*'
     }
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j

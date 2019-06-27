@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-
-import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
-import { ConnectionReportService } from './connection-report.service';
 import { delay, retryWhen, take } from 'rxjs/operators';
+
+import { ConnectionReportService } from './connection-report.service';
+import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
 
 @Component({
   selector: 'connections',
@@ -16,7 +16,7 @@ export class ConnectionReportComponent implements OnInit {
   outgoingConnections: Array<OutgoingConnection>;
   endpoints: Array<Endpoint>;
 
-  constructor(private titleService: Title, private connectionService: ConnectionReportService) {
+  constructor(private readonly titleService: Title, private readonly connectionService: ConnectionReportService) {
     this.titleService.setTitle('IDS Connections');
   }
 

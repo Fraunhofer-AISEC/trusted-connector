@@ -1,6 +1,6 @@
 Bundle-Name: IDS :: Dataflow Control Engine
 Export-Package: \
-    de.fhg.ids.dataflowcontrol
+    de.fhg.aisec.ids.dataflowcontrol*
 Import-Package: \
     !org.checkerframework.checker*,\
 	*

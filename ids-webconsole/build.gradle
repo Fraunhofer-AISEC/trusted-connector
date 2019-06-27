@@ -46,6 +46,9 @@ and this API does not provide any authorization mechanism.
 dependencies {
     providedByBundle project(':ids-api')
 
+    // Actual implementation must be provided by ids-infomodel-manager
+    compileOnly group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
+
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
@@ -69,6 +72,7 @@ dependencies {
     providedByBundle group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: libraryVersions.jackson
     providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
 
+    providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
@@ -84,14 +88,14 @@ dependencies {
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
 
-    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local'
-    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client'
+    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local', version: libraryVersions.cxf
+    testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client', version: libraryVersions.cxf
 }
 
 task yarnInstall(type: YarnTask) {
-    inputs.file("src/main/resources/www/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/resources/www/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
-    outputs.dir("src/main/resources/www/node_modules")
+    inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir('src/main/resources/www/node_modules')
     outputs.cacheIf { true }
 
     workingDir = file('src/main/resources/www')
@@ -99,12 +103,24 @@ task yarnInstall(type: YarnTask) {
 }
 
 task yarnBuild(type: YarnTask) {
+    inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir('src/main/resources/www/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir('build/resources/main/www')
+    outputs.cacheIf { true }
+    
     workingDir = file('src/main/resources/www')
     args = ['bundle']
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
 task yarnLint(type: YarnTask) {
+    inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir('src/main/resources/www/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.upToDateWhen { true }
+    outputs.cacheIf { true }
+    
     workingDir = file('src/main/resources/www')
     args = ['lint']
     onlyIf { !rootProject.hasProperty("skipAngular") }
@@ -114,12 +130,6 @@ task yarnApiDocs(type: YarnTask) {
     workingDir = file('src/main/resources/www')
     args = ['apidocs']
     onlyIf { !rootProject.hasProperty("skipAngular") }
-}
-
-clean.doLast {
-    if (!rootProject.hasProperty("skipAngular")) {
-        file('src/main/resources/www/dist').deleteDir()
-    }
 }
 
 yarnBuild.dependsOn(yarnLint)

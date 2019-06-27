@@ -1,25 +1,3 @@
-/*
- * This file is part of trust|me
- * Copyright(c) 2013 - 2017 Fraunhofer AISEC
- * Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2 (GPL 2), as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GPL 2 license for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, see <http://www.gnu.org/licenses/>
- *
- * The full GNU General Public License is included in this distribution in
- * the file called "COPYING".
- *
- * Contact Information:
- * Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
- */
 syntax = "proto2";
 
 option java_package = "de.fraunhofer.aisec.trustme";
@@ -28,6 +6,20 @@ message ContainerImageSize {
 	required string image_name = 1; // virtual name of the image file in guestos
 	required uint64 image_size = 2; // size (bytes) of the image file
 	optional string image_file = 3; // name of alternat image file which overwrites image_name of guestos config
+}
+
+message ContainerVnetConfig {
+	required string if_name = 1; // name of virtual veth endpoint in container
+	required bool configure = 2; // should cmld configure the interface or leav it unconfigured
+	// TODO Define configuration, for now just use hardcoded default config in c_net
+}
+
+/**
+ * Type of container KVM|CONTAINER
+ */
+enum ContainerType {
+	CONTAINER = 1;
+	KVM = 2	;
 }
 
 message ContainerConfig {
@@ -45,15 +37,10 @@ message ContainerConfig {
 
 	required fixed32 color = 6;
 
+	// type of container, e.g. KVM or CONTAINER
+	required ContainerType type = 7 [ default = CONTAINER ];
+
 	// Flags indicating the allows for containers:
-	optional bool allow_internet = 10 [default = false];
-	// white/blacklist of allowed/disallowed ip connections
-	repeated string internet_rules = 11;
-	optional bool allow_sensor_gps = 12 [default = false];
-	optional bool allow_camera = 13 [default = false];
-	optional bool allow_audio_microphone = 14 [default = false];
-	optional bool allow_audio_speakers = 15 [default = false];
-	optional bool allow_container_switch = 16 [default = true]; // allow 'home-button switching' and 'notification switching'
 	optional bool allow_autostart = 17 [default = false];
 	// TODO: add further features as necessary
 
@@ -65,6 +52,15 @@ message ContainerConfig {
 
 	// a list of network interfaces assigned to this container
 	repeated string net_ifaces = 23;
+
+	// a list of devices explicitely allowed for this container
+	repeated string allow_dev = 25;
+
+	// a list of devices exclusively assigned to this container
+	repeated string assign_dev = 26;
+
+	// list of virtual network interface configuration
+	repeated ContainerVnetConfig vnet_configs = 27;
 }
 
 /**
@@ -80,6 +76,7 @@ enum ContainerState {
 	FROZEN = 6;
 	ZOMBIE = 7;
 	SHUTDOWN = 8;
+	SETUP = 9;
 }
 
 /**
@@ -98,7 +95,7 @@ enum ContainerConnectivity {
 message ContainerStatus {
 	required string uuid = 1;
 	required string name = 2;
-	optional bool foreground = 3 [default = false];
+	required ContainerType type = 3;
 	required ContainerState state = 4;
 	required uint64 uptime = 5;
 	required uint64 created = 6;

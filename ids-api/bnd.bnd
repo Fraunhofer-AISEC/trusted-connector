@@ -2,9 +2,11 @@ Bundle-Name: IDS :: Core Platform API
 Bundle-Description: Common APIs for IDS connector components. This bundle can be shared, implementations \
 	are found in other bundles
 Export-Package: \
+  de.fraunhofer.iais.eis*,\
 	de.fhg.aisec.ids.api*,\
 	de.fhg.aisec.ids.messages
 Import-Package: \
 	!de.fhg.aisec.ids.messages,\
 	!org.checkerframework.checker*,\
+	!annotation*,\
 	*

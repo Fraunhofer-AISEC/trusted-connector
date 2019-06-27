@@ -1,19 +1,18 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+import { environment } from '../../environments/environment';
+import { Result } from '../result';
 
 import { App, AppSearchTerm } from './app';
 import { Cml } from './cml';
-import { Result } from '../result';
-
-import { environment } from '../../environments/environment';
-
-import { catchError } from 'rxjs/operators';
-import { Observable, throwError } from 'rxjs';
 
 @Injectable()
 export class AppService {
 
-    constructor(private http: HttpClient) {
+    constructor(private readonly http: HttpClient) {
     }
 
     getApps(): Observable<Array<App>> {
@@ -26,6 +25,11 @@ export class AppService {
 
     startApp(appId: string): Observable<Result> {
         return this.http.get<Result>(environment.apiURL + '/app/start/' + encodeURIComponent(appId));
+    }
+
+    wipeApp(appId: string): Observable<Result> {
+        return this.http.get<Result>(environment.apiURL + '/app/wipe?containerId=' + encodeURIComponent(appId))
+            .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
     }
 
     installApp(app: App): Observable<string> {
@@ -50,20 +54,4 @@ export class AppService {
         return result;
     }
 
-    /*getAllTags(term: string): Observable<Array<App>> {
-        const searchedApps: Observable<Array<App>> = this.searchApps(term);
-
-        return searchedApps.pipe(map(apps => {
-            for (const app of apps) {
-                this.getTags(app.name)
-                    .forEach(x => {
-                        app.tags = x;
-
-                        return app;
-                    });
-            }
-
-            return apps;
-        }));
-    }*/
 }

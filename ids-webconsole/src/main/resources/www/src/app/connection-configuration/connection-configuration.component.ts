@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import { ConnectionConfigurationService } from './connection-configuration.service';
 import { Configuration } from './configuration';
+import { ConnectionConfigurationService } from './connection-configuration.service';
 
 @Component({
   selector: 'connection-configuration',
@@ -14,7 +14,7 @@ export class ConnectionConfigurationComponent implements OnInit {
   private _model?: Configuration;
   private _selectedIndex = 0;
 
-  constructor(private titleService: Title, private connectionConfService: ConnectionConfigurationService) {
+  constructor(private readonly titleService: Title, private readonly connectionConfService: ConnectionConfigurationService) {
     this.titleService.setTitle('Connections Configuration');
   }
 

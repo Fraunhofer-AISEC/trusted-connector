@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-
-import { Route } from './route';
-import { RouteService } from './route.service';
-import { RouteMetrics } from './route-metrics';
 import { interval } from 'rxjs';
 import { mergeMap, takeWhile } from 'rxjs/operators';
+
+import { Route } from './route';
+import { RouteMetrics } from './route-metrics';
+import { RouteService } from './route.service';
 
 @Component({
     selector: 'route-list',
@@ -22,7 +22,7 @@ export class RoutesComponent implements OnInit, OnDestroy {
 
     private alive: boolean;
 
-    constructor(private titleService: Title, private routeService: RouteService) {
+    constructor(private readonly titleService: Title, private readonly routeService: RouteService) {
         this.titleService.setTitle('Message Routes');
 
         this.routeService.getRoutes()

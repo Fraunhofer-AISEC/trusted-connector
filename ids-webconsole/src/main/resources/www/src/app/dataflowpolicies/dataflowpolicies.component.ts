@@ -13,7 +13,7 @@ export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
   private _policies?: Array<string>;
   private _isLoaded = false;
 
-  constructor(private titleService: Title, private policyService: PolicyService) {
+  constructor(private readonly titleService: Title, private readonly policyService: PolicyService) {
     this.titleService.setTitle('Data Flow Control');
 
     this.policyService.getPolicies()

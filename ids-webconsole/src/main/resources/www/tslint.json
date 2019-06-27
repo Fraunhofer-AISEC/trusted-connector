@@ -17,13 +17,14 @@
     "rxjs-no-subject-unsubscribe": true,
     "rxjs-throw-error": true,
     
-    "no-unused-variable": true,
     "curly": true,
     "comment-format": false,
     
     "i18n": false,
     "no-unused-css": false,
     "prefer-template": false,
-    "component-selector": false
+    "component-selector": false,
+    "no-import-side-effect": false,
+    "template-cyclomatic-complexity": false
   }
 }

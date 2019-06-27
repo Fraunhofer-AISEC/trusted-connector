@@ -1,0 +1,88 @@
+apply plugin: DockerRemoteApiPlugin
+
+import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+import java.util.regex.Pattern
+
+def getCommitRefName() {
+    String refName
+    if (System.getenv('CI_COMMIT_REF_NAME') != null) {
+        // try to fetch commit ref name (GitLab CI)
+        refName = System.getenv('CI_COMMIT_REF_NAME')
+    } else if (findProperty('dockerTag')) {
+        // fall back to dockerTag if ref name not available (Local Build)
+        refName = findProperty('dockerTag')
+    } else {
+        return null
+    }
+
+    if (refName == 'develop') {
+        return 'develop'
+    } else if (refName == 'master' || refName == 'latest') {
+        return 'latest'
+    } else if (Pattern.compile('^v[0-9]+\\.[0-9]+\\.[0-9]+$').matcher(refName).matches()) {
+        return refName.substring(1)
+    } else {
+        return null
+    }
+}
+
+// Copy example and example-localhost to build directory
+task copyExample(type: Copy) {
+    from (project.projectDir) {
+        include 'example-*/**', 'tpmsim/tpmsim_data.tar', 'tpmsim/rootCA.crt'
+        exclude 'example-idscp/example-client'
+        exclude 'example-idscp/example-server'
+    }
+    into project.buildDir
+}
+
+// Overwrite docker compose files with evaluated templates to use latest docker tag
+task processTemplates(type: Copy) {
+    from 'templates'
+    include '**/*.yaml'
+    into project.buildDir
+    expand(dockerTag: getCommitRefName())
+    inputs.property 'dockerTag', getCommitRefName()
+    inputs.dir('templates').withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.cacheIf { true }
+}
+processTemplates.dependsOn copyExample
+processTemplates.onlyIf { getCommitRefName() != null }
+
+// Create ZIP archive with example and example-localhost, see task copyExample
+task zipExample(type: Zip) {
+    from fileTree(dir: project.buildDir)
+    archiveFileName = "${projectDir}/trusted-connector-examples_${getCommitRefName()}.zip"
+}
+zipExample.dependsOn processTemplates
+zipExample.onlyIf { getCommitRefName() != null }
+processResources.dependsOn zipExample
+
+task dockerize(dependsOn: ['dockerizeTpmSim', 'dockerizeClient', 'dockerizeServer'])
+
+task dockerizeTpmSim(type: DockerBuildImage) {
+    inputDir = new File(project.projectDir.getPath() + '/tpmsim')
+    tag = "fraunhoferaisec/tpmsim:${rootProject.getDockerTag()}"
+}
+
+task dockerizeClient(type: DockerBuildImage) {
+    inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-client')
+    tag = "fraunhoferaisec/example-client:${rootProject.getDockerTag()}"
+}
+
+task dockerizeServer(type: DockerBuildImage) {
+    inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-server')
+    tag = "fraunhoferaisec/example-server:${rootProject.getDockerTag()}"
+}
+
+// Delete the redundant build directory after install or build, if executed
+gradle.taskGraph.whenReady {
+    Task task = (Task) [install, build].find({ gradle.taskGraph.hasTask((Task) it) })
+    if (task != null) {
+        task.doLast {
+            delete "$projectDir/build"
+        }
+    }
+}

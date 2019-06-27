@@ -1,0 +1,59 @@
+version: '2'
+services:
+
+  # TPM simulator
+  ids-tpmsim-provider:
+    image: fraunhoferaisec/tpmsim:develop
+    build:
+      context: '../tpmsim'
+    volumes:
+      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
+      - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
+    networks:
+      - provider-internal
+
+  # The core platform, mounts docker control socket and route definition into the image
+  provider-core:
+    image: fraunhoferaisec/trusted-connector-core:develop
+    build:
+      context: '../../karaf-assembly'
+    tty: true
+    stdin_open: true
+    volumes:
+      - /tmp/ids/log/:/root/data/log/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./system.properties:/root/etc/system.properties
+      - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
+      - ./provider-client-truststore.jks:/root/etc/provider-client-truststore.jks
+      - ./provider-client-keystore.jks:/root/etc/provider-client-keystore.jks
+      - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
+    environment:
+      - TPM_HOST=ids-tpmsim-provider
+    # Enable this lines for debugging or UI access from localhost
+#    ports:
+#      - "5005:5005"
+#      - "8181:8181"
+#      - "8443:8443"
+    networks:
+      - ids-wide
+      - provider-internal
+
+  # Mosquitto MQTT broker
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    networks:
+      - provider-internal
+
+  # Sensor data provider
+  provider-app:
+    image: fraunhoferaisec/example-client:develop
+    build:
+      context: './example-client'
+    networks:
+      - provider-internal
+
+networks:
+  ids-wide:
+    driver: bridge
+  provider-internal:
+    driver: bridge

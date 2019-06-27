@@ -1,13 +1,13 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import { SubscriptionComponent } from '../subscription.component';
 import { App } from '../apps/app';
 import { AppService } from '../apps/app.service';
-import { MetricService } from '../metric/metric.service';
-import { RouteService } from '../routes/route.service';
 import { PolicyService } from '../dataflowpolicies/policy.service';
+import { MetricService } from '../metric/metric.service';
 import { RouteComponent } from '../routes/route';
+import { RouteService } from '../routes/route.service';
+import { SubscriptionComponent } from '../subscription.component';
 
 @Component({
   templateUrl: './dashboard.component.html',
@@ -21,8 +21,8 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
   policies = 0;
   metric: Array<String> = [];
 
-  constructor(private titleService: Title, private appService: AppService, private routeService: RouteService,
-              private policyService: PolicyService, private metricService: MetricService) {
+  constructor(private readonly titleService: Title, private readonly appService: AppService, private readonly routeService: RouteService,
+              private readonly policyService: PolicyService, private readonly metricService: MetricService) {
     super();
     this.titleService.setTitle('Overview');
 

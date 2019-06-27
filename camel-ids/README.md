@@ -1,0 +1,1 @@
+The _camel-ids_ module adds IDSCP support to the integrated Camel deployment. It creates a Camel Component to make the IDSCP available while building Camel routes. IDSCP itself is contained in module _ids-comm_.

@@ -1,17 +1,16 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 
 import { Configuration } from './configuration';
 import { Settings } from './settings.interface';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ConnectionConfigurationService {
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   storeConfiguration(config: Configuration): Observable<string> {
     return this.http.post(environment.apiURL + '/config/connectionConfigs/' + encodeURIComponent(config.connection),

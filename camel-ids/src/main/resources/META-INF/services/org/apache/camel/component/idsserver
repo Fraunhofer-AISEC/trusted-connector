@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-class=de.fhg.camel.ids.server.WebsocketComponent
+class=de.fhg.aisec.ids.camel.ids.server.WebsocketComponent

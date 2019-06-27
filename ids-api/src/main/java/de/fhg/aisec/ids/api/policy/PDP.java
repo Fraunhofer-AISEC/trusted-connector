@@ -28,7 +28,7 @@ package de.fhg.aisec.ids.api.policy;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public interface PDP {
-  public static final String LABEL_PREFIX = "LUCON_LABEL_";
+  String LABELS_KEY = "luconLabels";
 
   /**
    * Main method for requesting a policy decision.
@@ -36,13 +36,13 @@ public interface PDP {
    * <p>The decision request states attributes of subject and resource. The result is a decision
    * that is expected to be enforced by the PEP.
    *
-   * @param req
-   * @return
+   * @param req The decision request, wrapping relevant data for policy decision
+   * @return The policy decision
    */
-  public PolicyDecision requestDecision(DecisionRequest req);
+  PolicyDecision requestDecision(DecisionRequest req);
 
   /** Removes all data from PDP-internal caches. Future decisions will possibly take more time. */
-  public void clearAllCaches();
+  void clearAllCaches();
 
   /**
    * Requests the PDP for the result of applying a transformation function to a message.
@@ -53,8 +53,8 @@ public interface PDP {
    * <p>A transformation function must always applied to a message before the policy decision is
    * requested using <code>requestDecision</code>.
    *
-   * @param lastServiceNode The last service the message exchange has been sent to.
-   * @return
+   * @param lastServiceNode The last Processor the message exchange has processed
+   * @return The label transformations to apply to the Exchange
    */
-  public TransformationDecision requestTranformations(ServiceNode lastServiceNode);
+  TransformationDecision requestTranformations(ServiceNode lastServiceNode);
 }

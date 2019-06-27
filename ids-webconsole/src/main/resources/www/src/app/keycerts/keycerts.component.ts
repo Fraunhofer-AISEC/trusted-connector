@@ -15,7 +15,7 @@ export class KeycertsComponent implements OnInit {
 
     @Output() readonly changeTitle = new EventEmitter();
 
-    constructor(private titleService: Title, private certificateService: CertificateService, vcRef: ViewContainerRef) {
+    constructor(private readonly titleService: Title, private readonly certificateService: CertificateService, vcRef: ViewContainerRef) {
         this.titleService.setTitle('Identities');
 
         this.certificateService.getIdentities()

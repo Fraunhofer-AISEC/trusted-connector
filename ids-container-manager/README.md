@@ -1,0 +1,1 @@
+The _ids-container-manager_ module contains the Container Manager, responsible for handling the deployed data apps (containers) on a Connector. It interfaces to either Docker or trustme, depending on the setup.  

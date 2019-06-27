@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,9 +33,9 @@ public class PolicyDecision {
     DENY
   }
 
-  private String reason;
-  private Decision decision;
-  private List<Obligation> obligations;
+  private String reason = "Default deny";
+  private Decision decision = Decision.DENY;
+  private List<Obligation> obligations = Collections.emptyList();
 
   public String getReason() {
     return reason;

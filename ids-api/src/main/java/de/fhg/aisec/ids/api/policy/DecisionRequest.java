@@ -19,6 +19,9 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,20 +32,27 @@ import java.util.Objects;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public class DecisionRequest {
-  /** Node sending the message */
+  /** The processor that data is received from */
+  @NonNull
   private ServiceNode from;
 
-  /** Node about to receive the message */
+  /** The Processor that the data is to be sent to */
+  @NonNull
   private ServiceNode to;
 
   /** Properties of the message (e.g., labels) */
+  @NonNull
   private Map<String, Object> msgCtx;
 
   /** Properties of the environment */
+  @Nullable
   private Map<String, Object> envCtx;
 
   public DecisionRequest(
-      ServiceNode from, ServiceNode to, Map<String, Object> msgCtx, Map<String, Object> envCtx) {
+          @NonNull ServiceNode from,
+          @NonNull ServiceNode to,
+          @NonNull Map<String, Object> msgCtx,
+          @Nullable Map<String, Object> envCtx) {
     super();
     this.from = from;
     this.to = to;
@@ -53,37 +63,21 @@ public class DecisionRequest {
   /**
    * Returns the source, i.e. the origin of the communication for which a decision is requested.
    *
-   * @return
+   * @return The processor that data is received from
    */
+  @NonNull
   public ServiceNode getFrom() {
     return from;
   }
 
   /**
-   * Sets the source, i.e. the origin of the communication for which a decision is requested.
-   *
-   * @return
-   */
-  public void setFrom(ServiceNode from) {
-    this.from = from;
-  }
-
-  /**
    * Returns the sink, i.e. the endpoint of the communication for which a decision is requested.
    *
-   * @return
+   * @return The Processor that the data is to be sent to
    */
+  @NonNull
   public ServiceNode getTo() {
     return to;
-  }
-
-  /**
-   * Sets the source, i.e. the origin of the communication for which a decision is requested.
-   *
-   * @return
-   */
-  public void setTo(ServiceNode to) {
-    this.to = to;
   }
 
   /**
@@ -92,9 +86,10 @@ public class DecisionRequest {
    *
    * <p>The context may include - timestamps - route ids - etc.
    *
-   * @return
+   * @return Properties of the Exchange
    */
-  public Map<String, Object> getMessageCtx() {
+  @NonNull
+  public Map<String, Object> getProperties() {
     return msgCtx;
   }
 
@@ -105,8 +100,9 @@ public class DecisionRequest {
    * <p>The context may include - a reference to previously taken decisions for the sake of caching
    * - a reason for the request - identifiers of available components - etc.
    *
-   * @return
+   * @return Additional environment properties
    */
+  @Nullable
   public Map<String, Object> getEnvironmentCtx() {
     return envCtx;
   }
