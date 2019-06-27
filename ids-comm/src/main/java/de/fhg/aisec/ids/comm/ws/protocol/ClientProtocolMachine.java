@@ -49,12 +49,10 @@ public class ClientProtocolMachine extends FSM {
   private WebSocket clientSocket;
 
   /**
-   * Returns a finite state machine (FSM) implementing the IDSP protocol.
+   * Constructor of a finite state machine (FSM) implementing the IDSP protocol.
    *
    * <p>The FSM will be in its initial state and ready to accept messages via <code>FSM.feedEvent()
    * </code>. It will send responses over the session according to its FSM definition.
-   *
-   * @return a FSM implementing the IDSP protocol.
    */
   public ClientProtocolMachine(WebSocket ws, ClientConfiguration clientConfiguration) {
     this.clientSocket = ws;

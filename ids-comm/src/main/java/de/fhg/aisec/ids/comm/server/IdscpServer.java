@@ -92,7 +92,7 @@ public class IdscpServer {
   /**
    * Adds a ServletContextHandler to a (possibly running) server.
    *
-   * @return
+   * @return Adds an IDSCP servlet to this server
    */
   public IdscpServer addServlet(String basePath) {
     // TODO There should be one server per host/port, which is started at the first call to start().
