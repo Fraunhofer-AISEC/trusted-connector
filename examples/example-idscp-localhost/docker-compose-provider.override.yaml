@@ -1,3 +1,5 @@
+# NOTE: Publish the IDSCP port (TCP 9292, see docker-compose-consumer.yaml), otherwise consumer-core will not listen on localhost!
+
 # Use from directory "example-idscp" like this:
 # docker-compose -f docker-compose-provider.yaml -f ../example-idscp-localhost/docker-compose-provider.override.yaml up
 

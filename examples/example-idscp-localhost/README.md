@@ -2,6 +2,8 @@ This is an docker-compose override file for example-idscp featuring communicatio
 
 It relies on the docker0 bridge using the gateway IP 172.17.0.1 (default value for docker setups).
 
+*NOTE: Publish the IDSCP port (TCP 9292, see docker-compose-consumer.yaml), otherwise consumer-core will not listen on localhost!*
+
 Usage (assumes example-idscp as working directory):
 `docker-compose -f docker-compose-provider.yaml -f ../example-idscp-localhost/docker-compose-provider.override.yaml up`
 
