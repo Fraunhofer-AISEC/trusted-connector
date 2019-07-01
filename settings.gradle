@@ -1,4 +1,4 @@
-rootProject.name = 'core-platform'
+rootProject.name = 'trusted-connector-core'
 
 include ':jnr-unixsocket-wrapper'
 include ':camel-ids'
