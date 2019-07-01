@@ -1,7 +1,6 @@
 description = 'Camel IDS Component'
 
 dependencies {
-    providedByBundle project(':tpm2j')
     providedByBundle project(':ids-api')
     providedByBundle project(':ids-comm')
 

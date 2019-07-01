@@ -27,13 +27,13 @@ import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import de.fhg.aisec.tpm2j.tpm.TPM_ALG_ID;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tss.tpm.TPM_ALG_ID;
 
 import java.io.File;
 import java.net.URI;
@@ -58,7 +58,7 @@ public class ADVANCEDAttestationIT {
   private static IdsAttestationType aType = IdsAttestationType.ADVANCED;
   private static int bitmask = 20;
 
-  private TPM_ALG_ID.ALG_ID hAlg = TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256;
+  private TPM_ALG_ID hAlg = TPM_ALG_ID.SHA256;
 
   private ConnectorMessage msg0 =
       ConnectorMessage.newBuilder()

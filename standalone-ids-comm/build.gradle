@@ -2,7 +2,6 @@ dependencies {
     implementation (project(':ids-api')) {
         transitive = false
     }
-    implementation project(':tpm2j')
     implementation (project(':ids-comm')) {
         transitive = false
     }

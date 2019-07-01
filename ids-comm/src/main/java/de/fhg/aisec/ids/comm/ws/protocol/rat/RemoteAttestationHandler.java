@@ -21,18 +21,16 @@ package de.fhg.aisec.ids.comm.ws.protocol.rat;
 
 import com.google.protobuf.MessageLite;
 import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.comm.ByteArrayUtil;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.aisec.ids.messages.Idscp.*;
-import de.fhg.aisec.tpm2j.tools.ByteArrayUtil;
-import de.fhg.aisec.tpm2j.tpm.TPM_ALG_ID;
-import de.fhg.aisec.tpm2j.tpms.TPMS_ATTEST;
-import de.fhg.aisec.tpm2j.tpmt.TPMT_SIGNATURE;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tss.tpm.*;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -205,7 +203,7 @@ public class RemoteAttestationHandler {
       // Construct a new TPMT_SIGNATURE instance from byteSignature bytes
       final TPMT_SIGNATURE tpmtSignature;
       try {
-        tpmtSignature = new TPMT_SIGNATURE(byteSignature);
+        tpmtSignature = TPMT_SIGNATURE.fromTpm(byteSignature);
       } catch (Exception ex) {
         LOG.warn("Could not create a TPMT_SIGNATURE from bytes:\n" + ByteArrayUtil.toPrintableHexString(byteSignature),
                 ex);
@@ -215,14 +213,14 @@ public class RemoteAttestationHandler {
       // Construct a new TPMS_ATTEST instance from byteQuoted bytes
       final TPMS_ATTEST tpmsAttest;
       try {
-        tpmsAttest = new TPMS_ATTEST(byteQuoted);
+        tpmsAttest = TPMS_ATTEST.fromTpm(byteQuoted);
       } catch (Exception ex) {
         LOG.warn("Could not create a TPMS_ATTEST from bytes:\n" + ByteArrayUtil.toPrintableHexString(byteQuoted), ex);
         return false;
       }
 
       // check hash value (extra data) against expected hash
-      byte[] extraBytes = tpmsAttest.getExtraData().getBuffer();
+      byte[] extraBytes = tpmsAttest.extraData;
       if (!Arrays.equals(extraBytes, hash)) {
         if (LOG.isWarnEnabled()) {
           LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!"
@@ -234,17 +232,25 @@ public class RemoteAttestationHandler {
       }
 
       // Check signature of attestation
-      final String sigAlg;
-      if (tpmtSignature.getSignature().getHashAlg() == TPM_ALG_ID.ALG_ID.TPM_ALG_SHA256) {
-        sigAlg = "SHA256withRSA";
+      final int tpmSigAlg = tpmtSignature.GetUnionSelector_signature();
+      final int tpmSigHashAlg;
+      final byte[] tpmSig;
+      if (tpmSigAlg == TPM_ALG_ID.RSAPSS.toInt()) {
+        tpmSigHashAlg = ((TPMS_SIGNATURE_RSAPSS) tpmtSignature.signature).hash.toInt();
+        tpmSig = ((TPMS_SIGNATURE_RSAPSS) tpmtSignature.signature).sig;
+      } else if (tpmSigAlg == TPM_ALG_ID.RSASSA.toInt()) {
+        tpmSigHashAlg = ((TPMS_SIGNATURE_RSASSA) tpmtSignature.signature).hash.toInt();
+        tpmSig = ((TPMS_SIGNATURE_RSASSA) tpmtSignature.signature).sig;
       } else {
-        LOG.warn("Only SHA256withRSA TPM signature algorithm is allowed!");
-        return false;
+        throw new Exception("Unknown or unimplemented signature scheme: " + tpmtSignature.signature.getClass());
       }
-      Signature sig = Signature.getInstance(sigAlg);
+      if (tpmSigHashAlg != TPM_ALG_ID.SHA256.toInt()) {
+        throw new Exception("Only SHA256withRSA TPM signature hash algorithm is allowed!");
+      }
+      Signature sig = Signature.getInstance("SHA256withRSA");
       sig.initVerify(certificate.getPublicKey());
       sig.update(byteQuoted);
-      boolean result = sig.verify(tpmtSignature.getSignature().getSig());
+      boolean result = sig.verify(tpmSig);
       if (!result && LOG.isWarnEnabled()) {
         LOG.warn("Attestation signature invalid!");
       }
