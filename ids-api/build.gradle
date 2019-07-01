@@ -54,6 +54,32 @@ publishing {
     publications {
         apiLibrary(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'IDSCP Protocol Library'
+                description = 'Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)'
+                url = 'https://github.com/industrial-data-space/trusted-connector'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'Michael Lux'
+                        email = 'michael.lux@aisec.fraunhofer.de'
+                        organization = 'Fraunhofer AISEC'
+                        organizationUrl = 'aisec.fraunhofer.de'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com:industrial-data-space/trusted-connector.git'
+                    developerConnection = 'scm:git:ssh://github.com:industrial-data-space/trusted-connector.git'
+                    url = 'https://github.com/industrial-data-space/trusted-connector'
+                }
+            }
         }
     }
 
