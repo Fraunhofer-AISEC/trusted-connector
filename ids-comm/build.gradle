@@ -1,5 +1,7 @@
 version = libraryVersions.idscp
 
+apply plugin: 'maven-publish'
+
 dependencies {
     providedByBundle project(':ids-api')
 
@@ -22,7 +24,7 @@ dependencies {
 }
 
 task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
+    from sourceSets.main.allSource
     archiveClassifier = 'sources'
 }
 
