@@ -23,6 +23,12 @@ idea {
 }
 
 dependencies {
+    // APIs removed in Java 9 upwards
+    providedByBundle group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+    providedByBundle group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+    providedByBundle group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
+    providedByBundle group: 'javax.activation', name: 'activation', version: '1.1.1'
+
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 

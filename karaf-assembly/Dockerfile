@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-slim-stretch
+FROM openjdk:11-jdk-slim-stretch
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 
