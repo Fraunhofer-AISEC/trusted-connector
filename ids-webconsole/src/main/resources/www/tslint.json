@@ -20,7 +20,7 @@
     "curly": true,
     "comment-format": false,
     
-    "i18n": false,
+    "template-i18n": false,
     "no-unused-css": false,
     "prefer-template": false,
     "component-selector": false,

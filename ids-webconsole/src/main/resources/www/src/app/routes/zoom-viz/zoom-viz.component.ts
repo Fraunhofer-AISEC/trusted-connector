@@ -12,7 +12,7 @@ declare const Viz: any;
 })
 export class ZoomVizComponent implements OnInit {
   @Input() private readonly dotSubject: Subject<string>;
-  @ViewChild('vizCanvas') private readonly vizCanvasRef: ElementRef;
+  @ViewChild('vizCanvas', { static: true }) private readonly vizCanvasRef: ElementRef;
   private zoom?: SvgPanZoom.Instance;
   private isLocked = false;
   private removeMoveListener: () => void = (() => undefined);

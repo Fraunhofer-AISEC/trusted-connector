@@ -8,7 +8,7 @@ import { CertificateService } from './keycert.service';
 })
 export class CertUploadComponent {
     @Input() multiple = false;
-    @ViewChild('fileIn') inputEl: ElementRef;
+    @ViewChild('fileIn', { static: false }) inputEl: ElementRef;
 
     constructor(private readonly certificateService: CertificateService) {}
 
