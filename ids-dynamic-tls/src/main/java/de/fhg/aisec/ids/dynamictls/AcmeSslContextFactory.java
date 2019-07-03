@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Lux
  */
-public class AcmeSslContextFactory extends SslContextFactory
+public class AcmeSslContextFactory extends SslContextFactory.Server
     implements SslContextFactoryReloadable {
   private static final Logger LOG = LoggerFactory.getLogger(AcmeSslContextFactory.class);
   private ServiceRegistration<SslContextFactoryReloadable> serviceRegistration;
