@@ -280,6 +280,11 @@
   dependencies:
     esquery "^1.0.1"
 
+"@saritasa/tslint-config-angular@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@saritasa/tslint-config-angular/-/tslint-config-angular-2.0.0.tgz#9e76c98081b1bc54c260e1c27abd5cd4ef8d2525"
+  integrity sha512-zs7nOOgxOA3WpNeRLS2Qcuu0BHU/GN/n9Kfbv//w0fzZinxeZKMaLOOnDcSlq4JGgOp6AbVJeCR8l50enwEasQ==
+
 "@schematics/angular@8.1.0":
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/@schematics/angular/-/angular-8.1.0.tgz#853715399962914525aeec60947b12a3623b1865"

@@ -14,11 +14,11 @@ import { RouteService } from './route.service';
 })
 
 export class RoutesComponent implements OnInit, OnDestroy {
-    title = 'Current Routes';
-    @Output() readonly changeTitle = new EventEmitter();
-    routes: Array<Route>;
-    selectedRoute: Route;
-    routemetrics: RouteMetrics = new RouteMetrics();
+    public title = 'Current Routes';
+    @Output() public readonly changeTitle = new EventEmitter();
+    public routes: Array<Route>;
+    public selectedRoute: Route;
+    public routemetrics: RouteMetrics = new RouteMetrics();
 
     private alive: boolean;
 
@@ -31,7 +31,7 @@ export class RoutesComponent implements OnInit, OnDestroy {
             });
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         this.changeTitle.emit('Camel Routes');
         // Update route metrics every second
         interval(1000)
@@ -43,15 +43,15 @@ export class RoutesComponent implements OnInit, OnDestroy {
         this.alive = true;
     }
 
-    ngOnDestroy(): void {
+    public ngOnDestroy(): void {
         this.alive = false;
     }
 
-    trackRoutes(index: number, item: Route): string {
+    public trackRoutes(index: number, item: Route): string {
         return item.id;
     }
 
-    onSelect(route: Route): void {
+    public onSelect(route: Route): void {
         this.selectedRoute = route;
     }
 }

@@ -4,10 +4,10 @@ declare var componentHandler: {
 };
 
 @Directive({
-    selector: '[ngxMdl]'
+    selector: '[appNgxMdl]'
 })
 export class MDLUpgradeElementDirective implements AfterViewChecked {
-    ngAfterViewChecked(): void {
+    public ngAfterViewChecked(): void {
         componentHandler.upgradeAllRegistered();
     }
 }

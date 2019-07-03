@@ -10,9 +10,9 @@ import { AppsComponent } from './apps.component';
     templateUrl: './app-card.component.html'
 })
 export class AppCardComponent implements OnInit {
-    @Input() app: App;
-    statusIcon: string;
-    statusColor: string;
+    @Input() public app: App;
+    public statusIcon: string;
+    public statusColor: string;
     private portDefs: Array<PortDef>;
 
     constructor(private readonly appService: AppService, private readonly appsComponent: AppsComponent) { }
@@ -29,11 +29,11 @@ export class AppCardComponent implements OnInit {
         return this.portDefs;
     }
 
-    trackPorts(_: number, item: PortDef): string {
+    public trackPorts(_: number, item: PortDef): string {
         return item.text;
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         if (this.app.status.indexOf('Up') >= 0) {
             this.statusIcon = 'stop';
             this.statusColor = '';
@@ -43,7 +43,7 @@ export class AppCardComponent implements OnInit {
         }
     }
 
-    onToggle(containerId: string): void {
+    public onToggle(containerId: string): void {
         if (this.statusIcon === 'play_arrow') {
             this.statusIcon = 'stop';
             this.statusColor = '';
@@ -59,7 +59,7 @@ export class AppCardComponent implements OnInit {
         }
     }
 
-    onDeleteBtnClick(containerId: string): void {
+    public onDeleteBtnClick(containerId: string): void {
       this.appService.wipeApp(containerId)
         .subscribe(result => undefined);
       const index = this.appsComponent.apps.indexOf(this.app);

@@ -11,12 +11,12 @@ import { Policy } from './policy.interface';
 export class PolicyService {
     constructor(private readonly http: HttpClient) { }
 
-    getPolicies(): Observable<Array<string>> {
+    public getPolicies(): Observable<Array<string>> {
         return this.http.get<Array<string>>(environment.apiURL + '/policies/list');
     }
 
     // Installs a LUCON policy through the PAP
-    install(policy: Policy, policyFile: any): Observable<string> {
+    public install(policy: Policy, policyFile: any): Observable<string> {
         const headers = new HttpHeaders({ 'Content-Type': 'multipart/form-data' });
         const model = new FormData();
         model.append('policy_name', policy.policy_name);

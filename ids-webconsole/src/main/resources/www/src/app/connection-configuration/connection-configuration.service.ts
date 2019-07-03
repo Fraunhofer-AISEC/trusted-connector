@@ -12,7 +12,7 @@ import { Settings } from './settings.interface';
 export class ConnectionConfigurationService {
   constructor(private readonly http: HttpClient) { }
 
-  storeConfiguration(config: Configuration): Observable<string> {
+  public storeConfiguration(config: Configuration): Observable<string> {
     return this.http.post(environment.apiURL + '/config/connectionConfigs/' + encodeURIComponent(config.connection),
       JSON.stringify(config.settings), {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -20,12 +20,12 @@ export class ConnectionConfigurationService {
       });
   }
 
-  getConfiguration(connection: string): Observable<Configuration> {
+  public getConfiguration(connection: string): Observable<Configuration> {
     return this.http.get<Settings>(environment.apiURL + '/config/connectionConfigs/' + encodeURIComponent(connection))
       .pipe(map(res => new Configuration(connection, res)));
   }
 
-  getAllConfiguration(): Observable<Array<Configuration>> {
+  public getAllConfiguration(): Observable<Array<Configuration>> {
     return this.http.get<object>(environment.apiURL + '/config/connectionConfigs')
       .pipe(map(configMap => Object.keys(configMap)
         .map(key => new Configuration(key, configMap[key]))));

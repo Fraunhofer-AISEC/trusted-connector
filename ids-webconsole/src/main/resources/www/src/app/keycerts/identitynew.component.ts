@@ -10,17 +10,17 @@ import { CertificateService } from './keycert.service';
     templateUrl: './identitynew.component.html'
 })
 export class NewIdentityComponent implements OnInit {
-    @Output() readonly changeTitle = new EventEmitter();
-    myForm: FormGroup;
-    data: Identity;
-    events: Array<any> = [];
+    @Output() public readonly changeTitle = new EventEmitter();
+    public myForm: FormGroup;
+    public data: Identity;
+    public events: Array<any> = [];
 
     constructor(private readonly _fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
                 private readonly router: Router) {
         this.titleService.setTitle('New Identity');
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         // the short way to create a FormGroup
         this.myForm = this._fb.group({
             s: ['', Validators.required as any],
@@ -31,7 +31,7 @@ export class NewIdentityComponent implements OnInit {
         });
     }
 
-    async save(identity: Identity): Promise<boolean> {
+    public async save(identity: Identity): Promise<boolean> {
          // Call REST to create identity
         this.certService.createIdentity(identity)
             .subscribe(() => undefined);

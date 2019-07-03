@@ -7,12 +7,12 @@ import { CertificateService } from './keycert.service';
     templateUrl: './cert-upload.component.html'
 })
 export class CertUploadComponent {
-    @Input() multiple = false;
-    @ViewChild('fileIn', { static: false }) inputEl: ElementRef;
+    @Input() public multiple = false;
+    @ViewChild('fileIn', { static: false }) public inputEl: ElementRef;
 
     constructor(private readonly certificateService: CertificateService) {}
 
-    upload(): void {
+    public upload(): void {
         const inputEl: HTMLInputElement = this.inputEl.nativeElement;
         const fileCount: number = inputEl.files.length;
 

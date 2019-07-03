@@ -1,20 +1,20 @@
 export class IncomingConnection {
-  endpointIdentifier: string;
-  attestationResult: string;
-  connectionKey: string;
-  remoteHostName: string;
+  public endpointIdentifier: string;
+  public attestationResult: string;
+  public connectionKey: string;
+  public remoteHostName: string;
 }
 
 export class OutgoingConnection {
-  endpointIdentifier: string;
-  remoteAuthentication: string;
-  remoteIdentity: string;
-  attestationResult: string;
+  public endpointIdentifier: string;
+  public remoteAuthentication: string;
+  public remoteIdentity: string;
+  public attestationResult: string;
 }
 
 export class Endpoint {
-  endpointIdentifier: string;
-  defaultProtocol: string;
-  port: string;
-  host: string;
+  public endpointIdentifier: string;
+  public defaultProtocol: string;
+  public port: string;
+  public host: string;
 }

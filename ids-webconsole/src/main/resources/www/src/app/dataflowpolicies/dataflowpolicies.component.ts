@@ -9,7 +9,7 @@ declare var componentHandler: any;
   templateUrl: './dataflowpolicies.component.html'
 })
 export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
-  @Output() readonly changeTitle = new EventEmitter();
+  @Output() public readonly changeTitle = new EventEmitter();
   private _policies?: Array<string>;
   private _isLoaded = false;
 
@@ -23,11 +23,11 @@ export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
       });
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.changeTitle.emit('Data Flow Control');
   }
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     componentHandler.upgradeAllRegistered();
   }
 
@@ -39,7 +39,7 @@ export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
     return this._isLoaded;
   }
 
-  trackRules(index: number, item: string): string {
+  public trackRules(index: number, item: string): string {
     return item;
   }
 }

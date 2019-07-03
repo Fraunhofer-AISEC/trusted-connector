@@ -12,7 +12,7 @@ export class AppComponent implements AfterViewInit {
 
   constructor(public titleService: Title) {}
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     componentHandler.upgradeAllRegistered();
   }
 

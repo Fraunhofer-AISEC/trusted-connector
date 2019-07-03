@@ -24,25 +24,25 @@ export class SensorService implements OnDestroy {
       );
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.alive = false;
   }
 
-  getCurrentPower(): Observable<number> {
+  public getCurrentPower(): Observable<number> {
     return this.http.get<any>('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentpower/value/')
       .pipe(map(response => response.currentPower));
   }
 
-  getCurrentRPM(): Observable<number> {
+  public getCurrentRPM(): Observable<number> {
     return this.http.get<any>('http://iot-connector1.netsec.aisec.fraunhofer.de:8080/sensordataapp/currentrpm/value/')
       .pipe(map(response => response.sensorReading));
   }
 
-  getPowerObservable(): Observable<number> {
+  public getPowerObservable(): Observable<number> {
     return this.powerObservable;
   }
 
-  getRPMObservable(): Observable<number> {
+  public getRPMObservable(): Observable<number> {
     return this.rpmObservable;
   }
 

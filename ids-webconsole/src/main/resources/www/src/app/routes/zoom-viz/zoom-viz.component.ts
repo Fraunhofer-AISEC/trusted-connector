@@ -24,7 +24,7 @@ export class ZoomVizComponent implements OnInit {
     return this.isLocked;
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     const viz = new Viz();
     const vizCanvas = this.vizCanvasRef.nativeElement;
     const container = document.createElement('div');

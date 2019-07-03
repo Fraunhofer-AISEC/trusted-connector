@@ -5,6 +5,6 @@ import { Component, Input } from '@angular/core';
   templateUrl: './metric-card.component.html'
 })
 export class MetricCardComponent {
-  @Input() text = 'test';
-  @Input() value = '0';
+  @Input() public text = 'test';
+  @Input() public value = '0';
 }

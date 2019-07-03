@@ -12,11 +12,11 @@ import { RouteService } from '../route.service';
   styleUrls: ['./route-card.component.css']
 })
 export class RouteCardComponent implements OnInit {
-  @Input() route: Route;
-  vizResult: SafeHtml;
-  result: Result;
-  statusIcon: string;
-  dotSubject: ReplaySubject<string> = new ReplaySubject(1);
+  @Input() public route: Route;
+  public vizResult: SafeHtml;
+  public result: Result;
+  public statusIcon: string;
+  public dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
   constructor(private readonly routeService: RouteService) {}
 
@@ -28,12 +28,12 @@ export class RouteCardComponent implements OnInit {
     return (this.route.uptime / 1000 / 60).toFixed();
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.statusIcon = this.route.status === 'Started' ? 'stop' : 'play_arrow';
     this.dotSubject.next(this.route.dot);
   }
 
-  onStart(routeId: string): void {
+  public onStart(routeId: string): void {
     this.statusIcon = 'play_arrow';
     this.routeService.startRoute(routeId)
       .subscribe(result => {
@@ -42,7 +42,7 @@ export class RouteCardComponent implements OnInit {
       });
   }
 
-  onStop(routeId: string): void {
+  public onStop(routeId: string): void {
     this.statusIcon = 'stop';
     this.routeService.stopRoute(routeId)
       .subscribe(result => {
@@ -51,7 +51,7 @@ export class RouteCardComponent implements OnInit {
       });
   }
 
-  onToggle(routeId: string): void {
+  public onToggle(routeId: string): void {
     if (this.statusIcon === 'play_arrow') {
       this.statusIcon = 'stop';
       this.routeService.startRoute(routeId)

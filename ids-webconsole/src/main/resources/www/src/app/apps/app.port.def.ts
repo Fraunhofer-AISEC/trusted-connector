@@ -1,7 +1,7 @@
 export class PortDef {
-    readonly text: string;
-    readonly isLink: boolean;
-    readonly link?: string;
+    public readonly text: string;
+    public readonly isLink: boolean;
+    public readonly link?: string;
 
     constructor(text: string) {
         this.text = text;
