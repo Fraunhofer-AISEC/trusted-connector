@@ -9,11 +9,11 @@ import { CertificateService } from './keycert.service';
     templateUrl: './keycerts.component.html'
 })
 export class KeycertsComponent implements OnInit {
-    title = 'Current Certificates';
-    identities: Array<Certificate>;
-    certificates: Array<Certificate>;
+    public title = 'Current Certificates';
+    public identities: Array<Certificate>;
+    public certificates: Array<Certificate>;
 
-    @Output() readonly changeTitle = new EventEmitter();
+    @Output() public readonly changeTitle = new EventEmitter();
 
     constructor(private readonly titleService: Title, private readonly certificateService: CertificateService, vcRef: ViewContainerRef) {
         this.titleService.setTitle('Identities');
@@ -29,11 +29,11 @@ export class KeycertsComponent implements OnInit {
             });
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         this.changeTitle.emit('Certificates');
     }
 
-    deleteCert(alias: string): void {
+    public deleteCert(alias: string): void {
         this.certificateService.deleteCert(alias)
             .subscribe(result => {
                 //             this.result = result;
@@ -43,7 +43,7 @@ export class KeycertsComponent implements OnInit {
             });
     }
 
-    deleteIdentity(alias: string): void {
+    public deleteIdentity(alias: string): void {
         this.certificateService.deleteIdentity(alias)
             .subscribe(result => {
                 //             this.result = result;

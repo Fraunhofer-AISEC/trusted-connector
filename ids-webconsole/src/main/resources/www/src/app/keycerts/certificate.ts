@@ -1,13 +1,13 @@
 export class Certificate {
-  alias: string;
-  file: string;
-  certificate: string;
-  subjectDistinguishedName: string;
-  subjectAltnames: Array<string>;
-  subjectCN: string;
-  subjectOU: string;
-  subjectO: string;
-  subjectL: string;
-  subjectS: string;
-  subjectC: string;
+  public alias: string;
+  public file: string;
+  public certificate: string;
+  public subjectDistinguishedName: string;
+  public subjectAltnames: Array<string>;
+  public subjectCN: string;
+  public subjectOU: string;
+  public subjectO: string;
+  public subjectL: string;
+  public subjectS: string;
+  public subjectC: string;
 }

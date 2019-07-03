@@ -72,7 +72,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
    * @param endPoint The endpoint, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
-  get(endPoint: string, options?: any): any {
+  public get(endPoint: string, options?: any): any {
     if (options && options.cacheTTL) {
       const key = endPoint + JSON.stringify(options);
       const val = this.cache.get(key);
@@ -95,7 +95,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
    * @param body Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  post(endPoint: string, body: any | null, options?: any): any {
+  public post(endPoint: string, body: any | null, options?: any): any {
     return this.http.post(environment.apiURL + endPoint, body, options);
   }
 
@@ -105,7 +105,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
    * @param params Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  put(endPoint: string, params: Object, options?: any): any {
+  public put(endPoint: string, params: Object, options?: any): any {
     return this.http.put(environment.apiURL + endPoint, params, options);
   }
 
@@ -114,7 +114,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
    * @param endPoint The endpoint at the API, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
-  delete<T>(endPoint: string, options?: any): any {
+  public delete<T>(endPoint: string, options?: any): any {
     return this.http.delete<T>(environment.apiURL + endPoint, options);
   }
 }

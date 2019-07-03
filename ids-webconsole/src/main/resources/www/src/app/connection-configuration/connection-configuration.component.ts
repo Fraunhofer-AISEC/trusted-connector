@@ -10,7 +10,7 @@ import { ConnectionConfigurationService } from './connection-configuration.servi
   styleUrls: ['./connection-configuration.component.css']
 })
 export class ConnectionConfigurationComponent implements OnInit {
-  models: Array<Configuration>;
+  public models: Array<Configuration>;
   private _model?: Configuration;
   private _selectedIndex = 0;
 
@@ -18,7 +18,7 @@ export class ConnectionConfigurationComponent implements OnInit {
     this.titleService.setTitle('Connections Configuration');
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.connectionConfService.getAllConfiguration()
       .subscribe(val => {
         this.models = val;
@@ -30,7 +30,7 @@ export class ConnectionConfigurationComponent implements OnInit {
       });
   }
 
-  trackModels(index: number, item: Configuration): string {
+  public trackModels(index: number, item: Configuration): string {
     return item.connection;
   }
 
@@ -47,7 +47,7 @@ export class ConnectionConfigurationComponent implements OnInit {
     return this._model;
   }
 
-  save(): void {
+  public save(): void {
     // Call connection service API to store configurations
     this.connectionConfService.storeConfiguration(this.model)
       .subscribe(

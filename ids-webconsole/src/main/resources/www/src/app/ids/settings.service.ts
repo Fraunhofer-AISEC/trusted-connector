@@ -10,18 +10,18 @@ import { TermsOfService } from './terms-of-service.interface';
 export class SettingsService {
   constructor(@Inject(HTTP_INJECTION_TOKEN) private readonly http: ApplicationHttpClient) { }
 
-  getSettings(): Observable<Settings> {
+  public getSettings(): Observable<Settings> {
     return this.http.get<Settings>('/config');
   }
 
-  getToS(uri: string): Observable<TermsOfService> {
+  public getToS(uri: string): Observable<TermsOfService> {
     return this.http.get<TermsOfService>('/certs/acme_tos', {
       cacheTTL: 60,
       params: {uri}
     });
   }
 
-  store(model: Settings): Observable<string> {
+  public store(model: Settings): Observable<string> {
     return this.http.post('/config', model, { responseType: 'text' });
   }
 }

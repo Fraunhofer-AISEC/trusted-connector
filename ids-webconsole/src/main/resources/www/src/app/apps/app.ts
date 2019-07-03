@@ -33,5 +33,5 @@ export interface App {
 }
 
 export class AppSearchTerm {
-    searchTerm: string;
+    public searchTerm: string;
 }

@@ -12,15 +12,15 @@ import { Endpoint, IncomingConnection, OutgoingConnection } from './connections'
 })
 export class ConnectionReportComponent implements OnInit {
 
-  incomingConnections: Array<IncomingConnection>;
-  outgoingConnections: Array<OutgoingConnection>;
-  endpoints: Array<Endpoint>;
+  public incomingConnections: Array<IncomingConnection>;
+  public outgoingConnections: Array<OutgoingConnection>;
+  public endpoints: Array<Endpoint>;
 
   constructor(private readonly titleService: Title, private readonly connectionService: ConnectionReportService) {
     this.titleService.setTitle('IDS Connections');
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     const errorStrategy = errors => errors.pipe(
       delay(5000),
       take(6)
@@ -45,15 +45,15 @@ export class ConnectionReportComponent implements OnInit {
       });
   }
 
-  trackEndpoints(index: number, item: Endpoint): string {
+  public trackEndpoints(index: number, item: Endpoint): string {
     return item.endpointIdentifier;
   }
 
-  trackIncoming(index: number, item: IncomingConnection): string {
+  public trackIncoming(index: number, item: IncomingConnection): string {
     return item.connectionKey;
   }
 
-  trackOutgoing(index: number, item: OutgoingConnection): string {
+  public trackOutgoing(index: number, item: OutgoingConnection): string {
     return item.endpointIdentifier + item.remoteIdentity;
   }
 

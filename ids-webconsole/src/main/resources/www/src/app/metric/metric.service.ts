@@ -19,15 +19,15 @@ export class MetricService implements OnDestroy {
         this.alive = true;
     }
 
-    ngOnDestroy(): void {
+    public ngOnDestroy(): void {
         this.alive = false;
     }
 
-    getMetric(): Observable<Array<String>> {
+    public getMetric(): Observable<Array<String>> {
         return this.http.get<Array<String>>(environment.apiURL + '/metric/get');
     }
 
-    getMetricObservable(): Observable<Array<String>> {
+    public getMetricObservable(): Observable<Array<String>> {
         return this.metricObservable;
     }
 }

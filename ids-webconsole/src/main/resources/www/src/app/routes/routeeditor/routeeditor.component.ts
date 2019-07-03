@@ -15,7 +15,7 @@ import { CounterExample, ValidationInfo } from '../validation';
   styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
-  myForm: FormGroup;
+  public myForm: FormGroup;
 
   private _route?: Route;
   private _newRoute = false;
@@ -79,7 +79,7 @@ export class RouteeditorComponent implements OnInit {
     return this._dotSubject;
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.navRoute.params.subscribe(params => {
       const id = params.id;
 
@@ -111,15 +111,15 @@ export class RouteeditorComponent implements OnInit {
     });
   }
 
-  trackCounterExamples(index: number, item: CounterExample): string {
+  public trackCounterExamples(index: number, item: CounterExample): string {
     return `${item.explanation}${Number(index)}`;
   }
 
-  trackSteps(index: number, item: string): string {
+  public trackSteps(index: number, item: string): string {
     return item;
   }
 
-  onStart(routeId: string): void {
+  public onStart(routeId: string): void {
     this.routeService.startRoute(routeId)
       .subscribe(result => {
         this._result = result;
@@ -128,7 +128,7 @@ export class RouteeditorComponent implements OnInit {
     this.statusIcon = 'play_arrow';
   }
 
-  onStop(routeId: string): void {
+  public onStop(routeId: string): void {
     this.routeService.stopRoute(routeId)
       .subscribe(result => {
         this._result = result;
@@ -137,7 +137,7 @@ export class RouteeditorComponent implements OnInit {
     this.statusIcon = 'stop';
   }
 
-  onToggle(routeId: string): void {
+  public onToggle(routeId: string): void {
     if (this.statusIcon === 'play_arrow') {
       this.statusIcon = 'stop';
       this.routeService.startRoute(routeId)
@@ -157,7 +157,7 @@ export class RouteeditorComponent implements OnInit {
     }
   }
 
-  save(): void {
+  public save(): void {
     this._saved = true;
 
     // Call REST POST/PUT to store route

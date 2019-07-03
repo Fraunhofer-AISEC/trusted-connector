@@ -13,17 +13,17 @@ import { TermsOfService } from './terms-of-service.interface';
     providers: [SettingsService]
 })
 export class IdsComponent implements OnInit {
-    settingsForm?: FormGroup;
-    saved = true;
-    tosWebconsole?: TermsOfService;
+    public settingsForm?: FormGroup;
+    public saved = true;
+    public tosWebconsole?: TermsOfService;
 
     constructor(private readonly settingsService: SettingsService, private readonly formBuilder: FormBuilder) { }
 
-    canDeactivate(target: IdsComponent): boolean {
+    public canDeactivate(target: IdsComponent): boolean {
         return target.saved;
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         // Pull settings from server
         this.settingsService.getSettings()
             .subscribe(response => {
@@ -57,13 +57,13 @@ export class IdsComponent implements OnInit {
             });
     }
 
-    subscribeToFormChanges(): void {
+    public subscribeToFormChanges(): void {
         this.settingsForm.valueChanges.subscribe(_ => {
             this.saved = false;
         });
     }
 
-    save(): void {
+    public save(): void {
         if (this.settingsForm.valid) {
             this.settingsService.store(this.settingsForm.value)
                 .subscribe(() => this.saved = true);

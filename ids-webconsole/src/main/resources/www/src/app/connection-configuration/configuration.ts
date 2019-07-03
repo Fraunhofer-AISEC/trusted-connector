@@ -1,9 +1,9 @@
 import { Settings } from './settings.interface';
 
 export class Configuration {
-    connection: string;
-    settings: Settings;
-    dirty = false;
+    public connection: string;
+    public settings: Settings;
+    public dirty = false;
 
     constructor(connection: string, settings?: Settings) {
         this.connection = connection;
