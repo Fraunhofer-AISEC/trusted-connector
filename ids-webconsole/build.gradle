@@ -99,7 +99,7 @@ task yarnInstall(type: YarnTask) {
     outputs.cacheIf { true }
 
     workingDir = file('src/main/resources/www')
-    args = ['install']
+    args = ['install', '--ignore-optional']
 }
 
 task yarnBuild(type: YarnTask) {

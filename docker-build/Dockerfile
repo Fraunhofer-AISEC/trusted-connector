@@ -1,4 +1,4 @@
-FROM node:11-slim
+FROM node:12-slim
 
 #https://github.com/puckel/docker-airflow/issues/182#issuecomment-444683455
 RUN mkdir -p /usr/share/man/man1
