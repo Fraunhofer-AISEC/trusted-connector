@@ -40,10 +40,7 @@
     "@saritasa/tslint-config-angular": "^2.0.0",
     "@types/node": "^10.12.12",
     "@types/vis": "^4.21.9",
-    "angular-tslint-rules": "^1.12.1",
     "codelyzer": "^5.0.1",
-    "rxjs-tslint": "^0.1.6",
-    "rxjs-tslint-rules": "^4.16.2",
     "tslint": "^5.12.1",
     "typescript": "3.4.5",
     "vis": "^4.20.0"
