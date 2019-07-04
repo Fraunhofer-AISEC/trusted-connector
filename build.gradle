@@ -154,12 +154,21 @@ subprojects {
         // BOM for pax, for jetty, etc.
         bom group: 'org.ops4j.pax', name: 'web', version: libraryVersions.pax
 
-        testCompile "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
-        testCompile "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"
-        testCompile "org.ops4j.pax.exam:pax-exam:${libraryVersions.paxExam}"
-        testCompile "org.ops4j.pax.url:pax-url-aether:2.4.3"
-        testCompile "javax.inject:javax.inject:1"
-        testCompile "org.slf4j:slf4j-simple:1.7.12"
+        // Required for successful build with JDK 11
+        compileOnly group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+        compileOnly group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+        compileOnly group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
+        testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+        testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+        testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
+        testImplementation group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0'
+
+        testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
+        testImplementation "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"
+        testImplementation "org.ops4j.pax.exam:pax-exam:${libraryVersions.paxExam}"
+        testImplementation "org.ops4j.pax.url:pax-url-aether:2.4.3"
+        testImplementation "javax.inject:javax.inject:1"
+        testImplementation "org.slf4j:slf4j-simple:1.7.12"
     }
 
     tasks.withType(JavaCompile) {
