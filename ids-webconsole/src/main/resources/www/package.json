@@ -7,8 +7,7 @@
     "ng": "ng",
     "start": "ng serve",
     "bundle": "ng build --prod --no-progress --output-path=\"../../../../build/resources/main/www\"",
-    "lint": "ng lint",
-    "apidocs": "yarn run spectacle ../../../../generated/swagger-ui/swagger.json -t ../../../../generated/swagger-ui"
+    "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
@@ -36,25 +35,18 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.801.0",
-    "@angular-devkit/build-optimizer": "^0.13.0",
-    "@angular-devkit/core": "^7.3.0",
-    "@angular-devkit/schematics": "^7.3.0",
     "@angular/cli": "~8.1.0",
     "@angular/compiler": "~8.1.0",
     "@angular/compiler-cli": "~8.1.0",
     "@saritasa/tslint-config-angular": "^2.0.0",
-    "@types/jasmine": "^3.3.1",
     "@types/node": "^10.12.12",
     "@types/vis": "^4.21.9",
     "angular-tslint-rules": "^1.12.1",
     "codelyzer": "^5.0.1",
     "rxjs-tslint": "^0.1.6",
     "rxjs-tslint-rules": "^4.16.2",
-    "spectacle-docs": "^1.0.6",
     "tslint": "^5.12.1",
     "typescript": "3.4.5",
-    "vis": "^4.20.0",
-    "webpack": "~4.27.1",
-    "webpack-sources": "^1.3.0"
+    "vis": "^4.20.0"
   }
 }

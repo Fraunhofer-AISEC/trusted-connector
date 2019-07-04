@@ -126,22 +126,10 @@ task yarnLint(type: YarnTask) {
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
-task yarnApiDocs(type: YarnTask) {
-    workingDir = file('src/main/resources/www')
-    args = ['apidocs']
-    onlyIf { !rootProject.hasProperty("skipAngular") }
-}
-
 yarnBuild.dependsOn(yarnLint)
 
 // make sure, yarn install is executed first
 yarnBuild.dependsOn(yarnInstall)
-yarnApiDocs.dependsOn(yarnInstall)
 
 processResources.dependsOn(yarnBuild)
 
-// yarnApiDocs depends on swagger generation
-yarnApiDocs.dependsOn(generateSwaggerDocumentation)
-
-// build apidocs during build
-build.dependsOn(yarnApiDocs)
