@@ -46,7 +46,7 @@ def getDockerTag() {
 }
 
 allprojects {
-    group = 'de.fhg.aisec.ids'
+    group = 'de.fraunhofer.aisec.ids'
     version = '2.0.0'
 
     ext.libraryVersions = [
@@ -136,8 +136,6 @@ subprojects {
     apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'java'
     apply plugin: 'maven'
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -211,7 +209,7 @@ subprojects {
     }
 }
 
-configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
+configure(subprojects.findAll { it.name != 'examples' }) {
     apply plugin: 'com.diffplug.gradle.spotless'
 
     spotless {
@@ -240,5 +238,75 @@ configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
  * =========================LICENSE_END==================================
  */''').yearSeparator(' - ')
         }
+    }
+}
+
+configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' }) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        from ('src/main') {
+            include 'proto/**'
+        }
+        archiveClassifier = 'sources'
+    }
+
+    task javadocJar(type: Jar) {
+        from javadoc
+        archiveClassifier = 'javadoc'
+    }
+
+    publishing {
+        publications {
+            idsLibrary(MavenPublication) {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+                pom {
+                    name = 'IDSCP Protocol Library'
+                    description = 'Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)'
+                    url = 'https://github.com/industrial-data-space/trusted-connector'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = 'Michael Lux'
+                            email = 'michael.lux@aisec.fraunhofer.de'
+                            organization = 'Fraunhofer AISEC'
+                            organizationUrl = 'aisec.fraunhofer.de'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com:industrial-data-space/trusted-connector.git'
+                        developerConnection = 'scm:git:ssh://github.com:industrial-data-space/trusted-connector.git'
+                        url = 'https://github.com/industrial-data-space/trusted-connector'
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+                credentials {
+                    username = deployUsername
+                    password = deployPassword
+                }
+            }
+        }
+    }
+
+    signing {
+        useGpgCmd()
+        sign publishing.publications.idsLibrary
     }
 }
