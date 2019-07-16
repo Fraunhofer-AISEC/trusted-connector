@@ -46,10 +46,14 @@ def getDockerTag() {
 }
 
 allprojects {
-    group = 'de.fhg.aisec.ids'
+    group = 'de.fraunhofer.aisec.ids'
     version = '2.0.0'
 
     ext.libraryVersions = [
+            // Versions for modules that will be released as libraries
+            api                : '2.0.0',
+            idscp              : '1.0.0',
+
             // basically, the first requirement, all other libraries depend on this version
             karaf              : '4.2.2',
 
@@ -121,9 +125,9 @@ allprojects {
         // OSGi core dependencies which will just be there during runtime
         osgiCore
 
-        // All OSGi dependencies will be required at compile time and for unit tests
-        compileOnly.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
-        // Make compileOnly dependencies available for tests
+        // The "compile" configuration needs to be extended for dependency resolution of maven-publish
+        compile.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
+        // Some compileOnly dependencies are also needed for unit tests
         testImplementation.extendsFrom compileOnly
     }
 }
@@ -205,7 +209,7 @@ subprojects {
     }
 }
 
-configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
+configure(subprojects.findAll { it.name != 'examples' }) {
     apply plugin: 'com.diffplug.gradle.spotless'
 
     spotless {
@@ -234,5 +238,75 @@ configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
  * =========================LICENSE_END==================================
  */''').yearSeparator(' - ')
         }
+    }
+}
+
+configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' }) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        from ('src/main') {
+            include 'proto/**'
+        }
+        archiveClassifier = 'sources'
+    }
+
+    task javadocJar(type: Jar) {
+        from javadoc
+        archiveClassifier = 'javadoc'
+    }
+
+    publishing {
+        publications {
+            idsLibrary(MavenPublication) {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+                pom {
+                    name = 'IDSCP Protocol Library'
+                    description = 'Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)'
+                    url = 'https://github.com/industrial-data-space/trusted-connector'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = 'Michael Lux'
+                            email = 'michael.lux@aisec.fraunhofer.de'
+                            organization = 'Fraunhofer AISEC'
+                            organizationUrl = 'aisec.fraunhofer.de'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com:industrial-data-space/trusted-connector.git'
+                        developerConnection = 'scm:git:ssh://github.com:industrial-data-space/trusted-connector.git'
+                        url = 'https://github.com/industrial-data-space/trusted-connector'
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+                credentials {
+                    username = deployUsername
+                    password = deployPassword
+                }
+            }
+        }
+    }
+
+    signing {
+        useGpgCmd()
+        sign publishing.publications.idsLibrary
     }
 }
