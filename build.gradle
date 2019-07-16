@@ -298,8 +298,8 @@ configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' })
                 url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
                 credentials {
-                    username = deployUsername
-                    password = deployPassword
+                    username = project.findProperty('deployUsername')
+                    password = project.findProperty('deployPassword')
                 }
             }
         }
