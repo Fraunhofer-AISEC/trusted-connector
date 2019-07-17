@@ -30,10 +30,10 @@ dependencies {
 
     providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson
 
-    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+    publishCompile group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     // Actual implementation must be provided by ids-infomodel-manager
-    compileOnly group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
+    publishCompile group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito

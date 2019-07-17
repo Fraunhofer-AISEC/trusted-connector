@@ -1,15 +1,7 @@
 Bundle-Name: IDS :: IDS Communication Protocol
 Bundle-Description: IDS Communication Protocol
 Export-Package: \
-	de.fhg.aisec.ids.comm,\
-	de.fhg.aisec.ids.comm.client,\
-	de.fhg.aisec.ids.comm.server,\
-	de.fhg.aisec.ids.comm.unixsocket,\
-	de.fhg.aisec.ids.comm.ws.protocol,\
-	de.fhg.aisec.ids.comm.ws.protocol.error,\
-	de.fhg.aisec.ids.comm.ws.protocol.fsm,\
-	de.fhg.aisec.ids.comm.ws.protocol.metadata,\
-	de.fhg.aisec.ids.comm.ws.protocol.rat
+	de.fhg.aisec.ids.comm*
 Import-Package: \
   !org.checkerframework.checker*,\
 	*

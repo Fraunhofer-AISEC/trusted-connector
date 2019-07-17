@@ -10,7 +10,7 @@ dependencies {
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
     
-    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+    publishCompile group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
 

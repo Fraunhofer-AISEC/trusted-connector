@@ -51,8 +51,8 @@ allprojects {
 
     ext.libraryVersions = [
             // Versions for modules that will be released as libraries
-            api                : '2.0.0',
-            idscp              : '1.0.0',
+            api                : '2.0.1',
+            idscp              : '1.0.1',
 
             // basically, the first requirement, all other libraries depend on this version
             karaf              : '4.2.2',
@@ -125,8 +125,11 @@ allprojects {
         // OSGi core dependencies which will just be there during runtime
         osgiCore
 
+        // For artifacts that should be included as "compile" dependencies into published maven artifacts
+        publishCompile
+
         // The "compile" configuration needs to be extended for dependency resolution of maven-publish
-        compile.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
+        compile.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore, publishCompile
         // Some compileOnly dependencies are also needed for unit tests
         testImplementation.extendsFrom compileOnly
     }
@@ -192,20 +195,12 @@ subprojects {
     }
 
     repositories {
-        mavenLocal()
         mavenCentral()
         jcenter()
-        // References local copy of the private IAIS repository that contains the necessary artifacts
+        // References IAIS repository that contains the infomodel artifacts
         maven {
             url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
         }
-//        maven {
-//            url "https://maven.iais.fraunhofer.de/artifactory/eis-ids-snapshot/"
-//            credentials {
-//                username = isstUser
-//                password = isstPassword
-//            }
-//        }
     }
 }
 
