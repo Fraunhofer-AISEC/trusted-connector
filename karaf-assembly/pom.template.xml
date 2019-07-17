@@ -10,6 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <branding.first>${brandingFirst}</branding.first>
+        <branding.second>${brandingSecond}</branding.second>
     </properties>
 
     <dependencies>
