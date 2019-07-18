@@ -7,4 +7,10 @@ export interface Settings {
   acmeDnsWebcon: string;
   acmePortWebcon: number;
   tosAcceptWebcon: boolean;
+  dapsUrl: string;
+  keystoreName: string;
+  keystorePassword: string;
+  keystoreAliasName: string;
+  connectorUUID: string;
+
 }

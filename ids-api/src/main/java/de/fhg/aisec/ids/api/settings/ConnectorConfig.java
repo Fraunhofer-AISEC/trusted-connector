@@ -32,6 +32,11 @@ public final class ConnectorConfig implements Serializable {
   private final String acmeDnsWebcon;
   private final int acmePortWebcon;
   private final boolean tosAcceptWebcon;
+  private final String dapsUrl;
+  private final String keystoreName;
+  private final String keystorePassword;
+  private final String keystoreAliasName;
+  private final String connectorUUID;
 
   public ConnectorConfig() {
     appstoreUrl = "https://raw.githubusercontent.com/industrial-data-space/templates/master/templates.json";
@@ -42,6 +47,11 @@ public final class ConnectorConfig implements Serializable {
     acmeDnsWebcon = "";
     acmePortWebcon = 80;
     tosAcceptWebcon = false;
+    dapsUrl = "http://daps.aisec.fraunhofer.de/token";
+    keystoreName = "client-keystore.jks";
+    keystorePassword = "password";
+    keystoreAliasName="1";
+    connectorUUID="00c6155a-966d-4d2c-af6e-60f997e24da2";
   }
 
   public String getAppstoreUrl() {
@@ -75,4 +85,14 @@ public final class ConnectorConfig implements Serializable {
   public boolean isTosAcceptWebcon() {
     return tosAcceptWebcon;
   }
+
+  public String getDapsUrl() { return dapsUrl; }
+
+  public String getKeystoreName() { return keystoreName; }
+
+  public String getKeystorePassword() { return keystorePassword; }
+
+  public String getKeystoreAliasName() { return keystoreAliasName; }
+
+  public String getConnectorUUID() { return connectorUUID; }
 }

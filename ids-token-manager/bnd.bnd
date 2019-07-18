@@ -1,0 +1,13 @@
+Bundle-Name: IDS :: Token Manager
+Export-Package: \
+  de.fhg.aisec.ids.tokenmanager
+Import-Package: \
+   !android.*,\
+   !org.conscrypt,\
+	*
+Private-Package: \
+    okhttp3*,\
+    okio*,\
+    //com.fasterxml.jackson.databind,\
+    io.jsonwebtoken*
+

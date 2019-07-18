@@ -85,7 +85,38 @@
 						<span class="mdl-textfield__error"> Valid Port required </span>
 					</div>
 				</div>
-				<div class="mdl-cell--12-col">
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <input class="mdl-textfield__input" id="dapsUrl"	type="URL" formControlName="dapsUrl"
+                 required minlength="5">
+          <label class="mdl-textfield__label" for="dapsUrl">Dynamic Attribute Provisioning Service (DAPS) Token URL</label>
+          <span class="mdl-textfield__error"> Valid DAPS Token URL required </span>
+        </div>
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <input class="mdl-textfield__input" id="keystoreName"	type="string" formControlName="keystoreName"
+                 required minlength="4">
+          <label class="mdl-textfield__label" for="keystoreName">Keystore file name</label>
+          <span class="mdl-textfield__error"> Valid keystore name required </span>
+        </div>
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <input class="mdl-textfield__input" id="keystorePassword"	type="password" formControlName="keystorePassword"
+                 required minlength="4">
+          <label class="mdl-textfield__label" for="keystorePassword">Keystore password</label>
+          <span class="mdl-textfield__error"> Password required </span>
+        </div>
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <input class="mdl-textfield__input" id="keystoreAliasName"	type="string" formControlName="keystoreAliasName"
+                 required minlength="1">
+          <label class="mdl-textfield__label" for="keystoreAliasName">Keystore alias of certificate</label>
+          <span class="mdl-textfield__error"> Valid Alias required </span>
+        </div>
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <input class="mdl-textfield__input" id="connectorUUID"	type="string" formControlName="connectorUUID"
+                 required minlength="1">
+          <label class="mdl-textfield__label" for="connectorUUID">Connector UUID</label>
+          <span class="mdl-textfield__error"> Valid UUID required </span>
+        </div>
+
+        <div class="mdl-cell--12-col">
 					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved}">
 						Save Settings
 					</button>

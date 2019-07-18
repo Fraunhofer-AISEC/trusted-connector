@@ -101,6 +101,11 @@ allprojects {
             jersey             : '2.26',
             mockito            : '1.10.19',
 
+            // needed for token manager to assemble JWTs
+            jsonwebtoken  : '0.10.5',
+            okhttp        : '3.11.0',
+            okio          : '1.15.0',
+
             // for OSGi integration tests
             paxExam            : '4.6.0'
     ]

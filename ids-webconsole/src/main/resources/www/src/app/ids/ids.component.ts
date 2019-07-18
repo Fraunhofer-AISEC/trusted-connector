@@ -51,7 +51,13 @@ export class IdsComponent implements OnInit {
                     ]],
                     acmeDnsWebcon: response.acmeDnsWebcon,
                     acmePortWebcon: response.acmePortWebcon,
-                    tosAcceptWebcon: response.tosAcceptWebcon
+                    tosAcceptWebcon: response.tosAcceptWebcon,
+                    dapsUrl: response.dapsUrl,
+                    keystoreName: response.keystoreName,
+                    keystorePassword: response.keystorePassword,
+                    keystoreAliasName: response.keystoreAliasName,
+                    connectorUUID: response.connectorUUID
+
                 });
                 this.subscribeToFormChanges();
             });

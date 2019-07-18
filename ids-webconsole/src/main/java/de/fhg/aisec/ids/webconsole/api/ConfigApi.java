@@ -26,6 +26,7 @@ import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,6 +36,7 @@ import io.swagger.annotations.ApiResponses;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.nio.file.FileSystems;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +91,16 @@ public class ConfigApi {
     	return "No settings available";
     }
     settings.setConnectorConfig(config);
+    TokenManager tokenManager = WebConsoleComponent.getTokenManager();
+    if (tokenManager == null) {
+      return "No TokenManager available";
+    }
+
+    try {
+      tokenManager.acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(), config.getConnectorUUID());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     return "OK";
   }
