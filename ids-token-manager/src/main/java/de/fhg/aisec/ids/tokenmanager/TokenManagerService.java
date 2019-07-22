@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.tokenmanager;
 
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import io.jsonwebtoken.JwtBuilder;
+import org.jose4j.http.Get;
 import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jwt.JwtClaims;
@@ -43,6 +44,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import io.jsonwebtoken.*;
+import org.json.*;
 
 //import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
@@ -182,9 +184,9 @@ public class TokenManagerService implements TokenManager {
             Request request = new Request.Builder().url(dapsUrl+"/token").post(formBody).build();
             LOG.info("Request looks like this: " + bodyToString(request));
             Response jwtresponse = client.newCall(request).execute();
-
+            String responseBody = jwtresponse.body().string();
             LOG.info("Response: " + jwtresponse.toString());
-            LOG.info("Body: " + jwtresponse.body().string());
+            LOG.info("Body: " + responseBody);
             LOG.info("Message: " + jwtresponse.message());
 
             if (!jwtresponse.isSuccessful())
@@ -194,11 +196,15 @@ public class TokenManagerService implements TokenManager {
             // Because it retains the JWKs after fetching them, it can and should be reused
             // to improve efficiency by reducing the number of outbound calls the the endpoint.
             HttpsJwks httpsJkws = new HttpsJwks(dapsUrl + "/.well-known/jwks.json");
+            Get getInstance = new Get();
+            getInstance.setSslSocketFactory();
+            httpsJkws.setSimpleHttpGet();
 
             // The HttpsJwksVerificationKeyResolver uses JWKs obtained from the HttpsJwks and will select the
             // most appropriate one to use for verification based on the Key ID and other factors provided
             // in the header of the JWS/JWT.
             HttpsJwksVerificationKeyResolver httpsJwksKeyResolver = new HttpsJwksVerificationKeyResolver(httpsJkws);
+
 
             // Use JwtConsumerBuilder to construct an appropriate JwtConsumer, which will
             // be used to validate and process the JWT.
@@ -219,9 +225,11 @@ public class TokenManagerService implements TokenManager {
                                     AlgorithmIdentifiers.RSA_USING_SHA256))
                     .build(); // create the JwtConsumer instance
 
-            //HashMap jwtMap = new ObjectMapper().readValue(jwtresponse.body().string(), HashMap.class);
 
-            String accessToken = "";//(String) jwtMap.get("access_token");
+            JSONObject jsonObject = new JSONObject(responseBody);
+            String accessToken = jsonObject.getString("access_token");
+            LOG.info("Access Token: " + accessToken);
+
 
             try
             {

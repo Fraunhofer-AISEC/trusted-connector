@@ -22,6 +22,7 @@ dependencies {
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
     implementation group: 'com.squareup.okio', name: 'okio', version: libraryVersions.okio
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
+    providedByBundle group: 'org.json', name: 'json', version: '20180813'
 
     implementation group: 'org.shredzone.acme4j', name: 'acme4j-client', version: libraryVersions.acme
     implementation group: 'org.shredzone.acme4j', name: 'acme4j-utils', version: libraryVersions.acme
