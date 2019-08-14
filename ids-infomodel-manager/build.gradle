@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    infomodelBundle project(':ids-api')
+    infomodelBundle(project(':ids-api')) { transitive = false }
 
     compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
 

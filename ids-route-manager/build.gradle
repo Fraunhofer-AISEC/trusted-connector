@@ -1,5 +1,5 @@
 dependencies {
-    providedByBundle project(':ids-api')
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel

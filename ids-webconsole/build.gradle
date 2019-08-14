@@ -44,7 +44,7 @@ and this API does not provide any authorization mechanism.
 }
 
 dependencies {
-    providedByBundle project(':ids-api')
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     // Actual implementation must be provided by ids-infomodel-manager
     compileOnly group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel

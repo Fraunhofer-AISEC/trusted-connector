@@ -3,6 +3,14 @@ apply plugin: DockerRemoteApiPlugin
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+dependencies {
+    testImplementation(project(':ids-api')) { transitive = false }
+
+    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+    testImplementation group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: libraryVersions.karaf
+}
+
 /*
 Now this is tricky. We need to build a custom assembly of karaf with a few features:
 - included ids feature
@@ -40,12 +48,5 @@ task dockerize(type: DockerBuildImage) {
 }
 
 dockerize.dependsOn(assembleKaraf)
-
-dependencies {
-    testImplementation project(':ids-api')
-    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
-    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
-    testImplementation group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: libraryVersions.karaf
-}
 
 integrationTest.dependsOn(jar)

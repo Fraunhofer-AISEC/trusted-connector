@@ -1,7 +1,7 @@
 version = libraryVersions.idscp
 
 dependencies {
-    providedByBundle project(':ids-api')
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     providedByBundle group: 'com.github.microsoft', name: 'TSS.Java', version: '0.3.0'
 

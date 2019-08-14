@@ -1,8 +1,8 @@
 description = 'Camel IDS Component'
 
 dependencies {
-    providedByBundle project(':ids-api')
-    providedByBundle project(':ids-comm')
+    providedByBundle(project(':ids-api')) { transitive = false }
+    providedByBundle(project(':ids-comm')) { transitive = false }
 
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel

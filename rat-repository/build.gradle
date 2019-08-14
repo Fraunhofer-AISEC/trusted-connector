@@ -6,7 +6,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 description = 'rat-repository'
 
 dependencies {
-    implementation project(':ids-api')
+    implementation(project(':ids-api')) { transitive = false }
 
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
