@@ -53,7 +53,7 @@ public class RemoteAttestationServer {
 
       // === jetty-https.xml ===
       // SSL Context Factory
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(
           Thread.currentThread()
               .getContextClassLoader()

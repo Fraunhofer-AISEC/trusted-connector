@@ -57,7 +57,7 @@ public class IdscpServer {
     HttpConfiguration https = new HttpConfiguration();
     https.addCustomizer(new SecureRequestCustomizer());
     
-    SslContextFactory sslContextFactory = new SslContextFactory();
+    SslContextFactory sslContextFactory = new SslContextFactory.Server();
     sslContextFactory.setKeyStore(config.getKeyStore());
     sslContextFactory.setKeyStorePassword(this.config.getKeyStorePassword());
     sslContextFactory.setCertAlias(this.config.getCertAlias());

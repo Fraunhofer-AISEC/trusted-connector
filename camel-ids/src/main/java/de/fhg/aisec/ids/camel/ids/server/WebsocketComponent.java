@@ -501,7 +501,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       } catch (GeneralSecurityException | IOException e) {
         LOG.error("Failed to patch TrustManager for WebsocketComponent", e);
       }
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setSslContext(sslContextParameters.createSSLContext(getCamelContext()));
       return new ServerConnector(server, sslContextFactory);
     } else {
