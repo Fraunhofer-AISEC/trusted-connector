@@ -149,6 +149,7 @@ subprojects {
 
     task integrationTest(type: Test) {
         include '**/*IT.*'
+        systemProperty "project.version", "$project.version"
     }
 
     check.dependsOn integrationTest

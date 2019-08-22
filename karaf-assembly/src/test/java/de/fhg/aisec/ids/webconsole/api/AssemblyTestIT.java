@@ -97,8 +97,8 @@ public class AssemblyTestIT {
 				.artifactId("karaf-features-ids")
 				.classifier("features")
 				.type("xml")
-				.version("1.2.0-SNAPSHOT");
-		File f = new File("./build/karaf-assembly-1.2.0-SNAPSHOT.tar.gz");
+				.version(System.getProperty("project.version"));
+		File f = new File("build/karaf-assembly-" + System.getProperty("project.version") + ".tar.gz");
 		return new Option[] { karafDistributionConfiguration().frameworkUrl(f.toURI().toURL().toString())
 				.unpackDirectory(new File("build/exam"))
 				.useDeployFolder(false),
