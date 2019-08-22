@@ -23,8 +23,12 @@ export class AppService {
         return this.http.get<Result>(environment.apiURL + '/app/stop/' + encodeURIComponent(appId));
     }
 
-    public startApp(appId: string): Observable<Result> {
-        return this.http.get<Result>(environment.apiURL + '/app/start/' + encodeURIComponent(appId));
+    public startApp(appId: string, key?: string): Observable<Result> {
+        let url = environment.apiURL + '/app/start/' + encodeURIComponent(appId);
+        if (key !== undefined && key !== null) {
+            url += '/' + encodeURIComponent(key);
+        }
+        return this.http.get<Result>(url);
     }
 
     public wipeApp(appId: string): Observable<Result> {

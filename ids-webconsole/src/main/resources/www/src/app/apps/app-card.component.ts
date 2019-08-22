@@ -47,7 +47,8 @@ export class AppCardComponent implements OnInit {
         if (this.statusIcon === 'play_arrow') {
             this.statusIcon = 'stop';
             this.statusColor = '';
-            this.appService.startApp(containerId)
+            const key = prompt('Please enter a password for the container', 'trustme');
+            this.appService.startApp(containerId, key)
               .subscribe(result => undefined);
             this.app.status = 'Up 1 seconds ago';
         } else {
