@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-slim-stretch
+FROM openjdk:11-jdk-slim
 
 RUN apt-get update -qq && apt-get install -qq bash sudo curl gnupg
 # Install nodejs 12.x
