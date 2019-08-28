@@ -99,4 +99,5 @@ public final class ConnectorConfig implements Serializable {
   public String getTruststoreName() { return truststoreName; }
 
   public String getConnectorUUID() { return connectorUUID; }
+
 }

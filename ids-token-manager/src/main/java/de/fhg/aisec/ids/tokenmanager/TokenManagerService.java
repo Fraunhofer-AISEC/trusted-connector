@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.tokenmanager;
 
+import com.oracle.tools.packager.Log;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import io.jsonwebtoken.JwtBuilder;
 import org.jose4j.http.Get;
@@ -104,11 +105,14 @@ public class TokenManagerService implements TokenManager {
      */
     public String acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID) {
 
-        String targetAudience = "api.Audience";
+        String targetAudience = "IDS_Connector";
+        //TODO: This is a bug in the DAPS. Audience should be not set to a default value "IDS_Connector"
         String issuer = connectorUUID;
         String subject = connectorUUID;
-        String accessToken = "INVALID_TOKEN";
+        String dynamicAttributeToken = "INVALID_TOKEN";
+        boolean tokenVerified = false;
 
+        //Try clause for setup phase (loading keys, building trust manager)
         try {
             InputStream jksKeyStoreInputStream = Files.newInputStream(targetDirectory.resolve(keyStoreName));
             InputStream jksTrustStoreInputStream = Files.newInputStream(targetDirectory.resolve(trustStoreName));
@@ -131,28 +135,6 @@ public class TokenManagerService implements TokenManager {
             Key privKey = (PrivateKey) keystore.getKey(keystoreAliasName, keyStorePassword.toCharArray());
             // Get certificate of public key
             X509Certificate cert = (X509Certificate)keystore.getCertificate(keystoreAliasName);
-            LOG.info("Retrieving Dynamic Attribute Token...");
-
-            //create signed JWT (JWS)
-            //Create expiry date one day (86400 seconds) from now
-            Date expiryDate = Date.from(Instant.now().plusSeconds(86400));
-            JwtBuilder jwtb = Jwts.builder()
-                    .setIssuer(issuer)
-                    .setSubject(subject)
-                    .setExpiration(expiryDate)
-                    .setIssuedAt(Date.from(Instant.now()))
-                    .setAudience(targetAudience)
-                    .setNotBefore(Date.from(Instant.now()));
-            LOG.info("\tCertificate Subject: " + cert.getSubjectDN());
-            String jws = jwtb.signWith(privKey, SignatureAlgorithm.RS256).compact();
-
-
-            RequestBody formBody = new FormBody.Builder()
-                    .add("grant_type", "client_credentials")
-                    .add("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-                    .add("client_assertion", jws)
-                    .add("scope", "ids_connector")
-                    .build();
 
             TrustManager[] trustManagers;
             SSLSocketFactory sslSocketFactory;
@@ -172,8 +154,33 @@ public class TokenManagerService implements TokenManager {
                 throw new RuntimeException(e);
             }
 
+
+            LOG.info("Retrieving Dynamic Attribute Token...");
+
+            //create signed JWT (JWS)
+            //Create expiry date one day (86400 seconds) from now
+            Date expiryDate = Date.from(Instant.now().plusSeconds(86400));
+            JwtBuilder jwtb = Jwts.builder()
+                    .setIssuer(issuer)
+                    .setSubject(subject)
+                    .setExpiration(expiryDate)
+                    .setIssuedAt(Date.from(Instant.now()))
+                    .setAudience(targetAudience)
+                    .setNotBefore(Date.from(Instant.now()));
+            LOG.info("\tCertificate Subject: " + cert.getSubjectDN());
+            String jws = jwtb.signWith(privKey, SignatureAlgorithm.RS256).compact();
+
+            //build form body to embed client assertion into post request
+            RequestBody formBody = new FormBody.Builder()
+                    .add("grant_type", "client_credentials")
+                    .add("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+                    .add("client_assertion", jws)
+                    .add("scope", "ids_connector")
+                    .build();
+
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
+            //configure client with trust manager
             OkHttpClient client = builder
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager)trustManagers[0])
                     .connectTimeout(15, TimeUnit.SECONDS)
@@ -182,18 +189,36 @@ public class TokenManagerService implements TokenManager {
                     .build();
 
             Request request = new Request.Builder().url(dapsUrl+"/token").post(formBody).build();
-            LOG.info("Request looks like this: " + bodyToString(request));
             Response jwtresponse = client.newCall(request).execute();
 
-
             String responseBody = jwtresponse.body().string();
-            LOG.info("Response: " + jwtresponse.toString());
-            LOG.info("Body: " + responseBody);
-            LOG.info("Message: " + jwtresponse.message());
 
             if (!jwtresponse.isSuccessful())
                 throw new IOException("Unexpected code " + jwtresponse);
 
+            JSONObject jsonObject = new JSONObject(responseBody);
+            dynamicAttributeToken = jsonObject.getString("access_token");
+
+
+            LOG.info("Dynamic Attribute Token: " + dynamicAttributeToken);
+
+            tokenVerified = verifyJWT(dynamicAttributeToken, targetAudience, sslSocketFactory, dapsUrl);
+
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | MalformedClaimException e) {
+            LOG.error("Cannot acquire token:", e);
+        } catch (IOException e) {
+            LOG.error("Error retrieving token:", e);
+        } catch (Exception e) {
+            LOG.error("Something else went wrong:", e);
+        }
+
+        return dynamicAttributeToken;
+
+    }
+
+    private boolean verifyJWT(String dynamicAttributeToken, String targetAudience, SSLSocketFactory sslSocketFactory, String dapsUrl) {
+        try
+        {
             // The HttpsJwks retrieves and caches keys from a the given HTTPS JWKS endpoint.
             // Because it retains the JWKs after fetching them, it can and should be reused
             // to improve efficiency by reducing the number of outbound calls the the endpoint.
@@ -207,7 +232,6 @@ public class TokenManagerService implements TokenManager {
             // in the header of the JWS/JWT.
             HttpsJwksVerificationKeyResolver httpsJwksKeyResolver = new HttpsJwksVerificationKeyResolver(httpsJkws);
 
-
             // Use JwtConsumerBuilder to construct an appropriate JwtConsumer, which will
             // be used to validate and process the JWT.
             // The specific validation requirements for a JWT are context dependent, however,
@@ -219,7 +243,7 @@ public class TokenManagerService implements TokenManager {
                     .setRequireExpirationTime() // the JWT must have an expiration time
                     .setAllowedClockSkewInSeconds(30) // allow some leeway in validating time based claims to account for clock skew
                     .setRequireSubject() // the JWT must have a subject claim
-                    .setExpectedIssuer(issuer) // whom the JWT needs to have been issued by
+                    .setExpectedIssuer("https://daps.aisec.fraunhofer.de") // whom the JWT needs to have been issued by
                     .setExpectedAudience(targetAudience) // to whom the JWT is intended for
                     .setVerificationKeyResolver(httpsJwksKeyResolver)
                     .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the given context
@@ -228,50 +252,40 @@ public class TokenManagerService implements TokenManager {
                     .build(); // create the JwtConsumer instance
 
 
-            JSONObject jsonObject = new JSONObject(responseBody);
-            accessToken = jsonObject.getString("access_token");
-            LOG.info("Access Token: " + accessToken);
-
-            try
-            {
-                LOG.info("Verifying JWT...");
-                //  Validate the JWT and process it to the Claims
-                JwtClaims jwtClaims = jwtConsumer.processToClaims(accessToken);
-                LOG.info("JWT validation succeeded! " + jwtClaims);
-            }
-            catch (InvalidJwtException e)
-            {
-                // InvalidJwtException will be thrown, if the JWT failed processing or validation in anyway.
-                // Hopefully with meaningful explanations(s) about what went wrong.
-                LOG.info("Invalid JWT! " + e);
-
-                // Programmatic access to (some) specific reasons for JWT invalidity is also possible
-                // should you want different error handling behavior for certain conditions.
-
-                // Whether or not the JWT has expired being one common reason for invalidity
-                if (e.hasExpired())
-                {
-                    LOG.info("JWT expired at " + e.getJwtContext().getJwtClaims().getExpirationTime());
-                }
-
-                // Or maybe the audience was invalid
-                if (e.hasErrorCode(ErrorCodes.AUDIENCE_INVALID))
-                {
-                    LOG.info("JWT had wrong audience: " + e.getJwtContext().getJwtClaims().getAudience());
-                }
-            }
-
-
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | MalformedClaimException e) {
-            LOG.error("Cannot acquire token:", e);
-        } catch (IOException e) {
-            LOG.error("Error retrieving token:", e);
-        } catch (Exception e) {
-            LOG.error("Error retrieving something:", e);
+            LOG.info("Verifying JWT...");
+            //  Validate the JWT and process it to the Claims
+            JwtClaims jwtClaims = jwtConsumer.processToClaims(dynamicAttributeToken);
+            LOG.info("JWT validation succeeded! " + jwtClaims);
         }
-        return accessToken;
+        catch (InvalidJwtException e)
+        {
+            // InvalidJwtException will be thrown, if the JWT failed processing or validation in anyway.
+            // Hopefully with meaningful explanations(s) about what went wrong.
+            LOG.info("Invalid JWT! " + e);
 
+            // Programmatic access to (some) specific reasons for JWT invalidity is also possible
+            // should you want different error handling behavior for certain conditions.
 
+            // Whether or not the JWT has expired being one common reason for invalidity
+            if (e.hasExpired())
+            {
+                try {
+                    LOG.info("JWT expired at " + e.getJwtContext().getJwtClaims().getExpirationTime());
+                } catch (MalformedClaimException e1) {
+                    LOG.info("Malformed claim");
+                }
+            }
+
+            // Or maybe the audience was invalid
+            if (e.hasErrorCode(ErrorCodes.AUDIENCE_INVALID))
+            {
+                try {
+                    LOG.info("JWT had wrong audience: " + e.getJwtContext().getJwtClaims().getAudience());
+                } catch (MalformedClaimException e1) {
+                    LOG.info("Malformed claim");
+                }
+            }
+        }
     }
 
     private static String bodyToString(final Request request){
