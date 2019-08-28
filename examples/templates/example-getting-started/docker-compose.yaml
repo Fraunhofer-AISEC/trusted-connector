@@ -23,7 +23,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - /tmp/ids/log/:/root/data/log/
+      - ../log/:/root/log/
       - /var/run/docker.sock:/var/run/docker.sock
       - ./system.properties:/root/etc/system.properties
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
