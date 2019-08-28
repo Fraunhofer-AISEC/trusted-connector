@@ -4,6 +4,7 @@ Export-Package: \
   de.fraunhofer.iais.eis*;-split-package:=merge-last,\
   org.eclipse.rdf4j*,\
   com.github.jsonldjava*,\
+  !org.apache.logging*,\
   org.apache*
 Import-Package: \
   com.fasterxml.jackson.dataformat*;resolution:=optional,\
@@ -20,4 +21,5 @@ Import-Package: \
   org.slf4j.ext;resolution:=optional,\
   org.zeromq;resolution:=optional,\
   sun.io;resolution:=optional,\
+  org.apache.logging*,\
   *
