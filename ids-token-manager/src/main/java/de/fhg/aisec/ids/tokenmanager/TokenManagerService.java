@@ -19,7 +19,6 @@
  */
 package de.fhg.aisec.ids.tokenmanager;
 
-import com.oracle.tools.packager.Log;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import io.jsonwebtoken.JwtBuilder;
 import org.jose4j.http.Get;
@@ -204,7 +203,7 @@ public class TokenManagerService implements TokenManager {
 
             tokenVerified = verifyJWT(dynamicAttributeToken, targetAudience, sslSocketFactory, dapsUrl);
 
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | MalformedClaimException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
             LOG.error("Cannot acquire token:", e);
         } catch (IOException e) {
             LOG.error("Error retrieving token:", e);
@@ -217,6 +216,7 @@ public class TokenManagerService implements TokenManager {
     }
 
     private boolean verifyJWT(String dynamicAttributeToken, String targetAudience, SSLSocketFactory sslSocketFactory, String dapsUrl) {
+        boolean verificationSucceeded = false;
         try
         {
             // The HttpsJwks retrieves and caches keys from a the given HTTPS JWKS endpoint.
@@ -256,6 +256,7 @@ public class TokenManagerService implements TokenManager {
             //  Validate the JWT and process it to the Claims
             JwtClaims jwtClaims = jwtConsumer.processToClaims(dynamicAttributeToken);
             LOG.info("JWT validation succeeded! " + jwtClaims);
+            verificationSucceeded = true;
         }
         catch (InvalidJwtException e)
         {
@@ -286,19 +287,9 @@ public class TokenManagerService implements TokenManager {
                 }
             }
         }
+        return verificationSucceeded;
     }
 
-    private static String bodyToString(final Request request){
-
-        try {
-            final Request copy = request.newBuilder().build();
-            final Buffer buffer = new Buffer();
-            copy.body().writeTo(buffer);
-            return buffer.readUtf8();
-        } catch (final IOException e) {
-            return "did not work";
-        }
-    }
 
     @Activate
     public void run() {
