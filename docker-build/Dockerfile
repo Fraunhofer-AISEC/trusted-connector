@@ -10,4 +10,4 @@ RUN chmod +x run.sh
 ENV GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 ENTRYPOINT ["/run.sh"]
-CMD ["build", "check", "dockerize", "--parallel", "-PdockerTag=develop"]
+CMD ["build", "check", "dockerize", "--no-daemon", "--parallel", "-PdockerTag=develop"]
