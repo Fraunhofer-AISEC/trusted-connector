@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.api.settings.Settings;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -42,6 +43,7 @@ import java.security.*;
 import java.io.InputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import javax.net.ssl.*;
 import java.time.Instant;
 import io.jsonwebtoken.*;
 import org.json.*;
@@ -56,7 +58,6 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.*;
 import okio.*;
 
-import javax.net.ssl.*;
 
 /**
  * Manages Dynamic Attribute Tokens.
@@ -98,24 +99,39 @@ public class TokenManagerService implements TokenManager {
      * @param keyStoreName - name of the keystore file (e.g., server-keystore.jks)
      * @param keyStorePassword - password of keystore
      * @param keystoreAliasName - alias of the connector's key entry. For default keystores with only one entry, this is '1'
+     * @param trustStoreName - name of the truststore file
      * @param connectorUUID - The UUID used to register the connector at the DAPS. Should be replaced by working code that does this automatically
      */
-    public void acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String connectorUUID) {
+    public String acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID) {
 
-        LOG.info("Resolving path for keystore: " + keyStoreName);
-        LOG.info("Path to resolve: " + FileSystems.getDefault().getPath("etc").toString());
         String targetAudience = "api.Audience";
         String issuer = connectorUUID;
         String subject = connectorUUID;
+        String accessToken = "INVALID_TOKEN";
 
-        try (InputStream jksInputStream = Files.newInputStream(targetDirectory.resolve(keyStoreName))) {
-            KeyStore store = KeyStore.getInstance("JKS");
-            store.load(jksInputStream, keyStorePassword.toCharArray());
+        try {
+            InputStream jksKeyStoreInputStream = Files.newInputStream(targetDirectory.resolve(keyStoreName));
+            InputStream jksTrustStoreInputStream = Files.newInputStream(targetDirectory.resolve(trustStoreName));
+
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            KeyStore trustManagerKeyStore = KeyStore.getInstance("JKS");
+
+            LOG.info("Loading key store: " + keyStoreName);
+            LOG.info("Loading trus store: " + trustStoreName);
+            keystore.load(jksKeyStoreInputStream, keyStorePassword.toCharArray());
+            trustManagerKeyStore.load(jksTrustStoreInputStream,keyStorePassword.toCharArray());
+            java.security.cert.Certificate[] certs =  trustManagerKeyStore.getCertificateChain("ca");
+            LOG.info("Cert chain: " + Arrays.toString( certs ));
+
+            LOG.info("LOADED CA CERT: " + trustManagerKeyStore.getCertificate("ca"));
+            jksKeyStoreInputStream.close();
+            jksTrustStoreInputStream.close();
+
             // get private key
-            Key privKey = (PrivateKey) store.getKey(keystoreAliasName, keyStorePassword.toCharArray());
+            Key privKey = (PrivateKey) keystore.getKey(keystoreAliasName, keyStorePassword.toCharArray());
             // Get certificate of public key
-            X509Certificate cert = (X509Certificate)store.getCertificate(keystoreAliasName);
-            LOG.info("Private key loaded. Retrieving Dynamic Attribute Token...");
+            X509Certificate cert = (X509Certificate)keystore.getCertificate(keystoreAliasName);
+            LOG.info("Retrieving Dynamic Attribute Token...");
 
             //create signed JWT (JWS)
             //Create expiry date one day (86400 seconds) from now
@@ -138,44 +154,28 @@ public class TokenManagerService implements TokenManager {
                     .add("scope", "ids_connector")
                     .build();
 
-
-            /**
-             * Trust Manager
-             */
-            // Create a trust manager that does not validate certificate chains
-            final TrustManager[] trustAllCerts = new TrustManager[] {
-                    new X509TrustManager() {
-                        @Override
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                        }
-
-                        @Override
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                        }
-
-                        @Override
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return new java.security.cert.X509Certificate[]{};
-                        }
-                    }
-            };
-
-            // Install the all-trusting trust manager
-            final SSLContext sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-            // Create an ssl socket factory with our all-trusting manager
-            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            TrustManager[] trustManagers;
+            SSLSocketFactory sslSocketFactory;
+            try {
+                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                        TrustManagerFactory.getDefaultAlgorithm());
+                trustManagerFactory.init(trustManagerKeyStore);
+                trustManagers = trustManagerFactory.getTrustManagers();
+                if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+                    throw new IllegalStateException("Unexpected default trust managers:"
+                            + Arrays.toString(trustManagers));
+                }
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, trustManagers, null);
+                sslSocketFactory = sslContext.getSocketFactory();
+            } catch (GeneralSecurityException e) {
+                throw new RuntimeException(e);
+            }
 
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager)trustAllCerts[0]);
-            builder.hostnameVerifier(new HostnameVerifier() {
-                @Override
-                public boolean verify(String hostname, SSLSession session) {
-                    return true;
-                }
-            });
 
             OkHttpClient client = builder
+                    .sslSocketFactory(sslSocketFactory, (X509TrustManager)trustManagers[0])
                     .connectTimeout(15, TimeUnit.SECONDS)
                     .writeTimeout(15, TimeUnit.SECONDS)
                     .readTimeout(15, TimeUnit.SECONDS)
@@ -184,6 +184,8 @@ public class TokenManagerService implements TokenManager {
             Request request = new Request.Builder().url(dapsUrl+"/token").post(formBody).build();
             LOG.info("Request looks like this: " + bodyToString(request));
             Response jwtresponse = client.newCall(request).execute();
+
+
             String responseBody = jwtresponse.body().string();
             LOG.info("Response: " + jwtresponse.toString());
             LOG.info("Body: " + responseBody);
@@ -197,8 +199,8 @@ public class TokenManagerService implements TokenManager {
             // to improve efficiency by reducing the number of outbound calls the the endpoint.
             HttpsJwks httpsJkws = new HttpsJwks(dapsUrl + "/.well-known/jwks.json");
             Get getInstance = new Get();
-            getInstance.setSslSocketFactory();
-            httpsJkws.setSimpleHttpGet();
+            getInstance.setSslSocketFactory(sslSocketFactory);
+            httpsJkws.setSimpleHttpGet(getInstance);
 
             // The HttpsJwksVerificationKeyResolver uses JWKs obtained from the HttpsJwks and will select the
             // most appropriate one to use for verification based on the Key ID and other factors provided
@@ -227,9 +229,8 @@ public class TokenManagerService implements TokenManager {
 
 
             JSONObject jsonObject = new JSONObject(responseBody);
-            String accessToken = jsonObject.getString("access_token");
+            accessToken = jsonObject.getString("access_token");
             LOG.info("Access Token: " + accessToken);
-
 
             try
             {
@@ -261,13 +262,14 @@ public class TokenManagerService implements TokenManager {
             }
 
 
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyManagementException | MalformedClaimException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | MalformedClaimException e) {
             LOG.error("Cannot acquire token:", e);
         } catch (IOException e) {
-            LOG.error("Cannot load key:", e);
+            LOG.error("Error retrieving token:", e);
+        } catch (Exception e) {
+            LOG.error("Error retrieving something:", e);
         }
-
-        //TODO: Get Token, return it
+        return accessToken;
 
 
     }
@@ -289,7 +291,7 @@ public class TokenManagerService implements TokenManager {
         LOG.info("Token renewal triggered.");
         try {
             ConnectorConfig config = settings.getConnectorConfig();
-            acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(), config.getConnectorUUID());
+            String token = acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName() ,config.getConnectorUUID());
         } catch (Exception e) {
             LOG.error("Token renewal failed", e);
         }

@@ -97,7 +97,7 @@ public class ConfigApi {
     }
 
     try {
-      tokenManager.acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(), config.getConnectorUUID());
+      tokenManager.acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName(), config.getConnectorUUID());
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -11,6 +11,7 @@ export interface Settings {
   keystoreName: string;
   keystorePassword: string;
   keystoreAliasName: string;
+  truststoreName: string;
   connectorUUID: string;
 
 }

@@ -36,6 +36,7 @@ public final class ConnectorConfig implements Serializable {
   private final String keystoreName;
   private final String keystorePassword;
   private final String keystoreAliasName;
+  private final String truststoreName;
   private final String connectorUUID;
 
   public ConnectorConfig() {
@@ -51,6 +52,7 @@ public final class ConnectorConfig implements Serializable {
     keystoreName = "client-keystore.jks";
     keystorePassword = "password";
     keystoreAliasName="1";
+    truststoreName = "client-truststore.jks";
     connectorUUID="00c6155a-966d-4d2c-af6e-60f997e24da2";
   }
 
@@ -93,6 +95,8 @@ public final class ConnectorConfig implements Serializable {
   public String getKeystorePassword() { return keystorePassword; }
 
   public String getKeystoreAliasName() { return keystoreAliasName; }
+
+  public String getTruststoreName() { return truststoreName; }
 
   public String getConnectorUUID() { return connectorUUID; }
 }

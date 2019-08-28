@@ -33,7 +33,7 @@ import java.nio.file.Path;
  */
 public interface TokenManager {
 
-  void acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String connectorUUID);
+  String acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID);
 
 
 }
