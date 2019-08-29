@@ -34,6 +34,9 @@ dependencies {
     }
     zmqFeature group: 'org.apache-extras.camel-extra', name: 'camel-zeromq', version: '2.22.0'
     providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
+
+    providedByBundle group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+    providedByBundle group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 }
 
 karaf {
