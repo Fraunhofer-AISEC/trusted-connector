@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.tokenmanager;
 
+import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import io.jsonwebtoken.JwtBuilder;
 import org.jose4j.http.Get;
@@ -34,7 +35,6 @@ import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.api.settings.Settings;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -56,7 +56,6 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.*;
-import okio.*;
 
 
 /**
@@ -71,6 +70,7 @@ public class TokenManagerService implements TokenManager {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private Settings settings = null;
+    private InfoModel infoModelMgr = null;
     /*
      * The following block subscribes this component to the Settings Service
      */
@@ -86,15 +86,35 @@ public class TokenManagerService implements TokenManager {
         settings = s;
     }
 
+    /*
+     * The following block subscribes this component to the InfoModel Service
+     */
+    @Reference(
+            name = "infomodel.service",
+            service = InfoModel.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unbindInfoModelService"
+    )
+
+    public void bindInfoModelService(InfoModel i) {
+        LOG.info("Bound to infomodel service");
+        infoModelMgr = i;
+    }
+
     @SuppressWarnings("unused")
     public void unbindSettingsService(Settings s) {
         settings = null;
     }
 
+    @SuppressWarnings("unused")
+    public void unbindInfoModelService(InfoModel i) {
+        infoModelMgr = null;
+    }
+
     /**
      * Method to aquire a Dynamic Attribute Token (DAT) from a Dynamic Attribute Provisioning Service (DAPS)
-     *
-     * @param targetDirectory - The directory the keystore resides in
+     *  @param targetDirectory - The directory the keystore resides in
      * @param dapsUrl - the token aquiry URL (e.g., http://daps.aisec.fraunhofer.de/token
      * @param keyStoreName - name of the keystore file (e.g., server-keystore.jks)
      * @param keyStorePassword - password of keystore
@@ -102,7 +122,7 @@ public class TokenManagerService implements TokenManager {
      * @param trustStoreName - name of the truststore file
      * @param connectorUUID - The UUID used to register the connector at the DAPS. Should be replaced by working code that does this automatically
      */
-    public String acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID) {
+    public boolean acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID) {
 
         String targetAudience = "IDS_Connector";
         //TODO: This is a bug in the DAPS. Audience should be not set to a default value "IDS_Connector"
@@ -211,7 +231,9 @@ public class TokenManagerService implements TokenManager {
             LOG.error("Something else went wrong:", e);
         }
 
-        return dynamicAttributeToken;
+        if(tokenVerified)
+            infoModelMgr.setDynamicAttributeToken(dynamicAttributeToken);
+        return tokenVerified;
 
     }
 
@@ -296,7 +318,8 @@ public class TokenManagerService implements TokenManager {
         LOG.info("Token renewal triggered.");
         try {
             ConnectorConfig config = settings.getConnectorConfig();
-            String token = acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName() ,config.getConnectorUUID());
+            acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName() ,config.getConnectorUUID());
+
         } catch (Exception e) {
             LOG.error("Token renewal failed", e);
         }

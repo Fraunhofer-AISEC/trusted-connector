@@ -19,9 +19,6 @@
  */
 package de.fhg.aisec.ids.api.tokenm;
 
-import de.fhg.aisec.ids.api.acme.AcmeTermsOfService;
-
-import java.net.URI;
 import java.nio.file.Path;
 
 /**
@@ -33,7 +30,7 @@ import java.nio.file.Path;
  */
 public interface TokenManager {
 
-  String acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID);
+  boolean acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID);
 
 
 }
