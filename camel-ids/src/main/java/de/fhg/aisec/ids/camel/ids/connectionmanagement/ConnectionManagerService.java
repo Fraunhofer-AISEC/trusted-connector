@@ -110,6 +110,7 @@ public class ConnectionManagerService implements ConnectionManager {
                           incomingConnection.setRemoteHostName(dws.getRemoteHostname());
                           incomingConnection.setAttestationResult(dws.getAttestationResult());
                           incomingConnection.setMetaData(dws.getMetaResult());
+                          incomingConnection.setDynamicAttributeToken(dws.getDynamicAttributeToken());
                           return incomingConnection;
                         });
               } else {

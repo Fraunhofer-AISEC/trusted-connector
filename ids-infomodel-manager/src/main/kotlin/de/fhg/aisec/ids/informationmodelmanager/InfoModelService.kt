@@ -4,6 +4,7 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.api.tokenm.DynamicAttributeToken
 import de.fraunhofer.iais.eis.*
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
@@ -163,6 +164,27 @@ class InfoModelService : InfoModel {
             }
             settings.connectorJsonLd = jsonLd
         } ?: LOG.warn("Couldn't store connector object: Settings not available.")
+    }
+    //TODO: Fix this
+    override fun getDynamicAttributeToken(): String {
+        return settings?.dynamicAttributeToken
+                ?: throw NullPointerException("Connector is not available")
+    }
+
+    override fun setDynamicAttributeToken(dynamicAttributeToken: String): Boolean {
+        return if (settings != null) {
+            settings?.dynamicAttributeToken = dynamicAttributeToken
+
+            try {
+                connector != null
+            } catch (ex: ConstraintViolationException) {
+                LOG.error("ConstraintViolationException while building Connector.", ex)
+                false
+            }
+        } else {
+            LOG.warn("Couldn't store connector object: Settings not available.")
+            false
+        }
     }
 
     companion object {

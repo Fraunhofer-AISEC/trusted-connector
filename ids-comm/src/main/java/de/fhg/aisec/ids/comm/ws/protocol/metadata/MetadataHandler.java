@@ -30,14 +30,20 @@ public class MetadataHandler {
   protected static String lastError = "";
   protected long sessionID = -1;
   protected String rdfSelfDescription = "THIS IS SOME META DATA";
+  protected String dynamicAttributeToken = "INVALID_TOKEN";
   public MetadataHandler () {
   }
-  public MetadataHandler (String rdfSelfDescription) {
+  public MetadataHandler (String rdfSelfDescription, String dynamicAttributeToken) {
     this.rdfSelfDescription = rdfSelfDescription;
+    this.dynamicAttributeToken = dynamicAttributeToken;
   }
-  public String generateMetaDataRDF() {
+  public String getMetaData() {
 
-    return rdfSelfDescription;
+    return this.rdfSelfDescription;
+  }
+
+  public String getDynamicAttributeToken() {
+    return this.dynamicAttributeToken;
   }
 
   public static MessageLite sendError(String lastError) {

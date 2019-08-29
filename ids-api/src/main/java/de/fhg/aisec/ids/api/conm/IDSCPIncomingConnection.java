@@ -30,6 +30,7 @@ public class IDSCPIncomingConnection {
   private String endpointKey;
   private String remoteHostName;
   private String metaData;
+  private String dynamicAttributeToken;
 
   public String getEndpointIdentifier() {
     return endpointIdentifier;
@@ -72,11 +73,11 @@ public class IDSCPIncomingConnection {
     this.remoteHostName = remoteHostname;
   }
 
-  public void setMetaData(String metaResult) {
-    this.metaData = metaResult;
-  }
+  public void setMetaData(String metaResult) { this.metaData = metaResult;}
 
   public String getMetaData() {
     return this.metaData;
   }
+
+  public void setDynamicAttributeToken(String dynamicAttributeToken) { this.dynamicAttributeToken = dynamicAttributeToken; }
 }

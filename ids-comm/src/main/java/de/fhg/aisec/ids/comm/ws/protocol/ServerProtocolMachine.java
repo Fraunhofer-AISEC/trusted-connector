@@ -65,7 +65,7 @@ public class ServerProtocolMachine extends FSM {
         new RemoteAttestationServerHandler(serverConfiguration, ttp,
             RemoteAttestationHandler.CONTROL_SOCKET);
     ErrorHandler errorHandler = new ErrorHandler();
-    MetadataProviderHandler metaHandler = new MetadataProviderHandler(serverConfiguration.getRDFDescription());
+    MetadataProviderHandler metaHandler = new MetadataProviderHandler(serverConfiguration.getRDFDescription(),serverConfiguration.getDynamicAttributeToken());
 
     // Standard protocol states
     this.addState(ProtocolState.IDSCP_START);
@@ -123,6 +123,7 @@ public class ServerProtocolMachine extends FSM {
             ProtocolState.IDSCP_END,
             e -> {
               this.setMetaData(e.getMessage().getMetadataExchange().getRdfdescription());
+              this.setDynamicAttributeToken(e.getMessage().getMetadataExchange().getDynamicAttributeToken());
               return replyProto(metaHandler.response(e));
             }));
 

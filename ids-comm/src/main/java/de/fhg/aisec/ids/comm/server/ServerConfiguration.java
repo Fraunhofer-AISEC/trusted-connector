@@ -32,6 +32,7 @@ import java.security.KeyStore;
  * Configuration of the server-side (Provider) part of the IDSC protocol.
  *
  * @author Julian Schuette
+ * @author Gerd Brost
  */
 public class ServerConfiguration implements IdscpConfiguration {
   public static final int DEFAULT_PORT = 8080;
@@ -44,7 +45,10 @@ public class ServerConfiguration implements IdscpConfiguration {
   private CertificatePair certificatePair = new CertificatePair();
   @Nullable
   private KeyStore keyStore = null;
-  @NonNull String rdfDescription = "";
+  @NonNull
+  String rdfDescription = "";
+  @NonNull
+  String dynamicAttributeToken = "";
   @Nullable
   private URI ttpUri = null;
   @NonNull
@@ -85,6 +89,12 @@ public class ServerConfiguration implements IdscpConfiguration {
     @NonNull
     public Builder rdfDescription(@NonNull String rdfDescription) {
       config.rdfDescription = rdfDescription;
+      return this;
+    }
+
+    @NonNull
+    public Builder dynamicAttributeToken(@NonNull String dynamicAttributeToken) {
+      config.dynamicAttributeToken = dynamicAttributeToken;
       return this;
     }
 
@@ -143,7 +153,12 @@ public class ServerConfiguration implements IdscpConfiguration {
     return certificatePair;
   }
 
-  @NonNull public String getRDFDescription() {return rdfDescription; }
+  @NonNull
+  public String getRDFDescription() {return rdfDescription; }
+
+  @NonNull
+  public String getDynamicAttributeToken() {return dynamicAttributeToken; }
+
 
   @Nullable
   public URI getTrustedThirdPartyURI() {

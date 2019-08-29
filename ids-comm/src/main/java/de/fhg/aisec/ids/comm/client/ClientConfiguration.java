@@ -43,6 +43,8 @@ public class ClientConfiguration implements IdscpConfiguration {
   @NonNull
   private String rdfDescription = "";
   @NonNull
+  private String dynamicAttributeToken = "";
+  @NonNull
   private String endpoint = "";
   @NonNull
   private List<byte[]> sha256CertificateHashes = Collections.emptyList();
@@ -82,6 +84,12 @@ public class ClientConfiguration implements IdscpConfiguration {
       return this;
     }
 
+    @NonNull
+    public Builder dynamicAttributeToken(@NonNull String dynamicAttributeToken) {
+      config.dynamicAttributeToken = dynamicAttributeToken;
+      return this;
+    }
+
 
     @NonNull
     public Builder endpoint(@NonNull String endpoint) {
@@ -116,10 +124,12 @@ public class ClientConfiguration implements IdscpConfiguration {
   }
 
   @NonNull
-  public String getRDFDescription() {
-    return rdfDescription;
+  public String getDynamicAttributeToken() {
+    return dynamicAttributeToken;
   }
 
+  @NonNull
+  public String getRDFDescription() { return rdfDescription; }
 
   @Nullable
   public URI getTrustedThirdPartyURI() {

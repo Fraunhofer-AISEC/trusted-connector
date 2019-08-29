@@ -37,6 +37,10 @@ public interface Settings {
 
   void setConnectorJsonLd(String jsonLd);
 
+  String getDynamicAttributeToken();
+
+  void setDynamicAttributeToken(String dynamicAttributeToken);
+
   ConnectionSettings getConnectionSettings(String connection);
 
   void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
