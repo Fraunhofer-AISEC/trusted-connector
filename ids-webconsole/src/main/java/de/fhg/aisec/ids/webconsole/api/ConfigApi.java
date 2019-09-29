@@ -19,11 +19,11 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
@@ -31,22 +31,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * REST API interface for configurations in the connector.
@@ -65,6 +59,7 @@ public class ConfigApi {
   @GET
   @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig.class)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public ConnectorConfig get() {
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
@@ -83,6 +78,7 @@ public class ConfigApi {
             "_No valid preferences received_: If incorrect configuration parameter is provided"
       ))
   @Consumes(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String set(ConnectorConfig config) {
     if (config == null) {
       throw new BadRequestException("No valid preferences received!");
@@ -113,6 +109,7 @@ public class ConfigApi {
             "_No valid connection settings received!_: If incorrect connection settings parameter is provided"
       ))
   @Consumes(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Response setConnectionConfigurations(
       @PathParam("con") String connection, ConnectionSettings conSettings) {
     if (conSettings == null) {
@@ -138,6 +135,7 @@ public class ConfigApi {
   @Path("/connectionConfigs/{con}")
   @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings.class)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
@@ -162,6 +160,7 @@ public class ConfigApi {
         responseContainer = "Map"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Map<String, ConnectionSettings> getAllConnectionConfigurations() {
     Settings settings = WebConsoleComponent.getSettings();
     ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();

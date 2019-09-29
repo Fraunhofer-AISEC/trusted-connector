@@ -1,10 +1,12 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import 'material-design-lite';
 import { AceEditorModule } from 'ng2-ace-editor';
 
+import { AuthGuard } from './_guards/auth.guard';
+import { JwtInterceptor } from './_interceptors/jwt.interceptor';
 import { AppComponent } from './app.component';
 import { routing } from './app.routing';
 import { HTTP_PROVIDER } from './application-http-client.service';
@@ -30,6 +32,10 @@ import { CertificateCardComponent } from './keycerts/certificate-card.component'
 import { NewIdentityComponent } from './keycerts/identitynew.component';
 import { CertificateService } from './keycerts/keycert.service';
 import { KeycertsComponent } from './keycerts/keycerts.component';
+import { HomeLayoutComponent } from './layouts/home-layout/home-layout.component';
+import { LoginLayoutComponent } from './layouts/login-layout/login-layout.component';
+import { LoginComponent } from './login/login.component';
+import { LoginService } from './login/login.service';
 import { MDLUpgradeElementDirective } from './mdl-upgrade-element-directive';
 import { MetricService } from './metric/metric.service';
 import { PrettifyPipe } from './prettify-json.pipe';
@@ -61,6 +67,7 @@ import { ValuesPipe } from './values.pipe';
     AppsComponent,
     AppCardComponent,
     AppSearchResultCardComponent,
+    LoginComponent,
     DataflowPoliciesComponent,
     NewDataflowPolicyComponent,
     RoutesComponent,
@@ -78,7 +85,9 @@ import { ValuesPipe } from './values.pipe';
     ConnectionReportComponent,
     ZoomVizComponent,
     ConnectionReportComponent,
-    MDLUpgradeElementDirective
+    MDLUpgradeElementDirective,
+    HomeLayoutComponent,
+    LoginLayoutComponent
   ],
   providers: [
     HTTP_PROVIDER,
@@ -87,13 +96,20 @@ import { ValuesPipe } from './values.pipe';
     PolicyService,
     SettingsService,
     CertificateService,
+    LoginService,
     SensorService,
     ConfirmService,
     IdsComponent,
     ConnectionReportService,
     ConnectionConfigurationService,
     MetricService,
-    Title
+    Title,
+    AuthGuard,
+    {
+            provide: HTTP_INTERCEPTORS,
+            useClass: JwtInterceptor,
+            multi: true
+    }
   ],
   bootstrap: [
     AppComponent

@@ -46,6 +46,7 @@ public class SettingsApi {
   @POST
   @Path("/connectorProfile")
   @Consumes(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String postConnectorProfile(ConnectorProfile profile) {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
@@ -64,6 +65,7 @@ public class SettingsApi {
   @GET
   @Path("/connectorProfile")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public ConnectorProfile getConnectorProfile() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
@@ -88,6 +90,7 @@ public class SettingsApi {
   @GET
   @Path("/selfInformation")
   @Produces("application/ld+json")
+  @AuthorizationRequired
   public String getSelfInformation() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
@@ -107,6 +110,7 @@ public class SettingsApi {
   @POST
   @Path("/selfInformation")
   @Consumes("application/ld+json")
+  @AuthorizationRequired
   public void setSelfInformation(String selfInformation) {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
@@ -125,6 +129,7 @@ public class SettingsApi {
   @DELETE
   @Path("/selfInformation")
   @Consumes("application/ld+json")
+  @AuthorizationRequired
   public void removeSelfInformation() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {

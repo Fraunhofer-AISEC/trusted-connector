@@ -19,31 +19,30 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import static org.junit.Assume.assumeFalse;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
 import org.apache.cxf.transport.local.LocalConduit;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assume.assumeFalse;
 
 public class CertApiTests extends Assert {
-  private static final String ENDPOINT_ADDRESS = "local://certs";
+  private static final String ENDPOINT_ADDRESS = "local://testserver";
   private static Server server;
 
   @BeforeClass
@@ -54,16 +53,21 @@ public class CertApiTests extends Assert {
   private static void startServer() throws Exception {
     JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
     sf.setResourceClasses(CertApi.class);
+    sf.setResourceClasses(MetricAPI.class);
+    sf.setResourceClasses(UserApi.class);
 
     // Server uses Jackson for JSON mapping
     List<Object> providers = new ArrayList<Object>();
     JacksonJsonProvider jackson = new JacksonJsonProvider();
     jackson.setMapper(new ObjectMapper());
     providers.add(jackson);
+    providers.add(new JWTRestAPIFilter());
     // add custom providers if any
     sf.setProviders(providers);
 
     sf.setResourceProvider(CertApi.class, new SingletonResourceProvider(new CertApi(), true));
+    sf.setResourceProvider(MetricAPI.class, new SingletonResourceProvider(new MetricAPI(), true));
+    sf.setResourceProvider(UserApi.class, new SingletonResourceProvider(new UserApi(), true));
     sf.setAddress(ENDPOINT_ADDRESS);
 
     server = sf.create();
@@ -187,5 +191,22 @@ public class CertApiTests extends Assert {
       contained |= alias.equals(k.alias);
     }
     assertFalse(contained);
+  }
+
+  @Test
+  public void getMetrics() {
+    WebClient c = newClient();
+    c.path("/user/login");
+    Response result = c.form(new Form().param("login", "admin").param("password", "admin"));
+    String validToken = result.readEntity(String.class);
+    System.out.println("Got valid token: " + validToken);
+
+    // Access a protected endpoint
+    WebClient client = newClient();
+    client.accept(MediaType.APPLICATION_JSON);
+    client.header("Authorization", "Bearer: " + validToken);
+    client.path("/metric/get");
+    Map<String, String> metrics = client.get(new GenericType<Map<String,String>>() {});
+    assumeFalse(metrics.isEmpty());
   }
 }

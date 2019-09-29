@@ -19,38 +19,25 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.fhg.aisec.ids.api.Result;
 import de.fhg.aisec.ids.api.internal.ComponentNotAvailableException;
 import de.fhg.aisec.ids.api.policy.PAP;
-import de.fhg.aisec.ids.api.router.RouteComponent;
-import de.fhg.aisec.ids.api.router.RouteManager;
-import de.fhg.aisec.ids.api.router.RouteMetrics;
-import de.fhg.aisec.ids.api.router.RouteObject;
-import de.fhg.aisec.ids.api.router.RouteVerificationProof;
+import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -85,6 +72,7 @@ public class RouteApi {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<RouteObject> list() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
@@ -97,6 +85,7 @@ public class RouteApi {
   @Path("/get/{id}")
   @ApiOperation(value = "Get a Camel route", response = RouteObject.class)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public RouteObject get(@ApiParam(value = "Route ID") @PathParam("id") @NonNull String id) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
@@ -116,6 +105,7 @@ public class RouteApi {
     response = RouteObject.class
   )
   @Produces(MediaType.TEXT_PLAIN)
+  @AuthorizationRequired
   public String getAsString(@ApiParam(value = "Route ID") @PathParam("id") String id) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
@@ -133,6 +123,7 @@ public class RouteApi {
   @Path("/startroute/{id}")
   @ApiOperation(value = "Stops a route")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Result startRoute(@PathParam("id") String id) {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
@@ -152,6 +143,7 @@ public class RouteApi {
   @ApiOperation(value = "Save changes to a route")
   @Consumes(MediaType.TEXT_PLAIN)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Result saveRoute(@PathParam("id") @NonNull String id, @NonNull String routeDefinition) {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
@@ -171,6 +163,7 @@ public class RouteApi {
   @ApiOperation(value = "Adds a new route")
   @Consumes(MediaType.TEXT_PLAIN)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Result addRoute(@NonNull String routeDefinition) {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
@@ -190,6 +183,7 @@ public class RouteApi {
   @Path("/stoproute/{id}")
   @ApiOperation(value = "Stops a route")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Result stopRoute(@PathParam("id") String id) {
     try {
       RouteManager rm =  WebConsoleComponent.getRouteManager();
@@ -208,6 +202,7 @@ public class RouteApi {
   @GET
   @ApiOperation(value = "Get runtime metrics of a route")
   @Path("/metrics/{id}")
+  @AuthorizationRequired
   public RouteMetrics getMetrics(@PathParam("id") String routeId) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
 	if (rm == null) {
@@ -220,6 +215,7 @@ public class RouteApi {
   @GET
   @ApiOperation(value = "Get aggregated runtime metrics of all routes")
   @Path("/metrics")
+  @AuthorizationRequired
   public RouteMetrics getMetrics() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
@@ -267,6 +263,7 @@ public class RouteApi {
   @GET
   @Path("/components")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<RouteComponent> getComponents() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
@@ -278,6 +275,7 @@ public class RouteApi {
   /** Retrieve list of currently installed endpoints (aka URIs to/from which routes exist) */
   @GET
   @Path("/list_endpoints")
+  @AuthorizationRequired
   public Map<String, String> listEndpoints() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
 	if (rm == null) {
@@ -289,6 +287,7 @@ public class RouteApi {
   @GET
   @Path("/validate/{routeId}")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public ValidationInfo validate(@PathParam("routeId") String routeId) {
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
@@ -306,6 +305,7 @@ public class RouteApi {
   @GET
   @Path("/prolog/{routeId}")
   @Produces(MediaType.TEXT_PLAIN)
+  @AuthorizationRequired
   public String getRouteProlog(@PathParam("routeId") @NonNull String routeId) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
 	if (rm == null) {

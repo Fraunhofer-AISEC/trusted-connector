@@ -23,18 +23,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadMXBean;
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.lang.management.*;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * REST API interface for platform metrics.
@@ -65,6 +62,7 @@ public class MetricAPI {
         responseContainer = "Map"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Map<String, String> getMetrics() {
     HashMap<String, String> result = new HashMap<>();
 

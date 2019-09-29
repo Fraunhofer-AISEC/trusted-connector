@@ -27,12 +27,12 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * REST API interface for managing connections from and to the connector.
@@ -53,6 +53,7 @@ public class ConnectionAPI {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<IDSCPIncomingConnection> getIncoming() {
 	ConnectionManager cm = WebConsoleComponent.getConnectionManager();
     if (cm == null) {
@@ -69,6 +70,7 @@ public class ConnectionAPI {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<IDSCPOutgoingConnection> getOutgoing() {
 	 ConnectionManager cm = WebConsoleComponent.getConnectionManager();
 	 if (cm == null) {
@@ -85,6 +87,7 @@ public class ConnectionAPI {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<IDSCPServerEndpoint> getAvailableEndpoints() {
     ConnectionManager cm = WebConsoleComponent.getConnectionManager();
     if (cm == null) {

@@ -25,6 +25,7 @@ http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/cor
             <bean id="policy" class="de.fhg.aisec.ids.webconsole.api.PolicyApi"/>
             <bean id="route" class="de.fhg.aisec.ids.webconsole.api.RouteApi"/>
             <bean id="settings" class="de.fhg.aisec.ids.webconsole.api.SettingsApi"/>
+            <bean id="user" class="de.fhg.aisec.ids.webconsole.api.UserApi"/>
         </jaxrs:serviceBeans>
 
         <jaxrs:providers>

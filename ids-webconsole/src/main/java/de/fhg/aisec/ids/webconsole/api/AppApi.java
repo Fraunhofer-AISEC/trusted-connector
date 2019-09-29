@@ -19,52 +19,29 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -91,6 +68,7 @@ public class AppApi {
   )
   @ApiResponses(@ApiResponse(code = 200, message = "List of apps"))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<ApplicationContainer> list() {
     ContainerManager cml = WebConsoleComponent.getContainerManager();
     if (cml == null) {
@@ -132,6 +110,7 @@ public class AppApi {
                   + "false if no container management layer is available"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public boolean start(
       @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId) {
     return start(containerId, null);
@@ -152,6 +131,7 @@ public class AppApi {
                 + "false if no container management layer is available"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public boolean start(
       @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId,
       @ApiParam(value = "Key for user token") @PathParam("key") String key) {
@@ -181,6 +161,7 @@ public class AppApi {
                 + "false if no container management layer is available"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public boolean stop(
       @ApiParam(value = "ID of the app to stop") @PathParam("containerId") String containerId) {
     try {
@@ -227,6 +208,7 @@ public class AppApi {
     )
   })
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String install(
       @ApiParam(value = "String with imageID", collectionFormat = "Map")
           Map<String, ApplicationContainer> apps) {
@@ -266,6 +248,7 @@ public class AppApi {
     @ApiResponse(code = 200, message = "If the app is being wiped"),
     @ApiResponse(code = 500, message = "_No cmld_ if no container management layer is available")
   })
+  @AuthorizationRequired
   public String wipe(
       @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") String containerId) {
     try {
@@ -287,6 +270,7 @@ public class AppApi {
     response = Map.class
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Map<String, String> getCml() {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
@@ -305,6 +289,7 @@ public class AppApi {
   @Path("search")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<ApplicationContainer> search(AppSearchRequest searchRequest) {
     String term = searchRequest.getSearchTerm();
     try {
