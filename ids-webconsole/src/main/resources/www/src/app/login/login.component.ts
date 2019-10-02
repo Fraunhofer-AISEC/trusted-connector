@@ -1,41 +1,45 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-
-import { App } from '../apps/app';
 
 import { LoginService } from './login.service';
 
 @Component({
-  templateUrl: './login.component.html',
-  providers: []
+    templateUrl: './login.component.html',
+    providers: []
 })
 export class LoginComponent {
-    public form:FormGroup;
+    public form: FormGroup;
+    public errorText: string = undefined;
 
-    constructor(private fb:FormBuilder,
-                 private authService: LoginService,
-                 private router: Router) {
+    constructor(private fb: FormBuilder,
+        private authService: LoginService,
+        private router: Router) {
         this.form = this.fb.group({
-            username: ['',Validators.required],
-            password: ['',Validators.required]
+            username: [''],
+            password: ['']
         });
 
-  }
+    }
 
-  public login(): void {
-  console.log('Login clicked');
-      const val = this.form.value;
+    public clearError(): void {
+        this.errorText = undefined;
+    }
 
-      if (val.username && val.password) {
-          this.authService.login(val.username, val.password)
-              .subscribe(
-                  () => {
-                      console.log('User is logged in');
-                      this.router.navigateByUrl('/');
-                  }
-              );
-      }
-  }
+    public login(): void {
+        const val = this.form.value;
+
+        if (val.username && val.password) {
+            this.authService.login(val.username, val.password)
+                .subscribe(() => {
+                    console.log('User is logged in');
+                    this.router.navigateByUrl('/');
+                }, () => {
+                    this.errorText = 'Login rejected, wrong username or password?';
+                });
+        } else {
+            // Use empty string to indicate empty username/password error
+            this.errorText = '';
+        }
+    }
 }
