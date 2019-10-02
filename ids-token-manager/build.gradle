@@ -9,26 +9,23 @@ idea {
 }
 
 dependencies {
-    providedByBundle project(':ids-api')
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
-    implementation group: 'com.squareup.okio', name: 'okio', version: libraryVersions.okio
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
+    providedByBundle group: 'com.squareup.okio', name: 'okio', version: libraryVersions.okio
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
     providedByBundle group: 'org.json', name: 'json', version: '20180813'
 
-    implementation group: 'org.shredzone.acme4j', name: 'acme4j-client', version: libraryVersions.acme
-    implementation group: 'org.shredzone.acme4j', name: 'acme4j-utils', version: libraryVersions.acme
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
-
 }
 
 
