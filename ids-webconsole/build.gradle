@@ -73,6 +73,7 @@ dependencies {
     providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
 
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
+    implementation group: 'com.auth0', name: 'java-jwt', version: '3.8.2'
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 

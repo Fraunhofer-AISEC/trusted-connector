@@ -28,6 +28,13 @@ import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 import io.swagger.annotations.*;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,12 +52,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -70,6 +71,7 @@ public class CertApi {
   @GET
   @ApiOperation(value = "Starts ACME renewal over X509v3 certificates")
   @Path("acme_renew/{target}")
+  @AuthorizationRequired
   public void getAcmeCert(
       @ApiParam(
             value =
@@ -101,6 +103,7 @@ public class CertApi {
     response = AcmeTermsOfService.class
   )
   @Path("acme_tos")
+  @AuthorizationRequired
   public AcmeTermsOfService getAcmeTermsOfService(
       @ApiParam(value = "URI to retrieve the TOS from") @QueryParam("uri") String uri) {
     AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
@@ -121,6 +124,7 @@ public class CertApi {
     @ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available"),
   })
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<Cert> listCerts() {
     File truststore = getKeystoreFile(TRUSTSTORE_FILE);
     if (truststore == null) {
@@ -137,6 +141,7 @@ public class CertApi {
         "Certificates in this list refer to private keys that can be used as identities by the connector."
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<Cert> listIdentities() {
     File keystoreFile = getKeystoreFile(KEYSTORE_FILE);
     return getKeystoreEntries(keystoreFile);
@@ -146,6 +151,7 @@ public class CertApi {
   @Path("create_identity")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String createIdentity(
       @ApiParam(value = "Specification of the identity to create a key pair for") Identity spec) {
     String alias = UUID.randomUUID().toString();
@@ -162,6 +168,7 @@ public class CertApi {
   @Path("delete_identity")
   @ApiOperation(value = "Deletes a public/private key pair")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String deleteIdentity(String alias) {
     File keyStoreFile = getKeystoreFile(KEYSTORE_FILE);
     boolean success = delete(alias, keyStoreFile);
@@ -177,6 +184,7 @@ public class CertApi {
   @Path("delete_cert")
   @ApiOperation(value = "Deletes a trusted certificate")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String deleteCert(String alias) {
     File keyStoreFile = getKeystoreFile(TRUSTSTORE_FILE);
     boolean success = delete(alias, keyStoreFile);
@@ -195,6 +203,7 @@ public class CertApi {
   })
   @Produces(MediaType.TEXT_HTML)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @AuthorizationRequired
   public String installTrustedCert(
       @ApiParam(hidden = true, name = "attachment") @Multipart("upfile") Attachment attachment)
       throws IOException {

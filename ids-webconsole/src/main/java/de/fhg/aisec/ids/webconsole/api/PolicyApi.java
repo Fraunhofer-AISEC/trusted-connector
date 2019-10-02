@@ -59,6 +59,7 @@ public class PolicyApi {
         responseContainer = "List"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<String> list() {
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
@@ -75,6 +76,7 @@ public class PolicyApi {
   @GET
   @Path("policyProlog")
   @Produces(MediaType.TEXT_PLAIN)
+  @AuthorizationRequired
   public String getPolicyProlog() {
 	  PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
 	  if (pap == null) {
@@ -87,6 +89,7 @@ public class PolicyApi {
   @OPTIONS
   @Path("install")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @AuthorizationRequired
   public String install(
       @Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
       @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,

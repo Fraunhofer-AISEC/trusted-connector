@@ -1,0 +1,40 @@
+<div class="mdl-cell mdl-cell--6-col">
+  <div class="mdl-card card-dark">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">Console Login</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+      <form [formGroup]="form" (ngSubmit)="login()">
+        <fieldset>
+          <div mdl-textfield [ngClass]="{'is-invalid': errorText !== undefined}"
+            class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+            <input class="mdl-textfield__input" id="username" formControlName="username" (keydown)="clearError()">
+            <label class="mdl-textfield__label" for="username">Username</label>
+            <span class="mdl-textfield__error" *ngIf="!form.value.username">
+              Username Required
+            </span>
+          </div>
+          <div mdl-textfield [ngClass]="{'is-invalid': errorText !== undefined}"
+            class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+            <input class="mdl-textfield__input" id="password" type="password" formControlName="password" (keydown)="clearError()">
+            <label class="mdl-textfield__label" for="username">Password</label>
+            <span class="mdl-textfield__error">
+              <span *ngIf="form.value.password; else defaultError">
+                {{ errorText }}
+              </span>
+              <ng-template #defaultError>
+                Password Required
+              </ng-template>
+            </span>
+          </div>
+        </fieldset>
+        <div class="mdl-card__actions">
+          <button type="submit"
+            class="mdl-cell mdl-cell--12-col mdl-button mdl-button--raised mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--white">
+            Log in
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
