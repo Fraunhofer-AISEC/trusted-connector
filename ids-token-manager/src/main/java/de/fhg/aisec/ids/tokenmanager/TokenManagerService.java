@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -114,15 +114,18 @@ public class TokenManagerService implements TokenManager {
 
     /**
      * Method to aquire a Dynamic Attribute Token (DAT) from a Dynamic Attribute Provisioning Service (DAPS)
-     *  @param targetDirectory - The directory the keystore resides in
-     * @param dapsUrl - the token aquiry URL (e.g., http://daps.aisec.fraunhofer.de/token
-     * @param keyStoreName - name of the keystore file (e.g., server-keystore.jks)
-     * @param keyStorePassword - password of keystore
-     * @param keystoreAliasName - alias of the connector's key entry. For default keystores with only one entry, this is '1'
-     * @param trustStoreName - name of the truststore file
-     * @param connectorUUID - The UUID used to register the connector at the DAPS. Should be replaced by working code that does this automatically
+     *  @param targetDirectory The directory the keystore resides in
+     * @param dapsUrl The token aquiry URL (e.g., http://daps.aisec.fraunhofer.de/token
+     * @param keyStoreName Name of the keystore file (e.g., server-keystore.jks)
+     * @param keyStorePassword Password of keystore
+     * @param keystoreAliasName Alias of the connector's key entry.
+     *                          For default keystores with only one entry, this is '1'
+     * @param trustStoreName Name of the truststore file
+     * @param connectorUUID The UUID used to register the connector at the DAPS.
+     *                      Should be replaced by working code that does this automatically
      */
-    public boolean acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID) {
+    public boolean acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword,
+                                String keystoreAliasName, String trustStoreName, String connectorUUID) {
 
         String targetAudience = "IDS_Connector";
         //TODO: This is a bug in the DAPS. Audience should be not set to a default value "IDS_Connector"
@@ -208,21 +211,19 @@ public class TokenManagerService implements TokenManager {
                     .build();
 
             Request request = new Request.Builder().url(dapsUrl+"/token").post(formBody).build();
-            Response jwtresponse = client.newCall(request).execute();
-
-            String responseBody = jwtresponse.body().string();
-
-            if (!jwtresponse.isSuccessful())
-                throw new IOException("Unexpected code " + jwtresponse);
+            Response jwtResponse = client.newCall(request).execute();
+            if (!jwtResponse.isSuccessful()) {
+                throw new IOException("Unexpected code " + jwtResponse);
+            }
+            String responseBody = jwtResponse.body().string();
+            LOG.info("Response body of token request:\n{}", responseBody);
 
             JSONObject jsonObject = new JSONObject(responseBody);
             dynamicAttributeToken = jsonObject.getString("access_token");
 
-
             LOG.info("Dynamic Attribute Token: " + dynamicAttributeToken);
 
             tokenVerified = verifyJWT(dynamicAttributeToken, targetAudience, sslSocketFactory, dapsUrl);
-
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
             LOG.error("Cannot acquire token:", e);
         } catch (IOException e) {
@@ -231,13 +232,14 @@ public class TokenManagerService implements TokenManager {
             LOG.error("Something else went wrong:", e);
         }
 
-        if(tokenVerified)
+        if(tokenVerified) {
             infoModelMgr.setDynamicAttributeToken(dynamicAttributeToken);
+        }
         return tokenVerified;
-
     }
 
-    private boolean verifyJWT(String dynamicAttributeToken, String targetAudience, SSLSocketFactory sslSocketFactory, String dapsUrl) {
+    private boolean verifyJWT(String dynamicAttributeToken, String targetAudience, SSLSocketFactory sslSocketFactory,
+                              String dapsUrl) {
         boolean verificationSucceeded = false;
         try
         {
@@ -269,7 +271,8 @@ public class TokenManagerService implements TokenManager {
                     .setExpectedAudience(targetAudience) // to whom the JWT is intended for
                     .setVerificationKeyResolver(httpsJwksKeyResolver)
                     .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the given context
-                            new org.jose4j.jwa.AlgorithmConstraints(org.jose4j.jwa.AlgorithmConstraints.ConstraintType.WHITELIST, // which is only RS256 here
+                            new org.jose4j.jwa.AlgorithmConstraints(
+                                org.jose4j.jwa.AlgorithmConstraints.ConstraintType.WHITELIST, // which is only RS256 here
                                     AlgorithmIdentifiers.RSA_USING_SHA256))
                     .build(); // create the JwtConsumer instance
 
@@ -318,7 +321,9 @@ public class TokenManagerService implements TokenManager {
         LOG.info("Token renewal triggered.");
         try {
             ConnectorConfig config = settings.getConnectorConfig();
-            acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName() ,config.getConnectorUUID());
+            acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(),
+                config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName(),
+                config.getConnectorUUID());
 
         } catch (Exception e) {
             LOG.error("Token renewal failed", e);

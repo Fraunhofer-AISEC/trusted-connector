@@ -82,8 +82,6 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
-
-
     override fun getAllConnectionSettings(): Map<String, ConnectionSettings> {
         return Collections.unmodifiableMap(connectionSettings)
     }
