@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,17 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import static org.junit.Assume.assumeFalse;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
+import de.fhg.aisec.ids.webconsole.api.data.User;
+import java.util.*;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -30,18 +37,7 @@ import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
 import org.apache.cxf.transport.local.LocalConduit;
 import org.junit.*;
 
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assume.assumeFalse;
-
-public class CertApiTests extends Assert {
+public class RestApiTests extends Assert {
   private static final String ENDPOINT_ADDRESS = "local://testserver";
   private static Server server;
 
@@ -50,6 +46,7 @@ public class CertApiTests extends Assert {
     startServer();
   }
 
+  /** Starts a test server. Note that REST endpoints must be registered manually here. */
   private static void startServer() throws Exception {
     JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
     sf.setResourceClasses(CertApi.class);
@@ -73,12 +70,15 @@ public class CertApiTests extends Assert {
     server = sf.create();
   }
 
-  private WebClient newClient() {
+  private WebClient newClient(String... token) {
     // Client uses Jackson for JSON mapping
     JacksonJsonProvider jackson = new JacksonJsonProvider();
     jackson.setMapper(new ObjectMapper());
     WebClient client = WebClient.create(ENDPOINT_ADDRESS, Collections.singletonList(jackson));
     WebClient.getConfig(client).getRequestContext().put(LocalConduit.DIRECT_DISPATCH, Boolean.TRUE);
+    if (token != null && token.length > 0) {
+      client.header("Authorization", "Bearer: " + token[0]);
+    }
     return client;
   }
 
@@ -102,7 +102,9 @@ public class CertApiTests extends Assert {
 
   @Test
   public void testListCerts() {
-    WebClient client = newClient();
+    String token = login();
+
+    WebClient client = newClient(token);
     client.accept(MediaType.APPLICATION_JSON);
     client.path("/certs/list_certs");
     List<Cert> certs = client.get(new GenericType<List<Cert>>() {});
@@ -112,7 +114,9 @@ public class CertApiTests extends Assert {
 
   @Test
   public void testListIdentities() {
-    WebClient client = newClient();
+    String token = login();
+
+    WebClient client = newClient(token);
     client.accept(MediaType.APPLICATION_JSON);
     client.path("/certs/list_identities");
     List<Cert> keys = client.get(new GenericType<List<Cert>>() {});
@@ -122,7 +126,9 @@ public class CertApiTests extends Assert {
 
   @Test
   public void testCreateIdentity() {
-    WebClient client = newClient();
+    String token = login();
+
+    WebClient client = newClient(token);
 
     Identity idSpec = new Identity();
     idSpec.c = "c";
@@ -139,15 +145,17 @@ public class CertApiTests extends Assert {
 
   @Test
   public void testDeleteIdentity() {
+    String token = login();
+
     // Get list of identities
-    WebClient client = newClient();
+    WebClient client = newClient(token);
     client.accept(MediaType.APPLICATION_JSON);
     client.path("/certs/list_identities");
     List<Cert> certs = client.get(new GenericType<List<Cert>>() {});
     assumeFalse(certs.isEmpty());
 
     // Choose an identity and delete it
-    client = newClient();
+    client = newClient(token);
     String alias = certs.get(0).alias;
     client.header("Content-type", MediaType.APPLICATION_JSON);
     client.path("/certs/delete_identity");
@@ -155,7 +163,7 @@ public class CertApiTests extends Assert {
     assertEquals(Response.Status.OK.getStatusCode(), resp.getStatus());
 
     // Confirm it has been deleted
-    client = newClient();
+    client = newClient(token);
     client.path("/certs/list_identities");
     List<Cert> keys = client.get(new GenericType<List<Cert>>() {});
     boolean contained = false;
@@ -167,15 +175,17 @@ public class CertApiTests extends Assert {
 
   @Test
   public void deleteCerts() {
+    String token = login();
+
     // Get list of certs
-    WebClient client = newClient();
+    WebClient client = newClient(token);
     client.accept(MediaType.APPLICATION_JSON);
     client.path("/certs/list_certs");
     List<Cert> certs = client.get(new GenericType<List<Cert>>() {});
     assumeFalse(certs.isEmpty());
 
     // Choose a cert and delete it
-    client = newClient();
+    client = newClient(token);
     String alias = certs.get(0).alias;
     client.header("Content-type", MediaType.APPLICATION_JSON);
     client.path("/certs/delete_cert");
@@ -183,7 +193,7 @@ public class CertApiTests extends Assert {
     assertEquals(Response.Status.OK.getStatusCode(), resp.getStatus());
 
     // Confirm it has been deleted
-    client = newClient();
+    client = newClient(token);
     client.path("/certs/list_certs");
     List<Cert> keys = client.get(new GenericType<List<Cert>>() {});
     boolean contained = false;
@@ -195,18 +205,32 @@ public class CertApiTests extends Assert {
 
   @Test
   public void getMetrics() {
-    WebClient c = newClient();
-    c.path("/user/login");
-    Response result = c.form(new Form().param("login", "admin").param("password", "admin"));
-    String validToken = result.readEntity(String.class);
-    System.out.println("Got valid token: " + validToken);
+    String token = login();
 
     // Access a protected endpoint
-    WebClient client = newClient();
-    client.accept(MediaType.APPLICATION_JSON);
-    client.header("Authorization", "Bearer: " + validToken);
-    client.path("/metric/get");
-    Map<String, String> metrics = client.get(new GenericType<Map<String,String>>() {});
+    WebClient c = newClient(token);
+    c.accept(MediaType.APPLICATION_JSON);
+    c.path("/metric/get");
+    Map<String, String> metrics = c.get(new GenericType<Map<String, String>>() {});
     assumeFalse(metrics.isEmpty());
+  }
+
+  /**
+   * Retrieves a fresh JWT from server.
+   *
+   * @return
+   */
+  private String login() {
+    WebClient c = newClient();
+    c.path("/user/login");
+    c.accept(MediaType.APPLICATION_JSON);
+    c.header("Content-type", MediaType.APPLICATION_JSON);
+    User u = new User();
+    u.username = "ids";
+    u.password = "ids";
+    Map<String, String> result = c.post(u, new GenericType<Map<String, String>>() {});
+    String token = result.get("token");
+    c.header("Authorization", "Bearer: " + token);
+    return token;
   }
 }
