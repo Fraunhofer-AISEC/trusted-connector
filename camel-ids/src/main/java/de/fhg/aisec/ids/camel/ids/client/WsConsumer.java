@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
  */
 package de.fhg.aisec.ids.camel.ids.client;
 
+import java.io.InputStream;
+import java.io.Reader;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
-
-import java.io.InputStream;
-import java.io.Reader;
 
 /**
  * A camel consumer retrieves an message, wraps in a Camel Exchange object and feeds it into Camel.

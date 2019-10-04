@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,13 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class WebsocketComponentServlet extends WebSocketServlet {
   private static final long serialVersionUID = 1L;
@@ -41,9 +40,7 @@ public class WebsocketComponentServlet extends WebSocketServlet {
       new ConcurrentHashMap<>();
 
   public WebsocketComponentServlet(
-      NodeSynchronization sync,
-      String pathSpec,
-      Map<String, WebSocketFactory> socketFactories) {
+      NodeSynchronization sync, String pathSpec, Map<String, WebSocketFactory> socketFactories) {
     this.sync = sync;
     this.socketFactories = socketFactories;
     this.pathSpec = pathSpec;
@@ -70,18 +67,16 @@ public class WebsocketComponentServlet extends WebSocketServlet {
   @Override
   public void configure(WebSocketServletFactory factory) {
     factory.setCreator(
-          (req, resp) -> {
-            String protocolKey = "ids";
-            if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
-              WebSocketFactory wsFactory = socketFactories.get(protocolKey);
-              resp.setAcceptedSubProtocol(protocolKey);
-              return wsFactory.newInstance(req, protocolKey, pathSpec, sync, consumer);
-            } else {
-              LOG.error(
-                  "WS subprotocols not supported: {}", String.join(",", req.getSubProtocols()));
-              return null;
-            }
-
+        (req, resp) -> {
+          String protocolKey = "ids";
+          if (req.getSubProtocols().isEmpty() || req.getSubProtocols().contains(protocolKey)) {
+            WebSocketFactory wsFactory = socketFactories.get(protocolKey);
+            resp.setAcceptedSubProtocol(protocolKey);
+            return wsFactory.newInstance(req, protocolKey, pathSpec, sync, consumer);
+          } else {
+            LOG.error("WS subprotocols not supported: {}", String.join(",", req.getSubProtocols()));
+            return null;
+          }
         });
   }
 }

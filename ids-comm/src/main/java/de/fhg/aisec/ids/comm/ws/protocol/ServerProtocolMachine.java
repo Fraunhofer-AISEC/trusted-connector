@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,13 @@ import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 import de.fhg.aisec.ids.messages.Idscp.AttestationResult;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import org.eclipse.jetty.websocket.api.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class generates the Finite State Machine (FSM) for the IDS protocol.
@@ -53,8 +52,7 @@ public class ServerProtocolMachine extends FSM {
   private Session serverSession;
   private AttestationResult attestationResult;
 
-  public ServerProtocolMachine(
-      Session sess, ServerConfiguration serverConfiguration) {
+  public ServerProtocolMachine(Session sess, ServerConfiguration serverConfiguration) {
     this.serverSession = sess;
 
     // set trusted third party URL
@@ -62,10 +60,11 @@ public class ServerProtocolMachine extends FSM {
 
     // all handler
     RemoteAttestationServerHandler ratProviderHandler =
-        new RemoteAttestationServerHandler(serverConfiguration, ttp,
-            RemoteAttestationHandler.CONTROL_SOCKET);
+        new RemoteAttestationServerHandler(
+            serverConfiguration, ttp, RemoteAttestationHandler.CONTROL_SOCKET);
     ErrorHandler errorHandler = new ErrorHandler();
-    MetadataProviderHandler metaHandler = new MetadataProviderHandler(serverConfiguration.getRDFDescription());
+    MetadataProviderHandler metaHandler =
+        new MetadataProviderHandler(serverConfiguration.getRDFDescription());
 
     // Standard protocol states
     this.addState(ProtocolState.IDSCP_START);
@@ -143,8 +142,8 @@ public class ServerProtocolMachine extends FSM {
 
     /* Add listener to log state transitions */
     this.addSuccessChangeListener(
-        (f, e) -> LOG.debug(
-            String.format("Provider State change: %s -> %s", e.getKey(), f.getState())));
+        (f, e) ->
+            LOG.debug(String.format("Provider State change: %s -> %s", e.getKey(), f.getState())));
 
     //        String graph = this.toDot();
     //        System.out.println(graph);
@@ -193,5 +192,4 @@ public class ServerProtocolMachine extends FSM {
       return false;
     }
   }
-
 }

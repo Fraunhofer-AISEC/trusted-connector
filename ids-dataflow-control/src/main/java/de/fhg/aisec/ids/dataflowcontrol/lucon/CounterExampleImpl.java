@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-dataflow-control
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ package de.fhg.aisec.ids.dataflowcontrol.lucon;
 import alice.tuprolog.Struct;
 import alice.tuprolog.Term;
 import de.fhg.aisec.ids.api.router.CounterExample;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.util.Iterator;
 import java.util.LinkedList;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CounterExampleImpl extends CounterExample {
 

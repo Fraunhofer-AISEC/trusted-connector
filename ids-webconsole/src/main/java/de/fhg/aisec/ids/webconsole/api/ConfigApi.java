@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,16 @@ import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * REST API interface for configurations in the connector.
@@ -52,7 +48,10 @@ import java.util.stream.Collectors;
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 @Path("/config")
-@Api(value = "Config")
+@Api(
+  value = "Connector Configuration",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class ConfigApi {
   public static final String GENERAL_CONFIG = "General Configuration";
 
@@ -63,7 +62,7 @@ public class ConfigApi {
   public ConnectorConfig get() {
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return null;
+      return null;
     }
     return settings.getConnectorConfig();
   }
@@ -86,7 +85,7 @@ public class ConfigApi {
 
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return "No settings available";
+      return "No settings available";
     }
     settings.setConnectorConfig(config);
 
@@ -118,7 +117,7 @@ public class ConfigApi {
 
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return Response.serverError().build();
+      return Response.serverError().build();
     }
     settings.setConnectionSettings(connection, conSettings);
 
@@ -139,7 +138,7 @@ public class ConfigApi {
   public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return null;
+      return null;
     }
     return settings.getConnectionSettings(connection);
   }
@@ -165,9 +164,9 @@ public class ConfigApi {
     Settings settings = WebConsoleComponent.getSettings();
     ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();
     RouteManager routeManager = WebConsoleComponent.getRouteManager();
-    
+
     if (settings == null || connectionManager == null || routeManager == null) {
-    	return Collections.emptyMap();
+      return Collections.emptyMap();
     }
 
     // Set of all connection configurations, properly ordered

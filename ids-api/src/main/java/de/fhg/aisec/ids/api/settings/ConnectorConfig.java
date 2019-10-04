@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ public final class ConnectorConfig implements Serializable {
   private final boolean tosAcceptWebcon;
 
   public ConnectorConfig() {
-    appstoreUrl = "https://raw.githubusercontent.com/industrial-data-space/templates/master/templates.json";
+    appstoreUrl =
+        "https://raw.githubusercontent.com/industrial-data-space/templates/master/templates.json";
     brokerUrl = "";
     ttpHost = "";
     ttpPort = 443;

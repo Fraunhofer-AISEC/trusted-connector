@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package de.fhg.aisec.ids.comm.ws.protocol.fsm;
 
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.comm.ws.protocol.ProtocolState;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,7 +39,7 @@ public class FSM {
   protected HashSet<ChangeListener> successChangeListeners;
   protected HashSet<ChangeListener> failChangeListeners;
   private String initialState = null;
-  private RatResult  ratResult;
+  private RatResult ratResult;
   private String metaData;
 
   public FSM() {
@@ -190,7 +189,6 @@ public class FSM {
   public void handleRatResult(RatResult attestationResult) {
     this.ratResult = attestationResult;
   }
-
 
   public RatResult getRatResult() {
     return ratResult;

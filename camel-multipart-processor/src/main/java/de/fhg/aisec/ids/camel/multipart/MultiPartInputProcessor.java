@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-route-manager
+ * camel-multipart-processor
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,24 @@
  */
 package de.fhg.aisec.ids.camel.multipart;
 
+import java.io.InputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import java.io.InputStream;
-
 public class MultiPartInputProcessor implements Processor {
 
-	@Override
-	public void process(Exchange exchange) throws Exception {
-		// Parse Multipart message
-		MultiPartStringParser parser = new MultiPartStringParser(exchange.getIn().getBody(InputStream.class));
-		// Parser JSON Header (should be an InfoModel object)
-		exchange.getIn().setHeader("idsMultipartHeader", parser.getHeader());
-		// Remove current Content-Type header before setting the new one
-		exchange.getIn().removeHeader("Content-Type");
-		// Copy Content-Type from payload part
-		exchange.getIn().setHeader("Content-Type", parser.getPayloadContentType());
-		// Populate body with extracted payload
-		exchange.getIn().setBody(parser.getPayload());
-	}
-
+  @Override
+  public void process(Exchange exchange) throws Exception {
+    // Parse Multipart message
+    MultiPartStringParser parser =
+        new MultiPartStringParser(exchange.getIn().getBody(InputStream.class));
+    // Parser JSON Header (should be an InfoModel object)
+    exchange.getIn().setHeader("idsMultipartHeader", parser.getHeader());
+    // Remove current Content-Type header before setting the new one
+    exchange.getIn().removeHeader("Content-Type");
+    // Copy Content-Type from payload part
+    exchange.getIn().setHeader("Content-Type", parser.getPayloadContentType());
+    // Populate body with extracted payload
+    exchange.getIn().setBody(parser.getPayload());
+  }
 }

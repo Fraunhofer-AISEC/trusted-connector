@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,8 @@ import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.comm.ByteArrayUtil;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
-import de.fhg.aisec.ids.messages.Idscp.Error;
 import de.fhg.aisec.ids.messages.Idscp.*;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tss.tpm.*;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
+import de.fhg.aisec.ids.messages.Idscp.Error;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,11 +44,17 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tss.tpm.*;
 
 public class RemoteAttestationHandler {
   public static final String CONTROL_SOCKET = "/var/run/tpm2d/control.sock";
-  protected static final Logger LOG =
-      LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
   static String lastError = "";
   // used to count messages between ids connector and attestation repository
   private static long privateID = new java.util.Random().nextLong();
@@ -65,14 +63,14 @@ public class RemoteAttestationHandler {
   Tpm2dSocket tpm2dSocket;
 
   RemoteAttestationHandler() {
-      // Tpm2dSocket used to communicate with local TPM2d
-      try {
-          String host = System.getenv("TPM_HOST") != null ? System.getenv("TPM_HOST") : "localhost";
-          tpm2dSocket = new Tpm2dSocket(host);
-      } catch (IOException e) {
-          lastError = "Could not create Tpm2dSocket. No TPM present?";
-          LOG.warn(lastError);
-      }
+    // Tpm2dSocket used to communicate with local TPM2d
+    try {
+      String host = System.getenv("TPM_HOST") != null ? System.getenv("TPM_HOST") : "localhost";
+      tpm2dSocket = new Tpm2dSocket(host);
+    } catch (IOException e) {
+      lastError = "Could not create Tpm2dSocket. No TPM present?";
+      LOG.warn(lastError);
+    }
   }
 
   public RatResult handleAttestationResult(@NonNull AttestationResult result) {
@@ -91,7 +89,9 @@ public class RemoteAttestationHandler {
   }
 
   static boolean checkRepository(
-          @Nullable IdsAttestationType aType, @Nullable AttestationResponse response, @Nullable URI ttpUri) {
+      @Nullable IdsAttestationType aType,
+      @Nullable AttestationResponse response,
+      @Nullable URI ttpUri) {
     if (aType == null || response == null || ttpUri == null) {
       return false;
     }
@@ -142,9 +142,10 @@ public class RemoteAttestationHandler {
       MessageDigest digest = MessageDigest.getInstance("SHA-1");
       digest.update(nonce);
       if (certificate != null) {
-    	  digest.update(certificate.getEncoded());
+        digest.update(certificate.getEncoded());
       } else {
-    	  LOG.warn("No client certificate available. Cannot bind nonce to public key to prevent masquerading attack. TLS misconfiguration!");
+        LOG.warn(
+            "No client certificate available. Cannot bind nonce to public key to prevent masquerading attack. TLS misconfiguration!");
       }
       return digest.digest();
     } catch (Exception e1) {
@@ -174,7 +175,8 @@ public class RemoteAttestationHandler {
       // Load trust anchor certificate
       final X509Certificate rootCertificate;
       Path rootCertPath = FileSystems.getDefault().getPath("etc", "rootca-cert.pem");
-      try (BufferedReader reader = Files.newBufferedReader(rootCertPath, StandardCharsets.US_ASCII)) {
+      try (BufferedReader reader =
+          Files.newBufferedReader(rootCertPath, StandardCharsets.US_ASCII)) {
         StringBuilder builder = new StringBuilder();
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
           if (!line.startsWith("-")) {
@@ -182,16 +184,17 @@ public class RemoteAttestationHandler {
           }
         }
         byte[] rootCertBytes = Base64.getDecoder().decode(builder.toString());
-        rootCertificate = (X509Certificate) certFactory.generateCertificate(
-                new ByteArrayInputStream(rootCertBytes));
+        rootCertificate =
+            (X509Certificate)
+                certFactory.generateCertificate(new ByteArrayInputStream(rootCertBytes));
       } catch (Exception e) {
         LOG.error("Error parsing root certificate", e);
         return false;
       }
 
       // Create X509Certificate instance from certBytes
-      final X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(
-              new ByteArrayInputStream(byteCert));
+      final X509Certificate certificate =
+          (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(byteCert));
       // Verify the TPM certificate
       try {
         certificate.verify(rootCertificate.getPublicKey());
@@ -205,8 +208,10 @@ public class RemoteAttestationHandler {
       try {
         tpmtSignature = TPMT_SIGNATURE.fromTpm(byteSignature);
       } catch (Exception ex) {
-        LOG.warn("Could not create a TPMT_SIGNATURE from bytes:\n" + ByteArrayUtil.toPrintableHexString(byteSignature),
-                ex);
+        LOG.warn(
+            "Could not create a TPMT_SIGNATURE from bytes:\n"
+                + ByteArrayUtil.toPrintableHexString(byteSignature),
+            ex);
         return false;
       }
 
@@ -215,7 +220,10 @@ public class RemoteAttestationHandler {
       try {
         tpmsAttest = TPMS_ATTEST.fromTpm(byteQuoted);
       } catch (Exception ex) {
-        LOG.warn("Could not create a TPMS_ATTEST from bytes:\n" + ByteArrayUtil.toPrintableHexString(byteQuoted), ex);
+        LOG.warn(
+            "Could not create a TPMS_ATTEST from bytes:\n"
+                + ByteArrayUtil.toPrintableHexString(byteQuoted),
+            ex);
         return false;
       }
 
@@ -223,10 +231,11 @@ public class RemoteAttestationHandler {
       byte[] extraBytes = tpmsAttest.extraData;
       if (!Arrays.equals(extraBytes, hash)) {
         if (LOG.isWarnEnabled()) {
-          LOG.warn("The hash (extra data) in TPMS_ATTEST structure is invalid!"
-                          + "\nextra data: {}\nhash: {}",
-                  ByteArrayUtil.toPrintableHexString(extraBytes),
-                  ByteArrayUtil.toPrintableHexString(hash));
+          LOG.warn(
+              "The hash (extra data) in TPMS_ATTEST structure is invalid!"
+                  + "\nextra data: {}\nhash: {}",
+              ByteArrayUtil.toPrintableHexString(extraBytes),
+              ByteArrayUtil.toPrintableHexString(hash));
         }
         return false;
       }
@@ -242,7 +251,8 @@ public class RemoteAttestationHandler {
         tpmSigHashAlg = ((TPMS_SIGNATURE_RSASSA) tpmtSignature.signature).hash.toInt();
         tpmSig = ((TPMS_SIGNATURE_RSASSA) tpmtSignature.signature).sig;
       } else {
-        throw new Exception("Unknown or unimplemented signature scheme: " + tpmtSignature.signature.getClass());
+        throw new Exception(
+            "Unknown or unimplemented signature scheme: " + tpmtSignature.signature.getClass());
       }
       if (tpmSigHashAlg != TPM_ALG_ID.SHA256.toInt()) {
         throw new Exception("Only SHA256withRSA TPM signature hash algorithm is allowed!");
@@ -263,7 +273,7 @@ public class RemoteAttestationHandler {
 
   static MessageLite sendError(long id, @Nullable String error) {
     if (error == null) {
-    	error = "";
+      error = "";
     }
     return ConnectorMessage.newBuilder()
         .setId(id)

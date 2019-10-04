@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,13 @@ public class MetadataHandler {
   protected static String lastError = "";
   protected long sessionID = -1;
   protected String rdfSelfDescription = "THIS IS SOME META DATA";
-  public MetadataHandler () {
-  }
-  public MetadataHandler (String rdfSelfDescription) {
+
+  public MetadataHandler() {}
+
+  public MetadataHandler(String rdfSelfDescription) {
     this.rdfSelfDescription = rdfSelfDescription;
   }
+
   public String generateMetaDataRDF() {
 
     return rdfSelfDescription;

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,6 @@ import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
 import io.swagger.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -42,6 +35,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -53,7 +52,10 @@ import java.util.stream.Collectors;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/app")
-@Api(value = "App")
+@Api(
+  value = "Applications",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class AppApi {
   public static final long PULL_TIMEOUT_MINUTES = 20;
   private static final Logger LOG = LoggerFactory.getLogger(AppApi.class);
@@ -61,7 +63,7 @@ public class AppApi {
   @GET
   @Path("list")
   @ApiOperation(
-    value = "List installed apps",
+    value = "List all applications installed in the connector",
     notes = "Returns an empty list if no apps are installed",
     response = ApplicationContainer.class,
     responseContainer = "List"
@@ -72,7 +74,7 @@ public class AppApi {
   public List<ApplicationContainer> list() {
     ContainerManager cml = WebConsoleComponent.getContainerManager();
     if (cml == null) {
-    	return new ArrayList<>();
+      return new ArrayList<>();
     }
 
     List<ApplicationContainer> result = cml.list(false);
@@ -98,16 +100,17 @@ public class AppApi {
   @GET
   @Path("start/{containerId}")
   @ApiOperation(
-      value = "Start an app",
-      notes = "Requests to start an app.",
-      response = Boolean.class
+    value = "Start an application",
+    notes =
+        "Starting an application may take some time. This method will start the app asynchronously and return immediately. This method starts the latest version of the app.",
+    response = Boolean.class
   )
   @ApiResponses(
       @ApiResponse(
-          code = 200,
-          message =
-              "true if the app has been requested to be started. "
-                  + "false if no container management layer is available"
+        code = 200,
+        message =
+            "true if the app has been requested to be started. "
+                + "false if no container management layer is available"
       ))
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
@@ -119,8 +122,9 @@ public class AppApi {
   @GET
   @Path("start/{containerId}/{key}")
   @ApiOperation(
-    value = "Start an app",
-    notes = "Requests to start an app.",
+    value = "Start an application",
+    notes =
+        "Starting an application may take some time. This method will start the app asynchronously and return immediately. This methods starts a specific version of the app.",
     response = Boolean.class
   )
   @ApiResponses(
@@ -134,15 +138,16 @@ public class AppApi {
   @AuthorizationRequired
   public boolean start(
       @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId,
-      @ApiParam(value = "Key for user token") @PathParam("key") String key) {
+      @ApiParam(value = "Key for user token (required for trustX containers)") @PathParam("key")
+          String key) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
-      if (cml!=null) {
-    	  cml.startContainer(containerId, key);
-    	  return true;
+      if (cml != null) {
+        cml.startContainer(containerId, key);
+        return true;
       } else {
-          LOG.warn("Container manager not available");
-    	  return false;
+        LOG.warn("Container manager not available");
+        return false;
       }
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
       LOG.error("Error starting container", e);
@@ -152,7 +157,12 @@ public class AppApi {
 
   @GET
   @Path("stop/{containerId}")
-  @ApiOperation(value = "Stop an app", notes = "Requests to stop an app.", response = Boolean.class)
+  @ApiOperation(
+    value = "Stop an app",
+    notes =
+        "Stops an application. The application will remain installed and can be re-started later. All temporary data will be lost, however.",
+    response = Boolean.class
+  )
   @ApiResponses(
       @ApiResponse(
         code = 200,
@@ -167,11 +177,11 @@ public class AppApi {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml != null) {
-	      cml.stopContainer(containerId);
-	      return true;
+        cml.stopContainer(containerId);
+        return true;
       } else {
-    	  LOG.warn("Container manager not available");
-    	  return false;
+        LOG.warn("Container manager not available");
+        return false;
       }
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
       LOG.error(e.getMessage(), e);
@@ -216,8 +226,8 @@ public class AppApi {
     LOG.debug("Request to load {}", app.getImage());
     final ContainerManager cm = WebConsoleComponent.getContainerManager();
     if (cm == null) {
-    	LOG.warn("Container manager not available");
-        throw new InternalServerErrorException("Null image");
+      LOG.warn("Container manager not available");
+      throw new InternalServerErrorException("Null image");
     }
 
     final String image = app.getImage();
@@ -254,7 +264,7 @@ public class AppApi {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml == null) {
-    	  return "No container manager";
+        return "No container manager";
       }
       cml.wipe(containerId);
     } catch (NullPointerException | NoContainerExistsException e) {
@@ -275,7 +285,7 @@ public class AppApi {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml == null) {
-    	  return Collections.emptyMap();
+        return Collections.emptyMap();
       }
       Map<String, String> result = new HashMap<>();
       result.put("cml_version", cml.getVersion());
@@ -296,8 +306,8 @@ public class AppApi {
       Client client = ClientBuilder.newBuilder().build();
       Settings settings = WebConsoleComponent.getSettings();
       if (settings == null) {
-    	  LOG.warn("No settings available");
-    	  return new ArrayList<>();
+        LOG.warn("No settings available");
+        return new ArrayList<>();
       }
       String url = settings.getConnectorConfig().getAppstoreUrl();
 

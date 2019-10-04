@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,15 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import io.swagger.annotations.*;
 import java.lang.management.*;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * REST API interface for platform metrics.
@@ -41,7 +37,10 @@ import java.util.Map;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/metric")
-@Api(value = "Metric")
+@Api(
+  value = "Runtime Metrics",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class MetricAPI {
 
   private static final DecimalFormat loadAvgFormat = new DecimalFormat("###.##");

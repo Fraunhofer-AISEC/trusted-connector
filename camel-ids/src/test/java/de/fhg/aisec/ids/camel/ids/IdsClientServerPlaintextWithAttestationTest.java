@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
+import java.util.List;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
-
-import java.util.List;
 
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
   protected static final String TEST_MESSAGE = "Hello World!";
@@ -61,7 +60,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     assertEquals(RatResult.Status.FAILED, ratResult.getStatus());
 
     // We expect some meta data about the remot endpoint
-    assertEquals( "{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
+    assertEquals("{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
 
     List<IDSCPOutgoingConnection> outgoings = conm.listOutgoingConnections();
     assertEquals(1, outgoings.size());
@@ -72,7 +71,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
 
     // ... and some meta data
     String meta = outgoingConnection.getMetaData();
-    assertEquals("{\"message\":\"No InfomodelManager loaded\"}",meta);
+    assertEquals("{\"message\":\"No InfomodelManager loaded\"}", meta);
   }
 
   @Test
@@ -102,16 +101,16 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
   @Override
   protected RouteBuilder[] createRouteBuilders() {
     return new RouteBuilder[] {
-        new RouteBuilder() {
-          public void configure() {
-            from("direct:input").routeId("client").to("idsclientplain://localhost:9292/zero");
-          }
-        },
-        new RouteBuilder() {
-          public void configure() {
-            from("idsserver://0.0.0.0:9292/zero").routeId("server").to("mock:result");
-          }
+      new RouteBuilder() {
+        public void configure() {
+          from("direct:input").routeId("client").to("idsclientplain://localhost:9292/zero");
         }
+      },
+      new RouteBuilder() {
+        public void configure() {
+          from("idsserver://0.0.0.0:9292/zero").routeId("server").to("mock:result");
+        }
+      }
     };
   }
 }

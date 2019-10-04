@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,14 @@ import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d;
 import de.fhg.aisec.ids.messages.AttestationProtos.RemoteToTpm2d.Code;
 import de.fhg.aisec.ids.messages.AttestationProtos.Tpm2dToRemote;
 import de.fhg.aisec.ids.messages.Idscp.*;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(RemoteAttestationClientHandler.class);
@@ -95,11 +94,12 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
     ByteString certificate = ByteString.EMPTY;
     if (tpm2dSocket != null) {
       try {
-        RemoteToTpm2d.Builder msgBuilder = RemoteToTpm2d.newBuilder()
-            .setAtype(this.aType)
-            .setQualifyingData(ByteString.copyFrom(hash))
-            .setCode(Code.ATTESTATION_REQ)
-            .setPcrs(this.attestationMask);
+        RemoteToTpm2d.Builder msgBuilder =
+            RemoteToTpm2d.newBuilder()
+                .setAtype(this.aType)
+                .setQualifyingData(ByteString.copyFrom(hash))
+                .setCode(Code.ATTESTATION_REQ)
+                .setPcrs(this.attestationMask);
         if (this.aType.equals(IdsAttestationType.ADVANCED)) {
           // send msg to local unix socket with bitmask set
           // construct protobuf message to send to local tpm2d via unix socket
@@ -148,11 +148,11 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
               + (this.sessionID + 1)
               + ")";
       LOG.debug(lastError);
-      return RemoteAttestationHandler.sendError(++this.sessionID, RemoteAttestationHandler.lastError);
+      return RemoteAttestationHandler.sendError(
+          ++this.sessionID, RemoteAttestationHandler.lastError);
     }
 
-    if (this.checkSignature(response, hash)
-        && checkRepository(this.aType, response, ttpUri)) {
+    if (this.checkSignature(response, hash) && checkRepository(this.aType, response, ttpUri)) {
       this.mySuccess = true;
     } else {
       LOG.warn(
@@ -178,7 +178,8 @@ public class RemoteAttestationClientHandler extends RemoteAttestationHandler {
               + (this.sessionID + 1)
               + ")";
       LOG.debug(lastError);
-      return RemoteAttestationHandler.sendError(++this.sessionID, RemoteAttestationHandler.lastError);
+      return RemoteAttestationHandler.sendError(
+          ++this.sessionID, RemoteAttestationHandler.lastError);
     }
 
     return ConnectorMessage.newBuilder()

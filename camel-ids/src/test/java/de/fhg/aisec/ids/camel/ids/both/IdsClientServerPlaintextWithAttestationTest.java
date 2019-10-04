@@ -1,15 +1,15 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * camel-ids
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,12 +23,11 @@ import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
+import java.util.List;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
-
-import java.util.List;
 
 /** These tests send messages over the IDSC protocol (via localhost). */
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
@@ -36,11 +35,10 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
   protected static final String TEST_MESSAGE_2 = "Hello Again!";
 
   /**
-   * Creates a route from a client to a server and verifies that 
-   * - it transports data
-   * - connection is correctly listed in ConnectionManager
-   * - remote attestation status is correctly "failed" (as we have no TPM here)
-   * 
+   * Creates a route from a client to a server and verifies that - it transports data - connection
+   * is correctly listed in ConnectionManager - remote attestation status is correctly "failed" (as
+   * we have no TPM here)
+   *
    * @throws Exception
    */
   @Test
@@ -71,7 +69,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     assertEquals(RatResult.Status.FAILED, ratResult.getStatus());
 
     // We expect some meta data about the remot endpoint
-    assertEquals("{\"message\":\"No InfomodelManager loaded\"}",incomingConnection.getMetaData());
+    assertEquals("{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
 
     List<IDSCPOutgoingConnection> outgoings = conm.listOutgoingConnections();
     assertEquals(1, outgoings.size());
@@ -82,12 +80,12 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
 
     // ... and some meta data
     String meta = outgoingConnection.getMetaData();
-    assertEquals("{\"message\":\"No InfomodelManager loaded\"}",incomingConnection.getMetaData());
+    assertEquals("{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
   }
 
   /**
    * Make sure that a route can handle being restarted.
-   * 
+   *
    * @throws Exception
    */
   @Test

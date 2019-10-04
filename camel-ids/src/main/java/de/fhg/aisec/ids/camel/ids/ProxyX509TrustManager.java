@@ -1,20 +1,38 @@
+/*-
+ * ========================LICENSE_START=================================
+ * camel-ids
+ * %%
+ * Copyright (C) 2019 Fraunhofer AISEC
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package de.fhg.aisec.ids.camel.ids;
 
 import de.fhg.aisec.ids.comm.CertificatePair;
-import org.apache.camel.util.jsse.*;
-
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import javax.net.ssl.X509TrustManager;
+import org.apache.camel.util.jsse.*;
 
 public class ProxyX509TrustManager implements X509TrustManager {
 
-  public static void bindCertificatePair(SSLContextParameters sslContextParameters,
-                                         boolean isServer, CertificatePair certificatePair)
+  public static void bindCertificatePair(
+      SSLContextParameters sslContextParameters, boolean isServer, CertificatePair certificatePair)
       throws GeneralSecurityException, IOException {
     // Acquire the local certificate
     if (sslContextParameters.getKeyManagers() != null) {
@@ -51,7 +69,8 @@ public class ProxyX509TrustManager implements X509TrustManager {
       serverParameters.setClientAuthentication("WANT");
       sslContextParameters.setServerParameters(serverParameters);
     } else {
-      // CLIENT ONLY: Replace X509TrustManager with this proxy implementation to log certificate of remote server
+      // CLIENT ONLY: Replace X509TrustManager with this proxy implementation to log certificate of
+      // remote server
       TrustManagersParameters tmParams = sslContextParameters.getTrustManagers();
       X509TrustManager systemTrustManager = (X509TrustManager) tmParams.createTrustManagers()[0];
       tmParams.setTrustManager(new ProxyX509TrustManager(systemTrustManager, certificatePair));
@@ -67,12 +86,14 @@ public class ProxyX509TrustManager implements X509TrustManager {
   }
 
   @Override
-  public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+  public void checkClientTrusted(X509Certificate[] chain, String authType)
+      throws CertificateException {
     trustManager.checkClientTrusted(chain, authType);
   }
 
   @Override
-  public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+  public void checkServerTrusted(X509Certificate[] chain, String authType)
+      throws CertificateException {
     // Save observed server certificate
     certificatePair.setRemoteCertificate(chain[0]);
     trustManager.checkServerTrusted(chain, authType);

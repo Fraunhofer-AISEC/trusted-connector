@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
-import org.apache.camel.Service;
-
 import java.util.Collection;
+import org.apache.camel.Service;
 
 public interface WebsocketStore extends Service {
 
