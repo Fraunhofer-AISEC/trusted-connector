@@ -15,7 +15,7 @@ export class ConnectionConfigurationComponent implements OnInit {
   private _selectedIndex = 0;
 
   constructor(private readonly titleService: Title, private readonly connectionConfService: ConnectionConfigurationService) {
-    this.titleService.setTitle('Connections Configuration');
+    this.titleService.setTitle('Security Requirements');
   }
 
   public ngOnInit(): void {
