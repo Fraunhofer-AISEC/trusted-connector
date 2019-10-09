@@ -62,6 +62,7 @@ public class ConfigApi {
 
   @GET
   @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig.class)
+  @Path("/connectorConfig")
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public ConnectorConfig get() {

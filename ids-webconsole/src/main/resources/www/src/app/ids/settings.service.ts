@@ -11,7 +11,7 @@ export class SettingsService {
   constructor(@Inject(HTTP_INJECTION_TOKEN) private readonly http: ApplicationHttpClient) { }
 
   public getSettings(): Observable<Settings> {
-    return this.http.get<Settings>('/config');
+    return this.http.get<Settings>('/config/connectorConfig');
   }
 
   public getToS(uri: string): Observable<TermsOfService> {
@@ -22,6 +22,6 @@ export class SettingsService {
   }
 
   public store(model: Settings): Observable<string> {
-    return this.http.post('/config', model, { responseType: 'text' });
+    return this.http.post('/config/connectorConfig', model, { responseType: 'text' });
   }
 }
