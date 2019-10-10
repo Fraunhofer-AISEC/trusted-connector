@@ -28,6 +28,7 @@ import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.Authorization;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

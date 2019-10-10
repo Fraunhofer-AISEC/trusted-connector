@@ -26,6 +26,7 @@ import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.GET;
