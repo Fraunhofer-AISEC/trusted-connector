@@ -58,10 +58,11 @@ import javax.ws.rs.core.Response;
   authorizations = {@Authorization(value = "oauth2")}
 )
 public class ConfigApi {
-  public static final String GENERAL_CONFIG = "General Configuration";
+  public static final String GENERAL_CONFIG = "All new connections";
 
   @GET
   @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig.class)
+  @Path("/connectorConfig")
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public ConnectorConfig get() {
@@ -74,7 +75,8 @@ public class ConfigApi {
 
   @POST
   @OPTIONS
-  @ApiOperation(value = "Sets the configuration", response = ConnectorConfig.class)
+  @Path("/connectorConfig")
+  @ApiOperation(value = "Sets the overall configuration of the connector")
   @ApiResponses(
       @ApiResponse(
         code = 500,
