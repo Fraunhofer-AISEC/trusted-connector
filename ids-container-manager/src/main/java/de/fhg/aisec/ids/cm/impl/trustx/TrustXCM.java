@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-container-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,6 @@ import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon;
 import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon.Command;
 import de.fraunhofer.aisec.trustme.Control.DaemonToController;
 import de.fraunhofer.aisec.trustme.Control.DaemonToController.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +40,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ContainerManager implementation for trust-x containers.
@@ -81,13 +80,13 @@ public class TrustXCM implements ContainerManager {
   }
 
   private String stateToStatusString(ContainerState state) {
-     switch (state) {
-       case RUNNING:
-       case SETUP:
-         return "Up";
-       default:
-         return "Exited";
-     }
+    switch (state) {
+      case RUNNING:
+      case SETUP:
+        return "Up";
+      default:
+        return "Exited";
+    }
   }
 
   @Override
@@ -105,7 +104,7 @@ public class TrustXCM implements ContainerManager {
           container.setId(cs.getUuid());
           container.setImage("");
           container.setCreated(formatter.format(Instant.ofEpochSecond(cs.getCreated())));
-          //container.setStatus(cs.getState().name());
+          // container.setStatus(cs.getState().name());
           container.setStatus(stateToStatusString(cs.getState()));
           container.setPorts(Arrays.asList("\n".split("\n")));
           container.setNames(cs.getName());

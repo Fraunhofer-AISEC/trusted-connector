@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,14 +40,16 @@ public interface RouteManager {
    *
    * @return All installed rules
    */
-  @NonNull List<RouteObject> getRoutes();
+  @NonNull
+  List<RouteObject> getRoutes();
 
   /**
    * Returns a list of currently installed routes.
    *
    * @return The queried route or null
    */
-  @Nullable RouteObject getRoute(@NonNull String id);
+  @Nullable
+  RouteObject getRoute(@NonNull String id);
 
   /**
    * Starts a route.
@@ -70,16 +72,19 @@ public interface RouteManager {
    *
    * @return
    */
-  @NonNull List<RouteComponent> listComponents();
+  @NonNull
+  List<RouteComponent> listComponents();
 
   /**
    * List all route endpoints, i.e. all URLs to which routes exist.
    *
    * @return
    */
-  @NonNull Map<String, Collection<String>> getEndpoints();
+  @NonNull
+  Map<String, Collection<String>> getEndpoints();
 
-  @NonNull Map<String, String> listEndpoints();
+  @NonNull
+  Map<String, String> listEndpoints();
 
   /**
    * Save a route, replacing it with a new representation within the same context
@@ -90,7 +95,9 @@ public interface RouteManager {
    * @throws RouteException If the route does not exist or some Exception was thrown during route
    *     replacement.
    */
-  @NonNull RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation) throws RouteException;
+  @NonNull
+  RouteObject saveRoute(@NonNull String routeId, @NonNull String routeRepresentation)
+      throws RouteException;
 
   /**
    * Adds a route and starts it.
@@ -135,14 +142,16 @@ public interface RouteManager {
    * @param routeId The identifier of the route
    * @return The from (input) URIs of the route
    */
-  @NonNull List<String> getRouteInputUris(@NonNull String routeId);
+  @NonNull
+  List<String> getRouteInputUris(@NonNull String routeId);
 
   /**
    * Returns aggregated runtime metrics of all installed routes.
    *
    * @return map<k,v> where k is a string indicating the route id.
    */
-  @NonNull Map<String, RouteMetrics> getRouteMetrics();
+  @NonNull
+  Map<String, RouteMetrics> getRouteMetrics();
 
   /**
    * Returns the given route configuration in a Prolog representation.
@@ -150,5 +159,6 @@ public interface RouteManager {
    * @param routeId ID of route to retrieve prolog representation for
    * @return Route represented as prolog
    */
-   @NonNull String getRouteAsProlog(@NonNull String routeId);
+  @NonNull
+  String getRouteAsProlog(@NonNull String routeId);
 }

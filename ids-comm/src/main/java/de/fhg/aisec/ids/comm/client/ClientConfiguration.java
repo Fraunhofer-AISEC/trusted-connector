@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,11 @@ package de.fhg.aisec.ids.comm.client;
 import de.fhg.aisec.ids.comm.CertificatePair;
 import de.fhg.aisec.ids.comm.IdscpConfiguration;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Configuration of a client-side (Consumer) IDSC endpoint.
@@ -35,25 +34,17 @@ import java.util.List;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public class ClientConfiguration implements IdscpConfiguration {
-  @NonNull
-  private IdsAttestationType attestationType = IdsAttestationType.BASIC;
+  @NonNull private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask = 0;
-  @NonNull
-  private CertificatePair certificatePair = new CertificatePair();
-  @NonNull
-  private String rdfDescription = "";
-  @NonNull
-  private String dynamicAttributeToken = "";
-  @NonNull
-  private String endpoint = "";
-  @NonNull
-  private List<byte[]> sha256CertificateHashes = Collections.emptyList();
-  @Nullable
-  protected URI ttpUri;
-  
+  @NonNull private CertificatePair certificatePair = new CertificatePair();
+  @NonNull private String rdfDescription = "";
+  @NonNull private String dynamicAttributeToken = "";
+  @NonNull private String endpoint = "";
+  @NonNull private List<byte[]> sha256CertificateHashes = Collections.emptyList();
+  @Nullable protected URI ttpUri;
+
   public static class Builder {
-	  @NonNull
-    private ClientConfiguration config = new ClientConfiguration();
+    @NonNull private ClientConfiguration config = new ClientConfiguration();
 
     public Builder attestationMask(int attestationMask) {
       config.attestationMask = attestationMask;
@@ -90,11 +81,10 @@ public class ClientConfiguration implements IdscpConfiguration {
       return this;
     }
 
-
     @NonNull
     public Builder endpoint(@NonNull String endpoint) {
-    	config.endpoint = endpoint;
-    	return this;
+      config.endpoint = endpoint;
+      return this;
     }
 
     @NonNull
@@ -102,7 +92,7 @@ public class ClientConfiguration implements IdscpConfiguration {
       config.sha256CertificateHashes = hashes;
       return this;
     }
-    
+
     @NonNull
     public ClientConfiguration build() {
       return config;
@@ -117,7 +107,7 @@ public class ClientConfiguration implements IdscpConfiguration {
   public int getAttestationMask() {
     return attestationMask;
   }
-  
+
   @NonNull
   public CertificatePair getCertificatePair() {
     return certificatePair;
@@ -129,20 +119,22 @@ public class ClientConfiguration implements IdscpConfiguration {
   }
 
   @NonNull
-  public String getRDFDescription() { return rdfDescription; }
+  public String getRDFDescription() {
+    return rdfDescription;
+  }
 
   @Nullable
   public URI getTrustedThirdPartyURI() {
-	  return ttpUri;
+    return ttpUri;
   }
 
   @NonNull
   public String getEndpoint() {
-	  return endpoint;
+    return endpoint;
   }
 
   @NonNull
-  public List<byte[]> getSha256CertificateHashes(){
+  public List<byte[]> getSha256CertificateHashes() {
     return sha256CertificateHashes;
   }
 }

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-container-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class DockerCM implements ContainerManager {
       throw new RuntimeException(e);
     }
     for (String line : lines) {
-	  Matcher m = pattern.matcher(line);
+      Matcher m = pattern.matcher(line);
       if (!m.matches() || m.groupCount() != 8) {
         LOG.error("Unexpected number of columns in docker ps: " + m.groupCount() + ": " + line);
         break;
@@ -226,7 +226,7 @@ public class DockerCM implements ContainerManager {
       createCmd.add("create");
 
       // Set exposed ports
-      if (app.getPorts()!=null) {
+      if (app.getPorts() != null) {
         for (String port : app.getPorts()) {
           createCmd.add("-p");
           createCmd.add(port);

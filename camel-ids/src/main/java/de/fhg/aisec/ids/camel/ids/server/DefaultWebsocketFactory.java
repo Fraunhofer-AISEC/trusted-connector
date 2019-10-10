@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@
 package de.fhg.aisec.ids.camel.ids.server;
 
 import de.fhg.aisec.ids.comm.CertificatePair;
+import java.security.cert.X509Certificate;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.security.cert.X509Certificate;
 
 /** Default websocket factory. Used when no custom websocket is needed. */
 public class DefaultWebsocketFactory implements WebSocketFactory {
@@ -47,10 +46,10 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
     CertificatePair finalPair = new CertificatePair(certificatePair);
     // ... plus the remote (client) certificate from the request
     X509Certificate[] certificates = request.getCertificates();
-    if (certificates != null && certificates.length>0) {
+    if (certificates != null && certificates.length > 0) {
       finalPair.setRemoteCertificate(certificates[0]);
     } else {
-    	LOG.warn("Remote client did not present TLS certificate");
+      LOG.warn("Remote client did not present TLS certificate");
     }
     return new DefaultWebsocket(sync, pathSpec, consumer, finalPair);
   }

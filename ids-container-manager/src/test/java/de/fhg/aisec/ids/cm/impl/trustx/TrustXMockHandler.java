@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-container-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,11 @@
  */
 package de.fhg.aisec.ids.cm.impl.trustx;
 
+import java.util.LinkedList;
+import java.util.List;
 import jnr.unixsocket.UnixSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.LinkedList;
-import java.util.List;
 
 public class TrustXMockHandler implements Runnable {
   private Logger LOG = LoggerFactory.getLogger(TrustXMockHandler.class);

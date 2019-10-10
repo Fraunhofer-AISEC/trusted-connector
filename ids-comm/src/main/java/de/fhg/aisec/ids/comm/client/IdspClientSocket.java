@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,18 @@ import de.fhg.aisec.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.aisec.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketListener;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
 public class IdspClientSocket implements WebSocketListener {
   private static final Logger Log = LoggerFactory.getLogger(IdspClientSocket.class);
   private FSM fsm;
-  @NonNull
-  private final ReentrantLock lock = new ReentrantLock();
+  @NonNull private final ReentrantLock lock = new ReentrantLock();
   private final Condition idscpInProgress = lock.newCondition();
   private final ConnectorMessage startMsg =
       Idscp.ConnectorMessage.newBuilder()

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,19 @@ import java.nio.file.Path;
 /**
  * Interface of the Token Manager.
  *
- * <p>TThe Token Manager takes care of identity tokens (such as the Dynamic Attribute Token, acquired by the Dynamic Attribute Provisioning Service.
+ * <p>TThe Token Manager takes care of identity tokens (such as the Dynamic Attribute Token,
+ * acquired by the Dynamic Attribute Provisioning Service.
  *
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
 public interface TokenManager {
 
-  boolean acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID);
-
-
+  boolean acquireToken(
+      Path targetDirectory,
+      String dapsUrl,
+      String keyStoreName,
+      String keyStorePassword,
+      String keystoreAliasName,
+      String trustStoreName,
+      String connectorUUID);
 }

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.nio.file.FileSystems;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +39,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * REST API interface for configurations in the connector.
@@ -65,7 +64,7 @@ public class ConfigApi {
   public ConnectorConfig get() {
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return null;
+      return null;
     }
     return settings.getConnectorConfig();
   }
@@ -88,7 +87,7 @@ public class ConfigApi {
 
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return "No settings available";
+      return "No settings available";
     }
     settings.setConnectorConfig(config);
     TokenManager tokenManager = WebConsoleComponent.getTokenManager();
@@ -97,7 +96,14 @@ public class ConfigApi {
     }
 
     try {
-      tokenManager.acquireToken(FileSystems.getDefault().getPath("etc"), config.getDapsUrl(), config.getKeystoreName(), config.getKeystorePassword(), config.getKeystoreAliasName(),config.getTruststoreName(), config.getConnectorUUID());
+      tokenManager.acquireToken(
+          FileSystems.getDefault().getPath("etc"),
+          config.getDapsUrl(),
+          config.getKeystoreName(),
+          config.getKeystorePassword(),
+          config.getKeystoreAliasName(),
+          config.getTruststoreName(),
+          config.getConnectorUUID());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -130,7 +136,7 @@ public class ConfigApi {
 
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return Response.serverError().build();
+      return Response.serverError().build();
     }
     settings.setConnectionSettings(connection, conSettings);
 
@@ -151,7 +157,7 @@ public class ConfigApi {
   public ConnectionSettings getConnectionConfigurations(@PathParam("con") String connection) {
     Settings settings = WebConsoleComponent.getSettings();
     if (settings == null) {
-    	return null;
+      return null;
     }
     return settings.getConnectionSettings(connection);
   }
@@ -177,9 +183,9 @@ public class ConfigApi {
     Settings settings = WebConsoleComponent.getSettings();
     ConnectionManager connectionManager = WebConsoleComponent.getConnectionManager();
     RouteManager routeManager = WebConsoleComponent.getRouteManager();
-    
+
     if (settings == null || connectionManager == null || routeManager == null) {
-    	return Collections.emptyMap();
+      return Collections.emptyMap();
     }
 
     // Set of all connection configurations, properly ordered

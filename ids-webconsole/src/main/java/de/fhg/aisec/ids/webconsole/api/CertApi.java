@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,6 @@ import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 import io.swagger.annotations.*;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,6 +45,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -79,19 +78,18 @@ public class CertApi {
           )
           @PathParam("target")
           String target) {
-	Settings settings = WebConsoleComponent.getSettings();
-	if (settings == null) {
-		return;
-	}
+    Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+      return;
+    }
     ConnectorConfig config = settings.getConnectorConfig();
     AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
-    if ("webconsole".equals(target) && acmeClient!=null) {
-      acmeClient
-          .renewCertificate(
-              FileSystems.getDefault().getPath("etc", "tls-webconsole"),
-              URI.create(config.getAcmeServerWebcon()),
-              config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"),
-              config.getAcmePortWebcon());
+    if ("webconsole".equals(target) && acmeClient != null) {
+      acmeClient.renewCertificate(
+          FileSystems.getDefault().getPath("etc", "tls-webconsole"),
+          URI.create(config.getAcmeServerWebcon()),
+          config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"),
+          config.getAcmePortWebcon());
     } else {
       LOG.warn("ACME renewal for services other than WebConsole is not yet implemented!");
     }
@@ -107,9 +105,9 @@ public class CertApi {
   public AcmeTermsOfService getAcmeTermsOfService(
       @ApiParam(value = "URI to retrieve the TOS from") @QueryParam("uri") String uri) {
     AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
-	if (acmeClient == null) {
-		return null;
-	}
+    if (acmeClient == null) {
+      return null;
+    }
     return acmeClient.getTermsOfService(URI.create(uri.trim()));
   }
 

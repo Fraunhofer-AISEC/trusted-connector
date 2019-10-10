@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,11 +73,15 @@ public class IDSCPIncomingConnection {
     this.remoteHostName = remoteHostname;
   }
 
-  public void setMetaData(String metaResult) { this.metaData = metaResult;}
+  public void setMetaData(String metaResult) {
+    this.metaData = metaResult;
+  }
 
   public String getMetaData() {
     return this.metaData;
   }
 
-  public void setDynamicAttributeToken(String dynamicAttributeToken) { this.dynamicAttributeToken = dynamicAttributeToken; }
+  public void setDynamicAttributeToken(String dynamicAttributeToken) {
+    this.dynamicAttributeToken = dynamicAttributeToken;
+  }
 }

@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-ids
+ * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@
  */
 package de.fhg.aisec.ids.camel.ids.protocol;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import de.fhg.aisec.ids.comm.CertificatePair;
 import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.server.ServerConfiguration;
@@ -27,6 +32,11 @@ import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationServerHandler;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -34,17 +44,6 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tss.tpm.TPM_ALG_ID;
-
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 // BASIC test
@@ -59,10 +58,7 @@ public class BASICAttestationIT {
   private TPM_ALG_ID hAlg = TPM_ALG_ID.SHA256;
 
   private ConnectorMessage msg0 =
-      ConnectorMessage.newBuilder()
-          .setType(ConnectorMessage.Type.RAT_START)
-          .setId(id)
-          .build();
+      ConnectorMessage.newBuilder().setType(ConnectorMessage.Type.RAT_START).setId(id).build();
 
   private static ConnectorMessage msg1;
   private static ConnectorMessage msg2;
@@ -84,18 +80,20 @@ public class BASICAttestationIT {
     CertificatePair clientPair = new CertificatePair();
     clientPair.setLocalCertificate(clientDummyCert);
     clientPair.setRemoteCertificate(serverDummyCert);
-    ClientConfiguration clientConfiguration = new ClientConfiguration.Builder()
-        .attestationType(aType)
-        .certificatePair(clientPair)
-        .build();
+    ClientConfiguration clientConfiguration =
+        new ClientConfiguration.Builder()
+            .attestationType(aType)
+            .certificatePair(clientPair)
+            .build();
     // Server IDSCP configuration
     CertificatePair serverPair = new CertificatePair();
     serverPair.setLocalCertificate(serverDummyCert);
     serverPair.setRemoteCertificate(clientDummyCert);
-    ServerConfiguration serverConfiguration = new ServerConfiguration.Builder()
-        .attestationType(aType)
-        .certificatePair(serverPair)
-        .build();
+    ServerConfiguration serverConfiguration =
+        new ServerConfiguration.Builder()
+            .attestationType(aType)
+            .certificatePair(serverPair)
+            .build();
     final String ratRepoUri = "https://127.0.0.1:31337/configurations/check";
     consumer =
         new RemoteAttestationClientHandler(clientConfiguration, new URI(ratRepoUri), TPMD_SOCKET);
@@ -129,7 +127,8 @@ public class BASICAttestationIT {
 
   @Test
   public void test3() throws Exception {
-    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     msg3 =
         ConnectorMessage.parseFrom(
@@ -146,7 +145,8 @@ public class BASICAttestationIT {
 
   @Test
   public void test4() throws Exception {
-    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     msg4 =
         ConnectorMessage.parseFrom(
@@ -163,7 +163,8 @@ public class BASICAttestationIT {
 
   @Test
   public void test5() throws Exception {
-    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     msg5 =
         ConnectorMessage.parseFrom(
@@ -177,7 +178,8 @@ public class BASICAttestationIT {
 
   @Test
   public void test6() throws Exception {
-    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     msg6 =
         ConnectorMessage.parseFrom(
@@ -191,7 +193,8 @@ public class BASICAttestationIT {
 
   @Test
   public void test7() throws Exception {
-    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     msg7 =
         ConnectorMessage.parseFrom(
@@ -206,7 +209,8 @@ public class BASICAttestationIT {
 
   @Test
   public void test8() throws Exception {
-    assumeTrue("tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
+    assumeTrue(
+        "tpmd socket not available. Skipping integration test", new File(TPMD_SOCKET).canWrite());
 
     msg8 =
         ConnectorMessage.parseFrom(

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,21 +22,16 @@ package de.fhg.aisec.ids.api.tokenm;
 /**
  * Dynamic Attribute Token. Wraps the token acquired from the DAPS.
  *
- *
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
-
 public final class DynamicAttributeToken {
   final String token;
 
-
   public DynamicAttributeToken(String token) {
     this.token = token;
-
   }
 
   public String getToken() {
     return token;
   }
-
 }

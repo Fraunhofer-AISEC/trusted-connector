@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 
 public class MetadataProviderHandler extends MetadataHandler {
-  public MetadataProviderHandler (String rdfSelfDescription, String dynamicAttributeToken) {
+  public MetadataProviderHandler(String rdfSelfDescription, String dynamicAttributeToken) {
     super(rdfSelfDescription, dynamicAttributeToken);
   }
+
   public MessageLite response(Event e) {
     this.sessionID = e.getMessage().getId();
 
@@ -35,7 +36,10 @@ public class MetadataProviderHandler extends MetadataHandler {
         .setId(++this.sessionID)
         .setType(ConnectorMessage.Type.META_RESPONSE)
         .setMetadataExchange(
-            MedadataExchange.newBuilder().setRdfdescription(getMetaData()).setDynamicAttributeToken(getDynamicAttributeToken()).build())
+            MedadataExchange.newBuilder()
+                .setRdfdescription(getMetaData())
+                .setDynamicAttributeToken(getDynamicAttributeToken())
+                .build())
         .build();
   }
 }

@@ -1,15 +1,15 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-webconsole
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,21 +24,19 @@ import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.util.PlainLiteral;
+import java.util.stream.Collectors;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.stream.Collectors;
-
-
 /**
  * REST API interface for Connector settings in the connector.
- * <p>
- * The API will be available at http://localhost:8181/cxf/api/v1/settings/<method>.
+ *
+ * <p>The API will be available at http://localhost:8181/cxf/api/v1/settings/<method>.
  */
 
-//ConnectorProfile will be processed by custom Jackson deserializer
+// ConnectorProfile will be processed by custom Jackson deserializer
 @Path("/settings")
 public class SettingsApi {
   private static final Logger LOG = LoggerFactory.getLogger(SettingsApi.class);
@@ -59,9 +57,7 @@ public class SettingsApi {
     }
   }
 
-  /**
-   * Returns Connector profile based on currently stored preferences or empty Connector profile
-   */
+  /** Returns Connector profile based on currently stored preferences or empty Connector profile */
   @GET
   @Path("/connectorProfile")
   @Produces(MediaType.APPLICATION_JSON)
@@ -76,16 +72,16 @@ public class SettingsApi {
       return new ConnectorProfile();
     } else {
       return new ConnectorProfile(
-              c.getSecurityProfile(),
-              c.getId(),
-              c.getMaintainer(),
-              c.getDescriptions().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
+          c.getSecurityProfile(),
+          c.getId(),
+          c.getMaintainer(),
+          c.getDescriptions().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
     }
   }
 
   /**
-   * Returns connector profile based on currently stored preferences or statically provided JSON-LD model,
-   * or empty connector profile if none of those are available.
+   * Returns connector profile based on currently stored preferences or statically provided JSON-LD
+   * model, or empty connector profile if none of those are available.
    */
   @GET
   @Path("/selfInformation")
@@ -104,9 +100,7 @@ public class SettingsApi {
     }
   }
 
-  /**
-   * Set static connector profile based on passed JSON-LD data
-   */
+  /** Set static connector profile based on passed JSON-LD data */
   @POST
   @Path("/selfInformation")
   @Consumes("application/ld+json")
@@ -123,9 +117,7 @@ public class SettingsApi {
     }
   }
 
-  /**
-   * Remove static connector profile based on JSON-LD data
-   */
+  /** Remove static connector profile based on JSON-LD data */
   @DELETE
   @Path("/selfInformation")
   @Consumes("application/ld+json")
@@ -141,5 +133,4 @@ public class SettingsApi {
       LOG.warn("Connector description build failed, building empty description.", e);
     }
   }
-
 }

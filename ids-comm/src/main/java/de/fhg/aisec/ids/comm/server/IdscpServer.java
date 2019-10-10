@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,15 +56,15 @@ public class IdscpServer {
     Server s = new Server();
     HttpConfiguration https = new HttpConfiguration();
     https.addCustomizer(new SecureRequestCustomizer());
-    
+
     SslContextFactory sslContextFactory = new SslContextFactory.Server();
     sslContextFactory.setKeyStore(config.getKeyStore());
     sslContextFactory.setKeyStorePassword(this.config.getKeyStorePassword());
     sslContextFactory.setCertAlias(this.config.getCertAlias());
     sslContextFactory.setKeyManagerPassword(this.config.getKeyManagerPassword());
-    
-    ServerConnector sslConnector = new ServerConnector(s, sslContextFactory,
-        new HttpConnectionFactory(https));
+
+    ServerConnector sslConnector =
+        new ServerConnector(s, sslContextFactory, new HttpConnectionFactory(https));
     sslConnector.setPort(this.config.getPort());
     s.setConnectors(new Connector[] {sslConnector});
 

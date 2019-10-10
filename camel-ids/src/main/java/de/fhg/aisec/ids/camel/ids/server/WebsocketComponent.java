@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,14 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 import de.fhg.aisec.ids.camel.ids.ProxyX509TrustManager;
 import de.fhg.aisec.ids.comm.CertificatePair;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.servlet.DispatcherType;
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
@@ -43,15 +51,6 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.DispatcherType;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebsocketComponent extends DefaultComponent implements SSLContextParametersAware {
   protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
@@ -160,8 +159,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
         // Create Server and add connector
         Server server = createServer();
 
-        ServerConnector connector =
-            getSocketConnector(server, endpoint.getSslContextParameters());
+        ServerConnector connector = getSocketConnector(server, endpoint.getSslContextParameters());
 
         if (endpoint.getPort() != null) {
           connector.setPort(endpoint.getPort());
@@ -404,9 +402,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
   }
 
   protected WebsocketComponentServlet addServlet(
-      NodeSynchronization sync,
-      WebsocketProducerConsumer prodcon,
-      String resourceUri)
+      NodeSynchronization sync, WebsocketProducerConsumer prodcon, String resourceUri)
       throws Exception {
 
     // Get Connector from one of the Jetty Instances to add WebSocket Servlet
@@ -441,7 +437,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       String pathSpec,
       Map<String, WebsocketComponentServlet> servlets,
       ServletContextHandler handler) {
-    WebsocketComponentServlet servlet = new WebsocketComponentServlet(sync, pathSpec, getSocketFactories());
+    WebsocketComponentServlet servlet =
+        new WebsocketComponentServlet(sync, pathSpec, getSocketFactories());
     servlets.put(pathSpec, servlet);
     ServletHolder servletHolder = new ServletHolder(servlet);
     servletHolder.getInitParameters().putAll(handler.getInitParams());
@@ -490,7 +487,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  private ServerConnector getSocketConnector(Server server, SSLContextParameters sslContextParameters)
+  private ServerConnector getSocketConnector(
+      Server server, SSLContextParameters sslContextParameters)
       throws GeneralSecurityException, IOException {
     if (sslContextParameters == null) {
       sslContextParameters = retrieveGlobalSslContextParameters();

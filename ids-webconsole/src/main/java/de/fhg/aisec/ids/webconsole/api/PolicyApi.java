@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -63,9 +62,9 @@ public class PolicyApi {
   public List<String> list() {
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
-    	return new ArrayList<>();
+      return new ArrayList<>();
     }
-	return pap.listRules();
+    return pap.listRules();
   }
 
   /**
@@ -78,10 +77,10 @@ public class PolicyApi {
   @Produces(MediaType.TEXT_PLAIN)
   @AuthorizationRequired
   public String getPolicyProlog() {
-	  PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
-	  if (pap == null) {
-		  return "";
-	  }
+    PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
+    if (pap == null) {
+      return "";
+    }
     return pap.getPolicy();
   }
 
@@ -97,7 +96,7 @@ public class PolicyApi {
     LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
-    	return "No PAP available";
+      return "No PAP available";
     }
     pap.loadPolicy(policy);
     return "OK";

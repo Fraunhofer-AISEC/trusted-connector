@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.camel.ids.client.WsEndpoint;
 import de.fhg.aisec.ids.camel.ids.server.WebsocketComponent;
 import de.fhg.aisec.ids.camel.ids.server.WebsocketComponentServlet;
-import org.osgi.service.component.annotations.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.osgi.service.component.annotations.*;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -46,27 +45,27 @@ public class ConnectionManagerService implements ConnectionManager {
 
   private static ConnectionManagerService instance = null;
 
-  @Reference(cardinality=ReferenceCardinality.OPTIONAL)
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private Settings settings = null;
 
   @Activate
   protected void activate() {
-	  ConnectionManagerService.instance = this;	  
+    ConnectionManagerService.instance = this;
   }
-  
+
   @Deactivate
   protected void deactivate() {
-	  ConnectionManagerService.instance = null;	  
+    ConnectionManagerService.instance = null;
   }
 
   public static Settings getSettings() {
-	  ConnectionManagerService in = ConnectionManagerService.instance;
-	  if (in!=null) {
-		  return in.settings;  
-	  }
-	  return null;
+    ConnectionManagerService in = ConnectionManagerService.instance;
+    if (in != null) {
+      return in.settings;
+    }
+    return null;
   }
-  
+
   @Override
   public List<IDSCPServerEndpoint> listAvailableEndpoints() {
     return WebsocketComponent.getConnectors()
@@ -110,7 +109,8 @@ public class ConnectionManagerService implements ConnectionManager {
                           incomingConnection.setRemoteHostName(dws.getRemoteHostname());
                           incomingConnection.setAttestationResult(dws.getAttestationResult());
                           incomingConnection.setMetaData(dws.getMetaResult());
-                          incomingConnection.setDynamicAttributeToken(dws.getDynamicAttributeToken());
+                          incomingConnection.setDynamicAttributeToken(
+                              dws.getDynamicAttributeToken());
                           return incomingConnection;
                         });
               } else {

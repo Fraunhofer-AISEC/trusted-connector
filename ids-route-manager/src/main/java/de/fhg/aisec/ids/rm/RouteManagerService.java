@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-route-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,15 @@ import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
 import de.fhg.aisec.ids.rm.util.PrologPrinter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import javax.management.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Route;
@@ -43,16 +52,6 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.management.*;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 /**
  * Manages Camel routes.
@@ -337,7 +336,8 @@ public class RouteManagerService implements RouteManager {
     try {
       CamelRouteToDot viz = new CamelRouteToDot();
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8));
+      BufferedWriter writer =
+          new BufferedWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8));
       viz.printSingleRoute(writer, rd);
       writer.flush();
       result = bos.toString("UTF-8");

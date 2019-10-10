@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,16 @@ import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.client.IdspClientSocket;
 import de.fhg.aisec.ids.comm.ws.protocol.IDSCPException;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -42,17 +52,6 @@ import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This is the client-side implementation of a Camel endpoint for the IDS communication protocol
@@ -210,11 +209,12 @@ public class WsEndpoint extends AhcEndpoint {
     URI ttpUri = null;
     try {
       if (settings != null) {
-        ttpUri = new URI(String.format(
-            "https://%s:%d/rat-verify",
-            settings.getConnectorConfig().getTtpHost(),
-            settings.getConnectorConfig().getTtpPort()
-        ));
+        ttpUri =
+            new URI(
+                String.format(
+                    "https://%s:%d/rat-verify",
+                    settings.getConnectorConfig().getTtpHost(),
+                    settings.getConnectorConfig().getTtpPort()));
       }
     } catch (URISyntaxException e) {
       LOG.error("incorrect TTP URI syntax", e);
@@ -230,9 +230,9 @@ public class WsEndpoint extends AhcEndpoint {
                     ? "{\"message\":\"No InfomodelManager loaded\"}"
                     : infoModel.getConnectorAsJsonLd())
             .dynamicAttributeToken(
-                    infoModel == null
-                            ? "{\"message\":\"No InfomodelManager loaded\"}"
-                            : infoModel.getDynamicAttributeToken())
+                infoModel == null
+                    ? "{\"message\":\"No InfomodelManager loaded\"}"
+                    : infoModel.getDynamicAttributeToken())
             .ttpUrl(ttpUri)
             .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);
@@ -256,9 +256,9 @@ public class WsEndpoint extends AhcEndpoint {
           LOG.warn("Interrupt occurred whilst waiting for IDSCP handshake", ie);
           Thread.currentThread().interrupt();
         }
-      } while (!idspListener.isTerminated());  // To handle sporadic wake-ups
+      } while (!idspListener.isTerminated()); // To handle sporadic wake-ups
     } catch (ExecutionException | InterruptedException e) {
-        Thread.currentThread().interrupt();
+      Thread.currentThread().interrupt();
       throw new IDSCPException("Error in WebSocket connect", e);
     } finally {
       idspListener.semaphore().unlock();

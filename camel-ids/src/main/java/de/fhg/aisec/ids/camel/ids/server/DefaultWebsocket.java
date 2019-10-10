@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +33,16 @@ import de.fhg.aisec.ids.comm.ws.protocol.fsm.Event;
 import de.fhg.aisec.ids.comm.ws.protocol.fsm.FSM;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import org.eclipse.jetty.websocket.api.CloseStatus;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.eclipse.jetty.websocket.api.CloseStatus;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @WebSocket
 public class DefaultWebsocket {
@@ -58,7 +57,10 @@ public class DefaultWebsocket {
   private CertificatePair certificatePair;
 
   public DefaultWebsocket(
-      NodeSynchronization sync, String pathSpec, WebsocketConsumer consumer, CertificatePair certificatePair) {
+      NodeSynchronization sync,
+      String pathSpec,
+      WebsocketConsumer consumer,
+      CertificatePair certificatePair) {
     this.sync = sync;
     this.consumer = consumer;
     this.pathSpec = pathSpec;
@@ -94,31 +96,33 @@ public class DefaultWebsocket {
     Settings settings = ConnectionManagerService.getSettings();
     URI ttpUri = null;
     try {
-	    if (settings != null) {
-	      ttpUri = new URI(String.format(
-	          "https://%s:%d/rat-verify",
-            settings.getConnectorConfig().getTtpHost(),
-            settings.getConnectorConfig().getTtpPort()
-        ));
-	    }
+      if (settings != null) {
+        ttpUri =
+            new URI(
+                String.format(
+                    "https://%s:%d/rat-verify",
+                    settings.getConnectorConfig().getTtpHost(),
+                    settings.getConnectorConfig().getTtpPort()));
+      }
     } catch (URISyntaxException e) {
-    	LOG.error("incorrect TTP URI syntax", e);
+      LOG.error("incorrect TTP URI syntax", e);
     }
     InfoModel infoModel = CamelComponent.getInfoModelManager();
-    ServerConfiguration configuration = new ServerConfiguration.Builder()
-        .attestationType(type)
-        .attestationMask(attestationMask)
-        .certificatePair(certificatePair)
-        .rdfDescription(
+    ServerConfiguration configuration =
+        new ServerConfiguration.Builder()
+            .attestationType(type)
+            .attestationMask(attestationMask)
+            .certificatePair(certificatePair)
+            .rdfDescription(
                 infoModel == null
-                        ? "{\"message\":\"No InfomodelManager loaded\"}"
-                        : infoModel.getConnectorAsJsonLd())
-        .dynamicAttributeToken(
+                    ? "{\"message\":\"No InfomodelManager loaded\"}"
+                    : infoModel.getConnectorAsJsonLd())
+            .dynamicAttributeToken(
                 infoModel == null
-                        ? "{\"message\":\"No InfomodelManager loaded\"}"
-                        : infoModel.getDynamicAttributeToken())
-        .ttpUrl(ttpUri)
-        .build();
+                    ? "{\"message\":\"No InfomodelManager loaded\"}"
+                    : infoModel.getDynamicAttributeToken())
+            .ttpUrl(ttpUri)
+            .build();
     idsFsm = new ServerProtocolMachine(session, configuration);
     sync.addSocket(this);
   }
@@ -208,12 +212,15 @@ public class DefaultWebsocket {
     return idsFsm.getRatResult();
   }
 
-  public String getMetaResult() { return idsFsm.getMetaData(); }
+  public String getMetaResult() {
+    return idsFsm.getMetaData();
+  }
 
-  public String getDynamicAttributeToken(){ return idsFsm.getDynamicAttributeToken(); }
+  public String getDynamicAttributeToken() {
+    return idsFsm.getDynamicAttributeToken();
+  }
 
   public String getRemoteHostname() {
     return session.getRemoteAddress().getHostName();
   }
-
 }

@@ -2,14 +2,14 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,20 +19,12 @@
  */
 package de.fhg.aisec.ids.comm.client;
 
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
 import de.fhg.aisec.ids.api.conm.RatResult;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.JdkSslContext;
 import io.netty.handler.ssl.SslContext;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig.Builder;
-import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketUpgradeHandler;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.DatatypeConverter;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
@@ -41,8 +33,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-
-import static org.asynchttpclient.Dsl.asyncHttpClient;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig.Builder;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketUpgradeHandler;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A standalone client implementation for the IDSCP protocol.
@@ -66,8 +65,9 @@ public class IdscpClient {
    * @throws NoSuchAlgorithmException Use <code>connect(String host, int port)</code> instead.
    */
   @Deprecated
-  public WebSocket connect(URI uri) throws InterruptedException, ExecutionException,
-      KeyManagementException, NoSuchAlgorithmException {
+  public WebSocket connect(URI uri)
+      throws InterruptedException, ExecutionException, KeyManagementException,
+          NoSuchAlgorithmException {
     return connect(uri.getHost(), uri.getPort());
   }
 
@@ -77,38 +77,46 @@ public class IdscpClient {
    */
   public WebSocket connect(@NonNull String host, int port)
       throws InterruptedException, ExecutionException, KeyManagementException,
-      NoSuchAlgorithmException {
+          NoSuchAlgorithmException {
     final Builder builder = new Builder();
     if (!this.config.getSha256CertificateHashes().isEmpty()) {
       SSLContext ctx = SSLContext.getInstance("TLS");
-      ctx.init(null, new X509TrustManager[]{new X509TrustManager() {
-        @Override
-        public void checkServerTrusted(X509Certificate[] certs, String str)
-            throws CertificateException {
-          try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] digestBytes = digest.digest(certs[0].getEncoded());
-            if (config.getSha256CertificateHashes().stream()
-                .noneMatch(hash -> Arrays.equals(digestBytes, hash))) {
-              throw new CertificateException("Did not find pinned SHA256 certificate hash: "
-                  + DatatypeConverter.printHexBinary(digestBytes));
+      ctx.init(
+          null,
+          new X509TrustManager[] {
+            new X509TrustManager() {
+              @Override
+              public void checkServerTrusted(X509Certificate[] certs, String str)
+                  throws CertificateException {
+                try {
+                  MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                  byte[] digestBytes = digest.digest(certs[0].getEncoded());
+                  if (config
+                      .getSha256CertificateHashes()
+                      .stream()
+                      .noneMatch(hash -> Arrays.equals(digestBytes, hash))) {
+                    throw new CertificateException(
+                        "Did not find pinned SHA256 certificate hash: "
+                            + DatatypeConverter.printHexBinary(digestBytes));
+                  }
+                } catch (Exception x) {
+                  throw new CertificateException("Error during hash calculation", x);
+                }
+              }
+
+              @Override
+              public void checkClientTrusted(X509Certificate[] certs, String str)
+                  throws CertificateException {
+                throw new CertificateException("Must not be called by client implementation!");
+              }
+
+              @Override
+              public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+              }
             }
-          } catch (Exception x) {
-            throw new CertificateException("Error during hash calculation", x);
-          }
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] certs, String str)
-            throws CertificateException {
-          throw new CertificateException("Must not be called by client implementation!");
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-          return new X509Certificate[0];
-        }
-      }}, null);
+          },
+          null);
       SslContext sslContext = new JdkSslContext(ctx, true, ClientAuth.NONE);
       builder.setSslContext(sslContext);
     }
@@ -116,7 +124,7 @@ public class IdscpClient {
 
     // Connect to web socket
     IdspClientSocket wsListener = new IdspClientSocket(this.config);
-    
+
     WebSocket ws =
         c.prepareGet("wss://" + host + ":" + port + "/" + this.config.getEndpoint())
             .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(wsListener).build())

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-container-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,17 @@
  */
 package de.fhg.aisec.ids.cm;
 
+import de.fhg.aisec.ids.api.MetaDataInfoPoint;
+import de.fhg.aisec.ids.api.cm.ContainerManager;
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.fhg.aisec.ids.api.MetaDataInfoPoint;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 
 /**
  * Provides meta data (= information) about running applications (= containers).
@@ -46,7 +44,8 @@ public class ContainerMetaDataInfoPoint implements MetaDataInfoPoint {
   private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
 
   /**
-   * Injected by OSGi declarative service framework when a ContainerManager service becomes available.
+   * Injected by OSGi declarative service framework when a ContainerManager service becomes
+   * available.
    */
   @Reference(
     name = "container.service",

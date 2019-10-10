@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.util.Map;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Data structure holding a decision request which is sent to the PDP. The PDP is expected to answer
@@ -33,26 +32,22 @@ import java.util.Objects;
  */
 public class DecisionRequest {
   /** The processor that data is received from */
-  @NonNull
-  private ServiceNode from;
+  @NonNull private ServiceNode from;
 
   /** The Processor that the data is to be sent to */
-  @NonNull
-  private ServiceNode to;
+  @NonNull private ServiceNode to;
 
   /** Properties of the message (e.g., labels) */
-  @NonNull
-  private Map<String, Object> msgCtx;
+  @NonNull private Map<String, Object> msgCtx;
 
   /** Properties of the environment */
-  @Nullable
-  private Map<String, Object> envCtx;
+  @Nullable private Map<String, Object> envCtx;
 
   public DecisionRequest(
-          @NonNull ServiceNode from,
-          @NonNull ServiceNode to,
-          @NonNull Map<String, Object> msgCtx,
-          @Nullable Map<String, Object> envCtx) {
+      @NonNull ServiceNode from,
+      @NonNull ServiceNode to,
+      @NonNull Map<String, Object> msgCtx,
+      @Nullable Map<String, Object> envCtx) {
     super();
     this.from = from;
     this.to = to;

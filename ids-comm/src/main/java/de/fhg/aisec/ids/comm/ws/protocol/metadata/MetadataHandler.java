@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,14 @@ public class MetadataHandler {
   protected long sessionID = -1;
   protected String rdfSelfDescription = "THIS IS SOME META DATA";
   protected String dynamicAttributeToken = "INVALID_TOKEN";
-  public MetadataHandler () {
-  }
-  public MetadataHandler (String rdfSelfDescription, String dynamicAttributeToken) {
+
+  public MetadataHandler() {}
+
+  public MetadataHandler(String rdfSelfDescription, String dynamicAttributeToken) {
     this.rdfSelfDescription = rdfSelfDescription;
     this.dynamicAttributeToken = dynamicAttributeToken;
   }
+
   public String getMetaData() {
 
     return this.rdfSelfDescription;

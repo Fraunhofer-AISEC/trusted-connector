@@ -2,14 +2,14 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,12 +28,11 @@ import de.fhg.aisec.ids.comm.ws.protocol.metadata.MetadataConsumerHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationHandler;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
+import java.net.URI;
+import java.util.Arrays;
 import org.asynchttpclient.ws.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.util.Arrays;
 
 /**
  * This class generates the Finite State Machine (FSM) for the IDS protocol.
@@ -61,10 +60,13 @@ public class ClientProtocolMachine extends FSM {
     URI ttp = clientConfiguration.getTrustedThirdPartyURI();
     // all handler
     RemoteAttestationClientHandler ratConsumerHandler =
-        new RemoteAttestationClientHandler(clientConfiguration, ttp,
-            RemoteAttestationHandler.CONTROL_SOCKET);
+        new RemoteAttestationClientHandler(
+            clientConfiguration, ttp, RemoteAttestationHandler.CONTROL_SOCKET);
     ErrorHandler errorHandler = new ErrorHandler();
-    MetadataConsumerHandler metaHandler = new MetadataConsumerHandler(clientConfiguration.getRDFDescription(),clientConfiguration.getDynamicAttributeToken());
+    MetadataConsumerHandler metaHandler =
+        new MetadataConsumerHandler(
+            clientConfiguration.getRDFDescription(),
+            clientConfiguration.getDynamicAttributeToken());
 
     // Standard protocol states
     this.addState(ProtocolState.IDSCP_START);
@@ -107,8 +109,9 @@ public class ClientProtocolMachine extends FSM {
             ProtocolState.IDSCP_RAT_AWAIT_LEAVE,
             e -> {
               MessageLite message = ratConsumerHandler.leaveRatRequest(e);
-              this.handleRatResult(ratConsumerHandler
-                  .handleAttestationResult(e.getMessage().getAttestationResult()));
+              this.handleRatResult(
+                  ratConsumerHandler.handleAttestationResult(
+                      e.getMessage().getAttestationResult()));
               return replyProto(message);
             }));
 
@@ -126,7 +129,8 @@ public class ClientProtocolMachine extends FSM {
             ProtocolState.IDSCP_END,
             e -> {
               this.setMetaData(e.getMessage().getMetadataExchange().getRdfdescription());
-              this.setDynamicAttributeToken(e.getMessage().getMetadataExchange().getDynamicAttributeToken());
+              this.setDynamicAttributeToken(
+                  e.getMessage().getMetadataExchange().getDynamicAttributeToken());
               return true;
             }));
 
@@ -134,21 +138,21 @@ public class ClientProtocolMachine extends FSM {
     // in case of error, either fast forward to meta exchange (if in rat) or go to END
     ProtocolState[] errorStartStates =
         new ProtocolState[] {
-            ProtocolState.IDSCP_START,
-            ProtocolState.IDSCP_RAT_AWAIT_REQUEST,
-            ProtocolState.IDSCP_RAT_AWAIT_RESPONSE,
-            ProtocolState.IDSCP_RAT_AWAIT_RESULT,
-            ProtocolState.IDSCP_RAT_AWAIT_LEAVE,
-            ProtocolState.IDSCP_META_REQUEST,
-            ProtocolState.IDSCP_META_RESPONSE
+          ProtocolState.IDSCP_START,
+          ProtocolState.IDSCP_RAT_AWAIT_REQUEST,
+          ProtocolState.IDSCP_RAT_AWAIT_RESPONSE,
+          ProtocolState.IDSCP_RAT_AWAIT_RESULT,
+          ProtocolState.IDSCP_RAT_AWAIT_LEAVE,
+          ProtocolState.IDSCP_META_REQUEST,
+          ProtocolState.IDSCP_META_RESPONSE
         };
     Arrays.stream(errorStartStates)
         .forEach(state -> this.addTransition(makeConsumerErrorTransition(state, errorHandler)));
 
     // Add listener to log state transitions
     this.addSuccessChangeListener(
-        (f, e) -> LOG.debug(
-            String.format("Consumer State change: %s -> %s", e.getKey(), f.getState())));
+        (f, e) ->
+            LOG.debug(String.format("Consumer State change: %s -> %s", e.getKey(), f.getState())));
 
     //        String graph = this.toDot();
     //        System.out.println(graph);
@@ -156,7 +160,6 @@ public class ClientProtocolMachine extends FSM {
     /* Run the FSM */
     this.setInitialState(ProtocolState.IDSCP_START);
   }
-
 
   protected Transition makeConsumerErrorTransition(ProtocolState state, ErrorHandler errorHandler) {
     return new Transition(
@@ -180,5 +183,4 @@ public class ClientProtocolMachine extends FSM {
     this.clientSocket.sendBinaryFrame(text);
     return true;
   }
-
 }

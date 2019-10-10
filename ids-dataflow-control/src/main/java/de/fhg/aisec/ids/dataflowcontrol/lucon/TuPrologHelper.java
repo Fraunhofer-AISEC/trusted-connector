@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-dataflow-control
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,13 @@ package de.fhg.aisec.ids.dataflowcontrol.lucon;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.Struct;
 import alice.tuprolog.Term;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class TuPrologHelper {
 
@@ -41,9 +40,9 @@ public final class TuPrologHelper {
 
   @NonNull
   public static String escape(@Nullable String s) {
-	if (s == null) {
-	  return "";
-	}
+    if (s == null) {
+      return "";
+    }
     StringBuilder sb = new StringBuilder();
     sb.append('\'');
     int charLength = s.length();
@@ -78,5 +77,4 @@ public final class TuPrologHelper {
       return s;
     }
   }
-
 }

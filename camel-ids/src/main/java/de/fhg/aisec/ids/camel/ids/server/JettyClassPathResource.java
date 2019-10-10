@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,16 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
-import org.apache.camel.spi.ClassResolver;
-import org.apache.camel.util.IOHelper;
-import org.apache.camel.util.ObjectHelper;
-import org.eclipse.jetty.util.resource.Resource;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+import org.apache.camel.spi.ClassResolver;
+import org.apache.camel.util.IOHelper;
+import org.apache.camel.util.ObjectHelper;
+import org.eclipse.jetty.util.resource.Resource;
 
 /**
  * A Jetty {@link Resource} to load from the classpath using Camels {@link ClassResolver} which
