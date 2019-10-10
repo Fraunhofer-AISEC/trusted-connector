@@ -17,33 +17,20 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.settings;
+package de.fhg.aisec.ids.api.tokenm;
 
-import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
+import java.nio.file.Path;
 
-import java.util.Map;
+/**
+ * Interface of the Token Manager.
+ *
+ * <p>TThe Token Manager takes care of identity tokens (such as the Dynamic Attribute Token, acquired by the Dynamic Attribute Provisioning Service.
+ *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ */
+public interface TokenManager {
 
-public interface Settings {
+  boolean acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String trustStoreName, String connectorUUID);
 
-  ConnectorConfig getConnectorConfig();
 
-  void setConnectorConfig(ConnectorConfig config);
-
-  ConnectorProfile getConnectorProfile();
-
-  void setConnectorProfile(ConnectorProfile profile);
-
-  String getConnectorJsonLd();
-
-  void setConnectorJsonLd(String jsonLd);
-
-  String getDynamicAttributeToken();
-
-  void setDynamicAttributeToken(String dynamicAttributeToken);
-
-  ConnectionSettings getConnectionSettings(String connection);
-
-  void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
-
-  Map<String, ConnectionSettings> getAllConnectionSettings();
 }

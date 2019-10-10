@@ -17,33 +17,26 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.api.settings;
+package de.fhg.aisec.ids.api.tokenm;
 
-import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
+/**
+ * Dynamic Attribute Token. Wraps the token acquired from the DAPS.
+ *
+ *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ */
 
-import java.util.Map;
+public final class DynamicAttributeToken {
+  final String token;
 
-public interface Settings {
 
-  ConnectorConfig getConnectorConfig();
+  public DynamicAttributeToken(String token) {
+    this.token = token;
 
-  void setConnectorConfig(ConnectorConfig config);
+  }
 
-  ConnectorProfile getConnectorProfile();
+  public String getToken() {
+    return token;
+  }
 
-  void setConnectorProfile(ConnectorProfile profile);
-
-  String getConnectorJsonLd();
-
-  void setConnectorJsonLd(String jsonLd);
-
-  String getDynamicAttributeToken();
-
-  void setDynamicAttributeToken(String dynamicAttributeToken);
-
-  ConnectionSettings getConnectionSettings(String connection);
-
-  void setConnectionSettings(String connection, ConnectionSettings connectionSettings);
-
-  Map<String, ConnectionSettings> getAllConnectionSettings();
 }

@@ -4,6 +4,7 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.api.tokenm.DynamicAttributeToken
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
@@ -52,6 +53,18 @@ class SettingsComponent : Settings {
         return settingsStore[CONNECTOR_JSON_LD_KEY] as String?
     }
 
+    override fun getDynamicAttributeToken(): String? {
+        return settingsStore[DAT_KEY] as String?
+    }
+
+    override fun setDynamicAttributeToken(dynamicAttributeToken: String?) {
+        if (dynamicAttributeToken == null) {
+            settingsStore -= DAT_KEY
+        } else {
+            settingsStore[DAT_KEY] = DAT_KEY
+        }
+    }
+
     override fun setConnectorJsonLd(jsonLd: String?) {
         if (jsonLd == null) {
             settingsStore -= CONNECTOR_JSON_LD_KEY
@@ -77,6 +90,7 @@ class SettingsComponent : Settings {
         internal const val CONNECTOR_SETTINGS_KEY = "main_config"
         internal const val CONNECTOR_PROFILE_KEY = "connector_profile"
         internal const val CONNECTOR_JSON_LD_KEY = "connector_json_ld"
+        internal const val DAT_KEY = "dynamic_attribute_token"
         internal val DB_PATH = FileSystems.getDefault().getPath("etc", "settings.mapdb")
         private val LOG = LoggerFactory.getLogger(SettingsComponent::class.java)
         private lateinit var mapDB: DB

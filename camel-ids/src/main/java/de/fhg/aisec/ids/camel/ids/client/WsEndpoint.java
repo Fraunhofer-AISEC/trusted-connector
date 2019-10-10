@@ -229,6 +229,10 @@ public class WsEndpoint extends AhcEndpoint {
                 infoModel == null
                     ? "{\"message\":\"No InfomodelManager loaded\"}"
                     : infoModel.getConnectorAsJsonLd())
+            .dynamicAttributeToken(
+                    infoModel == null
+                            ? "{\"message\":\"No InfomodelManager loaded\"}"
+                            : infoModel.getDynamicAttributeToken())
             .ttpUrl(ttpUri)
             .build();
     IdspClientSocket idspListener = new IdspClientSocket(config);

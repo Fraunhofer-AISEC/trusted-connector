@@ -34,6 +34,7 @@
  */
 package de.fhg.aisec.ids.api.infomodel;
 
+import de.fhg.aisec.ids.api.tokenm.DynamicAttributeToken;
 import de.fraunhofer.iais.eis.Connector;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -67,5 +68,18 @@ public interface InfoModel {
    * or remove if "null" is passed
    */
   void setConnectorByJsonLd(@Nullable String jsonLd);
+
+  /**
+   * Get connector Dynamic Attribute Token
+   *
+   * @return DAT
+   */
+  @NonNull String getDynamicAttributeToken();
+
+  /**
+   * Set Dynamic Attribute Token
+   * or remove if "null" is passed
+   */
+  boolean setDynamicAttributeToken(@NonNull String dynamicAttributeToken);
 
 }

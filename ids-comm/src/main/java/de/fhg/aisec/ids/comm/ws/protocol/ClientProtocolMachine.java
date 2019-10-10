@@ -64,7 +64,7 @@ public class ClientProtocolMachine extends FSM {
         new RemoteAttestationClientHandler(clientConfiguration, ttp,
             RemoteAttestationHandler.CONTROL_SOCKET);
     ErrorHandler errorHandler = new ErrorHandler();
-    MetadataConsumerHandler metaHandler = new MetadataConsumerHandler(clientConfiguration.getRDFDescription());
+    MetadataConsumerHandler metaHandler = new MetadataConsumerHandler(clientConfiguration.getRDFDescription(),clientConfiguration.getDynamicAttributeToken());
 
     // Standard protocol states
     this.addState(ProtocolState.IDSCP_START);
@@ -126,6 +126,7 @@ public class ClientProtocolMachine extends FSM {
             ProtocolState.IDSCP_END,
             e -> {
               this.setMetaData(e.getMessage().getMetadataExchange().getRdfdescription());
+              this.setDynamicAttributeToken(e.getMessage().getMetadataExchange().getDynamicAttributeToken());
               return true;
             }));
 

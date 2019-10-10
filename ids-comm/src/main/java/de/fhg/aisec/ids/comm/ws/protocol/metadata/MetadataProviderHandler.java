@@ -25,8 +25,8 @@ import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 
 public class MetadataProviderHandler extends MetadataHandler {
-  public MetadataProviderHandler (String rdfSelfDescription) {
-    super(rdfSelfDescription);
+  public MetadataProviderHandler (String rdfSelfDescription, String dynamicAttributeToken) {
+    super(rdfSelfDescription, dynamicAttributeToken);
   }
   public MessageLite response(Event e) {
     this.sessionID = e.getMessage().getId();
@@ -35,7 +35,7 @@ public class MetadataProviderHandler extends MetadataHandler {
         .setId(++this.sessionID)
         .setType(ConnectorMessage.Type.META_RESPONSE)
         .setMetadataExchange(
-            MedadataExchange.newBuilder().setRdfdescription(generateMetaDataRDF()).build())
+            MedadataExchange.newBuilder().setRdfdescription(getMetaData()).setDynamicAttributeToken(getDynamicAttributeToken()).build())
         .build();
   }
 }

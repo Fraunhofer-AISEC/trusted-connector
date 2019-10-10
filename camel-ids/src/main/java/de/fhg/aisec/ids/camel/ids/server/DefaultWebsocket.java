@@ -113,6 +113,10 @@ public class DefaultWebsocket {
                 infoModel == null
                         ? "{\"message\":\"No InfomodelManager loaded\"}"
                         : infoModel.getConnectorAsJsonLd())
+        .dynamicAttributeToken(
+                infoModel == null
+                        ? "{\"message\":\"No InfomodelManager loaded\"}"
+                        : infoModel.getDynamicAttributeToken())
         .ttpUrl(ttpUri)
         .build();
     idsFsm = new ServerProtocolMachine(session, configuration);
@@ -204,11 +208,12 @@ public class DefaultWebsocket {
     return idsFsm.getRatResult();
   }
 
-  public String getMetaResult() {
-    return idsFsm.getMetaData();
-  }
+  public String getMetaResult() { return idsFsm.getMetaData(); }
+
+  public String getDynamicAttributeToken(){ return idsFsm.getDynamicAttributeToken(); }
 
   public String getRemoteHostname() {
     return session.getRemoteAddress().getHostName();
   }
+
 }

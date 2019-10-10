@@ -42,6 +42,7 @@ public class FSM {
   private String initialState = null;
   private RatResult  ratResult;
   private String metaData;
+  private String dynamicAttributeToken;
 
   public FSM() {
     this.states = new HashMap<>();
@@ -196,11 +197,15 @@ public class FSM {
     return ratResult;
   }
 
-  public void setMetaData(String metaData) {
-    this.metaData = metaData;
-  }
+  public void setMetaData(String metaData) { this.metaData = metaData; }
 
   public String getMetaData() {
     return this.metaData;
+  }
+
+  public void setDynamicAttributeToken(String dynamicAttributeToken) {this.dynamicAttributeToken = dynamicAttributeToken; }
+
+  public String getDynamicAttributeToken() {
+    return this.dynamicAttributeToken;
   }
 }

@@ -26,6 +26,7 @@ import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.annotations.*;
 
@@ -47,6 +48,9 @@ import org.osgi.service.component.annotations.*;
  */
 @Component(name = "ids-webconsole")
 public class WebConsoleComponent {
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  private TokenManager tokenManager = null;
+
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private Settings settings = null;
 
@@ -105,6 +109,15 @@ public class WebConsoleComponent {
     WebConsoleComponent in = instance;
     if (in != null) {
       return in.connectionManager;
+    }
+    return null;
+  }
+
+  @Nullable
+  public static TokenManager getTokenManager() {
+    WebConsoleComponent in = instance;
+    if (in != null) {
+      return in.tokenManager;
     }
     return null;
   }
