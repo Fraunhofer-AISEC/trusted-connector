@@ -50,7 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/user")
-@Api(value = "User")
+@Api(value = "User Authentication")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 public class UserApi {

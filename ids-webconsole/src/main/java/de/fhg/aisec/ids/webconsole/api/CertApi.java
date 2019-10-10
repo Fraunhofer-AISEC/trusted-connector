@@ -60,7 +60,10 @@ import org.slf4j.LoggerFactory;
  * @author Hamed Rasifard (hamed.rasifard@aisec.fraunhofer.de)
  */
 @Path("/certs")
-@Api(value = "Certs")
+@Api(
+  value = "Identities and Certificates",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class CertApi {
   private static final Logger LOG = LoggerFactory.getLogger(CertApi.class);
   private static final String KEYSTORE_PWD = "password";

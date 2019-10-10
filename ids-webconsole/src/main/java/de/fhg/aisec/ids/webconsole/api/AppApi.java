@@ -52,7 +52,10 @@ import org.slf4j.LoggerFactory;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/app")
-@Api(value = "App")
+@Api(
+  value = "Applications",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class AppApi {
   public static final long PULL_TIMEOUT_MINUTES = 20;
   private static final Logger LOG = LoggerFactory.getLogger(AppApi.class);
@@ -60,7 +63,7 @@ public class AppApi {
   @GET
   @Path("list")
   @ApiOperation(
-    value = "List installed apps",
+    value = "List all applications installed in the connector",
     notes = "Returns an empty list if no apps are installed",
     response = ApplicationContainer.class,
     responseContainer = "List"
@@ -97,8 +100,9 @@ public class AppApi {
   @GET
   @Path("start/{containerId}")
   @ApiOperation(
-    value = "Start an app",
-    notes = "Requests to start an app.",
+    value = "Start an application",
+    notes =
+        "Starting an application may take some time. This method will start the app asynchronously and return immediately. This method starts the latest version of the app.",
     response = Boolean.class
   )
   @ApiResponses(
@@ -118,8 +122,9 @@ public class AppApi {
   @GET
   @Path("start/{containerId}/{key}")
   @ApiOperation(
-    value = "Start an app",
-    notes = "Requests to start an app.",
+    value = "Start an application",
+    notes =
+        "Starting an application may take some time. This method will start the app asynchronously and return immediately. This methods starts a specific version of the app.",
     response = Boolean.class
   )
   @ApiResponses(
@@ -133,7 +138,8 @@ public class AppApi {
   @AuthorizationRequired
   public boolean start(
       @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId,
-      @ApiParam(value = "Key for user token") @PathParam("key") String key) {
+      @ApiParam(value = "Key for user token (required for trustX containers)") @PathParam("key")
+          String key) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml != null) {
@@ -151,7 +157,12 @@ public class AppApi {
 
   @GET
   @Path("stop/{containerId}")
-  @ApiOperation(value = "Stop an app", notes = "Requests to stop an app.", response = Boolean.class)
+  @ApiOperation(
+    value = "Stop an app",
+    notes =
+        "Stops an application. The application will remain installed and can be re-started later. All temporary data will be lost, however.",
+    response = Boolean.class
+  )
   @ApiResponses(
       @ApiResponse(
         code = 200,

@@ -53,7 +53,10 @@ import javax.ws.rs.core.Response;
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 @Path("/config")
-@Api(value = "Config")
+@Api(
+  value = "Connector Configuration",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class ConfigApi {
   public static final String GENERAL_CONFIG = "General Configuration";
 

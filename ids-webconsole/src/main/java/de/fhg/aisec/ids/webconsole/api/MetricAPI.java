@@ -40,7 +40,10 @@ import javax.ws.rs.core.MediaType;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/metric")
-@Api(value = "Metric")
+@Api(
+  value = "Runtime Metrics",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class MetricAPI {
 
   private static final DecimalFormat loadAvgFormat = new DecimalFormat("###.##");

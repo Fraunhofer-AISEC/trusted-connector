@@ -49,7 +49,10 @@ import org.slf4j.LoggerFactory;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/routes")
-@Api("Routes")
+@Api(
+  value = "Message Routing",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class RouteApi {
   private static final Logger LOG = LoggerFactory.getLogger(RouteApi.class);
 
@@ -99,10 +102,7 @@ public class RouteApi {
 
   @GET
   @Path("/getAsString/{id}")
-  @ApiOperation(
-    value = "Gets a textual representation of a Camel route.",
-    response = RouteObject.class
-  )
+  @ApiOperation(value = "Gets an XML representation of a Camel route.")
   @Produces(MediaType.TEXT_PLAIN)
   @AuthorizationRequired
   public String getAsString(@ApiParam(value = "Route ID") @PathParam("id") String id) {
@@ -120,7 +120,7 @@ public class RouteApi {
   /** Stop a route based on an id. */
   @GET
   @Path("/startroute/{id}")
-  @ApiOperation(value = "Stops a route")
+  @ApiOperation(value = "Starts a Camel route. The route will start to process messages.")
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public Result startRoute(@PathParam("id") String id) {
@@ -139,7 +139,7 @@ public class RouteApi {
 
   @POST
   @Path("/save/{id}")
-  @ApiOperation(value = "Save changes to a route")
+  @ApiOperation(value = "Save changes to a route. ")
   @Consumes(MediaType.TEXT_PLAIN)
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
@@ -159,7 +159,7 @@ public class RouteApi {
 
   @PUT
   @Path("/add")
-  @ApiOperation(value = "Adds a new route")
+  @ApiOperation(value = "Adds a new route, provided as Camel XML.")
   @Consumes(MediaType.TEXT_PLAIN)
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
@@ -180,7 +180,10 @@ public class RouteApi {
   /** Stop a route based on its id. */
   @GET
   @Path("/stoproute/{id}")
-  @ApiOperation(value = "Stops a route")
+  @ApiOperation(
+    value =
+        "Stops a Camel route. The route will remain installed but it will not process any messages."
+  )
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public Result stopRoute(@PathParam("id") String id) {
@@ -199,7 +202,7 @@ public class RouteApi {
 
   /** Get runtime metrics of a route */
   @GET
-  @ApiOperation(value = "Get runtime metrics of a route")
+  @ApiOperation(value = "Get runtime metrics of a route", response = RouteMetrics.class)
   @Path("/metrics/{id}")
   @AuthorizationRequired
   public RouteMetrics getMetrics(@PathParam("id") String routeId) {
@@ -212,7 +215,10 @@ public class RouteApi {
 
   /** Get aggregated runtime metrics of all routes */
   @GET
-  @ApiOperation(value = "Get aggregated runtime metrics of all routes")
+  @ApiOperation(
+    value = "Get aggregated runtime metrics of all routes",
+    response = RouteMetrics.class
+  )
   @Path("/metrics")
   @AuthorizationRequired
   public RouteMetrics getMetrics() {

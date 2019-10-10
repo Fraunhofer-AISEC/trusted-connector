@@ -38,11 +38,16 @@ import org.slf4j.LoggerFactory;
 
 // ConnectorProfile will be processed by custom Jackson deserializer
 @Path("/settings")
+@Api(
+  value = "Self-Description and Connector Profiles",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class SettingsApi {
   private static final Logger LOG = LoggerFactory.getLogger(SettingsApi.class);
 
   @POST
   @Path("/connectorProfile")
+  @ApiOperation(value = "Configure the connector's self-description (\"Connector Profile\").")
   @Consumes(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public String postConnectorProfile(ConnectorProfile profile) {
@@ -61,6 +66,10 @@ public class SettingsApi {
   @GET
   @Path("/connectorProfile")
   @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(
+    value = "Returns this connector's self-description (\"Connector Profile\")",
+    response = ConnectorProfile.class
+  )
   @AuthorizationRequired
   public ConnectorProfile getConnectorProfile() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
@@ -86,6 +95,7 @@ public class SettingsApi {
   @GET
   @Path("/selfInformation")
   @Produces("application/ld+json")
+  // TODO Document ApiOperation
   @AuthorizationRequired
   public String getSelfInformation() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
@@ -103,6 +113,7 @@ public class SettingsApi {
   /** Set static connector profile based on passed JSON-LD data */
   @POST
   @Path("/selfInformation")
+  // TODO Document ApiOperation
   @Consumes("application/ld+json")
   @AuthorizationRequired
   public void setSelfInformation(String selfInformation) {
@@ -120,6 +131,7 @@ public class SettingsApi {
   /** Remove static connector profile based on JSON-LD data */
   @DELETE
   @Path("/selfInformation")
+  // TODO Document ApiOperation
   @Consumes("application/ld+json")
   @AuthorizationRequired
   public void removeSelfInformation() {

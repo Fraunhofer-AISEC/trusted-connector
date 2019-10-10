@@ -34,22 +34,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * REST API interface for managing "apps" in the connector.
- *
- * <p>In this implementation, apps are either docker or trustX containers.
+ * REST API interface for managing usage control policies in the connector.
  *
  * <p>The API will be available at http://localhost:8181/cxf/api/v1/policies/<method>.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/policies")
-@Api("Policies")
+@Api(
+  value = "Usage Control Policies",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class PolicyApi {
   private static final Logger LOG = LoggerFactory.getLogger(PolicyApi.class);
 
   @GET
   @Path("list")
-  @ApiOperation(value = "Lists active rules", responseContainer = "List")
+  @ApiOperation(value = "Lists active usage control rules", responseContainer = "List")
   @ApiResponses(
       @ApiResponse(
         code = 200,
@@ -75,6 +76,7 @@ public class PolicyApi {
   @GET
   @Path("policyProlog")
   @Produces(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Returns the full usage control policy as a Prolog theory")
   @AuthorizationRequired
   public String getPolicyProlog() {
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
@@ -87,6 +89,7 @@ public class PolicyApi {
   @POST
   @OPTIONS
   @Path("install")
+  @ApiOperation(value = "Installs a new usage control policy as a Prolog theory file")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @AuthorizationRequired
   public String install(

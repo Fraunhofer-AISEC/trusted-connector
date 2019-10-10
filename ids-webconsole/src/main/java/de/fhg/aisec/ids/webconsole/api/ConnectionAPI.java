@@ -41,7 +41,10 @@ import javax.ws.rs.core.MediaType;
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
 @Path("/connections")
-@Api("Connections")
+@Api(
+  value = "IDSCP Connections",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class ConnectionAPI {
 
   @GET
