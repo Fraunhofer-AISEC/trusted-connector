@@ -35,9 +35,9 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
   protected static final String TEST_MESSAGE_2 = "Hello Again!";
 
   /**
-   * Creates a route from a client to a server and verifies that - it transports data - connection
-   * is correctly listed in ConnectionManager - remote attestation status is correctly "failed" (as
-   * we have no TPM here)
+   * Creates a route from a client to a server and verifies that it transports data, connection
+   * is correctly listed in ConnectionManager and remote attestation status is correctly "failed"
+   * (as we have no TPM here)
    *
    * @throws Exception
    */
