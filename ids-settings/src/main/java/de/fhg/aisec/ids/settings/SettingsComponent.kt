@@ -63,6 +63,7 @@ class SettingsComponent : Settings {
         } else {
             settingsStore[DAT_KEY] = DAT_KEY
         }
+        mapDB.commit()
     }
 
     override fun setConnectorJsonLd(jsonLd: String?) {
@@ -71,6 +72,7 @@ class SettingsComponent : Settings {
         } else {
             settingsStore[CONNECTOR_JSON_LD_KEY] = jsonLd
         }
+        mapDB.commit()
     }
 
     override fun getConnectionSettings(connection: String): ConnectionSettings {
