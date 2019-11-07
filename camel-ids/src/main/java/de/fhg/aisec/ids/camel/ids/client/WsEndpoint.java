@@ -219,23 +219,32 @@ public class WsEndpoint extends AhcEndpoint {
     } catch (URISyntaxException e) {
       LOG.error("incorrect TTP URI syntax", e);
     }
-    InfoModel infoModel = CamelComponent.getInfoModelManager();
-    ClientConfiguration config =
+    InfoModel infoModelManager = CamelComponent.getInfoModelManager();
+    ClientConfiguration.Builder clientConfigBuilder =
         new ClientConfiguration.Builder()
             .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
-            .rdfDescription(
-                infoModel == null
-                    ? "{\"message\":\"No InfomodelManager loaded\"}"
-                    : infoModel.getConnectorAsJsonLd())
-            .dynamicAttributeToken(
-                infoModel == null
-                    ? "{\"message\":\"No InfomodelManager loaded\"}"
-                    : infoModel.getDynamicAttributeToken())
-            .ttpUrl(ttpUri)
-            .build();
-    IdspClientSocket idspListener = new IdspClientSocket(config);
+            .ttpUrl(ttpUri);
+    if (infoModelManager == null) {
+      clientConfigBuilder
+          .rdfDescription("{\"message\":\"Infomodel is not available\"}")
+          .dynamicAttributeToken("{\"message\":\"DAPS token is not available\"}");
+    } else {
+      try {
+        clientConfigBuilder.rdfDescription(infoModelManager.getConnectorAsJsonLd());
+      } catch (Exception x) {
+        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!", x);
+        clientConfigBuilder.rdfDescription("{\"message\":\"Infomodel is not available\"}");
+      }
+      try {
+        clientConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
+      } catch (Exception x) {
+        LOG.error("DAPS token load failed, please verify your DAPS configuration!", x);
+        clientConfigBuilder.rdfDescription("{\"message\":\"DAPS token is not available\"}");
+      }
+    }
+    IdspClientSocket idspListener = new IdspClientSocket(clientConfigBuilder.build());
 
     try {
       // Block until IDSCP has finished

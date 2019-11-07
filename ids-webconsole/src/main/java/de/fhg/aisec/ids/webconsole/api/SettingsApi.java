@@ -87,7 +87,7 @@ public class SettingsApi {
           c.getSecurityProfile(),
           c.getId(),
           c.getMaintainer(),
-          c.getDescriptions().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
+          c.getDescription().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
     }
   }
 

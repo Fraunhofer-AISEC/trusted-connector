@@ -38,106 +38,15 @@ class SecurityProfileDeserializer : JsonDeserializer<SecurityProfile>() {
      * all attributes default to "NONE" if not specified
      */
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): SecurityProfile? {
-        val node = p.readValueAsTree<JsonNode>()
-
-        val id = if (node.has("id")) {
-            node.get("id").asText()
-        } else {
-            ""
-        }
-
-        val basedOn = if (node.has("basedOn")) {
-            node.get("basedOn").asText()
-        } else {
-            null
-        }
-
-        val integrityProtectionAndVerification = if (node.has("integrityProtectionAndVerificationSupport")) {
-            node.get("integrityProtectionAndVerificationSupport").asText()
-        } else {
-            NONE
-        }
-
-        val authenticationSupport = if (node.has("authenticationSupport")) {
-            node.get("authenticationSupport").asText()
-        } else {
-            NONE
-        }
-
-        val serviceIsolationSupport = if (node.has("serviceIsolationSupport")) {
-            node.get("serviceIsolationSupport").asText()
-        } else {
-            NONE
-        }
-
-        val integrityProtectionScope = if (node.has("integrityProtectionScope")) {
-            node.get("integrityProtectionScope").asText()
-        } else {
-            NONE
-        }
-
-        val appExecutionResources = if (node.has("appExecutionResources")) {
-            node.get("appExecutionResources").asText()
-        } else {
-            NONE
-        }
-
-        val dataUsageControlSupport = if (node.has("dataUsageControlSupport")) {
-            node.get("dataUsageControlSupport").asText()
-        } else {
-            NONE
-        }
-
-        val auditLogging = if (node.has("auditLogging")) {
-            node.get("auditLogging").asText()
-        } else {
-            NONE
-        }
-
-        val localDataConfidentiality = if (node.has("localDataConfidentiality")){
-            node.get("localDataConfidentiality").asText()
-        } else {
-            NONE
-        }
-
-        val psp: PredefinedSecurityProfile? = if (basedOn != null) {
-            PredefinedSecurityProfile.valueOf(basedOn)
-        } else {
-            null
-        }
-
         return try {
-            val securityProfileBuilder: SecurityProfileBuilder = if (!id.isEmpty()) {
-                SecurityProfileBuilder(URL(id))
-            } else {
-                SecurityProfileBuilder()
-            }
-            securityProfileBuilder._basedOn_(psp)
-                    ._integrityProtectionAndVerificationSupport_(
-                            IntegrityProtectionAndVerificationSupport
-                                    .valueOf(integrityProtectionAndVerification))
-                    ._authenticationSupport_(AuthenticationSupport.valueOf(authenticationSupport))
-                    ._serviceIsolationSupport_(ServiceIsolationSupport.valueOf(serviceIsolationSupport))
-                    ._integrityProtectionScope_(
-                            IntegrityProtectionScope.valueOf(integrityProtectionScope))
-                    ._appExecutionResources_(AppExecutionResources.valueOf(appExecutionResources))
-                    ._dataUsageControlSupport_(DataUsageControlSupport.valueOf(dataUsageControlSupport))
-                    ._auditLogging_(AuditLogging.valueOf(auditLogging))
-                    ._localDataConfidentiality_(
-                            LocalDataConfidentiality.valueOf(localDataConfidentiality))
-                    .build()
-        } catch (ex: ConstraintViolationException) {
-            LOG.error("Caught ConstraintViolationException while deserializing Security profile.", ex)
-            null
-        } catch (ex: MalformedURLException) {
-            LOG.error("Caught MalformedURLException while deserializing Security profile.", ex)
-            null
+            ctxt.readValue(p, SecurityProfile::class.java)
+        } catch (x: Exception) {
+            LOG.error("Error during SecurityProfile parsing, falling back to BASE_CONNECTOR_SECURITY_PROFILE", x)
+            SecurityProfile.BASE_CONNECTOR_SECURITY_PROFILE;
         }
-
     }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(SecurityProfileDeserializer::class.java)
-        private const val NONE = "NONE"
     }
 }

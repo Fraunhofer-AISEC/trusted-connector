@@ -26,6 +26,7 @@ import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.camel.ids.CamelComponent;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
 import de.fhg.aisec.ids.comm.CertificatePair;
+import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.server.ServerConfiguration;
 import de.fhg.aisec.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.aisec.ids.comm.ws.protocol.ServerProtocolMachine;
@@ -107,23 +108,32 @@ public class DefaultWebsocket {
     } catch (URISyntaxException e) {
       LOG.error("incorrect TTP URI syntax", e);
     }
-    InfoModel infoModel = CamelComponent.getInfoModelManager();
-    ServerConfiguration configuration =
+    InfoModel infoModelManager = CamelComponent.getInfoModelManager();
+    ServerConfiguration.Builder serverConfigBuilder =
         new ServerConfiguration.Builder()
             .attestationType(type)
             .attestationMask(attestationMask)
             .certificatePair(certificatePair)
-            .rdfDescription(
-                infoModel == null
-                    ? "{\"message\":\"No InfomodelManager loaded\"}"
-                    : infoModel.getConnectorAsJsonLd())
-            .dynamicAttributeToken(
-                infoModel == null
-                    ? "{\"message\":\"No InfomodelManager loaded\"}"
-                    : infoModel.getDynamicAttributeToken())
-            .ttpUrl(ttpUri)
-            .build();
-    idsFsm = new ServerProtocolMachine(session, configuration);
+            .ttpUrl(ttpUri);
+    if (infoModelManager == null) {
+      serverConfigBuilder
+          .rdfDescription("{\"message\":\"Infomodel is not available\"}")
+          .dynamicAttributeToken("{\"message\":\"DAPS token is not available\"}");
+    } else {
+      try {
+        serverConfigBuilder.rdfDescription(infoModelManager.getConnectorAsJsonLd());
+      } catch (Exception x) {
+        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!", x);
+        serverConfigBuilder.rdfDescription("{\"message\":\"Infomodel is not available\"}");
+      }
+      try {
+        serverConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
+      } catch (Exception x) {
+        LOG.error("DAPS token load failed, please verify your DAPS configuration!", x);
+        serverConfigBuilder.rdfDescription("{\"message\":\"DAPS token is not available\"}");
+      }
+    }
+    idsFsm = new ServerProtocolMachine(session, serverConfigBuilder.build());
     sync.addSocket(this);
   }
 

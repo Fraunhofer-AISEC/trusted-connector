@@ -4,7 +4,6 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
-import de.fhg.aisec.ids.api.tokenm.DynamicAttributeToken
 import de.fraunhofer.iais.eis.*
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
@@ -30,12 +29,22 @@ class InfoModelService : InfoModel {
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     private var connectionManager: ConnectionManager? = null
 
+    private val connectorProfile: ConnectorProfile?
+        get() {
+            return try {
+                settings?.connectorProfile
+            } catch (x: Exception) {
+                LOG.error("Error parsing ConnectorProfile, please provide a new ConnectorProfile via the REST API.", x)
+                null
+            }
+        }
+
     /**
      * Build Connector Entity Names from preferences
      */
     private val connectorEntityNames: List<PlainLiteral>
         get() {
-            val entityNames = settings?.connectorProfile?.connectorEntityNames
+            val entityNames = connectorProfile?.connectorEntityNames
             return if (entityNames != null) {
                 entityNames
             } else {
@@ -46,7 +55,7 @@ class InfoModelService : InfoModel {
 
     private val catalog: Catalog
         get() {
-            return CatalogBuilder()._offers_(ArrayList(resources)).build()
+            return CatalogBuilder()._offer_(ArrayList(resources)).build()
         }
 
     /**
@@ -61,7 +70,7 @@ class InfoModelService : InfoModel {
                     val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
                     val host = HostBuilder()._accessUrl_(url)._protocol_(Protocol.IDSCP).build()
                     val endpoint = StaticEndpointBuilder()._endpointHost_(host).build()
-                    ResourceBuilder()._resourceEndpoints_(arrayListOf(endpoint)).build()
+                    ResourceBuilder()._resourceEndpoint_(arrayListOf(endpoint)).build()
                 }
             } ?: emptyList()
         }
@@ -73,7 +82,7 @@ class InfoModelService : InfoModel {
      */
     private val securityProfile: SecurityProfile?
         get() {
-            val securityProfile = settings?.connectorProfile?.securityProfile
+            val securityProfile = connectorProfile?.securityProfile
             return if (securityProfile != null) {
                 securityProfile
             } else {
@@ -86,13 +95,8 @@ class InfoModelService : InfoModel {
     // returns random connector_url if none is stored in preferences
     // op_url and entityNames can not be null
     override fun getConnector(): Connector? {
-        if (settings == null) {
-            LOG.warn("Couldn't create connector object: Settings not available.")
-            return null
-        }
-
-        val maintainerUrl = settings?.connectorProfile?.maintainerUrl
-        val connectorUrl = settings?.connectorProfile?.connectorUrl
+        val maintainerUrl = connectorProfile?.maintainerUrl
+        val connectorUrl = connectorProfile?.connectorUrl
         val entityNames = connectorEntityNames
 
         if (LOG.isTraceEnabled) {
@@ -107,13 +111,13 @@ class InfoModelService : InfoModel {
                 } else {
                     TrustedConnectorBuilder(connectorUrl)
                             ._hosts_(Util.asList<Host>(HostBuilder()
-                            ._accessUrl_(connectorUrl.toURI()).build()))
+                            ._accessUrl_(connectorUrl).build()))
                 }
                 trustedConnectorBuilder._maintainer_(maintainerUrl)
-                return trustedConnectorBuilder._titles_(ArrayList(entityNames))
+                return trustedConnectorBuilder._title_(ArrayList(entityNames))
                         ._securityProfile_(securityProfile)
                         ._catalog_(catalog)
-                        ._descriptions_(ArrayList(entityNames)).build()
+                        ._description_(ArrayList(entityNames)).build()
             } catch (ex: ConstraintViolationException) {
                 LOG.error("Caught ConstraintViolationException while building Connector", ex)
                 return null
@@ -184,17 +188,6 @@ class InfoModelService : InfoModel {
     companion object {
         private val LOG = LoggerFactory.getLogger(InfoModelService::class.java)
         private val serializer: Serializer by lazy { Serializer() }
-//        const val INTEGRITY_PROTECTION_AND_VERIFICATION_SUPPORT = "IntegrityProtectionAndVerificationSupport"
-//        const val AUTHENTICATION_SUPPORT = "AuthenticationSupport"
-//        const val SERVICE_ISOLATION_SUPPORT = "ServiceIsolationSupport"
-//        const val INTEGRITY_PROTECTION_SCOPE = "IntegrityProtectionScope"
-//        const val APP_EXECUTION_RESOURCES = "AppExecutionResources"
-//        const val DATA_USAGE_CONTROL_SUPPORT = "DataUsageControlSupport"
-//        const val AUDIT_LOGGING = "AuditLogging"
-//        const val LOCAL_DATA_CONFIDENTIALITY = "LocalDataConfidentiality"
-//        const val CONNECTOR_URL = "ConnectorUrl"
-//        const val MAINTAINER_URL = "MaintainerUrl"
-//        const val CONNECTOR_ENTITIES = "ConnectorEntities"
     }
 
 }

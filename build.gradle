@@ -58,8 +58,8 @@ allprojects {
             karaf              : '4.2.6',
 
             // The used version of the infomodel from IESE
-            infomodel          : '1.0.2-20190326.094248-16',
-            infomodelSerializer: '1.0.2-20190326.155238-20',
+            infomodel          : '2.0.0+',
+            infomodelSerializer: '2.0.0+',
 
             // For javax.xml.bind support in newer java versions
             jaxb               : "2.2.11",

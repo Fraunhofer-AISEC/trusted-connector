@@ -30,8 +30,8 @@ import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
-  protected static final String TEST_MESSAGE = "Hello World!";
-  protected static final String TEST_MESSAGE_2 = "Hello Again!";
+  private static final String TEST_MESSAGE = "Hello World!";
+  private static final String TEST_MESSAGE_2 = "Hello Again!";
 
   @Test
   public void testFromRouteAToB() throws InterruptedException {
@@ -43,15 +43,16 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     // Send a test message into begin of client route
     template.sendBody("direct:input", TEST_MESSAGE);
 
-    log.trace("mock is satisfied");
-
     // We expect that mock endpoint is happy and has received a message
     mock.assertIsSatisfied();
     mock.expectedBodiesReceived(TEST_MESSAGE);
 
     // We expect one incoming connection to be listed by ConnectionManager
     List<IDSCPIncomingConnection> incomings = conm.listIncomingConnections();
-    assertEquals(1, incomings.size());
+    assertEquals(
+        "Incoming connection established, but ConnectionManager did not list it.",
+        1,
+        incomings.size());
 
     IDSCPIncomingConnection incomingConnection = incomings.get(0);
 
@@ -59,8 +60,8 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     RatResult ratResult = incomingConnection.getAttestationResult();
     assertEquals(RatResult.Status.FAILED, ratResult.getStatus());
 
-    // We expect some meta data about the remot endpoint
-    assertEquals("{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
+    // We expect some meta data about the remote endpoint
+    assertEquals("{\"message\":\"Infomodel is not available\"}", incomingConnection.getMetaData());
 
     List<IDSCPOutgoingConnection> outgoings = conm.listOutgoingConnections();
     assertEquals(1, outgoings.size());
@@ -71,9 +72,14 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
 
     // ... and some meta data
     String meta = outgoingConnection.getMetaData();
-    assertEquals("{\"message\":\"No InfomodelManager loaded\"}", meta);
+    assertEquals("{\"message\":\"Infomodel is not available\"}", meta);
   }
 
+  /**
+   * Make sure that a route can handle being restarted.
+   *
+   * @throws Exception
+   */
   @Test
   public void testTwoRoutesRestartConsumer() throws Exception {
     MockEndpoint mock = getMockEndpoint("mock:result");
