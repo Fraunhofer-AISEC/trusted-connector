@@ -5,9 +5,11 @@ import org.mapdb.DataOutput2
 import org.mapdb.Serializer
 import org.mapdb.elsa.ElsaMaker
 import org.mapdb.elsa.ElsaSerializer
+import org.mapdb.elsa.ElsaSerializerBase
+import org.mapdb.elsa.ElsaSerializerPojo
 
 class OsgiElsaSerializer<T> : Serializer<T> {
-    private val serializer: ElsaSerializer
+    private val serializer: ElsaSerializerPojo
 
     init {
         // We must temporarily fix the context class loader when creating the serializer,

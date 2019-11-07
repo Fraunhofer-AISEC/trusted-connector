@@ -1,10 +1,10 @@
 package de.fhg.aisec.ids.settings
 
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
+import de.fhg.aisec.ids.api.infomodel.ConnectorProfileV2
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
-import de.fhg.aisec.ids.api.tokenm.DynamicAttributeToken
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
@@ -40,11 +40,11 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
-    override fun getConnectorProfile(): ConnectorProfile {
-        return settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
+    override fun getConnectorProfile(): Any {
+        return settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfileV2() }
     }
 
-    override fun setConnectorProfile(connectorProfile: ConnectorProfile) {
+    override fun setConnectorProfile(connectorProfile: ConnectorProfileV2) {
         settingsStore[CONNECTOR_PROFILE_KEY] = connectorProfile
         mapDB.commit()
     }
