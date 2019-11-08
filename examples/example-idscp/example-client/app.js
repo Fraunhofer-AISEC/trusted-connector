@@ -32,5 +32,5 @@ client.on('message', (topic, message) => {
 
 // simulate sensor data by publishing random temperature data to MQTT broker
 setInterval(() => {
-    client.publish(TEMP_TOPIC,  String(Math.random() * (35 - 10) + 10));
+    client.publish(TEMP_TOPIC,  String(Math.random() * (100 - 10) + 100));
 }, 1000)
