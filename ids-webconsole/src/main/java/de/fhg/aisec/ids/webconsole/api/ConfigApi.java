@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.api.router.RouteManager;
@@ -28,13 +29,15 @@ import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
+import de.fhg.aisec.ids.api.Constants;
 import io.swagger.annotations.*;
+import org.apache.camel.Route;
+
 import java.nio.file.FileSystems;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -55,7 +58,7 @@ import javax.ws.rs.core.Response;
   authorizations = {@Authorization(value = "oauth2")}
 )
 public class ConfigApi {
-  public static final String GENERAL_CONFIG = "All new connections";
+  private static final Pattern CONNECTION_CONFIG_PATTERN = Pattern.compile(".* - ([^ ]+)$");
 
   @GET
   @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig.class)
@@ -140,8 +143,18 @@ public class ConfigApi {
     if (settings == null) {
       return Response.serverError().build();
     }
-    settings.setConnectionSettings(connection, conSettings);
 
+    //connection has format "<route_id> - host:port"
+      //store only "host:port" in database to make connection available in other parts of application
+
+    Matcher m = CONNECTION_CONFIG_PATTERN.matcher(connection);
+    if (!m.matches()){
+        //GENERAL_CONFIG
+        settings.setConnectionSettings(connection, conSettings);
+    } else
+        settings.setConnectionSettings(m.group(1), conSettings);
+
+    //toDo inform Observers, that some endpoint configuration has changed
     return Response.ok().build();
   }
 
@@ -161,6 +174,7 @@ public class ConfigApi {
     if (settings == null) {
       return null;
     }
+
     return settings.getConnectionSettings(connection);
   }
 
@@ -194,9 +208,9 @@ public class ConfigApi {
     Map<String, ConnectionSettings> allSettings =
         new TreeMap<>(
             (o1, o2) -> {
-              if (ConfigApi.GENERAL_CONFIG.equals(o1)) {
+              if (Constants.GENERAL_CONFIG.equals(o1)) {
                 return -1;
-              } else if (ConfigApi.GENERAL_CONFIG.equals(o2)) {
+              } else if (Constants.GENERAL_CONFIG.equals(o2)) {
                 return 1;
               } else {
                 return o1.compareTo(o2);
@@ -205,7 +219,7 @@ public class ConfigApi {
     // Load all existing entries
     allSettings.putAll(settings.getAllConnectionSettings());
     // Assert global configuration entry
-    allSettings.putIfAbsent(ConfigApi.GENERAL_CONFIG, new ConnectionSettings());
+    allSettings.putIfAbsent(Constants.GENERAL_CONFIG, new ConnectionSettings());
 
     Map<String, List<String>> routeInputs =
         routeManager
@@ -214,33 +228,48 @@ public class ConfigApi {
             .map(RouteObject::getId)
             .collect(Collectors.toMap(Function.identity(), routeManager::getRouteInputUris));
 
+    //add all available endpoints
     for (IDSCPServerEndpoint endpoint : connectionManager.listAvailableEndpoints()) {
       // For every currently available endpoint, go through all preferences and check
       // if the id is already there. If not, create empty config.
       String hostIdentifier = endpoint.getHost() + ":" + endpoint.getPort();
-      String serverUri = "idsserver://" + hostIdentifier;
-      List<String> endpointIdentifiers =
-          routeInputs
-              .entrySet()
-              .stream()
-              .filter(e -> e.getValue().stream().anyMatch(u -> u.startsWith(serverUri)))
-              .map(e -> e.getKey() + " - " + hostIdentifier)
-              .collect(Collectors.toList());
 
-      if (endpointIdentifiers.isEmpty()) {
-        endpointIdentifiers =
-            Collections.singletonList("<no route found>" + " - " + hostIdentifier);
+      //create missing endpoint configurations
+      if (allSettings.keySet().stream().noneMatch(hostIdentifier::equals)){
+          allSettings.put(hostIdentifier, new ConnectionSettings());
       }
-
-      // Create missing endpoint configurations
-      endpointIdentifiers.forEach(
-          endpointIdentifier -> {
-            if (allSettings.keySet().stream().noneMatch(endpointIdentifier::equals)) {
-              allSettings.put(endpointIdentifier, new ConnectionSettings());
-            }
-          });
     }
 
-    return allSettings;
+    //add route id before host identifier for web console view
+    Map<String, ConnectionSettings> retAllSettings = new HashMap<>();
+    for (Map.Entry<String, ConnectionSettings> entry : allSettings.entrySet()){
+
+      if (entry.getKey().equals(Constants.GENERAL_CONFIG)){
+        retAllSettings.put(entry.getKey(), entry.getValue());
+      } else {
+
+        List<String> endpointIdentifiers =
+                routeInputs
+                        .entrySet()
+                        .stream()
+                        .filter(e -> e.getValue().stream().anyMatch(u -> u.startsWith("idsserver://" + entry.getKey())))
+                        .map(e -> e.getKey() + " - " + entry.getKey())
+                        .collect(Collectors.toList());
+
+        if (endpointIdentifiers.isEmpty()) {
+          endpointIdentifiers =
+                  Collections.singletonList("<no route found>" + " - " + entry.getKey());
+        }
+
+        // add endpoint configurations
+        endpointIdentifiers.forEach(
+                endpointIdentifier -> {
+                  if (retAllSettings.keySet().stream().noneMatch(endpointIdentifier::equals)) {
+                    retAllSettings.put(endpointIdentifier, entry.getValue());
+                  }});
+      }
+    }
+
+    return retAllSettings;
   }
 }

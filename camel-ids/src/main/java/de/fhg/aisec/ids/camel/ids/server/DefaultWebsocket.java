@@ -21,8 +21,11 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.api.endpointConfigListener.EndpointConfigListener;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.camel.ids.CamelComponent;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
 import de.fhg.aisec.ids.comm.CertificatePair;
@@ -46,7 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @WebSocket
-public class DefaultWebsocket {
+public class DefaultWebsocket implements EndpointConfigListener {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);
 
   private final WebsocketConsumer consumer;
@@ -56,6 +59,7 @@ public class DefaultWebsocket {
   private final String pathSpec;
   private FSM idsFsm;
   private CertificatePair certificatePair;
+  private boolean isTokenValidated = false;
 
   public DefaultWebsocket(
       NodeSynchronization sync,
@@ -137,11 +141,23 @@ public class DefaultWebsocket {
     sync.addSocket(this);
   }
 
+
   @OnWebSocketMessage
   public void onMessage(String message) {
     LOG.debug("onMessage: {}", message);
     // Check if fsm is in its final state If not, this message is not our department
     if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+      //if this is the first msg in IDSCP_END or endpoint configuration has changed, validate client attribute token
+      isTokenValidated = false;
+      if (!isTokenValidated){
+        if ((isTokenValidated = validateDynamicAttributeToken(true))) {
+          LOG.info("DynamicAttributeToken: client validation was successful");
+        } else {
+          LOG.info("DynamicAttributeToken: client validation failed. Disconnecting from Client ..");
+          this.session.close(new CloseStatus(1003, "Security requirements not fulfilled"));
+        }
+      }
+
       if (this.consumer != null) {
         this.consumer.sendMessage(this.connectionKey, message);
       } else {
@@ -166,6 +182,16 @@ public class DefaultWebsocket {
   public void onMessage(byte[] data, int offset, int length) {
     LOG.trace("server received {} byte in onMessage", length);
     if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
+
+      if (!isTokenValidated){
+        if ((isTokenValidated = validateDynamicAttributeToken(true))) {
+          LOG.info("DynamicAttributeToken: client validation was successful");
+        } else {
+          LOG.info("DynamicAttributeToken: client validation failed. Disconnecting from Client ..");
+          this.session.close(new CloseStatus(1003, "Security requirements not fulfilled"));
+        }
+      }
+
       if (this.consumer != null) {
         this.consumer.sendMessage(this.connectionKey, data);
       } else {
@@ -190,6 +216,41 @@ public class DefaultWebsocket {
   @OnWebSocketError
   public void onError(Session session, Throwable t) {
     LOG.error(t.getMessage() + " Host: " + session.getRemoteAddress().getHostName(), t);
+  }
+
+  private boolean validateDynamicAttributeToken(boolean newConnection){
+
+    TokenManager tokenManager = CamelComponent.getTokenManager();
+    String dynamicAttributeToken = idsFsm.getDynamicAttributeToken();
+    Settings settings = ConnectionManagerService.getSettings();
+
+    if (tokenManager == null || dynamicAttributeToken == null || dynamicAttributeToken.trim().equals("") ||
+            settings == null)
+      return false;
+
+    String dapsUrl = settings.getConnectorConfig().getDapsUrl();
+
+    //get endpoint security settings, never returns null
+    ConnectionSettings connectionSettings = settings.getConnectionSettings(consumer.getEndpoint().getHost() + ":"
+            + consumer.getEndpoint().getPort().toString());
+
+    String targetAudience = "IDS_Connector";
+    //toDo: This is a bug in the DAPS. Audience should be not set to a default value
+    // "IDS_Connector"
+
+    boolean retVal = false;
+    tokenManager.semaphore().lock(); //to protect jwtBodyAsJson export in tokenManagerService until it is verified
+    try {
+      //validate token signature, target Audience, expire date
+      if (tokenManager.verifyJWT(dynamicAttributeToken, targetAudience, dapsUrl, true)){
+        //validate supported security attributes
+        retVal = tokenManager.validateDATSecurityAttributes(connectionSettings);
+      }
+    } finally {
+      tokenManager.semaphore().unlock();
+    }
+
+    return retVal;
   }
 
   public Session getSession() {
@@ -232,5 +293,25 @@ public class DefaultWebsocket {
 
   public String getRemoteHostname() {
     return session.getRemoteAddress().getHostName();
+  }
+
+  //observer update function, that is called by the subject when endpoint settings have changed
+  @Override
+  public void updateTokenValidation(String endpointConfig) {
+    //an endpoint configuration has changed, check if it is relevant for this WebSocket
+    //endpointConfig has format 'host:port'
+    if (!isTokenValidated)
+      return; //not relevant because initial validation was not successful yet
+
+    if (connectionKey.endsWith(consumer.getEndpoint().getHost() + ":" + consumer.getEndpoint().getPort())){
+      LOG.info("Endpoint config for endpoint " + endpointConfig + "has changed. Verify DynamicAttributeToken again");
+
+      if ((isTokenValidated = validateDynamicAttributeToken(false))) {
+        LOG.info("DynamicAttributeToken: client validation was successful");
+      } else {
+        LOG.info("DynamicAttributeToken: client validation failed. Disconnecting from Client ..");
+        this.session.close(new CloseStatus(1003, "Security requirements not fulfilled anymore"));
+      }
+    }
   }
 }

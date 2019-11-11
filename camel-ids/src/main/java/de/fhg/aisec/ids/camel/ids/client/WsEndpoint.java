@@ -304,7 +304,7 @@ public class WsEndpoint extends AhcEndpoint {
 
   void connect(WsConsumer wsConsumer) {
     consumers.add(wsConsumer);
-    reConnect();
+    //reConnect();
   }
 
   void disconnect(WsConsumer wsConsumer) {

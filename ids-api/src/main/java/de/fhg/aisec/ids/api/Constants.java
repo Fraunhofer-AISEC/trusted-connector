@@ -23,4 +23,5 @@ public interface Constants {
 
   String PREFERENCES_ID = "ids.preferences";
   String CONNECTIONS_PREFERENCES = "ids.connectionPreferences";
+  String GENERAL_CONFIG = "General Configuration";
 }
