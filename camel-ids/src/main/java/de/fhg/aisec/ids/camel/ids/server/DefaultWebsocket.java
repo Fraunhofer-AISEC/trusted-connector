@@ -123,13 +123,13 @@ public class DefaultWebsocket {
       try {
         serverConfigBuilder.rdfDescription(infoModelManager.getConnectorAsJsonLd());
       } catch (Exception x) {
-        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!", x);
+        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!");
         serverConfigBuilder.rdfDescription("{\"message\":\"Infomodel is not available\"}");
       }
       try {
         serverConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
       } catch (Exception x) {
-        LOG.error("DAPS token load failed, please verify your DAPS configuration!", x);
+        LOG.error("DAPS token load failed, please verify your DAPS configuration!");
         serverConfigBuilder.rdfDescription("{\"message\":\"DAPS token is not available\"}");
       }
     }

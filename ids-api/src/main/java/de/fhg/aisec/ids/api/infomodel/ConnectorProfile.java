@@ -27,12 +27,12 @@ import java.util.List;
 
 public final class ConnectorProfile implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
-  private final SecurityProfile securityProfile;
-  private final URI connectorUrl;
-  private final URI maintainerUrl;
-  private final List<PlainLiteral> connectorEntityNames;
+  private SecurityProfile securityProfile;
+  private URI connectorUrl;
+  private URI maintainerUrl;
+  private List<PlainLiteral> connectorEntityNames;
 
   public ConnectorProfile() {
     this.securityProfile = SecurityProfile.BASE_CONNECTOR_SECURITY_PROFILE;
@@ -67,5 +67,21 @@ public final class ConnectorProfile implements Serializable {
 
   public List<PlainLiteral> getConnectorEntityNames() {
     return connectorEntityNames;
+  }
+
+  public void setSecurityProfile(SecurityProfile securityProfile) {
+    this.securityProfile = securityProfile;
+  }
+
+  public void setConnectorUrl(URI connectorUrl) {
+    this.connectorUrl = connectorUrl;
+  }
+
+  public void setMaintainerUrl(URI maintainerUrl) {
+    this.maintainerUrl = maintainerUrl;
+  }
+
+  public void setConnectorEntityNames(List<PlainLiteral> connectorEntityNames) {
+    this.connectorEntityNames = connectorEntityNames;
   }
 }

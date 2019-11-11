@@ -234,13 +234,13 @@ public class WsEndpoint extends AhcEndpoint {
       try {
         clientConfigBuilder.rdfDescription(infoModelManager.getConnectorAsJsonLd());
       } catch (Exception x) {
-        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!", x);
+        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!");
         clientConfigBuilder.rdfDescription("{\"message\":\"Infomodel is not available\"}");
       }
       try {
         clientConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
       } catch (Exception x) {
-        LOG.error("DAPS token load failed, please verify your DAPS configuration!", x);
+        LOG.error("DAPS token load failed, please verify your DAPS configuration!");
         clientConfigBuilder.rdfDescription("{\"message\":\"DAPS token is not available\"}");
       }
     }

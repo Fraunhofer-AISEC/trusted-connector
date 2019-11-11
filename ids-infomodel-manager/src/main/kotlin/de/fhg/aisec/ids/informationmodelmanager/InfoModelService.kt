@@ -30,33 +30,20 @@ class InfoModelService : InfoModel {
     private var connectionManager: ConnectionManager? = null
 
     private val connectorProfile: ConnectorProfile?
-        get() {
-            return try {
-                settings?.connectorProfile
-            } catch (x: Exception) {
-                LOG.error("Error parsing ConnectorProfile, please provide a new ConnectorProfile via the REST API.", x)
-                null
-            }
-        }
+        get() = settings?.connectorProfile
 
     /**
      * Build Connector Entity Names from preferences
      */
     private val connectorEntityNames: List<PlainLiteral>
-        get() {
-            val entityNames = connectorProfile?.connectorEntityNames
-            return if (entityNames != null) {
-                entityNames
-            } else {
-                LOG.warn("Settings or ConnectorProfile not available")
-                emptyList()
+        get() = connectorProfile?.connectorEntityNames.also {
+            if (it == null) {
+                LOG.warn("Settings or ConnectorProfile not available, or no connector entity names provided")
             }
-        }
+        } ?: emptyList()
 
     private val catalog: Catalog
-        get() {
-            return CatalogBuilder()._offer_(ArrayList(resources)).build()
-        }
+        get() = CatalogBuilder()._offer_(ArrayList(resources)).build()
 
     /**
      * Build current endpoints as given by connectionManager
@@ -64,16 +51,14 @@ class InfoModelService : InfoModel {
      * Multiple names for one connector allowed
      */
     private val resources: List<Resource>
-        get() {
-            return connectionManager?.let { cm ->
-                cm.listAvailableEndpoints().map {
-                    val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
-                    val host = HostBuilder()._accessUrl_(url)._protocol_(Protocol.IDSCP).build()
-                    val endpoint = StaticEndpointBuilder()._endpointHost_(host).build()
-                    ResourceBuilder()._resourceEndpoint_(arrayListOf(endpoint)).build()
-                }
-            } ?: emptyList()
-        }
+        get() = connectionManager?.let { cm ->
+            cm.listAvailableEndpoints().map {
+                val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
+                val host = HostBuilder()._accessUrl_(url)._protocol_(Protocol.IDSCP).build()
+                val endpoint = StaticEndpointBuilder()._endpointHost_(host).build()
+                ResourceBuilder()._resourceEndpoint_(arrayListOf(endpoint)).build()
+            }
+        } ?: emptyList()
 
     /**
      * Build Security Profile from preferences
@@ -81,13 +66,9 @@ class InfoModelService : InfoModel {
      * @return
      */
     private val securityProfile: SecurityProfile?
-        get() {
-            val securityProfile = connectorProfile?.securityProfile
-            return if (securityProfile != null) {
-                securityProfile
-            } else {
-                LOG.warn("Settings or ConnectorProfile not available")
-                null
+        get() = connectorProfile?.securityProfile.also {
+            if (it == null) {
+                LOG.warn("Settings, ConnectorProfile not available, or no SecurityProfile provided")
             }
         }
 
@@ -135,6 +116,9 @@ class InfoModelService : InfoModel {
     // creates random connector_url if null and succeeds only if maintainerUrl and entityNames != null
     // generates RDF description from Connector object and returns building success
     override fun setConnector(profile: ConnectorProfile): Boolean {
+        if (profile.securityProfile == null) {
+            profile.securityProfile = SecurityProfile.BASE_CONNECTOR_SECURITY_PROFILE
+        }
         return if (settings != null) {
             settings?.connectorProfile = profile
 
@@ -150,11 +134,9 @@ class InfoModelService : InfoModel {
         }
     }
 
-    override fun getConnectorAsJsonLd(): String {
-        return settings?.connectorJsonLd
-                ?: connector?.let { serializer.serialize(it) }
-                ?: throw NullPointerException("Connector is not available")
-    }
+    override fun getConnectorAsJsonLd(): String = settings?.connectorJsonLd
+            ?: connector?.let { serializer.serialize(it) }
+            ?: throw NullPointerException("Connector is not available")
 
     override fun setConnectorByJsonLd(jsonLd: String?) {
         settings?.let { settings ->
@@ -170,20 +152,17 @@ class InfoModelService : InfoModel {
         } ?: LOG.warn("Couldn't store connector object: Settings not available.")
     }
 
-    override fun getDynamicAttributeToken(): String {
-        return settings?.dynamicAttributeToken
-                ?: throw NullPointerException("Connector is not available")
-    }
+    override fun getDynamicAttributeToken(): String = settings?.dynamicAttributeToken
+            ?: throw NullPointerException("DAPS token is not available")
 
-    override fun setDynamicAttributeToken(dynamicAttributeToken: String): Boolean {
-        return if (settings != null) {
-            settings?.dynamicAttributeToken = dynamicAttributeToken
-            true
-        } else {
-            LOG.warn("Couldn't store connector object: Settings not available.")
-            false
-        }
-    }
+    override fun setDynamicAttributeToken(dynamicAttributeToken: String) =
+            if (settings != null) {
+                settings?.dynamicAttributeToken = dynamicAttributeToken
+                true
+            } else {
+                LOG.warn("Couldn't store connector object: Settings not available.")
+                false
+            }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(InfoModelService::class.java)
