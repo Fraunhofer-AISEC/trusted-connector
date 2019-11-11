@@ -16,7 +16,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentMap
 import kotlin.collections.HashMap
 
-@Component(immediate = true, name="ids-settings")
+@Component(immediate = true, name = "ids-settings")
 class SettingsComponent : Settings {
     @Activate
     fun activate() {
@@ -30,13 +30,13 @@ class SettingsComponent : Settings {
         }
         // Migrate old DB versions
         while (dbVersion < CURRENT_DB_VERSION) {
-            LOG.info("Migrating settings database from version $dbVersion to version $CURRENT_DB_VERSION")
+            LOG.info("Migrating settings database from version $dbVersion to version $CURRENT_DB_VERSION...")
             when (dbVersion) {
                 1 -> {
                     // Checking ConnectorProfile for errors
                     try {
                         settingsStore[CONNECTOR_PROFILE_KEY]
-                    } catch(x: Exception) {
+                    } catch (x: Exception) {
                         // Serialization issue due to infomodel changes, need to rebuild settings store
                         val tempMap = HashMap<String, Any?>()
                         settingsStore.keys.forEach {
@@ -52,6 +52,7 @@ class SettingsComponent : Settings {
             }
             settingsStore[DB_VERSION_KEY] = dbVersion
             mapDB.commit()
+            LOG.info("Migration successful")
         }
     }
 
@@ -61,31 +62,25 @@ class SettingsComponent : Settings {
         mapDB.close()
     }
 
-    override fun getConnectorConfig(): ConnectorConfig {
-        return settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
-    }
+    override fun getConnectorConfig() =
+            settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
 
     override fun setConnectorConfig(connectorConfig: ConnectorConfig) {
         settingsStore[CONNECTOR_SETTINGS_KEY] = connectorConfig
         mapDB.commit()
     }
 
-    override fun getConnectorProfile(): ConnectorProfile {
-        return settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
-    }
+    override fun getConnectorProfile() =
+            settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
 
     override fun setConnectorProfile(connectorProfile: ConnectorProfile) {
         settingsStore[CONNECTOR_PROFILE_KEY] = connectorProfile
         mapDB.commit()
     }
 
-    override fun getConnectorJsonLd(): String? {
-        return settingsStore[CONNECTOR_JSON_LD_KEY] as String?
-    }
+    override fun getConnectorJsonLd() = settingsStore[CONNECTOR_JSON_LD_KEY] as String?
 
-    override fun getDynamicAttributeToken(): String? {
-        return settingsStore[DAT_KEY] as String?
-    }
+    override fun getDynamicAttributeToken() = settingsStore[DAT_KEY] as String?
 
     override fun setDynamicAttributeToken(dynamicAttributeToken: String?) {
         if (dynamicAttributeToken == null) {
@@ -105,18 +100,16 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
-    override fun getConnectionSettings(connection: String): ConnectionSettings {
-        return connectionSettings.getOrElse(connection) { ConnectionSettings() }
-    }
+    override fun getConnectionSettings(connection: String): ConnectionSettings =
+            connectionSettings.getOrElse(connection) { ConnectionSettings() }
 
     override fun setConnectionSettings(connection: String, conSettings: ConnectionSettings) {
         connectionSettings[connection] = conSettings
         mapDB.commit()
     }
 
-    override fun getAllConnectionSettings(): Map<String, ConnectionSettings> {
-        return Collections.unmodifiableMap(connectionSettings)
-    }
+    override fun getAllConnectionSettings(): MutableMap<String, ConnectionSettings> =
+            Collections.unmodifiableMap(connectionSettings)
 
     companion object {
         internal const val DB_VERSION_KEY = "db_version"
