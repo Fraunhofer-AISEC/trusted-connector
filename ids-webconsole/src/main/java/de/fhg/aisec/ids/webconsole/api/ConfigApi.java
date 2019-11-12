@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.webconsole.api;
 import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
+import de.fhg.aisec.ids.api.dynamicEndpointConfig.DynamicEndpointConfigManager;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
@@ -29,9 +30,7 @@ import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import de.fhg.aisec.ids.api.Constants;
 import io.swagger.annotations.*;
-import org.apache.camel.Route;
 
 import java.nio.file.FileSystems;
 import java.util.*;
@@ -145,16 +144,24 @@ public class ConfigApi {
     }
 
     //connection has format "<route_id> - host:port"
-      //store only "host:port" in database to make connection available in other parts of application
+    //store only "host:port" in database to make connection available in other parts of the application
+    // where rout_id is not available
 
     Matcher m = CONNECTION_CONFIG_PATTERN.matcher(connection);
     if (!m.matches()){
-        //GENERAL_CONFIG
+        //GENERAL_CONFIG has changed
         settings.setConnectionSettings(connection, conSettings);
-    } else
-        settings.setConnectionSettings(m.group(1), conSettings);
+    } else {
+      // specific endpoint config has changed
+      settings.setConnectionSettings(m.group(1), conSettings);
 
-    //toDo inform Observers, that some endpoint configuration has changed
+      //notify EndpointConfigurationListeners that some endpointConfig has changed
+      DynamicEndpointConfigManager dynEndConManager = WebConsoleComponent.getDynamicEndpointConfigManager();
+      if (dynEndConManager != null){
+        dynEndConManager.notifyAll(m.group(1));
+      }
+    }
+
     return Response.ok().build();
   }
 

@@ -1,0 +1,10 @@
+Bundle-Name: IDS :: Dynamic Endpoint Config
+Export-Package: \
+  de.fhg.aisec.ids.dynamicendpointconfig*
+Import-Package: \
+   !android.*,\
+   !org.conscrypt,\
+	*
+
+
+

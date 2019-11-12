@@ -23,6 +23,7 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+    osgiCore group: 'org.osgi', name: 'org.osgi.core', version: libraryVersions.osgi
 
     providedByFeature group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 
@@ -30,4 +31,6 @@ dependencies {
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.apache.camel', name: 'camel-test', version: libraryVersions.camel
     testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+
+
 }

@@ -21,7 +21,8 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.api.endpointConfigListener.EndpointConfigListener;
+import de.fhg.aisec.ids.api.dynamicEndpointConfig.DynamicEndpointConfigManager;
+import de.fhg.aisec.ids.api.dynamicEndpointConfig.EndpointConfigListener;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.Settings;
@@ -47,6 +48,10 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 @WebSocket
 public class DefaultWebsocket implements EndpointConfigListener {
@@ -60,6 +65,8 @@ public class DefaultWebsocket implements EndpointConfigListener {
   private FSM idsFsm;
   private CertificatePair certificatePair;
   private boolean isTokenValidated = false;
+  private ServiceRegistration<EndpointConfigListener> serviceRegistration = null;
+
 
   public DefaultWebsocket(
       NodeSynchronization sync,
@@ -76,6 +83,10 @@ public class DefaultWebsocket implements EndpointConfigListener {
   public void onClose(int closeCode, String message) {
     LOG.trace("onClose {} {}", closeCode, message);
     sync.removeSocket(this);
+
+    //unregister from DynamicEndpointConfigManager
+    if (serviceRegistration != null)
+      serviceRegistration.unregister();
   }
 
   @OnWebSocketConnect
@@ -139,6 +150,13 @@ public class DefaultWebsocket implements EndpointConfigListener {
     }
     idsFsm = new ServerProtocolMachine(session, serverConfigBuilder.build());
     sync.addSocket(this);
+
+    //register to DynamicEndpointConfigManager
+    Bundle osgiBundle = FrameworkUtil.getBundle(DefaultWebsocket.class);
+    if (osgiBundle != null){
+      serviceRegistration =
+              osgiBundle.getBundleContext().registerService(EndpointConfigListener.class, this, null);
+    }
   }
 
 
@@ -148,7 +166,7 @@ public class DefaultWebsocket implements EndpointConfigListener {
     // Check if fsm is in its final state If not, this message is not our department
     if (idsFsm.getState().equals(ProtocolState.IDSCP_END.id())) {
       //if this is the first msg in IDSCP_END or endpoint configuration has changed, validate client attribute token
-      isTokenValidated = false;
+      //isTokenValidated = false;
       if (!isTokenValidated){
         if ((isTokenValidated = validateDynamicAttributeToken(true))) {
           LOG.info("DynamicAttributeToken: client validation was successful");
@@ -303,7 +321,7 @@ public class DefaultWebsocket implements EndpointConfigListener {
     if (!isTokenValidated)
       return; //not relevant because initial validation was not successful yet
 
-    if (connectionKey.endsWith(consumer.getEndpoint().getHost() + ":" + consumer.getEndpoint().getPort())){
+    if (endpointConfig.equals(consumer.getEndpoint().getHost() + ":" + consumer.getEndpoint().getPort())){
       LOG.info("Endpoint config for endpoint " + endpointConfig + "has changed. Verify DynamicAttributeToken again");
 
       if ((isTokenValidated = validateDynamicAttributeToken(false))) {
