@@ -21,8 +21,8 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
-import de.fhg.aisec.ids.api.dynamicEndpointConfig.DynamicEndpointConfigManager;
-import de.fhg.aisec.ids.api.dynamicEndpointConfig.EndpointConfigListener;
+import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigListener;
+import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.Settings;
@@ -30,7 +30,6 @@ import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.camel.ids.CamelComponent;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
 import de.fhg.aisec.ids.comm.CertificatePair;
-import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.server.ServerConfiguration;
 import de.fhg.aisec.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.aisec.ids.comm.ws.protocol.ServerProtocolMachine;
@@ -43,15 +42,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceRegistration;
 
 @WebSocket
 public class DefaultWebsocket implements EndpointConfigListener {
@@ -65,7 +61,6 @@ public class DefaultWebsocket implements EndpointConfigListener {
   private FSM idsFsm;
   private CertificatePair certificatePair;
   private boolean isTokenValidated = false;
-  private ServiceRegistration<EndpointConfigListener> serviceRegistration = null;
 
 
   public DefaultWebsocket(
@@ -81,17 +76,27 @@ public class DefaultWebsocket implements EndpointConfigListener {
 
   @OnWebSocketClose
   public void onClose(int closeCode, String message) {
-    LOG.trace("onClose {} {}", closeCode, message);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("onClose {} {}", closeCode, message);
+    }
     sync.removeSocket(this);
 
-    //unregister from DynamicEndpointConfigManager
-    if (serviceRegistration != null)
-      serviceRegistration.unregister();
+    // Remove Listener from EndpointConfigManager
+    final EndpointConfigManager ecp = CamelComponent.getEndpointConfigManager();
+    if (ecp != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Remove EndpointConfigListener: {}", this);
+      }
+      String endpointIdentifier = consumer.getEndpoint().getHost() + ":" + consumer.getEndpoint().getPort();
+      ecp.removeEndpointConfigListener(endpointIdentifier);
+    }
   }
 
   @OnWebSocketConnect
   public void onConnect(Session session) {
-    LOG.trace("onConnect {}", session);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("onConnect {}", session);
+    }
     this.session = session;
     this.connectionKey = UUID.randomUUID().toString();
     IdsAttestationType type;
@@ -151,11 +156,14 @@ public class DefaultWebsocket implements EndpointConfigListener {
     idsFsm = new ServerProtocolMachine(session, serverConfigBuilder.build());
     sync.addSocket(this);
 
-    //register to DynamicEndpointConfigManager
-    Bundle osgiBundle = FrameworkUtil.getBundle(DefaultWebsocket.class);
-    if (osgiBundle != null){
-      serviceRegistration =
-              osgiBundle.getBundleContext().registerService(EndpointConfigListener.class, this, null);
+    // Register listener at EndpointConfigManager
+    final EndpointConfigManager ecp = CamelComponent.getEndpointConfigManager();
+    if (ecp != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Register EndpointConfigListener: {}", this);
+      }
+      String endpointIdentifier = consumer.getEndpoint().getHost() + ":" + consumer.getEndpoint().getPort();
+      ecp.addEndpointConfigListener(endpointIdentifier,this);
     }
   }
 
@@ -315,21 +323,26 @@ public class DefaultWebsocket implements EndpointConfigListener {
 
   //observer update function, that is called by the subject when endpoint settings have changed
   @Override
-  public void updateTokenValidation(String endpointConfig) {
-    //an endpoint configuration has changed, check if it is relevant for this WebSocket
-    //endpointConfig has format 'host:port'
-    if (!isTokenValidated)
-      return; //not relevant because initial validation was not successful yet
+  public void updateTokenValidation() {
+    if (!isTokenValidated) {
+      // Not relevant because initial validation was not successful yet
+      return;
+    }
 
-    if (endpointConfig.equals(consumer.getEndpoint().getHost() + ":" + consumer.getEndpoint().getPort())){
-      LOG.info("Endpoint config for endpoint " + endpointConfig + "has changed. Verify DynamicAttributeToken again");
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Endpoint config for endpoint {}:{} has changed. Verify DynamicAttributeToken again",
+          consumer.getEndpoint().getHost(), consumer.getEndpoint().getPort());
+    }
 
-      if ((isTokenValidated = validateDynamicAttributeToken(false))) {
-        LOG.info("DynamicAttributeToken: client validation was successful");
-      } else {
-        LOG.info("DynamicAttributeToken: client validation failed. Disconnecting from Client ..");
-        this.session.close(new CloseStatus(1003, "Security requirements not fulfilled anymore"));
+    if ((isTokenValidated = validateDynamicAttributeToken(false))) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("DynamicAttributeToken: Client validation was successful.");
       }
+    } else {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("DynamicAttributeToken: Client validation failed. Disconnecting from Client...");
+      }
+      this.session.close(new CloseStatus(1003, "Security requirements not fulfilled anymore"));
     }
   }
 }

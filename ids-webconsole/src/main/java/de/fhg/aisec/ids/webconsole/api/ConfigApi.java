@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.webconsole.api;
 import de.fhg.aisec.ids.api.Constants;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
-import de.fhg.aisec.ids.api.dynamicEndpointConfig.DynamicEndpointConfigManager;
+import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
@@ -156,9 +156,9 @@ public class ConfigApi {
       settings.setConnectionSettings(m.group(1), conSettings);
 
       //notify EndpointConfigurationListeners that some endpointConfig has changed
-      DynamicEndpointConfigManager dynEndConManager = WebConsoleComponent.getDynamicEndpointConfigManager();
+      EndpointConfigManager dynEndConManager = WebConsoleComponent.getEndpointConfigManager();
       if (dynEndConManager != null){
-        dynEndConManager.notifyAll(m.group(1));
+        dynEndConManager.notify(m.group(1));
       }
     }
 

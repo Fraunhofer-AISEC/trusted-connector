@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.camel.ids;
 
+import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
@@ -36,6 +37,9 @@ public class CamelComponent {
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private TokenManager tokenManager = null;
+
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  private EndpointConfigManager endpointConfigManager = null;
 
   private static CamelComponent instance;
 
@@ -60,6 +64,7 @@ public class CamelComponent {
     return null;
   }
 
+  @Nullable
   public static InfoModel getInfoModelManager() {
     CamelComponent in = instance;
     if (in != null) {
@@ -68,10 +73,20 @@ public class CamelComponent {
     return null;
   }
 
+  @Nullable
   public static TokenManager getTokenManager() {
     CamelComponent in = instance;
     if (in != null) {
       return in.tokenManager;
+    }
+    return null;
+  }
+
+  @Nullable
+  public static EndpointConfigManager getEndpointConfigManager() {
+    CamelComponent in = instance;
+    if (in != null) {
+      return in.endpointConfigManager;
     }
     return null;
   }

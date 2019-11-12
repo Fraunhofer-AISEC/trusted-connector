@@ -18,4 +18,4 @@
  * =========================LICENSE_END==================================
  */
 /** APIs for accessing dynamicEndpointConfig Services. */
-package de.fhg.aisec.ids.api.dynamicEndpointConfig;
+package de.fhg.aisec.ids.api.endpointconfig;

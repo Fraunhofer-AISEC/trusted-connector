@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.api.dynamicEndpointConfig;
+package de.fhg.aisec.ids.api.endpointconfig;
 
 /**
  * Interface of the Endpoint Configuration Listener.
@@ -9,5 +9,5 @@ package de.fhg.aisec.ids.api.dynamicEndpointConfig;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public interface EndpointConfigListener {
-    void updateTokenValidation(String endpointConfig);
+    void updateTokenValidation();
 }
