@@ -13,7 +13,7 @@ public interface EndpointConfigManager {
 
     void addEndpointConfigListener(String identifier, EndpointConfigListener listener);
 
-    boolean removeEndpointConfigListener(String identifier);
+    void removeEndpointConfigListener(String identifier);
 
     void notify(String endpointConfig);
 

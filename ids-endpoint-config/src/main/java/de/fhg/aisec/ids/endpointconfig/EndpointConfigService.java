@@ -54,11 +54,11 @@ public class EndpointConfigService implements EndpointConfigManager {
   }
 
   @Override
-  public boolean removeEndpointConfigListener(String identifier) {
+  public void removeEndpointConfigListener(String identifier) {
     if (LOG.isTraceEnabled()) {
       LOG.trace("Unregister EndpointConfigListener: {}", identifier);
     }
-    return this.endpointListeners.remove(identifier) != null;
+    this.endpointListeners.remove(identifier);
   }
 
   @Override
