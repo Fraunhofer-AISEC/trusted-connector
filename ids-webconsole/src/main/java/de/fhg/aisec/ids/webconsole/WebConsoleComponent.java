@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.webconsole;
 import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
+import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.RouteManager;
@@ -47,6 +48,9 @@ import org.osgi.service.component.annotations.*;
  */
 @Component(name = "ids-webconsole")
 public class WebConsoleComponent {
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  private EndpointConfigManager dynEndConManager = null;
+
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private TokenManager tokenManager = null;
 
@@ -153,6 +157,15 @@ public class WebConsoleComponent {
     WebConsoleComponent in = instance;
     if (in != null) {
       return in.im;
+    }
+    return null;
+  }
+
+  @Nullable
+  public static EndpointConfigManager getEndpointConfigManager() {
+    WebConsoleComponent in = instance;
+    if (in != null) {
+      return in.dynEndConManager;
     }
     return null;
   }

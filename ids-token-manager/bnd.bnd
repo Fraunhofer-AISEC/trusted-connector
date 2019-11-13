@@ -1,6 +1,6 @@
 Bundle-Name: IDS :: Token Manager
 Export-Package: \
-  de.fhg.aisec.ids.tokenmanager
+  de.fhg.aisec.ids.tokenmanager*
 Import-Package: \
    !android.*,\
    !org.conscrypt,\

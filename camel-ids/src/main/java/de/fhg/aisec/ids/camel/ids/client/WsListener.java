@@ -43,11 +43,15 @@ class WsListener implements WebSocketListener {
 
   @Override
   public void onClose(WebSocket websocket, int code, String status) {
-    LOG.debug("websocket closed - reconnecting");
-    try {
-      this.endpoint.reConnect();
-    } catch (Exception e) {
-      LOG.warn("Error re-connecting to websocket", e);
+    if (code == 1003){
+      LOG.debug("websocket closed - " + status);
+    } else {
+      LOG.debug("websocket closed - reconnecting");
+      try {
+        this.endpoint.reConnect();
+      } catch (Exception e) {
+        LOG.warn("Error re-connecting to websocket", e);
+      }
     }
   }
 

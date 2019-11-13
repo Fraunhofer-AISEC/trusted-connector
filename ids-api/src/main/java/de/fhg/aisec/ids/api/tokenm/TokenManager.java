@@ -19,7 +19,10 @@
  */
 package de.fhg.aisec.ids.api.tokenm;
 
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
+
 import java.nio.file.Path;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Interface of the Token Manager.
@@ -39,4 +42,15 @@ public interface TokenManager {
       String keystoreAliasName,
       String trustStoreName,
       String connectorUUID);
+
+  boolean verifyJWT(
+      String dynamicAttributeToken,
+      String targetAudience,
+      String dapsUrl,
+      boolean extractAsJson);
+
+  boolean validateDATSecurityAttributes(
+          ConnectionSettings connectionSettings);
+
+  ReentrantLock semaphore();
 }

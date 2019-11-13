@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.settings
 
+import de.fhg.aisec.ids.api.Constants
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
@@ -86,7 +87,7 @@ class SettingsComponent : Settings {
         if (dynamicAttributeToken == null) {
             settingsStore -= DAT_KEY
         } else {
-            settingsStore[DAT_KEY] = DAT_KEY
+            settingsStore[DAT_KEY] = dynamicAttributeToken
         }
         mapDB.commit()
     }
@@ -101,7 +102,11 @@ class SettingsComponent : Settings {
     }
 
     override fun getConnectionSettings(connection: String): ConnectionSettings =
+        if (connection == Constants.GENERAL_CONFIG) {
             connectionSettings.getOrElse(connection) { ConnectionSettings() }
+        } else {
+            connectionSettings.getOrPut(connection) {getConnectionSettings(Constants.GENERAL_CONFIG)}
+        }
 
     override fun setConnectionSettings(connection: String, conSettings: ConnectionSettings) {
         connectionSettings[connection] = conSettings

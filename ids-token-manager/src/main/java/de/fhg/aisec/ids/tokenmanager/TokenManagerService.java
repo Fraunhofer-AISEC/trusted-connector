@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.tokenmanager;
 
-import de.fhg.aisec.ids.api.infomodel.InfoModel;
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.*;
 import okhttp3.*;
 import org.jose4j.http.Get;
@@ -51,6 +52,7 @@ import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Manages Dynamic Attribute Tokens.
  *
@@ -62,7 +64,10 @@ public class TokenManagerService implements TokenManager {
   public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
   private Settings settings = null;
-  private InfoModel infoModelMgr = null;
+  private SSLSocketFactory sslSocketFactory = null;
+  private String jwtBodyAsJson = null;
+  private ReentrantLock reentrantLock = new ReentrantLock(); //reentrantLock for jwtBodyAsJson
+
   /*
    * The following block subscribes this component to the Settings Service
    */
@@ -78,29 +83,9 @@ public class TokenManagerService implements TokenManager {
     settings = s;
   }
 
-  /*
-   * The following block subscribes this component to the InfoModel Service
-   */
-  @Reference(
-    name = "infomodel.service",
-    service = InfoModel.class,
-    cardinality = ReferenceCardinality.OPTIONAL,
-    policy = ReferencePolicy.DYNAMIC,
-    unbind = "unbindInfoModelService"
-  )
-  public void bindInfoModelService(InfoModel i) {
-    LOG.info("Bound to infomodel service");
-    infoModelMgr = i;
-  }
-
   @SuppressWarnings("unused")
   public void unbindSettingsService(Settings s) {
     settings = null;
-  }
-
-  @SuppressWarnings("unused")
-  public void unbindInfoModelService(InfoModel i) {
-    infoModelMgr = null;
   }
 
   /**
@@ -127,7 +112,7 @@ public class TokenManagerService implements TokenManager {
       String connectorUUID) {
 
     String targetAudience = "IDS_Connector";
-    // TODO: This is a bug in the DAPS. Audience should be not set to a default value
+    //toDo: This is a bug in the DAPS. Audience should be not set to a default value
     // "IDS_Connector"
     String issuer = connectorUUID;
     String subject = connectorUUID;
@@ -161,7 +146,6 @@ public class TokenManagerService implements TokenManager {
       X509Certificate cert = (X509Certificate) keystore.getCertificate(keystoreAliasName);
 
       TrustManager[] trustManagers;
-      SSLSocketFactory sslSocketFactory;
       try {
         TrustManagerFactory trustManagerFactory =
             TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -209,7 +193,7 @@ public class TokenManagerService implements TokenManager {
       // configure client with trust manager
       OkHttpClient client =
           builder
-              .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustManagers[0])
+              .sslSocketFactory(this.sslSocketFactory, (X509TrustManager) trustManagers[0])
               .connectTimeout(15, TimeUnit.SECONDS)
               .writeTimeout(15, TimeUnit.SECONDS)
               .readTimeout(15, TimeUnit.SECONDS)
@@ -228,7 +212,7 @@ public class TokenManagerService implements TokenManager {
 
       LOG.info("Dynamic Attribute Token: " + dynamicAttributeToken);
 
-      tokenVerified = verifyJWT(dynamicAttributeToken, targetAudience, sslSocketFactory, dapsUrl);
+      tokenVerified = verifyJWT(dynamicAttributeToken, targetAudience, dapsUrl, false);
     } catch (KeyStoreException
         | NoSuchAlgorithmException
         | CertificateException
@@ -241,17 +225,22 @@ public class TokenManagerService implements TokenManager {
     }
 
     if (tokenVerified) {
-      infoModelMgr.setDynamicAttributeToken(dynamicAttributeToken);
+      settings.setDynamicAttributeToken(dynamicAttributeToken);
     }
+
     return tokenVerified;
   }
 
-  private boolean verifyJWT(
+  public boolean verifyJWT(
       String dynamicAttributeToken,
       String targetAudience,
-      SSLSocketFactory sslSocketFactory,
-      String dapsUrl) {
+      String dapsUrl,
+      boolean extractAsJson) {
     boolean verificationSucceeded = false;
+
+    if (sslSocketFactory == null) //should be initialized in acquireToken() always before verifyJWT() is called
+      return false;
+
     try {
       // The HttpsJwks retrieves and caches keys from a the given HTTPS JWKS endpoint.
       // Because it retains the JWKs after fetching them, it can and should be reused
@@ -297,6 +286,12 @@ public class TokenManagerService implements TokenManager {
       //  Validate the JWT and process it to the Claims
       JwtClaims jwtClaims = jwtConsumer.processToClaims(dynamicAttributeToken);
       LOG.info("JWT validation succeeded! " + jwtClaims);
+
+      if(extractAsJson){
+        //extract Jwt as Json Object for verifying JWT
+        this.jwtBodyAsJson = jwtClaims.toJson();
+      }
+
       verificationSucceeded = true;
     } catch (InvalidJwtException e) {
       // InvalidJwtException will be thrown, if the JWT failed processing or validation in anyway.
@@ -325,6 +320,36 @@ public class TokenManagerService implements TokenManager {
       }
     }
     return verificationSucceeded;
+  }
+
+  public boolean validateDATSecurityAttributes(ConnectionSettings connectionSettings){
+    try {
+      //get securityProfile as Json
+      JSONObject json = new JSONObject(this.jwtBodyAsJson);
+      JSONObject idsSecurityAttributes = json.getJSONObject("ids_attributes").getJSONObject("security_profile");
+
+      //validate audit_logging
+      if (Integer.parseInt(connectionSettings.getAuditLogging()) > idsSecurityAttributes.getInt("audit_logging")){
+        LOG.info("Client does not support the security requirements for audit_logging.");
+        return false;
+      }
+
+      //toDo validate further security attributes
+
+    } catch (JSONException e){
+      //JSONObject not found
+      LOG.info(e.getMessage());
+      return false;
+    } catch (NumberFormatException e){
+      LOG.error("Connection settings contains an invalid number format.");
+      return false;
+    }
+
+    return true;
+  }
+
+  public ReentrantLock semaphore() {
+    return reentrantLock;
   }
 
   @Activate
