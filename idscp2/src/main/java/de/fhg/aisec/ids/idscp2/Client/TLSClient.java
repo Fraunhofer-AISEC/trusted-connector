@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.idscp2.Client;
 
 import de.fhg.aisec.ids.idscp2.Constants;
+import de.fhg.aisec.ids.idscp2.TLSPreConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +24,19 @@ public class TLSClient extends IDSCPv2Client {
 
         /* init TLS Client */
         try {
-            //create and load KeyManager and TrustManager
-            TrustManager[] myTrustManager = null;
-            KeyManager[] myKeyManager = null;
+            /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
+             * hostVerification and algorithm constraints */
+            TrustManager[] myTrustManager = TLSPreConfiguration.getX509ExtTrustManager(
+                    clientConfiguration.getTrustStorePath(),
+                    clientConfiguration.getTrustStorePassword()
+            );
+
+            /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
+             * connection specific key selection via key alias*/
+            KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
+                    clientConfiguration.getKeyStorePath(),
+                    clientConfiguration.getKeyStorePassword()
+            );
 
             SSLContext sslContext = SSLContext.getInstance(Constants.TLS_INSTANCE);
             sslContext.init(myKeyManager, myTrustManager, null);
@@ -35,8 +46,12 @@ public class TLSClient extends IDSCPv2Client {
             //create server socket
             clientSocket = socketFactory.createSocket();
 
+            SSLSocket sslSocket = (SSLSocket) clientSocket;
+            SSLParameters sslParameters = sslSocket.getSSLParameters();
+            sslParameters.setUseCipherSuitesOrder(false); //use server priority order
+            sslParameters.setWantClientAuth(true);
             //toDo set sslParameters
-            SSLParameters sslParameters = ((SSLSocket)clientSocket).getSSLParameters();
+            sslSocket.setSSLParameters(sslParameters);
 
 
         } catch (NoSuchAlgorithmException | KeyManagementException | IOException e){

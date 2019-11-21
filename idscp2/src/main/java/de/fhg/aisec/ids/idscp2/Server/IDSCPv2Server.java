@@ -21,8 +21,8 @@ public abstract class IDSCPv2Server {
     protected volatile boolean isRunning = false;
     protected ServerSocket serverSocket = null;
 
-    public IDSCPv2Server(){
-
+    public IDSCPv2Server(ServerConfiguration serverConfiguration){
+        this.serverConfiguration = serverConfiguration;
     }
 
     protected boolean start(){

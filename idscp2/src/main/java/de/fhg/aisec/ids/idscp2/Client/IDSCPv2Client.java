@@ -44,4 +44,8 @@ public abstract class IDSCPv2Client {
         }
     }
 
+    public boolean isConnected(){
+        return clientSocket != null && clientSocket.isConnected();
+    }
+
 }
