@@ -9,7 +9,7 @@ ext {
 
 rootProject.configurations.findAll { it.name.endsWith('Bundle') }.each { project.ext.bundleConfigurations.add(it.name) }
 
-rootProject.subprojects.findAll { it.name.matches("^(camel|ids|jnr)-.*") }.each { p ->
+rootProject.subprojects.findAll { it.name.matches("^(camel|ids|jnr|cxf)-.*") }.each { p ->
     Boolean included = false
     // Include each sub-project declaring dependencies with a configuration ending on "Bundle",
     // using exactly that configuration for the dependency itself and selection of additional recursive dependencies.

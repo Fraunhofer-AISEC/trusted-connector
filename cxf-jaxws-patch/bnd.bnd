@@ -1,0 +1,9 @@
+Bundle-Name: IDS :: JAXWS patch for Apache CXF
+Import-Package: *
+Export-Package:\
+    javax.xml.ws*;version="2.4.0",\
+    javax.xml.soap*,\
+    org.glassfish.hk2.osgiresourcelocator
+# The following line makes this bundle a "Fragment" to cxf-rt-frontend-jaxws,
+# i.e. its classes will simply be added to the class path of cxf-rt-frontend-jaxws.
+Fragment-Host: org.apache.cxf.cxf-rt-frontend-jaxws
