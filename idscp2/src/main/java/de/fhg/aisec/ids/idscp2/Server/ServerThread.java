@@ -7,6 +7,7 @@ package de.fhg.aisec.ids.idscp2.Server;
  */
 
 public interface ServerThread {
-
+    void send(byte[] bytes);
     void safeStop();
+    boolean isConnected();
 }

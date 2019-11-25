@@ -77,6 +77,7 @@ public class TLSPreConfiguration {
             if (myKeyManager.length == 1 && myKeyManager[0] instanceof X509ExtendedKeyManager) {
                 //toDo connection specific key selection via KeyAlias
 
+
                 return myKeyManager;
             } else {
                 throw new IllegalStateException(

@@ -18,6 +18,11 @@ public final class Constants {
     //socket instances
     public static final String TLS_INSTANCE = "TLSv1.2";
 
+    //Standard Messages
+    public static final String CLIENT_GOODBYE = "Client is disconnecting";
+    public static final String SERVER_GOODBYE = "Server is disconnecting";
+    public static final String END_OF_STREAM = "End of stream";
+
 
     private Constants(){};
 }

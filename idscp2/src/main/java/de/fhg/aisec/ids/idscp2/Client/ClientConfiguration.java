@@ -9,4 +9,9 @@ import de.fhg.aisec.ids.idscp2.IDSCPv2Configuration;
  */
 public class ClientConfiguration extends IDSCPv2Configuration {
 
+    private String hostname = "localhost";
+
+    public String getHostname() {
+        return hostname;
+    }
 }
