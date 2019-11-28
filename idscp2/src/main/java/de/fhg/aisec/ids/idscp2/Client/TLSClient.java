@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -51,8 +52,9 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
             SSLSocket sslSocket = (SSLSocket) clientSocket;
             SSLParameters sslParameters = sslSocket.getSSLParameters();
             sslParameters.setUseCipherSuitesOrder(false); //use server priority order
-            sslParameters.setWantClientAuth(true);
-            sslParameters.setProtocols(new String[] {Constants.TLS_INSTANCE}); //only TLSv1.2
+            sslParameters.setNeedClientAuth(true);
+            sslParameters.setProtocols(Constants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
+            sslParameters.setCipherSuites(Constants.TLS_ENABLED_CIPHER); //only allow strong cipher
             //toDo set further SSL Parameters e.g SNI Matchers, Cipher Suite, Protocols ... whatever
             sslSocket.setSSLParameters(sslParameters);
 
@@ -79,11 +81,9 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
             //start tls handshake
             sslSocket.addHandshakeCompletedListener(this);
             sslSocket.startHandshake();
-
-
         } catch (IOException e) {
-            System.out.println("Connecting TLS client to server failed");
-            e.printStackTrace();
+            LOG.error("Connecting TLS client to server failed");
+            //e.printStackTrace();
             disconnect();
             return false;
         }

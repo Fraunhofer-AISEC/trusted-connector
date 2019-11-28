@@ -10,6 +10,8 @@ import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
 /**
@@ -30,6 +32,8 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
     TLSServerThread(SSLSocket sslSocket){
         this.sslSocket = sslSocket;
         try {
+            //set timout for blocking read
+            sslSocket.setSoTimeout(5000);
             in = sslSocket.getInputStream();
             out = sslSocket.getOutputStream();
         } catch (IOException e){
@@ -55,12 +59,15 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
 
         while (running){
             try {
-                //toDo interrupt read when running is set to false
                 if (0 > in.read(buf, 0, buf.length - 1)) {
                     onMessage(Constants.END_OF_STREAM.getBytes());
                 } else {
                     onMessage(buf);
                 }
+            } catch (SocketTimeoutException e){
+                //timeout catches safeStop() call and allows to send server_goodbye
+                //alternative: close sslSocket and catch SocketException
+                //continue
             } catch (IOException e){
                 e.printStackTrace();
             }

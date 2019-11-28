@@ -36,8 +36,8 @@ public class TLSPreConfiguration {
             ManagerFactoryParameters trustParams =
                     new CertPathTrustManagerParameters(filterTrustAnchors(trustStore));
             trustManagerFactory.init(trustParams);*/
-
             trustManagerFactory.init(trustStore);
+
             myTrustManager = trustManagerFactory.getTrustManagers();
 
 

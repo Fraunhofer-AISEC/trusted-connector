@@ -44,6 +44,8 @@ public abstract class IDSCPv2Client implements DataAvailableListener {
             out = clientSocket.getOutputStream();
             in = clientSocket.getInputStream();
 
+            //set clientSocket timeout to allow safeStop()
+            clientSocket.setSoTimeout(5000);
             //start receiving listener
             inputListenerThread = new InputListenerThread(in);
             inputListenerThread.register(this);

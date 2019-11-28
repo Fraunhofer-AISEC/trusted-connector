@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 /**
@@ -23,13 +24,16 @@ public class InputListenerThread extends Thread implements InputListener{
         byte[] buf = new byte[2048];
         while (running){
             try {
-                //toDo interrupt read when running is set to false
-                if (0 > in.read(buf,0, buf.length -1)) {
+                if (0 > in.read(buf, 0, buf.length - 1)) {
                     notifyListeners(Constants.END_OF_STREAM.getBytes());
                     running = false; //terminate
                 } else {
                     notifyListeners(buf);
                 }
+            } catch (SocketTimeoutException e){
+                //timeout to catch safeStop() call, which allows save close and sending Client_Goodbye
+                //alternative: close socket / InputStream and catch exception
+                //continue;
             } catch (IOException e) {
                 e.printStackTrace();
             }
