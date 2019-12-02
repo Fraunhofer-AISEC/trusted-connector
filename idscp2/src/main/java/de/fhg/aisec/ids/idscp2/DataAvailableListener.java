@@ -8,6 +8,6 @@ package de.fhg.aisec.ids.idscp2;
 
 public interface DataAvailableListener {
 
-    void onMessage(byte[] bytes);
+    void onMessage(int len, byte[] bytes);
 
 }

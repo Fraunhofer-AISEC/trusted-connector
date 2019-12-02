@@ -6,13 +6,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A TLS server thread implementation for the IDSCPv2 protocol.
@@ -28,6 +28,7 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
     private InputStream in;
     private OutputStream out;
     private boolean tlsHandshakeCompleted = false;
+    private boolean sendServerGoodbye = true;
 
     TLSServerThread(SSLSocket sslSocket){
         this.sslSocket = sslSocket;
@@ -47,33 +48,32 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
         //wait for new data while running
         byte[] buf = new byte[2048];
 
-        //wait until tls handshake is completed
-        //toDo avoid busy waiting
-        while(!tlsHandshakeCompleted){
-            try {
-                sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
         while (running){
             try {
-                if (0 > in.read(buf, 0, buf.length - 1)) {
-                    onMessage(Constants.END_OF_STREAM.getBytes());
+                int len = in.read(buf, 0, buf.length - 1);
+                if (0 > len) {
+                    onMessage(Constants.END_OF_STREAM.length(), Constants.END_OF_STREAM.getBytes());
+                    running = false;
                 } else {
-                    onMessage(buf);
+                    onMessage(len, buf);
                 }
             } catch (SocketTimeoutException e){
                 //timeout catches safeStop() call and allows to send server_goodbye
                 //alternative: close sslSocket and catch SocketException
                 //continue
+            } catch (SSLException e){
+                LOG.error("SSL error");
+                e.printStackTrace();
+                running = false;
+                return;
             } catch (IOException e){
                 e.printStackTrace();
+                running = false;
             }
         }
         try {
-            send(Constants.SERVER_GOODBYE);
+            if (sendServerGoodbye)
+                send(Constants.SERVER_GOODBYE);
             out.close();
             in.close();
             sslSocket.close();
@@ -90,6 +90,7 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
             try {
                 out.write(data);
                 out.flush();
+                LOG.info("Send message: " + new String(data));
             } catch (IOException e){
                 LOG.error("Server cannot send data");
                 e.printStackTrace();
@@ -101,14 +102,17 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
         send(data.getBytes());
     }
 
-    public void onMessage(byte[] data) {
-        if (Arrays.toString(data).equals(Constants.END_OF_STREAM) ||
-                Arrays.toString(data).equals(Constants.CLIENT_GOODBYE)){
+    public void onMessage(int len, byte[] rawData) {
+        String data = new String(rawData, 0, len, StandardCharsets.UTF_8);
+        if (data.equals(Constants.END_OF_STREAM) ||
+                data.equals(Constants.CLIENT_GOODBYE)){
             //End of stream or client goodbye, connection is no longer available
             running = false; //terminate server
+            LOG.info("Server is terminating after client disconnect");
+            sendServerGoodbye = false;
         } else {
             //toDo do something with the received data
-            System.out.println("New data received: " + Arrays.toString(data));
+            System.out.println("New data received: " + data);
         }
     }
 
@@ -121,9 +125,9 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
         return (sslSocket != null && sslSocket.isConnected());
     }
 
-
     @Override
     public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
         tlsHandshakeCompleted = true;
+        LOG.info("TLS handshake was successful");
     }
 }

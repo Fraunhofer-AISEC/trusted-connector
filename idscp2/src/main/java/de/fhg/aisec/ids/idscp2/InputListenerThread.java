@@ -24,18 +24,20 @@ public class InputListenerThread extends Thread implements InputListener{
         byte[] buf = new byte[2048];
         while (running){
             try {
-                if (0 > in.read(buf, 0, buf.length - 1)) {
-                    notifyListeners(Constants.END_OF_STREAM.getBytes());
+                int len = in.read(buf, 0, buf.length - 1);
+                if (0 > len) {
+                    notifyListeners(Constants.END_OF_STREAM.length(), Constants.END_OF_STREAM.getBytes());
                     running = false; //terminate
                 } else {
-                    notifyListeners(buf);
+                    notifyListeners(len, buf);
                 }
             } catch (SocketTimeoutException e){
                 //timeout to catch safeStop() call, which allows save close and sending Client_Goodbye
                 //alternative: close socket / InputStream and catch exception
                 //continue;
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                running = false;
             }
         }
         listeners.clear();
@@ -51,9 +53,9 @@ public class InputListenerThread extends Thread implements InputListener{
         listeners.remove(listener);
     }
 
-    private void notifyListeners(byte[] bytes) {
+    private void notifyListeners(int len, byte[] bytes) {
         for (DataAvailableListener listener : listeners){
-            listener.onMessage(bytes);
+            listener.onMessage(len, bytes);
         }
     }
 

@@ -53,9 +53,10 @@ public class TLSServer extends IDSCPv2Server {
             sslParameters.setUseCipherSuitesOrder(true); //server determines priority-order of algorithms in CipherSuite
             sslParameters.setNeedClientAuth(true); //client must authenticate
             sslParameters.setProtocols(Constants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
-            //toDo set further SSL Parameters e.g SNI Matchers, Cipher Suite, Protocols ... whatever
+            sslParameters.setCipherSuites(Constants.TLS_ENABLED_CIPHER); //only allow strong cipher suite
+            //toDo set further SSL Parameters
             sslServerSocket.setSSLParameters(sslParameters);
-
+            LOG.info("Server was initialized successfully");
 
         } catch (NoSuchAlgorithmException | KeyManagementException | IOException e){
             LOG.error("Init SSL server socket failed");
@@ -90,6 +91,7 @@ public class TLSServer extends IDSCPv2Server {
             }
 
             //start new server thread
+            LOG.info("New client has connected. Create new server session");
             TLSServerThread server = new TLSServerThread(sslSocket);
             //toDo server.setName() + hashmap
             servers.add(server);

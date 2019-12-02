@@ -26,15 +26,18 @@ public abstract class IDSCPv2Server {
     }
 
     protected boolean start(){
+        LOG.info("Starting server");
         return (isRunning = true);
     }
 
     public void stop(){
+        LOG.info("Stopping server");
         isRunning = false;
         terminateRunningThreads();
     }
 
     public void close(){
+        stop();
         if (serverSocket != null && !serverSocket.isClosed()){
             try {
                 serverSocket.close();

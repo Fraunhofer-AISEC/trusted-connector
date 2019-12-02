@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -55,8 +54,9 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
             sslParameters.setNeedClientAuth(true);
             sslParameters.setProtocols(Constants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
             sslParameters.setCipherSuites(Constants.TLS_ENABLED_CIPHER); //only allow strong cipher
-            //toDo set further SSL Parameters e.g SNI Matchers, Cipher Suite, Protocols ... whatever
+            //toDo set further SSL Parameters
             sslSocket.setSSLParameters(sslParameters);
+            LOG.info("TLS Client was initialized successfully");
 
         } catch (NoSuchAlgorithmException | KeyManagementException | IOException e){
             LOG.error("Init TLS Client failed");
@@ -75,16 +75,31 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
         try {
             sslSocket.connect(new InetSocketAddress(clientConfiguration.getHostname(),
                     clientConfiguration.getServerPort()));
+            LOG.info("Client is connected to server " + clientConfiguration.getHostname()
+                    + ":" + clientConfiguration.getServerPort());
+
+            //set clientSocket timeout to allow safeStop()
+            clientSocket.setSoTimeout(5000);
+
             out = clientSocket.getOutputStream();
             in = clientSocket.getInputStream();
 
+            //add inputListener but start it not before handshake is complete
+            inputListenerThread = new InputListenerThread(in);
+            inputListenerThread.register(this);
+
             //start tls handshake
             sslSocket.addHandshakeCompletedListener(this);
+            LOG.info("Start TLS Handshake");
             sslSocket.startHandshake();
+        } catch (SSLHandshakeException e){
+            System.out.println("TLS Handshake failed" + e.getMessage());
+            disconnect(false);
+            return false;
         } catch (IOException e) {
             LOG.error("Connecting TLS client to server failed");
             //e.printStackTrace();
-            disconnect();
+            disconnect(false);
             return false;
         }
         return true;
@@ -96,9 +111,8 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
 
     @Override
     public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
-        //start receiving listener for IDSCPv2 communication
-        inputListenerThread = new InputListenerThread(in);
-        inputListenerThread.register(this);
+        //start receiving listener for IDSCPv2 communication after TLS Handshake was successful
+        LOG.info("TLS Handshake was successful. Starting input listener thread");
         inputListenerThread.start();
     }
 }
