@@ -50,7 +50,7 @@ karaf {
         repository "mvn:org.apache.camel.karaf/apache-camel/${libraryVersions.camel}/xml/features"
 
         // include cxf repository, since the camel one is slightly outdated
-        repository "mvn:org.apache.cxf.karaf/apache-cxf/${libraryVersions.cxf}/xml/features"
+//        repository "mvn:org.apache.cxf.karaf/apache-cxf/${libraryVersions.cxf}/xml/features"
         
         feature {
             name = 'ids'
