@@ -1,7 +1,7 @@
 version: '2'
 services:
 
-  # TPM simulator
+  # Trusted Connector build container
   build-container:
     image: fraunhoferaisec/docker-build:jdk11
     tty: true

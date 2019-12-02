@@ -11,7 +11,5 @@ RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 COPY run.sh .
 RUN chmod +x run.sh
 
-ENV GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-
 ENTRYPOINT ["/run.sh"]
 CMD ["build", "check", "dockerize", "--no-daemon", "--parallel", "-PdockerTag=develop"]

@@ -21,7 +21,7 @@ cd "$PROJECT_DIR" || exit 1
 
 # Create a build user with the UID of the /core-platfrom mount
 TARGET_UID=$(stat -c %u "$PROJECT_DIR")
-if [ "$TARGET_UID" == "root" ]; then
+if [ "$TARGET_UID" == "root" ] || [ "$TARGET_UID" == "0" ]; then
     ln -s "$GRADLE_DIR" /root/.gradle
     ln -s "$M2_DIR" /root/.m2
     echo "Running ./gradlew as root..."
