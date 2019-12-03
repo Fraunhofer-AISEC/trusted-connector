@@ -35,7 +35,9 @@ public class TLSServer extends IDSCPv2Server {
              * connection specific key selection via key alias*/
             KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
                     serverConfiguration.getKeyStorePath(),
-                    serverConfiguration.getKeyStorePassword()
+                    serverConfiguration.getKeyStorePassword(),
+                    serverConfiguration.getCertAlias(),
+                    serverConfiguration.getKeyStoreKeyType()
             );
 
             // create tls context based on keyManager and trustManager

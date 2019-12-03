@@ -37,7 +37,9 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
              * connection specific key selection via key alias*/
             KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
                     clientConfiguration.getKeyStorePath(),
-                    clientConfiguration.getKeyStorePassword()
+                    clientConfiguration.getKeyStorePassword(),
+                    clientConfiguration.getCertAlias(),
+                    clientConfiguration.getKeyStoreKeyType()
             );
 
             SSLContext sslContext = SSLContext.getInstance(Constants.TLS_INSTANCE);

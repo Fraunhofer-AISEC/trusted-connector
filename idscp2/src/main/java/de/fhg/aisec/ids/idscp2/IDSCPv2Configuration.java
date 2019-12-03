@@ -8,6 +8,8 @@ public abstract class IDSCPv2Configuration {
     private String trustStorePassword = "password";
     private String keyStorePath = null;
     private String keyStorePassword = "password";
+    private String certAlias = "1.0.1";
+    private String keyStoreKeyType = "RSA";
 
 
     private AttestationConfig supportedAttestation = null;
@@ -41,5 +43,13 @@ public abstract class IDSCPv2Configuration {
 
     public String getTrustStorePassword() {
         return trustStorePassword;
+    }
+
+    public String getKeyStoreKeyType() {
+        return keyStoreKeyType;
+    }
+
+    public String getCertAlias() {
+        return certAlias;
     }
 }

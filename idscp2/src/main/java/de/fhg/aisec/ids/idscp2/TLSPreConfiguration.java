@@ -26,10 +26,10 @@ public class TLSPreConfiguration {
                 InputStream jksTrustStoreIn = Files.newInputStream(Paths.get(trustStorePath))
         ) {
             /* create TrustManager */
-            TrustManager[] myTrustManager;
+            final TrustManager[] myTrustManager;
             KeyStore trustStore = KeyStore.getInstance("JKS");
             trustStore.load(jksTrustStoreIn, trustStorePassword.toCharArray());
-            TrustManagerFactory trustManagerFactory =
+            final TrustManagerFactory trustManagerFactory =
                     TrustManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
 
             /* filterTrustAnchors for validation
@@ -58,16 +58,18 @@ public class TLSPreConfiguration {
 
     public static KeyManager[] getX509ExtKeyManager(
             String keyStorePath,
-            String keyStorePassword
+            String keyStorePassword,
+            String certAlias,
+            String keyType
     ) {
         try (
                 InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath));
         ) {
             /* create KeyManager for remote authentication */
-            KeyManager[] myKeyManager;
+            final KeyManager[] myKeyManager;
             KeyStore keystore = KeyStore.getInstance("JKS");
             keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
-            KeyManagerFactory keyManagerFactory =
+            final KeyManagerFactory keyManagerFactory =
                     KeyManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
             keyManagerFactory.init(keystore, keyStorePassword.toCharArray());
             myKeyManager = keyManagerFactory.getKeyManagers();
@@ -75,7 +77,9 @@ public class TLSPreConfiguration {
             /* set up keyManager config */
             //allow only X509 Authentication
             if (myKeyManager.length == 1 && myKeyManager[0] instanceof X509ExtendedKeyManager) {
-                //toDo connection specific key selection via KeyAlias
+                //select certificate alias
+                myKeyManager[0] =
+                        new CustomX509ExtendedKeyManager(certAlias, keyType, (X509ExtendedKeyManager) myKeyManager[0]);
                 return myKeyManager;
             } else {
                 throw new IllegalStateException(
