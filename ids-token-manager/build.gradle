@@ -25,7 +25,7 @@ dependencies {
     providedByBundle group: 'org.json', name: 'json', version: '20180813'
 
     testImplementation group: 'junit', name: 'junit'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }
 
 

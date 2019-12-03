@@ -1,14 +1,12 @@
 #!/bin/sh
 set -e
 
-# Script downloaded 2018-11-07 from get.docker.com and adapted for "stable" channel (see line 28!)
-
 # This script is meant for quick & easy install via:
-#   $ curl -fsSL get.docker.com -o get-docker.sh
+#   $ curl -fsSL https://get.docker.com -o get-docker.sh
 #   $ sh get-docker.sh
 #
 # For test builds (ie. release candidates):
-#   $ curl -fsSL test.docker.com -o test-docker.sh
+#   $ curl -fsSL https://test.docker.com -o test-docker.sh
 #   $ sh test-docker.sh
 #
 # NOTE: Make sure to verify the contents of the script
@@ -18,13 +16,14 @@ set -e
 #
 # Git commit from https://github.com/docker/docker-install when
 # the script was uploaded (Should only be modified by upload job):
-SCRIPT_COMMIT_SHA=36b78b2
+SCRIPT_COMMIT_SHA="6bf300318ebaab958c4adc341a8c7bb9f3a54a1a"
 
 
-# This value will automatically get changed for:
-#   * edge
+# The channel to install from:
+#   * nightly
 #   * test
-#   * experimental
+#   * stable
+#   * edge (deprecated)
 DEFAULT_CHANNEL_VALUE="stable"
 if [ -z "$CHANNEL" ]; then
 	CHANNEL=$DEFAULT_CHANNEL_VALUE
@@ -39,47 +38,6 @@ DEFAULT_REPO_FILE="docker-ce.repo"
 if [ -z "$REPO_FILE" ]; then
 	REPO_FILE="$DEFAULT_REPO_FILE"
 fi
-
-SUPPORT_MAP="
-x86_64-centos-7
-x86_64-fedora-26
-x86_64-fedora-27
-x86_64-fedora-28
-x86_64-debian-wheezy
-x86_64-debian-jessie
-x86_64-debian-stretch
-x86_64-debian-buster
-x86_64-ubuntu-trusty
-x86_64-ubuntu-xenial
-x86_64-ubuntu-bionic
-x86_64-ubuntu-artful
-s390x-ubuntu-xenial
-s390x-ubuntu-bionic
-s390x-ubuntu-artful
-ppc64le-ubuntu-xenial
-ppc64le-ubuntu-bionic
-ppc64le-ubuntu-artful
-aarch64-ubuntu-xenial
-aarch64-ubuntu-bionic
-aarch64-debian-jessie
-aarch64-debian-stretch
-aarch64-debian-buster
-aarch64-fedora-26
-aarch64-fedora-27
-aarch64-fedora-28
-aarch64-centos-7
-armv6l-raspbian-jessie
-armv7l-raspbian-jessie
-armv6l-raspbian-stretch
-armv7l-raspbian-stretch
-armv7l-debian-jessie
-armv7l-debian-stretch
-armv7l-debian-buster
-armv7l-ubuntu-trusty
-armv7l-ubuntu-xenial
-armv7l-ubuntu-bionic
-armv7l-ubuntu-artful
-"
 
 mirror=''
 DRY_RUN=${DRY_RUN:-}
@@ -215,14 +173,14 @@ check_forked() {
 				fi
 				dist_version="$(sed 's/\/.*//' /etc/debian_version | sed 's/\..*//')"
 				case "$dist_version" in
+					10)
+						dist_version="buster"
+					;;
 					9)
 						dist_version="stretch"
 					;;
 					8|'Kali Linux 2')
 						dist_version="jessie"
-					;;
-					7)
-						dist_version="wheezy"
 					;;
 				esac
 			fi
@@ -336,14 +294,14 @@ do_install() {
 		debian|raspbian)
 			dist_version="$(sed 's/\/.*//' /etc/debian_version | sed 's/\..*//')"
 			case "$dist_version" in
+				10)
+					dist_version="buster"
+				;;
 				9)
 					dist_version="stretch"
 				;;
 				8)
 					dist_version="jessie"
-				;;
-				7)
-					dist_version="wheezy"
 				;;
 			esac
 		;;
@@ -373,39 +331,16 @@ do_install() {
 	# Check if this is a forked Linux distro
 	check_forked
 
-	# Check if we actually support this configuration
-	if ! echo "$SUPPORT_MAP" | grep "$(uname -m)-$lsb_dist-$dist_version" >/dev/null; then
-		cat >&2 <<-'EOF'
-
-		Either your platform is not easily detectable or is not supported by this
-		installer script.
-		Please visit the following URL for more detailed installation instructions:
-
-		https://docs.docker.com/engine/installation/
-
-		EOF
-		exit 1
-	fi
-
 	# Run setup for each distro accordingly
 	case "$lsb_dist" in
 		ubuntu|debian|raspbian)
 			pre_reqs="apt-transport-https ca-certificates curl"
 			if [ "$lsb_dist" = "debian" ]; then
-				if [ "$dist_version" = "wheezy" ]; then
-					add_debian_backport_repo "$dist_version"
-				fi
 				# libseccomp2 does not exist for debian jessie main repos for aarch64
 				if [ "$(uname -m)" = "aarch64" ] && [ "$dist_version" = "jessie" ]; then
 					add_debian_backport_repo "$dist_version"
 				fi
 			fi
-
-			# TODO: August 31, 2018 delete from here,
-			if [ "$lsb_dist" =  "ubuntu" ] && [ "$dist_version" = "artful" ]; then
-				deprecation_notice "$lsb_dist $dist_version" "August 31, 2018"
-			fi
-			# TODO: August 31, 2018 delete to here,
 
 			if ! command -v gpg > /dev/null; then
 				pre_reqs="$pre_reqs gnupg"
@@ -419,19 +354,16 @@ do_install() {
 				$sh_c "apt-get install -y -qq $pre_reqs >/dev/null"
 				$sh_c "curl -fsSL \"$DOWNLOAD_URL/linux/$lsb_dist/gpg\" | apt-key add -qq - >/dev/null"
 				$sh_c "echo \"$apt_repo\" > /etc/apt/sources.list.d/docker.list"
-				if [ "$lsb_dist" = "debian" ] && [ "$dist_version" = "wheezy" ]; then
-					$sh_c 'sed -i "/deb-src.*download\.docker/d" /etc/apt/sources.list.d/docker.list'
-				fi
 				$sh_c 'apt-get update -qq >/dev/null'
 			)
 			pkg_version=""
-			if [ ! -z "$VERSION" ]; then
+			if [ -n "$VERSION" ]; then
 				if is_dry_run; then
 					echo "# WARNING: VERSION pinning is not supported in DRY_RUN"
 				else
 					# Will work for incomplete versions IE (17.12), but may not actually grab the "latest" if in the test channel
 					pkg_pattern="$(echo "$VERSION" | sed "s/-ce-/~ce~.*/g" | sed "s/-/.*/g").*-0~$lsb_dist"
-					search_command="apt-cache madison 'docker-ce' | grep '$pkg_pattern' | head -1 | cut -d' ' -f 4"
+					search_command="apt-cache madison 'docker-ce' | grep '$pkg_pattern' | head -1 | awk '{\$1=\$1};1' | cut -d' ' -f 3"
 					pkg_version="$($sh_c "$search_command")"
 					echo "INFO: Searching repository for VERSION '$VERSION'"
 					echo "INFO: $search_command"
@@ -441,12 +373,18 @@ do_install() {
 						echo
 						exit 1
 					fi
+					search_command="apt-cache madison 'docker-ce-cli' | grep '$pkg_pattern' | head -1 | awk '{\$1=\$1};1' | cut -d' ' -f 3"
+					# Don't insert an = for cli_pkg_version, we'll just include it later
+					cli_pkg_version="$($sh_c "$search_command")"
 					pkg_version="=$pkg_version"
 				fi
 			fi
 			(
 				if ! is_dry_run; then
 					set -x
+				fi
+				if [ -n "$cli_pkg_version" ]; then
+					$sh_c "apt-get install -y -qq --no-install-recommends docker-ce-cli=$cli_pkg_version >/dev/null"
 				fi
 				$sh_c "apt-get install -y -qq --no-install-recommends docker-ce$pkg_version >/dev/null"
 			)
@@ -460,20 +398,17 @@ do_install() {
 				exit 1
 			fi
 			if [ "$lsb_dist" = "fedora" ]; then
-				if [ "$dist_version" -lt "26" ]; then
-					echo "Error: Only Fedora >=26 are supported"
-					exit 1
-				fi
-
 				pkg_manager="dnf"
 				config_manager="dnf config-manager"
 				enable_channel_flag="--set-enabled"
+				disable_channel_flag="--set-disabled"
 				pre_reqs="dnf-plugins-core"
 				pkg_suffix="fc$dist_version"
 			else
 				pkg_manager="yum"
 				config_manager="yum-config-manager"
 				enable_channel_flag="--enable"
+				disable_channel_flag="--disable"
 				pre_reqs="yum-utils"
 				pkg_suffix="el"
 			fi
@@ -485,12 +420,13 @@ do_install() {
 				$sh_c "$config_manager --add-repo $yum_repo"
 
 				if [ "$CHANNEL" != "stable" ]; then
+					$sh_c "$config_manager $disable_channel_flag docker-ce-*"
 					$sh_c "$config_manager $enable_channel_flag docker-ce-$CHANNEL"
 				fi
 				$sh_c "$pkg_manager makecache"
 			)
 			pkg_version=""
-			if [ ! -z "$VERSION" ]; then
+			if [ -n "$VERSION" ]; then
 				if is_dry_run; then
 					echo "# WARNING: VERSION pinning is not supported in DRY_RUN"
 				else
@@ -505,6 +441,9 @@ do_install() {
 						echo
 						exit 1
 					fi
+					search_command="$pkg_manager list --showduplicates 'docker-ce-cli' | grep '$pkg_pattern' | tail -1 | awk '{print \$2}'"
+					# It's okay for cli_pkg_version to be blank, since older versions don't support a cli package
+					cli_pkg_version="$($sh_c "$search_command" | cut -d':' -f 2)"
 					# Cut out the epoch and prefix with a '-'
 					pkg_version="-$(echo "$pkg_version" | cut -d':' -f 2)"
 				fi
@@ -513,10 +452,20 @@ do_install() {
 				if ! is_dry_run; then
 					set -x
 				fi
+				# install the correct cli version first
+				if [ -n "$cli_pkg_version" ]; then
+					$sh_c "$pkg_manager install -y -q docker-ce-cli-$cli_pkg_version"
+				fi
 				$sh_c "$pkg_manager install -y -q docker-ce$pkg_version"
 			)
 			echo_docker_as_nonroot
 			exit 0
+			;;
+		*)
+			echo
+			echo "ERROR: Unsupported distribution '$lsb_dist'"
+			echo
+			exit 1
 			;;
 	esac
 	exit 1

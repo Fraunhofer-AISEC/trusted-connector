@@ -8,7 +8,7 @@ stages:
 build:
   stage: build
   image:
-    name: fraunhoferaisec/docker-build:develop
+    name: fraunhoferaisec/docker-build:jdk11
     entrypoint: [""]
   variables:
     GRADLE_DIR: "/cache/.gradle"

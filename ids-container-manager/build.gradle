@@ -33,5 +33,5 @@ dependencies {
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }

@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-slim-stretch
+FROM openjdk:11-jdk-slim-stretch
 
 ARG VERSION
 ENV FILENAME="rat-repository-${VERSION}.jar"

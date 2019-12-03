@@ -9,7 +9,7 @@ ext {
 
 rootProject.configurations.findAll { it.name.endsWith('Bundle') }.each { project.ext.bundleConfigurations.add(it.name) }
 
-rootProject.subprojects.findAll { it.name.matches("^(camel|ids|jnr)-.*") }.each { p ->
+rootProject.subprojects.findAll { it.name.matches("(^(camel|ids|jnr)-.*|.*-patch\$)") }.each { p ->
     Boolean included = false
     // Include each sub-project declaring dependencies with a configuration ending on "Bundle",
     // using exactly that configuration for the dependency itself and selection of additional recursive dependencies.
@@ -34,6 +34,9 @@ dependencies {
     }
     zmqFeature group: 'org.apache-extras.camel-extra', name: 'camel-zeromq', version: '2.22.0'
     providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
+
+    providedByBundle group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+    providedByBundle group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 }
 
 karaf {
@@ -47,7 +50,7 @@ karaf {
         repository "mvn:org.apache.camel.karaf/apache-camel/${libraryVersions.camel}/xml/features"
 
         // include cxf repository, since the camel one is slightly outdated
-        repository "mvn:org.apache.cxf.karaf/apache-cxf/${libraryVersions.cxf}/xml/features"
+//        repository "mvn:org.apache.cxf.karaf/apache-cxf/${libraryVersions.cxf}/xml/features"
         
         feature {
             name = 'ids'

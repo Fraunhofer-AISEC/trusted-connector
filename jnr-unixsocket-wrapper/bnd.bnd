@@ -7,6 +7,7 @@ Import-Package: \
   jnr.ffi*,\
   !jnr*,\
   !sun.misc*,\
+  !sun.nio*,\
   *
 # Merge split-package jnr.enxio.channels from jnr-enxio and jnr-unixsocket.
 Export-Package: \

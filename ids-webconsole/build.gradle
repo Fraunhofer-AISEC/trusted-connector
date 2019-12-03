@@ -97,7 +97,7 @@ dependencies {
     compileOnly group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
 
     testImplementation group: 'junit', name: 'junit'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 
     testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local', version: libraryVersions.cxf
     testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client', version: libraryVersions.cxf

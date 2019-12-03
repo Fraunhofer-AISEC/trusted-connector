@@ -3,3 +3,4 @@ Bundle-Description: attestation repository for the IDS protocol
 Import-Package: \
 	de.fhg.aisec.ids.messages, \
 	*
+-fixupmessages: "Classes found in the wrong directory*"; is:=warning
