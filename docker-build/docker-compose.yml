@@ -3,7 +3,7 @@ services:
 
   # Trusted Connector build container
   build-container:
-    image: fraunhoferaisec/docker-build:jdk11
+    image: fraunhoferaisec/docker-build:develop
     tty: true
     stdin_open: true
     environment:
