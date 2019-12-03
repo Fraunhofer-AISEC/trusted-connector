@@ -19,7 +19,7 @@ fi
 
 cd "$PROJECT_DIR" || exit 1
 
-# Create a build user with the UID of the /core-platfrom mount
+# Get user UID of the /core-platfrom mount
 TARGET_UID=$(stat -c %u "$PROJECT_DIR")
 if [ "$TARGET_UID" == "root" ] || [ "$TARGET_UID" == "0" ]; then
     ln -s "$GRADLE_DIR" /root/.gradle
@@ -31,6 +31,7 @@ if [ "$TARGET_UID" == "root" ] || [ "$TARGET_UID" == "0" ]; then
 else
     DOCKER_GID=$(stat -c %g /var/run/docker.sock)
     addgroup --gid "$DOCKER_GID" --quiet docker
+    # Create a build user with the UID of the /core-platfrom mount
     adduser --uid "$TARGET_UID" --disabled-password --ingroup docker --gecos 'Build User' --quiet build
     ln -s "$GRADLE_DIR" /home/build/.gradle
     ln -s "$M2_DIR" /home/build/.m2

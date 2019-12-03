@@ -113,7 +113,7 @@ allprojects {
             okio          : '1.15.0',
 
             // for OSGi integration tests
-            paxExam            : '4.6.0'
+            paxExam            : '4.13.1'
     ]
 
     configurations {
