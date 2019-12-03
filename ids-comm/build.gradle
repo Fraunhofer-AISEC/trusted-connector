@@ -22,5 +22,5 @@ dependencies {
     testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }

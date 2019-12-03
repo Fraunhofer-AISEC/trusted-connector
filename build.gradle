@@ -105,7 +105,7 @@ allprojects {
 
             // needed for rat-repository, should be seperated 
             jersey             : '2.26',
-            mockito            : '1.10.19',
+            mockito            : '3.2.0',
 
             // needed for token manager to assemble JWTs
             jsonwebtoken  : '0.10.5',
