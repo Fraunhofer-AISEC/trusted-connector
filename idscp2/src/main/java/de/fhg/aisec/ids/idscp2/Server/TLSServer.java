@@ -9,6 +9,7 @@ import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.security.*;
+import java.util.UUID;
 
 /**
  * A TLS server implementation for the IDSCPv2 protocol.
@@ -56,7 +57,8 @@ public class TLSServer extends IDSCPv2Server {
             sslParameters.setNeedClientAuth(true); //client must authenticate
             sslParameters.setProtocols(Constants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
             sslParameters.setCipherSuites(Constants.TLS_ENABLED_CIPHER); //only allow strong cipher suite
-            //toDo set further SSL Parameters
+            //toDo uncomment hostname identification, this is deactivated because the client uses a certificate of an other identity in the examples at the moment
+            //sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
             sslServerSocket.setSSLParameters(sslParameters);
             LOG.info("Server was initialized successfully");
 
@@ -94,9 +96,10 @@ public class TLSServer extends IDSCPv2Server {
 
             //start new server thread
             LOG.info("New client has connected. Create new server session");
-            TLSServerThread server = new TLSServerThread(sslSocket);
-            //toDo server.setName() + hashmap
-            servers.add(server);
+            String connectionId = UUID.randomUUID().toString();
+            TLSServerThread server = new TLSServerThread(sslSocket, connectionId);
+            server.registerListener(this);
+            servers.put(connectionId, server);
             sslSocket.addHandshakeCompletedListener(server);
             server.start();
         }

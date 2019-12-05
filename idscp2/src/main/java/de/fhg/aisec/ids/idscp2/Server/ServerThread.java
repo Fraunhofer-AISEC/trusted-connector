@@ -10,4 +10,5 @@ public interface ServerThread {
     void send(byte[] bytes);
     void safeStop();
     boolean isConnected();
+    void registerListener(ServerNodeSynchronizer serverNodeSynchronizer);
 }

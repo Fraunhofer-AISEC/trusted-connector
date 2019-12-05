@@ -56,7 +56,7 @@ public class TLSClient extends IDSCPv2Client implements HandshakeCompletedListen
             sslParameters.setNeedClientAuth(true);
             sslParameters.setProtocols(Constants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
             sslParameters.setCipherSuites(Constants.TLS_ENABLED_CIPHER); //only allow strong cipher
-            //toDo set further SSL Parameters
+            sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
             sslSocket.setSSLParameters(sslParameters);
             LOG.info("TLS Client was initialized successfully");
 

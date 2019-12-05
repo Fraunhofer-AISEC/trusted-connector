@@ -29,9 +29,13 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
     private OutputStream out;
     private boolean tlsHandshakeCompleted = false;
     private boolean sendServerGoodbye = true;
+    private ServerNodeSynchronizer serverNodeSynchronizer = null;
+    private String connectionId; //unique server - client connection id, that identifies this serverThread
 
-    TLSServerThread(SSLSocket sslSocket){
+    TLSServerThread(SSLSocket sslSocket, String connectionId){
         this.sslSocket = sslSocket;
+        this.connectionId = connectionId;
+
         try {
             //set timout for blocking read
             sslSocket.setSoTimeout(5000);
@@ -80,6 +84,10 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        //unregister from main server
+        if (this.serverNodeSynchronizer != null)
+            this.serverNodeSynchronizer.unregisterServerOnClose(this.connectionId);
     }
 
     @Override
@@ -123,6 +131,11 @@ public class TLSServerThread extends Thread implements ServerThread, HandshakeCo
     @Override
     public boolean isConnected() {
         return (sslSocket != null && sslSocket.isConnected());
+    }
+
+    @Override
+    public void registerListener(ServerNodeSynchronizer serverNodeSynchronizer) {
+        this.serverNodeSynchronizer = serverNodeSynchronizer;
     }
 
     @Override

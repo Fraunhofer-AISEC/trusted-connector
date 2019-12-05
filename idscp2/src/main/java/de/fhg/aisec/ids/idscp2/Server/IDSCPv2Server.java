@@ -5,19 +5,19 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An abstract server implementation for the IDSCPv2 protocol.
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public abstract class IDSCPv2Server {
+public abstract class IDSCPv2Server implements ServerNodeSynchronizer {
     private static final Logger LOG = LoggerFactory.getLogger(IDSCPv2Server.class);
 
-    protected ArrayList<ServerThread> servers = new ArrayList<>();
-
-    protected ServerConfiguration serverConfiguration = null;
+    protected ConcurrentHashMap<String,ServerThread> servers = new ConcurrentHashMap<>();
+    protected ServerConfiguration serverConfiguration;
     protected volatile boolean isRunning = false;
     protected ServerSocket serverSocket = null;
 
@@ -50,13 +50,16 @@ public abstract class IDSCPv2Server {
     }
 
     private void terminateRunningThreads(){
-        for (ServerThread thread : servers){
-            thread.safeStop();
-        }
+        servers.forEach((id, serverThread) -> serverThread.safeStop());
         servers.clear();
     }
 
     public boolean isRunning(){
         return isRunning;
     }
+
+    public void unregisterServerOnClose(String connectionId){
+        servers.remove(connectionId);
+    }
+
 }

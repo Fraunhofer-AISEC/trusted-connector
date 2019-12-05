@@ -10,11 +10,8 @@ public abstract class IDSCPv2Configuration {
     private String keyStorePassword = "password";
     private String certAlias = "1.0.1";
     private String keyStoreKeyType = "RSA";
-
-
     private AttestationConfig supportedAttestation = null;
     private AttestationConfig expectedAttestation = null;
-
 
 
     public AttestationConfig getExpectedAttestation() {
@@ -51,5 +48,29 @@ public abstract class IDSCPv2Configuration {
 
     public String getCertAlias() {
         return certAlias;
+    }
+
+    public void setKeyStorePath(String keyStorePath) {
+        this.keyStorePath = keyStorePath;
+    }
+
+    public void setTrustStorePath(String trustStorePath) {
+        this.trustStorePath = trustStorePath;
+    }
+
+    public void setCertAlias(String certAlias) {
+        this.certAlias = certAlias;
+    }
+
+    public void setKeyStoreKeyType(String keyStoreKeyType) {
+        this.keyStoreKeyType = keyStoreKeyType;
+    }
+
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
+    }
+
+    public void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
     }
 }
