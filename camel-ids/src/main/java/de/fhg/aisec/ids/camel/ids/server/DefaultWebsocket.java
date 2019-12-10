@@ -150,7 +150,7 @@ public class DefaultWebsocket implements EndpointConfigListener {
         serverConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
       } catch (Exception x) {
         LOG.error("DAPS token load failed, please verify your DAPS configuration!");
-        serverConfigBuilder.rdfDescription("{\"message\":\"DAPS token is not available\"}");
+        serverConfigBuilder.dynamicAttributeToken("{\"message\":\"DAPS token is not available\"}");
       }
     }
     idsFsm = new ServerProtocolMachine(session, serverConfigBuilder.build());
@@ -177,9 +177,9 @@ public class DefaultWebsocket implements EndpointConfigListener {
       //isTokenValidated = false;
       if (!isTokenValidated){
         if ((isTokenValidated = validateDynamicAttributeToken(true))) {
-          LOG.info("DynamicAttributeToken: client validation was successful");
+          LOG.info("DynamicAttributeToken: Client validation was successful");
         } else {
-          LOG.info("DynamicAttributeToken: client validation failed. Disconnecting from Client ..");
+          LOG.warn("DynamicAttributeToken: Client validation failed. Disconnecting from Client...");
           this.session.close(new CloseStatus(1003, "Security requirements not fulfilled"));
         }
       }
@@ -211,9 +211,9 @@ public class DefaultWebsocket implements EndpointConfigListener {
 
       if (!isTokenValidated){
         if ((isTokenValidated = validateDynamicAttributeToken(true))) {
-          LOG.info("DynamicAttributeToken: client validation was successful");
+          LOG.info("DynamicAttributeToken: Client validation was successful");
         } else {
-          LOG.info("DynamicAttributeToken: client validation failed. Disconnecting from Client ..");
+          LOG.warn("DynamicAttributeToken: Client validation failed. Disconnecting from Client...");
           this.session.close(new CloseStatus(1003, "Security requirements not fulfilled"));
         }
       }
@@ -340,7 +340,7 @@ public class DefaultWebsocket implements EndpointConfigListener {
       }
     } else {
       if (LOG.isInfoEnabled()) {
-        LOG.info("DynamicAttributeToken: Client validation failed. Disconnecting from Client...");
+        LOG.warn("DynamicAttributeToken: Client validation failed. Disconnecting from Client...");
       }
       this.session.close(new CloseStatus(1003, "Security requirements not fulfilled anymore"));
     }

@@ -241,7 +241,7 @@ public class WsEndpoint extends AhcEndpoint {
         clientConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
       } catch (Exception x) {
         LOG.error("DAPS token load failed, please verify your DAPS configuration!");
-        clientConfigBuilder.rdfDescription("{\"message\":\"DAPS token is not available\"}");
+        clientConfigBuilder.dynamicAttributeToken("{\"message\":\"DAPS token is not available\"}");
       }
     }
     IdspClientSocket idspListener = new IdspClientSocket(clientConfigBuilder.build());
