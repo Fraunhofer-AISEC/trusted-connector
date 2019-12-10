@@ -24,8 +24,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./system.properties:/root/etc/system.properties
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
-      - ./consumer-server-keystore.jks:/root/etc/consumer-server-keystore.jks
-      - ./consumer-server-truststore.jks:/root/etc/consumer-server-truststore.jks
+      - ./consumer-keystore.p12:/root/etc/consumer-keystore.p12
+      - ./truststore.p12:/root/etc/truststore.p12
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-consumer

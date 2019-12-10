@@ -9,10 +9,10 @@
   <!-- Define TLS configuration for data provider -->
   <camel:sslContextParameters id="clientSslContext">
     <camel:keyManagers keyPassword="password">
-      <camel:keyStore resource="etc/provider-client-keystore.jks" password="password"/>
+      <camel:keyStore resource="etc/provider-keystore.p12" password="password"/>
     </camel:keyManagers>
     <camel:trustManagers>
-      <camel:keyStore resource="etc/provider-client-truststore.jks" password="password"/>
+      <camel:keyStore resource="etc/truststore.p12" password="password"/>
     </camel:trustManagers>
   </camel:sslContextParameters>
 

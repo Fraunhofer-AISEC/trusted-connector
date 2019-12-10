@@ -20,8 +20,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./system.properties:/root/etc/system.properties
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
-      - ./provider-client-truststore.jks:/root/etc/provider-client-truststore.jks
-      - ./provider-client-keystore.jks:/root/etc/provider-client-keystore.jks
+      - ./provider-keystore.p12:/root/etc/provider-keystore.p12
+      - ./truststore.p12:/root/etc/truststore.p12
       - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-provider
