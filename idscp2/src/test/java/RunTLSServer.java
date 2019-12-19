@@ -1,17 +1,16 @@
-import de.fhg.aisec.ids.idscp2.Server.ServerConfiguration;
-import de.fhg.aisec.ids.idscp2.Server.TLSServer;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
 
-public class RunTLSServer {
+public class RunTLSServer{
 
     public static void main(String[] argv){
 
-        ServerConfiguration serverConfiguration = new ServerConfiguration();
-        serverConfiguration.setKeyStorePath(RunTLSServer.class.getClassLoader().
-                getResource("jsse/aisecconnector2-keystore.jks").getPath());
-        serverConfiguration.setTrustStorePath(RunTLSServer.class.getClassLoader().
-                getResource("jsse/client-truststore_new.jks").getPath());
-        TLSServer tlsServer = new TLSServer(serverConfiguration);
-        tlsServer.start();
-        tlsServer.close();
+        IDSCPv2Settings settings = new IDSCPv2Settings();
+        settings.setKeyStorePath(RunTLSServer.class.getClassLoader().
+                getResource("ssl/aisecconnector2-keystore.jks").getPath());
+        settings.setTrustStorePath(RunTLSServer.class.getClassLoader().
+                getResource("ssl/client-truststore_new.jks").getPath());
+
+        IDSCPv2ServerInitiator initiator = new IDSCPv2ServerInitiator();
+        initiator.init(settings);
     }
 }
