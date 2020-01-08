@@ -38,8 +38,8 @@ RUN git clone https://github.com/trustm3/external_protobuf-c-text.git && cd exte
   make install && make prefix=/usr install
 # make tpm2d & scd
 RUN git clone https://github.com/trustm3/device_fraunhofer_common_cml && cd device_fraunhofer_common_cml/tpm2d && \
-  ln -s /ibmtss1331/utils/ibmtss && ln -s /protobuf-c-text/protobuf-c-text && mkdir ${BUILD_DIR}/bin && \
-  make && cp tpm2d ${BUILD_DIR}/bin/ && cd ../scd && make && cp scd ${BUILD_DIR}/bin/
+  git checkout v0.1.1 && ln -s /ibmtss1331/utils/ibmtss && ln -s /protobuf-c-text/protobuf-c-text && \
+  mkdir ${BUILD_DIR}/bin && make && cp tpm2d ${BUILD_DIR}/bin/ && cd ../scd && make && cp scd ${BUILD_DIR}/bin/
 
 # openssl_tpm2_engine dependencies
 RUN apt-get update -qq && apt-get install -qq help2man
