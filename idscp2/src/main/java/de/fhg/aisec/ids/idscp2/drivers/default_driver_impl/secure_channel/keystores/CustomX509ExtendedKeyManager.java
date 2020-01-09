@@ -55,7 +55,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
             if ((cachedAliases.containsKey(this.certAlias) &&
                     cachedAliases.get(this.certAlias).match(keyType, issuers))
                     || Arrays.asList(getServerAliases(keyType, issuers)).contains(this.certAlias)) {
-                LOG.info("CertificateAlias is {}", this.certAlias);
+                LOG.debug("CertificateAlias is {}", this.certAlias);
                 return this.certAlias;
             } else {
                 LOG.warn("certAlias '{}' was not found in keystore", this.certAlias);
@@ -84,7 +84,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
         if (keyType.equals(this.keyType)){
             if ((cachedAliases.containsKey(certAlias) && cachedAliases.get(this.certAlias).match(keyType, issuers))
                     || Arrays.asList(getServerAliases(keyType, issuers)).contains(this.certAlias)) {
-                LOG.info("CertificateAlias is {}", this.certAlias);
+                LOG.debug("CertificateAlias is {}", this.certAlias);
                 return this.certAlias;
             } else {
                 LOG.warn("certAlias '{}' was not found in keystore", this.certAlias);
@@ -103,7 +103,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     public X509Certificate[] getCertificateChain(String certAlias) {
         if (certAlias.equals(this.certAlias)){
             X509Certificate[] ret = delegate.getCertificateChain(certAlias);
-            LOG.info("Certificate Chain: {}", Arrays.toString(ret));
+            LOG.debug("Certificate Chain: {}", Arrays.toString(ret));
             return ret;
         } else {
             LOG.warn("Invalid certAlias '{}' in getCertificateChain() in class X509ExtendedKeyManager", certAlias);

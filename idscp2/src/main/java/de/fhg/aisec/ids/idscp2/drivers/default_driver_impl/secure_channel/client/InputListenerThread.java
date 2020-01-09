@@ -1,6 +1,8 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client;
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class InputListenerThread extends Thread implements InputListener {
+    private static final Logger LOG = LoggerFactory.getLogger(InputListenerThread.class);
 
     private InputStream in;
     private ArrayList<DataAvailableListener> listeners = new ArrayList<>();

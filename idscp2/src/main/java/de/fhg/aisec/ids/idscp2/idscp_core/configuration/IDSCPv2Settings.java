@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
 /**
- * IDSCPv2 configuration class, containing information about keyStore and TrustStores, Attestation Types
+ * IDSCPv2 configuration class, containing information about keyStore and TrustStores, Attestation Types, host, ...
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */

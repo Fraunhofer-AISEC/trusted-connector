@@ -1,5 +1,8 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.keystores;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class TLSPreConfiguration {
+    //private static final Logger LOG = LoggerFactory.getLogger(TLSPreConfiguration.class);
 
     public static TrustManager[] getX509ExtTrustManager(
             String trustStorePath,

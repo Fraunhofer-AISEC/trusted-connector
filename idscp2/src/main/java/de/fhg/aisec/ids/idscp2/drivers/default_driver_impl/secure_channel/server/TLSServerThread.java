@@ -104,7 +104,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             }
         }
         callback.connectionClosedHandler(this.connectionId);
-        LOG.info("ServerThread is terminating");
+        LOG.trace("ServerThread is terminating");
         try {
             out.close();
             in.close();
@@ -121,7 +121,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             try {
                 out.write(data);
                 out.flush();
-                LOG.info("Send message: " + new String(data));
+                LOG.trace("Send message: " + new String(data));
             } catch (IOException e){
                 LOG.error("Server cannot send data");
                 e.printStackTrace();
@@ -155,7 +155,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
 
     @Override
     public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
-        LOG.info("TLS handshake was successful");
+        LOG.debug("TLS handshake was successful");
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();

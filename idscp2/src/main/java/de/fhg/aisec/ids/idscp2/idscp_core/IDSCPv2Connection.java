@@ -3,15 +3,13 @@ package de.fhg.aisec.ids.idscp2.idscp_core;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpClose;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * The IDSCPv2 Connection class is the entry point for the IDSCPv2 protocol. It runs a peer (client or server) and
- * establishes a secure state by building a secure transfer channel, verifies the dynamicAttributeToken and RAT
+ * The IDSCPv2 Connection class
  *
- * Developer API:
- *
- * Constructors:
- * IDSCPv2Connection(SecureChannel sc, String connectionID)
+ * User/Developer API:
  *
  * Methods:
  * void close()             to close an IDSCP connection
@@ -22,6 +20,7 @@ import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class IDSCPv2Connection implements IdscpMsgListener {
+    private static final Logger LOG = LoggerFactory.getLogger(IDSCPv2Connection.class);
 
     private SecureChannel secureChannel;
     private String connectionId;
@@ -33,21 +32,25 @@ public class IDSCPv2Connection implements IdscpMsgListener {
     }
 
     public void close() {
+        LOG.info("Close idscp connection");
+        LOG.debug("Send IDSCP_CLOSE");
         IdscpMessage msg = IdscpMessage.newBuilder()
                 .setType(IdscpMessage.Type.IDSCP_CLOSE)
                 .setIdscpClose(IdscpClose.newBuilder().build()
                 ).build();
         send(msg);
+        LOG.debug("Close secure channel");
         secureChannel.close();
     }
 
     public void send(IdscpMessage msg) {
+        LOG.debug("Send idscp message of type {}", msg.getType());
         secureChannel.send(msg);
     }
 
     @Override
     public void onMessage(IdscpMessage msg) {
-        System.out.println("Received new IDSCP Message: " + msg.toString());
+        LOG.info("Received new IDSCP Message: " + msg.toString());
     }
 
     public boolean isConnected() {

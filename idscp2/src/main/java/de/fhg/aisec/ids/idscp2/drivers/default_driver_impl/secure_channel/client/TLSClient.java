@@ -59,55 +59,51 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private IDSCPv2Callback callback;
     private String connectionId = null;
 
-    public TLSClient(IDSCPv2Settings clientSettings, IDSCPv2Callback callback){
+    public TLSClient(IDSCPv2Settings clientSettings, IDSCPv2Callback callback)
+            throws IOException, KeyManagementException, NoSuchAlgorithmException{
         this.callback = callback;
         /* init TLS Client */
-        try {
-            /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
-             * hostVerification and algorithm constraints */
-            TrustManager[] myTrustManager = TLSPreConfiguration.getX509ExtTrustManager(
-                    clientSettings.getTrustStorePath(),
-                    clientSettings.getTrustStorePassword()
-            );
 
-            /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
-             * connection specific key selection via key alias*/
-            KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
-                    clientSettings.getKeyStorePath(),
-                    clientSettings.getKeyStorePassword(),
-                    clientSettings.getCertAlias(),
-                    clientSettings.getKeyStoreKeyType()
-            );
+        /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
+         * hostVerification and algorithm constraints */
+        TrustManager[] myTrustManager = TLSPreConfiguration.getX509ExtTrustManager(
+                clientSettings.getTrustStorePath(),
+                clientSettings.getTrustStorePassword()
+        );
 
-            SSLContext sslContext = SSLContext.getInstance(TlsConstants.TLS_INSTANCE);
-            sslContext.init(myKeyManager, myTrustManager, null);
+        /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
+         * connection specific key selection via key alias*/
+        KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
+                clientSettings.getKeyStorePath(),
+                clientSettings.getKeyStorePassword(),
+                clientSettings.getCertAlias(),
+                clientSettings.getKeyStoreKeyType()
+        );
 
-            SSLSocketFactory socketFactory = sslContext.getSocketFactory();
+        SSLContext sslContext = SSLContext.getInstance(TlsConstants.TLS_INSTANCE);
+        sslContext.init(myKeyManager, myTrustManager, null);
 
-            //create server socket
-            clientSocket = socketFactory.createSocket();
+        SSLSocketFactory socketFactory = sslContext.getSocketFactory();
 
-            SSLSocket sslSocket = (SSLSocket) clientSocket;
-            SSLParameters sslParameters = sslSocket.getSSLParameters();
-            sslParameters.setUseCipherSuitesOrder(false); //use server priority order
-            sslParameters.setNeedClientAuth(true);
-            sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
-            sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher
-            sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
-            sslSocket.setSSLParameters(sslParameters);
-            LOG.info("TLS Client was initialized successfully");
+        //create server socket
+        clientSocket = socketFactory.createSocket();
 
-        } catch (NoSuchAlgorithmException | KeyManagementException | IOException e){
-            LOG.error("Init TLS Client failed");
-            e.printStackTrace();
-        }
+        SSLSocket sslSocket = (SSLSocket) clientSocket;
+        SSLParameters sslParameters = sslSocket.getSSLParameters();
+        sslParameters.setUseCipherSuitesOrder(false); //use server priority order
+        sslParameters.setNeedClientAuth(true);
+        sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
+        sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher
+        sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
+        sslSocket.setSSLParameters(sslParameters);
+        LOG.debug("TLS Client was initialized successfully");
     }
 
 
     public void connect(String hostname, int port){
         SSLSocket sslSocket = (SSLSocket) clientSocket;
         if (sslSocket == null || sslSocket.isClosed()){
-            System.out.println("Client socket is not available");
+            LOG.warn("Client socket is not available");
             callback.secureChannelConnectHandler(null);
             return;
         }
@@ -115,7 +111,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         try {
             sslSocket.connect(new InetSocketAddress(hostname,
                     port));
-            LOG.info("Client is connected to server {}:{}", hostname, port);
+            LOG.debug("Client is connected to server {}:{}", hostname, port);
 
             //set clientSocket timeout to allow safeStop()
             clientSocket.setSoTimeout(5000);
@@ -128,10 +124,10 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
             //start tls handshake
             sslSocket.addHandshakeCompletedListener(this);
-            LOG.info("Start TLS Handshake");
+            LOG.debug("Start TLS Handshake");
             sslSocket.startHandshake();
         } catch (SSLHandshakeException | SSLProtocolException e){
-            LOG.error("TLS Handshake failed: {}", e.getMessage());
+            LOG.warn("TLS Handshake failed: {}", e.getMessage());
             disconnect();
             callback.secureChannelConnectHandler(null);
         } catch (IOException e) {
@@ -142,7 +138,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     private void disconnect(){
-        LOG.info("Disconnecting from server");
+        LOG.debug("Disconnecting from tls server");
         //close listener
         if (inputListenerThread != null && inputListenerThread.isAlive()) {
             inputListenerThread.safeStop();
@@ -169,14 +165,14 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
     public void send(byte[] data){
         if (!isConnected()){
-            LOG.error("Client cannot send data because socket is not connected");
+            LOG.warn("Client cannot send data because socket is not connected");
         } else {
             try {
                 out.write(data);
                 out.flush();
-                LOG.info("Send message: {}", new String(data));
+                LOG.debug("Send message: {}", new String(data));
             } catch (IOException e){
-                LOG.error("Client cannot send data");
+                LOG.warn("Client cannot send data");
                 e.printStackTrace();
             }
         }
@@ -193,7 +189,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     @Override
     public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
         //start receiving listener after TLS Handshake was successful
-        LOG.info("TLS Handshake was successful. Starting input listener thread");
+        LOG.debug("TLS Handshake was successful. Starting input listener thread");
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         inputListenerThread.start();
@@ -206,7 +202,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         System.arraycopy(rawData, 0, data, 0, len);
         if ((new String(data, StandardCharsets.UTF_8)).equals(TlsConstants.END_OF_STREAM)){
             //End of stream, connection is not available anymore
-            LOG.info("Client is terminating after server disconnected");
+            LOG.debug("Client is terminating after server disconnected");
             disconnect();
             callback.connectionClosedHandler(this.connectionId);
         } else {
