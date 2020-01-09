@@ -20,10 +20,10 @@ import java.util.ArrayList;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class InputListenerThread extends Thread implements InputListener {
-    private static final Logger LOG = LoggerFactory.getLogger(InputListenerThread.class);
+    //private static final Logger LOG = LoggerFactory.getLogger(InputListenerThread.class);
 
     private InputStream in;
-    private ArrayList<DataAvailableListener> listeners = new ArrayList<>();
+    private ArrayList<DataAvailableListener> listeners = new ArrayList<>(); //no race conditions, could be empty list
     private volatile boolean running = true;
 
     public InputListenerThread(InputStream in){

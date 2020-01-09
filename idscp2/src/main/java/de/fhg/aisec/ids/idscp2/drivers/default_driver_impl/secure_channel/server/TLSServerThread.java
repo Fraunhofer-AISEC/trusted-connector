@@ -49,9 +49,10 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     private volatile boolean running = true;
     private InputStream in;
     private OutputStream out;
-    private String connectionId;
-    private SecureChannelListener listener = null;
-    private IDSCPv2Callback callback;
+    private String connectionId = null; //race condition avoided using CountDownLatch
+    private CountDownLatch connectionIdLatch = new CountDownLatch(1);
+    private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
+    private IDSCPv2Callback callback;  // race conditions are avoided because callback is initialized by constructor
     private CountDownLatch listenerLatch = new CountDownLatch(1);
 
 
@@ -73,6 +74,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     @Override
     public void setConnectionId(String connectionId){
         this.connectionId = connectionId;
+        connectionIdLatch.countDown();
     }
 
     @Override
@@ -103,7 +105,14 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 running = false;
             }
         }
-        callback.connectionClosedHandler(this.connectionId);
+
+        try {
+            connectionIdLatch.await();
+            callback.connectionClosedHandler(this.connectionId);
+        } catch (InterruptedException e){
+            Thread.currentThread().interrupt();
+        }
+
         LOG.trace("ServerThread is terminating");
         try {
             out.close();
@@ -141,7 +150,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             listenerLatch.await();
             this.listener.onMessage(data);
         } catch (InterruptedException e){
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 

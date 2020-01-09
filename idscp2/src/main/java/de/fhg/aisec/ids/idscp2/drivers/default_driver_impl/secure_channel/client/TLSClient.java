@@ -18,8 +18,9 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.CountDownLatch;
 
- /**
+/**
  * A TLS Client that notifies an IDSCPv2Configuration when a secure channel was created and the TLS handshake is done
  * The client is notified from an InputListenerThread when new data are available and transfer them to the
  * SecureChannelListener
@@ -55,8 +56,10 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private Socket clientSocket;
     private OutputStream out;
     private InputListenerThread inputListenerThread;
-    private SecureChannelListener listener;
-    private IDSCPv2Callback callback;
+    private SecureChannelListener listener; //race conditions are avoided using CountDownLatch
+    private CountDownLatch listenerLatch = new CountDownLatch(1);
+    private IDSCPv2Callback callback; //race conditions are avoided because callback is initialized in constructor
+    private CountDownLatch connectionIdLatch = new CountDownLatch(1);
     private String connectionId = null;
 
     public TLSClient(IDSCPv2Settings clientSettings, IDSCPv2Callback callback)
@@ -156,6 +159,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     @Override
     public void setConnectionId(String connectionId){
         this.connectionId = connectionId;
+        connectionIdLatch.countDown();
     }
 
     @Override
@@ -192,6 +196,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         LOG.debug("TLS Handshake was successful. Starting input listener thread");
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
+        listenerLatch.countDown();
         inputListenerThread.start();
         callback.secureChannelConnectHandler(secureChannel);
     }
@@ -204,9 +209,21 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             //End of stream, connection is not available anymore
             LOG.debug("Client is terminating after server disconnected");
             disconnect();
-            callback.connectionClosedHandler(this.connectionId);
+
+            try {
+                connectionIdLatch.await();
+                callback.connectionClosedHandler(this.connectionId);
+            } catch (InterruptedException e){
+                Thread.currentThread().interrupt();
+            }
+
         } else {
-            listener.onMessage(data);
+            try{
+                listenerLatch.await();
+                listener.onMessage(data);
+            } catch (InterruptedException e){
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }

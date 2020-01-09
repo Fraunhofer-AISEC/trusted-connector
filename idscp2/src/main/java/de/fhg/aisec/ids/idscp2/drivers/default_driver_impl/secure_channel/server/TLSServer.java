@@ -38,7 +38,7 @@ public class TLSServer extends Thread implements SecureServer {
 
     private volatile boolean isRunning = false;
     private ServerSocket serverSocket;
-    private IDSCPv2Callback callback;
+    private IDSCPv2Callback callback; //race conditions are avoided because callback is initialized in the constructor
 
     public TLSServer(IDSCPv2Settings serverSettings, IDSCPv2Callback callback)
             throws IOException, NoSuchAlgorithmException, KeyManagementException {

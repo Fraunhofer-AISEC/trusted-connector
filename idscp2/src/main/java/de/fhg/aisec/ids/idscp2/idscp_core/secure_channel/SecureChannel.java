@@ -6,6 +6,8 @@ import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * A secureChannel which is the secure underlying basis of the IDSCPv2 protocol, that implements a secureChannelListener
  *
@@ -26,6 +28,7 @@ public class SecureChannel implements SecureChannelListener {
 
     private SecureChannelEndpoint endpoint;
     private IdscpMsgListener listener = null;
+    private CountDownLatch listenerLatch = new CountDownLatch(1);
 
     public SecureChannel(SecureChannelEndpoint secureChannelEndpoint){
         this.endpoint = secureChannelEndpoint;
@@ -46,9 +49,12 @@ public class SecureChannel implements SecureChannelListener {
         LOG.debug("New raw data were received via the secure channel");
         try {
             IdscpMessage message = IdscpMessage.parseFrom(data);
+            listenerLatch.await();
             listener.onMessage(message);
         } catch (InvalidProtocolBufferException e) {
             LOG.warn("Cannot parse raw data into IdscpMessage {}", data);
+        } catch (InterruptedException e){
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -58,6 +64,7 @@ public class SecureChannel implements SecureChannelListener {
 
     public void registerMessageListener(IdscpMsgListener listener){
         this.listener = listener;
+        listenerLatch.countDown();
     }
 
     public void setEndpointConnectionId(String id){
