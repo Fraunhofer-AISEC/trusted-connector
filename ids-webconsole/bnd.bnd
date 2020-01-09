@@ -14,7 +14,6 @@ Import-Package: \
 	org.apache.cxf.interceptor.security,\
 	com.fasterxml.jackson.jaxrs.json,\
 	com.fasterxml.jackson.databind,\
-	org.json.*,\
 	!io.swagger.annotations,\
 	*
 Private-Package: \

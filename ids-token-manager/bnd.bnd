@@ -3,4 +3,4 @@ Import-Package: \
    !com.android.org.conscrypt,\
 	*
 Private-Package: \
-    io.jsonwebtoken*
+    io.jsonwebtoken*;-split-package:=merge-last

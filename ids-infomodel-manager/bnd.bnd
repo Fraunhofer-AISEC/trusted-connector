@@ -7,19 +7,15 @@ Export-Package: \
   !org.apache.logging*,\
   org.apache*
 Import-Package: \
-  com.fasterxml.jackson.dataformat*;resolution:=optional,\
-  com.lmax.disruptor*;resolution:=optional,\
   com.sun.jdmk.comm;resolution:=optional,\
   edu.sussex.nlp.jws;resolution:=optional,\
   javax*;resolution:=optional,\
   net.sf.ehcache;resolution:=optional,\
   net.spy.memcached;resolution:=optional,\
   org.apache.commons*;resolution:=optional,\
-  org.apache.kafka*;resolution:=optional,\
   org.apache.log;resolution:=optional,\
   org.eclipse*;resolution:=optional,\
   org.slf4j.ext;resolution:=optional,\
   org.zeromq;resolution:=optional,\
   sun.io;resolution:=optional,\
-  org.apache.logging*,\
   *
