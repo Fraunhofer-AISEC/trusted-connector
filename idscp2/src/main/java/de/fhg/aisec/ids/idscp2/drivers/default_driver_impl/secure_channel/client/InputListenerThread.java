@@ -4,6 +4,8 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsCon
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
@@ -22,29 +24,32 @@ import java.util.ArrayList;
 public class InputListenerThread extends Thread implements InputListener {
     //private static final Logger LOG = LoggerFactory.getLogger(InputListenerThread.class);
 
-    private InputStream in;
+    private DataInputStream in;
     private ArrayList<DataAvailableListener> listeners = new ArrayList<>(); //no race conditions, could be empty list
     private volatile boolean running = true;
 
     public InputListenerThread(InputStream in){
-        this.in = in;
+        this.in = new DataInputStream(in);
     }
 
     public void run(){
-        byte[] buf = new byte[2048];
+        byte[] buf;
         while (running){
             try {
-                int len = in.read(buf, 0, buf.length);
-                if (0 > len) {
-                    notifyListeners(TlsConstants.END_OF_STREAM.length(), TlsConstants.END_OF_STREAM.getBytes());
-                    running = false; //terminate
-                } else {
-                    notifyListeners(len, buf);
-                }
-            } catch (SocketTimeoutException e){
+
+                int len = in.readInt();
+                buf = new byte[len];
+                in.readFully(buf, 0, len);
+                notifyListeners(buf);
+
+            } catch (SocketTimeoutException e) {
                 //timeout to catch safeStop() call, which allows save close and sending Client_Goodbye
                 //alternative: close socket / InputStream and catch exception
                 //continue;
+                //toDo offset when timeout while reading ???
+            } catch (EOFException e){
+                notifyListeners(TlsConstants.END_OF_STREAM.getBytes());
+                running = false; //terminate
             } catch (IOException e) {
                 //e.printStackTrace();
                 running = false;
@@ -58,9 +63,9 @@ public class InputListenerThread extends Thread implements InputListener {
         listeners.add(listener);
     }
 
-    private void notifyListeners(int len, byte[] bytes) {
+    private void notifyListeners(byte[] bytes) {
         for (DataAvailableListener listener : listeners){
-            listener.onMessage(len, bytes);
+            listener.onMessage(bytes);
         }
     }
 

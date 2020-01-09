@@ -6,5 +6,5 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.clien
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public interface DataAvailableListener {
-    void onMessage(int len, byte[] rawData);
+    void onMessage(byte[] data);
 }

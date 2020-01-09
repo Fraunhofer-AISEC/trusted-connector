@@ -11,10 +11,9 @@ import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -47,8 +46,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
 
     private SSLSocket sslSocket;
     private volatile boolean running = true;
-    private InputStream in;
-    private OutputStream out;
+    private DataInputStream in;
+    private DataOutputStream out;
     private String connectionId = null; //race condition avoided using CountDownLatch
     private CountDownLatch connectionIdLatch = new CountDownLatch(1);
     private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
@@ -63,8 +62,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         try {
             //set timout for blocking read
             sslSocket.setSoTimeout(5000);
-            in = sslSocket.getInputStream();
-            out = sslSocket.getOutputStream();
+            in = new DataInputStream(sslSocket.getInputStream());
+            out = new DataOutputStream(sslSocket.getOutputStream());
         } catch (IOException e){
             LOG.error(e.getMessage());
             running = false;
@@ -80,26 +79,25 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     @Override
     public void run(){
         //wait for new data while running
-        byte[] buf = new byte[2048];
-
+        byte[] buf;
         while (running){
             try {
-                int len = in.read(buf, 0, buf.length);
-                if (0 > len) {
-                    //onMessage(TlsConstants.END_OF_STREAM.length(), TlsConstants.END_OF_STREAM.getBytes());
-                    running = false;
-                } else {
-                    onMessage(len, buf);
-                }
+                int len = in.readInt();
+                buf = new byte[len];
+                in.readFully(buf, 0, len);
+                onMessage(buf);
+
             } catch (SocketTimeoutException e){
                 //timeout catches safeStop() call and allows to send server_goodbye
                 //alternative: close sslSocket and catch SocketException
                 //continue
-            } catch (SSLException e){
+            } catch (SSLException e) {
                 LOG.error("SSL error");
                 e.printStackTrace();
                 running = false;
                 return;
+            } catch (EOFException e){
+                running = false;
             } catch (IOException e){
                 e.printStackTrace();
                 running = false;
@@ -128,12 +126,12 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             LOG.error("Server cannot send data because socket is not connected");
         } else {
             try {
+                out.writeInt(data.length);
                 out.write(data);
                 out.flush();
                 LOG.trace("Send message: " + new String(data));
             } catch (IOException e){
-                LOG.error("Server cannot send data");
-                e.printStackTrace();
+                LOG.error("Server cannot send data. {}",e.getMessage());
             }
         }
     }
@@ -143,9 +141,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         safeStop();
     }
 
-    public void onMessage(int len, byte[] rawData)  {
-        byte[] data = new byte[len];
-        System.arraycopy(rawData, 0, data, 0, len);
+    @Override
+    public void onMessage(byte[] data)  {
         try{
             listenerLatch.await();
             this.listener.onMessage(data);

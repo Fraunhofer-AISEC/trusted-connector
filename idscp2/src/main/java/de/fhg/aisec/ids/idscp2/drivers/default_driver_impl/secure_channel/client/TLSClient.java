@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -54,7 +55,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private static final Logger LOG = LoggerFactory.getLogger(TLSClient.class);
 
     private Socket clientSocket;
-    private OutputStream out;
+    private DataOutputStream out;
     private InputListenerThread inputListenerThread;
     private SecureChannelListener listener; //race conditions are avoided using CountDownLatch
     private CountDownLatch listenerLatch = new CountDownLatch(1);
@@ -119,7 +120,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             //set clientSocket timeout to allow safeStop()
             clientSocket.setSoTimeout(5000);
 
-            out = clientSocket.getOutputStream();
+            out = new DataOutputStream(clientSocket.getOutputStream());
 
             //add inputListener but start it not before handshake is complete
             inputListenerThread = new InputListenerThread(clientSocket.getInputStream());
@@ -172,6 +173,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             LOG.warn("Client cannot send data because socket is not connected");
         } else {
             try {
+                out.writeInt(data.length);
                 out.write(data);
                 out.flush();
                 LOG.debug("Send message: {}", new String(data));
@@ -202,9 +204,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     @Override
-    public void onMessage(int len, byte[] rawData) {
-        byte[] data = new byte[len];
-        System.arraycopy(rawData, 0, data, 0, len);
+    public void onMessage(byte[] data) {
         if ((new String(data, StandardCharsets.UTF_8)).equals(TlsConstants.END_OF_STREAM)){
             //End of stream, connection is not available anymore
             LOG.debug("Client is terminating after server disconnected");
