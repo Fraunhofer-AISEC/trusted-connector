@@ -2,6 +2,7 @@ import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
+import de.fhg.aisec.ids.idscp2.error.IDSCPv2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.IDSCPv2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Configuration;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
@@ -19,7 +20,12 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
         IDSCPv2Configuration idscpServerConfig = new IDSCPv2Configuration(this,
                 null,null,null,secureChannelDriver);
-        secureServer = idscpServerConfig.listen(serverSettings);
+        try {
+            secureServer = idscpServerConfig.listen(serverSettings);
+        } catch (IDSCPv2Exception e) {
+            //e.printStackTrace();
+            return;
+        }
         //secureServer.safeStop();
         try {
             Thread.sleep(300000); //run server for 5 minutes
