@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server;
 
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
@@ -13,7 +14,6 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -51,13 +51,15 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     private String connectionId = null; //race condition avoided using CountDownLatch
     private CountDownLatch connectionIdLatch = new CountDownLatch(1);
     private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
-    private IDSCPv2Callback callback;  // race conditions are avoided because callback is initialized by constructor
+    private IDSCPv2Callback configCallback;  //no race conditions
+    private IdscpConnectionListener idscpServerCallback; //no race conditions
     private CountDownLatch listenerLatch = new CountDownLatch(1);
 
 
-    TLSServerThread(SSLSocket sslSocket, IDSCPv2Callback callback){
+    TLSServerThread(SSLSocket sslSocket, IDSCPv2Callback configCallback, IdscpConnectionListener idscpServerCallback){
         this.sslSocket = sslSocket;
-        this.callback = callback;
+        this.configCallback = configCallback;
+        this.idscpServerCallback = idscpServerCallback;
 
         try {
             //set timout for blocking read
@@ -106,7 +108,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
 
         try {
             connectionIdLatch.await();
-            callback.connectionClosedHandler(this.connectionId);
+            idscpServerCallback.connectionClosedHandler(this.connectionId);
+            configCallback.connectionClosedHandler(this.connectionId);
         } catch (InterruptedException e){
             Thread.currentThread().interrupt();
         }
@@ -165,6 +168,6 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();
-        callback.secureChannelListenHandler(secureChannel);
+        configCallback.secureChannelListenHandler(secureChannel, idscpServerCallback);
     }
 }

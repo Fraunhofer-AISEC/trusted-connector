@@ -4,12 +4,13 @@ import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.*;
 import de.fhg.aisec.ids.idscp2.error.IDSCPv2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.IDSCPv2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IDSCPv2Server;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -51,15 +52,18 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         secureChannelDriver.connect(settings, this);
     }
 
-    public SecureServer listen(IDSCPv2Settings settings) throws IDSCPv2Exception {
+    public IDSCPv2Server listen(IDSCPv2Settings settings) throws IDSCPv2Exception {
         LOG.info("Starting new IDSCPv2 server at port {}", settings.getServerPort());
 
         SecureServer secureServer;
-        if ((secureServer = secureChannelDriver.listen(settings, this)) == null){
+        IDSCPv2Server idscpServer = new IDSCPv2Server();
+
+        if ((secureServer = secureChannelDriver.listen(settings, this, idscpServer)) == null){
             throw new IDSCPv2Exception("Idscpv2 listen() failed. Cannot create SecureServer");
         }
 
-        return secureServer;
+        idscpServer.setSecureServer(secureServer);
+        return idscpServer;
     }
 
     @Override
@@ -86,7 +90,7 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
     }
 
     @Override
-    public void secureChannelListenHandler(SecureChannel secureChannel) {
+    public void secureChannelListenHandler(SecureChannel secureChannel, IdscpConnectionListener idscpServer) {
         if (secureChannel != null){
             LOG.debug("A new secure channel for an incoming idscpv2 connection was established");
             LOG.debug("Send Idscp hello");
@@ -102,6 +106,7 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
             IDSCPv2Connection newConnection = new IDSCPv2Connection(secureChannel, connectionId);
             secureChannel.registerMessageListener(newConnection);
             LOG.info("A new idscpv2 connection with id {} was created", connectionId);
+            idscpServer.newConnectionHandler(newConnection); //bind connection to idscp server
             user.newConnectionHandler(newConnection);
         } else {
             LOG.warn("An incoming idscpv2 client connection request failed because no secure channel was established");

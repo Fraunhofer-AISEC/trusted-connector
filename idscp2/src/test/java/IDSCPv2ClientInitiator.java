@@ -22,12 +22,12 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
     @Override
     public void newConnectionHandler(IDSCPv2Connection connection) {
         this.connections.put(connection.getConnectionId(), connection);
-        connection.close();
+        //connection.close();
     }
 
     @Override
     public void errorHandler(String error) {
-        System.out.println(error);
+        System.out.println("Error occurred: " + error);
     }
 
     @Override

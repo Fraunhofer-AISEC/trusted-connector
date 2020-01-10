@@ -5,6 +5,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.keysto
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +39,14 @@ public class TLSServer extends Thread implements SecureServer {
 
     private volatile boolean isRunning = false;
     private ServerSocket serverSocket;
-    private IDSCPv2Callback callback; //race conditions are avoided because callback is initialized in the constructor
+    private IDSCPv2Callback idscpConfigCallback; //no race conditions
+    private IdscpConnectionListener idscpServerCallback;
 
-    public TLSServer(IDSCPv2Settings serverSettings, IDSCPv2Callback callback)
+    public TLSServer(IDSCPv2Settings serverSettings, IDSCPv2Callback configCallback,
+                     IdscpConnectionListener idscpServerCallback)
             throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        this.callback = callback;
+        this.idscpConfigCallback = configCallback;
+        this.idscpServerCallback = idscpServerCallback;
 
         /* init server for TCP/TLS communication */
 
@@ -82,7 +86,8 @@ public class TLSServer extends Thread implements SecureServer {
         sslParameters.setNeedClientAuth(true); //client must authenticate
         sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.3
         sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher suite
-        //FIXME uncomment hostname identification, this is deactivated because the client uses a certificate of an other identity in the examples at the moment
+        //FIXME uncomment hostname identification, this is deactivated because the client uses a certificate of an
+        // other identity in the examples at the moment
         //sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
         sslServerSocket.setSSLParameters(sslParameters);
         LOG.debug("TLS server was initialized successfully");
@@ -118,7 +123,7 @@ public class TLSServer extends Thread implements SecureServer {
 
             //start new server thread
             LOG.debug("New TLS client has connected. Create new server session");
-            TLSServerThread server = new TLSServerThread(sslSocket, this.callback);
+            TLSServerThread server = new TLSServerThread(sslSocket, idscpConfigCallback, idscpServerCallback);
             sslSocket.addHandshakeCompletedListener(server);
             server.start();
         }
