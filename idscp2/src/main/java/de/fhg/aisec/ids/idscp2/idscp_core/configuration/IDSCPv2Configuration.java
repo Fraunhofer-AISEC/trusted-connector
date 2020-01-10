@@ -73,12 +73,11 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
             user.errorHandler("IDSCPv2 connect failed because no secure channel was established");
         } else {
             LOG.debug("A new secure channel for an outgoing idscpv2 connection was established");
-            LOG.debug("Send Idscp hello");
-            secureChannel.send(IDSCPv2.IdscpMessage.newBuilder()
-                    .setType(IDSCPv2.IdscpMessage.Type.IDSCP_HELLO)
-                    .setIdscpHello(IDSCPv2.IdscpHello.newBuilder().build()).build());
-            //toDo verify security properties
-            //toDo RAT
+            try {
+                secureChannel.startIdscpHandshake();
+            } catch (IDSCPv2Exception e){
+                return;
+            }
 
             LOG.debug("All IDSCPv2 requirements for new connection were fulfilled");
             String connectionId = UUID.randomUUID().toString();
@@ -93,12 +92,12 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
     public void secureChannelListenHandler(SecureChannel secureChannel, IdscpConnectionListener idscpServer) {
         if (secureChannel != null){
             LOG.debug("A new secure channel for an incoming idscpv2 connection was established");
-            LOG.debug("Send Idscp hello");
-            secureChannel.send(IDSCPv2.IdscpMessage.newBuilder()
-                    .setType(IDSCPv2.IdscpMessage.Type.IDSCP_HELLO)
-                    .setIdscpHello(IDSCPv2.IdscpHello.newBuilder().build()).build());
-            //toDo verify security properties
-            //toDo RAT
+
+            try {
+                secureChannel.startIdscpHandshake();
+            } catch (IDSCPv2Exception e){
+                return;
+            }
 
             LOG.debug("All IDSCPv2 requirements for a new incoming connection were fulfilled");
             //create new IDSCPv2Connection
