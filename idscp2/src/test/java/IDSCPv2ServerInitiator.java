@@ -29,7 +29,7 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
         try {
             Thread.sleep(40000); //run server for 5 minutes
         } catch (Exception e){
-
+            return;
         }
         idscPv2Server.terminate();
     }

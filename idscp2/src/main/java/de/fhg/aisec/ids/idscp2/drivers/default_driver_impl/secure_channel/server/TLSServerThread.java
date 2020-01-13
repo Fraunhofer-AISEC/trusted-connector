@@ -48,7 +48,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     private volatile boolean running = true;
     private DataInputStream in;
     private DataOutputStream out;
-    private String connectionId = null; //race condition avoided using CountDownLatch
+    private String connectionId = "empty_connection_id"; //race condition avoided using CountDownLatch
     private CountDownLatch connectionIdLatch = new CountDownLatch(1);
     private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
     private IDSCPv2Callback configCallback;  //no race conditions
@@ -97,12 +97,15 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 LOG.error("SSL error");
                 e.printStackTrace();
                 running = false;
+                connectionIdLatch.countDown();
                 return;
             } catch (EOFException e){
                 running = false;
+                connectionIdLatch.countDown();
             } catch (IOException e){
                 e.printStackTrace();
                 running = false;
+                connectionIdLatch.countDown();
             }
         }
 
@@ -120,7 +123,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             in.close();
             sslSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 

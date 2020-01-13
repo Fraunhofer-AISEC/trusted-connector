@@ -61,7 +61,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private CountDownLatch listenerLatch = new CountDownLatch(1);
     private IDSCPv2Callback callback; //race conditions are avoided because callback is initialized in constructor
     private CountDownLatch connectionIdLatch = new CountDownLatch(1);
-    private String connectionId = null;
+    private String connectionId = "empty_connection_id";
 
     public TLSClient(IDSCPv2Settings clientSettings, IDSCPv2Callback callback)
             throws IOException, KeyManagementException, NoSuchAlgorithmException{

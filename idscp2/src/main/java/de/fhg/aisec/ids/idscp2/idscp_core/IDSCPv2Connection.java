@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core;
 
+import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpClose;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
@@ -22,30 +23,21 @@ import org.slf4j.LoggerFactory;
 public class IDSCPv2Connection implements IdscpMsgListener {
     private static final Logger LOG = LoggerFactory.getLogger(IDSCPv2Connection.class);
 
-    private SecureChannel secureChannel;
+    private FSM fsm;
     private String connectionId;
 
-    public IDSCPv2Connection(SecureChannel secureChannel, String connectionId){
-        this.secureChannel = secureChannel;
+    public IDSCPv2Connection(FSM fsm, String connectionId){
+        this.fsm = fsm;
         this.connectionId = connectionId;
-        secureChannel.setEndpointConnectionId(connectionId);
     }
 
     public void close() {
-        LOG.info("Close idscp connection");
-        LOG.debug("Send IDSCP_CLOSE");
-        IdscpMessage msg = IdscpMessage.newBuilder()
-                .setType(IdscpMessage.Type.IDSCP_CLOSE)
-                .setIdscpClose(IdscpClose.newBuilder().build()
-                ).build();
-        send(msg);
-        LOG.debug("Close secure channel");
-        secureChannel.close();
+        fsm.terminate();
     }
 
     public void send(IdscpMessage msg) {
         LOG.debug("Send idscp message of type {}", msg.getType());
-        secureChannel.send(msg);
+        fsm.send(msg);
     }
 
     @Override
@@ -54,7 +46,7 @@ public class IDSCPv2Connection implements IdscpMsgListener {
     }
 
     public boolean isConnected() {
-        return secureChannel.isConnected();
+        return fsm.isConnected();
     }
 
     public String getConnectionId() {
