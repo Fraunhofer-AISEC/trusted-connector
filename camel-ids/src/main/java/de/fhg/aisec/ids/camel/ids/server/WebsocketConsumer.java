@@ -19,10 +19,9 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
-import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.DefaultConsumer;
+import org.apache.camel.support.DefaultConsumer;
 
 public class WebsocketConsumer extends DefaultConsumer implements WebsocketProducerConsumer {
 
@@ -77,13 +76,11 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
     getAsyncProcessor()
         .process(
             exchange,
-            new AsyncCallback() {
-              public void done(boolean doneSync) {
-                if (exchange.getException() != null) {
-                  getExceptionHandler()
-                      .handleException(
-                          "Error processing exchange", exchange, exchange.getException());
-                }
+            doneSync -> {
+              if (exchange.getException() != null) {
+                getExceptionHandler()
+                    .handleException(
+                        "Error processing exchange", exchange, exchange.getException());
               }
             });
   }

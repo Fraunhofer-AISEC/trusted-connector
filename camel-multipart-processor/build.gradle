@@ -5,7 +5,7 @@ dependencies {
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
     providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
-	providedByFeature group: 'org.apache.camel', name: 'camel-http4', version: libraryVersions.camel
+	providedByFeature group: 'org.apache.camel', name: 'camel-http4', version: '3.0.0-M4'
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 

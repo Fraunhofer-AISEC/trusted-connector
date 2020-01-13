@@ -20,14 +20,15 @@
 package de.fhg.aisec.ids.camel.ids;
 
 import de.fhg.aisec.ids.comm.CertificatePair;
+import org.apache.camel.support.jsse.*;
+
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
-import javax.net.ssl.X509TrustManager;
-import org.apache.camel.util.jsse.*;
 
 public class ProxyX509TrustManager implements X509TrustManager {
 

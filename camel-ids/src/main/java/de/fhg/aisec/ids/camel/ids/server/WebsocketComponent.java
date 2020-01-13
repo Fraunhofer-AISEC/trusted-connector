@@ -21,20 +21,12 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 import de.fhg.aisec.ids.camel.ids.ProxyX509TrustManager;
 import de.fhg.aisec.ids.comm.CertificatePair;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.servlet.DispatcherType;
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.SSLContextParametersAware;
-import org.apache.camel.impl.DefaultComponent;
 import org.apache.camel.spi.Metadata;
-import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.support.DefaultComponent;
+import org.apache.camel.support.jsse.SSLContextParameters;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
@@ -51,6 +43,15 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.DispatcherType;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebsocketComponent extends DefaultComponent implements SSLContextParametersAware {
   protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);

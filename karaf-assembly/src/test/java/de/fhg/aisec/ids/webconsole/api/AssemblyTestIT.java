@@ -50,7 +50,7 @@ import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.maven;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.*;
 
-@Ignore
+@Ignore("Broken with Java 11, Pax Exam complains that container doesn't come up although it has been tested OK.")
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerSuite.class)
 public class AssemblyTestIT {

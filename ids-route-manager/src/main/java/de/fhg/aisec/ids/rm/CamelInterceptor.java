@@ -20,8 +20,8 @@
 package de.fhg.aisec.ids.rm;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.NamedNode;
 import org.apache.camel.Processor;
-import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.InterceptStrategy;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -35,9 +35,9 @@ public class CamelInterceptor implements InterceptStrategy {
   @Override
   public Processor wrapProcessorInInterceptors(
       final CamelContext context,
-      final ProcessorDefinition<?> definition,
+      final NamedNode node,
       final Processor target,
       final Processor nextTarget) {
-    return new PolicyEnforcementPoint(definition, target, this.rm);
+    return new PolicyEnforcementPoint(context, node, target, this.rm);
   }
 }

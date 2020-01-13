@@ -19,12 +19,13 @@
  */
 package de.fhg.aisec.ids.camel.ids.client;
 
-import java.io.IOException;
-import java.io.InputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.support.DefaultProducer;
 import org.asynchttpclient.ws.WebSocket;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /** */
 public class WsProducer extends DefaultProducer {
@@ -111,9 +112,9 @@ public class WsProducer extends DefaultProducer {
   private void sendStreamMessage(WebSocket webSocket, InputStream in) throws IOException {
     byte[] readbuf = new byte[streamBufferSize];
     byte[] writebuf = new byte[streamBufferSize];
-    int rn = 0;
+    int rn;
     int wn = 0;
-    try {
+    try (in) {
       while ((rn = in.read(readbuf, 0, readbuf.length)) != -1) {
         if (wn > 0) {
           webSocket.sendContinuationFrame(writebuf, false, 0);
@@ -128,8 +129,6 @@ public class WsProducer extends DefaultProducer {
         System.arraycopy(tmpbuf, 0, writebuf, 0, wn);
       } // ends
       webSocket.sendContinuationFrame(writebuf, true, 0);
-    } finally {
-      in.close();
     }
   }
 

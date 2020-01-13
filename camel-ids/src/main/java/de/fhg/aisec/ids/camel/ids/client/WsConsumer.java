@@ -19,12 +19,12 @@
  */
 package de.fhg.aisec.ids.camel.ids.client;
 
-import java.io.InputStream;
-import java.io.Reader;
-import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.DefaultConsumer;
+import org.apache.camel.support.DefaultConsumer;
+
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * A camel consumer retrieves an message, wraps in a Camel Exchange object and feeds it into Camel.
@@ -41,13 +41,13 @@ public class WsConsumer extends DefaultConsumer {
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     super.start();
     getEndpoint().connect(this);
   }
 
   @Override
-  public void stop() throws Exception {
+  public void stop() {
     getEndpoint().disconnect(this);
     super.stop();
   }
@@ -94,13 +94,11 @@ public class WsConsumer extends DefaultConsumer {
     getAsyncProcessor()
         .process(
             exchange,
-            new AsyncCallback() {
-              public void done(boolean doneSync) {
-                if (exchange.getException() != null) {
-                  getExceptionHandler()
-                      .handleException(
-                          "Error processing exchange", exchange, exchange.getException());
-                }
+            doneSync -> {
+              if (exchange.getException() != null) {
+                getExceptionHandler()
+                    .handleException(
+                        "Error processing exchange", exchange, exchange.getException());
               }
             });
   }

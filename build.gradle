@@ -72,7 +72,7 @@ allprojects {
 
             pax                : '7.2.10',
 
-            camel              : '2.24.1',
+            camel              : '3.0.0',
 
             // Camel ships with cxf, however it is slightly older so we want a newer version
             cxf                : '3.2.7',
@@ -176,6 +176,8 @@ subprojects {
         // Required for successful build with JDK 11
         compileOnly group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
         testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+        testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+        testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
         testImplementation group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0'
 
         testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"

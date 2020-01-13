@@ -23,11 +23,12 @@ import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.RatResult;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
-import java.util.List;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
+
+import java.util.List;
 
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
   private static final String TEST_MESSAGE = "Hello World!";
@@ -75,11 +76,6 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     assertEquals("{\"message\":\"Infomodel is not available\"}", meta);
   }
 
-  /**
-   * Make sure that a route can handle being restarted.
-   *
-   * @throws Exception
-   */
   @Test
   public void testTwoRoutesRestartConsumer() throws Exception {
     MockEndpoint mock = getMockEndpoint("mock:result");
@@ -96,8 +92,9 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
 
     // Now stop and start the client route
     log.info("Restarting client route");
-    context.stopRoute("client");
-    context.startRoute("client");
+    var routeController = context.getRouteController();
+    routeController.stopRoute("client");
+    routeController.startRoute("client");
 
     template.sendBody("direct:input", TEST_MESSAGE_2);
     mock.expectedBodiesReceived(TEST_MESSAGE_2);

@@ -30,6 +30,19 @@ import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.client.IdspClientSocket;
 import de.fhg.aisec.ids.comm.ws.protocol.IDSCPException;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
+import org.apache.camel.Consumer;
+import org.apache.camel.Processor;
+import org.apache.camel.Producer;
+import org.apache.camel.component.ahc.AhcEndpoint;
+import org.apache.camel.spi.UriEndpoint;
+import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.jsse.SSLContextParameters;
+import org.asynchttpclient.*;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketUpgradeHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,18 +53,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.apache.camel.Consumer;
-import org.apache.camel.Processor;
-import org.apache.camel.Producer;
-import org.apache.camel.component.ahc.AhcEndpoint;
-import org.apache.camel.spi.UriEndpoint;
-import org.apache.camel.spi.UriParam;
-import org.apache.camel.util.jsse.SSLContextParameters;
-import org.asynchttpclient.*;
-import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketUpgradeHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is the client-side implementation of a Camel endpoint for the IDS communication protocol

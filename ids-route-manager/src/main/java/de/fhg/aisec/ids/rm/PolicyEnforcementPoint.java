@@ -20,29 +20,30 @@
 package de.fhg.aisec.ids.rm;
 
 import de.fhg.aisec.ids.api.policy.*;
-import java.util.HashSet;
-import java.util.Set;
-import org.apache.camel.AsyncCallback;
-import org.apache.camel.AsyncProcessor;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.model.ProcessorDefinition;
+import org.apache.camel.*;
 import org.apache.camel.model.RouteDefinition;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+
 public class PolicyEnforcementPoint implements AsyncProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);
-  private ProcessorDefinition<?> definition;
+  private CamelContext ctx;
+  private NamedNode node;
   private Processor target;
   private RouteManagerService rm;
 
   PolicyEnforcementPoint(
-      @NonNull ProcessorDefinition<?> definition,
+      @NonNull CamelContext ctx,
+      @NonNull NamedNode node,
       @NonNull Processor target,
       @NonNull RouteManagerService rm) {
-    this.definition = definition;
+    this.ctx = ctx;
+    this.node = node;
     this.target = target;
     this.rm = rm;
   }
@@ -81,9 +82,13 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
 
     String source = (String) exchange.getProperty("lastDestination");
     if (source == null) {
-      source = ((RouteDefinition) definition.getParent()).getInputs().get(0).toString();
+      var routeNode = node.getParent();
+      while (!(routeNode instanceof RouteDefinition)) {
+        routeNode = node.getParent();
+      }
+      source = ((RouteDefinition) routeNode).getInput().toString();
     }
-    String destination = definition.toString();
+    String destination = node.toString();
     exchange.setProperty("lastDestination", destination);
 
     if (LOG.isTraceEnabled()) {
@@ -162,5 +167,15 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
     }
     callback.done(false);
     return false;
+  }
+
+  @Override
+  public CompletableFuture<Exchange> processAsync(Exchange exchange) {
+    try {
+      target.process(exchange);
+      return CompletableFuture.completedFuture(exchange);
+    } catch (Exception x) {
+      return CompletableFuture.failedFuture(x);
+    }
   }
 }
