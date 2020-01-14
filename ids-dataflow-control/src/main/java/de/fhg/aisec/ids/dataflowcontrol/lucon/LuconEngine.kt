@@ -70,18 +70,24 @@ class LuconEngine
 
         // Add some listeners for logging/debugging
         p.addExceptionListener { ex -> LOG.error("Exception in Prolog reasoning: " + ex.msg) }
-        p.addQueryListener { q -> LOG.trace("Prolog query " + q.solveInfo.query.toString()) }
-        p.addLibraryListener(
-                object : LibraryListener {
-                    override fun libraryLoaded(e: LibraryEvent) {
-                        LOG.debug("Prolog library loaded " + e.libraryName)
-                    }
+        if (LOG.isTraceEnabled) {
+            p.addQueryListener { q -> LOG.trace("Prolog query " + q.solveInfo.query.toString()) }
+        }
+        if (LOG.isDebugEnabled) {
+            p.addLibraryListener(
+                    object : LibraryListener {
+                        override fun libraryLoaded(e: LibraryEvent) {
+                            LOG.debug("Prolog library loaded " + e.libraryName)
+                        }
 
-                    override fun libraryUnloaded(e: LibraryEvent) {
-                        LOG.debug("Prolog library unloaded " + e.libraryName)
-                    }
-                })
-        p.addSpyListener { l -> LOG.trace(l.msg + " " + l.source) }
+                        override fun libraryUnloaded(e: LibraryEvent) {
+                            LOG.debug("Prolog library unloaded " + e.libraryName)
+                        }
+                    })
+        }
+        if (LOG.isTraceEnabled) {
+            p.addSpyListener { l -> LOG.trace(l.msg + " " + l.source) }
+        }
         p.addWarningListener { warningEvent ->
             val w = warningEvent.msg
             if (WARNING_FILTER.matcher(w).matches()) {
