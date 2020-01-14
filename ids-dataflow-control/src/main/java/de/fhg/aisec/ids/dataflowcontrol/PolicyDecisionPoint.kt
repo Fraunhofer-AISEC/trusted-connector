@@ -20,7 +20,6 @@
 package de.fhg.aisec.ids.dataflowcontrol
 
 import alice.tuprolog.*
-import alice.tuprolog.exceptions.PrologException
 import com.google.common.cache.CacheBuilder
 import de.fhg.aisec.ids.api.policy.*
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision
@@ -184,19 +183,21 @@ class PolicyDecisionPoint : PDP, PAP {
                         // Get solutions, convert label variables to string and collect in sets
                         val labelsToAdd = result.labelsToAdd
                         val labelsToRemove = result.labelsToRemove
-                        solveInfo.filter { it.isSuccess }.forEach { s ->
-                            val adds = s.getVarValue("Adds").term
-                            if (adds.isList) {
-                                listStream(adds).forEach { labelsToAdd.add(it.toString()) }
-                            } else {
-                                throw RuntimeException("\"Adds\" is not a prolog list!")
-                            }
-                            val removes = s.getVarValue("Removes").term
-                            if (removes.isList) {
-                                listStream(removes).forEach { labelsToRemove.add(it.toString()) }
-                            } else {
-                                throw RuntimeException("\"Removes\" is not a prolog list!")
-                            }
+                        solveInfo.forEach { s ->
+                            try {
+                                val adds = s.getVarValue("Adds").term
+                                if (adds.isList) {
+                                    listStream(adds).forEach { labelsToAdd.add(it.toString()) }
+                                } else {
+                                    throw RuntimeException("\"Adds\" is not a prolog list!")
+                                }
+                                val removes = s.getVarValue("Removes").term
+                                if (removes.isList) {
+                                    listStream(removes).forEach { labelsToRemove.add(it.toString()) }
+                                } else {
+                                    throw RuntimeException("\"Removes\" is not a prolog list!")
+                                }
+                            } catch (ignored: NoSolutionException) {}
                         }
                     }
                     LOG.debug("Transformation: {}", result)
@@ -216,7 +217,8 @@ class PolicyDecisionPoint : PDP, PAP {
     override fun requestDecision(req: DecisionRequest): PolicyDecision {
         val dec = PolicyDecision()
 
-        LOG.debug("Decision requested " + req.from.endpoint + " -> " + req.to.endpoint)
+        LOG.debug(
+                "Decision requested " + req.from.endpoint + " -> " + req.to.endpoint)
 
         try {
             // Query Prolog engine for a policy decision
@@ -269,37 +271,47 @@ class PolicyDecisionPoint : PDP, PAP {
             // Collect obligations
             val obligations = LinkedList<Obligation>()
             applicableSolveInfos.forEach { s ->
-                val rule = s.getVarValue("X")
-                val decision = s.getVarValue("D")
-                if (decision !is Var) {
-                    val decString = decision.term.toString()
-                    if ("drop" == decString) {
-                        dec.reason = rule.term.toString()
-                    } else if ("allow" == decString) {
-                        dec.reason = rule.term.toString()
-                        dec.decision = Decision.ALLOW
-                    }
-                }
-                val action = s.getVarValue("A")
-                val altDecision = s.getVarValue("Alt")
-                if (action !is Var) {
-                    val o = Obligation()
-                    o.action = action.term.toString()
-                    if (altDecision !is Var) {
-                        val altDecString = altDecision.term.toString()
-                        if ("drop" == altDecString) {
-                            o.alternativeDecision = Decision.DENY
-                        } else if ("allow" == altDecString) {
-                            o.alternativeDecision = Decision.ALLOW
+                try {
+                    val rule = s.getVarValue("X")
+                    val decision = s.getVarValue("D")
+                    if (decision !is Var) {
+                        val decString = decision.term.toString()
+                        if ("drop" == decString) {
+                            dec.reason = rule.term.toString()
+                        } else if ("allow" == decString) {
+                            dec.reason = rule.term.toString()
+                            dec.decision = Decision.ALLOW
                         }
                     }
-                    obligations.add(o)
+                    val action = s.getVarValue("A")
+                    val altDecision = s.getVarValue("Alt")
+                    if (action !is Var) {
+                        val o = Obligation()
+                        o.action = action.term.toString()
+                        if (altDecision !is Var) {
+                            val altDecString = altDecision.term.toString()
+                            if ("drop" == altDecString) {
+                                o.alternativeDecision = Decision.DENY
+                            } else if ("allow" == altDecString) {
+                                o.alternativeDecision = Decision.ALLOW
+                            }
+                        }
+                        obligations.add(o)
+                    }
+                } catch (e: NoSolutionException) {
+                    LOG.warn("Unexpected: solution variable not present: " + e.message)
+                    dec.reason = "Solution variable not present"
                 }
             }
             dec.obligations = obligations
-        } catch (e: PrologException) {
+        } catch (e: NoMoreSolutionException) {
             LOG.error(e.message, e)
-            dec.decision = Decision.DENY
+            dec.reason = "Error: " + e.message
+        } catch (e: MalformedGoalException) {
+            LOG.error(e.message, e)
+            dec.reason = "Error: " + e.message
+        } catch (e: NoSolutionException) {
+            LOG.error(e.message, e)
             dec.reason = "Error: " + e.message
         }
 
@@ -315,14 +327,18 @@ class PolicyDecisionPoint : PDP, PAP {
         if (!LOG.isTraceEnabled) {
             return
         }
-        for (i in solveInfo) {
-            if (i.isSuccess) {
-                val vars = i.bindingVars
-                LOG.trace(vars.joinToString(", ") { v ->
-                    String.format("%s: %s (%s)", v.name, v.term,
-                            if (v.isBound) "bound" else "unbound")
-                })
+        try {
+            for (i in solveInfo) {
+                if (i.isSuccess) {
+                    val vars = i.bindingVars
+                    LOG.trace(vars.joinToString(", ") { v ->
+                        String.format("%s: %s (%s)", v.name, v.term,
+                                if (v.isBound) "bound" else "unbound")
+                    })
+                }
             }
+        } catch (nse: NoSolutionException) {
+            LOG.trace("No solution found", nse)
         }
 
     }

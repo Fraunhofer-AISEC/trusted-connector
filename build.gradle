@@ -87,7 +87,7 @@ allprojects {
             checkerQual        : '2.5.2',
             guava              : '27.0-jre',
             kotlin             : '1.3.21',
-            tuprolog           : '4.1.1',
+            tuprolog           : '3.3.0',
             log4j              : '2.6.2',
             junit4             : '4.12',
             mapdb              : '3.0.7',

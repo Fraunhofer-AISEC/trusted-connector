@@ -12,7 +12,7 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
-    providedByBundle group: 'it.unibo.alice.tuprolog', name: '2p-core', version: libraryVersions.tuprolog
+    providedByBundle group: 'it.unibo.alice.tuprolog', name: 'tuprolog', version: libraryVersions.tuprolog
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
