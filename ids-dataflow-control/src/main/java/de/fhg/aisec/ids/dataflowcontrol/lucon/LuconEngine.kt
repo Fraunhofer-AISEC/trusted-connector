@@ -21,7 +21,11 @@ package de.fhg.aisec.ids.dataflowcontrol.lucon
 
 import alice.tuprolog.*
 import alice.tuprolog.event.LibraryEvent
-import alice.tuprolog.event.LibraryListener
+import alice.tuprolog.exceptions.InvalidLibraryException
+import alice.tuprolog.exceptions.InvalidTheoryException
+import alice.tuprolog.exceptions.MalformedGoalException
+import alice.tuprolog.exceptions.NoSolutionException
+import alice.tuprolog.interfaces.event.LibraryListener
 import de.fhg.aisec.ids.api.router.CounterExample
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import org.slf4j.LoggerFactory
@@ -55,15 +59,9 @@ class LuconEngine
             return t?.toString() ?: ""
         }
 
-    val theoryAsJSON: String
-        get() {
-            val t = p.theory
-            return if (t == null) "" else t.toJSON()
-        }
-
     init {
         try {
-            p.theory = Theory(defaultPolicy)
+            p.theory = Theory.parseWithStandardOperators(defaultPolicy)
         } catch (e: Exception) {
             LOG.error("Error loading default policy", e)
         }
@@ -114,10 +112,6 @@ class LuconEngine
 
     }
 
-    fun setSpy(spy: Boolean) {
-        p.isSpy = spy
-    }
-
     /**
      * Loads a policy in form of a prolog theory.
      *
@@ -128,7 +122,7 @@ class LuconEngine
      */
     @Throws(InvalidTheoryException::class)
     fun loadPolicy(theory: String) {
-        val t = Theory(theory)
+        val t = Theory.parseWithStandardOperators(theory)
         LOG.debug("Loading theory:\n$t")
         p.theory = t
     }
@@ -147,7 +141,6 @@ class LuconEngine
             } catch (e: NoSolutionException) {
                 e.printStackTrace()
             }
-
         }
         return result
     }
@@ -189,7 +182,7 @@ class LuconEngine
         try {
             // Get policy as prolog, add Camel route and init new Prolog engine with combined theory
             val t = p.theory
-            t.append(Theory(routePl))
+            t.append(Theory.parseWithStandardOperators(routePl))
             val newP = Prolog()
             newP.loadLibrary(LuconLibrary())
             newP.theory = t
