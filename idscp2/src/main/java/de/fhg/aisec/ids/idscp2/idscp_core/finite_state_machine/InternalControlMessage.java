@@ -1,4 +1,15 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 public enum InternalControlMessage {
+    START_IDSCP_HANDSHAKE,
+    DAT_TIMER_EXPIRED,
+    RAT_VERIFIER_SUCCESSFUL,
+    RAT_VERIFIER_FAILED,
+    RAT_PROVER_SUCCESSFUL,
+    RAT_PROVER_FAILED,
+    DAT_VERIFICATION_SUCCESSFUL,
+    DAT_VERIFICATION_FAILED,
+    ERROR,
+    IDSCP_STOP,
+    SEND_IDSCP_MESSAGE
 }
