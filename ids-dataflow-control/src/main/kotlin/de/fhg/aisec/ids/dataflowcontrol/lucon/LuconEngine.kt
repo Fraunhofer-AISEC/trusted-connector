@@ -19,7 +19,9 @@
  */
 package de.fhg.aisec.ids.dataflowcontrol.lucon
 
-import alice.tuprolog.*
+import alice.tuprolog.Prolog
+import alice.tuprolog.SolveInfo
+import alice.tuprolog.Theory
 import alice.tuprolog.event.LibraryEvent
 import alice.tuprolog.event.LibraryListener
 import de.fhg.aisec.ids.api.router.CounterExample

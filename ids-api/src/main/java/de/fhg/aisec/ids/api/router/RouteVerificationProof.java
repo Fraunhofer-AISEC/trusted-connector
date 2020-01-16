@@ -86,9 +86,8 @@ public class RouteVerificationProof {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("Proof for ").append(this.query).append("\n");
-    sb.append("returns ").append(this.isValid).append("\n");
-    sb.append("Example flows violating policy:\n");
+    sb.append("Proof for ").append(this.query).append(" is ").append(this.isValid ? "VALID" : "INVALID").append("\n")
+        .append("Example flows violating policy:\n");
     for (CounterExample ce : this.counterExamples) {
       sb.append("|-- ").append(ce.toString()).append("\n\n");
     }

@@ -17,64 +17,48 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.dataflowcontrol.lucon;
+package de.fhg.aisec.ids.dataflowcontrol.lucon
 
-import alice.tuprolog.Prolog;
-import alice.tuprolog.Struct;
-import alice.tuprolog.Term;
-import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import alice.tuprolog.Struct
+import alice.tuprolog.Term
+import java.util.*
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
-public final class TuPrologHelper {
+object TuPrologHelper {
 
-  private static final ThreadLocal<Prolog> threadProlog = ThreadLocal.withInitial(Prolog::new);
-
-  public static Prolog getVm() {
-    return threadProlog.get();
-  }
-
-  @NonNull
-  public static String escape(@Nullable String s) {
-    if (s == null) {
-      return "";
+    fun escape(s: String?): String {
+        if (s == null) {
+            return ""
+        }
+        val sb = StringBuilder()
+        sb.append('\'')
+        val charLength = s.length
+        for (i in 0 until charLength) {
+            val c = s[i]
+            sb.append(if (c == '\'') "''" else c)
+        }
+        sb.append('\'')
+        return sb.toString()
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append('\'');
-    int charLength = s.length();
-    for (int i = 0; i < charLength; i++) {
-      char c = s.charAt(i);
-      sb.append(c == '\'' ? "''" : c);
-    }
-    sb.append('\'');
-    return sb.toString();
-  }
 
-  @NonNull
-  public static Stream<? extends Term> listStream(@Nullable Term list) {
-    if (list == null) {
-      return Stream.empty();
+    fun listStream(list: Term?): Stream<out Term?> {
+        if (list == null) {
+            return Stream.empty()
+        }
+        require(list.isList) { "Not a tuProlog list" }
+        val listIterator = (list as Struct).listIterator()
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(listIterator, Spliterator.ORDERED), false)
     }
-    if (!list.isList()) {
-      throw new IllegalArgumentException("Not a tuProlog list");
-    }
-    Iterator<? extends Term> listIterator = ((Struct) list).listIterator();
-    return StreamSupport.stream(
-        Spliterators.spliteratorUnknownSize(listIterator, Spliterator.ORDERED), false);
-  }
 
-  @NonNull
-  static String unquote(@NonNull String s) {
-    if (s.length() > 2 && s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\'') {
-      return s.substring(1, s.length() - 1);
-    } else if (s.length() == 2 && "''".equals(s)) {
-      return "";
-    } else {
-      return s;
+    fun unquote(s: String): String {
+        return if (s.length > 2 && s[0] == '\'' && s[s.length - 1] == '\'') {
+            s.substring(1, s.length - 1)
+        } else if (s.length == 2 && "''" == s) {
+            ""
+        } else {
+            s
+        }
     }
-  }
 }
