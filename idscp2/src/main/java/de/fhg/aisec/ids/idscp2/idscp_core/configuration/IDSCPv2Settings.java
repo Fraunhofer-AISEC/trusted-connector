@@ -6,7 +6,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class IDSCPv2Settings {
-    public static final int DEFAULT_SERVER_PORT = 8081;
+    public static final int DEFAULT_SERVER_PORT = 8080;
 
     private int serverPort = DEFAULT_SERVER_PORT;
     private String host = "localhost";

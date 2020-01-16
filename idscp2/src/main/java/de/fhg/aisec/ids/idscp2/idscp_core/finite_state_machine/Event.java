@@ -2,6 +2,12 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.messages.IDSCPv2.*;
 
+/**
+ * An Event class for the Finite State Machine. Triggers a transition and holds either an idscpMessage or an
+ * InternalControlMessage.
+ *
+ * @author Leon Beckmann leon.beckmann@aisec.fraunhofer.de
+ */
 public class Event {
     public enum EventType {
         IDSCP_MESSAGE,
@@ -13,15 +19,15 @@ public class Event {
     private IdscpMessage idscpMessage;
     private InternalControlMessage controlMessage;
 
-    public Event(Object key, InternalControlMessage controlMessage){
-        this.key = key;
+    public Event(InternalControlMessage controlMessage){
+        this.key = controlMessage.getValue();
         this.type = EventType.INTERNAL_CONTROL_MESSAGE;
         this.controlMessage = controlMessage;
         this.idscpMessage = null;
     }
 
-    public Event (Object key, IdscpMessage idscpMessage){
-        this.key = key;
+    public Event (IdscpMessage idscpMessage){
+        this.key = idscpMessage.getMessageCase().getNumber();
         this.type = EventType.IDSCP_MESSAGE;
         this.idscpMessage = idscpMessage;
         this.controlMessage = null;

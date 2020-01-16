@@ -16,6 +16,6 @@ public class DefaultDapsDriver implements DapsDriver {
 
     @Override
     public boolean verifyToken(byte[] dat) {
-        return false;
+        return true;
     }
 }

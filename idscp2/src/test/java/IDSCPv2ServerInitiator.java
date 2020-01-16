@@ -1,5 +1,11 @@
 import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2ProverImpl;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2VerifierImpl;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.error.IDSCPv2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.IDSCPv2Connection;
@@ -16,8 +22,12 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
 
     public void init(IDSCPv2Settings serverSettings)  {
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
+        DapsDriver dapsDriver = new DefaultDapsDriver();
+        RatVerifierDriver ratVerifier = new TPM2VerifierImpl();
+        RatProverDriver ratProver = new TPM2ProverImpl();
+
         IDSCPv2Configuration idscpServerConfig = new IDSCPv2Configuration(this,
-                null,null,null,secureChannelDriver);
+                dapsDriver, ratVerifier, ratProver, secureChannelDriver);
         IDSCPv2Server idscPv2Server;
         try {
             idscPv2Server = idscpServerConfig.listen(serverSettings);
@@ -27,7 +37,7 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
         }
         //secureServer.safeStop();
         try {
-            Thread.sleep(40000); //run server for 5 minutes
+            Thread.sleep(120000); //run server for 2 minutes
         } catch (Exception e){
             return;
         }

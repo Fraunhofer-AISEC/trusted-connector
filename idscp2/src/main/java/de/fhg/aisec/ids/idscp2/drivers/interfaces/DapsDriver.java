@@ -6,7 +6,6 @@ package de.fhg.aisec.ids.idscp2.drivers.interfaces;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public interface DapsDriver {
-
     byte[] getToken();
     boolean verifyToken(byte[] dat);
 }
