@@ -30,13 +30,18 @@ public class TPM2Prover extends Thread implements RatProverInstance{
     }
 
     @Override
+    public void restart() {
+
+    }
+
+    @Override
     public void run() {
         while (running){
             synchronized (resultAvailableLock) {
                 try {
                     resultAvailableLock.wait();
                     if (successful){
-                        fsmListener.onControlMessage(InternalControlMessage.RAT_PROVER_SUCCESSFUL);
+                        fsmListener.onControlMessage(InternalControlMessage.RAT_PROVER_OK);
                     } else {
                         fsmListener.onControlMessage(InternalControlMessage.RAT_PROVER_FAILED);
                     }

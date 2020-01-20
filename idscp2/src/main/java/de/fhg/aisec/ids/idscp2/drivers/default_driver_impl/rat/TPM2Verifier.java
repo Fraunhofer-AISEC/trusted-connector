@@ -30,13 +30,18 @@ public class TPM2Verifier extends Thread implements RatVerifierInstance {
     }
 
     @Override
+    public void restart() {
+
+    }
+
+    @Override
     public void run(){
         while (running){
             synchronized (resultAvailableLock) {
                 try {
                     resultAvailableLock.wait();
                     if (successful){
-                        fsmListener.onControlMessage(InternalControlMessage.RAT_VERIFIER_SUCCESSFUL);
+                        fsmListener.onControlMessage(InternalControlMessage.RAT_VERIFIER_OK);
                     } else {
                         fsmListener.onControlMessage(InternalControlMessage.RAT_VERIFIER_FAILED);
                     }

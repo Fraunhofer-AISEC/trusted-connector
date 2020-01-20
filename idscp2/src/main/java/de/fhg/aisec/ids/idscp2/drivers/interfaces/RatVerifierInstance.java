@@ -5,4 +5,5 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 public interface RatVerifierInstance {
     void delegate(IDSCPv2.IdscpMessage message);
     void terminate();
+    void restart();
 }
