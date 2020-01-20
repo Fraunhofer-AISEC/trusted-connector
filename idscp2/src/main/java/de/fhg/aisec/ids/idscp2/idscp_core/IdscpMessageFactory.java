@@ -20,33 +20,23 @@ public class IdscpMessageFactory {
                 .build();
 
         return IdscpMessage.newBuilder()
-                .setType(IdscpMessage.Type.IDSCP_HELLO)
                 .setIdscpHello(idscpHello)
                 .build();
     }
 
-    public static IdscpMessage getIdscpCloseMessage(){
-        return IdscpMessage.newBuilder()
-                . setType(IdscpMessage.Type.IDSCP_CLOSE)
-                .setIdscpClose(IdscpClose.newBuilder().build())
-                .build();
-    }
-
-    public static IdscpMessage getIdscpErrorMessage(String msg, String code){
-        IdscpError idscpError = IdscpError.newBuilder()
-                .setErrorMsg(msg)
-                .setErrorCode(code)
+    public static IdscpMessage getIdscpCloseMessage(String closeMsg, String closeCode){
+        IdscpClose idscpClose = IdscpClose.newBuilder()
+                .setCauseMsg(closeMsg)
+                .setCauseCode(closeCode)
                 .build();
 
         return IdscpMessage.newBuilder()
-                . setType(IdscpMessage.Type.IDSCP_ERROR)
-                .setIdscpError(idscpError)
+                .setIdscpClose(idscpClose)
                 .build();
     }
 
     public static IdscpMessage getIdscpDatExpiredMessage(){
         return IdscpMessage.newBuilder()
-                . setType(IdscpMessage.Type.IDSCP_DAT_EXPIRED)
                 .setIdscpDatExpired(IdscpDatExpired.newBuilder().build())
                 .build();
     }
@@ -57,7 +47,6 @@ public class IdscpMessageFactory {
                 .build();
 
         return IdscpMessage.newBuilder()
-                . setType(IdscpMessage.Type.IDSCP_DAT)
                 .setIdscpDat(idscpDat)
                 .build();
     }
@@ -68,7 +57,6 @@ public class IdscpMessageFactory {
                 .build();
 
         return IdscpMessage.newBuilder()
-                . setType(IdscpMessage.Type.IDSCP_RE_RAT)
                 .setIdscpReRat(idscpReRat)
                 .build();
     }
@@ -79,7 +67,6 @@ public class IdscpMessageFactory {
                 .build();
 
         return IdscpMessage.newBuilder()
-                . setType(IdscpMessage.Type.IDSCP_DATA)
                 .setIdscpData(idscpData)
                 .build();
     }

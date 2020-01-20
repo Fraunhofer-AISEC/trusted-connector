@@ -4,6 +4,7 @@ public enum InternalControlMessage {
     START_IDSCP_HANDSHAKE("ICM_START"),
     IDSCP_STOP("ICM_STOP"),
     DAT_TIMER_EXPIRED("ICM_DAT_TIMER_EXPIRED"),
+    RAT_TIMER_EXPIRED("ICM_RAT_TIMER_EXPIRED"),
     REPEAT_RAT("ICM_REPEAT_RAT"),
     RAT_VERIFIER_SUCCESSFUL("ICM_RAT_V_SUC"),
     RAT_VERIFIER_FAILED("ICM_RAT_V_FAILED"),
@@ -12,8 +13,7 @@ public enum InternalControlMessage {
     DAT_VERIFICATION_SUCCESSFUL("IFM_DAT_SUC"),
     DAT_VERIFICATION_FAILED("ICM_DAT_FAILED"),
     ERROR("ICM_ERROR"),
-    TIMEOUT("ICM_TIMEOUT"),
-    SEND_IDSCP_MESSAGE("ICM_SEND");
+    TIMEOUT("ICM_TIMEOUT");
 
     //set unique values that are different from IdscpMessage.MessageCase ot identify event.key
     private final String id;

@@ -9,7 +9,6 @@ import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.messages.IDSCPv2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.CountDownLatch;
 
 public class FSM implements FsmListener{
@@ -19,15 +18,14 @@ public class FSM implements FsmListener{
     private final State STATE_CLOSED = new State();
     private final State STATE_WAIT_FOR_HELLO = new State();
     private final State STATE_WAIT_FOR_RAT= new State();
-    private final State STATE_WAIT_FOR_RAT_CLIENT = new State();
-    private final State STATE_WAIT_FOR_RAT_SERVER = new State();
-    private final State STATE_WAIT_FOR_DAT_AND_RAT_CLIENT = new State();
-    private final State STATE_WAIT_FOR_DAT_AND_RAT_SERVER = new State();
+    private final State STATE_WAIT_FOR_RAT_VERIFIER = new State();
+    private final State STATE_WAIT_FOR_RAT_PROVER = new State();
+    private final State STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER = new State();
+    private final State STATE_WAIT_FOR_DAT_AND_RAT = new State();
     private final State STATE_ESTABLISHED = new State();
     /*  ----------------   end of states   --------------- */
 
-    //toDo error codes
-
+    //toDo error codes in protobuf
     private State currentState;
     private final State initialState = STATE_CLOSED;
     private SecureChannel secureChannel;
@@ -36,7 +34,6 @@ public class FSM implements FsmListener{
     private DapsDriver dapsDriver;
     private IdscpMsgListener listener = null;
     private final CountDownLatch listenerLatch = new CountDownLatch(1);
-    private IdscpMessage cachedIdscpHello = null;
     private final Object idscpHandshakeLock = new Object();
     private final Object fsmIsBusy = new Object();
     //toDo cipher suites
@@ -45,6 +42,9 @@ public class FSM implements FsmListener{
     private byte[] remoteDat = null;
     private RatProverInstance ratProver = null;
     private RatVerifierInstance ratVerifier = null;
+    private Timer datTimer;
+    private Timer ratTimer;
+    private Timer handshakeTimer;
 
     public FSM(SecureChannel secureChannel, RatProverDriver ratProver, RatVerifierDriver ratVerifier,
                DapsDriver dapsDriver){
@@ -55,14 +55,40 @@ public class FSM implements FsmListener{
         this.dapsDriver = dapsDriver;
         secureChannel.setFsm(this);
 
+        /* ------------- Timeout Handler Routines ------------*/
+        Runnable handshakeTimeoutHandler = new Runnable() {
+            @Override
+            public void run() {
+                onControlMessage(InternalControlMessage.TIMEOUT);
+            }
+        };
+
+        Runnable datTimeoutHandler = new Runnable() {
+            @Override
+            public void run() {
+                onControlMessage(InternalControlMessage.DAT_TIMER_EXPIRED);
+            }
+        };
+
+        Runnable ratTimeoutHandler = new Runnable() {
+            @Override
+            public void run() {
+                onControlMessage(InternalControlMessage.RAT_TIMER_EXPIRED);
+            }
+        };
+        //toDo set correct delays
+        this.handshakeTimer = new Timer(handshakeTimeoutHandler);
+        this.datTimer = new Timer(datTimeoutHandler);
+        this.ratTimer = new Timer(ratTimeoutHandler);
+        /* ------------- end timeout routines ------------- */
+
+
         /*  -----------   Protocol Transitions   ---------- */
 
         /*---------------------------------------------------
         * STATE_CLOSED - Transition Description
         * ---------------------------------------------------
         * INTERNAL_CONTROL_MESSAGE.START_IDSCP_HANDSHAKE ---> send IDSCP_HELLO ---> STATE_WAIT_FOR_HELLO
-        * INTERNAL_CONTROL_MESSAGE.IDSCP_STOP ---> send IDSCP_CLOSE ---> STATE_CLOSED
-        * IDSCP_MESSAGE.IDSCP_HELLO ---> cache IDSCP_HELLO ---> STATE_CLOSED
         * ALL_OTHER_MESSAGES ---> STATE_CLOSED
         * --------------------------------------------------- */
         STATE_CLOSED.addTransition(InternalControlMessage.START_IDSCP_HANDSHAKE.getValue(), new Transition(
@@ -73,29 +99,11 @@ public class FSM implements FsmListener{
                     IdscpMessage idscpHello = IdscpMessageFactory.
                             getIdscpHelloMessage(dat, this.ratSupportedSuite, this.ratExpectedSuite);
                     this.send(idscpHello);
-                    //toDo set handshake timeout
+                    fsmIsBusy.notify(); //enables fsm.onMessage()
+                    LOG.debug("Set handshake timeout to 3 seconds");
+                    handshakeTimer.resetTimeout(3);
                     LOG.debug("Switch to state STATE_WAIT_FOR_HELLO");
                     return STATE_WAIT_FOR_HELLO;
-                }
-        ));
-
-        STATE_CLOSED.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
-                event -> {
-                    LOG.debug("Send IDSCP_CLOSE");
-                    IdscpMessage idscpClose = IdscpMessageFactory.getIdscpCloseMessage();
-                    send(idscpClose);
-                    LOG.debug("Stay in state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
-                    return STATE_CLOSED;
-                }
-        ));
-
-        STATE_CLOSED.addTransition(IdscpMessage.IDSCPHELLO_FIELD_NUMBER, new Transition(
-                event -> {
-                    LOG.debug("Cache IDSCP_HELLO");
-                    this.cachedIdscpHello = event.getIdscpMessage();
-                    LOG.debug("Stay in state STATE_CLOSED");
-                    return STATE_CLOSED;
                 }
         ));
 
@@ -123,7 +131,7 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_HELLO.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
                     LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    send(IdscpMessageFactory.getIdscpCloseMessage());
+                    send(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", ""));
                     notifyHandshakeCompleteLock();
                     LOG.debug("Switch to state STATE_CLOSED");
                     return STATE_CLOSED;
@@ -133,7 +141,7 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_HELLO.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSC_CLOSE");
-                    send(IdscpMessageFactory.getIdscpCloseMessage());
+                    send(IdscpMessageFactory.getIdscpCloseMessage("User close", ""));
                     notifyHandshakeCompleteLock();
                     LOG.debug("Switch to state STATE_CLOSED");
                     return STATE_CLOSED;
@@ -151,9 +159,8 @@ public class FSM implements FsmListener{
 
         STATE_WAIT_FOR_HELLO.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
-                    LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_ERROR and IDSCP_CLOSE");
-                    send(IdscpMessageFactory.getIdscpErrorMessage("Timeout", ""));
-                    send(IdscpMessageFactory.getIdscpCloseMessage());
+                    LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_CLOSE");
+                    send(IdscpMessageFactory.getIdscpCloseMessage("Handshake Timeout", ""));
                     notifyHandshakeCompleteLock();
                     LOG.debug("Switch to state STATE_CLOSED");
                     return STATE_CLOSED;
@@ -167,9 +174,8 @@ public class FSM implements FsmListener{
                     LOG.debug("Calculate Rat mechanisms");
                     if (!calculateRatMechanisms(null, null) //toDo rat ciphers
                     ){
-                        LOG.debug("Cannot find a match for RAT cipher. Send IDSCP_ERROR and IDSCP_CLOSE");
-                        send(IdscpMessageFactory.getIdscpErrorMessage("No match for RAT mechanism", ""));
-                        send(IdscpMessageFactory.getIdscpCloseMessage());
+                        LOG.debug("Cannot find a match for RAT cipher. Send IDSCP_CLOSE");
+                        send(IdscpMessageFactory.getIdscpCloseMessage("No match for RAT mechanism", ""));
                         notifyHandshakeCompleteLock();
                         LOG.debug("Switch to state STATE_CLOSED");
                         return STATE_CLOSED;
@@ -178,9 +184,8 @@ public class FSM implements FsmListener{
                     //check if Dat is available and verify dat
                     if (!idscpHello.hasDynamicAttributeToken() || !this.dapsDriver
                             .verifyToken(idscpHello.getDynamicAttributeToken().getToken().toByteArray())){
-                        LOG.debug("No valid remote DAT is available. Send IDSCP_ERROR and IDSCP_CLOSE");
-                        send(IdscpMessageFactory.getIdscpErrorMessage("No valid DAT", ""));
-                        send(IdscpMessageFactory.getIdscpCloseMessage());
+                        LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
+                        send(IdscpMessageFactory.getIdscpCloseMessage("No valid DAT", ""));
                         notifyHandshakeCompleteLock();
                         LOG.debug("Switch to state STATE_CLOSED");
                         return STATE_CLOSED;
@@ -218,6 +223,19 @@ public class FSM implements FsmListener{
          * IDSCP_MESSAGE.CLOSE ---> STATE_CLOSED
          * IDSCP_MESSAGE.DAT_EXPIRED ---> send DAT, start RAT_PROVER ---> STATE_WAIT_FOR_RAT_SERVER
          * --------------------------------------------------- */
+        /*STATE_WAIT_FOR_RAT.addTransition(, new Transition(
+                event ->  {
+
+                }
+        ));*/
+
+        STATE_WAIT_FOR_RAT.setNoTransitionHandler(
+                event -> {
+                    LOG.debug("No transition available for given event " + event.toString());
+                    LOG.debug("Stay in state STATE_WAIT_FOR_RAT");
+                    return STATE_WAIT_FOR_RAT;
+                }
+        );
 
         /*---------------------------------------------------
          * STATE_ESTABLISHED - Transition Description
@@ -234,16 +252,15 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_ESTABLISHED.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
-                    LOG.debug("Error occurred, send IDSCP_ERROR and IDSCP_CLOSE and close idscp connection");
-                    send(IdscpMessageFactory.getIdscpErrorMessage("Error occurred", ""));
-                    send(IdscpMessageFactory.getIdscpCloseMessage());
+                    LOG.debug("Error occurred, send IDSCP_CLOSE and close idscp connection");
+                    send(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", ""));
                     return STATE_CLOSED;
                 }
         ));
 
         STATE_ESTABLISHED.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    send(IdscpMessageFactory.getIdscpCloseMessage());
+                    send(IdscpMessageFactory.getIdscpCloseMessage("User close", ""));
                     LOG.debug("Close idscp connection and send IDSCP_CLOSE");
                     return STATE_CLOSED;
                 }
@@ -255,7 +272,7 @@ public class FSM implements FsmListener{
                     send(IdscpMessageFactory.getIdscpDatExpiredMessage());
                     //toDo set dat timeout
                     LOG.debug("Switch to state STATE_WAIT_FOR_DAT_AND_RAT_CLIENT");
-                    return STATE_WAIT_FOR_DAT_AND_RAT_CLIENT;
+                    return STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER;
                 }
         ));
 
@@ -264,7 +281,7 @@ public class FSM implements FsmListener{
                     LOG.debug("RAT timer expired. Send IDSCP_RE_RAT");
                     send(IdscpMessageFactory.getIdscpReRatMessage("RAT expired"));
                     LOG.debug("Switch to state STATE_WAIT_FOR_RAT_CLIENT");
-                    return STATE_WAIT_FOR_RAT_CLIENT;
+                    return STATE_WAIT_FOR_RAT_VERIFIER;
                 }
         ));
 
@@ -274,7 +291,7 @@ public class FSM implements FsmListener{
                     LOG.debug("Start RAT_PROVER");
                     //toDo trigger RAT_PROVER
                     LOG.debug("Switch to state STATE_WAIT_FOR_RAT_SERVER");
-                    return STATE_WAIT_FOR_RAT_SERVER;
+                    return STATE_WAIT_FOR_RAT_PROVER;
                 }
         ));
 
@@ -284,7 +301,7 @@ public class FSM implements FsmListener{
                     send(IdscpMessageFactory.getIdscpDatMessage(this.dapsDriver.getToken()));
                     //toDo trigger RAT Prover
                     LOG.debug("Switch to state STATE_WAIT_FOR_RAT_SERVER");
-                    return STATE_WAIT_FOR_RAT_SERVER;
+                    return STATE_WAIT_FOR_RAT_PROVER;
                 }
         ));
 
@@ -333,15 +350,25 @@ public class FSM implements FsmListener{
     @Override
     public void onMessage(byte[] data){
         //parse message and create new IDSCP Message Event, then pass it to current state and update new state
+        IdscpMessage message;
         try {
-            IdscpMessage message = IdscpMessage.parseFrom(data);
-            Event e = new Event(message);
-            synchronized (fsmIsBusy){
-                currentState = currentState.feedEvent(e);
-            }
+            message = IdscpMessage.parseFrom(data);
         } catch (InvalidProtocolBufferException e) {
-            LOG.warn("Cannot parse raw data into IdscpMessage {}. Send error message", data);
-            //toDo sendError("Cannot parse raw data into IdscpMessage", "");
+            LOG.warn("Cannot parse raw data into IdscpMessage {}", data);
+            return;
+        }
+
+        Event event = new Event(message);
+        //must wait when fsm is in state STATE_CLOSED --> wait() will be notified when fsm is leaving STATE_CLOSED
+        synchronized (fsmIsBusy){
+            while (currentState == STATE_CLOSED){
+                try {
+                    fsmIsBusy.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            currentState = currentState.feedEvent(event);
         }
     }
 
@@ -366,14 +393,6 @@ public class FSM implements FsmListener{
             //trigger handshake init
             onControlMessage(InternalControlMessage.START_IDSCP_HANDSHAKE);
 
-            //check if a idscpHello was already received and trigger next transition
-            synchronized (fsmIsBusy){
-                if (cachedIdscpHello != null){
-                    Event e = new Event(cachedIdscpHello);
-                    currentState = currentState.feedEvent(e);
-                }
-            }
-
             try {
                 //wait until handshake was successful or failed
                 synchronized (idscpHandshakeLock) {
@@ -392,7 +411,14 @@ public class FSM implements FsmListener{
     }
 
     public void send(IdscpMessage msg){
-        secureChannel.send(msg.toByteArray());
+        //send messages from user only when idscp connection is established
+        synchronized(fsmIsBusy){
+            if(isConnected()){
+                secureChannel.send(msg.toByteArray());
+            } else {
+                LOG.error("Cannot send IDSCP_DATA because protocol is not established");
+            }
+        }
     }
 
     public boolean isConnected(){

@@ -36,7 +36,7 @@ public class IDSCPv2Connection implements IdscpMsgListener {
     }
 
     public void send(IdscpMessage msg) {
-        LOG.debug("Send idscp message of type {}", msg.getType());
+        LOG.debug("Send idscp message");
         fsm.send(msg);
     }
 

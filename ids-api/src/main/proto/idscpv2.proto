@@ -2,34 +2,18 @@ syntax = "proto3";
 option java_package = "de.fhg.aisec.ids.messages";
 option java_outer_classname = "IDSCPv2";
 
-//IDSCP message frame, contains a type identifier of the following message and the message
+//IDSCP message frame
 message IdscpMessage {
-    enum Type {
-        IDSCP_HELLO = 0;            //open a connection by sending an IDSCP_HELLO
-        IDSCP_CLOSE = 1;            //send an IDSCP_CLOSE, that triggers connection close
-        IDSCP_ERROR = 2;            //send an error message
-        IDSCP_DAT_EXPIRED = 3;      //request a ne dynamicAttributeToken
-        IDSCP_DAT = 4;              //send dynamicAttributeToken
-        IDSCP_RE_RAT = 5;           //request a new remote Attestation
-        IDSCP_RAT_PROVER = 6;       //send
-        IDSCP_RAT_VERIFIER = 7;     //send
-        IDSCP_DATA = 8;             //send IDSCP Payload
-    }
-
-    // Identifies which field is filled in.
-    Type type = 1;
-
     // One of the following will be filled in.
     oneof message {
-        IdscpHello idscpHello = 2;
-        IdscpClose idscpClose = 3;
-        IdscpError idscpError = 4;
-        IdscpDatExpired idscpDatExpired = 5;
-        IdscpDat idscpDat = 6;
-        IdscpReRat idscpReRat = 7;
-        IdscpRatProver idscpRatProver = 8;
-        IdscpRatVerifier idscpRatVerifier = 9;
-        IdscpData idscpData = 10;
+        IdscpHello idscpHello = 1;
+        IdscpClose idscpClose = 2;
+        IdscpDatExpired idscpDatExpired = 3;
+        IdscpDat idscpDat = 4;
+        IdscpReRat idscpReRat = 5;
+        IdscpRatProver idscpRatProver = 6;
+        IdscpRatVerifier idscpRatVerifier = 7;
+        IdscpData idscpData = 8;
     }
 }
 
@@ -42,12 +26,14 @@ message IdscpHello {
 }
 
 message IdscpClose {
+    string cause_msg = 1;
+    string cause_code = 2;
 }
 
-message IdscpError {
-    string error_code = 1;
-    string error_msg = 2;
-}
+//message IdscpError {
+//    string error_code = 1;
+//    string error_msg = 2;
+//
 
 message IdscpDatExpired {           //request new dynamicAttributeToken
 }
