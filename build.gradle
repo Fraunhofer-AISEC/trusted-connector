@@ -188,6 +188,12 @@ subprojects {
         testImplementation "org.slf4j:slf4j-simple:1.7.12"
     }
 
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
 //        options.compilerArgs << '-Xlint:unchecked'
