@@ -11,7 +11,7 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     
-    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.15.1'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.30.1'
     implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: libraryVersions.jetty
     implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: libraryVersions.jetty
 
