@@ -40,13 +40,13 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     assertTrue(conm.listIncomingConnections().isEmpty());
 
     MockEndpoint mock = getMockEndpoint("mock:result");
+    mock.expectedBodiesReceived(TEST_MESSAGE);
 
     // Send a test message into begin of client route
     template.sendBody("direct:input", TEST_MESSAGE);
 
     // We expect that mock endpoint is happy and has received a message
     mock.assertIsSatisfied();
-    mock.expectedBodiesReceived(TEST_MESSAGE);
 
     // We expect one incoming connection to be listed by ConnectionManager
     List<IDSCPIncomingConnection> incomings = conm.listIncomingConnections();
@@ -79,16 +79,11 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
   @Test
   public void testTwoRoutesRestartConsumer() throws Exception {
     MockEndpoint mock = getMockEndpoint("mock:result");
+
     resetMocks();
-
-    // Send a message
-    template.sendBody("direct:input", TEST_MESSAGE);
-
     mock.expectedBodiesReceived(TEST_MESSAGE);
+    template.sendBody("direct:input", TEST_MESSAGE);
     mock.assertIsSatisfied();
-
-    // Clean the mocks
-    resetMocks();
 
     // Now stop and start the client route
     log.info("Restarting client route");
@@ -96,8 +91,9 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     routeController.stopRoute("client");
     routeController.startRoute("client");
 
-    template.sendBody("direct:input", TEST_MESSAGE_2);
+    resetMocks();
     mock.expectedBodiesReceived(TEST_MESSAGE_2);
+    template.sendBody("direct:input", TEST_MESSAGE_2);
     mock.assertIsSatisfied();
   }
 
