@@ -40,6 +40,6 @@ jar {
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
     buildArgs = ["VERSION": "${version}"]
-    tag = "fraunhoferaisec/ttpsim:${rootProject.getDockerTag()}"
+    images.add("fraunhoferaisec/ttpsim:${rootProject.getDockerTag()}")
 }
 dockerize.dependsOn jar

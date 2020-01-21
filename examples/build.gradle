@@ -64,17 +64,17 @@ task dockerize(dependsOn: ['dockerizeTpmSim', 'dockerizeClient', 'dockerizeServe
 
 task dockerizeTpmSim(type: DockerBuildImage) {
     inputDir = new File(project.projectDir.getPath() + '/tpmsim')
-    tag = "fraunhoferaisec/tpmsim:${rootProject.getDockerTag()}"
+    images.add("fraunhoferaisec/tpmsim:${rootProject.getDockerTag()}")
 }
 
 task dockerizeClient(type: DockerBuildImage) {
     inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-client')
-    tag = "fraunhoferaisec/example-client:${rootProject.getDockerTag()}"
+    images.add("fraunhoferaisec/example-client:${rootProject.getDockerTag()}")
 }
 
 task dockerizeServer(type: DockerBuildImage) {
     inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-server')
-    tag = "fraunhoferaisec/example-server:${rootProject.getDockerTag()}"
+    images.add("fraunhoferaisec/example-server:${rootProject.getDockerTag()}")
 }
 
 // Delete the redundant build directory after install or build, if executed

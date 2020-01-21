@@ -1,5 +1,5 @@
 buildscript {
-    repositories {   // config some remote repo, then ok
+    repositories {
         mavenCentral()
     }
 }
@@ -13,7 +13,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.21'
     id 'com.github.jlouns.cpe' version '0.5.0'
     id 'com.benjaminsproule.swagger' version '1.0.6'
-    id 'com.bmuschko.docker-remote-api' version '3.4.3'
+    id 'com.bmuschko.docker-remote-api' version '6.1.1'
     id 'com.diffplug.gradle.spotless' version '3.13.0'
     id 'com.github.jk1.dependency-license-report' version '1.2'
 }
@@ -144,6 +144,15 @@ allprojects {
         // Some compileOnly dependencies are also needed for unit tests
         testImplementation.extendsFrom compileOnly
     }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        // References IAIS repository that contains the infomodel artifacts
+        maven {
+            url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
+        }
+    }
 }
 
 subprojects {
@@ -209,15 +218,6 @@ subprojects {
                 // TODO: this was set in most of the bnd files. do we really need this?
                 attributes '-noee': true
             }
-        }
-    }
-
-    repositories {
-        mavenCentral()
-        jcenter()
-        // References IAIS repository that contains the infomodel artifacts
-        maven {
-            url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
         }
     }
 }
