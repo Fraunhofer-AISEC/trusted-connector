@@ -23,8 +23,27 @@ import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
-import io.jsonwebtoken.*;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import okhttp3.*;
+import org.jose4j.http.Get;
+import org.jose4j.jwk.HttpsJwks;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.consumer.ErrorCodes;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.osgi.service.component.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
@@ -38,19 +57,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.net.ssl.*;
-import okhttp3.*;
-import org.jose4j.http.Get;
-import org.jose4j.jwk.HttpsJwks;
-import org.jose4j.jws.AlgorithmIdentifiers;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.jwt.MalformedClaimException;
-import org.jose4j.jwt.consumer.*;
-import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
-import org.json.*;
-import org.osgi.service.component.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -296,7 +302,7 @@ public class TokenManagerService implements TokenManager {
     } catch (InvalidJwtException e) {
       // InvalidJwtException will be thrown, if the JWT failed processing or validation in anyway.
       // Hopefully with meaningful explanations(s) about what went wrong.
-      LOG.info("Invalid JWT! " + e);
+      LOG.warn("Invalid JWT!", e);
 
       // Programmatic access to (some) specific reasons for JWT invalidity is also possible
       // should you want different error handling behavior for certain conditions.
@@ -304,18 +310,18 @@ public class TokenManagerService implements TokenManager {
       // Whether or not the JWT has expired being one common reason for invalidity
       if (e.hasExpired()) {
         try {
-          LOG.info("JWT expired at " + e.getJwtContext().getJwtClaims().getExpirationTime());
+          LOG.warn("JWT expired at " + e.getJwtContext().getJwtClaims().getExpirationTime());
         } catch (MalformedClaimException e1) {
-          LOG.info("Malformed claim");
+          LOG.error("Malformed claim encountered", e1);
         }
       }
 
       // Or maybe the audience was invalid
       if (e.hasErrorCode(ErrorCodes.AUDIENCE_INVALID)) {
         try {
-          LOG.info("JWT had wrong audience: " + e.getJwtContext().getJwtClaims().getAudience());
+          LOG.warn("JWT had wrong audience: " + e.getJwtContext().getJwtClaims().getAudience());
         } catch (MalformedClaimException e1) {
-          LOG.info("Malformed claim");
+          LOG.error("Malformed claim encountered", e1);
         }
       }
     }

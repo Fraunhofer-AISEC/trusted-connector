@@ -23,13 +23,14 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This filter verifies JWT bearer tokens provided by HTTP "Authorization" header.
@@ -64,7 +65,7 @@ public class JWTRestAPIFilter implements ContainerRequestFilter {
           JWT.require(algorithm).withIssuer("ids-connector").build(); // Reusable verifier instance
       DecodedJWT validToken = verifier.verify(jwt);
     } catch (Exception e) {
-      LOG.debug("Invalid JWT token in request for " + requestContext.getUriInfo().getPath());
+      LOG.warn("Invalid JWT token in request for " + requestContext.getUriInfo().getPath());
       // On token validation error (or other), return HTTP 403.
       requestContext.abortWith(
           Response.status(Response.Status.UNAUTHORIZED).entity("Invalid token.").build());
