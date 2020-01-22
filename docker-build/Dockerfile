@@ -1,5 +1,13 @@
-FROM openjdk:11-jdk-slim
+FROM debian:buster-slim
 
+LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
+
+# Fix for installing openjdk on debian-slim
+RUN mkdir -p /usr/share/man/man1
+# Install JDK
+RUN apt-get update -qq && apt-get install -qq openjdk-11-jdk
+
+# Install tools for nodejs/yarn setup
 RUN apt-get update -qq && apt-get install -qq bash sudo curl gnupg
 # Install nodejs 12.x
 RUN curl -sL https://deb.nodesource.com/setup_12.x  | bash - && apt-get install -qq nodejs

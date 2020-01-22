@@ -1,9 +1,14 @@
-FROM openjdk:11-jdk-slim-stretch
+FROM debian:buster-slim
+
+LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
+
+# Fix for installing openjdk on debian-slim
+RUN mkdir -p /usr/share/man/man1
+# Install JDK
+RUN apt-get update -qq && apt-get install -qq openjdk-11-jdk
 
 ARG VERSION
 ENV FILENAME="rat-repository-${VERSION}.jar"
-
-LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 
 # Optional: Install oh-my-zsh for a better shell (~ 20 MiB overhead)
 #RUN apt-get update && apt-get install -y wget git zsh fonts-powerline \

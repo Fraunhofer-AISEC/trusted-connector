@@ -1,9 +1,15 @@
-FROM openjdk:11-jdk-slim
+FROM debian:buster-slim
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 
+# Fix for installing openjdk on debian-slim
+RUN mkdir -p /usr/share/man/man1
+# Install JDK
+RUN apt-get update -qq && apt-get install -qq openjdk-11-jdk
+
 # Install socat for UNIX socket debugging and ps command for karaf scripts
 RUN apt-get update -qq && apt-get install -qq socat procps
+
 # Optional: Install oh-my-zsh for a better shell (~ 20 MiB overhead)
 RUN apt-get update -qq && apt-get install -qq wget git zsh fonts-powerline \
   && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
