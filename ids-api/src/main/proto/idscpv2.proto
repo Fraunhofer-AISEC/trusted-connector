@@ -17,6 +17,7 @@ message IdscpMessage {
     }
 }
 
+
 //IDSCP messages
 message IdscpHello {
     int32 version = 1;                      //IDSCP protocol version
@@ -26,14 +27,21 @@ message IdscpHello {
 }
 
 message IdscpClose {
-    string cause_msg = 1;
-    string cause_code = 2;
-}
 
-//message IdscpError {
-//    string error_code = 1;
-//    string error_msg = 2;
-//
+    enum CloseCause {
+        USER_SHUTDOWN = 0;
+        TIMEOUT = 1;
+        ERROR = 2;
+        NO_VALID_DAT = 3;
+        NO_RAT_MECHANISM_MATCH_PROVER = 4;
+        NO_RAT_MECHANISM_MATCH_VERIFIER = 5;
+        RAT_PROVER_FAILED = 6;
+        RAT_VERIFIER_FAILED = 7;
+    }
+
+    CloseCause cause_code = 1;
+    string cause_msg = 2;
+}
 
 message IdscpDatExpired {           //request new dynamicAttributeToken
 }

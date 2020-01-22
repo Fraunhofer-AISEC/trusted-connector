@@ -24,10 +24,10 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpCloseMessage(String closeMsg, String closeCode){
+    public static IdscpMessage getIdscpCloseMessage(String closeMsg, IdscpClose.CloseCause causeCode){
         IdscpClose idscpClose = IdscpClose.newBuilder()
+                .setCauseCode(causeCode)
                 .setCauseMsg(closeMsg)
-                .setCauseCode(closeCode)
                 .build();
 
         return IdscpMessage.newBuilder()

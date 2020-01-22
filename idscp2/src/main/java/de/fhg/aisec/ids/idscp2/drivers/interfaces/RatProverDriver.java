@@ -8,5 +8,5 @@ import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public interface RatProverDriver {
-    RatProverInstance start(FsmListener fsmListener);
+    RatProverInstance start(String instance, FsmListener fsmListener);
 }

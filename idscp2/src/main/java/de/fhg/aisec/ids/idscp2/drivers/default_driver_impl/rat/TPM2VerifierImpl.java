@@ -12,7 +12,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
 public class TPM2VerifierImpl implements RatVerifierDriver {
 
     @Override
-    public RatVerifierInstance start(FsmListener fsmListener) {
+    public RatVerifierInstance start(String instance, FsmListener fsmListener) {
         TPM2Verifier newVerifier = new TPM2Verifier(fsmListener);
         newVerifier.start();
         return newVerifier;

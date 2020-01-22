@@ -12,7 +12,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
 public class TPM2ProverImpl implements RatProverDriver {
 
     @Override
-    public RatProverInstance start(FsmListener fsmListener) {
+    public RatProverInstance start(String instance, FsmListener fsmListener) {
         TPM2Prover newProver = new TPM2Prover(fsmListener);
         newProver.start();
         return newProver;
