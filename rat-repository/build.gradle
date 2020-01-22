@@ -8,6 +8,12 @@ description = 'rat-repository'
 dependencies {
     implementation(project(':ids-api')) { transitive = false }
 
+    // Java 11 javax.xml.bind polyfills
+    implementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+    implementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+    implementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
+    implementation group: 'com.sun.activation', name: 'javax.activation', version: libraryVersions.jaxActivation
+
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     

@@ -69,6 +69,7 @@ allprojects {
 
             // For javax.xml.bind support in newer java versions
             jaxb               : "2.2.11",
+            jaxActivation      : "1.2.0",
 
             pax                : '7.2.10',
 
@@ -187,7 +188,7 @@ subprojects {
         testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
         testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
         testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
-        testImplementation group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0'
+        testImplementation group: 'com.sun.activation', name: 'javax.activation', version: libraryVersions.jaxActivation
 
         testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
         testImplementation "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"

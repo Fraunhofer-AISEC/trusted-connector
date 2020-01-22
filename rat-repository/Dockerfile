@@ -10,6 +10,9 @@ RUN apt-get update -qq && apt-get install -qq openjdk-11-jdk
 ARG VERSION
 ENV FILENAME="rat-repository-${VERSION}.jar"
 
+# Install binutils, recommended for platform detection (readelf)
+RUN apt-get update -qq && apt-get install -qq binutils
+
 # Optional: Install oh-my-zsh for a better shell (~ 20 MiB overhead)
 #RUN apt-get update && apt-get install -y wget git zsh fonts-powerline \
 #  && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
