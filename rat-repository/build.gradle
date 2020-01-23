@@ -45,7 +45,7 @@ jar {
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    buildArgs = ["VERSION": "${version}"]
+    buildArgs = ["VERSION": version, "BASE_IMAGE": findProperty("baseImage") ?: "debian:buster-slim"]
     images.add("fraunhoferaisec/ttpsim:${rootProject.getDockerTag()}")
 }
 dockerize.dependsOn jar

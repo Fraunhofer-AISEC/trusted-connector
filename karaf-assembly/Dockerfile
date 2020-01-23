@@ -1,11 +1,12 @@
-FROM debian:buster-slim
+ARG BASE_IMAGE=debian:buster-slim
+FROM $BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 
 # Fix for installing openjdk on debian-slim
 RUN mkdir -p /usr/share/man/man1
 # Install JDK
-RUN apt-get update -qq && apt-get install -qq openjdk-11-jdk
+RUN apt-get update -qq && apt-get install -qq --no-install-recommends openjdk-11-jdk
 
 # Install socat for UNIX socket debugging and ps command for karaf scripts
 RUN apt-get update -qq && apt-get install -qq socat procps
