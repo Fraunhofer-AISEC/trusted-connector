@@ -8,7 +8,6 @@ import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IDSCPv2Server;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
-import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,20 +30,14 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
 
     private IDSCPv2Initiator user;
     private DapsDriver dapsDriver;
-    private RatProverDriver ratProverDriver;
-    private RatVerifierDriver ratVerifierDriver;
     private SecureChannelDriver secureChannelDriver;
 
 
     public IDSCPv2Configuration(IDSCPv2Initiator initiator,
                                 DapsDriver dapsDriver,
-                                RatVerifierDriver ratVerifierDriver,
-                                RatProverDriver ratProverDriver,
                                 SecureChannelDriver secureChannelDriver){
         this.user = initiator;
         this.dapsDriver = dapsDriver;
-        this.ratVerifierDriver = ratVerifierDriver;
-        this.ratProverDriver = ratProverDriver;
         this.secureChannelDriver = secureChannelDriver;
     }
 
@@ -74,7 +67,7 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
             user.errorHandler("IDSCPv2 connect failed because no secure channel was established");
         } else {
             LOG.debug("A new secure channel for an outgoing idscpv2 connection was established");
-            FSM fsm = new FSM(secureChannel, ratProverDriver, ratVerifierDriver, dapsDriver);
+            FSM fsm = new FSM(secureChannel, dapsDriver);
             String connectionId = UUID.randomUUID().toString();
             //important so set endpoint connection id before fsm.startIdscpHandshake() to avoid deadlock
             fsm.setEndpointConnectionId(connectionId);
@@ -96,7 +89,7 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
     public void secureChannelListenHandler(SecureChannel secureChannel, IdscpConnectionListener idscpServer) {
         if (secureChannel != null){
             LOG.debug("A new secure channel for an incoming idscpv2 connection was established");
-            FSM fsm = new FSM(secureChannel, ratProverDriver, ratVerifierDriver, dapsDriver);
+            FSM fsm = new FSM(secureChannel, dapsDriver);
             String connectionId = UUID.randomUUID().toString();
             //important so set endpoint connection id before fsm.startIdscpHandshake() to avoid deadlock
             fsm.setEndpointConnectionId(connectionId);

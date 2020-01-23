@@ -1,8 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core;
 
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM;
-import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
-import de.fhg.aisec.ids.messages.IDSCPv2.IdscpClose;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

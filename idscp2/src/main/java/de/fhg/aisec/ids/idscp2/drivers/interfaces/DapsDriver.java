@@ -7,5 +7,5 @@ package de.fhg.aisec.ids.idscp2.drivers.interfaces;
  */
 public interface DapsDriver {
     byte[] getToken();
-    boolean verifyToken(byte[] dat);
+    int verifyToken(byte[] dat);
 }
