@@ -5,10 +5,6 @@ apply plugin: 'idea'
 
 protobuf {
     generatedFilesBaseDir = "$projectDir/generated"
-
-    protoc {
-        artifact = "com.google.protobuf:protoc:${libraryVersions.protobuf}"
-    }
 }
 
 clean {
