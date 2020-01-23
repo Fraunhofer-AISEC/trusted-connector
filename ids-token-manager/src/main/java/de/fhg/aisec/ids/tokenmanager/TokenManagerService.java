@@ -39,7 +39,10 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,30 +72,11 @@ public class TokenManagerService implements TokenManager {
   private static final Logger LOG = LoggerFactory.getLogger(TokenManagerService.class);
   public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
+  @Reference(cardinality = ReferenceCardinality.MANDATORY)
   private Settings settings = null;
   private SSLSocketFactory sslSocketFactory = null;
   private String jwtBodyAsJson = null;
   private ReentrantLock reentrantLock = new ReentrantLock(); //reentrantLock for jwtBodyAsJson
-
-  /*
-   * The following block subscribes this component to the Settings Service
-   */
-  @Reference(
-    name = "config.service",
-    service = Settings.class,
-    cardinality = ReferenceCardinality.OPTIONAL,
-    policy = ReferencePolicy.DYNAMIC,
-    unbind = "unbindSettingsService"
-  )
-  public void bindSettingsService(Settings s) {
-    LOG.info("Bound to configuration service");
-    settings = s;
-  }
-
-  @SuppressWarnings("unused")
-  public void unbindSettingsService(Settings s) {
-    settings = null;
-  }
 
   /**
    * Method to aquire a Dynamic Attribute Token (DAT) from a Dynamic Attribute Provisioning Service
