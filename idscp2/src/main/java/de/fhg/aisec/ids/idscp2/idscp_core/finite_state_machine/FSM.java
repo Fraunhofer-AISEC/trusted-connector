@@ -67,7 +67,7 @@ public class FSM implements FsmListener{
             @Override
             public void run() {
                 //onControlMessage(InternalControlMessage.TIMEOUT);
-                System.out.println("Handshake timeout");
+                System.out.println("HANDSHAKE_TIMER_EXPIRED");
             }
         };
 
@@ -87,9 +87,9 @@ public class FSM implements FsmListener{
             }
         };
         //toDo set correct delays
-        this.handshakeTimer = new Timer(handshakeTimeoutHandler);
-        this.datTimer = new Timer(datTimeoutHandler);
-        this.ratTimer = new Timer(ratTimeoutHandler);
+        this.handshakeTimer = new Timer(fsmIsBusy, handshakeTimeoutHandler);
+        this.datTimer = new Timer(fsmIsBusy, datTimeoutHandler);
+        this.ratTimer = new Timer(fsmIsBusy, ratTimeoutHandler);
         /* ------------- end timeout routines ------------- */
 
 
@@ -429,6 +429,11 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_WAIT_FOR_RAT");
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return STATE_WAIT_FOR_RAT;
                 }
         );
@@ -538,7 +543,7 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
                     stopRatVerifierDriver();
-                    this.datTimer.stop();
+                    this.datTimer.cancelTimeout();
                     this.handshakeTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_CLOSED");
                     notifyHandshakeCompleteLock();
@@ -582,6 +587,11 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_WAIT_FOR_RAT_VERIFIER");
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return STATE_WAIT_FOR_RAT_VERIFIER;
                 }
         );
@@ -751,6 +761,11 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_WAIT_FOR_RAT_PROVER");
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return STATE_WAIT_FOR_RAT_PROVER;
                 }
         );
@@ -1144,6 +1159,11 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_ESTABLISHED");
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return STATE_ESTABLISHED;
                 }
         );
@@ -1336,5 +1356,4 @@ public class FSM implements FsmListener{
             ratProverDriver.terminate();
         }
     }
-
 }

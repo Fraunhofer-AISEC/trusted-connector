@@ -1,45 +1,40 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import static java.util.concurrent.TimeUnit.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Timer {
 
-    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-    private ScheduledFuture<?> timer;
-    private boolean isLocked = false;
-    private boolean isExecuting = false;
-    private Runnable timeoutHandler;
+    //toDo real time FIFO synchronization for whole state machine
 
-    public Timer(Runnable timeoutHandler){
+    private TimerThread thread = null;
+    private final Object lock;
+    private final ReentrantLock mutex = new ReentrantLock();
+    private final Runnable timeoutHandler;
+
+    Timer(Object lock, Runnable timeoutHandler){
+        this.lock = lock;
         this.timeoutHandler = timeoutHandler;
     }
 
-    public void cancelTimeout() {
-        if (!isLocked) {
-            if (isExecuting) {
-                timer.cancel(true);
-            }
-        }
+    void resetTimeout(int delay){
+        cancelTimeout();
+        start(delay);
     }
 
-    public boolean resetTimeout(int delay){
-        if (!isLocked){
-            if (isExecuting){
-                timer.cancel(true);
-            }
-            timer = executor.schedule(timeoutHandler, delay, SECONDS);
-            return true;
-        }
-        return false;
+    public void start(int delay){
+        mutex.lock();
+        thread = new TimerThread(delay, timeoutHandler, lock);
+        thread.start();
+        mutex.unlock();
     }
 
-    public void stop(){
-        if (!isLocked){
-            executor.shutdownNow();
-            isLocked = true;
+    void cancelTimeout(){
+        mutex.lock();
+        if (thread != null){
+            thread.safeStop();
+            thread = null;
         }
+        mutex.unlock();
     }
-
 }
+
