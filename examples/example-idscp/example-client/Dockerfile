@@ -1,4 +1,5 @@
-FROM node:alpine
+ARG PLATFORM=amd64
+FROM --platform=${PLATFORM} node:alpine
 
 WORKDIR /app
 

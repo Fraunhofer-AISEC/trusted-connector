@@ -3,7 +3,7 @@
 # Use from directory "example-idscp" like this:
 # docker-compose -f docker-compose-provider.yaml -f ../example-idscp-localhost/docker-compose-provider.override.yaml up
 
-version: '2'
+version: '3'
 services:
 
   provider-core:

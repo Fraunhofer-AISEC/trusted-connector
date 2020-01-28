@@ -1,5 +1,6 @@
 ARG BASE_IMAGE=debian:buster-slim
-FROM $BASE_IMAGE
+ARG PLATFORM=amd64
+FROM --platform=${PLATFORM} $BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 

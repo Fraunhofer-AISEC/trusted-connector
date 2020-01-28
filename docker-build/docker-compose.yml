@@ -1,9 +1,9 @@
-version: '2'
+version: '3'
 services:
 
   # Trusted Connector build container
   build-container:
-    image: fraunhoferaisec/docker-build:develop
+    image: fraunhoferaisec/docker-build:${EXAMPLE_TAG:-develop}
     tty: true
     stdin_open: true
     environment:
@@ -17,3 +17,6 @@ services:
       - ~/.m2:/.m2
     build:
       context: '.'
+      args:
+        PLATFORM: ${PLATFORM:-amd64}
+        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
