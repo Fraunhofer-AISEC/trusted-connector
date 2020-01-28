@@ -18,14 +18,21 @@ RUN apt-get update -qq && apt-get install -qq wget git zsh fonts-powerline \
   && sed -ie 's/^ZSH_THEME=".*"$/ZSH_THEME="agnoster"/' ~/.zshrc \
   # Disable automatic update
   && sed -ie 's/^# DISABLE_AUTO_UPDATE$/DISABLE_AUTO_UPDATE/' ~/.zshrc \
-  # Remove wget and git, Cleanup
-  && apt-get remove --purge -qq wget git && apt-get autoremove --purge -qq \
+  # Remove git, Cleanup
+  && apt-get remove --purge -qq git && apt-get autoremove --purge -qq \
   # Inject karaf console start command into zsh history
   && echo ": 0:0;bin/client" > ~/.zsh_history
 
 # Install docker using get.docker.com script
 ADD build/assembly/bin /root/bin/
-RUN sh /root/bin/get-docker.sh
+RUN apt-get update -qq && apt-get install -qq wget lsb-release apt-transport-https gnupg2
+RUN wget -O - https://download.docker.com/linux/debian/gpg | apt-key add - \
+  && echo "deb https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+  | tee /etc/apt/sources.list.d/docker.list \
+  && apt-get update -qq && apt-get install -qq docker-ce docker-ce-cli containerd.io
+# Remove unnecessary packages, Cleanup
+RUN apt-get remove --purge -qq wget lsb-release apt-transport-https gnupg2 \
+  && apt-get autoremove --purge -qq
 
 # Adding the actual core platform files to /root
 ADD build/assembly /root/
