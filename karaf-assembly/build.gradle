@@ -61,10 +61,7 @@ rootProject.subprojects.findAll() {
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    buildArgs = [
-            "PLATFORM": findProperty("platform") ?: "amd64",
-            "BASE_IMAGE": findProperty("baseImage") ?: "debian:buster-slim"
-    ]
+    buildArgs = ["BASE_IMAGE": findProperty("baseImage") ?: "debian:buster-slim"]
     images.add("fraunhoferaisec/trusted-connector-core:${rootProject.getDockerTag()}")
 }
 

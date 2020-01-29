@@ -63,19 +63,16 @@ processResources.dependsOn zipExample
 task dockerize(dependsOn: ['dockerizeTpmSim', 'dockerizeClient', 'dockerizeServer'])
 
 task dockerizeTpmSim(type: DockerBuildImage) {
-    buildArgs = ["PLATFORM": findProperty("platform") ?: "amd64"]
     inputDir = new File(project.projectDir.getPath() + '/tpmsim')
     images.add("fraunhoferaisec/tpmsim:${rootProject.getDockerTag()}")
 }
 
 task dockerizeClient(type: DockerBuildImage) {
-    buildArgs = ["PLATFORM": findProperty("platform") ?: "amd64"]
     inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-client')
     images.add("fraunhoferaisec/example-client:${rootProject.getDockerTag()}")
 }
 
 task dockerizeServer(type: DockerBuildImage) {
-    buildArgs = ["PLATFORM": findProperty("platform") ?: "amd64"]
     inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-server')
     images.add("fraunhoferaisec/example-server:${rootProject.getDockerTag()}")
 }

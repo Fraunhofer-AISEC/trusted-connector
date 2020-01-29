@@ -1,5 +1,4 @@
-ARG PLATFORM=amd64
-FROM --platform=${PLATFORM} debian:stretch
+FROM debian:stretch
 
 ENV BUILD_DIR /build
 RUN mkdir ${BUILD_DIR}
@@ -51,7 +50,7 @@ RUN git clone https://kernel.googlesource.com/pub/scm/linux/kernel/git/jejb/open
   make -j4 && checkinstall --fstrans=no --pkgname=openssl-tpm2-engine -y && cp openssl-tpm2-engine*.deb ${BUILD_DIR}
 
 
-FROM --platform=${PLATFORM} debian:stretch-slim
+FROM debian:stretch-slim
 
 RUN apt-get update -qq && apt-get install -qq bash fuse libglib2.0 libseccomp-dev libprotobuf-c-dev
 COPY --from=0 /build /usr/
