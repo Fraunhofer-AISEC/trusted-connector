@@ -7,21 +7,12 @@ services:
     volumes:
       # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
       - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
-    build:
-      context: '../tpmsim'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
     networks:
       - consumer-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
     image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../../karaf-assembly'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
-        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
     tty: true
     stdin_open: true
     volumes:
@@ -48,10 +39,6 @@ services:
   # Data App (REST consumer, displays web page)
   consumer-app:
     image: fraunhoferaisec/example-server:${EXAMPLE_TAG:-develop}
-    build:
-      context: './example-server'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
     ports:
       - "8081:8081"
     networks:

@@ -4,10 +4,6 @@ services:
   # TPM simulator
   ids-tpmsim:
     image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../tpmsim'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
     volumes:
       - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
     networks:
@@ -16,12 +12,6 @@ services:
   # Trusted third party (RAT repository) simulator
   ids-ttpsim:
     image: fraunhoferaisec/ttpsim:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../../rat-repository'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
-        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
-        VERSION: ${PROJECT_VERSION}
     networks:
       example-internal:
         aliases:
@@ -30,11 +20,6 @@ services:
   # The core platform, mounts docker control socket into the image
   ids-core:
     image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../../karaf-assembly'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
-        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
     tty: true
     stdin_open: true
     volumes:
