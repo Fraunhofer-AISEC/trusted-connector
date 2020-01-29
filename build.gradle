@@ -64,8 +64,8 @@ allprojects {
             karaf              : '4.2.7',
 
             // The used version of the infomodel from IESE
-            infomodel          : '2.1.0+',
-            infomodelSerializer: '2.0.1+',
+            infomodel          : '2.1.0-20191128.190429-1',
+            infomodelSerializer: '2.1.0-20200123.143430-1',
 
             // For javax.xml.bind support in newer java versions
             jaxb               : "2.2.11",
@@ -270,6 +270,11 @@ configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' })
     task javadocJar(type: Jar) {
         from javadoc
         archiveClassifier = 'javadoc'
+    }
+
+    // Must disable gradle metadata because of infomodel SNAPSHOT dependencies
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
     }
 
     publishing {
