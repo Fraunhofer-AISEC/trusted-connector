@@ -40,12 +40,12 @@ public class TPM2Prover extends RatProverDriver {
         int countDown = 2;
         while (true){
             try {
-                sleep(2000);
+                sleep(1000);
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,
                         IdscpMessageFactory.getIdscpRatProverMessage());
-                System.out.println("Prover waits");
+                LOG.debug("Prover waits");
                 IDSCPv2.IdscpMessage m = queue.take();
-                System.out.println("Prover receives, send something");
+                LOG.debug("Prover receives, send something");
                 if (--countDown == 0)
                     break;
             } catch (InterruptedException e) {

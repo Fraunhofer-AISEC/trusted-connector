@@ -54,7 +54,7 @@ public class FSM implements FsmListener{
     private Timer datTimer;
     private Timer ratTimer;
     private Timer handshakeTimer;
-    private int ratTimeoutDelay = 3600;
+    private int ratTimeoutDelay = 10;
 
     public FSM(SecureChannel secureChannel, DapsDriver dapsDriver){
 
@@ -66,25 +66,24 @@ public class FSM implements FsmListener{
         Runnable handshakeTimeoutHandler = new Runnable() {
             @Override
             public void run() {
-                //onControlMessage(InternalControlMessage.TIMEOUT);
                 System.out.println("HANDSHAKE_TIMER_EXPIRED");
-
+                onControlMessage(InternalControlMessage.TIMEOUT);
             }
         };
 
         Runnable datTimeoutHandler = new Runnable() {
             @Override
             public void run() {
-                //onControlMessage(InternalControlMessage.DAT_TIMER_EXPIRED);
                 System.out.println("DAT_TIMER_EXPIRED");
+                onControlMessage(InternalControlMessage.DAT_TIMER_EXPIRED);
             }
         };
 
         Runnable ratTimeoutHandler = new Runnable() {
             @Override
             public void run() {
-                //onControlMessage(InternalControlMessage.RAT_TIMER_EXPIRED);
                 System.out.println("RAT_TIMER_EXPIRED");
+                onControlMessage(InternalControlMessage.REPEAT_RAT);
             }
         };
         //toDo set correct delays
@@ -1196,6 +1195,9 @@ public class FSM implements FsmListener{
                 }
             }
             currentState = currentState.feedEvent(event);
+            /*if (LOG.isDebugEnabled()) {
+                LOG.debug("Switched to state {}", currentState);
+            }*/
         }
     }
 
@@ -1221,6 +1223,8 @@ public class FSM implements FsmListener{
         synchronized (fsmIsBusy) {
             if (Long.toString(Thread.currentThread().getId()).equals(currentRatProverId)) {
                 currentState = currentState.feedEvent(e);
+            } else {
+                LOG.warn("An old or unknown identity calls onRatProverMessage()");
             }
         }
     }
@@ -1238,6 +1242,8 @@ public class FSM implements FsmListener{
         synchronized (fsmIsBusy) {
             if (Long.toString(Thread.currentThread().getId()).equals(currentRatVerifierId)) {
                 currentState = currentState.feedEvent(e);
+            } else {
+                LOG.warn("An old or unknown identity calls onRatVerifierMessage()");
             }
         }
     }

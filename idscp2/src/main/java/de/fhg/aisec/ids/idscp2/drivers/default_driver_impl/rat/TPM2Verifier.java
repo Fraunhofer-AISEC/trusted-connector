@@ -30,12 +30,12 @@ public class TPM2Verifier extends RatVerifierDriver {
         int countDown = 2;
         while (true){
             try {
-                sleep(2000);
+                sleep(1000);
                 LOG.debug("Verifier waits");
                 IDSCPv2.IdscpMessage m = queue.take();
                 LOG.debug("Verifier receives, send something");
-                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,
-                        IdscpMessageFactory.getIdscpRatProverMessage());
+                fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG,
+                        IdscpMessageFactory.getIdscpRatVerifierMessage());
                 if (--countDown == 0)
                     break;
             } catch (InterruptedException e) {
