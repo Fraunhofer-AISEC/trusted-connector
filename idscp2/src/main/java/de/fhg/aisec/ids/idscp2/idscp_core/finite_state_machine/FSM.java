@@ -68,6 +68,7 @@ public class FSM implements FsmListener{
             public void run() {
                 //onControlMessage(InternalControlMessage.TIMEOUT);
                 System.out.println("HANDSHAKE_TIMER_EXPIRED");
+
             }
         };
 
@@ -1339,7 +1340,7 @@ public class FSM implements FsmListener{
 
     private void restartRatProverDriver(){
         //assume prover mechanism is set
-        stopRatVerifierDriver();
+        stopRatProverDriver();
         ratProverDriver = RatProverDriverRegistry.startRatProverDriver(proverMechanism, this);
         if (ratProverDriver == null){
             LOG.error("Cannot create instance of RAT_PROVER_DRIVER");
