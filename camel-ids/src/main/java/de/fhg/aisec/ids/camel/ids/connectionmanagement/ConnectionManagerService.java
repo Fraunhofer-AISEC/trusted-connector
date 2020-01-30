@@ -43,29 +43,6 @@ import org.osgi.service.component.annotations.*;
 @Component(name = "ids-connection-manager", immediate = true)
 public class ConnectionManagerService implements ConnectionManager {
 
-  private static ConnectionManagerService instance = null;
-
-  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private Settings settings = null;
-
-  @Activate
-  protected void activate() {
-    ConnectionManagerService.instance = this;
-  }
-
-  @Deactivate
-  protected void deactivate() {
-    ConnectionManagerService.instance = null;
-  }
-
-  public static Settings getSettings() {
-    ConnectionManagerService in = ConnectionManagerService.instance;
-    if (in != null) {
-      return in.settings;
-    }
-    return null;
-  }
-
   @Override
   public List<IDSCPServerEndpoint> listAvailableEndpoints() {
     return WebsocketComponent.getConnectors()

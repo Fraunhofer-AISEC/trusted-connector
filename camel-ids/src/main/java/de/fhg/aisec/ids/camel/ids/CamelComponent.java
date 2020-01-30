@@ -23,13 +23,14 @@ import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.service.component.annotations.*;
 
 @Component
 public class CamelComponent {
 
-  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+  @Reference(cardinality = ReferenceCardinality.MANDATORY)
   private Settings settings = null;
 
   @Reference(cardinality = ReferenceCardinality.MANDATORY)
@@ -55,22 +56,14 @@ public class CamelComponent {
     instance = null;
   }
 
-  @Nullable
+  @NonNull
   public static Settings getSettings() {
-    CamelComponent in = instance;
-    if (in != null) {
-      return in.settings;
-    }
-    return null;
+    return instance.settings;
   }
 
-  @Nullable
+  @NonNull
   public static InfoModel getInfoModelManager() {
-    CamelComponent in = instance;
-    if (in != null) {
-      return in.infoModelManager;
-    }
-    return null;
+    return instance.infoModelManager;
   }
 
   @Nullable
