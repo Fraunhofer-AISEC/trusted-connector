@@ -68,9 +68,6 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         } else {
             LOG.debug("A new secure channel for an outgoing idscpv2 connection was established");
             FSM fsm = new FSM(secureChannel, dapsDriver);
-            String connectionId = UUID.randomUUID().toString();
-            //important so set endpoint connection id before fsm.startIdscpHandshake() to avoid deadlock
-            fsm.setEndpointConnectionId(connectionId);
 
             try {
                 fsm.startIdscpHandshake(); //blocking until handshake is done
@@ -78,7 +75,8 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
                 return;
             }
 
-            IDSCPv2Connection newConnection = new IDSCPv2Connection(fsm, connectionId);
+            String connectionId = UUID.randomUUID().toString();
+            IDSCPv2Connection newConnection = new IDSCPv2Connection(fsm, connectionId, user, null);
             fsm.registerMessageListener(newConnection);
             LOG.info("A new IDSCPv2 connection with id {} was created", connectionId);
             user.newConnectionHandler(newConnection);
@@ -90,9 +88,6 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         if (secureChannel != null){
             LOG.debug("A new secure channel for an incoming idscpv2 connection was established");
             FSM fsm = new FSM(secureChannel, dapsDriver);
-            String connectionId = UUID.randomUUID().toString();
-            //important so set endpoint connection id before fsm.startIdscpHandshake() to avoid deadlock
-            fsm.setEndpointConnectionId(connectionId);
 
             try {
                 fsm.startIdscpHandshake(); //blocking until handshake is done
@@ -101,7 +96,8 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
             }
 
             //create new IDSCPv2Connection
-            IDSCPv2Connection newConnection = new IDSCPv2Connection(fsm, connectionId);
+            String connectionId = UUID.randomUUID().toString();
+            IDSCPv2Connection newConnection = new IDSCPv2Connection(fsm, connectionId, user, idscpServer);
             fsm.registerMessageListener(newConnection);
             LOG.info("A new idscpv2 connection with id {} was created", connectionId);
             idscpServer.newConnectionHandler(newConnection); //bind connection to idscp server

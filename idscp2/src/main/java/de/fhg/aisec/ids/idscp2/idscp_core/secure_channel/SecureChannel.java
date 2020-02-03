@@ -52,13 +52,30 @@ public class SecureChannel implements SecureChannelListener {
         }
     }
 
-    public boolean isConnected(){
-        return endpoint.isConnected();
+    @Override
+    public void onError() {
+        //tell fsm an error occurred in secure channel
+        try {
+            fsmLatch.await();
+            fsm.onError();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
-    public void setEndpointConnectionId(String id){
-        this.endpoint.setConnectionId(id);
-        //deadlock is resolved
+    @Override
+    public void onClose() {
+        //tell fsm secure channel received EOF
+        try {
+            fsmLatch.await();
+            fsm.onClose();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public boolean isConnected(){
+        return endpoint.isConnected();
     }
 
     public void setFsm(FsmListener fsm) {

@@ -7,4 +7,6 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.clien
  */
 public interface DataAvailableListener {
     void onMessage(byte[] data);
+    void onError();
+    void onClose();
 }

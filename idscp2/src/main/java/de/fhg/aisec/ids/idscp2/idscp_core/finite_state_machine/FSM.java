@@ -8,11 +8,14 @@ import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMsgListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
+import de.fhg.aisec.ids.messages.IDSCPv2;
 import de.fhg.aisec.ids.messages.IDSCPv2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class FSM implements FsmListener{
     private static final Logger LOG = LoggerFactory.getLogger(FSM.class);
@@ -43,8 +46,11 @@ public class FSM implements FsmListener{
 
     private IdscpMsgListener listener = null;
     private final CountDownLatch listenerLatch = new CountDownLatch(1);
-    private final Object idscpHandshakeLock = new Object();
-    private final Object fsmIsBusy = new Object();
+    private final ReentrantLock fsmIsBusy = new ReentrantLock(true); //use a fair synchronization lock (FIFO)
+    private final Condition onMessageBlock = fsmIsBusy.newCondition();
+    private final Condition idscpHandshakeLock = fsmIsBusy.newCondition();
+    private boolean handshakeResultAvailable = false;
+    private boolean fsmIsClosed = false;
 
     //toDo cipher suites
     private String[] localSupportedRatSuite = new String[] {"TPM_2, TRUST_ZONE, SGX"};
@@ -61,6 +67,7 @@ public class FSM implements FsmListener{
         this.secureChannel = secureChannel;
         this.dapsDriver = dapsDriver;
         secureChannel.setFsm(this);
+
 
         /* ------------- Timeout Handler Routines ------------*/
         Runnable handshakeTimeoutHandler = new Runnable() {
@@ -92,24 +99,23 @@ public class FSM implements FsmListener{
         this.ratTimer = new Timer(fsmIsBusy, ratTimeoutHandler);
         /* ------------- end timeout routines ------------- */
 
-
         /*  -----------   Protocol Transitions   ---------- */
 
         /*---------------------------------------------------
-        * STATE_CLOSED - Transition Description
-        * ---------------------------------------------------
-        * onICM: start_handshake --> {send IDSCP_HELLO, set handshake_timeout} --> STATE_WAIT_FOR_HELLO
-        * ALL_OTHER_MESSAGES ---> STATE_CLOSED
-        * --------------------------------------------------- */
+         * STATE_CLOSED - Transition Description
+         * ---------------------------------------------------
+         * onICM: start_handshake --> {send IDSCP_HELLO, set handshake_timeout} --> STATE_WAIT_FOR_HELLO
+         * ALL_OTHER_MESSAGES ---> STATE_CLOSED
+         * --------------------------------------------------- */
         STATE_CLOSED.addTransition(InternalControlMessage.START_IDSCP_HANDSHAKE.getValue(), new Transition(
                 event -> {
                     LOG.debug("Get DAT Token vom DAT_DRIVER");
                     byte[] dat = this.dapsDriver.getToken();
                     LOG.debug("Send IDSCP_HELLO");
-                    IdscpMessage idscpHello = IdscpMessageFactory.
+                    IDSCPv2.IdscpMessage idscpHello = IdscpMessageFactory.
                             getIdscpHelloMessage(dat, this.localSupportedRatSuite, this.localExpectedRatSuite);
                     sendFromFSM(idscpHello);
-                    fsmIsBusy.notify(); //enables fsm.onMessage()
+                    onMessageBlock.signalAll(); //enables fsm.onMessage()
                     LOG.debug("Set handshake timeout");
                     handshakeTimer.resetTimeout(5);
                     LOG.debug("Switch to state STATE_WAIT_FOR_HELLO");
@@ -124,7 +130,7 @@ public class FSM implements FsmListener{
                     notifyHandshakeCompleteLock();
                     return STATE_CLOSED;
                 }
-            );
+        );
 
         /*---------------------------------------------------
          * STATE_WAIT_FOR_HELLO - Transition Description
@@ -234,7 +240,6 @@ public class FSM implements FsmListener{
                     handshakeTimer.resetTimeout(5);
 
                     LOG.debug("Switch to state STATE_WAIT_FOR_RAT");
-                    notifyHandshakeCompleteLock();
                     return STATE_WAIT_FOR_RAT;
                 }
         ));
@@ -429,11 +434,6 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_WAIT_FOR_RAT");
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     return STATE_WAIT_FOR_RAT;
                 }
         );
@@ -500,7 +500,6 @@ public class FSM implements FsmListener{
                     LOG.debug("Set handshake timeout");
                     handshakeTimer.resetTimeout(5);
                     LOG.debug("Switch to state STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER");
-                    notifyHandshakeCompleteLock();
                     return STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER;
                 }
         ));
@@ -587,11 +586,6 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_WAIT_FOR_RAT_VERIFIER");
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     return STATE_WAIT_FOR_RAT_VERIFIER;
                 }
         );
@@ -662,7 +656,6 @@ public class FSM implements FsmListener{
                     LOG.debug("Set handshake timeout");
                     handshakeTimer.resetTimeout(5);
                     LOG.debug("Switch to state STATE_WAIT_FOR_DAT_AND_RAT");
-                    notifyHandshakeCompleteLock();
                     return STATE_WAIT_FOR_DAT_AND_RAT;
                 }
         ));
@@ -761,11 +754,6 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_WAIT_FOR_RAT_PROVER");
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     return STATE_WAIT_FOR_RAT_PROVER;
                 }
         );
@@ -1061,7 +1049,8 @@ public class FSM implements FsmListener{
                     LOG.debug("Error occurred, send IDSCP_CLOSE and close idscp connection");
                     this.datTimer.cancelTimeout();
                     this.ratTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred",
+                            IdscpClose.CloseCause.ERROR));
                     LOG.debug("Switch to state STATE_CLOSED");
                     return STATE_CLOSED;
                 }
@@ -1134,7 +1123,7 @@ public class FSM implements FsmListener{
                 event -> {
                     try {
                         this.listenerLatch.await();
-                        this.listener.onMessage(event.getIdscpMessage());
+                        this.listener.onMessage(event.getIdscpMessage().getIdscpData().toByteArray());
                         LOG.debug("Idscp data was passed to connection listener");
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
@@ -1159,11 +1148,6 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_ESTABLISHED");
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     return STATE_ESTABLISHED;
                 }
         );
@@ -1186,27 +1170,32 @@ public class FSM implements FsmListener{
 
         Event event = new Event(message);
         //must wait when fsm is in state STATE_CLOSED --> wait() will be notified when fsm is leaving STATE_CLOSED
-        synchronized (fsmIsBusy){
+        fsmIsBusy.lock();
+        try {
             while (currentState == STATE_CLOSED){
                 try {
-                    fsmIsBusy.wait();
+                    onMessageBlock.await();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
-            currentState = currentState.feedEvent(event);
-            /*if (LOG.isDebugEnabled()) {
-                LOG.debug("Switched to state {}", currentState);
-            }*/
+            feedEvent(event);
+        } finally {
+            fsmIsBusy.unlock();
         }
+
     }
 
     @Override
     public void onControlMessage(InternalControlMessage controlMessage) {
         //create Internal Control Message Event and pass it to current state and update new state
         Event e = new Event(controlMessage);
-        synchronized (fsmIsBusy){
-            currentState = currentState.feedEvent(e);
+
+        fsmIsBusy.lock();
+        try {
+            feedEvent(e);
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 
@@ -1220,12 +1209,15 @@ public class FSM implements FsmListener{
             e = new Event(controlMessage, idscpMessage);
         }
 
-        synchronized (fsmIsBusy) {
+        fsmIsBusy.lock();
+        try {
             if (Long.toString(Thread.currentThread().getId()).equals(currentRatProverId)) {
-                currentState = currentState.feedEvent(e);
+                feedEvent(e);
             } else {
                 LOG.warn("An old or unknown identity calls onRatProverMessage()");
             }
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 
@@ -1239,12 +1231,37 @@ public class FSM implements FsmListener{
             e = new Event(controlMessage, idscpMessage);
         }
 
-        synchronized (fsmIsBusy) {
+        fsmIsBusy.lock();
+        try{
             if (Long.toString(Thread.currentThread().getId()).equals(currentRatVerifierId)) {
-                currentState = currentState.feedEvent(e);
+                feedEvent(e);
             } else {
                 LOG.warn("An old or unknown identity calls onRatVerifierMessage()");
             }
+        } finally {
+            fsmIsBusy.unlock();
+        }
+    }
+
+    private void feedEvent(Event e){
+        State prevState = currentState;
+        currentState = currentState.feedEvent(e);
+        if (!prevState.equals(STATE_CLOSED) && currentState.equals(STATE_CLOSED)){
+            //fsm is closed, stop and free all resources, drivers and lock fsm forever
+            secureChannel.close();
+            dapsDriver = null;
+
+            this.datTimer.cancelTimeout();
+            this.datTimer = null;
+            this.ratTimer.cancelTimeout();
+            this.ratTimer = null;
+            this.handshakeTimer.cancelTimeout();
+            this.handshakeTimer = null;
+
+            this.stopRatProverDriver();
+            this.stopRatVerifierDriver();
+
+            fsmIsClosed = true;
         }
     }
 
@@ -1256,14 +1273,20 @@ public class FSM implements FsmListener{
     }
 
     public void startIdscpHandshake() throws IDSCPv2Exception {
-        if (currentState.equals(STATE_CLOSED)){
-            //trigger handshake init
-            onControlMessage(InternalControlMessage.START_IDSCP_HANDSHAKE);
+        fsmIsBusy.lock();
+        try {
+            if (currentState.equals(STATE_CLOSED)) {
+                if (fsmIsClosed) {
+                    throw new IDSCPv2Exception("FSM is in a final closed state forever");
+                }
 
-            try {
+                //trigger handshake init
+                onControlMessage(InternalControlMessage.START_IDSCP_HANDSHAKE);
+
                 //wait until handshake was successful or failed
-                synchronized (idscpHandshakeLock) {
-                    idscpHandshakeLock.wait();
+                if (!handshakeResultAvailable) {
+                    System.out.println("lock handshake");
+                    idscpHandshakeLock.await();
                 }
 
                 if (!isConnected()){
@@ -1271,9 +1294,14 @@ public class FSM implements FsmListener{
                     throw new IDSCPv2Exception("Handshake failed");
                 }
 
-            } catch (InterruptedException e) {
-                throw new IDSCPv2Exception("Handshake failed because thread was interrupted");
+
+            } else {
+                throw new IDSCPv2Exception("Handshake has already been started");
             }
+        } catch (InterruptedException e) {
+            throw new IDSCPv2Exception("Handshake failed because thread was interrupted");
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 
@@ -1282,14 +1310,39 @@ public class FSM implements FsmListener{
         secureChannel.send(msg.toByteArray());
     }
 
+    @Override
+    public void onError(){
+        onControlMessage(InternalControlMessage.ERROR);
+        try {
+            listenerLatch.await();
+            listener.onClose();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onClose(){
+        onControlMessage(InternalControlMessage.ERROR); //toDo
+        try {
+            listenerLatch.await();
+            listener.onClose();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void send(IdscpMessage msg){
         //send messages from user only when idscp connection is established
-        synchronized(fsmIsBusy){
+        fsmIsBusy.lock();
+        try{
             if(isConnected()){
                 secureChannel.send(msg.toByteArray());
             } else {
                 LOG.error("Cannot send IDSCP_DATA because protocol is not established");
             }
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 
@@ -1302,13 +1355,13 @@ public class FSM implements FsmListener{
         listenerLatch.countDown();
     }
 
-    public void setEndpointConnectionId(String id){
-        this.secureChannel.setEndpointConnectionId(id);
-    }
-
     private void notifyHandshakeCompleteLock(){
-        synchronized (idscpHandshakeLock){
-            idscpHandshakeLock.notify();
+        fsmIsBusy.lock();
+        try {
+            handshakeResultAvailable = true;
+            idscpHandshakeLock.signal();
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 

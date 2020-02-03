@@ -1,16 +1,18 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 public class TimerThread extends Thread{
 
     private volatile boolean canceled = false;
     private int delay;
     private final Runnable timeoutHandler;
-    private final Object lock;
+    private final ReentrantLock fsmIsBusy;
 
-    TimerThread(int delay, Runnable timeoutHandler, Object lock){
+    TimerThread(int delay, Runnable timeoutHandler, ReentrantLock fsmIsBusy){
         this.delay = delay;
         this.timeoutHandler = timeoutHandler;
-        this.lock = lock;
+        this.fsmIsBusy = fsmIsBusy;
     }
 
     public void run(){
@@ -23,10 +25,13 @@ public class TimerThread extends Thread{
         if (canceled)
             return;
 
-        synchronized (lock){
+        fsmIsBusy.lock();
+        try {
             if (!canceled){
                 timeoutHandler.run();
             }
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 

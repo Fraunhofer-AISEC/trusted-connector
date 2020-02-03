@@ -30,8 +30,6 @@ import java.util.concurrent.CountDownLatch;
  *
  * close()  disconnects the serverThread
  *
- * setConnectionId(ConnectionId) set the internal connectionId, which is used for notifying the IDSCPv2Configuration
- *                                when the client quits the connection
  *
  * handshakeCompleted()        create a secureChannel, including this serverThread and provides it to the IDSCPv2Config
  *
@@ -48,8 +46,6 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     private volatile boolean running = true;
     private DataInputStream in;
     private DataOutputStream out;
-    private String connectionId = "empty_connection_id"; //race condition avoided using CountDownLatch
-    private CountDownLatch connectionIdLatch = new CountDownLatch(1);
     private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
     private IDSCPv2Callback configCallback;  //no race conditions
     private IdscpConnectionListener idscpServerCallback; //no race conditions
@@ -73,12 +69,6 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     }
 
     @Override
-    public void setConnectionId(String connectionId){
-        this.connectionId = connectionId;
-        connectionIdLatch.countDown();
-    }
-
-    @Override
     public void run(){
         //wait for new data while running
         byte[] buf;
@@ -93,31 +83,18 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 //timeout catches safeStop() call and allows to send server_goodbye
                 //alternative: close sslSocket and catch SocketException
                 //continue
-            } catch (SSLException e) {
-                LOG.error("SSL error");
-                e.printStackTrace();
-                running = false;
-                connectionIdLatch.countDown();
-                return;
             } catch (EOFException e){
+                onClose();
                 running = false;
-                connectionIdLatch.countDown();
             } catch (IOException e){
-                e.printStackTrace();
+                onError();
                 running = false;
-                connectionIdLatch.countDown();
             }
         }
+        closeSockets();
+    }
 
-        try {
-            connectionIdLatch.await();
-            idscpServerCallback.connectionClosedHandler(this.connectionId);
-            configCallback.connectionClosedHandler(this.connectionId);
-        } catch (InterruptedException e){
-            Thread.currentThread().interrupt();
-        }
-
-        LOG.trace("ServerThread is terminating");
+    private void closeSockets(){
         try {
             out.close();
             in.close();
@@ -130,6 +107,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     public void send(byte[] data) {
         if (!isConnected()){
             LOG.error("Server cannot send data because socket is not connected");
+            closeSockets();
         } else {
             try {
                 out.writeInt(data.length);
@@ -137,8 +115,27 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 out.flush();
                 LOG.trace("Send message: " + new String(data));
             } catch (IOException e){
-                LOG.error("Server cannot send data. {}",e.getMessage());
+                LOG.error("ServerThread cannot send data.");
+                closeSockets();
             }
+        }
+    }
+
+    private void onClose(){
+        try {
+            listenerLatch.await();
+            listener.onClose();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void onError(){
+        try {
+            listenerLatch.await();
+            listener.onError();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 

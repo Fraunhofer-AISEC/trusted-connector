@@ -25,7 +25,7 @@ public class InputListenerThread extends Thread implements InputListener {
     //private static final Logger LOG = LoggerFactory.getLogger(InputListenerThread.class);
 
     private DataInputStream in;
-    private ArrayList<DataAvailableListener> listeners = new ArrayList<>(); //no race conditions, could be empty list
+    private DataAvailableListener listener = null; //no race conditions, could be empty list
     private volatile boolean running = true;
 
     public InputListenerThread(InputStream in){
@@ -40,7 +40,7 @@ public class InputListenerThread extends Thread implements InputListener {
                 int len = in.readInt();
                 buf = new byte[len];
                 in.readFully(buf, 0, len);
-                notifyListeners(buf);
+                this.listener.onMessage(buf);
 
             } catch (SocketTimeoutException e) {
                 //timeout to catch safeStop() call, which allows save close and sending Client_Goodbye
@@ -48,26 +48,20 @@ public class InputListenerThread extends Thread implements InputListener {
                 //continue;
                 //toDo offset when timeout while reading ???
             } catch (EOFException e){
-                notifyListeners(TlsConstants.END_OF_STREAM.getBytes());
+                listener.onClose();
                 running = false; //terminate
             } catch (IOException e) {
-                //e.printStackTrace();
+                listener.onError();
                 running = false;
             }
         }
-        listeners.clear();
     }
 
     @Override
     public void register(DataAvailableListener listener) {
-        listeners.add(listener);
+        this.listener = listener;
     }
 
-    private void notifyListeners(byte[] bytes) {
-        for (DataAvailableListener listener : listeners){
-            listener.onMessage(bytes);
-        }
-    }
 
     @Override
     public void safeStop() {

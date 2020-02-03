@@ -46,7 +46,7 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
 
     @Override
     public void newConnectionHandler(IDSCPv2Connection connection) {
-        //connections.put(connection.getConnectionId(), connection);
+        System.out.println("New connection with id " + connection.getConnectionId());
     }
 
     @Override
@@ -57,6 +57,5 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
     @Override
     public void connectionClosedHandler(String connectionId) {
         System.out.println("Connection with id " + connectionId + " has been closed");
-        //connections.remove(connectionId);
     }
 }

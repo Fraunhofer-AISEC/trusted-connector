@@ -10,7 +10,6 @@ package de.fhg.aisec.ids.idscp2.idscp_core.secure_channel;
  * void onMessage(int len, byte[])      receive new raw data from connected endpoint
  * void send(byte[])                    send byte array to connected endpoint
  * boolean isConnected()                check if endpoint is connected
- * void setConnectionId(String id)
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -19,5 +18,4 @@ public interface SecureChannelEndpoint {
     void onMessage(byte[] bytes);
     void send(byte[] bytes);
     boolean isConnected();
-    void setConnectionId(String id);
 }

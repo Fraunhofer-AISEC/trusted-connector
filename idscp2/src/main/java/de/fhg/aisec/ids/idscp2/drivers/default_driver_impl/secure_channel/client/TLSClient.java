@@ -37,8 +37,6 @@ import java.util.concurrent.CountDownLatch;
  *
  * close()  disconnects the client
  *
- * setConnectionId(ConnectionId) set the internal connectionId, which is used for notifying the IDSCPv2Configuration
- *                                when the server quits the connection
  *
  * handshakeCompleted()         create a secureChannel, including this client; start inputListenerThread and transfer
  *                              the secureChannel to the IDSCPv2Configuration
@@ -60,8 +58,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private SecureChannelListener listener; //race conditions are avoided using CountDownLatch
     private CountDownLatch listenerLatch = new CountDownLatch(1);
     private IDSCPv2Callback callback; //race conditions are avoided because callback is initialized in constructor
-    private CountDownLatch connectionIdLatch = new CountDownLatch(1);
-    private String connectionId = "empty_connection_id";
+
 
     public TLSClient(IDSCPv2Settings clientSettings, IDSCPv2Callback callback)
             throws IOException, KeyManagementException, NoSuchAlgorithmException{
@@ -158,9 +155,23 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     @Override
-    public void setConnectionId(String connectionId){
-        this.connectionId = connectionId;
-        connectionIdLatch.countDown();
+    public void onClose(){
+        try {
+            listenerLatch.await();
+            listener.onClose();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void onError(){
+        try {
+            listenerLatch.await();
+            listener.onError();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -179,7 +190,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
                 LOG.debug("Send message: {}", new String(data));
             } catch (IOException e){
                 LOG.warn("Client cannot send data");
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
@@ -205,25 +216,11 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
     @Override
     public void onMessage(byte[] data) {
-        if ((new String(data, StandardCharsets.UTF_8)).equals(TlsConstants.END_OF_STREAM)){
-            //End of stream, connection is not available anymore
-            LOG.debug("Client is terminating after server disconnected");
-            disconnect();
-
-            try {
-                connectionIdLatch.await();
-                callback.connectionClosedHandler(this.connectionId);
-            } catch (InterruptedException e){
-                Thread.currentThread().interrupt();
-            }
-
-        } else {
-            try{
-                listenerLatch.await();
-                listener.onMessage(data);
-            } catch (InterruptedException e){
-                Thread.currentThread().interrupt();
-            }
+        try{
+            listenerLatch.await();
+            listener.onMessage(data);
+        } catch (InterruptedException e){
+            Thread.currentThread().interrupt();
         }
     }
 }

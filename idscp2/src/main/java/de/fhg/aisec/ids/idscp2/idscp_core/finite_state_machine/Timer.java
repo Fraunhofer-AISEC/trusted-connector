@@ -7,12 +7,12 @@ public class Timer {
     //toDo real time FIFO synchronization for whole state machine
 
     private TimerThread thread = null;
-    private final Object lock;
-    private final ReentrantLock mutex = new ReentrantLock();
+    private final ReentrantLock fsmIsBusy;
+    private final ReentrantLock mutex = new ReentrantLock(true);
     private final Runnable timeoutHandler;
 
-    Timer(Object lock, Runnable timeoutHandler){
-        this.lock = lock;
+    Timer(ReentrantLock fsmIsBusy, Runnable timeoutHandler){
+        this.fsmIsBusy = fsmIsBusy;
         this.timeoutHandler = timeoutHandler;
     }
 
@@ -23,7 +23,7 @@ public class Timer {
 
     public void start(int delay){
         mutex.lock();
-        thread = new TimerThread(delay, timeoutHandler, lock);
+        thread = new TimerThread(delay, timeoutHandler, fsmIsBusy);
         thread.start();
         mutex.unlock();
     }

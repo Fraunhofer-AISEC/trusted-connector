@@ -7,4 +7,6 @@ public interface FsmListener {
     void onControlMessage(InternalControlMessage controlMessage);
     void onRatProverMessage(InternalControlMessage controlMessage, IDSCPv2.IdscpMessage idscpMessage);
     void onRatVerifierMessage(InternalControlMessage controlMessage, IDSCPv2.IdscpMessage idscpMessage);
+    void onError();
+    void onClose();
 }

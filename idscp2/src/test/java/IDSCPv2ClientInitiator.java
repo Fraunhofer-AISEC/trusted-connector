@@ -33,7 +33,7 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
     @Override
     public void newConnectionHandler(IDSCPv2Connection connection) {
         this.connections.put(connection.getConnectionId(), connection);
-        //connection.close();
+        System.out.println("New connection with id " + connection.getConnectionId());
     }
 
     @Override
