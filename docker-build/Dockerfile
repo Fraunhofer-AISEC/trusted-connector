@@ -23,4 +23,4 @@ COPY run.sh .
 RUN chmod +x run.sh
 
 ENTRYPOINT ["/run.sh"]
-CMD ["build", "check", "dockerize", "--no-daemon", "--parallel", "-PdockerTag=develop"]
+CMD ["build", "check", "--no-daemon", "--parallel"]
