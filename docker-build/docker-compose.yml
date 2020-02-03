@@ -15,8 +15,3 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.gradle:/.gradle
       - ~/.m2:/.m2
-    build:
-      context: '.'
-      args:
-        PLATFORM: ${PLATFORM:-amd64}
-        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}

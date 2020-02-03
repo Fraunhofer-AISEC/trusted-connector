@@ -1,0 +1,45 @@
+version: '3'
+services:
+
+  # Trusted Connector build container
+  build-container:
+    image: fraunhoferaisec/docker-build:${EXAMPLE_TAG:-develop}
+    build:
+      context: '../docker-build'
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
+
+  # Trusted Connector core platform
+  core:
+    image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
+    build:
+      context: '../karaf-assembly'
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
+
+  # TPM simulator
+  tpmsim:
+    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
+    build:
+      context: '../examples/tpmsim'
+
+  # Trusted third party (RAT repository) simulator
+  ttpsim:
+    image: fraunhoferaisec/ttpsim:${EXAMPLE_TAG:-develop}
+    build:
+      context: '../rat-repository'
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-debian:buster-slim}
+        VERSION: ${PROJECT_VERSION}
+
+  # IDSCP example data app (REST consumer, displays web page)
+  example-idscp-consumer-app:
+    image: fraunhoferaisec/example-server:${EXAMPLE_TAG:-develop}
+    build:
+      context: '../examples/example-idscp/example-server'
+
+  # IDSCP example data provider
+  example-idscp-provider-app:
+    image: fraunhoferaisec/example-client:${EXAMPLE_TAG:-develop}
+    build:
+      context: '../examples/example-idscp/example-client'
