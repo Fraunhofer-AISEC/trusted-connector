@@ -16,4 +16,4 @@ echo "In case of build errors, please verify that recent versions of docker and 
 echo ""
 # Pull is allowed to fail, ignore if it happens.
 ! docker-compose -f docker-build/docker-compose.yml pull
-docker-compose -f docker-build/docker-compose.yml run --rm build-container
+docker-compose -f docker-build/docker-compose.yml run --rm build-container "$*"
