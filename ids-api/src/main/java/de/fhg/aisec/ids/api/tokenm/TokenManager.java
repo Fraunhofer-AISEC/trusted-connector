@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.api.tokenm;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 
 import java.nio.file.Path;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Map;
 
 /**
  * Interface of the Token Manager.
@@ -34,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public interface TokenManager {
 
-  boolean acquireToken(
+  Map<String, Object> acquireToken(
       Path targetDirectory,
       String dapsUrl,
       String keyStoreName,
@@ -43,14 +43,13 @@ public interface TokenManager {
       String trustStoreName,
       String connectorUUID);
 
-  boolean verifyJWT(
+  Map<String, Object> verifyJWT(
       String dynamicAttributeToken,
       String targetAudience,
-      String dapsUrl,
-      boolean extractAsJson);
+      String dapsUrl) throws Exception;
 
   boolean validateDATSecurityAttributes(
+      Map<String, Object> claims,
           ConnectionSettings connectionSettings);
 
-  ReentrantLock semaphore();
 }

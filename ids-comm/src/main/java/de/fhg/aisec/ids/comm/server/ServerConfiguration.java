@@ -22,10 +22,11 @@ package de.fhg.aisec.ids.comm.server;
 import de.fhg.aisec.ids.comm.CertificatePair;
 import de.fhg.aisec.ids.comm.IdscpConfiguration;
 import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
-import java.net.URI;
-import java.security.KeyStore;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.net.URI;
+import java.security.KeyStore;
 
 /**
  * Configuration of the server-side (Provider) part of the IDSC protocol.
@@ -88,7 +89,7 @@ public class ServerConfiguration implements IdscpConfiguration {
     }
 
     @NonNull
-    public Builder ttpUrl(@NonNull URI ttpUri) {
+    public Builder ttpUrl(@Nullable URI ttpUri) {
       config.ttpUri = ttpUri;
       return this;
     }
@@ -161,14 +162,17 @@ public class ServerConfiguration implements IdscpConfiguration {
     return keyStore;
   }
 
+  @NonNull
   public String getKeyStorePassword() {
     return keyStorePassword;
   }
 
+  @NonNull
   public String getKeyManagerPassword() {
     return keyManagerPassword;
   }
 
+  @NonNull
   public String getCertAlias() {
     return certAlias;
   }

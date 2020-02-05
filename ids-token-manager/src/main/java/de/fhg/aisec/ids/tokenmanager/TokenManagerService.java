@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import okhttp3.*;
@@ -37,7 +38,6 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -58,8 +58,8 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -70,29 +70,27 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component(immediate = true, name = "ids-tokenmanager")
 public class TokenManagerService implements TokenManager {
   private static final Logger LOG = LoggerFactory.getLogger(TokenManagerService.class);
-  public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
   @Reference(cardinality = ReferenceCardinality.MANDATORY)
   private Settings settings = null;
   private SSLSocketFactory sslSocketFactory = null;
-  private String jwtBodyAsJson = null;
-  private ReentrantLock reentrantLock = new ReentrantLock(); //reentrantLock for jwtBodyAsJson
 
   /**
    * Method to aquire a Dynamic Attribute Token (DAT) from a Dynamic Attribute Provisioning Service
    * (DAPS)
    *
-   * @param targetDirectory The directory the keystore resides in
-   * @param dapsUrl The token aquiry URL (e.g., http://daps.aisec.fraunhofer.de/token
-   * @param keyStoreName Name of the keystore file (e.g., server-keystore.jks)
-   * @param keyStorePassword Password of keystore
+   * @param targetDirectory   The directory the keystore resides in
+   * @param dapsUrl           The token aquiry URL (e.g., http://daps.aisec.fraunhofer.de/token
+   * @param keyStoreName      Name of the keystore file (e.g., server-keystore.jks)
+   * @param keyStorePassword  Password of keystore
    * @param keystoreAliasName Alias of the connector's key entry. For default keystores with only
-   *     one entry, this is '1'
-   * @param trustStoreName Name of the truststore file
-   * @param connectorUUID The UUID used to register the connector at the DAPS. Should be replaced by
-   *     working code that does this automatically
+   *                          one entry, this is '1'
+   * @param trustStoreName    Name of the truststore file
+   * @param connectorUUID     The UUID used to register the connector at the DAPS. Should be replaced by
+   *                          working code that does this automatically
    */
-  public boolean acquireToken(
+  @Override
+  public Map<String, Object> acquireToken(
       Path targetDirectory,
       String dapsUrl,
       String keyStoreName,
@@ -104,10 +102,8 @@ public class TokenManagerService implements TokenManager {
     String targetAudience = "IDS_Connector";
     //toDo: This is a bug in the DAPS. Audience should be not set to a default value
     // "IDS_Connector"
-    String issuer = connectorUUID;
-    String subject = connectorUUID;
     String dynamicAttributeToken = "INVALID_TOKEN";
-    boolean tokenVerified = false;
+    Map<String, Object> jwtClaims = null;
 
     // Try clause for setup phase (loading keys, building trust manager)
     try {
@@ -131,7 +127,7 @@ public class TokenManagerService implements TokenManager {
       jksTrustStoreInputStream.close();
 
       // get private key
-      Key privKey = (PrivateKey) keystore.getKey(keystoreAliasName, keyStorePassword.toCharArray());
+      Key privKey = keystore.getKey(keystoreAliasName, keyStorePassword.toCharArray());
       // Get certificate of public key
       X509Certificate cert = (X509Certificate) keystore.getCertificate(keystoreAliasName);
 
@@ -159,8 +155,8 @@ public class TokenManagerService implements TokenManager {
       Date expiryDate = Date.from(Instant.now().plusSeconds(86400));
       JwtBuilder jwtb =
           Jwts.builder()
-              .setIssuer(issuer)
-              .setSubject(subject)
+              .setIssuer(connectorUUID)
+              .setSubject(connectorUUID)
               .setExpiration(expiryDate)
               .setIssuedAt(Date.from(Instant.now()))
               .setAudience(targetAudience)
@@ -202,7 +198,7 @@ public class TokenManagerService implements TokenManager {
 
       LOG.info("Dynamic Attribute Token: " + dynamicAttributeToken);
 
-      tokenVerified = verifyJWT(dynamicAttributeToken, targetAudience, dapsUrl, false);
+      jwtClaims = verifyJWT(dynamicAttributeToken, targetAudience, dapsUrl);
     } catch (KeyStoreException
         | NoSuchAlgorithmException
         | CertificateException
@@ -214,22 +210,19 @@ public class TokenManagerService implements TokenManager {
       LOG.error("Something else went wrong:", e);
     }
 
-    if (tokenVerified) {
-      settings.setDynamicAttributeToken(dynamicAttributeToken);
-    }
+    settings.setDynamicAttributeToken(dynamicAttributeToken);
 
-    return tokenVerified;
+    return jwtClaims;
   }
 
-  public boolean verifyJWT(
+  @Override
+  public Map<String, Object> verifyJWT(
       String dynamicAttributeToken,
       String targetAudience,
-      String dapsUrl,
-      boolean extractAsJson) {
-    boolean verificationSucceeded = false;
-
-    if (sslSocketFactory == null) //should be initialized in acquireToken() always before verifyJWT() is called
-      return false;
+      String dapsUrl) throws Exception {
+    if (sslSocketFactory == null) {
+      throw new JwtException("SSLSocketFactory is null, acquireToken() must be called first!");
+    }
 
     try {
       // The HttpsJwks retrieves and caches keys from a the given HTTPS JWKS endpoint.
@@ -241,9 +234,8 @@ public class TokenManagerService implements TokenManager {
       httpsJkws.setSimpleHttpGet(getInstance);
 
       // The HttpsJwksVerificationKeyResolver uses JWKs obtained from the HttpsJwks and will select
-      // the
-      // most appropriate one to use for verification based on the Key ID and other factors provided
-      // in the header of the JWS/JWT.
+      // the most appropriate one to use for verification based on the Key ID and other factors
+      // provided in the header of the JWS/JWT.
       HttpsJwksVerificationKeyResolver httpsJwksKeyResolver =
           new HttpsJwksVerificationKeyResolver(httpsJkws);
 
@@ -277,12 +269,7 @@ public class TokenManagerService implements TokenManager {
       JwtClaims jwtClaims = jwtConsumer.processToClaims(dynamicAttributeToken);
       LOG.info("JWT validation succeeded! " + jwtClaims);
 
-      if(extractAsJson){
-        //extract Jwt as Json Object for verifying JWT
-        this.jwtBodyAsJson = jwtClaims.toJson();
-      }
-
-      verificationSucceeded = true;
+      return jwtClaims.getClaimsMap();
     } catch (InvalidJwtException e) {
       // InvalidJwtException will be thrown, if the JWT failed processing or validation in anyway.
       // Hopefully with meaningful explanations(s) about what went wrong.
@@ -308,38 +295,44 @@ public class TokenManagerService implements TokenManager {
           LOG.error("Malformed claim encountered", e1);
         }
       }
+
+      throw e;
     }
-    return verificationSucceeded;
   }
 
-  public boolean validateDATSecurityAttributes(ConnectionSettings connectionSettings){
+  @Override
+  @SuppressWarnings("unchecked")
+  public boolean validateDATSecurityAttributes(Map<String, Object> claims, ConnectionSettings connectionSettings) {
     try {
-      //get securityProfile as Json
-      JSONObject json = new JSONObject(this.jwtBodyAsJson);
-      JSONObject idsSecurityAttributes = json.getJSONObject("ids_attributes").getJSONObject("security_profile");
-
-      //validate audit_logging
-      if (Integer.parseInt(connectionSettings.getAuditLogging()) > idsSecurityAttributes.getInt("audit_logging")){
-        LOG.info("Client does not support the security requirements for audit_logging.");
+      Object idsAttributesObject = claims.get("ids_attributes");
+      Map<String, Object> securityProfile;
+      if (idsAttributesObject instanceof Map) {
+        var securityProfileObject = ((Map<String, Object>) idsAttributesObject).get("security_profile");
+        if (securityProfileObject instanceof Map) {
+          securityProfile = (Map<String, Object>) securityProfileObject;
+        } else {
+          LOG.warn("No security_profile found in claims {}", securityProfileObject);
+          return false;
+        }
+      } else {
+        LOG.warn("No ids_attributes claims found in claims {}", idsAttributesObject);
         return false;
       }
 
-      //toDo validate further security attributes
+      // Validate audit_logging
+      var auditLogging = Integer.parseInt(securityProfile.get("audit_logging").toString());
+      if (Integer.parseInt(connectionSettings.getAuditLogging()) > auditLogging) {
+        LOG.warn("Client does not support the security requirements for audit_logging.");
+        return false;
+      }
 
-    } catch (JSONException e){
-      //JSONObject not found
-      LOG.info(e.getMessage());
-      return false;
-    } catch (NumberFormatException e){
-      LOG.error("Connection settings contains an invalid number format.");
+      // TODO: validate further security attributes
+    } catch (NumberFormatException e) {
+      LOG.error("Connection settings contains an invalid number format.", e);
       return false;
     }
 
     return true;
-  }
-
-  public ReentrantLock semaphore() {
-    return reentrantLock;
   }
 
   @Activate
