@@ -127,7 +127,6 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.debug("No transition available for given event " + event.toString());
                     LOG.debug("Stay in state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
                     return STATE_CLOSED;
                 }
         );
@@ -135,7 +134,7 @@ public class FSM implements FsmListener{
         /*---------------------------------------------------
          * STATE_WAIT_FOR_HELLO - Transition Description
          * ---------------------------------------------------
-         * onICM: error --> {send IDSCP_CLOSE} ---> STATE_CLOSED
+         * onICM: error --> {} ---> STATE_CLOSED
          * onICM: stop --> {send IDSCP_CLOSE} ---> STATE_CLOSED
          * onICM: timeout --> {send IDSCP_CLOSE} ---> STATE_CLOSED
          * onMessage: IDSCP_CLOSE---> {} ---> STATE_CLOSED
@@ -148,10 +147,9 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_HELLO.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
                     handshakeTimer.cancelTimeout();
-                    LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    LOG.debug("An internal control error occurred");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -162,7 +160,7 @@ public class FSM implements FsmListener{
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -172,7 +170,7 @@ public class FSM implements FsmListener{
                     LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake Timeout", IdscpClose.CloseCause.TIMEOUT));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -182,7 +180,7 @@ public class FSM implements FsmListener{
                     handshakeTimer.cancelTimeout();
                     LOG.debug("Received IDSCP_CLOSE");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -201,7 +199,7 @@ public class FSM implements FsmListener{
                         sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No match for RAT Prover mechanism",
                                 IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_PROVER));
                         LOG.debug("Switch to state STATE_CLOSED");
-                        notifyHandshakeCompleteLock();
+                        connectionClosed();
                         return STATE_CLOSED;
                     }
 
@@ -212,7 +210,7 @@ public class FSM implements FsmListener{
                         sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No match for RAT Verifier mechanism",
                                 IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_VERIFIER));
                         LOG.debug("Switch to state STATE_CLOSED");
-                        notifyHandshakeCompleteLock();
+                        connectionClosed();
                         return STATE_CLOSED;
                     }
 
@@ -225,7 +223,7 @@ public class FSM implements FsmListener{
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
                         sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No valid DAT", IdscpClose.CloseCause.NO_VALID_DAT));
                         LOG.debug("Switch to state STATE_CLOSED");
-                        notifyHandshakeCompleteLock();
+                        connectionClosed();
                         return STATE_CLOSED;
                     }
                     this.remoteDat = dat;
@@ -255,7 +253,7 @@ public class FSM implements FsmListener{
         /*---------------------------------------------------
          * STATE_WAIT_FOR_RAT - Transition Description
          * ---------------------------------------------------
-         * onICM: error ---> {ratP.stop(), ratV.stop(), timeouts.stop(), send IDSCP_CLOSE} ---> IDSCP_CLOSED
+         * onICM: error ---> {ratP.stop(), ratV.stop(), timeouts.stop()} ---> IDSCP_CLOSED
          * onICM: stop ---> {ratP.stop(), ratV.stop(), timeouts.stop(), send IDSCP_CLOSE} ---> IDSCP_CLOSED
          * onICM: rat_prover_ok ---> {} ---> STATE_WAIT_FOR_RAT_VERIFIER
          * onICM: rat_verifier_ok ---> {set rat timeout} ---> STATE_WAIT_FOR_RAT_PROVER
@@ -273,28 +271,19 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_WAIT_FOR_RAT.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event ->  {
-                    LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    stopRatProverDriver();
-                    stopRatVerifierDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    LOG.debug("An internal control error occurred");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
 
         STATE_WAIT_FOR_RAT.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    stopRatProverDriver();
-                    stopRatVerifierDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -320,12 +309,9 @@ public class FSM implements FsmListener{
                 event -> {
                     LOG.error("RAT_PROVER failed");
                     LOG.debug("Send IDSC_CLOSE");
-                    stopRatVerifierDriver();
-                    this.datTimer.cancelTimeout();
-                    this.handshakeTimer.cancelTimeout();
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("RAT_PROVER failed", IdscpClose.CloseCause.RAT_PROVER_FAILED));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -333,13 +319,10 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT.addTransition(InternalControlMessage.RAT_VERIFIER_FAILED.getValue(), new Transition(
                 event -> {
                     LOG.error("RAT_VERIFIER failed");
-                    stopRatProverDriver();
-                    this.datTimer.cancelTimeout();
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("RAT_VERIFIER failed", IdscpClose.CloseCause.RAT_VERIFIER_FAILED));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -377,12 +360,9 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    stopRatProverDriver();
-                    stopRatVerifierDriver();
-                    this.datTimer.cancelTimeout();
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake timeout", IdscpClose.CloseCause.TIMEOUT));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -420,12 +400,8 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT.addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
-                    stopRatVerifierDriver();
-                    stopRatProverDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -441,7 +417,7 @@ public class FSM implements FsmListener{
         /*---------------------------------------------------
          * STATE_WAIT_FOR_RAT_VERIFIER - Transition Description
          * ---------------------------------------------------
-         * onICM: error ---> {send IDSCP_CLOSE, stop RAT_VERIFIER} ---> STATE_CLOSED
+         * onICM: error ---> {stop RAT_VERIFIER} ---> STATE_CLOSED
          * onICM: close ---> {send IDSCP_CLOSE, stop RAT_VERIFIER} ---> STATE_CLOSED
          * onICM: dat_timeout ---> {send IDSCP_DAT_EXPIRED, cancel ratV} ---> STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER
          * onICM: timeout ---> {send IDSCP_CLOSE, stop RAT_VERIFIER} ---> STATE_CLOSED
@@ -456,26 +432,19 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_WAIT_FOR_RAT_VERIFIER.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    stopRatVerifierDriver();
-                    this.datTimer.cancelTimeout();
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
 
         STATE_WAIT_FOR_RAT_VERIFIER.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
-                    LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    this.datTimer.cancelTimeout();
-                    stopRatVerifierDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    LOG.debug("An internal control error occurred");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -483,11 +452,9 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT_VERIFIER.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    stopRatVerifierDriver();
-                    datTimer.cancelTimeout();
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake timeout", IdscpClose.CloseCause.TIMEOUT));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -511,7 +478,7 @@ public class FSM implements FsmListener{
                     LOG.debug("Start RAT Timer");
                     this.ratTimer.resetTimeout(ratTimeoutDelay);
                     LOG.debug("Switch to state STATE_ESTABLISHED");
-                    notifyHandshakeCompleteLock();
+                    connectionEstablished();
                     return STATE_ESTABLISHED;
                 }
         ));
@@ -519,12 +486,10 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT_VERIFIER.addTransition(InternalControlMessage.RAT_VERIFIER_FAILED.getValue(), new Transition(
                 event -> {
                     LOG.error("RAT_VERIFIER failed");
-                    this.handshakeTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("RAT_VERIFIER failed", IdscpClose.CloseCause.RAT_VERIFIER_FAILED));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -541,11 +506,8 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT_VERIFIER.addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
-                    stopRatVerifierDriver();
-                    this.datTimer.cancelTimeout();
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -594,7 +556,7 @@ public class FSM implements FsmListener{
          * STATE_WAIT_FOR_RAT_PROVER - Transition Description
          * ---------------------------------------------------
          * onICM: stop ---> {send IDSCP_CLOSE, stop RAT_PROVER, timeouts.terminate()} ---> STATE_CLOSED
-         * onICM: error ---> {send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
+         * onICM: error ---> {stop RAT_PROVER} ---> STATE_CLOSED
          * onICM: timeout ---> {send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
          * onICM: dat_timeout ---> {send IDSCP_DAT_EXPIRED} ---> STATE_WAIT_FOR_DAT_AND_RAT
          * onICM: rat_prover_ok ---> {} ---> STATE_ESTABLISHED
@@ -609,28 +571,19 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_WAIT_FOR_RAT_PROVER.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    stopRatProverDriver();
-                    this.ratTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
 
         STATE_WAIT_FOR_RAT_PROVER.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
-                    LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    stopRatProverDriver();
-                    this.ratTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
-                    this.handshakeTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    LOG.debug("An internal control error occurred");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -638,12 +591,9 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT_PROVER.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    stopRatProverDriver();
-                    this.datTimer.cancelTimeout();
-                    this.ratTimer.cancelTimeout();
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake timeout", IdscpClose.CloseCause.TIMEOUT));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -665,7 +615,7 @@ public class FSM implements FsmListener{
                     LOG.debug("Received RAT_PROVER OK");
                     this.handshakeTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_ESTABLISHED");
-                    notifyHandshakeCompleteLock();
+                    connectionEstablished();
                     return STATE_ESTABLISHED;
                 }
         ));
@@ -673,14 +623,10 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT_PROVER.addTransition(InternalControlMessage.RAT_PROVER_FAILED.getValue(), new Transition(
                 event -> {
                     LOG.error("RAT_PROVER failed");
-                    stopRatProverDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
-                    this.ratTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("RAT_PROVER failed", IdscpClose.CloseCause.RAT_PROVER_FAILED));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -710,12 +656,8 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_RAT_PROVER.addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
-                    stopRatProverDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    this.datTimer.cancelTimeout();
-                    this.ratTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -762,7 +704,7 @@ public class FSM implements FsmListener{
          * STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER - Transition Description
          * ---------------------------------------------------
          * onICM: stop ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
-         * onICM: error ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
+         * onICM: error ---> {} ---> STATE_CLOSED
          * onICM: timeout ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
          * onMessage: IDSCP_CLOSE ---> {} ---> STATE_CLOSED
          * onMessage: IDSCP_DAT(success) --> {verify DAT, set det_timeout, start RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT_VERIFEIER
@@ -773,22 +715,19 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
 
         STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
-                    LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    this.handshakeTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    LOG.debug("An internal control error occurred");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -798,7 +737,7 @@ public class FSM implements FsmListener{
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake timeout", IdscpClose.CloseCause.TIMEOUT));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -806,9 +745,8 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER.addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -824,7 +762,7 @@ public class FSM implements FsmListener{
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
                         sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No valid DAT", IdscpClose.CloseCause.NO_VALID_DAT));
                         LOG.debug("Switch to state STATE_CLOSED");
-                        notifyHandshakeCompleteLock();
+                        connectionClosed();
                         return STATE_CLOSED;
                     }
                     this.remoteDat = dat;
@@ -876,7 +814,7 @@ public class FSM implements FsmListener{
          * STATE_WAIT_FOR_DAT_AND_RAT - Transition Description
          * ---------------------------------------------------
          * onICM: stop ---> {send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
-         * onICM: error ---> {send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
+         * onICM: error ---> {stop RAT_PROVER} ---> STATE_CLOSED
          * onICM: timeout ---> {send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
          * onICM: rat_prover_ok ---> {} ---> STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER
          * onICM: rat_prover_failed ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
@@ -891,24 +829,19 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_WAIT_FOR_DAT_AND_RAT.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    stopRatProverDriver();
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
 
         STATE_WAIT_FOR_DAT_AND_RAT.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
-                    LOG.debug("An internal control error occurred, send IDSC_CLOSE");
-                    stopRatProverDriver();
-                    this.handshakeTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred", IdscpClose.CloseCause.ERROR));
+                    LOG.debug("An internal control error occurred");
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -916,10 +849,9 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_DAT_AND_RAT.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    stopRatProverDriver();
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake timeout", IdscpClose.CloseCause.TIMEOUT));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -936,11 +868,10 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_DAT_AND_RAT.addTransition(InternalControlMessage.RAT_PROVER_FAILED.getValue(), new Transition(
                 event -> {
                     LOG.error("RAT_PROVER failed");
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Send IDSC_CLOSE");
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("RAT_PROVER failed", IdscpClose.CloseCause.RAT_PROVER_FAILED));
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -957,10 +888,8 @@ public class FSM implements FsmListener{
         STATE_WAIT_FOR_DAT_AND_RAT.addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
-                    stopRatProverDriver();
-                    this.handshakeTimer.cancelTimeout();
                     LOG.debug("Switch to state STATE_CLOSED");
-                    notifyHandshakeCompleteLock();
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -973,11 +902,10 @@ public class FSM implements FsmListener{
                     byte[] dat = event.getIdscpMessage().getIdscpDat().getToken().toByteArray();
                     int datValidityPeriod;
                     if (0 > (datValidityPeriod = this.dapsDriver.verifyToken(dat))){
-                        stopRatProverDriver();
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
                         sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No valid DAT", IdscpClose.CloseCause.NO_VALID_DAT));
                         LOG.debug("Switch to state STATE_CLOSED");
-                        notifyHandshakeCompleteLock();
+                        connectionClosed();
                         return STATE_CLOSED;
                     }
                     this.remoteDat = dat;
@@ -1034,7 +962,7 @@ public class FSM implements FsmListener{
          * STATE_ESTABLISHED - Transition Description
          * ---------------------------------------------------
          * onICM: error ---> {timeouts.cancel(), send IDSCP_CLOSE} ---> STATE_CLOSED
-         * onICM: stop ---> {timeouts.cancel(), send IDSCP_CLOSE} ---> STATE_CLOSED
+         * onICM: stop ---> {timeouts.cancel()} ---> STATE_CLOSED
          * onICM: re_rat ---> {send IDSCP_RE_RAT, start RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT_VERIFIER
          * //FIXME onICM: send_data ---> {send IDS_DATA} ---> STATE_ESTABLISHED
          * onICM: dat_timeout ---> {send IDSCP_DAT_EXPIRED} ---> STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER
@@ -1046,12 +974,9 @@ public class FSM implements FsmListener{
          * --------------------------------------------------- */
         STATE_ESTABLISHED.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
                 event -> {
-                    LOG.debug("Error occurred, send IDSCP_CLOSE and close idscp connection");
-                    this.datTimer.cancelTimeout();
-                    this.ratTimer.cancelTimeout();
-                    sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Error occurred",
-                            IdscpClose.CloseCause.ERROR));
+                    LOG.debug("Error occurred, close idscp connection");
                     LOG.debug("Switch to state STATE_CLOSED");
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -1059,10 +984,9 @@ public class FSM implements FsmListener{
         STATE_ESTABLISHED.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSCP_CLOSE");
-                    this.datTimer.cancelTimeout();
-                    this.ratTimer.cancelTimeout();
                     sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close", IdscpClose.CloseCause.USER_SHUTDOWN));
                     LOG.debug("Switch to state STATE_CLOSED");
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -1137,9 +1061,8 @@ public class FSM implements FsmListener{
         STATE_ESTABLISHED.addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Receive IDSCP_CLOSED");
-                    datTimer.cancelTimeout();
-                    ratTimer.cancelTimeout();
                     LOG.debug("Switch to STATE_CLOSED");
+                    connectionClosed();
                     return STATE_CLOSED;
                 }
         ));
@@ -1284,8 +1207,7 @@ public class FSM implements FsmListener{
                 onControlMessage(InternalControlMessage.START_IDSCP_HANDSHAKE);
 
                 //wait until handshake was successful or failed
-                if (!handshakeResultAvailable) {
-                    System.out.println("lock handshake");
+                while (!handshakeResultAvailable) {
                     idscpHandshakeLock.await();
                 }
 
@@ -1293,7 +1215,6 @@ public class FSM implements FsmListener{
                     //handshake failed, throw exception
                     throw new IDSCPv2Exception("Handshake failed");
                 }
-
 
             } else {
                 throw new IDSCPv2Exception("Handshake has already been started");
@@ -1313,22 +1234,43 @@ public class FSM implements FsmListener{
     @Override
     public void onError(){
         onControlMessage(InternalControlMessage.ERROR);
-        try {
-            listenerLatch.await();
-            listener.onClose();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public void onClose(){
-        onControlMessage(InternalControlMessage.ERROR); //toDo
+        onControlMessage(InternalControlMessage.ERROR);
+    }
+
+    private void connectionEstablished(){
+        fsmIsBusy.lock();
         try {
-            listenerLatch.await();
-            listener.onClose();
+            if (!handshakeResultAvailable) {
+                notifyHandshakeCompleteLock();
+            }
+        } finally {
+            fsmIsBusy.unlock();
+        }
+    }
+
+    private void connectionClosed(){
+        fsmIsBusy.lock();
+        try {
+            if (handshakeResultAvailable){
+                listenerLatch.await();
+                listener.onClose();
+            } else {
+                notifyHandshakeCompleteLock();
+            }
+            //terminate timeouts, rat drivers
+            this.handshakeTimer.cancelTimeout();
+            this.datTimer.cancelTimeout();
+            this.ratTimer.cancelTimeout();
+            stopRatVerifierDriver();
+            stopRatProverDriver();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
+        } finally {
+            fsmIsBusy.unlock();
         }
     }
 

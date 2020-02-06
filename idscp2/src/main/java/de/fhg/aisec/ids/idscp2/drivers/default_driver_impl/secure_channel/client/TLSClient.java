@@ -149,7 +149,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                //e.printStackTrace();
+                //nothing to do
             }
         }
     }
@@ -181,7 +181,8 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
     public void send(byte[] data){
         if (!isConnected()){
-            LOG.warn("Client cannot send data because socket is not connected");
+            LOG.error("Client cannot send data because socket is not connected");
+            onError();
         } else {
             try {
                 out.writeInt(data.length);
@@ -189,8 +190,8 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
                 out.flush();
                 LOG.debug("Send message: {}", new String(data));
             } catch (IOException e){
-                LOG.warn("Client cannot send data");
-                //e.printStackTrace();
+                LOG.error("Client cannot send data");
+                onError();
             }
         }
     }

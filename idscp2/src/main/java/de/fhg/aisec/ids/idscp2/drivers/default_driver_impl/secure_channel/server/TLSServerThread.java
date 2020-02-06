@@ -108,6 +108,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         if (!isConnected()){
             LOG.error("Server cannot send data because socket is not connected");
             closeSockets();
+            onError();
         } else {
             try {
                 out.writeInt(data.length);
@@ -117,6 +118,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             } catch (IOException e){
                 LOG.error("ServerThread cannot send data.");
                 closeSockets();
+                onError();
             }
         }
     }

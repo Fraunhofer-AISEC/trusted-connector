@@ -39,10 +39,8 @@ public class IDSCPv2Server implements IdscpConnectionListener{
 
     public void terminateAllSessions(){
         for (IDSCPv2Connection c : connections.values()){
-            if (c.isConnected()){
-                c.close();
-                LOG.debug("Idscp connection with id {} has been closed", c.getConnectionId());
-            }
+            c.close();
+            LOG.debug("Idscp connection with id {} has been closed", c.getConnectionId());
             connections.remove(c.getConnectionId());
         }
     }

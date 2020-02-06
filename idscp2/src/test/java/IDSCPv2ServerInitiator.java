@@ -37,7 +37,7 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
         }
         //secureServer.safeStop();
         try {
-            Thread.sleep(120000); //run server for 2 minutes
+            Thread.sleep(20000); //run server for 2 minutes
         } catch (Exception e){
             return;
         }
@@ -46,16 +46,16 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
 
     @Override
     public void newConnectionHandler(IDSCPv2Connection connection) {
-        System.out.println("New connection with id " + connection.getConnectionId());
+        System.out.println("User: New connection with id " + connection.getConnectionId());
     }
 
     @Override
     public void errorHandler(String error) {
-        System.out.println("Error occurred: " + error);
+        System.out.println("User: Error occurred: " + error);
     }
 
     @Override
     public void connectionClosedHandler(String connectionId) {
-        System.out.println("Connection with id " + connectionId + " has been closed");
+        System.out.println("User: Connection with id " + connectionId + " has been closed");
     }
 }

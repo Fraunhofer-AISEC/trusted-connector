@@ -19,11 +19,14 @@ public class TimerThread extends Thread{
         try {
             Thread.sleep(delay * 1000);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            if (!canceled) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        if (canceled) {
             return;
         }
-        if (canceled)
-            return;
 
         fsmIsBusy.lock();
         try {
@@ -37,5 +40,6 @@ public class TimerThread extends Thread{
 
     public void safeStop(){
         canceled = true;
+        this.interrupt();
     }
 }

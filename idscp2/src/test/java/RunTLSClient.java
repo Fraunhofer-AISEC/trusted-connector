@@ -13,6 +13,5 @@ public class RunTLSClient {
 
         IDSCPv2ClientInitiator initiator = new IDSCPv2ClientInitiator();
         initiator.init(settings);
-
     }
 }
