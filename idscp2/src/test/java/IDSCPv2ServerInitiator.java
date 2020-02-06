@@ -37,7 +37,7 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
         }
         //secureServer.safeStop();
         try {
-            Thread.sleep(20000); //run server for 2 minutes
+            Thread.sleep(120000); //run server for 2 minutes
         } catch (Exception e){
             return;
         }

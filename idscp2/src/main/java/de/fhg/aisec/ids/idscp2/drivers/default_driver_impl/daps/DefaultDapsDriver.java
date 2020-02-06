@@ -16,6 +16,6 @@ public class DefaultDapsDriver implements DapsDriver {
 
     @Override
     public int verifyToken(byte[] dat) {
-        return 3600;
+        return 20;
     } //returns number of seconds until dat is valid
 }

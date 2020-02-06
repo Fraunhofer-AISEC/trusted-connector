@@ -30,14 +30,8 @@ public class State {
     void setNoTransitionHandler(Function<Event, State> noTransitionHandler) {
         this.noTransitionHandler = noTransitionHandler;
     }
-/*
-    protected void runEntryCode(){
 
-    }
+    public void runEntryCode() {}
 
-    protected void runExitCode(){
-
-    }
-
- */
+    public void runExitCode() {}
 }
