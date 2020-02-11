@@ -22,7 +22,7 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
 fi
 
 OPTIONS=t:b:f:
-LONGOPTS=example-tag:,base-image:,file:,build-container
+LONGOPTS=example-tag:,base-image:,file:,docker-build-tag:,build-container
 
 ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
 if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
@@ -33,6 +33,7 @@ fi
 eval set -- "$PARSED"
 
 EXAMPLE_TAG_ARG="develop"
+DOCKER_BUILD_TAG_ARG="develop"
 BASE_IMAGE_ARG="debian:buster-slim"
 FILES=""
 BUILD_CONTAINER=0
@@ -49,6 +50,10 @@ while true; do
     ;;
   -b | --base-image)
     BASE_IMAGE_ARG="$2"
+    shift 2
+    ;;
+  --docker-build-tag)
+    DOCKER_BUILD_TAG_ARG="$2"
     shift 2
     ;;
   --build-container)
@@ -68,6 +73,7 @@ done
 
 # Export vars for buildx bake yaml resolution
 export EXAMPLE_TAG="$EXAMPLE_TAG_ARG"
+export DOCKER_BUILD_TAG="$DOCKER_BUILD_TAG_ARG"
 export BASE_IMAGE="$BASE_IMAGE_ARG"
 printf "######################################################################\n"
 printf "Using build tag \"%s\" and base image \"%s\"\n" "$EXAMPLE_TAG" "$BASE_IMAGE"

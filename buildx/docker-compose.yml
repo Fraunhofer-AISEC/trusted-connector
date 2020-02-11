@@ -3,7 +3,7 @@ services:
 
   # Trusted Connector build container
   build-container:
-    image: fraunhoferaisec/docker-build:${EXAMPLE_TAG:-develop}
+    image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-develop}
     build:
       context: '../docker-build'
       args:
