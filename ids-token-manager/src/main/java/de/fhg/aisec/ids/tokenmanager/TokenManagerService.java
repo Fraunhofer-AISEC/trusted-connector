@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.tokenmanager;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.DatException;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
@@ -98,10 +99,9 @@ public class TokenManagerService implements TokenManager {
       String keystoreAliasName,
       String trustStoreName,
       String connectorUUID) {
-
+    // This is a bug in the DAPS.
+    // Audience should not be set to default value "IDS_Connector"
     String targetAudience = "IDS_Connector";
-    //toDo: This is a bug in the DAPS. Audience should be not set to a default value
-    // "IDS_Connector"
     String dynamicAttributeToken = "INVALID_TOKEN";
     Map<String, Object> jwtClaims = null;
 
@@ -190,10 +190,14 @@ public class TokenManagerService implements TokenManager {
       if (!jwtResponse.isSuccessful()) {
         throw new IOException("Unexpected code " + jwtResponse);
       }
-      String responseBody = jwtResponse.body().string();
-      LOG.info("Response body of token request:\n{}", responseBody);
+      var responseBody = jwtResponse.body();
+      if (responseBody == null) {
+        throw new Exception("JWT response is null.");
+      }
+      var jwtString = responseBody.string();
+      LOG.info("Response body of token request:\n{}", jwtString);
 
-      JSONObject jsonObject = new JSONObject(responseBody);
+      JSONObject jsonObject = new JSONObject(jwtString);
       dynamicAttributeToken = jsonObject.getString("access_token");
 
       LOG.info("Dynamic Attribute Token: " + dynamicAttributeToken);
@@ -302,7 +306,8 @@ public class TokenManagerService implements TokenManager {
 
   @Override
   @SuppressWarnings("unchecked")
-  public boolean validateDATSecurityAttributes(Map<String, Object> claims, ConnectionSettings connectionSettings) {
+  public void validateDATSecurityAttributes(Map<String, Object> claims, ConnectionSettings connectionSettings)
+      throws DatException {
     try {
       Object idsAttributesObject = claims.get("ids_attributes");
       Map<String, Object> securityProfile;
@@ -311,28 +316,22 @@ public class TokenManagerService implements TokenManager {
         if (securityProfileObject instanceof Map) {
           securityProfile = (Map<String, Object>) securityProfileObject;
         } else {
-          LOG.warn("No security_profile found in claims {}", securityProfileObject);
-          return false;
+          throw new DatException("No security_profile found in claims " + securityProfileObject);
         }
       } else {
-        LOG.warn("No ids_attributes claims found in claims {}", idsAttributesObject);
-        return false;
+        throw new DatException("No ids_attributes claims found in claims " + idsAttributesObject);
       }
 
       // Validate audit_logging
       var auditLogging = Integer.parseInt(securityProfile.get("audit_logging").toString());
       if (Integer.parseInt(connectionSettings.getAuditLogging()) > auditLogging) {
-        LOG.warn("Client does not support the security requirements for audit_logging.");
-        return false;
+        throw new DatException("Client does not support the security requirements for audit_logging.");
       }
 
       // TODO: validate further security attributes
     } catch (NumberFormatException e) {
-      LOG.error("Connection settings contains an invalid number format.", e);
-      return false;
+      throw new DatException("Connection settings contains an invalid number format.", e);
     }
-
-    return true;
   }
 
   @Activate

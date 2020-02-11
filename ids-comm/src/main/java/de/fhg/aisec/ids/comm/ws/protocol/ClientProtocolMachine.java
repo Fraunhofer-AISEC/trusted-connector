@@ -20,6 +20,8 @@
 package de.fhg.aisec.ids.comm.ws.protocol;
 
 import com.google.protobuf.MessageLite;
+import de.fhg.aisec.ids.api.tokenm.DatException;
+import de.fhg.aisec.ids.comm.DatVerifier;
 import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.ws.protocol.error.ErrorHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.fsm.FSM;
@@ -27,6 +29,7 @@ import de.fhg.aisec.ids.comm.ws.protocol.fsm.Transition;
 import de.fhg.aisec.ids.comm.ws.protocol.metadata.MetadataConsumerHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationClientHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.rat.RemoteAttestationHandler;
+import de.fhg.aisec.ids.messages.Idscp;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import java.net.URI;
 import java.util.Arrays;
@@ -53,7 +56,8 @@ public class ClientProtocolMachine extends FSM {
    * <p>The FSM will be in its initial state and ready to accept messages via <code>FSM.feedEvent()
    * </code>. It will send responses over the session according to its FSM definition.
    */
-  public ClientProtocolMachine(WebSocket ws, ClientConfiguration clientConfiguration) {
+  public ClientProtocolMachine(WebSocket ws, ClientConfiguration clientConfiguration,
+                               DatVerifier datVerifier) {
     this.clientSocket = ws;
 
     // set trusted third party URL
@@ -128,10 +132,17 @@ public class ClientProtocolMachine extends FSM {
             ProtocolState.IDSCP_META_REQUEST,
             ProtocolState.IDSCP_END,
             e -> {
-              this.setMetaData(e.getMessage().getMetadataExchange().getRdfdescription());
-              this.setDynamicAttributeToken(
-                  e.getMessage().getMetadataExchange().getDynamicAttributeToken());
-              return true;
+              var mex = e.getMessage().getMetadataExchange();
+              this.setMetaData(mex.getRdfdescription());
+              this.setDynamicAttributeToken(mex.getDynamicAttributeToken());
+              try {
+                datVerifier.verify(getDynamicAttributeToken());
+                LOG.info("DAT successfully verified.");
+                return true;
+              } catch (DatException de) {
+                LOG.warn("Error during DAT verification", de);
+                return false;
+              }
             }));
 
     // Error transitions

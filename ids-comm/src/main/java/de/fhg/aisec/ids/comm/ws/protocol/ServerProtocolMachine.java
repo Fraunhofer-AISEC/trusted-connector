@@ -20,6 +20,8 @@
 package de.fhg.aisec.ids.comm.ws.protocol;
 
 import com.google.protobuf.MessageLite;
+import de.fhg.aisec.ids.api.tokenm.DatException;
+import de.fhg.aisec.ids.comm.DatVerifier;
 import de.fhg.aisec.ids.comm.server.ServerConfiguration;
 import de.fhg.aisec.ids.comm.ws.protocol.error.ErrorHandler;
 import de.fhg.aisec.ids.comm.ws.protocol.fsm.FSM;
@@ -34,6 +36,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.function.Function;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +56,8 @@ public class ServerProtocolMachine extends FSM {
   private Session serverSession;
   private AttestationResult attestationResult;
 
-  public ServerProtocolMachine(Session sess, ServerConfiguration serverConfiguration) {
+  public ServerProtocolMachine(Session sess, ServerConfiguration serverConfiguration,
+                               DatVerifier datVerifier) {
     this.serverSession = sess;
 
     // set trusted third party URL
@@ -123,10 +128,25 @@ public class ServerProtocolMachine extends FSM {
             ProtocolState.IDSCP_META_REQUEST,
             ProtocolState.IDSCP_END,
             e -> {
-              this.setMetaData(e.getMessage().getMetadataExchange().getRdfdescription());
-              this.setDynamicAttributeToken(
-                  e.getMessage().getMetadataExchange().getDynamicAttributeToken());
-              return replyProto(metaHandler.response(e));
+              var mex = e.getMessage().getMetadataExchange();
+              this.setMetaData(mex.getRdfdescription());
+              this.setDynamicAttributeToken(mex.getDynamicAttributeToken());
+              try {
+                datVerifier.verify(getDynamicAttributeToken());
+                LOG.info("DAT successfully verified.");
+                return replyProto(metaHandler.response(e));
+              } catch (Exception de) {
+                LOG.warn("Error during DAT verification", de);
+                replyProto(ConnectorMessage.newBuilder()
+                    .setId(-1)
+                    .setType(ConnectorMessage.Type.ERROR)
+                    .setError(Error.newBuilder()
+                        .setErrorCode("")
+                        .setErrorMessage("DAT verification failed: " + de.getMessage())
+                        .build())
+                    .build());
+                return false;
+              }
             }));
 
     // Error transitions

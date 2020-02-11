@@ -100,4 +100,24 @@ public class CamelComponent {
     }
     return null;
   }
+
+  public void setSettings(Settings settings) {
+    this.settings = settings;
+  }
+
+  public void setInfoModelManager(InfoModel infoModelManager) {
+    this.infoModelManager = infoModelManager;
+  }
+
+  public void setTokenManager(TokenManager tokenManager) {
+    this.tokenManager = tokenManager;
+  }
+
+  public void setEndpointConfigManager(EndpointConfigManager endpointConfigManager) {
+    this.endpointConfigManager = endpointConfigManager;
+  }
+
+  public static void setInstance(CamelComponent instance) {
+    CamelComponent.instance = instance;
+  }
 }

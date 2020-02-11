@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.comm.server;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.comm.DatVerifier;
 import de.fhg.aisec.ids.comm.ws.protocol.ProtocolState;
 import de.fhg.aisec.ids.comm.ws.protocol.ServerProtocolMachine;
 import de.fhg.aisec.ids.comm.ws.protocol.fsm.Event;
@@ -51,11 +52,20 @@ public class IdscpServerSocket {
   private ServerConfiguration config;
   private SocketListener socketListener;
   private Session session;
+  private DatVerifier datVerifier = dat -> {
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Received DAT token: {}", dat);
+    }
+  };
 
   public IdscpServerSocket(ServerConfiguration config, SocketListener socketListener) {
     // Create provider socket
     this.config = config;
     this.socketListener = socketListener;
+  }
+
+  public void setDatVerifier(DatVerifier datVerifier) {
+    this.datVerifier = datVerifier;
   }
 
   /**
@@ -76,7 +86,7 @@ public class IdscpServerSocket {
     this.session = session;
 
     // create Finite State Machine for IDS protocol
-    fsm = new ServerProtocolMachine(session, this.config);
+    fsm = new ServerProtocolMachine(session, this.config, this.datVerifier);
   }
 
   @OnWebSocketClose

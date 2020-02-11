@@ -22,17 +22,45 @@ package de.fhg.aisec.ids.camel.ids;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
   private static final String TEST_MESSAGE = "Hello World!";
   private static final String TEST_MESSAGE_2 = "Hello Again!";
+
+  @Before
+  public void mockRequiredBundles() throws Exception {
+    CamelComponent cc = new CamelComponent();
+    Settings settings = mock(Settings.class);
+    ConnectorConfig connectorConfig = mock(ConnectorConfig.class);
+    when(settings.getConnectorConfig()).thenReturn(connectorConfig);
+    when(connectorConfig.getDapsUrl()).thenReturn("daps.mock.url");
+    when(settings.getConnectionSettings(anyString())).thenReturn(new ConnectionSettings());
+    cc.setSettings(settings);
+    TokenManager tm = mock(TokenManager.class);
+    when(tm.verifyJWT(anyString(), anyString(), anyString())).thenReturn(Collections.emptyMap());
+    doNothing().when(tm).validateDATSecurityAttributes(any(), any(ConnectionSettings.class));
+    cc.setTokenManager(tm);
+    CamelComponent.setInstance(cc);
+  }
 
   @Test
   public void testFromRouteAToB() throws InterruptedException {

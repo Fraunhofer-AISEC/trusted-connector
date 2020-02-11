@@ -48,8 +48,8 @@ public interface TokenManager {
       String targetAudience,
       String dapsUrl) throws Exception;
 
-  boolean validateDATSecurityAttributes(
+  void validateDATSecurityAttributes(
       Map<String, Object> claims,
-          ConnectionSettings connectionSettings);
+          ConnectionSettings connectionSettings) throws DatException;
 
 }
