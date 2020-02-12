@@ -57,8 +57,8 @@ allprojects {
 
     ext.libraryVersions = [
             // Versions for modules that will be released as libraries
-            api                : '2.0.1',
-            idscp              : '1.0.2',
+            api                : '2.1.0',
+            idscp              : '1.1.0',
 
             // basically, the first requirement, all other libraries depend on this version
             karaf              : '4.2.7',
