@@ -1,0 +1,12 @@
+apply plugin: DockerRemoteApiPlugin
+
+import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+description = 'docker-jdk-base'
+
+task dockerize(type: DockerBuildImage) {
+    inputDir = project.projectDir
+    buildArgs = ["BASE_IMAGE": findProperty("baseImage") ?: "adoptopenjdk:11-jdk-hotspot"]
+    images.add("fraunhoferaisec/jdk-base:${rootProject.getDockerTag()}")
+}

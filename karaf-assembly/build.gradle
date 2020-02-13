@@ -61,10 +61,10 @@ rootProject.subprojects.findAll() {
 
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
-    buildArgs = ["BASE_IMAGE": findProperty("baseImage") ?: "debian:buster-slim"]
+    buildArgs = ["JDK_BASE_IMAGE": "fraunhoferaisec/jdk-base:${rootProject.getDockerTag()}"]
     images.add("fraunhoferaisec/trusted-connector-core:${rootProject.getDockerTag()}")
 }
-
 dockerize.dependsOn(assembleKaraf)
+dockerize.dependsOn(":docker-jdk-base:dockerize")
 
 integrationTest.dependsOn(jar)

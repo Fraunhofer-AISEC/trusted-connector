@@ -26,7 +26,7 @@ LONGOPTS=example-tag:,base-image:,file:,docker-build-tag:,build-container
 
 ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
 if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-  echo "Paramter prasing failed"
+  echo "Paramter parsing failed"
   exit 2
 fi
 
@@ -34,14 +34,15 @@ eval set -- "$PARSED"
 
 EXAMPLE_TAG_ARG="develop"
 DOCKER_BUILD_TAG_ARG="develop"
-BASE_IMAGE_ARG="debian:buster-slim"
+BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot"
+TARGETS="core tpmsim ttpsim example-idscp-consumer-app example-idscp-provider-app"
 FILES=""
 BUILD_CONTAINER=0
 
 while true; do
   case "$1" in
   -f | --file)
-    FILES="$FILES -f $2"
+    FILES="${FILES}-f $2 "
     shift 2
     ;;
   -t | --example-tag)
@@ -78,14 +79,14 @@ export BASE_IMAGE="$BASE_IMAGE_ARG"
 printf "######################################################################\n"
 printf "Using build tag \"%s\" and base image \"%s\"\n" "$EXAMPLE_TAG" "$BASE_IMAGE"
 printf "######################################################################\n\n"
+echo "Building jdk-base via \"docker buildx bake jdk-base ${FILES}$*\"..."
+eval "docker buildx bake jdk-base ${FILES}$*"
 
 if [ $BUILD_CONTAINER = 1 ]; then
   echo "Building build-container via \"docker buildx bake build-container $*\"..."
-  # shellcheck disable=SC2086
-  # shellcheck disable=SC2090
   eval "docker buildx bake build-container $*"
   exit
-  # Check whether preconditions are fulfilled
+# Check whether preconditions are fulfilled
 elif [[ ! -d "../karaf-assembly/build/assembly" ]]; then
   printf "\e[31m################################################################################\n"
   printf "Directory karaf-assembly/build/assembly not found, this build might fail.\n"
@@ -105,7 +106,5 @@ printf "######################################################################\n
 printf "Detected project version: %s\n" "$PROJECT_VERSION"
 printf "######################################################################\n\n"
 
-echo "Building images via \"docker buildx bake$FILES $*\"..."
-# shellcheck disable=SC2086
-# shellcheck disable=SC2090
-eval "docker buildx bake$FILES $*"
+echo "Building images via \"docker buildx bake $TARGETS ${FILES}$*\"..."
+eval "docker buildx bake $TARGETS ${FILES}$*"

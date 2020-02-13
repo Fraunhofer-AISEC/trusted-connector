@@ -46,10 +46,10 @@ jar {
 task dockerize(type: DockerBuildImage) {
     inputDir = project.projectDir
     buildArgs = [
-            "PLATFORM": findProperty("platform") ?: "amd64",
-            "BASE_IMAGE": findProperty("baseImage") ?: "debian:buster-slim",
+            "JDK_BASE_IMAGE": "fraunhoferaisec/jdk-base:${rootProject.getDockerTag()}",
             "VERSION": version
     ]
     images.add("fraunhoferaisec/ttpsim:${rootProject.getDockerTag()}")
 }
-dockerize.dependsOn jar
+dockerize.dependsOn(jar)
+dockerize.dependsOn(":docker-jdk-base:dockerize")

@@ -1,3 +1,8 @@
+target "jdk-base" {
+  output = ["type=registry"]
+  platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
+}
+
 target "build-container" {
   output = ["type=registry"]
   platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]

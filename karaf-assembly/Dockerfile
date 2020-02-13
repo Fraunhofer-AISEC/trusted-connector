@@ -1,12 +1,7 @@
-ARG BASE_IMAGE=debian:buster-slim
-FROM $BASE_IMAGE
+ARG JDK_BASE_IMAGE=fraunhoferaisec/jdk-base:develop
+FROM $JDK_BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
-
-# Fix for installing openjdk on debian-slim
-RUN mkdir -p /usr/share/man/man1
-# Install JDK
-RUN apt-get update -qq && apt-get install -qq --no-install-recommends openjdk-11-jdk
 
 # Install socat for UNIX socket debugging and ps command for karaf scripts
 RUN apt-get update -qq && apt-get install -qq socat procps
@@ -26,8 +21,8 @@ RUN apt-get update -qq && apt-get install -qq wget git zsh fonts-powerline \
 # Install docker using get.docker.com script
 ADD build/assembly/bin /root/bin/
 RUN apt-get update -qq && apt-get install -qq wget lsb-release apt-transport-https gnupg2
-RUN wget -O - https://download.docker.com/linux/debian/gpg | apt-key add - \
-  && echo "deb https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+RUN wget -O - "https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg" | apt-key add - \
+  && echo "deb https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") $(lsb_release -cs) stable" \
   | tee /etc/apt/sources.list.d/docker.list \
   && apt-get update -qq && apt-get install -qq docker-ce docker-ce-cli containerd.io
 # Remove unnecessary packages, Cleanup
@@ -37,18 +32,12 @@ RUN apt-get remove --purge -qq wget lsb-release apt-transport-https gnupg2 \
 # Adding the actual core platform files to /root
 ADD build/assembly /root/
 
-# Making karaf start script and docker CLI executable
+# Making karaf start script executable
 RUN chmod 0755 /root/bin/karaf
 
 WORKDIR "/root"
 
 # Ports to expose
-EXPOSE 8181
-EXPOSE 8443
-EXPOSE 29998
-EXPOSE 5005
-EXPOSE 1099
-EXPOSE 1098
-EXPOSE 9292
+EXPOSE 8181 8443 29998 5005 1099 1098 9292
 
 ENTRYPOINT ["/root/bin/karaf"]
