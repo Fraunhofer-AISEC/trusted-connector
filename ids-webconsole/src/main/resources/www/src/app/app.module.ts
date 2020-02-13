@@ -113,7 +113,6 @@ import { ValuesPipe } from './values.pipe';
   ],
   bootstrap: [
     AppComponent
-  ],
-  entryComponents: []
+  ]
 })
 export class AppModule { }
