@@ -21,7 +21,13 @@ dependencies {
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
-    
+
+    // Provided dependency of docker-java-api
+    providedByBundle group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
+    // Required until our library PR has been accepted
+    providedByBundle group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'
+    implementation files('libs/docker-java-api-0.0.11-SNAPSHOT.jar')
+
     compileOnly project(":jnr-unixsocket-wrapper")
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf

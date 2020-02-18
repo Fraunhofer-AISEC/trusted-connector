@@ -26,4 +26,12 @@ package de.fhg.aisec.ids.api.cm;
  */
 public class NoContainerExistsException extends Exception {
   private static final long serialVersionUID = 3439666843047044252L;
+
+  public NoContainerExistsException(String message) {
+    super(message);
+  }
+
+  public NoContainerExistsException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

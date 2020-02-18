@@ -17,422 +17,384 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.cm.impl.docker;
+package de.fhg.aisec.ids.cm.impl.docker
 
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.Decision;
-import de.fhg.aisec.ids.api.cm.Direction;
-import de.fhg.aisec.ids.api.cm.Protocol;
-import de.fhg.aisec.ids.cm.impl.StreamGobbler;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.ProcessBuilder.Redirect;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.amihaiemil.docker.Container
+import com.amihaiemil.docker.Docker
+import com.amihaiemil.docker.Image
+import com.amihaiemil.docker.LocalDocker
+import de.fhg.aisec.ids.api.cm.*
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.IOException
+import java.time.*
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
+import java.util.*
+import java.util.stream.Collectors
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
+import javax.json.Json
+import javax.json.JsonValue
+import kotlin.math.abs
+
 
 /**
  * ContainerManager implementation for Docker containers.
  *
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
-public class DockerCM implements ContainerManager {
-  private static final Logger LOG = LoggerFactory.getLogger(DockerCM.class);
-  private static final String DOCKER_CLI = "docker"; // Name of docker cli executable
+class DockerCM : ContainerManager {
+    companion object {
+        private val LOG = LoggerFactory.getLogger(DockerCM::class.java)
+        private lateinit var DOCKER_CLIENT: Docker
+        private val PERIOD_UNITS = listOf<TemporalUnit>(ChronoUnit.YEARS, ChronoUnit.MONTHS, ChronoUnit.DAYS)
+        private val DURATION_UNITS = listOf<TemporalUnit>(ChronoUnit.HOURS, ChronoUnit.MINUTES, ChronoUnit.SECONDS)
+        /**
+         * Returns true if Docker is supported.
+         *
+         * @return Whether docker socket is available on the system
+         */
+        val isSupported: Boolean
+            get() {
+                return try {
+                    DOCKER_CLIENT.ping()
+                } catch (e: Exception) {
+                    when(e) {
+                        is UninitializedPropertyAccessException -> LOG.warn("Docker client is not available")
+                        else -> LOG.error(e.message, e)
+                    }
+                    false
+                }
+            }
 
-  @Override
-  public List<ApplicationContainer> list(boolean onlyRunning) {
-    Pattern pattern = Pattern.compile("@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@(.*?)@@");
-    List<ApplicationContainer> result = new ArrayList<>();
-    ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
-    ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
-    try {
-      ArrayList<String> cmd = new ArrayList<>();
-      cmd.add(DOCKER_CLI);
-      cmd.add("ps");
-      cmd.add("--no-trunc");
-      if (!onlyRunning) {
-        cmd.add("--all");
-      }
-      cmd.add("--format");
-      cmd.add(
-          "@@{{.ID}}@@{{.Image}}@@{{.CreatedAt}}@@{{.RunningFor}}@@{{.Ports}}@@{{.Status}}@@{{.Size}}@@{{.Names}}@@");
-
-      ProcessBuilder pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(cmd);
-      Process p = pb.start();
-      StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
-      StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
-      errorGobbler.start();
-      outputGobbler.start();
-      p.waitFor(30, TimeUnit.SECONDS);
-      errorGobbler.close();
-      outputGobbler.close();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-    String[] lines;
-    try {
-      lines = bbStd.toString(StandardCharsets.UTF_8.name()).split("\n");
-    } catch (UnsupportedEncodingException e) {
-      // impossible
-      throw new RuntimeException(e);
-    }
-    for (String line : lines) {
-      Matcher m = pattern.matcher(line);
-      if (!m.matches() || m.groupCount() != 8) {
-        LOG.error("Unexpected number of columns in docker ps: " + m.groupCount() + ": " + line);
-        break;
-      }
-      String id = m.group(1);
-      String image = m.group(2);
-      String created = m.group(3);
-      String uptime = m.group(4);
-      String ports = m.group(5);
-      String status = m.group(6);
-      String size = m.group(7);
-      String names = m.group(8);
-
-      // Extract owner, signature, description from container labels
-      Map<String, Object> labels = getMetadata(id);
-      String signature = (String) labels.get("ids.signature");
-      String owner = (String) labels.get("ids.owner");
-      String description = (String) labels.get("ids.description");
-
-      ApplicationContainer app = new ApplicationContainer();
-      app.setId(id);
-      app.setImage(image);
-      app.setCreated(created);
-      app.setStatus(status);
-      app.setPorts(Arrays.asList(ports.split("\n")));
-      app.setNames(names);
-      app.setSize(size);
-      app.setUptime(uptime);
-      app.setSignature(signature);
-      app.setOwner(owner);
-      app.setDescription(description);
-      app.setLabels((Map<String, Object>) labels);
-      result.add(app);
-    }
-    return result;
-  }
-
-  @Override
-  public void wipe(final String containerID) {
-    try {
-      LOG.info("Wiping containerID " + containerID);
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "rm", "-f", containerID));
-      Process p = pb.start();
-      p.waitFor(60, TimeUnit.SECONDS);
-
-      LOG.info("Wiping image and containers related to containerID " + containerID);
-      pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(
-                  Arrays.asList(
-                      DOCKER_CLI,
-                      "rmi",
-                      "-f",
-                      "`docker ps -a --format \"{{.Image}}\" -f id=" + containerID + "`"));
-      p = pb.start();
-      p.waitFor(60, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public void startContainer(final String containerID, final String key) {
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "start", containerID));
-      Process p = pb.start();
-      p.waitFor(660, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public void stopContainer(final String containerID) {
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "stop", containerID));
-      Process p = pb.start();
-      p.waitFor(660, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public void restartContainer(final String containerID) {
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "restart", containerID));
-      Process p = pb.start();
-      p.waitFor(660, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public Optional<String> pullImage(final ApplicationContainer app) {
-    try {
-      // Pull image from std docker registry
-      LOG.info("Pulling container image {}", app.getImage());
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "pull", app.getImage()));
-      Process p = pb.start();
-      p.waitFor(600, TimeUnit.SECONDS);
-
-      // Instantly create a container from that image, but do not start it yet.
-      LOG.info("Creating container instance from image {}", app.getImage());
-
-      // Create the name
-      String containerID;
-      if (app.getName() != null) {
-        containerID = defaultContainerName(app.getName());
-      } else {
-        containerID = defaultContainerName(app.getImage());
-      }
-
-      List<String> createCmd = new ArrayList<>();
-      createCmd.add(DOCKER_CLI);
-      createCmd.add("create");
-
-      // Set exposed ports
-      if (app.getPorts() != null) {
-        for (String port : app.getPorts()) {
-          createCmd.add("-p");
-          createCmd.add(port);
+        init {
+            try { // We have to modify the thread class loader for docker-java-api to find its config
+                val threadContextClassLoader = Thread.currentThread().contextClassLoader
+                Thread.currentThread().contextClassLoader = LocalDocker::class.java.classLoader
+                DOCKER_CLIENT = LocalDocker(File("/var/run/docker.sock"))
+                Thread.currentThread().contextClassLoader = threadContextClassLoader
+            } catch (x: Exception) {
+                LOG.error("Error initializing docker client", x)
+            }
         }
-      }
 
-      // Set environment variables
-      if (app.getEnv() != null) {
-        for (Map<String, Object> env : app.getEnv()) {
-          String varName = (String) env.get("name");
-          String varValue = (String) env.get("set");
-          createCmd.add("-e");
-          createCmd.add(varName + "=" + varValue);
+        /**
+         * Human readable memory sizes
+         * Credits: aioobe, https://stackoverflow.com/questions
+         * /3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+         */
+        private fun humanReadableByteCount(bytes: Long): String? {
+            val b = if (bytes == Long.MIN_VALUE) Long.MAX_VALUE else abs(bytes)
+            return when {
+                b < 1024L -> {
+                    "$bytes B"
+                }
+                b <= 0xfffccccccccccccL shr 40 -> {
+                    String.format("%.2f KiB", (bytes / 0x400).toFloat())
+                }
+                b <= 0xfffccccccccccccL shr 30 -> {
+                    String.format("%.2f MiB", (bytes / 0x100000).toFloat())
+                }
+                b <= 0xfffccccccccccccL shr 20 -> {
+                    String.format("%.2f GiB", (bytes / 0x40000000).toFloat())
+                }
+                b <= 0xfffccccccccccccL shr 10 -> {
+                    String.format("%.2f TiB", (bytes / 0x10000000000).toFloat())
+                }
+                b <= 0xfffccccccccccccL -> {
+                    String.format("%.2f PiB", ((bytes shr 10) / 0x10000000000).toFloat())
+                }
+                else -> {
+                    String.format("%.2f EiB", ((bytes shr 20) / 0x10000000000).toFloat())
+                }
+            }
         }
-      }
 
-      // Sets label(s)
-      createCmd.add("--label");
-      createCmd.add("created=" + Instant.now().toEpochMilli());
-
-      // Set name
-      createCmd.add("--name");
-      createCmd.add(containerID);
-
-      // Set restart policy
-      if (app.getRestartPolicy() != null) {
-        createCmd.add("--restart");
-        createCmd.add(app.getRestartPolicy());
-      }
-
-      if (app.isPrivileged()) {
-        createCmd.add("--privileged");
-      }
-
-      createCmd.add(app.getImage());
-      LOG.debug(String.join(" ", createCmd));
-      pb = new ProcessBuilder().redirectInput(Redirect.INHERIT).command(createCmd);
-      p = pb.start();
-      p.waitFor(600, TimeUnit.SECONDS);
-      return Optional.<String>of(containerID);
-    } catch (IOException | RuntimeException e) {
-      LOG.error(e.getMessage(), e);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    return Optional.<String>empty();
-  }
-
-  /**
-   * Returns the default containerName that will be given to a container of image "imageID".
-   *
-   * <p>For example, an imageID "shiva1029/weather" will be turned into "weather-shiva1029".
-   *
-   * @param imageID
-   * @return
-   */
-  private String defaultContainerName(String imageID) {
-    if (imageID.indexOf('/') > -1 && imageID.indexOf('/') < imageID.length() - 1) {
-      String name = imageID.substring(imageID.indexOf('/') + 1);
-      String rest = imageID.replace(name, "").replace('/', '-');
-      rest = rest.substring(0, rest.length() - 1);
-      return (name + "-" + rest).replaceAll(":", "_");
-    }
-
-    return imageID.replaceAll(":", "_");
-  }
-
-  /**
-   * Returns true if Docker is supported.
-   *
-   * @return
-   */
-  public static boolean isSupported() {
-    try {
-      // Attempt to invoke some docker command. If it fails, return false
-      Process p = new ProcessBuilder().command(Arrays.asList(DOCKER_CLI, "info")).start();
-      p.waitFor(10, TimeUnit.SECONDS);
-      return (p.exitValue() == 0);
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-    return false;
-  }
-
-  @Override
-  public Map<String, Object> getMetadata(String containerID) {
-    ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
-    ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "inspect", containerID));
-      Process p = pb.start();
-      StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
-      StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
-      errorGobbler.start();
-      outputGobbler.start();
-      p.waitFor(30, TimeUnit.SECONDS);
-      errorGobbler.close();
-      outputGobbler.close();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-
-    // Parse JSON output from "docker inspect" and return labels.
-    String[] lines;
-    try {
-      lines = bbStd.toString(StandardCharsets.UTF_8.name()).split("\n");
-    } catch (UnsupportedEncodingException e) {
-      // impossible
-      throw new RuntimeException(e);
-    }
-    Map<String, Object> labels = new HashMap<>();
-    boolean reading = false;
-    for (String line : lines) {
-      if (line.trim().startsWith("\"Labels\":")) {
-        reading = true;
-        continue;
-      }
-
-      if (reading && line.trim().startsWith("}")) {
-        reading = false;
-      }
-
-      if (reading) {
-        Pattern p = Pattern.compile(".*\"(.*?)\"\\W*:\\W*\"(.*?)\".*");
-        Matcher m = p.matcher(line);
-        if (m.matches()) {
-          labels.put(m.group(1), m.group(2));
+        private fun formatDuration(a: ZonedDateTime, b: ZonedDateTime): String {
+            val period = Period.between(a.toLocalDate(), b.toLocalDate())
+            var duration = ChronoUnit.SECONDS.between(a.toLocalTime(), b.toLocalTime())
+            val units: MutableList<String> = LinkedList()
+            for (unit in PERIOD_UNITS) {
+                val elapsed = period[unit]
+                if (elapsed > 0) {
+                    units.add(elapsed.toString() + " " + unit.toString().toLowerCase())
+                }
+            }
+            for (unit in DURATION_UNITS) {
+                val unitDuration = unit.duration.toSeconds()
+                val elapsed = duration / unitDuration
+                if (elapsed > 0) {
+                    units.add(elapsed.toString() + " " + unit.toString().toLowerCase())
+                }
+                duration %= unitDuration
+            }
+            return java.lang.String.join(", ", units)
         }
-      }
-    }
-    return labels;
-  }
-
-  @Override
-  public void setIpRule(
-      String containerID,
-      Direction direction,
-      int srcPort,
-      int dstPort,
-      String srcDstRange,
-      Protocol protocol,
-      Decision decision) {
-    // TODO Not implemented yet
-
-  }
-
-  /**
-   * TODO: This function seems incorrect, sb is never provided with any data
-   *
-   * @param containerID container id
-   * @return container information
-   */
-  @Override
-  public String inspectContainer(final String containerID) {
-    StringBuilder sb = new StringBuilder();
-    ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
-    ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "inspect", containerID));
-      Process p = pb.start();
-      StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
-      StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
-      errorGobbler.start();
-      outputGobbler.start();
-      p.waitFor(30, TimeUnit.SECONDS);
-      errorGobbler.close();
-      outputGobbler.close();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
     }
 
-    return sb.toString();
-  }
-
-  @Override
-  public String getVersion() {
-    ByteArrayOutputStream bbErr = new ByteArrayOutputStream();
-    ByteArrayOutputStream bbStd = new ByteArrayOutputStream();
-    try {
-      ProcessBuilder pb =
-          new ProcessBuilder()
-              .redirectInput(Redirect.INHERIT)
-              .command(Arrays.asList(DOCKER_CLI, "--version"));
-      Process p = pb.start();
-      StreamGobbler errorGobbler = new StreamGobbler(p.getErrorStream(), bbErr);
-      StreamGobbler outputGobbler = new StreamGobbler(p.getInputStream(), bbStd);
-      errorGobbler.start();
-      outputGobbler.start();
-      p.waitFor(30, TimeUnit.SECONDS);
-      errorGobbler.close();
-      outputGobbler.close();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
+    private fun getContainerStream(
+            all: Boolean = false,
+            filters: Map<String, Iterable<String>>? = null,
+            withSize: Boolean = false): Stream<Container> {
+        val filteredContainers = DOCKER_CLIENT
+                .containers()
+                .filter(filters ?: emptyMap())
+                .withSize(withSize)
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(
+                        if (all) filteredContainers.all() else filteredContainers.iterator(),
+                        Spliterator.ORDERED
+                ), false)
     }
 
-    try {
-      return bbStd.toString(StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
-      // impossible
-      throw new RuntimeException(e);
+    private fun getImageStream(filters: Map<String, Iterable<String>>?): Stream<Image> {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(
+                        DOCKER_CLIENT
+                                .images()
+                                .filter(filters ?: emptyMap()).iterator(),
+                        Spliterator.ORDERED
+                ), false)
     }
-  }
+
+    override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
+        return getContainerStream(true, withSize = true).map { c: Container ->
+            try {
+                val info = c.inspect()
+                val state = info.getJsonObject("State")
+                val config = info.getJsonObject("Config")
+                val running = state.getBoolean("Running")
+                val startedAt = state.getString("StartedAt")
+                val name = info.getString("Name").substring(1)
+                val ports = info.getJsonObject("NetworkSettings").getJsonObject("Ports")
+                val labels = config.getJsonObject("Labels")
+                val app = ApplicationContainer()
+                app.id = c.containerId()
+                app.image = config.getString("Image")
+                app.size = "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
+                        "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
+                app.created = info.getString("Created")
+                app.status = state.getString("Status")
+                app.ports = ports.entries
+                        .map { e: Map.Entry<String, JsonValue> -> e.key + ":" + e.value.toString() }
+                        .toList()
+                app.names = name
+                if (running) {
+                    app.uptime = formatDuration(
+                            ZonedDateTime.parse(startedAt), OffsetDateTime.now(ZoneId.of("Z")).toZonedDateTime())
+                } else {
+                    app.uptime = "-"
+                }
+                app.signature = labels.getOrDefault("ids.signature", JsonValue.NULL).toString()
+                app.owner = labels.getOrDefault("ids.owner", JsonValue.NULL).toString()
+                app.description = labels.getOrDefault("ids.description", JsonValue.NULL).toString()
+                app.labels = labels.entries.stream()
+                        .collect(Collectors.toMap({ it.key }, { it.value }))
+                return@map app
+            } catch (e: IOException) {
+                LOG.error("Container iteration error occurred, skipping container with id " + c.containerId(), e)
+                return@map null
+            }
+        }.filter { it != null }.map { it as ApplicationContainer }.collect(Collectors.toList())
+    }
+
+    private fun getContainer(containerID: String): Container {
+        val filters = HashMap<String, Iterable<String>>()
+        filters["id"] = listOf(containerID)
+        val optionalContainer = getContainerStream(true, filters).findFirst()
+        if (optionalContainer.isEmpty) {
+            throw NoContainerExistsException("The container with ID $containerID has not been found!")
+        } else {
+            return optionalContainer.get()
+        }
+    }
+
+    override fun wipe(containerID: String) {
+        val container = getContainer(containerID)
+        try {
+            LOG.info("Wiping containerID $containerID")
+            container.remove(false, true, false)
+            val filters: MutableMap<String, Iterable<String>> = HashMap()
+            filters["reference"] = listOf(container.getString("Image"))
+            val optionalImage = getImageStream(filters).findFirst()
+            if (optionalImage.isEmpty) {
+                LOG.warn("The image to be deleted (filters: {}) was not found!", filters)
+                return
+            }
+            LOG.info("Wiping image related to containerID $containerID")
+            optionalImage.get().delete()
+        } catch (e: Exception) {
+            LOG.error(e.message, e)
+        }
+    }
+
+    override fun startContainer(containerID: String, key: String?) {
+        val container = getContainer(containerID)
+        try {
+            container.start()
+        } catch (e: IOException) {
+            LOG.error("Error while starting container $containerID", e)
+        }
+    }
+
+    override fun stopContainer(containerID: String) {
+        val container = getContainer(containerID)
+        try {
+            container.stop()
+        } catch (e: IOException) {
+            LOG.error("Error while stopping container $containerID", e)
+        }
+    }
+
+    override fun restartContainer(containerID: String) {
+        val container = getContainer(containerID)
+        try {
+            container.restart()
+        } catch (e: IOException) {
+            LOG.error("Error while restarting container $containerID", e)
+        }
+    }
+
+    override fun pullImage(app: ApplicationContainer): Optional<String> {
+        try {
+            val imageInfo = app.image.split(":").toTypedArray()
+            val tag = if (imageInfo.size == 2) imageInfo[1] else "latest"
+            LOG.info("Pulling container image {} with tag {}", imageInfo[0], tag)
+            // Pull image from std docker registry
+            DOCKER_CLIENT.images().pull(imageInfo[0], tag)
+
+            // Instantly create a container from that image, but do not start it yet.
+            LOG.info("Creating container instance from image {}", app.image)
+            // Create the name
+            val containerName: String = if (app.name != null) {
+                app.name
+            } else {
+                defaultContainerName(app.image)
+            }
+            val container = Json.createObjectBuilder()
+            val hostConfig = Json.createObjectBuilder()
+            // Set image
+            container.add("Image", app.image)
+            // Add published ports and port bindings
+            if (app.ports != null) {
+                val exposedPorts = Json.createObjectBuilder()
+                val portBindings = Json.createObjectBuilder()
+                val portRegex = ("(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
+                        "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])):)?" +
+                        "([0-9]+):([0-9]+)(?:/(tcp|udp))?").toRegex()
+                for (port in app.ports) {
+                    val match = portRegex.matchEntire(port)
+                    if (match == null) {
+                        LOG.warn("Port definition {} does not match the pattern " +
+                                "[IPv4:]HostPort:ContainerPort[/tcp|udp], ignoring it", port)
+                    } else {
+                        val groups = match.groupValues
+                        val protocol = (if (groups[4].isEmpty()) "tcp" else groups[4])
+                        exposedPorts.add(groups[3] + "/" + protocol, JsonValue.EMPTY_JSON_OBJECT)
+                        val portBinding = Json.createObjectBuilder()
+                        if (groups[1].isNotEmpty()) {
+                            portBinding.add("HostIp", groups[1])
+                        }
+                        portBinding.add("HostPort", groups[2])
+                        portBindings.add(groups[3] + "/" + protocol, portBinding)
+                    }
+                }
+                container.add("ExposedPorts", exposedPorts)
+                hostConfig.add("PortBindings", portBindings)
+            }
+            if (app.env != null) {
+                val envJson = Json.createArrayBuilder()
+                for (env in app.env) {
+                    val varName = env["name"] as String?
+                    val varValue = env["set"] as String?
+                    envJson.add("$varName=$varValue")
+                }
+                container.add("Env", envJson)
+            }
+            // Sets label(s)
+            val labels = Json.createObjectBuilder()
+            labels.add("created", Instant.now().toEpochMilli().toString())
+            if (app.labels != null) {
+                app.labels.forEach { labels.add(it.key, it.value.toString()) }
+            }
+            container.add("Labels", labels)
+            // Set restart policy
+            if (app.restartPolicy != null) {
+                hostConfig.add(
+                        "RestartPolicy", Json.createObjectBuilder().add("Name", app.restartPolicy))
+            }
+            // Set privileged state
+            if (app.isPrivileged) {
+                hostConfig.add("Privileged", JsonValue.TRUE)
+            }
+            container.add("HostConfig", hostConfig)
+            val c = DOCKER_CLIENT.containers().create(containerName, container.build())
+
+            return Optional.of(c.containerId())
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+        } catch (e: Throwable) {
+            LOG.error(e.message, e)
+        }
+        return Optional.empty()
+    }
+
+    /**
+     * Returns the default containerName that will be given to a container of image "imageID".
+     *
+     *
+     * For example, an imageID "shiva1029/weather" will be turned into "weather-shiva1029".
+     *
+     * @param imageName The name of the image
+     * @return The name of the container, based on the image name
+     */
+    private fun defaultContainerName(imageName: String): String {
+        if (imageName.indexOf('/') > -1 && imageName.indexOf('/') < imageName.length - 1) {
+            val name = imageName.substring(imageName.indexOf('/') + 1)
+            var rest = imageName.replace(name, "").replace('/', '-')
+            rest = rest.substring(0, rest.length - 1)
+            return "$name-$rest".replace(":", "_")
+        }
+        return imageName.replace(":", "_")
+    }
+
+    /**
+     * Provides the labels associated with a given container
+     *
+     * @param containerID The ID of the container to query labels from
+     */
+    override fun getMetadata(containerID: String): Map<String, Any> {
+        val labels = HashMap<String, Any>()
+        getContainer(containerID).inspect().getJsonObject("Config").getJsonObject("Labels")
+        return labels
+    }
+
+    override fun setIpRule(
+            containerID: String,
+            direction: Direction,
+            srcPort: Int,
+            dstPort: Int,
+            srcDstRange: String,
+            protocol: Protocol,
+            decision: Decision) { // TODO Not implemented yet
+    }
+
+    /**
+     * Returns the result of the docker inspect API call as JSON
+     *
+     * @param containerID container id
+     * @return container information
+     */
+    override fun inspectContainer(containerID: String): String {
+        return getContainer(containerID).inspect().toString()
+    }
+
+    /**
+     * Returns the version of docker on the system
+     */
+    override fun getVersion(): String? {
+        return DOCKER_CLIENT.version().getString("Version")
+    }
 }

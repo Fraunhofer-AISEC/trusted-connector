@@ -149,7 +149,7 @@ public interface ContainerManager {
    *     need to configure them.
    * @param srcPort IP source port.
    * @param dstPort IP destination port.
-   * @param srcDestRange Remote IP, i.e. for OUTBOUND traffic, IP range of the destination. For
+   * @param srcDstRange Remote IP, i.e. for OUTBOUND traffic, IP range of the destination. For
    *     INBOUND traffic, IP range of the source.
    * @param protocol TPC or UDP.
    * @param decision ALLOW, DENY, or DROP

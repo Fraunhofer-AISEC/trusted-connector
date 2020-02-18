@@ -1,5 +1,6 @@
 Bundle-Name: IDS :: Container Manager
 Export-Package: \
-  de.fhg.aisec.ids.cm
+  de.fhg.aisec.ids.cm,\
+  com.amihaiemil.docker
 Import-Package: \
 	*
