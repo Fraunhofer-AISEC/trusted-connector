@@ -31,7 +31,7 @@ def getCommitRefName() {
 // Copy example and example-localhost to build directory
 task copyExample(type: Copy) {
     from (project.projectDir) {
-        include 'example-*/**', 'tpmsim/tpmsim_data.tar', 'tpmsim/rootCA.crt'
+        include 'example-*/**', 'tpmsim/tpmsim_data.tar', 'tpmsim/rootCA.crt', 'cert-stores/*'
         exclude 'example-idscp/example-client'
         exclude 'example-idscp/example-server'
     }
