@@ -1,9 +1,5 @@
-apply plugin: 'kotlin'
-
 dependencies {
     providedByBundle(project(':ids-api')) { transitive = false }
-
-    compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
 
     providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
         transitive = false  // Avoid pulling in of checker framework and other annotation stuff

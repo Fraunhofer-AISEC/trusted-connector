@@ -10,7 +10,7 @@ plugins {
     id 'com.moowork.node' version '1.3.1'
     id 'biz.aQute.bnd' version '4.2.0' apply false
     id 'com.github.lburgazzoli.karaf' version '0.5.1'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.61'
     id 'com.github.jlouns.cpe' version '0.5.0'
     id 'com.benjaminsproule.swagger' version '1.0.6'
     id 'com.bmuschko.docker-remote-api' version '6.1.1'
@@ -87,7 +87,7 @@ allprojects {
             acme               : '2.3',
             checkerQual        : '2.5.2',
             guava              : '27.0-jre',
-            kotlin             : '1.3.21',
+            kotlin             : '1.3.61',
             tuprolog           : '3.3.0',
             log4j              : '2.6.2',
             junit4             : '4.12',
@@ -160,6 +160,7 @@ subprojects {
     apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'java'
     apply plugin: 'maven'
+    apply plugin: 'kotlin'
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -182,6 +183,9 @@ subprojects {
 
         // BOM for pax, for jetty, etc.
         bom group: 'org.ops4j.pax', name: 'web', version: libraryVersions.pax
+
+        // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
+        compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
 
         // Required for successful build with JDK 11
         compileOnly group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb

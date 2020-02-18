@@ -1,11 +1,5 @@
-plugins {
-    id 'org.jetbrains.kotlin.jvm'
-}
-
 dependencies {
     infomodelBundle(project(':ids-api')) { transitive = false }
-
-    compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
 
     // MVN resolution problem workaround for infomodel until publicly released
     implementation group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
