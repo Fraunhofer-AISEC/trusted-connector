@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.api.cm;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +38,7 @@ public class ApplicationContainer {
   // Trusted Connector-specific properties:
   private String id;
   private String created;
-  private String status;
+  private ContainerStatus status;
   private List<String> ports;
   private String names;
   private String size;
@@ -83,11 +84,11 @@ public class ApplicationContainer {
     this.created = created;
   }
 
-  public String getStatus() {
+  public ContainerStatus getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(ContainerStatus status) {
     this.status = status;
   }
 

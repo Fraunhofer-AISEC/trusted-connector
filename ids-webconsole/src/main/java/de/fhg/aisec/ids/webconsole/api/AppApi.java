@@ -27,20 +27,21 @@ import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
 import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.ws.rs.*;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -81,14 +82,9 @@ public class AppApi {
     result.sort(
         (app1, app2) -> {
           try {
-            SimpleDateFormat d = new SimpleDateFormat("dd-MM-yyyy HH:mm:s Z");
-            Date date1 = d.parse(app1.getCreated());
-            Date date2 = d.parse(app2.getCreated());
-            if (date1.getTime() < date2.getTime()) {
-              return 1;
-            } else {
-              return -1;
-            }
+            ZonedDateTime date1 = ZonedDateTime.parse(app1.getCreated());
+            ZonedDateTime date2 = ZonedDateTime.parse(app2.getCreated());
+            return date1.compareTo(date2);
           } catch (Exception t) {
             LOG.warn("Unexpected app creation date/time. Cannot sort. {}", t.getMessage());
           }

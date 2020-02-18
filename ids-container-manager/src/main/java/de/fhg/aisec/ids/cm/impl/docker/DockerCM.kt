@@ -176,7 +176,7 @@ class DockerCM : ContainerManager {
                 app.size = "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
                         "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
                 app.created = info.getString("Created")
-                app.status = state.getString("Status")
+                app.status = ContainerStatus.valueOf(state.getString("Status").toUpperCase())
                 app.ports = ports.entries
                         .map { e: Map.Entry<String, JsonValue> -> e.key + ":" + e.value.toString() }
                         .toList()
@@ -395,6 +395,6 @@ class DockerCM : ContainerManager {
      * Returns the version of docker on the system
      */
     override fun getVersion(): String? {
-        return DOCKER_CLIENT.version().getString("Version")
+        return "Docker " + DOCKER_CLIENT.version().getString("Version")
     }
 }

@@ -1,8 +1,10 @@
+import { AppStatus } from './app-status';
+
 export interface App {
     id: string;
     image: string;
     created: Date;
-    status: string;
+    status: AppStatus;
     names: string;
     size: string;
     uptime: string;

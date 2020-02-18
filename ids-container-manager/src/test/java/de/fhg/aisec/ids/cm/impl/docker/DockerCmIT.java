@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.cm.impl.docker;
 
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
+import de.fhg.aisec.ids.api.cm.ContainerStatus;
 import org.junit.After;
 import org.junit.Test;
 
@@ -80,7 +81,7 @@ public class DockerCmIT {
         containers.stream().filter(c -> c.getId().equals(oContainerID.get())).findAny();
     assertTrue(container.isPresent());
 
-    assertEquals("created", container.get().getStatus());
+    assertEquals(ContainerStatus.CREATED, container.get().getStatus());
   }
 
   @Test
@@ -106,7 +107,7 @@ public class DockerCmIT {
         containers.stream().filter(c -> c.getId().equals(containerID)).findAny();
     assertTrue(container.isPresent());
 
-    assertEquals("created", container.get().getStatus());
+    assertEquals(ContainerStatus.CREATED, container.get().getStatus());
 
     // Start container
     d.startContainer(containerID, null);
@@ -116,7 +117,7 @@ public class DockerCmIT {
     Optional<ApplicationContainer> runningContainer =
         containers.stream().filter(c -> c.getId().equals(containerID)).findAny();
     assertTrue(runningContainer.isPresent());
-    assertEquals("running", runningContainer.get().getStatus());
+    assertEquals(ContainerStatus.RUNNING, runningContainer.get().getStatus());
 
     // Stop container
     d.stopContainer(containerID);
@@ -126,6 +127,6 @@ public class DockerCmIT {
     Optional<ApplicationContainer> stoppedContainer =
         containers.stream().filter(c -> c.getId().equals(containerID)).findAny();
     assertTrue(stoppedContainer.isPresent());
-    assertEquals("exited", stoppedContainer.get().getStatus());
+    assertEquals(ContainerStatus.EXITED, stoppedContainer.get().getStatus());
   }
 }

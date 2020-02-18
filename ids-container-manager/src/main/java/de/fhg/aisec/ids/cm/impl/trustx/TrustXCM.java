@@ -30,6 +30,9 @@ import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon;
 import de.fraunhofer.aisec.trustme.Control.ControllerToDaemon.Command;
 import de.fraunhofer.aisec.trustme.Control.DaemonToController;
 import de.fraunhofer.aisec.trustme.Control.DaemonToController.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,8 +43,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * ContainerManager implementation for trust-x containers.
@@ -79,13 +80,13 @@ public class TrustXCM implements ContainerManager {
     }
   }
 
-  private String stateToStatusString(ContainerState state) {
+  private de.fhg.aisec.ids.api.cm.ContainerStatus stateToStatusString(ContainerState state) {
     switch (state) {
       case RUNNING:
       case SETUP:
-        return "Up";
+        return de.fhg.aisec.ids.api.cm.ContainerStatus.RUNNING;
       default:
-        return "Exited";
+        return de.fhg.aisec.ids.api.cm.ContainerStatus.EXITED;
     }
   }
 

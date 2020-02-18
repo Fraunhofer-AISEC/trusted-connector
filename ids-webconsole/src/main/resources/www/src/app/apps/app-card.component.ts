@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { App } from './app';
+import { AppStatus } from './app-status';
 import { PortDef } from './app.port.def';
 import { AppService } from './app.service';
 import { AppsComponent } from './apps.component';
@@ -34,7 +35,7 @@ export class AppCardComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        if (this.app.status.indexOf('Up') >= 0) {
+        if (this.app.status === AppStatus.RUNNING) {
             this.statusIcon = 'stop';
             this.statusColor = '';
         } else {
@@ -49,14 +50,12 @@ export class AppCardComponent implements OnInit {
             this.statusColor = '';
             const key = prompt('Please enter a password for the container', 'trustme');
             this.appService.startApp(containerId, key)
-              .subscribe(result => undefined);
-            this.app.status = 'Up 1 seconds ago';
+              .subscribe(_ => this.app.status = AppStatus.RUNNING);
         } else {
             this.statusIcon = 'play_arrow';
             this.statusColor = 'card-dark';
             this.appService.stopApp(containerId)
-              .subscribe(result => undefined);
-            this.app.status = 'Exited(0) 1 seconds ago';
+              .subscribe(_ => this.app.status = AppStatus.EXITED);
         }
     }
 
