@@ -18,17 +18,6 @@ RUN apt-get update -qq && apt-get install -qq wget git zsh fonts-powerline \
   # Inject karaf console start command into zsh history
   && echo ": 0:0;bin/client" > ~/.zsh_history
 
-# Install docker using get.docker.com script
-ADD build/assembly/bin /root/bin/
-RUN apt-get update -qq && apt-get install -qq wget lsb-release apt-transport-https gnupg2
-RUN wget -O - "https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg" | apt-key add - \
-  && echo "deb https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") $(lsb_release -cs) stable" \
-  | tee /etc/apt/sources.list.d/docker.list \
-  && apt-get update -qq && apt-get install -qq docker-ce docker-ce-cli containerd.io
-# Remove unnecessary packages, Cleanup
-RUN apt-get remove --purge -qq wget lsb-release apt-transport-https gnupg2 \
-  && apt-get autoremove --purge -qq
-
 # Adding the actual core platform files to /root
 ADD build/assembly /root/
 
