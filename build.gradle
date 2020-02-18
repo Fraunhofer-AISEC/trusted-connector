@@ -102,7 +102,7 @@ allprojects {
             jetty              : '9.4.20.v20190813',
 
             // we will pull in a newer version of jackson because of security fixes
-            jackson            : '2.9.8',
+            jackson            : '2.10.2',
 
             // needed for rat-repository, should be seperated 
             jersey             : '2.26',
