@@ -394,7 +394,8 @@ class DockerCM : ContainerManager {
     /**
      * Returns the version of docker on the system
      */
-    override fun getVersion(): String? {
-        return "Docker " + DOCKER_CLIENT.version().getString("Version")
+    override fun getVersion(): String {
+        val version = DOCKER_CLIENT.version()
+        return "${version.platformName()} (${version.version()})"
     }
 }

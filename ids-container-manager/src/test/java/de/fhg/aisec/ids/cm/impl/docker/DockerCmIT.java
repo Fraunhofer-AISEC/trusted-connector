@@ -85,6 +85,18 @@ public class DockerCmIT {
   }
 
   @Test
+  public void testVersion() {
+    assumeTrue(DockerCM.Companion.isSupported());
+
+    DockerCM d = new DockerCM();
+
+    var version = d.getVersion();
+    assertFalse(version.isEmpty());
+    System.out.println(version);
+    assertTrue(version.matches("Docker.+\\([0-9.]+\\)"));
+  }
+
+  @Test
   public void testStartStop() {
     assumeTrue(DockerCM.Companion.isSupported());
 
