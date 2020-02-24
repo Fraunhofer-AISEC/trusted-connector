@@ -12,6 +12,7 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
 before_install:
+  - sudo apt-get -y install protobuf-compiler
   - nvm install 12
   - npm install -g yarn  
 install: true
