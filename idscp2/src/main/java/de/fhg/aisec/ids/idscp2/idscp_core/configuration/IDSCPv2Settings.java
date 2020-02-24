@@ -1,5 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
+import org.checkerframework.checker.units.qual.A;
+
 /**
  * IDSCPv2 configuration class, containing information about keyStore and TrustStores, Attestation Types, host, ...
  *
@@ -16,8 +18,8 @@ public class IDSCPv2Settings {
     private String keyStorePassword = "password";
     private String certAlias = "1.0.1";
     private String keyStoreKeyType = "RSA";
-    private AttestationConfig supportedAttestation = null;
-    private AttestationConfig expectedAttestation = null;
+    private AttestationConfig supportedAttestation = new AttestationConfig();
+    private AttestationConfig expectedAttestation = new AttestationConfig();
 
     public AttestationConfig getExpectedAttestation() {
         return expectedAttestation;

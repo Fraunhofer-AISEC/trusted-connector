@@ -25,7 +25,7 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
         RatVerifierDriverRegistry.getInstance().registerDriver("TPM_2", TPM2Verifier.class);
 
         IDSCPv2Configuration clientConfig = new IDSCPv2Configuration(this,
-                dapsDriver, secureChannelDriver);
+                dapsDriver, secureChannelDriver, settings.getExpectedAttestation(), settings.getSupportedAttestation());
         clientConfig.connect(settings);
     }
 

@@ -31,7 +31,6 @@ public class State {
         this.noTransitionHandler = noTransitionHandler;
     }
 
-    public void runEntryCode() {}
+    void runEntryCode(FSM fsm) {}
 
-    public void runExitCode() {}
 }
