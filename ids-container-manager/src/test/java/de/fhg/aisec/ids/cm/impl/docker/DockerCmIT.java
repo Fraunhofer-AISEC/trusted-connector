@@ -92,9 +92,10 @@ public class DockerCmIT {
 
     var version = d.getVersion();
     assertFalse(version.isEmpty());
-    if (!version.matches("Locker.+\\([0-9.]+\\)")) {
+    var regex = ".* \\([0-9.]+(?:-.+)?\\)";
+    if (!version.matches(regex)) {
       throw new AssertionError(
-          "Error: Docker version has to match regex 'Locker.+\\([0-9.]+\\)', found '" + version + "'");
+          "Error: Docker version has to match regex '" + regex + "', found '" + version + "'");
     }
   }
 
