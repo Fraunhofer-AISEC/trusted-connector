@@ -30,7 +30,6 @@ build:
     key: tc-build
     paths:
       - "cache"
-      - "*/build"
       - "ids-webconsole/src/main/resources/www/node_modules"
 
 # tag develop builds as latest and push them to the internal registry
