@@ -91,7 +91,7 @@ class InfoModelService : InfoModel {
                     TrustedConnectorBuilder()
                 } else {
                     TrustedConnectorBuilder(connectorUrl)
-                            ._hosts_(Util.asList<Host>(HostBuilder()
+                            ._host_(Util.asList<Host>(HostBuilder()
                             ._accessUrl_(connectorUrl).build()))
                 }
                 trustedConnectorBuilder._maintainer_(maintainerUrl)
