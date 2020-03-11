@@ -116,6 +116,7 @@ task yarnInstall(type: YarnTask) {
 task yarnBuild(type: YarnTask) {
     inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/angular.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('src/main/resources/www/src').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.dir('build/resources/main/www')
     outputs.cacheIf { true }
@@ -128,6 +129,7 @@ task yarnBuild(type: YarnTask) {
 task yarnLint(type: YarnTask) {
     inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/tslint.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('src/main/resources/www/src').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.upToDateWhen { true }
     outputs.cacheIf { true }
