@@ -8,6 +8,7 @@ Export-Package: \
   org.apache*
 Import-Package: \
   com.sun.jdmk.comm;resolution:=optional,\
+  com.sun.org.apache.xerces*;resolution:=optional,\
   edu.sussex.nlp.jws;resolution:=optional,\
   javax*;resolution:=optional,\
   net.sf.ehcache;resolution:=optional,\
