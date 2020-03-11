@@ -31,7 +31,7 @@ build:
     paths:
       - "cache"
       - "*/build"
-      - "**/node_modules"
+      - "ids-webconsole/src/main/resources/www/node_modules"
 
 # tag develop builds as latest and push them to the internal registry
 push:
