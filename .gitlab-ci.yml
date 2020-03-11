@@ -10,16 +10,15 @@ build:
   image:
     name: fraunhoferaisec/docker-build:develop
     entrypoint: [""]
-  variables:
-    GRADLE_DIR: "/cache/.gradle"
-    M2_DIR: "/cache/.m2"
   before_script:
     # defined here because of https://gitlab.com/gitlab-org/gitlab-runner/issues/1809
     - export PROJECT_DIR="${CI_PROJECT_DIR}"
     # caching for gradle
-    - mkdir -p /cache/.gradle
+    - export GRADLE_DIR="${CI_PROJECT_DIR}/cache/.gradle"
+    - mkdir -p "${CI_PROJECT_DIR}/cache/.gradle"
     # caching for mvn (used for karaf-assembly)
-    - mkdir -p /cache/.m2
+    - export M2_DIR="${CI_PROJECT_DIR}/cache/.m2"
+    - mkdir -p "${CI_PROJECT_DIR}/cache/.m2"
   script:
     # yarnBuild is part of build, but we try to speed up the process a bit by prioritizing that long-running task
     - /run.sh clean yarnBuild build check dockerize --parallel -PdockerTag=${CI_COMMIT_SHA:0:8}
@@ -27,6 +26,12 @@ build:
     when: always
     paths:
       - "*/build/reports"
+  cache:
+    key: tc-build
+    paths:
+      - "cache"
+      - "*/build"
+      - "**/node_modules"
 
 # tag develop builds as latest and push them to the internal registry
 push:
