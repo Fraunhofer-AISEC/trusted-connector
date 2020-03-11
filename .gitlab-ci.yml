@@ -21,7 +21,7 @@ build:
     - mkdir -p "${CI_PROJECT_DIR}/cache/.m2"
   script:
     # yarnBuild is part of build, but we try to speed up the process a bit by prioritizing that long-running task
-    - /run.sh clean yarnBuild build check dockerize --parallel -PdockerTag=${CI_COMMIT_SHA:0:8}
+    - /run.sh yarnBuild build check dockerize --parallel -PdockerTag=${CI_COMMIT_SHA:0:8}
   artifacts:
     when: always
     paths:
