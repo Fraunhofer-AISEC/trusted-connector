@@ -340,3 +340,8 @@ configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' })
         sign publishing.publications.idsLibrary
     }
 }
+
+// Always write project version to version.txt after build/install
+task dumpVersion {
+    new File(project.projectDir, "version.txt").text = project.version
+}

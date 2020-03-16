@@ -97,8 +97,7 @@ fi
 
 echo "Fetching project version from build-container via \"./gradlew properties\"..."
 # shellcheck disable=SC2155
-PROJECT_VERSION=$(docker-compose -f ../docker-build/docker-compose.yml run --rm build-container \
-  properties --no-daemon --console=plain -q | grep '^version:' | awk '{gsub(/[ \t\n\r]+$/,""); print $2}')
+PROJECT_VERSION=$(cat ../version.txt)
 
 # Export var for buildx bake yaml resolution
 export PROJECT_VERSION
