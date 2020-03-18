@@ -15,10 +15,13 @@ build:
     - export PROJECT_DIR="${CI_PROJECT_DIR}"
     # caching for gradle
     - export GRADLE_DIR="${CI_PROJECT_DIR}/cache/.gradle"
-    - mkdir -p "${CI_PROJECT_DIR}/cache/.gradle"
+    - mkdir -p "$GRADLE_DIR"
     # caching for mvn (used for karaf-assembly)
     - export M2_DIR="${CI_PROJECT_DIR}/cache/.m2"
-    - mkdir -p "${CI_PROJECT_DIR}/cache/.m2"
+    - mkdir -p "$M2_DIR"
+    # caching for ng build
+    - export NG_BUILD_CACHE="${CI_PROJECT_DIR}/cache/ng-cache"
+    - mkdir -p "$NG_CACHE"
   script:
     # yarnBuild is part of build, but we try to speed up the process a bit by prioritizing that long-running task
     - /run.sh yarnBuild build check dumpVersion --parallel
@@ -48,11 +51,14 @@ push:
     # Use docker-container driver to allow useful features (push/multi-platform)
     - docker buildx create --driver docker-container --use
     - docker buildx inspect --bootstrap
+    - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then; echo "latest"; else; echo "${CI_COMMIT_REF_NAME}"; fi;)
   script:
     # Important: Ensures execution of other binary formats is enabled in the kernel
     - update-binfmts --enable
     # Execute buildx script
-    - ./buildx/docker-buildx.sh -t ${CI_COMMIT_REF_NAME} -f docker-compose.yml -f docker-bake-multi.hcl
+    - chmod +x ./buildx/docker-buildx.sh
+    - echo "Using image tag ${TAG_NAME}"
+    - ./buildx/docker-buildx.sh -t ${TAG_NAME} -f docker-compose.yml -f docker-bake-multi.hcl
   only:
     - develop
 
