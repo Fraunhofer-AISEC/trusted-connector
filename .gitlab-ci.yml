@@ -51,7 +51,7 @@ push:
     # Use docker-container driver to allow useful features (push/multi-platform)
     - docker buildx create --driver docker-container --use
     - docker buildx inspect --bootstrap
-    - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then; echo "latest"; else; echo "${CI_COMMIT_REF_NAME}"; fi;)
+    - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then echo "latest"; else echo "${CI_COMMIT_REF_NAME}"; fi)
   script:
     # Important: Ensures execution of other binary formats is enabled in the kernel
     - update-binfmts --enable
