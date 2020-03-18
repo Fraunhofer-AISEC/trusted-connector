@@ -21,7 +21,7 @@ build:
     - mkdir -p "$M2_DIR"
     # caching for ng build
     - export NG_BUILD_CACHE="${CI_PROJECT_DIR}/cache/ng-cache"
-    - mkdir -p "$NG_CACHE"
+    - mkdir -p "$NG_BUILD_CACHE"
   script:
     # yarnBuild is part of build, but we try to speed up the process a bit by prioritizing that long-running task
     - /run.sh yarnBuild build check dumpVersion --parallel
