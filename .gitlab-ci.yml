@@ -43,8 +43,6 @@ push:
   stage: push
   dependencies:
     - build
-  services:
-    - docker:dind
   before_script:
     # Use docker-container driver to allow useful features (push/multi-platform)
     - docker buildx create --driver docker-container --use
