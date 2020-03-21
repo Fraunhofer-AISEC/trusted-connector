@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.keystores;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

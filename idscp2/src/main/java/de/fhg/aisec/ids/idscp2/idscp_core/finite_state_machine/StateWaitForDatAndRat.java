@@ -99,7 +99,7 @@ public class StateWaitForDatAndRat extends State {
                     //check if Dat is available and verify dat
                     byte[] dat = event.getIdscpMessage().getIdscpDat().getToken().toByteArray();
                     int datValidityPeriod;
-                    if (0 > (datValidityPeriod = dapsDriver.verifyToken(dat))){
+                    if (0 > (datValidityPeriod = dapsDriver.verifyToken(dat, null))){
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
                         fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No valid DAT", IDSCPv2.IdscpClose.CloseCause.NO_VALID_DAT));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);

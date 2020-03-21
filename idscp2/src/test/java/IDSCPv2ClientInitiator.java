@@ -1,5 +1,6 @@
 import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2Prover;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2Verifier;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
@@ -19,7 +20,18 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
 
     public void init(IDSCPv2Settings settings){
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
-        DapsDriver dapsDriver = new DefaultDapsDriver();
+        DefaultDapsDriverConfig config =
+            new DefaultDapsDriverConfig.Builder()
+                .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
+                .setKeyStorePath(settings.getKeyStorePath())
+                .setTrustStorePath(settings.getTrustStorePath())
+                .setKeyStorePassword(settings.getKeyStorePassword())
+                .setTrustStorePassword(settings.getTrustStorePassword())
+                .setKeyAlias(settings.getCertAlias())
+                .setDapsUrl("https://daps.aisec.fraunhofer.de")
+                .build();
+
+        DapsDriver dapsDriver = new DefaultDapsDriver(config);
 
         RatProverDriverRegistry.getInstance().registerDriver("TPM_2", TPM2Prover.class);
         RatVerifierDriverRegistry.getInstance().registerDriver("TPM_2", TPM2Verifier.class);

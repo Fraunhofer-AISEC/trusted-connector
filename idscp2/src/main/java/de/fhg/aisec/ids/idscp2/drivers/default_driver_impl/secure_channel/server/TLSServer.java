@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server;
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.keystores.TLSPreConfiguration;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -53,7 +52,7 @@ public class TLSServer extends Thread implements SecureServer {
         /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
          * hostVerification and algorithm constraints */
         LOG.debug("Create trust manager for tls server");
-        TrustManager[] myTrustManager = TLSPreConfiguration.getX509ExtTrustManager(
+        TrustManager[] myTrustManager = PreConfiguration.getX509ExtTrustManager(
                 serverSettings.getTrustStorePath(),
                 serverSettings.getTrustStorePassword()
         );
@@ -61,7 +60,7 @@ public class TLSServer extends Thread implements SecureServer {
         /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
          * connection specific key selection via key alias*/
         LOG.debug("Create key manager for tls server");
-        KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
+        KeyManager[] myKeyManager = PreConfiguration.getX509ExtKeyManager(
                 serverSettings.getKeyStorePath(),
                 serverSettings.getKeyStorePassword(),
                 serverSettings.getCertAlias(),

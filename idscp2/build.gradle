@@ -21,6 +21,14 @@ dependencies {
     testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
     testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'org.json', name: 'json', version: '20180813'
+    providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
+
+    providedByBundle group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
+
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }

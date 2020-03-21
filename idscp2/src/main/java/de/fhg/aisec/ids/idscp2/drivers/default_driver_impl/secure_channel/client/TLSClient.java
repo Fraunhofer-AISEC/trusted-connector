@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client;
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.keystores.TLSPreConfiguration;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
@@ -13,10 +13,8 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CountDownLatch;
@@ -67,14 +65,14 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
         /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
          * hostVerification and algorithm constraints */
-        TrustManager[] myTrustManager = TLSPreConfiguration.getX509ExtTrustManager(
+        TrustManager[] myTrustManager = PreConfiguration.getX509ExtTrustManager(
                 clientSettings.getTrustStorePath(),
                 clientSettings.getTrustStorePassword()
         );
 
         /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
          * connection specific key selection via key alias*/
-        KeyManager[] myKeyManager = TLSPreConfiguration.getX509ExtKeyManager(
+        KeyManager[] myKeyManager = PreConfiguration.getX509ExtKeyManager(
                 clientSettings.getKeyStorePath(),
                 clientSettings.getKeyStorePassword(),
                 clientSettings.getCertAlias(),

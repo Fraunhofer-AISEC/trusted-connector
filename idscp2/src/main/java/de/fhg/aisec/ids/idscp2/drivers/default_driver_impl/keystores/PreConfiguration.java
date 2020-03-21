@@ -1,7 +1,4 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.keystores;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -19,7 +16,7 @@ import java.util.stream.Collectors;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class TLSPreConfiguration {
+public class PreConfiguration {
     //private static final Logger LOG = LoggerFactory.getLogger(TLSPreConfiguration.class);
 
     public static TrustManager[] getX509ExtTrustManager(
@@ -41,23 +38,20 @@ public class TLSPreConfiguration {
                     new CertPathTrustManagerParameters(filterTrustAnchors(trustStore));
             trustManagerFactory.init(trustParams);*/
             trustManagerFactory.init(trustStore);
-
             myTrustManager = trustManagerFactory.getTrustManagers();
-
 
             /* set up TrustManager config */
             //allow only X509 Authentication
             if (myTrustManager.length == 1 && myTrustManager[0] instanceof X509ExtendedTrustManager) {
                 //toDo algorithm constraints
-                //toDO hostname verification is currently done by using https identification protocol
+                //toDo hostname verification is currently done by using https identification protocol
                 return myTrustManager;
             } else {
                 throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(myTrustManager));
             }
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     public static KeyManager[] getX509ExtKeyManager(
@@ -92,9 +86,33 @@ public class TLSPreConfiguration {
 
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException
                 | CertificateException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null; //some exception was raised
+    }
+
+    public static Key getKey(
+        String keyStorePath,
+        String keyStorePassword,
+        String keyAlias
+    ) {
+        try (
+            InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath));
+        ) {
+            /* create KeyManager for remote authentication */
+            KeyStore keystore = KeyStore.getInstance("JKS");
+
+            //load keystore
+            keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
+
+            // get private key
+            return keystore.getKey(keyAlias,
+                keyStorePassword.toCharArray()
+            );
+
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException
+            | UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static PKIXBuilderParameters filterTrustAnchors(KeyStore keyStore)
