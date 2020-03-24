@@ -45,17 +45,18 @@ push:
     - build
   before_script:
     # Use docker-container driver to allow useful features (push/multi-platform)
-    - docker buildx create --use --platform linux/amd64,linux/arm64,linux/arm/v7
+    - docker buildx create --driver docker-container --use --name tc_builder
     - docker buildx inspect --bootstrap
     - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then echo "latest"; else echo "${CI_COMMIT_REF_NAME}"; fi)
   script:
     - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
-    # Ensures execution of other binary formats is enabled in the kernel
-    - update-binfmts --enable
     # Execute buildx script
     - chmod +x ./buildx/docker-buildx.sh
     - echo "Using image tag ${TAG_NAME}"
     - ./buildx/docker-buildx.sh -t ${TAG_NAME} -f docker-compose.yml -f docker-bake-multi.hcl
+  after_script:
+    # Remove the buildx builder
+    - docker buildx rm tc_builder
   only:
     - develop
     - master
