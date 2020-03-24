@@ -44,14 +44,14 @@ push:
   dependencies:
     - build
   before_script:
+    # Ensures execution of other binary formats is enabled in the kernel
+    - update-binfmts --enable
     # Use docker-container driver to allow useful features (push/multi-platform)
     - docker buildx create --driver docker-container --use
     - docker buildx inspect --bootstrap
     - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then echo "latest"; else echo "${CI_COMMIT_REF_NAME}"; fi)
   script:
     - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
-    # Important: Ensures execution of other binary formats is enabled in the kernel
-    - update-binfmts --enable
     # Execute buildx script
     - chmod +x ./buildx/docker-buildx.sh
     - echo "Using image tag ${TAG_NAME}"
