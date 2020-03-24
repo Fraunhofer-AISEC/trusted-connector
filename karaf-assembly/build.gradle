@@ -1,8 +1,3 @@
-apply plugin: DockerRemoteApiPlugin
-
-import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
 dependencies {
     testImplementation(project(':ids-api')) { transitive = false }
 
@@ -20,13 +15,12 @@ Now this is tricky. We need to build a custom assembly of karaf with a few featu
 Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
 */
 
-ext.BRANDING_WIDTH = 84
-
-def getBrandingAligned(String branding, String space = "\\u0020") {
+static def getBrandingAligned(String branding, String space = "\\u0020") {
+    int BRANDING_WIDTH = 84
     def sb = new StringBuilder()
     def spaces = (BRANDING_WIDTH - branding.length()) / 2
     for (int i = 0; i < spaces; ++i) {
-        sb.append(space);
+        sb.append(space)
     }
     sb.append(branding)
     return sb.toString()
@@ -58,13 +52,5 @@ rootProject.subprojects.findAll() {
         assembleKaraf.dependsOn(it.tasks.install)
     }
 }
-
-task dockerize(type: DockerBuildImage) {
-    inputDir = project.projectDir
-    buildArgs = ["JDK_BASE_IMAGE": "fraunhoferaisec/jdk-base:${rootProject.getDockerTag()}"]
-    images.add("fraunhoferaisec/trusted-connector-core:${rootProject.getDockerTag()}")
-}
-dockerize.dependsOn(assembleKaraf)
-dockerize.dependsOn(":docker-jdk-base:dockerize")
 
 integrationTest.dependsOn(jar)

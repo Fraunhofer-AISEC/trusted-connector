@@ -1,8 +1,3 @@
-apply plugin: DockerRemoteApiPlugin
-
-import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
 import java.util.regex.Pattern
 
 def getCommitRefName() {
@@ -11,7 +6,7 @@ def getCommitRefName() {
         // try to fetch commit ref name (GitLab CI)
         refName = System.getenv('CI_COMMIT_REF_NAME')
     } else if (findProperty('dockerTag')) {
-        // fall back to dockerTag if ref name not available (Local Build)
+        // Try fallback to dockerTag if ref name not available (local build)
         refName = findProperty('dockerTag')
     } else {
         return null
@@ -59,23 +54,6 @@ task zipExample(type: Zip) {
 zipExample.dependsOn processTemplates
 zipExample.onlyIf { getCommitRefName() != null }
 processResources.dependsOn zipExample
-
-task dockerize(dependsOn: ['dockerizeTpmSim', 'dockerizeClient', 'dockerizeServer'])
-
-task dockerizeTpmSim(type: DockerBuildImage) {
-    inputDir = new File(project.projectDir.getPath() + '/tpmsim')
-    images.add("fraunhoferaisec/tpmsim:${rootProject.getDockerTag()}")
-}
-
-task dockerizeClient(type: DockerBuildImage) {
-    inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-client')
-    images.add("fraunhoferaisec/example-client:${rootProject.getDockerTag()}")
-}
-
-task dockerizeServer(type: DockerBuildImage) {
-    inputDir = new File(project.projectDir.getPath() + '/example-idscp/example-server')
-    images.add("fraunhoferaisec/example-server:${rootProject.getDockerTag()}")
-}
 
 // Delete the redundant build directory after install or build, if executed
 gradle.taskGraph.whenReady {

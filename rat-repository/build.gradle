@@ -1,8 +1,3 @@
-apply plugin: DockerRemoteApiPlugin
-
-import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
 description = 'rat-repository'
 
 dependencies {
@@ -42,14 +37,3 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
-
-task dockerize(type: DockerBuildImage) {
-    inputDir = project.projectDir
-    buildArgs = [
-            "JDK_BASE_IMAGE": "fraunhoferaisec/jdk-base:${rootProject.getDockerTag()}",
-            "VERSION": version
-    ]
-    images.add("fraunhoferaisec/ttpsim:${rootProject.getDockerTag()}")
-}
-dockerize.dependsOn(jar)
-dockerize.dependsOn(":docker-jdk-base:dockerize")

@@ -25,8 +25,9 @@ dependencies {
     // Provided dependency of docker-java-api
     providedByBundle group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
     // Required until our library PR has been accepted
-    providedByBundle group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'
-    implementation files('libs/docker-java-api-0.0.11-SNAPSHOT.jar')
+    providedByBundle(group: 'com.amihaiemil.web', name: 'docker-java-api', version: '0.0.11') {
+        exclude group: 'com.github.jnr', module: 'jnr-unixsocket'
+    }
 
     compileOnly project(":jnr-unixsocket-wrapper")
 
