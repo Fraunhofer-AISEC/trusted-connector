@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.A;
 
 /**
@@ -20,6 +21,71 @@ public class IDSCPv2Settings {
     private String keyStoreKeyType = "RSA";
     private AttestationConfig supportedAttestation = new AttestationConfig();
     private AttestationConfig expectedAttestation = new AttestationConfig();
+
+    public static class Builder {
+        @NonNull
+        private IDSCPv2Settings settings = new IDSCPv2Settings();
+
+        @NonNull
+        public Builder setHost(String host) {
+            this.settings.host = host;
+            return this;
+        }
+
+        @NonNull
+        public Builder setTrustStore(String path) {
+            this.settings.trustStorePath = path;
+            return this;
+        }
+
+        @NonNull
+        public Builder setKeyStore(String path) {
+            this.settings.keyStorePath = path;
+            return this;
+        }
+
+        @NonNull
+        public Builder setTrustStorePwd(String pwd) {
+            this.settings.trustStorePassword = pwd;
+            return this;
+        }
+
+        @NonNull
+        public Builder setKeyStorePwd(String pwd) {
+            this.settings.keyStorePassword = pwd;
+            return this;
+        }
+
+        @NonNull
+        public Builder setCertificateAlias(String alias) {
+            this.settings.certAlias = alias;
+            return this;
+        }
+
+        @NonNull
+        public Builder setKeyStoreKeyType(String keyType) {
+            this.settings.keyStoreKeyType = keyType;
+            return this;
+        }
+
+        @NonNull
+        public Builder setSupportedAttestationSuite(AttestationConfig suite) {
+            this.settings.supportedAttestation = suite;
+            return this;
+        }
+
+        @NonNull
+        public Builder setExpectedAttestationSuite(AttestationConfig suite) {
+            this.settings.expectedAttestation = suite;
+            return this;
+        }
+
+        @NonNull
+        public IDSCPv2Settings build() {
+            return this.settings;
+        }
+
+    }
 
     public AttestationConfig getExpectedAttestation() {
         return expectedAttestation;
@@ -57,35 +123,7 @@ public class IDSCPv2Settings {
         return certAlias;
     }
 
-    public void setKeyStorePath(String keyStorePath) {
-        this.keyStorePath = keyStorePath;
-    }
-
-    public void setTrustStorePath(String trustStorePath) {
-        this.trustStorePath = trustStorePath;
-    }
-
-    public void setCertAlias(String certAlias) {
-        this.certAlias = certAlias;
-    }
-
-    public void setKeyStoreKeyType(String keyStoreKeyType) {
-        this.keyStoreKeyType = keyStoreKeyType;
-    }
-
-    public void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = trustStorePassword;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
-    }
-
     public String getHost() {
         return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
     }
 }

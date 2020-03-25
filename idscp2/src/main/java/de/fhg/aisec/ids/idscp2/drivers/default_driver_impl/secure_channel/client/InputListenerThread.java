@@ -36,17 +36,16 @@ public class InputListenerThread extends Thread implements InputListener {
         byte[] buf;
         while (running){
             try {
-
                 int len = in.readInt();
                 buf = new byte[len];
                 in.readFully(buf, 0, len);
                 this.listener.onMessage(buf);
-
             } catch (SocketTimeoutException e) {
                 //timeout to catch safeStop() call, which allows save close and sending Client_Goodbye
                 //alternative: close socket / InputStream and catch exception
                 //continue;
                 //toDo offset when timeout while reading ???
+
             } catch (EOFException e){
                 listener.onClose();
                 running = false; //terminate

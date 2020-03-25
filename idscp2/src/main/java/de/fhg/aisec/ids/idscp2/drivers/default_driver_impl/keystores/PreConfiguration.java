@@ -105,9 +105,12 @@ public class PreConfiguration {
             keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
 
             // get private key
-            return keystore.getKey(keyAlias,
-                keyStorePassword.toCharArray()
-            );
+            Key key = keystore.getKey(keyAlias, keyStorePassword.toCharArray());
+            if (key == null) {
+                throw new RuntimeException("No key was found in keystore for given alias");
+            } else {
+                return key;
+            }
 
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException
             | UnrecoverableKeyException e) {

@@ -16,12 +16,12 @@ public class Timer {
         this.timeoutHandler = timeoutHandler;
     }
 
-    void resetTimeout(int delay){
+    void resetTimeout(long delay){
         cancelTimeout();
         start(delay);
     }
 
-    public void start(int delay){
+    public void start(long delay){
         mutex.lock();
         thread = new TimerThread(delay, timeoutHandler, fsmIsBusy);
         thread.start();

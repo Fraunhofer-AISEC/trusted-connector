@@ -26,6 +26,8 @@ import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
 import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.NumericDate;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
@@ -165,7 +167,7 @@ public class DefaultDapsDriver implements DapsDriver {
     }
 
     @Override
-    public int verifyToken(byte[] dat, Object securityRequirements) {
+    public long verifyToken(byte[] dat, Object securityRequirements) {
 
         LOG.info("Verify dynamic attribute token ...");
 
@@ -198,15 +200,21 @@ public class DefaultDapsDriver implements DapsDriver {
 
         //verify dat
         JwtClaims claims;
+        NumericDate expTime;
 
         LOG.debug("Request JWKS from DAPS for validating DAT");
 
         try {
             claims = jwtConsumer.processToClaims(new String(dat));
+            expTime = claims.getExpirationTime();
         } catch (InvalidJwtException e) {
             LOG.error("DAPS response is not a valid DAT format", e);
             return -1;
+        } catch (MalformedClaimException e) {
+            LOG.error("DAT does not contain expiration time", e);
+            return -1;
         }
+        long validityTime = expTime.getValue() - NumericDate.now().getValue();
 
         //check security requirements
         if (securityRequirements != null) {
@@ -225,7 +233,7 @@ public class DefaultDapsDriver implements DapsDriver {
                 if (secRequirements.getAuditLogging() <= providedSecurityProfile.getAuditLogging())
                 {
                     LOG.info("DAT is valid and secure");
-                    return 20;
+                    return validityTime;
                 } else {
                     LOG.warn("DAT does not fulfill the security requirements");
                     return -1;
@@ -237,7 +245,7 @@ public class DefaultDapsDriver implements DapsDriver {
             }
         } else {
             LOG.info("DAT is valid");
-            return 20;
+            return validityTime;
         }
     } //returns number of seconds dat is valid
 

@@ -5,11 +5,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class TimerThread extends Thread{
 
     private volatile boolean canceled = false;
-    private int delay;
+    private long delay;
     private final Runnable timeoutHandler;
     private final ReentrantLock fsmIsBusy;
 
-    TimerThread(int delay, Runnable timeoutHandler, ReentrantLock fsmIsBusy){
+    TimerThread(long delay, Runnable timeoutHandler, ReentrantLock fsmIsBusy){
         this.delay = delay;
         this.timeoutHandler = timeoutHandler;
         this.fsmIsBusy = fsmIsBusy;
