@@ -58,7 +58,7 @@ public class FSM implements FsmListener{
     private Timer datTimer;
     private Timer ratTimer;
     private Timer handshakeTimer;
-    private final int ratTimeoutDelay = 120;
+    private final int ratTimeoutDelay = 20;
 
     public FSM(SecureChannel secureChannel, DapsDriver dapsDriver,
                String[] localSupportedRatSuite, String[] localExpectedRatSuite){

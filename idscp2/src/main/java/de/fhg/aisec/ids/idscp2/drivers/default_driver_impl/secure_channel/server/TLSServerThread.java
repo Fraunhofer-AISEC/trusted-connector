@@ -5,6 +5,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
+import javax.net.ssl.SSLHandshakeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +87,11 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             } catch (EOFException e){
                 onClose();
                 running = false;
+            } catch (SSLHandshakeException e) {
+                LOG.warn("SSLHandshakeException occurred. Quit server session");
+                running = false;
             } catch (IOException e){
-                onError();
+                onError(); //FIXME ??? is there any other exception that could occur before fsm was created ??, if so -> Thread will run forever
                 running = false;
             }
         }

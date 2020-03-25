@@ -30,7 +30,7 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
                 .setTrustStorePath(serverSettings.getTrustStorePath())
                 .setKeyStorePassword(serverSettings.getKeyStorePassword())
                 .setTrustStorePassword(serverSettings.getTrustStorePassword())
-                .setKeyAlias(serverSettings.getCertAlias())
+                .setKeyAlias(serverSettings.getDapsKeyAlias())
                 .setDapsUrl("https://daps.aisec.fraunhofer.de")
                 .build();
         DapsDriver dapsDriver = new DefaultDapsDriver(config);

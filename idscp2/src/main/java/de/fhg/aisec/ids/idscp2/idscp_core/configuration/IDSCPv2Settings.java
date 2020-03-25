@@ -18,6 +18,7 @@ public class IDSCPv2Settings {
     private String keyStorePath = null;
     private String keyStorePassword = "password";
     private String certAlias = "1.0.1";
+    private String dapsKeyAlias = "1";
     private String keyStoreKeyType = "RSA";
     private AttestationConfig supportedAttestation = new AttestationConfig();
     private AttestationConfig expectedAttestation = new AttestationConfig();
@@ -59,6 +60,12 @@ public class IDSCPv2Settings {
         @NonNull
         public Builder setCertificateAlias(String alias) {
             this.settings.certAlias = alias;
+            return this;
+        }
+
+        @NonNull
+        public Builder setDapsKeyAlias(String alias) {
+            this.settings.dapsKeyAlias = alias;
             return this;
         }
 
@@ -121,6 +128,10 @@ public class IDSCPv2Settings {
 
     public String getCertAlias() {
         return certAlias;
+    }
+
+    public String getDapsKeyAlias() {
+        return dapsKeyAlias;
     }
 
     public String getHost() {
