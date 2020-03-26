@@ -45,6 +45,8 @@ push:
     - docker buildx create --driver docker-container --use --name tc_builder
     - docker buildx inspect --bootstrap
     - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then echo "latest"; else echo "${CI_COMMIT_REF_NAME}"; fi)
+    # Remove the prefixing "v" of version tags for docker registry
+    - if [[ "$TAG_NAME" =~ v[0-9]+\.[0-9]+\.[0-9]+ ]]; then export TAG_NAME=${TAG_NAME:1}; fi
   script:
     - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
     # Execute buildx script
