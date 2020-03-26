@@ -1,13 +1,19 @@
+version = libraryVersions.idscp
+
 dependencies {
-    providedByBundle project(':ids-api')
-    providedByBundle project(':tpm2j')
+    providedByBundle(project(':ids-api')) { transitive = false }
+
+    providedByBundle(group: 'com.github.microsoft', name: 'TSS.Java', version: '0.3.0') {
+        // JNA not needed, because we do not directly communicate with the TPM via this library
+        exclude group: 'net.java.dev.jna', module: 'jna'
+    }
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
     
-    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
+    publishCompile group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
 
@@ -15,5 +21,5 @@ dependencies {
     providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }

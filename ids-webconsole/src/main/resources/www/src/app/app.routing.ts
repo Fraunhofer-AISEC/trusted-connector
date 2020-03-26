@@ -1,5 +1,6 @@
 import { RouterModule, Routes } from '@angular/router';
 
+import { AuthGuard } from './_guards/auth.guard';
 import { AppsComponent, AppsSearchComponent } from './apps/apps.component';
 import { ConnectionConfigurationComponent } from './connection-configuration/connection-configuration.component';
 import { ConnectionReportComponent } from './connection-report/connection-report.component';
@@ -9,56 +10,37 @@ import { NewDataflowPolicyComponent } from './dataflowpolicies/dataflowpoliciesn
 import { IdsComponent } from './ids/ids.component';
 import { NewIdentityComponent } from './keycerts/identitynew.component';
 import { KeycertsComponent } from './keycerts/keycerts.component';
+import { HomeLayoutComponent } from './layouts/home-layout/home-layout.component';
+import { LoginLayoutComponent } from './layouts/login-layout/login-layout.component';
+import { LoginComponent } from './login/login.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
 import { RoutesComponent } from './routes/routes.component';
 
-const appRoutes: Routes = [{
-    path: '',
-    redirectTo: '/dashboard',
-    pathMatch: 'full'
-  },                       {
-    path: 'dashboard',
-    component: DashboardComponent,
-    data: {
-      title: 'Dashboard'
-    }
-  },                       {
-    path: 'apps',
-    component: AppsComponent
-  },                       {
-      path: 'appsearch',
-      component: AppsSearchComponent
-  },                       {
-    path: 'dataflowpolicies',
-    component: DataflowPoliciesComponent
-  },                       {
-    path: 'dataflowpolicyynew',
-    component: NewDataflowPolicyComponent
-  },                       {
-    path: 'identitynew',
-    component: NewIdentityComponent
-  },                       {
-    path: 'connections',
-    component: ConnectionReportComponent
-  },                       {
-    path: 'connectionconfiguration',
-    component: ConnectionConfigurationComponent
-  },                       {
-    path: 'routes',
-    component: RoutesComponent
-  },                       {
-    path: 'routeeditor/:id',
-    component: RouteeditorComponent
-  },                       {
-    path: 'routeeditor',
-    component: RouteeditorComponent
-  },                       {
-    path: 'ids',
-    component: IdsComponent,
-    canDeactivate: [IdsComponent]
-  },                       {
-    path: 'certificates',
-    component: KeycertsComponent
+const appRoutes: Routes = [
+  // Pages using the "home" layout (with sidebar and topnav)
+  { path: '', component: HomeLayoutComponent, canActivate: [AuthGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full', canActivate: [AuthGuard] },
+      { path: 'dashboard',  component: DashboardComponent,  data: { title: 'Dashboard' }, canActivate: [AuthGuard] },
+      { path: 'apps', component: AppsComponent, canActivate: [AuthGuard] },
+      { path: 'appsearch', component: AppsSearchComponent, canActivate: [AuthGuard] },
+      { path: 'dataflowpolicies', component: DataflowPoliciesComponent, canActivate: [AuthGuard] },
+      { path: 'dataflowpolicyynew', component: NewDataflowPolicyComponent, canActivate: [AuthGuard] },
+      { path: 'identitynew', component: NewIdentityComponent, canActivate: [AuthGuard] },
+      { path: 'connections', component: ConnectionReportComponent, canActivate: [AuthGuard] },
+      { path: 'connectionconfiguration', component: ConnectionConfigurationComponent, canActivate: [AuthGuard] },
+      { path: 'routes', component: RoutesComponent, canActivate: [AuthGuard] },
+      { path: 'routeeditor/:id', component: RouteeditorComponent, canActivate: [AuthGuard] },
+      { path: 'routeeditor', component: RouteeditorComponent, canActivate: [AuthGuard] },
+      { path: 'ids', component: IdsComponent, canDeactivate: [IdsComponent], canActivate: [AuthGuard] },
+      { path: 'certificates', component: KeycertsComponent, canActivate: [AuthGuard]  }
+    ]
+  },
+  // Pages using the "login" layout (centered full page without sidebar)
+  { path: '', component: LoginLayoutComponent,
+    children: [
+      { path: 'login', component: LoginComponent, data: { title: 'Login' } }
+    ]
   }
 ];
 

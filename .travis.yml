@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 services:
   - docker
 before_cache:
@@ -11,5 +11,12 @@ cache:
   - $HOME/.m2
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
+before_install:
+  - wget -O protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
+  - mkdir $HOME/protoc && unzip -d $HOME/protoc protoc.zip
+  - export PATH=$HOME/protoc/bin:$PATH
+  - echo $PATH
+  - nvm install 12
+  - npm install -g yarn  
 install: true
-script: ./gradlew --parallel clean build dockerize
+script: ./gradlew --parallel clean build

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
+import io.swagger.annotations.Authorization;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.GET;
@@ -42,7 +42,10 @@ import javax.ws.rs.core.MediaType;
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
 @Path("/connections")
-@Api("Connections")
+@Api(
+  value = "IDSCP Connections",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class ConnectionAPI {
 
   @GET
@@ -53,12 +56,13 @@ public class ConnectionAPI {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<IDSCPIncomingConnection> getIncoming() {
-	ConnectionManager cm = WebConsoleComponent.getConnectionManager();
+    ConnectionManager cm = WebConsoleComponent.getConnectionManager();
     if (cm == null) {
-    	return new ArrayList<>();
+      return new ArrayList<>();
     }
-	return cm.listIncomingConnections();
+    return cm.listIncomingConnections();
   }
 
   @GET
@@ -69,12 +73,13 @@ public class ConnectionAPI {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<IDSCPOutgoingConnection> getOutgoing() {
-	 ConnectionManager cm = WebConsoleComponent.getConnectionManager();
-	 if (cm == null) {
-	   	return new ArrayList<>();
-	 }
-	 return cm.listOutgoingConnections();
+    ConnectionManager cm = WebConsoleComponent.getConnectionManager();
+    if (cm == null) {
+      return new ArrayList<>();
+    }
+    return cm.listOutgoingConnections();
   }
 
   @GET
@@ -85,11 +90,12 @@ public class ConnectionAPI {
     responseContainer = "List"
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<IDSCPServerEndpoint> getAvailableEndpoints() {
     ConnectionManager cm = WebConsoleComponent.getConnectionManager();
     if (cm == null) {
-    	return new ArrayList<>();
+      return new ArrayList<>();
     }
-	return cm.listAvailableEndpoints();
+    return cm.listAvailableEndpoints();
   }
 }

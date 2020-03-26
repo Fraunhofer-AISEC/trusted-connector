@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-route-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,15 @@ package de.fhg.aisec.ids.rm.util;
 import de.fhg.aisec.ids.api.router.graph.Edge;
 import de.fhg.aisec.ids.api.router.graph.GraphData;
 import de.fhg.aisec.ids.api.router.graph.Node;
-import java.io.IOException;
+import org.apache.camel.model.ChoiceDefinition;
+import org.apache.camel.model.OptionalIdentifiedDefinition;
+import org.apache.camel.model.ProcessorDefinition;
+import org.apache.camel.model.RouteDefinition;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.camel.model.*;
 
 public class GraphProcessor {
 
@@ -39,7 +42,7 @@ public class GraphProcessor {
   public static GraphData processRoute(RouteDefinition route) {
     GraphData gd = new GraphData();
     // Print route entry points
-    processInputs(gd, route, route.getInputs());
+    processInput(gd, route);
     return gd;
   }
 
@@ -50,7 +53,6 @@ public class GraphProcessor {
    * @param current
    * @param preds
    * @return
-   * @throws IOException
    */
   private static List<ProcessorDefinition<?>> processNode(
       GraphData graphData,
@@ -96,25 +98,22 @@ public class GraphProcessor {
 
   /**
    * Prints a single FromDefinition (= a route entry point) in Prolog representation.
-   *
-   * @throws IOException
    */
-  private static void processInputs(
-      GraphData graphData, RouteDefinition route, List<FromDefinition> inputs) {
+  private static void processInput(
+      GraphData graphData, RouteDefinition route) {
     AtomicInteger counter = new AtomicInteger(0);
-    for (FromDefinition i : inputs) {
-      // Make sure every input node has a unique id
-      if (i.getId() == null) {
-        i.setCustomId(true);
-        i.setId("input" + counter);
-      }
-      graphData.addNode(new Node(i.getId(), i.getLabel(), Node.NodeType.EntryNode));
+    var i = route.getInput();
+    // Make sure every input node has a unique id
+    if (i.getId() == null) {
+      i.setCustomId(true);
+      i.setId("input" + counter);
+    }
+    graphData.addNode(new Node(i.getId(), i.getLabel(), Node.NodeType.EntryNode));
 
-      OptionalIdentifiedDefinition<?> prev = i;
-      for (ProcessorDefinition<?> next : route.getOutputs()) {
-        processNode(graphData, next, Collections.singletonList(prev));
-        prev = next;
-      }
+    OptionalIdentifiedDefinition<?> prev = i;
+    for (ProcessorDefinition<?> next : route.getOutputs()) {
+      processNode(graphData, next, Collections.singletonList(prev));
+      prev = next;
     }
   }
 }

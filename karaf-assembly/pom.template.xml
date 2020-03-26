@@ -10,6 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <branding.first>${brandingFirst}</branding.first>
+        <branding.second>${brandingSecond}</branding.second>
     </properties>
 
     <dependencies>
@@ -106,7 +108,6 @@
                     </bootFeatures>
                     <startupFeatures>
                         <feature>ids</feature>
-                        <feature>camel-influxdb-aisec</feature>
                         <feature>camel-zeromq</feature>
                     </startupFeatures>
                 </configuration>

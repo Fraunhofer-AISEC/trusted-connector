@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,4 +23,5 @@ public interface Constants {
 
   String PREFERENCES_ID = "ids.preferences";
   String CONNECTIONS_PREFERENCES = "ids.connectionPreferences";
+  String GENERAL_CONFIG = "General Configuration";
 }

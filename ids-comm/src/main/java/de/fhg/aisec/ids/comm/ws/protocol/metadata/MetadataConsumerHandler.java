@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import de.fhg.aisec.ids.messages.Idscp.MedadataExchange;
 
 public class MetadataConsumerHandler extends MetadataHandler {
 
-  public MetadataConsumerHandler (String rdfSelfDescription) {
-    super(rdfSelfDescription);
+  public MetadataConsumerHandler(String rdfSelfDescription, String dynamicAttributeToken) {
+    super(rdfSelfDescription, dynamicAttributeToken);
   }
 
   public MessageLite request(Event e) {
@@ -36,7 +36,10 @@ public class MetadataConsumerHandler extends MetadataHandler {
         .setId(++this.sessionID)
         .setType(ConnectorMessage.Type.META_REQUEST)
         .setMetadataExchange(
-            MedadataExchange.newBuilder().setRdfdescription(generateMetaDataRDF()).build())
+            MedadataExchange.newBuilder()
+                .setRdfdescription(getMetaData())
+                .setDynamicAttributeToken(getDynamicAttributeToken())
+                .build())
         .build();
   }
 }

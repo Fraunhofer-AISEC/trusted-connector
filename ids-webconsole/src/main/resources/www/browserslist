@@ -1,0 +1,3 @@
+# only build on a modern browser
+
+last 1 chrome version

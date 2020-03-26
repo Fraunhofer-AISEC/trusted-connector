@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.apache.camel.Producer;
 import org.apache.camel.component.ahc.AhcEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
-import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
 import org.asynchttpclient.*;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
@@ -210,28 +210,42 @@ public class WsEndpoint extends AhcEndpoint {
     URI ttpUri = null;
     try {
       if (settings != null) {
-        ttpUri = new URI(String.format(
-            "https://%s:%d/rat-verify",
-            settings.getConnectorConfig().getTtpHost(),
-            settings.getConnectorConfig().getTtpPort()
-        ));
+        ttpUri =
+            new URI(
+                String.format(
+                    "https://%s:%d/rat-verify",
+                    settings.getConnectorConfig().getTtpHost(),
+                    settings.getConnectorConfig().getTtpPort()));
       }
     } catch (URISyntaxException e) {
       LOG.error("incorrect TTP URI syntax", e);
     }
-    InfoModel infoModel = CamelComponent.getInfoModelManager();
-    ClientConfiguration config =
+    InfoModel infoModelManager = CamelComponent.getInfoModelManager();
+    ClientConfiguration.Builder clientConfigBuilder =
         new ClientConfiguration.Builder()
             .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
-            .rdfDescription(
-                infoModel == null
-                    ? "{\"message\":\"No InfomodelManager loaded\"}"
-                    : infoModel.getConnectorAsJsonLd())
-            .ttpUrl(ttpUri)
-            .build();
-    IdspClientSocket idspListener = new IdspClientSocket(config);
+            .ttpUrl(ttpUri);
+    if (infoModelManager == null) {
+      clientConfigBuilder
+          .rdfDescription("{\"message\":\"Infomodel is not available\"}")
+          .dynamicAttributeToken("{\"message\":\"DAPS token is not available\"}");
+    } else {
+      try {
+        clientConfigBuilder.rdfDescription(infoModelManager.getConnectorAsJsonLd());
+      } catch (Exception x) {
+        LOG.error("Infomodel load failed, please configure a valid Infomodel via the REST API!");
+        clientConfigBuilder.rdfDescription("{\"message\":\"Infomodel is not available\"}");
+      }
+      try {
+        clientConfigBuilder.dynamicAttributeToken(infoModelManager.getDynamicAttributeToken());
+      } catch (Exception x) {
+        LOG.error("DAPS token load failed, please verify your DAPS configuration!");
+        clientConfigBuilder.dynamicAttributeToken("{\"message\":\"DAPS token is not available\"}");
+      }
+    }
+    IdspClientSocket idspListener = new IdspClientSocket(clientConfigBuilder.build());
 
     try {
       // Block until IDSCP has finished
@@ -252,9 +266,9 @@ public class WsEndpoint extends AhcEndpoint {
           LOG.warn("Interrupt occurred whilst waiting for IDSCP handshake", ie);
           Thread.currentThread().interrupt();
         }
-      } while (!idspListener.isTerminated());  // To handle sporadic wake-ups
+      } while (!idspListener.isTerminated()); // To handle sporadic wake-ups
     } catch (ExecutionException | InterruptedException e) {
-        Thread.currentThread().interrupt();
+      Thread.currentThread().interrupt();
       throw new IDSCPException("Error in WebSocket connect", e);
     } finally {
       idspListener.semaphore().unlock();
@@ -291,7 +305,7 @@ public class WsEndpoint extends AhcEndpoint {
 
   void connect(WsConsumer wsConsumer) {
     consumers.add(wsConsumer);
-    reConnect();
+    //reConnect();
   }
 
   void disconnect(WsConsumer wsConsumer) {

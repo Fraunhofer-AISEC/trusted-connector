@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
  */
 package de.fhg.aisec.ids.camel.ids.client;
 
-import org.apache.camel.component.ahc.AhcComponent;
-import org.apache.camel.component.ahc.AhcEndpoint;
-
-import java.net.URI;
-
 import static de.fhg.aisec.ids.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
 import static de.fhg.aisec.ids.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
+
+import java.net.URI;
+import org.apache.camel.component.ahc.AhcComponent;
+import org.apache.camel.component.ahc.AhcEndpoint;
 
 public class WsComponent extends AhcComponent {
 

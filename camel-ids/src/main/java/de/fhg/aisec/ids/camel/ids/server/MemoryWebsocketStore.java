@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,26 +53,22 @@ public class MemoryWebsocketStore extends ConcurrentHashMap<String, DefaultWebso
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     // noop
   }
 
   @Override
-  public void stop() throws Exception {
+  public void stop() {
     clear();
   }
 
   private String getKey(DefaultWebsocket ws) {
     StringBuilder sb = new StringBuilder();
-    if (ws.getConnectionKey() == null && ws.getPathSpec() == null) {
-      return null;
-    } else {
-      if (ws.getConnectionKey() != null) {
-        sb.append(ws.getConnectionKey());
-      }
-      if (ws.getPathSpec() != null) {
-        sb.append(ws.getPathSpec());
-      }
+    if (ws.getConnectionKey() != null) {
+      sb.append(ws.getConnectionKey());
+    }
+    if (ws.getPathSpec() != null) {
+      sb.append(ws.getPathSpec());
     }
     return sb.toString();
   }

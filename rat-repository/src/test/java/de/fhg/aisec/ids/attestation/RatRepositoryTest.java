@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.attestation;
 
+import static org.junit.Assert.*;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -29,14 +31,6 @@ import de.fhg.aisec.ids.messages.AttestationProtos.IdsAttestationType;
 import de.fhg.aisec.ids.messages.AttestationProtos.Pcr;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
-import org.apache.camel.test.AvailablePortFinder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,8 +40,13 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import javax.net.ssl.*;
+import org.apache.camel.test.AvailablePortFinder;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Unit test for ratRepositoryTest */
 public class RatRepositoryTest {

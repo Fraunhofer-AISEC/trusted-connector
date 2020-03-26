@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@
 package de.fhg.aisec.ids.attestation;
 
 public class Start {
-  private static final String VERSION = "2.0.0";
+  private static final String VERSION = "3.0.0";
   private static final String URL = "rat-verify";
 
   private static String host = "127.0.0.1";
   private static int port = 31337;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     switch (args.length) {
       case 2:
         firstArg(args);

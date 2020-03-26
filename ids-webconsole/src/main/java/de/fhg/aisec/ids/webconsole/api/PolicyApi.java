@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,36 +21,33 @@ package de.fhg.aisec.ids.webconsole.api;
 
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * REST API interface for managing "apps" in the connector.
- *
- * <p>In this implementation, apps are either docker or trustX containers.
+ * REST API interface for managing usage control policies in the connector.
  *
  * <p>The API will be available at http://localhost:8181/cxf/api/v1/policies/<method>.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/policies")
-@Api("Policies")
+@Api(
+  value = "Usage Control Policies",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class PolicyApi {
   private static final Logger LOG = LoggerFactory.getLogger(PolicyApi.class);
 
   @GET
   @Path("list")
-  @ApiOperation(value = "Lists active rules", responseContainer = "List")
+  @ApiOperation(value = "Lists active usage control rules", responseContainer = "List")
   @ApiResponses(
       @ApiResponse(
         code = 200,
@@ -59,12 +56,13 @@ public class PolicyApi {
         responseContainer = "List"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<String> list() {
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
-    	return new ArrayList<>();
+      return new ArrayList<>();
     }
-	return pap.listRules();
+    return pap.listRules();
   }
 
   /**
@@ -75,18 +73,22 @@ public class PolicyApi {
   @GET
   @Path("policyProlog")
   @Produces(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Returns the full usage control policy as a Prolog theory")
+  @AuthorizationRequired
   public String getPolicyProlog() {
-	  PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
-	  if (pap == null) {
-		  return "";
-	  }
+    PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
+    if (pap == null) {
+      return "";
+    }
     return pap.getPolicy();
   }
 
   @POST
   @OPTIONS
   @Path("install")
+  @ApiOperation(value = "Installs a new usage control policy as a Prolog theory file")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @AuthorizationRequired
   public String install(
       @Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
       @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,
@@ -94,7 +96,7 @@ public class PolicyApi {
     LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
-    	return "No PAP available";
+      return "No PAP available";
     }
     pap.loadPolicy(policy);
     return "OK";

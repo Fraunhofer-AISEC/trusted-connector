@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,4 +26,12 @@ package de.fhg.aisec.ids.api.cm;
  */
 public class NoContainerExistsException extends Exception {
   private static final long serialVersionUID = 3439666843047044252L;
+
+  public NoContainerExistsException(String message) {
+    super(message);
+  }
+
+  public NoContainerExistsException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

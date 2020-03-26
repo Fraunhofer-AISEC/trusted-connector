@@ -1,9 +1,5 @@
-apply plugin: 'kotlin'
-
 dependencies {
-    providedByBundle project(':ids-api')
-
-    compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
         transitive = false  // Avoid pulling in of checker framework and other annotation stuff
@@ -19,5 +15,5 @@ dependencies {
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }

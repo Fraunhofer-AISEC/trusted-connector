@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,52 +19,29 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * REST API interface for managing "apps" in the connector.
@@ -76,7 +53,10 @@ import io.swagger.annotations.ApiResponses;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/app")
-@Api(value = "App")
+@Api(
+  value = "Applications",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class AppApi {
   public static final long PULL_TIMEOUT_MINUTES = 20;
   private static final Logger LOG = LoggerFactory.getLogger(AppApi.class);
@@ -84,31 +64,27 @@ public class AppApi {
   @GET
   @Path("list")
   @ApiOperation(
-    value = "List installed apps",
+    value = "List all applications installed in the connector",
     notes = "Returns an empty list if no apps are installed",
     response = ApplicationContainer.class,
     responseContainer = "List"
   )
   @ApiResponses(@ApiResponse(code = 200, message = "List of apps"))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<ApplicationContainer> list() {
     ContainerManager cml = WebConsoleComponent.getContainerManager();
     if (cml == null) {
-    	return new ArrayList<>();
+      return new ArrayList<>();
     }
 
     List<ApplicationContainer> result = cml.list(false);
     result.sort(
         (app1, app2) -> {
           try {
-            SimpleDateFormat d = new SimpleDateFormat("dd-MM-yyyy HH:mm:s Z");
-            Date date1 = d.parse(app1.getCreated());
-            Date date2 = d.parse(app2.getCreated());
-            if (date1.getTime() < date2.getTime()) {
-              return 1;
-            } else {
-              return -1;
-            }
+            ZonedDateTime date1 = ZonedDateTime.parse(app1.getCreated());
+            ZonedDateTime date2 = ZonedDateTime.parse(app2.getCreated());
+            return date1.compareTo(date2);
           } catch (Exception t) {
             LOG.warn("Unexpected app creation date/time. Cannot sort. {}", t.getMessage());
           }
@@ -120,28 +96,9 @@ public class AppApi {
   @GET
   @Path("start/{containerId}")
   @ApiOperation(
-      value = "Start an app",
-      notes = "Requests to start an app.",
-      response = Boolean.class
-  )
-  @ApiResponses(
-      @ApiResponse(
-          code = 200,
-          message =
-              "true if the app has been requested to be started. "
-                  + "false if no container management layer is available"
-      ))
-  @Produces(MediaType.APPLICATION_JSON)
-  public boolean start(
-      @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId) {
-    return start(containerId, null);
-  }
-
-  @GET
-  @Path("start/{containerId}/{key}")
-  @ApiOperation(
-    value = "Start an app",
-    notes = "Requests to start an app.",
+    value = "Start an application",
+    notes =
+        "Starting an application may take some time. This method will start the app asynchronously and return immediately. This method starts the latest version of the app.",
     response = Boolean.class
   )
   @ApiResponses(
@@ -152,17 +109,41 @@ public class AppApi {
                 + "false if no container management layer is available"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
+  public boolean start(
+      @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId) {
+    return start(containerId, null);
+  }
+
+  @GET
+  @Path("start/{containerId}/{key}")
+  @ApiOperation(
+    value = "Start an application",
+    notes =
+        "Starting an application may take some time. This method will start the app asynchronously and return immediately. This methods starts a specific version of the app.",
+    response = Boolean.class
+  )
+  @ApiResponses(
+      @ApiResponse(
+        code = 200,
+        message =
+            "true if the app has been requested to be started. "
+                + "false if no container management layer is available"
+      ))
+  @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public boolean start(
       @ApiParam(value = "ID of the app to start") @PathParam("containerId") String containerId,
-      @ApiParam(value = "Key for user token") @PathParam("key") String key) {
+      @ApiParam(value = "Key for user token (required for trustX containers)") @PathParam("key")
+          String key) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
-      if (cml!=null) {
-    	  cml.startContainer(containerId, key);
-    	  return true;
+      if (cml != null) {
+        cml.startContainer(containerId, key);
+        return true;
       } else {
-          LOG.warn("Container manager not available");
-    	  return false;
+        LOG.warn("Container manager not available");
+        return false;
       }
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
       LOG.error("Error starting container", e);
@@ -172,7 +153,12 @@ public class AppApi {
 
   @GET
   @Path("stop/{containerId}")
-  @ApiOperation(value = "Stop an app", notes = "Requests to stop an app.", response = Boolean.class)
+  @ApiOperation(
+    value = "Stop an app",
+    notes =
+        "Stops an application. The application will remain installed and can be re-started later. All temporary data will be lost, however.",
+    response = Boolean.class
+  )
   @ApiResponses(
       @ApiResponse(
         code = 200,
@@ -181,16 +167,17 @@ public class AppApi {
                 + "false if no container management layer is available"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public boolean stop(
       @ApiParam(value = "ID of the app to stop") @PathParam("containerId") String containerId) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml != null) {
-	      cml.stopContainer(containerId);
-	      return true;
+        cml.stopContainer(containerId);
+        return true;
       } else {
-    	  LOG.warn("Container manager not available");
-    	  return false;
+        LOG.warn("Container manager not available");
+        return false;
       }
     } catch (NoContainerExistsException | ServiceUnavailableException e) {
       LOG.error(e.getMessage(), e);
@@ -227,6 +214,7 @@ public class AppApi {
     )
   })
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String install(
       @ApiParam(value = "String with imageID", collectionFormat = "Map")
           Map<String, ApplicationContainer> apps) {
@@ -234,8 +222,8 @@ public class AppApi {
     LOG.debug("Request to load {}", app.getImage());
     final ContainerManager cm = WebConsoleComponent.getContainerManager();
     if (cm == null) {
-    	LOG.warn("Container manager not available");
-        throw new InternalServerErrorException("Null image");
+      LOG.warn("Container manager not available");
+      throw new InternalServerErrorException("Null image");
     }
 
     final String image = app.getImage();
@@ -266,12 +254,13 @@ public class AppApi {
     @ApiResponse(code = 200, message = "If the app is being wiped"),
     @ApiResponse(code = 500, message = "_No cmld_ if no container management layer is available")
   })
+  @AuthorizationRequired
   public String wipe(
       @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") String containerId) {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml == null) {
-    	  return "No container manager";
+        return "No container manager";
       }
       cml.wipe(containerId);
     } catch (NullPointerException | NoContainerExistsException e) {
@@ -287,11 +276,12 @@ public class AppApi {
     response = Map.class
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Map<String, String> getCml() {
     try {
       ContainerManager cml = WebConsoleComponent.getContainerManager();
       if (cml == null) {
-    	  return Collections.emptyMap();
+        return Collections.emptyMap();
       }
       Map<String, String> result = new HashMap<>();
       result.put("cml_version", cml.getVersion());
@@ -305,14 +295,15 @@ public class AppApi {
   @Path("search")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<ApplicationContainer> search(AppSearchRequest searchRequest) {
     String term = searchRequest.getSearchTerm();
     try {
       Client client = ClientBuilder.newBuilder().build();
       Settings settings = WebConsoleComponent.getSettings();
       if (settings == null) {
-    	  LOG.warn("No settings available");
-    	  return new ArrayList<>();
+        LOG.warn("No settings available");
+        return new ArrayList<>();
       }
       String url = settings.getConnectorConfig().getAppstoreUrl();
 

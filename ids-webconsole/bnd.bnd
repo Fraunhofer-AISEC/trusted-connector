@@ -16,5 +16,7 @@ Import-Package: \
 	com.fasterxml.jackson.databind,\
 	!io.swagger.annotations,\
 	*
+Private-Package: \
+    com.auth0.*
 Web-ContextPath: /
 -wab: build/resources/main/www/

@@ -43,3 +43,6 @@ out
 
 # Lock files
 .lock
+
+# Version file
+/version.txt

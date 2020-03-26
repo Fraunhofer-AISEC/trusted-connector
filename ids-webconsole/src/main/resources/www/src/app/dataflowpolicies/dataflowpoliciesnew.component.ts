@@ -1,6 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AbstractControl } from '@angular/forms/src/model';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
 import { Policy } from './policy.interface';
@@ -10,19 +9,19 @@ import { PolicyService } from './policy.service';
     templateUrl: './dataflowpoliciesnew.component.html'
 })
 export class NewDataflowPolicyComponent implements OnInit {
-    @Output() readonly changeTitle = new EventEmitter();
-    myForm: FormGroup;
-    data: Policy;
-    policyFileLabel = 'Select lucon file ...';
-    events: Array<any> = [];
-    multiple: false;
-    fileUpload: AbstractControl;
+    @Output() public readonly changeTitle = new EventEmitter();
+    public myForm: FormGroup;
+    public data: Policy;
+    public policyFileLabel = 'Select lucon file ...';
+    public events: Array<any> = [];
+    public multiple: false;
+    public fileUpload: AbstractControl;
 
     constructor(private readonly _fb: FormBuilder, private readonly titleService: Title, private readonly policyService: PolicyService) {
         this.titleService.setTitle('New Policy');
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         // the short way to create a FormGroup
         this.myForm = this._fb.group({
             policy_file: ['', Validators.required as any]
@@ -31,7 +30,7 @@ export class NewDataflowPolicyComponent implements OnInit {
         this.fileUpload = this.myForm.get('policy_file');
     }
 
-    save(policy: Policy, fileInputElement: any, isValid: boolean): void {
+    public save(policy: Policy, fileInputElement: any, isValid: boolean): void {
         // console.log(policy, fileInputElement, isValid);
         // console.log(fileInputElement.files[0]);
 
@@ -41,7 +40,7 @@ export class NewDataflowPolicyComponent implements OnInit {
     }
 
     // Update caption of upload button with file name when a file is selected
-    fileChangeEvent(fileInput: any): void {
+    public fileChangeEvent(fileInput: any): void {
         if (fileInput.target.files && fileInput.target.files[0]) {
             this.policyFileLabel = fileInput.target.files[0].name;
         }

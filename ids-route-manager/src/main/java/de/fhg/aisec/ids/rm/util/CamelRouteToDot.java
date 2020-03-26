@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-route-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,19 @@
  */
 package de.fhg.aisec.ids.rm.util;
 
-import static org.apache.camel.util.ObjectHelper.isNotEmpty;
+import org.apache.camel.model.*;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.*;
-import org.apache.camel.model.ChoiceDefinition;
-import org.apache.camel.model.FromDefinition;
-import org.apache.camel.model.MulticastDefinition;
-import org.apache.camel.model.PipelineDefinition;
-import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.model.ToDefinition;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.apache.camel.util.ObjectHelper.isNotEmpty;
 
 /**
  * Camel route definition to GraphViz converter.
@@ -63,10 +61,7 @@ public class CamelRouteToDot {
       writer.write("style = \"dashed\";\n");
     }
     for (RouteDefinition route : routes) {
-      List<FromDefinition> inputs = route.getInputs();
-      for (FromDefinition input : inputs) {
-        printRoute(writer, route, input);
-      }
+      printRoute(writer, route, route.getInput());
       writer.write("\n");
     }
     if (group != null) {
@@ -90,10 +85,7 @@ public class CamelRouteToDot {
     writer.write(
         "node [shape=\"box\", style = \"filled\", fillcolor = white, "
             + "fontname=\"Helvetica-Oblique\"];");
-    List<FromDefinition> inputs = route.getInputs();
-    for (FromDefinition input : inputs) {
-      printRoute(writer, route, input);
-    }
+    printRoute(writer, route, route.getInput());
 
     writer.write("\n}");
   }
@@ -204,10 +196,10 @@ public class CamelRouteToDot {
     Object key = node;
     if (node instanceof FromDefinition) {
       FromDefinition fromType = (FromDefinition) node;
-      key = fromType.getUriOrRef();
+      key = fromType.getUri();
     } else if (node instanceof ToDefinition) {
       ToDefinition toType = (ToDefinition) node;
-      key = toType.getUriOrRef();
+      key = toType.getUri();
     }
     NodeData answer = null;
     if (key != null) {

@@ -11,15 +11,15 @@ export class ConnectionReportService {
 
   constructor(private readonly http: HttpClient) { }
 
-  getEndpoints(): Observable<Array<Endpoint>> {
+  public getEndpoints(): Observable<Array<Endpoint>> {
     return this.http.get<Array<Endpoint>>(environment.apiURL + '/connections/endpoints');
   }
 
-  getIncomingConnections(): Observable<Array<IncomingConnection>> {
+  public getIncomingConnections(): Observable<Array<IncomingConnection>> {
     return this.http.get<Array<IncomingConnection>>(environment.apiURL + '/connections/incoming');
   }
 
-  getOutgoingConnections(): Observable<Array<OutgoingConnection>> {
+  public getOutgoingConnections(): Observable<Array<OutgoingConnection>> {
     return this.http.get<Array<OutgoingConnection>>(environment.apiURL + '/connections/outgoing');
   }
 

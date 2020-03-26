@@ -1,4 +1,0 @@
-Bundle-Name: TPM2j
-Bundle-Description: TPM2j: Java-based API for the Trusted Platform Module (TPM) version 2.0
-Export-Package: de.fhg.aisec.tpm2j.*
-Import-Package: *

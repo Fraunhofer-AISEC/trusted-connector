@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-api
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public interface ContainerManager {
    *     need to configure them.
    * @param srcPort IP source port.
    * @param dstPort IP destination port.
-   * @param srcDestRange Remote IP, i.e. for OUTBOUND traffic, IP range of the destination. For
+   * @param srcDstRange Remote IP, i.e. for OUTBOUND traffic, IP range of the destination. For
    *     INBOUND traffic, IP range of the source.
    * @param protocol TPC or UDP.
    * @param decision ALLOW, DENY, or DROP

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@ import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryRequest;
 import de.fhg.aisec.ids.messages.Idscp.AttestationRepositoryResponse;
 import de.fhg.aisec.ids.messages.Idscp.ConnectorMessage;
 import de.fhg.aisec.ids.messages.Idscp.Error;
-
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 @Path("/")
 public class REST {

@@ -1,11 +1,9 @@
-version: '2'
+version: '3'
 services:
 
   # TPM simulator
   ids-tpmsim:
-    image: fraunhoferaisec/tpmsim:develop
-    build:
-      context: '../tpmsim'
+    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
     volumes:
       - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
     networks:
@@ -13,9 +11,7 @@ services:
 
   # Trusted third party (RAT repository) simulator
   ids-ttpsim:
-    image: fraunhoferaisec/ttpsim:develop
-    build:
-      context: '../../rat-repository'
+    image: fraunhoferaisec/ttpsim:${EXAMPLE_TAG:-develop}
     networks:
       example-internal:
         aliases:
@@ -23,16 +19,17 @@ services:
 
   # The core platform, mounts docker control socket into the image
   ids-core:
-    image: fraunhoferaisec/trusted-connector-core:develop
-    build:
-      context: '../../karaf-assembly'
+    image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
     tty: true
     stdin_open: true
     volumes:
-      - /tmp/ids/log/:/root/data/log/
+      - ../log/:/root/log/
       - /var/run/docker.sock:/var/run/docker.sock
       - ./system.properties:/root/etc/system.properties
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
+      - ../cert-stores/consumer-keystore.p12:/root/etc/consumer-keystore.p12
+      - ../cert-stores/provider-keystore.p12:/root/etc/provider-keystore.p12
+      - ../cert-stores/truststore.p12:/root/etc/truststore.p12
       - ./example-idscp-localloop.xml:/root/deploy/example-idscp-localloop.xml
     environment:
       - TPM_HOST=ids-tpmsim

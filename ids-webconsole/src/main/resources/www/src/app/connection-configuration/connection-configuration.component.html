@@ -1,195 +1,384 @@
 <div class="mdl-grid">
+  <div class="mdl-cell mdl-cell--12-col">
 
-    <div class="card-dark mdl-card mdl-cell mdl-cell--12-col  mdl-shadow--2dp">
-        <div class="mdl-card__title">
-            <h2 class="mdl-card__title-text">Endpoint Security Obligations</h2>
-        </div>
-        <div class="selectEndpoint clearfix">
-            <button *ngFor="let ep of models; let i = index; trackBy: trackModels" (click)="selectedIndex = i"
-                    class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect no-upper"
-                    [class.mdl-button--colored]="i === selectedIndex"
-                    [class.mdl-button--accent]="ep.dirty &amp;&amp; i !== selectedIndex">
-                {{ ep.connection }}
-            </button>
-            <div style="clear:left"></div>
-            <button class="mdl-button mdl-js-button mdl-button--raised" (click)="save()"
-                    [class.mdl-button--accent]="model &amp;&amp; model.dirty">
-                Save Settings
-            </button>
-        </div>
+    <h5>Endpoint Security Requirements</h5>
+
+    <p>Configure the security requirements which remote endpoints must meet to connect to this Trusted Connector.
+      Endpoints that do meet these requirements will not be able to exchange data with this connector.</p>
+
+    <button class="mdl-button mdl-js-button mdl-button--raised"
+            (click)="save()"
+            [class.mdl-button--accent]="model && model.dirty">
+      Save Settings
+    </button>
+
+    <div class="mdl-tabs mdl-js-tabs">
+      <div class="mdl-tabs__tab-bar" style="justify-content: flex-start">
+        <a *ngFor="let ep of models; let i = index; trackBy: trackModels" href="#id-{{i}}" class="mdl-tabs__tab"
+        [class.is-active]="i === selectedIndex" [class.mdl-button--accent]="ep.dirty && i !== selectedIndex"
+        (click)="selectedIndex = i; $event.preventDefault()">
+          {{ ep.connection }}
+        </a>
+      </div>
+
+      <div *ngFor="let ep of models; let i = index; trackBy: trackModels" class="mdl-tabs__panel" id="id-{{i}}"
+      [class.is-active]="i === selectedIndex">
         <div class="tbl-content">
-            <p class="loading" *ngIf="!model">Loading Settings...</p>
-            <table *ngIf="model" cellpadding="0" cellspacing="0" border="0" (click)="model.dirty = true">
-                <tbody>
-                    <tr>
-                        <td width="25%">
-                            <p>Integrity protection and verification</p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_1_left" [(ngModel)]="model.settings.integrityProtectionAndVerification"
-                                        name="integrityProtectionAndVerification" [value]="'1'" [checked]="model.settings.integrityProtectionAndVerification === '1'"
-                                    />
-                                    <label class="labelSmall" for="switch_1_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_1_center" [(ngModel)]="model.settings.integrityProtectionAndVerification"
-                                        name="integrityProtectionAndVerification" [value]="'2'" [checked]="model.settings.integrityProtectionAndVerification === '2'"
-                                    />
-                                    <label class="labelWide" for="switch_1_center">Local Integrity Protection</label>
-                                    <input class="switch-button" type="radio" id="switch_1_right" [(ngModel)]="model.settings.integrityProtectionAndVerification"
-                                        name="integrityProtectionAndVerification" [value]="'3'" [checked]="model.settings.integrityProtectionAndVerification === '3'"
-                                    />
-                                    <label class="labelWide" for="switch_1_right">Remote integrity verification</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="25%">
-                            <p>Authentication</p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_2_left" [(ngModel)]="model.settings.authentication" name="authentication"
-                                        [value]="'1'" [checked]="model.settings.authentication === '1'" />
-                                    <label class="labelSmall" for="switch_2_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_2_center" [(ngModel)]="model.settings.authentication" name="authentication"
-                                        [value]="'2'" [checked]="model.settings.authentication === '2'" />
-                                    <label class="labelWide" for="switch_2_center">Server side only authentication</label>
-                                    <input class="switch-button" type="radio" id="switch_2_right" [(ngModel)]="model.settings.authentication" name="authentication"
-                                        [value]="'3'" [checked]="model.settings.authentication === '3'" />
-                                    <label class="labelWide" for="switch_2_right">Mutual Authentication</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="25%">
-                            <p>Service Isolation
-                                <p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_3_left" [(ngModel)]="model.settings.serviceIsolation" name="serviceIsolation"
-                                        [value]="'1'" [checked]="model.settings.serviceIsolation === '1'" />
-                                    <label class="labelSmall" for="switch_3_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_3_center" [(ngModel)]="model.settings.serviceIsolation" name="serviceIsolation"
-                                        [value]="'2'" [checked]="model.settings.serviceIsolation === '2'" />
-                                    <label class="labelWide" for="switch_3_center">Process group isolation</label>
-                                    <input class="switch-button" type="radio" id="switch_3_right" [(ngModel)]="model.settings.serviceIsolation" name="serviceIsolation"
-                                        [value]="'3'" [checked]="model.settings.serviceIsolation === '3'" />
-                                    <label class="labelWide" for="switch_3_right">Least privilege based isolation</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="25%">
-                            <p>Integrity protection / Verification Scope</p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_4_left" [(ngModel)]="model.settings.integrityProtectionVerificationScope"
-                                        name="integrityProtectionVerificationScope" [value]="'1'" [checked]="model.settings.integrityProtectionVerificationScope === '1'"
-                                    />
-                                    <label class="labelSmall" for="switch_4_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_4_center" [(ngModel)]="model.settings.integrityProtectionVerificationScope"
-                                        name="integrityProtectionVerificationScope" [value]="'2'" [checked]="model.settings.integrityProtectionVerificationScope === '2'"
-                                    />
-                                    <label class="labelWide" for="switch_4_center">Kernel &amp; core containers</label>
-                                    <input class="switch-button" type="radio" id="switch_4_right" [(ngModel)]="model.settings.integrityProtectionVerificationScope"
-                                        name="integrityProtectionVerificationScope" [value]="'3'" [checked]="model.settings.integrityProtectionVerificationScope === '3'"
-                                    />
-                                    <label class="labelWide" for="switch_4_right">Kernel &amp; core &amp; Application containers</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="25%">
-                            <p>App Execution resources</p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_5_left" [(ngModel)]="model.settings.appExecutionResources" name="appExecutionResources"
-                                        [value]="'1'" [checked]="model.settings.appExecutionResources === '1'" />
-                                    <label class="labelSmall" for="switch_5_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_5_center" [(ngModel)]="model.settings.appExecutionResources" name="appExecutionResources"
-                                        [value]="'2'" [checked]="model.settings.appExecutionResources === '2'" />
-                                    <label class="labelWide" for="switch_5_center">Local enforcement</label>
-                                    <input class="switch-button" type="radio" id="switch_5_right" [(ngModel)]="model.settings.appExecutionResources" name="appExecutionResources"
-                                        [value]="'3'" [checked]="model.settings.appExecutionResources === '3'" />
-                                    <label class="labelWide" for="switch_5_right">Remote verification</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="25%">
-                            <p>Data usage control support</p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_6_left" [(ngModel)]="model.settings.dataUsageControlSupport" name="dataUsageControlSupport"
-                                        [value]="'1'" [checked]="model.settings.dataUsageControlSupport === '1'" />
-                                    <label class="labelSmall" for="switch_6_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_6_center" [(ngModel)]="model.settings.dataUsageControlSupport" name="dataUsageControlSupport"
-                                        [value]="'2'" [checked]="model.settings.dataUsageControlSupport === '2'" />
-                                    <label class="labelWide" for="switch_6_center">Usage control policy enforcement</label>
-                                    <input class="switch-button" type="radio" id="switch_6_right" [(ngModel)]="model.settings.dataUsageControlSupport" name="dataUsageControlSupport"
-                                        [value]="'3'" [checked]="model.settings.dataUsageControlSupport === '3'" />
-                                    <label class="labelWide" for="switch_6_right">Remote policy compliance verification</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="20%">
-                            <p>Audit logging</p>
-                        </td>
-                        <td width="80%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_7_left" [(ngModel)]="model.settings.auditLogging" name="auditLogging"
-                                        [value]="'1'" [checked]="model.settings.auditLogging === '1'" />
-                                    <label class="labelSmall" for="switch_7_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_7_center" [(ngModel)]="model.settings.auditLogging" name="auditLogging"
-                                        [value]="'2'" [checked]="model.settings.auditLogging === '2'" />
-                                    <label class="labelWide" for="switch_7_center">Local logging &amp; integrity protection</label>
-                                    <input class="switch-button" type="radio" id="switch_7_right" [(ngModel)]="model.settings.auditLogging" name="auditLogging"
-                                        [value]="'3'" [checked]="model.settings.auditLogging === '3'" />
-                                    <label class="labelWide" for="switch_7_right">Remote audit log tracing</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="25%">
-                            <p>Local Data confidentiality</p>
-                        </td>
-                        <td width="75%">
-                            <form class="form">
-                                <div class="switch-field">
-                                    <input class="switch-button" type="radio" id="switch_8_left" [(ngModel)]="model.settings.localDataConfidentiality" name="localDataConfidentiality"
-                                        [value]="'1'" [checked]="model.settings.localDataConfidentiality === '1'" />
-                                    <label class="labelSmall" for="switch_8_left">None</label>
-                                    <input class="switch-button" type="radio" id="switch_8_center" [(ngModel)]="model.settings.localDataConfidentiality" name="localDataConfidentiality"
-                                        [value]="'2'" [checked]="model.settings.localDataConfidentiality === '2'" />
-                                    <label class="labelWide" for="switch_8_center">Secure data erasure</label>
-                                    <input class="switch-button" type="radio" id="switch_8_right" [(ngModel)]="model.settings.localDataConfidentiality" name="localDataConfidentiality"
-                                        [value]="'3'" [checked]="model.settings.localDataConfidentiality === '3'" />
-                                    <label class="labelWide" for="switch_8_right">Local full data enryption</label>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+          <p class="loading" *ngIf="!model">Loading Settings...</p>
+          <table *ngIf="model" cellpadding="0" cellspacing="0" border="0" (click)="model.dirty = true">
+            <tbody>
+            <!-- <tr>
+              <td width="50%">
+                <h5>Integrity</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title"></span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Local Integrity Protection</b></span>
+                    <span class="mdl-list__item-sub-title"></span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Remote integrity verification</b></span>
+                    <span class="mdl-list__item-sub-title"></span>
+                  </span>
+                </ul>
+              </td>
+              <td width="50%">
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_1_left"
+                           [(ngModel)]="model.settings.integrityProtectionAndVerification"
+                           name="integrityProtectionAndVerification" [value]="'1'"
+                           [checked]="model.settings.integrityProtectionAndVerification === '1'"
+                    />
+                    <label class="labelSmall" for="switch_1_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_1_center"
+                           [(ngModel)]="model.settings.integrityProtectionAndVerification"
+                           name="integrityProtectionAndVerification" [value]="'2'"
+                           [checked]="model.settings.integrityProtectionAndVerification === '2'"
+                    />
+                    <label class="labelWide" for="switch_1_center">Local Integrity Protection</label>
+                    <input class="switch-button" type="radio" id="switch_1_right"
+                           [(ngModel)]="model.settings.integrityProtectionAndVerification"
+                           name="integrityProtectionAndVerification" [value]="'3'"
+                           [checked]="model.settings.integrityProtectionAndVerification === '3'"
+                    />
+                    <label class="labelWide" for="switch_1_right">Remote integrity verification</label>
+                  </div>
+                </form>
+              </td>
+            </tr> -->
+            <tr>
+              <td>
+                <h5>Authentication</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title">No endpoint authentication required. Connections are encrypted, but authenticity of the communication partner cannot be guaranteed. Data may be sent to malicious endpoints.</span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Server Authentication</b></span>
+                    <span class="mdl-list__item-sub-title">Authenticity of the server must be guaranteed. Authenticity of the client is not checked.</span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Mutual Authentication</b></span>
+                    <span class="mdl-list__item-sub-title">Authenticity of server and client must be guaranteed.</span>
+                  </span>
+                </ul>
+              </td>
+              <td>
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_2_left"
+                           [(ngModel)]="model.settings.authentication"
+                           name="authentication"
+                           [value]="'1'" [checked]="model.settings.authentication === '1'"/>
+                    <label class="labelSmall" for="switch_2_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_2_center"
+                           [(ngModel)]="model.settings.authentication"
+                           name="authentication"
+                           [value]="'2'" [checked]="model.settings.authentication === '2'"/>
+                    <label class="labelWide" for="switch_2_center">Server Authentication</label>
+                    <input class="switch-button" type="radio" id="switch_2_right"
+                           [(ngModel)]="model.settings.authentication"
+                           name="authentication"
+                           [value]="'3'" [checked]="model.settings.authentication === '3'"/>
+                    <label class="labelWide" for="switch_2_right">Mutual Authentication</label>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td width="50%">
+                <h5>App Isolation</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title">Apps are not isolated. A malicious app may compromise the whole connector.</span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Containers</b></span>
+                    <span class="mdl-list__item-sub-title">Apps run in separate containers but may still communicate with each other and the Internet.</span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Trusted Containers</b></span>
+                    <span class="mdl-list__item-sub-title">Apps run in separate, signed and restricted containers. By default, they may only communicate with the Core Platform which enforces usage control policies.</span>
+                  </span>
+                  </ul>
+              </td>
+              <td width="50%">
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_3_left"
+                           [(ngModel)]="model.settings.serviceIsolation"
+                           name="serviceIsolation"
+                           [value]="'1'" [checked]="model.settings.serviceIsolation === '1'"/>
+                    <label class="labelSmall" for="switch_3_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_3_center"
+                           [(ngModel)]="model.settings.serviceIsolation" name="serviceIsolation"
+                           [value]="'2'" [checked]="model.settings.serviceIsolation === '2'"/>
+                    <label class="labelWide" for="switch_3_center">Containers</label>
+                    <input class="switch-button" type="radio" id="switch_3_right"
+                           [(ngModel)]="model.settings.serviceIsolation" name="serviceIsolation"
+                           [value]="'3'" [checked]="model.settings.serviceIsolation === '3'"/>
+                    <label class="labelWide" for="switch_3_right">Trusted Containers</label>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h5>Attestation Scope</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title">Integrity of the remote connector is not attested. There will be no guarantees about the software stack running on a remote connector. Any data sent to the remote connector must be considered unprotected.</span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Kernel &amp; Core Platform</b></span>
+                    <span class="mdl-list__item-sub-title">Integrity of the remote connector's kernel and Core Platform will be attested. These components will be guaranteed to be in a known state, but apps remain unattested.</span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Full Stack</b></span>
+                    <span class="mdl-list__item-sub-title">Integrity of the remote connector's kernel, Core Platform, and apps will be attested. All these components will be guaranteed to be in a known state.</span>
+                  </span>
+                </ul>
+              </td>
+              <td>
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_4_left"
+                           [(ngModel)]="model.settings.integrityProtectionVerificationScope"
+                           name="integrityProtectionVerificationScope" [value]="'1'"
+                           [checked]="model.settings.integrityProtectionVerificationScope === '1'"
+                    />
+                    <label class="labelSmall" for="switch_4_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_4_center"
+                           [(ngModel)]="model.settings.integrityProtectionVerificationScope"
+                           name="integrityProtectionVerificationScope" [value]="'2'"
+                           [checked]="model.settings.integrityProtectionVerificationScope === '2'"
+                    />
+                    <label class="labelWide" for="switch_4_center">Kernel &amp; Core Platform</label>
+                    <input class="switch-button" type="radio" id="switch_4_right"
+                           [(ngModel)]="model.settings.integrityProtectionVerificationScope"
+                           name="integrityProtectionVerificationScope" [value]="'3'"
+                           [checked]="model.settings.integrityProtectionVerificationScope === '3'"
+                    />
+                    <label class="labelWide" for="switch_4_right">Full Stack</label>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            <!--<tr>
+              <td>
+                <h5>App Execution Resources</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title"></span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Local Enforcement</b></span>
+                    <span class="mdl-list__item-sub-title"></span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Remote Verification</b></span>
+                    <span class="mdl-list__item-sub-title"></span>
+                  </span>
+                </ul>
+
+              </td>
+              <td>
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_5_left"
+                           [(ngModel)]="model.settings.appExecutionResources" name="appExecutionResources"
+                           [value]="'1'" [checked]="model.settings.appExecutionResources === '1'"/>
+                    <label class="labelSmall" for="switch_5_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_5_center"
+                           [(ngModel)]="model.settings.appExecutionResources" name="appExecutionResources"
+                           [value]="'2'" [checked]="model.settings.appExecutionResources === '2'"/>
+                    <label class="labelWide" for="switch_5_center">Local enforcement</label>
+                    <input class="switch-button" type="radio" id="switch_5_right"
+                           [(ngModel)]="model.settings.appExecutionResources" name="appExecutionResources"
+                           [value]="'3'" [checked]="model.settings.appExecutionResources === '3'"/>
+                    <label class="labelWide" for="switch_5_right">Remote verification</label>
+                  </div>
+                </form>
+              </td>
+            </tr> -->
+            <tr>
+              <td>
+                <h5>Data Usage Control</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title">Remote connector is not expected to provide usage control.</span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Compliance</b></span>
+                    <span class="mdl-list__item-sub-title">Remote connector is expected to apply usage control policies, but not to strictly enforce them at a technical level. Legal usage obligations may still apply</span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Enforcement</b></span>
+                    <span class="mdl-list__item-sub-title">Remote connector must be able to technically enforce usage control policies. This requires a trusted remote platform.</span>
+                  </span>
+                </ul>
+              </td>
+              <td>
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_6_left"
+                           [(ngModel)]="model.settings.dataUsageControlSupport" name="dataUsageControlSupport"
+                           [value]="'1'" [checked]="model.settings.dataUsageControlSupport === '1'"/>
+                    <label class="labelSmall" for="switch_6_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_6_center"
+                           [(ngModel)]="model.settings.dataUsageControlSupport" name="dataUsageControlSupport"
+                           [value]="'2'" [checked]="model.settings.dataUsageControlSupport === '2'"/>
+                    <label class="labelWide" for="switch_6_center">Compliance</label>
+                    <input class="switch-button" type="radio" id="switch_6_right"
+                           [(ngModel)]="model.settings.dataUsageControlSupport" name="dataUsageControlSupport"
+                           [value]="'3'" [checked]="model.settings.dataUsageControlSupport === '3'"/>
+                    <label class="labelWide" for="switch_6_right">Enforcement</label>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h5>Audit Logging</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title">No audit logging.</span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Local</b></span>
+                    <span class="mdl-list__item-sub-title">Local audit logging.</span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Remote Ledger</b></span>
+                    <span class="mdl-list__item-sub-title">Non-repudiatable audit logging in a remote ledger.</span>
+                  </span>
+                </ul>
+              </td>
+              <td>
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_7_left"
+                           [(ngModel)]="model.settings.auditLogging"
+                           name="auditLogging"
+                           [value]="'1'" [checked]="model.settings.auditLogging === '1'"/>
+                    <label class="labelSmall" for="switch_7_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_7_center"
+                           [(ngModel)]="model.settings.auditLogging"
+                           name="auditLogging"
+                           [value]="'2'" [checked]="model.settings.auditLogging === '2'"/>
+                    <label class="labelWide" for="switch_7_center">Local</label>
+                    <input class="switch-button" type="radio" id="switch_7_right"
+                           [(ngModel)]="model.settings.auditLogging"
+                           name="auditLogging"
+                           [value]="'3'" [checked]="model.settings.auditLogging === '3'"/>
+                    <label class="labelWide" for="switch_7_right">Remote Ledger</label>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h5>Local data protection</h5>
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>None</b></span>
+                    <span class="mdl-list__item-sub-title">Data is stored without additional protection. Administrators or malicious users may be able to read/modify/delete stored data.</span>
+                  </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Secure data erasure</b></span>
+                    <span class="mdl-list__item-sub-title">Locally stored data may be securely erased.  Administrators or malicious users may still be able to read/modify/delete stored data.</span>
+                  </span>
+                  <li class="mdl-list__item mdl-list__item--two-line">
+                    <span class="mdl-list__item-primary-content">
+                      <span><b>Full Disk Encryption</b></span>
+                    <span class="mdl-list__item-sub-title">Local data is stored on a full disk encryption (FDE) medium.</span>
+                  </span>
+                </ul>
+              </td>
+              <td>
+                <form class="form">
+                  <div class="switch-field">
+                    <input class="switch-button" type="radio" id="switch_8_left"
+                           [(ngModel)]="model.settings.localDataConfidentiality" name="localDataConfidentiality"
+                           [value]="'1'" [checked]="model.settings.localDataConfidentiality === '1'"/>
+                    <label class="labelSmall" for="switch_8_left">None</label>
+                    <input class="switch-button" type="radio" id="switch_8_center"
+                           [(ngModel)]="model.settings.localDataConfidentiality" name="localDataConfidentiality"
+                           [value]="'2'" [checked]="model.settings.localDataConfidentiality === '2'"/>
+                    <label class="labelWide" for="switch_8_center">Secure data erasure</label>
+                    <input class="switch-button" type="radio" id="switch_8_right"
+                           [(ngModel)]="model.settings.localDataConfidentiality" name="localDataConfidentiality"
+                           [value]="'3'" [checked]="model.settings.localDataConfidentiality === '3'"/>
+                    <label class="labelWide" for="switch_8_right">Local full data encryption</label>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
+  </div>
 </div>

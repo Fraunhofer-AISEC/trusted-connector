@@ -1,36 +1,21 @@
 /*-
  * ========================LICENSE_START=================================
- * Camel IDS Component
+ * ids-api
  * %%
- * Copyright (C) 2017 - 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * =========================LICENSE_END==================================
- */
-/*
- * Copyright 2018 toni.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 package de.fhg.aisec.ids.api.infomodel;
 
@@ -45,7 +30,8 @@ public interface InfoModel {
    *
    * @return currently stored Connector object
    */
-  @Nullable Connector getConnector();
+  @Nullable
+  Connector getConnector();
 
   /**
    * Save/Update Connector object to preferences
@@ -60,12 +46,20 @@ public interface InfoModel {
    *
    * @return Connector self-description as JSON-LD
    */
-  @NonNull String getConnectorAsJsonLd();
+  @NonNull
+  String getConnectorAsJsonLd();
 
-  /**
-   * Set static connector self-description as JSON-LD,
-   * or remove if "null" is passed
-   */
+  /** Set static connector self-description as JSON-LD, or remove if "null" is passed */
   void setConnectorByJsonLd(@Nullable String jsonLd);
 
+  /**
+   * Get connector Dynamic Attribute Token
+   *
+   * @return DAT
+   */
+  @NonNull
+  String getDynamicAttributeToken();
+
+  /** Set Dynamic Attribute Token or remove if "null" is passed */
+  boolean setDynamicAttributeToken(@NonNull String dynamicAttributeToken);
 }

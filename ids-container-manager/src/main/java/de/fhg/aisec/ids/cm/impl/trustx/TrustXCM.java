@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-container-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,14 +80,14 @@ public class TrustXCM implements ContainerManager {
     }
   }
 
-  private String stateToStatusString(ContainerState state) {
-     switch (state) {
-       case RUNNING:
-       case SETUP:
-         return "Up";
-       default:
-         return "Exited";
-     }
+  private de.fhg.aisec.ids.api.cm.ContainerStatus stateToStatusString(ContainerState state) {
+    switch (state) {
+      case RUNNING:
+      case SETUP:
+        return de.fhg.aisec.ids.api.cm.ContainerStatus.RUNNING;
+      default:
+        return de.fhg.aisec.ids.api.cm.ContainerStatus.EXITED;
+    }
   }
 
   @Override
@@ -105,7 +105,7 @@ public class TrustXCM implements ContainerManager {
           container.setId(cs.getUuid());
           container.setImage("");
           container.setCreated(formatter.format(Instant.ofEpochSecond(cs.getCreated())));
-          //container.setStatus(cs.getState().name());
+          // container.setStatus(cs.getState().name());
           container.setStatus(stateToStatusString(cs.getState()));
           container.setPorts(Arrays.asList("\n".split("\n")));
           container.setNames(cs.getName());

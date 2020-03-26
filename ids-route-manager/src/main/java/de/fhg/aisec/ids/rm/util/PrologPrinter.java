@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-route-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@
  */
 package de.fhg.aisec.ids.rm.util;
 
+import org.apache.camel.model.ChoiceDefinition;
+import org.apache.camel.model.OptionalIdentifiedDefinition;
+import org.apache.camel.model.ProcessorDefinition;
+import org.apache.camel.model.RouteDefinition;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.camel.model.ChoiceDefinition;
-import org.apache.camel.model.FromDefinition;
-import org.apache.camel.model.OptionalIdentifiedDefinition;
-import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.model.RouteDefinition;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PrologPrinter {
 
@@ -48,7 +48,7 @@ public class PrologPrinter {
     }
 
     // Print route entry points
-    printInputs(writer, route, route.getInputs());
+    printInput(writer, route);
   }
 
   /**
@@ -103,24 +103,23 @@ public class PrologPrinter {
    *
    * @throws IOException
    */
-  private void printInputs(Writer writer, RouteDefinition route, List<FromDefinition> inputs)
+  private void printInput(Writer writer, RouteDefinition route)
       throws IOException {
     AtomicInteger counter = new AtomicInteger(0);
-    for (FromDefinition i : inputs) {
-      // Make sure every input node has a unique id
-      if (i.getId() == null) {
-        i.setCustomId(true);
-        i.setId("input" + counter.incrementAndGet());
-      }
-      writer.write("stmt(" + i.getId() + ").\n");
-      writer.write("entrynode(" + i.getId() + ").\n");
-      writer.write("has_action(" + i.getId() + ", \"" + i.getLabel() + "\").\n");
+    var i = route.getInput();
+    // Make sure every input node has a unique id
+    if (i.getId() == null) {
+      i.setCustomId(true);
+      i.setId("input" + counter.incrementAndGet());
+    }
+    writer.write("stmt(" + i.getId() + ").\n");
+    writer.write("entrynode(" + i.getId() + ").\n");
+    writer.write("has_action(" + i.getId() + ", \"" + i.getLabel() + "\").\n");
 
-      OptionalIdentifiedDefinition<?> prev = i;
-      for (ProcessorDefinition<?> next : route.getOutputs()) {
-        printNode(writer, next, Collections.singletonList(prev));
-        prev = next;
-      }
+    OptionalIdentifiedDefinition<?> prev = i;
+    for (ProcessorDefinition<?> next : route.getOutputs()) {
+      printNode(writer, next, Collections.singletonList(prev));
+      prev = next;
     }
   }
 }

@@ -1,7 +1,10 @@
-apply plugin: DockerRemoteApiPlugin
+dependencies {
+    testImplementation(project(':ids-api')) { transitive = false }
 
-import com.bmuschko.gradle.docker.DockerRemoteApiPlugin
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+    testImplementation group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: libraryVersions.karaf
+}
 
 /*
 Now this is tricky. We need to build a custom assembly of karaf with a few features:
@@ -12,14 +15,30 @@ Now this is tricky. We need to build a custom assembly of karaf with a few featu
 Since gradle still has no karaf-assembly plugin we need to do this using maven (meh!)
 */
 
+static def getBrandingAligned(String branding, String space = "\\u0020") {
+    int BRANDING_WIDTH = 84
+    def sb = new StringBuilder()
+    def spaces = (BRANDING_WIDTH - branding.length()) / 2
+    for (int i = 0; i < spaces; ++i) {
+        sb.append(space)
+    }
+    sb.append(branding)
+    return sb.toString()
+}
+
 task parsePom(type: Copy) {
     from (project.projectDir) {
         include 'pom.template.xml'
     }
-    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf)
-    rename '.*', 'pom.xml'
+    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf,
+        'brandingFirst': getBrandingAligned("Trusted Connector Console (${project.version}), " +
+                "Apache Karaf (${libraryVersions.karaf})"),
+        'brandingSecond': getBrandingAligned("Fraunhofer AISEC ${new Date()[Calendar.YEAR].toString()}"))
+    rename 'pom.template.xml', 'pom.xml'
     into project.projectDir
 }
+parsePom.inputs.property('projectVersion', project.version)
+parsePom.inputs.property('karafVersion', libraryVersions.karaf)
 
 task assembleKaraf(type: CrossPlatformExec) {
     commandLine "./mvnw", "--no-transfer-progress", "clean", "package"
@@ -32,20 +51,6 @@ rootProject.subprojects.findAll() {
     if (it.name != project.name) {
         assembleKaraf.dependsOn(it.tasks.install)
     }
-}
-
-task dockerize(type: DockerBuildImage) {
-    inputDir = project.projectDir
-    tag = "fraunhoferaisec/trusted-connector-core:${rootProject.getDockerTag()}"
-}
-
-dockerize.dependsOn(assembleKaraf)
-
-dependencies {
-    testImplementation project(':ids-api')
-    osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
-    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
-    testImplementation group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: libraryVersions.karaf
 }
 
 integrationTest.dependsOn(jar)

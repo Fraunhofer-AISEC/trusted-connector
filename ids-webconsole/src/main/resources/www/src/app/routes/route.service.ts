@@ -13,37 +13,37 @@ import { ValidationInfo } from './validation';
 export class RouteService {
   constructor(private readonly httpClient: HttpClient) { }
 
-  getRoute(routeId: string): Observable<Route> {
+  public getRoute(routeId: string): Observable<Route> {
     return this.httpClient.get(environment.apiURL + '/routes/get/' + routeId) as Observable<Route>;
   }
 
-  getRouteAsString(routeId: string): Observable<string> {
+  public getRouteAsString(routeId: string): Observable<string> {
     return this.httpClient.get(environment.apiURL + '/routes/getAsString/' + routeId, { responseType: 'text' });
   }
 
-  getValidationInfo(routeId: string): Observable<ValidationInfo> {
+  public getValidationInfo(routeId: string): Observable<ValidationInfo> {
     return this.httpClient.get(environment.apiURL + '/routes/validate/' + routeId) as Observable<ValidationInfo>;
   }
 
-  getMetrics(): Observable<RouteMetrics> {
+  public getMetrics(): Observable<RouteMetrics> {
     return this.httpClient.get(environment.apiURL + '/routes/metrics') as Observable<RouteMetrics>;
   }
 
-  getRoutes(): Observable<Array<Route>> {
+  public getRoutes(): Observable<Array<Route>> {
     return this.httpClient.get(environment.apiURL + '/routes/list/') as Observable<Array<Route>>;
   }
 
-  stopRoute(routeId: string): Observable<Result> {
+  public stopRoute(routeId: string): Observable<Result> {
     // Stop Camel route
     return this.httpClient.get(environment.apiURL + '/routes/stoproute/' + routeId) as Observable<Result>;
   }
 
-  startRoute(routeId: string): Observable<Result> {
+  public startRoute(routeId: string): Observable<Result> {
     // Start Camel route
     return this.httpClient.get(environment.apiURL + '/routes/startroute/' + routeId) as Observable<Result>;
   }
 
-  saveRoute(routeId: string, routeString: string): Observable<RouteResult> {
+  public saveRoute(routeId: string, routeString: string): Observable<RouteResult> {
     // Update Camel route
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
     // console.log('Sending Update: ' + routeString);
@@ -52,7 +52,7 @@ export class RouteService {
       routeString, { headers }) as Observable<RouteResult>;
   }
 
-  addRoute(routeString: string): Observable<Result> {
+  public addRoute(routeString: string): Observable<Result> {
     // Save new Camel route
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
     // console.log('Sending New: ' + routeString);
@@ -61,7 +61,7 @@ export class RouteService {
       routeString, { headers }) as Observable<Result>;
   }
 
-  listComponents(): Observable<Array<RouteComponent>> {
+  public listComponents(): Observable<Array<RouteComponent>> {
     return this.httpClient.get<Array<RouteComponent>>(environment.apiURL + '/routes/components');
   }
 }

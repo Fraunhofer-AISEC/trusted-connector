@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@
 package de.fhg.aisec.ids.comm.ws.protocol.fsm;
 
 import de.fhg.aisec.ids.comm.ws.protocol.ProtocolState;
-import org.slf4j.LoggerFactory;
-
 import java.util.function.Function;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Transition transfers the FSM from a start state to an end state and is triggered by an event.

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,10 @@ import org.slf4j.LoggerFactory;
  * @author Hamed Rasifard (hamed.rasifard@aisec.fraunhofer.de)
  */
 @Path("/certs")
-@Api(value = "Certs")
+@Api(
+  value = "Identities and Certificates",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class CertApi {
   private static final Logger LOG = LoggerFactory.getLogger(CertApi.class);
   private static final String KEYSTORE_PWD = "password";
@@ -70,6 +73,7 @@ public class CertApi {
   @GET
   @ApiOperation(value = "Starts ACME renewal over X509v3 certificates")
   @Path("acme_renew/{target}")
+  @AuthorizationRequired
   public void getAcmeCert(
       @ApiParam(
             value =
@@ -77,19 +81,18 @@ public class CertApi {
           )
           @PathParam("target")
           String target) {
-	Settings settings = WebConsoleComponent.getSettings();
-	if (settings == null) {
-		return;
-	}
+    Settings settings = WebConsoleComponent.getSettings();
+    if (settings == null) {
+      return;
+    }
     ConnectorConfig config = settings.getConnectorConfig();
     AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
-    if ("webconsole".equals(target) && acmeClient!=null) {
-      acmeClient
-          .renewCertificate(
-              FileSystems.getDefault().getPath("etc", "tls-webconsole"),
-              URI.create(config.getAcmeServerWebcon()),
-              config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"),
-              config.getAcmePortWebcon());
+    if ("webconsole".equals(target) && acmeClient != null) {
+      acmeClient.renewCertificate(
+          FileSystems.getDefault().getPath("etc", "tls-webconsole"),
+          URI.create(config.getAcmeServerWebcon()),
+          config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"),
+          config.getAcmePortWebcon());
     } else {
       LOG.warn("ACME renewal for services other than WebConsole is not yet implemented!");
     }
@@ -101,12 +104,13 @@ public class CertApi {
     response = AcmeTermsOfService.class
   )
   @Path("acme_tos")
+  @AuthorizationRequired
   public AcmeTermsOfService getAcmeTermsOfService(
       @ApiParam(value = "URI to retrieve the TOS from") @QueryParam("uri") String uri) {
     AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
-	if (acmeClient == null) {
-		return null;
-	}
+    if (acmeClient == null) {
+      return null;
+    }
     return acmeClient.getTermsOfService(URI.create(uri.trim()));
   }
 
@@ -121,6 +125,7 @@ public class CertApi {
     @ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available"),
   })
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<Cert> listCerts() {
     File truststore = getKeystoreFile(TRUSTSTORE_FILE);
     if (truststore == null) {
@@ -137,6 +142,7 @@ public class CertApi {
         "Certificates in this list refer to private keys that can be used as identities by the connector."
   )
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public List<Cert> listIdentities() {
     File keystoreFile = getKeystoreFile(KEYSTORE_FILE);
     return getKeystoreEntries(keystoreFile);
@@ -146,6 +152,7 @@ public class CertApi {
   @Path("create_identity")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String createIdentity(
       @ApiParam(value = "Specification of the identity to create a key pair for") Identity spec) {
     String alias = UUID.randomUUID().toString();
@@ -162,6 +169,7 @@ public class CertApi {
   @Path("delete_identity")
   @ApiOperation(value = "Deletes a public/private key pair")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String deleteIdentity(String alias) {
     File keyStoreFile = getKeystoreFile(KEYSTORE_FILE);
     boolean success = delete(alias, keyStoreFile);
@@ -177,6 +185,7 @@ public class CertApi {
   @Path("delete_cert")
   @ApiOperation(value = "Deletes a trusted certificate")
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public String deleteCert(String alias) {
     File keyStoreFile = getKeystoreFile(TRUSTSTORE_FILE);
     boolean success = delete(alias, keyStoreFile);
@@ -195,6 +204,7 @@ public class CertApi {
   })
   @Produces(MediaType.TEXT_HTML)
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @AuthorizationRequired
   public String installTrustedCert(
       @ApiParam(hidden = true, name = "attachment") @Multipart("upfile") Attachment attachment)
       throws IOException {

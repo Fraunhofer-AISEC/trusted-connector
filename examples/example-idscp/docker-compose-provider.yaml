@@ -1,11 +1,9 @@
-version: '2'
+version: '3'
 services:
 
   # TPM simulator
   ids-tpmsim-provider:
-    image: fraunhoferaisec/tpmsim:develop
-    build:
-      context: '../tpmsim'
+    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
     volumes:
       # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
       - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
@@ -14,18 +12,16 @@ services:
 
   # The core platform, mounts docker control socket and route definition into the image
   provider-core:
-    image: fraunhoferaisec/trusted-connector-core:develop
-    build:
-      context: '../../karaf-assembly'
+    image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
     tty: true
     stdin_open: true
     volumes:
-      - /tmp/ids/log/:/root/data/log/
+      - ../log/:/root/log/
       - /var/run/docker.sock:/var/run/docker.sock
       - ./system.properties:/root/etc/system.properties
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
-      - ./provider-client-truststore.jks:/root/etc/provider-client-truststore.jks
-      - ./provider-client-keystore.jks:/root/etc/provider-client-keystore.jks
+      - ../cert-stores/provider-keystore.p12:/root/etc/provider-keystore.p12
+      - ../cert-stores/truststore.p12:/root/etc/truststore.p12
       - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-provider
@@ -46,9 +42,7 @@ services:
 
   # Sensor data provider
   provider-app:
-    image: fraunhoferaisec/example-client:develop
-    build:
-      context: './example-client'
+    image: fraunhoferaisec/example-client:${EXAMPLE_TAG:-develop}
     networks:
       - provider-internal
 

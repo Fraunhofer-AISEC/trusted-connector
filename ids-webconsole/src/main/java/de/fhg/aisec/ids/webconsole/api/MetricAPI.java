@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,8 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadMXBean;
+import io.swagger.annotations.*;
+import java.lang.management.*;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +37,10 @@ import javax.ws.rs.core.MediaType;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Path("/metric")
-@Api(value = "Metric")
+@Api(
+  value = "Runtime Metrics",
+  authorizations = {@Authorization(value = "oauth2")}
+)
 public class MetricAPI {
 
   private static final DecimalFormat loadAvgFormat = new DecimalFormat("###.##");
@@ -65,6 +61,7 @@ public class MetricAPI {
         responseContainer = "Map"
       ))
   @Produces(MediaType.APPLICATION_JSON)
+  @AuthorizationRequired
   public Map<String, String> getMetrics() {
     HashMap<String, String> result = new HashMap<>();
 

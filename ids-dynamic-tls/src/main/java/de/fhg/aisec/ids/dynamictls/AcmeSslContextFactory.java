@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-dynamic-tls
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Lux
  */
-public class AcmeSslContextFactory extends SslContextFactory
+public class AcmeSslContextFactory extends SslContextFactory.Server
     implements SslContextFactoryReloadable {
   private static final Logger LOG = LoggerFactory.getLogger(AcmeSslContextFactory.class);
   private ServiceRegistration<SslContextFactoryReloadable> serviceRegistration;

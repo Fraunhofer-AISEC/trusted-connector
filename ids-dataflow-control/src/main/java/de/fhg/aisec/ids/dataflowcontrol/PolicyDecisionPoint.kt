@@ -244,23 +244,14 @@ class PolicyDecisionPoint : PDP, PAP {
 
             // Include only solveInfos with highest priority
             var maxPrio = Integer.MIN_VALUE
+            val applicableSolveInfos = ArrayList<SolveInfo>()
             for (si in solveInfo) {
                 try {
                     val priority = Integer.parseInt(si.getVarValue("P").term.toString())
                     if (priority > maxPrio) {
                         maxPrio = priority
+                        applicableSolveInfos.clear()
                     }
-                } catch (e: NumberFormatException) {
-                    LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e)
-                } catch (e: NullPointerException) {
-                    LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e)
-                }
-
-            }
-            val applicableSolveInfos = ArrayList<SolveInfo>()
-            for (si in solveInfo) {
-                try {
-                    val priority = Integer.parseInt(si.getVarValue("P").term.toString())
                     if (priority == maxPrio) {
                         applicableSolveInfos.add(si)
                     }

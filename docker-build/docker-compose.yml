@@ -1,9 +1,9 @@
-version: '2'
+version: '3'
 services:
 
-  # TPM simulator
+  # Trusted Connector build container
   build-container:
-    image: fraunhoferaisec/docker-build:develop
+    image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-develop}
     tty: true
     stdin_open: true
     environment:
@@ -15,5 +15,3 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.gradle:/.gradle
       - ~/.m2:/.m2
-    build:
-      context: '.'

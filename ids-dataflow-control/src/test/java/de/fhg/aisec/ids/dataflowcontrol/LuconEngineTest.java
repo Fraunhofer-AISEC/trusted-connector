@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-dataflow-control
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@
  */
 package de.fhg.aisec.ids.dataflowcontrol;
 
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.MalformedGoalException;
 import alice.tuprolog.NoSolutionException;
@@ -29,9 +34,6 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
 import de.fhg.aisec.ids.api.router.RouteManager;
 import de.fhg.aisec.ids.api.router.RouteVerificationProof;
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -39,11 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -123,35 +122,35 @@ public class LuconEngineTest {
           + "has_endpoint(testQueueService, \"^amqp:.*?:test\").";
 
   // Policy with extended labels, i.e. "purpose(green)"
-  private static final String EXTENDED_LABELS_POLICY = "" +
-  		"%%%%%%%% Rules %%%%%%%%%%%%\n"
-        + "rule(denyAll).\n"
-        + "rule_priority(denyAll, 0).\n"
-        + "has_decision(denyAll, drop).\n"
-        + "receives_label(denyAll).\n"
-        + "has_target(denyAll, serviceAll).\n"
-        + "\n"
-        + "rule(demo).\n"
-        + "rule_priority(demo, 1).\n"
-  		+ "has_target(demo, service473016340).\n" 
-  		+ "service(service473016340).\n"
-  		+ "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n" 
-  		+ "receives_label(demo) :- label(purpose(green)).\n"  // Note that Prolog does not support nested predicates.
-  		+ "has_decision(demo, allow).\n" 
-  		+ "\n"
-  		+ "%%%%% Services %%%%%%%%%%%%\n" 
-        + "service(serviceAll).\n"
-        + "has_endpoint(serviceAll,'.*').\n"
-  		+ "creates_label(serviceAll, purpose(green)).\n" 
-        + "\n"
-  		+ "service(sanitizedata).\n"
-  		+ "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" 
-  		+ "creates_label(sanitizedata, public).\n"
-  		+ "removes_label(sanitizedata, private).\n";
-  
+  private static final String EXTENDED_LABELS_POLICY =
+      ""
+          + "%%%%%%%% Rules %%%%%%%%%%%%\n"
+          + "rule(denyAll).\n"
+          + "rule_priority(denyAll, 0).\n"
+          + "has_decision(denyAll, drop).\n"
+          + "receives_label(denyAll).\n"
+          + "has_target(denyAll, serviceAll).\n"
+          + "\n"
+          + "rule(demo).\n"
+          + "rule_priority(demo, 1).\n"
+          + "has_target(demo, service473016340).\n"
+          + "service(service473016340).\n"
+          + "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n"
+          + "receives_label(demo) :- label(purpose(green)).\n" // Note that Prolog does not support
+          // nested predicates.
+          + "has_decision(demo, allow).\n"
+          + "\n"
+          + "%%%%% Services %%%%%%%%%%%%\n"
+          + "service(serviceAll).\n"
+          + "has_endpoint(serviceAll,'.*').\n"
+          + "creates_label(serviceAll, purpose(green)).\n"
+          + "\n"
+          + "service(sanitizedata).\n"
+          + "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n"
+          + "creates_label(sanitizedata, public).\n"
+          + "removes_label(sanitizedata, private).\n";
 
-		  
-		  // Route from LUCON paper with path searching logic
+  // Route from LUCON paper with path searching logic
   private static final String VERIFIABLE_ROUTE =
       "%\n"
           + "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n"
@@ -201,9 +200,7 @@ public class LuconEngineTest {
     assertTrue(prolog.trim().startsWith("move(1,X,Y"));
   }
 
-  /**
-   * Loading an invalid Prolog theory is expected to throw an exception.
-   */
+  /** Loading an invalid Prolog theory is expected to throw an exception. */
   @Test
   public void testLoadingTheoryNotGood() {
     LuconEngine e = new LuconEngine(System.out);
@@ -221,8 +218,7 @@ public class LuconEngineTest {
    * @throws InvalidTheoryException If invalid theory is encountered
    */
   @Test
-  public void testSimplePrologQuery()
-      throws InvalidTheoryException {
+  public void testSimplePrologQuery() throws InvalidTheoryException {
     LuconEngine e = new LuconEngine(System.out);
     e.loadPolicy(HANOI_THEORY);
     try {
@@ -286,10 +282,10 @@ public class LuconEngineTest {
     PolicyDecision dec = pdp.requestDecision(new DecisionRequest(source, dest, attributes, null));
     assertEquals(Decision.ALLOW, dec.getDecision());
 
-//    // Check obligation
-//    assertEquals(3, dec.getObligations().size());
-//    Obligation obl = dec.getObligations().get(0);
-//    assertEquals("delete_after_days(30)", obl.getAction());
+    //    // Check obligation
+    //    assertEquals(3, dec.getObligations().size());
+    //    Obligation obl = dec.getObligations().get(0);
+    //    assertEquals("delete_after_days(30)", obl.getAction());
   }
 
   /**
@@ -317,9 +313,7 @@ public class LuconEngineTest {
     assertEquals(0, dec.getObligations().size());
   }
 
-  /**
-   * List all rules of the currently loaded policy.
-   */
+  /** List all rules of the currently loaded policy. */
   @Test
   public void testListRules() {
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
@@ -392,7 +386,7 @@ public class LuconEngineTest {
     // Create policy decision point and attach to route manager
     PolicyDecisionPoint pdp = new PolicyDecisionPoint();
     pdp.loadPolicies();
-    
+
     // Manually inject routemanager into PDP
     Field f1 = pdp.getClass().getDeclaredField("routeManager");
     f1.setAccessible(true);

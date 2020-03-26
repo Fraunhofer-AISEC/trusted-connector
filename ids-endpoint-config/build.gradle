@@ -1,0 +1,14 @@
+dependencies {
+    providedByBundle(project(':ids-api')) { transitive = false }
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
+}
+
+
+

@@ -1,0 +1,32 @@
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+idea {
+    module {
+        // mark as generated sources for IDEA
+        generatedSourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
+    }
+}
+
+dependencies {
+    providedByBundle(project(':ids-api')) { transitive = false }
+
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
+    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
+
+    osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
+
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
+    providedByBundle group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
+    providedByBundle group: 'com.squareup.okio', name: 'okio', version: libraryVersions.okio
+    providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
+    providedByBundle group: 'org.json', name: 'json', version: '20180813'
+
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
+}
+
+
+

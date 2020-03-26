@@ -23,7 +23,7 @@
     </Call>
   </New>
 
-  <!-- Use our own Acme-enhanced SslContextFacctory instead of the standard org.eclipse.jetty.util.ssl.SslContextFactory -->
+  <!-- Use our own Acme-enhanced SslContextFacctory instead of standard org.eclipse.jetty.util.ssl.SslContextFactory -->
   <New id="sslContextFactory" class="de.fhg.aisec.ids.dynamictls.AcmeSslContextFactory">
     <Set name="KeyStorePath">
       <SystemProperty name="karaf.home"/>/etc/tls-webconsole/keystore_latest.jks
@@ -32,21 +32,22 @@
     <Set name="KeyManagerPassword">ids</Set>
     <Set name="EndpointIdentificationAlgorithm"/>
 
-    <!-- Disable SSLv3 to protect against POODLE bug -->
+    <!-- Recent bad/weak protocols and ciphers, taken from defaults in org.eclipse.jetty.util.ssl.SslContextFactory -->
     <Set name="ExcludeProtocols">
       <Array type="java.lang.String">
+        <Item>SSL</Item>
+        <Item>SSLv2</Item>
+        <Item>SSLv2Hello</Item>
         <Item>SSLv3</Item>
       </Array>
     </Set>
     <Set name="ExcludeCipherSuites">
       <Array type="String">
-        <Item>SSL_RSA_WITH_DES_CBC_SHA</Item>
-        <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
-        <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
-        <Item>SSL_RSA_EXPORT_WITH_RC4_40_MD5</Item>
-        <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
-        <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
-        <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
+        <Item>^.*_(MD5|SHA|SHA1)$</Item>
+        <Item>^TLS_RSA_.*$</Item>
+        <Item>^SSL_.*$</Item>
+        <Item>^.*_NULL_.*$</Item>
+        <Item>^.*_anon_.*$</Item>
       </Array>
     </Set>
   </New>

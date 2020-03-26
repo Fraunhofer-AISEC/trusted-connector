@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-route-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,12 @@ import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
 import de.fhg.aisec.ids.rm.util.PrologPrinter;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
-import org.apache.camel.Route;
-import org.apache.camel.ServiceStatus;
+import org.apache.camel.*;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.DefaultManagementAgent;
 import org.apache.camel.model.*;
 import org.apache.camel.spi.ManagementAgent;
-import org.apache.camel.util.RouteStatDump;
+import org.apache.camel.support.dump.RouteStatDump;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osgi.framework.BundleContext;
@@ -40,6 +37,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,12 +79,13 @@ public class RouteManagerService implements RouteManager {
       LOG.error(e.getMessage(), e);
     }
     CamelInterceptor interceptor = new CamelInterceptor(this);
-    cCtx.addInterceptStrategy(interceptor);
-    cCtx.setDefaultTracer(interceptor);
+    var routeController = cCtx.getRouteController();
+    var ecc = cCtx.adapt(ExtendedCamelContext.class);
+    ecc.addInterceptStrategy(interceptor);
     for (Route r : cCtx.getRoutes()) {
       try {
-        cCtx.stopRoute(r.getId());
-        cCtx.startRoute(r.getId());
+        routeController.stopRoute(r.getId());
+        routeController.startRoute(r.getId());
       } catch (Exception e) {
         LOG.error(e.getMessage(), e);
       }
@@ -113,11 +112,12 @@ public class RouteManagerService implements RouteManager {
   @NonNull
   public List<RouteObject> getRoutes() {
     List<RouteObject> result = new ArrayList<>();
-    List<CamelContext> camelO = getCamelContexts();
+    List<CamelContext> camelContexts = getCamelContexts();
 
     // Create response
-    for (CamelContext cCtx : camelO) {
-      for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
+    for (CamelContext cCtx : camelContexts) {
+      var mcc = cCtx.adapt(ModelCamelContext.class);
+      for (RouteDefinition rd : mcc.getRouteDefinitions()) {
         result.add(routeDefinitionToObject(cCtx, rd));
       }
     }
@@ -126,11 +126,12 @@ public class RouteManagerService implements RouteManager {
 
   @Override
   public RouteObject getRoute(@NonNull String id) {
-    List<CamelContext> camelO = getCamelContexts();
+    List<CamelContext> camelContexts = getCamelContexts();
 
     // Create response
-    for (CamelContext cCtx : camelO) {
-      RouteDefinition rd = cCtx.getRouteDefinition(id);
+    for (CamelContext cCtx : camelContexts) {
+      var mcc = cCtx.adapt(ModelCamelContext.class);
+      RouteDefinition rd = mcc.getRouteDefinition(id);
       if (rd != null) {
         return routeDefinitionToObject(cCtx, rd);
       }
@@ -147,7 +148,7 @@ public class RouteManagerService implements RouteManager {
       Route rt = cCtx.getRoute(routeId);
       if (rt != null) {
         try {
-          cCtx.startRoute(routeId);
+          cCtx.getRouteController().startRoute(routeId);
         } catch (Exception e) {
           throw new RouteException(e);
         }
@@ -163,7 +164,7 @@ public class RouteManagerService implements RouteManager {
       Route rt = cCtx.getRoute(routeId);
       if (rt != null) {
         try {
-          cCtx.stopRoute(routeId);
+          cCtx.getRouteController().stopRoute(routeId);
         } catch (Exception e) {
           throw new RouteException(e);
         }
@@ -219,12 +220,11 @@ public class RouteManagerService implements RouteManager {
   @Override
   @NonNull
   public Map<String, String> listEndpoints() {
-    List<CamelContext> camelO = getCamelContexts();
     Map<String, String> epURIs = new HashMap<>();
 
-    for (CamelContext cCtx : camelO) {
-      for (Entry<String, Endpoint> e : cCtx.getEndpointMap().entrySet()) {
-        epURIs.put(e.getKey(), e.getValue().getEndpointUri());
+    for (CamelContext cCtx : getCamelContexts()) {
+      for (Entry<? extends ValueHolder<String>, Endpoint> e : cCtx.getEndpointRegistry().entrySet()) {
+        epURIs.put(e.getKey().get(), e.getValue().getEndpointUri());
       }
     }
 
@@ -237,7 +237,8 @@ public class RouteManagerService implements RouteManager {
     Map<String, RouteMetrics> rdump = new HashMap<>();
     List<CamelContext> cCtxs = getCamelContexts();
     for (CamelContext cCtx : cCtxs) {
-      List<RouteDefinition> rds = cCtx.getRouteDefinitions();
+      var mcc = cCtx.adapt(ModelCamelContext.class);
+      List<RouteDefinition> rds = mcc.getRouteDefinitions();
       for (RouteDefinition rd : rds) {
         RouteStatDump stat;
         try {
@@ -271,7 +272,8 @@ public class RouteManagerService implements RouteManager {
   public void delRoute(@Nullable String routeId) {
     List<CamelContext> cCtxs = getCamelContexts();
     for (CamelContext cCtx : cCtxs) {
-      for (RouteDefinition rd : cCtx.getRouteDefinitions()) {
+      var mcc = cCtx.adapt(ModelCamelContext.class);
+      for (RouteDefinition rd : mcc.getRouteDefinitions()) {
         if (rd.getId().equals(routeId)) {
           try {
             cCtx.removeRoute(rd.getId());
@@ -322,7 +324,7 @@ public class RouteManagerService implements RouteManager {
         rd.getShortName(),
         cCtx.getName(),
         cCtx.getUptimeMillis(),
-        cCtx.getRouteStatus(rd.getId()).toString());
+        cCtx.getRouteController().getRouteStatus(rd.getId()).toString());
   }
 
   /**
@@ -337,10 +339,11 @@ public class RouteManagerService implements RouteManager {
     try {
       CamelRouteToDot viz = new CamelRouteToDot();
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8));
+      BufferedWriter writer =
+          new BufferedWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8));
       viz.printSingleRoute(writer, rd);
       writer.flush();
-      result = bos.toString("UTF-8");
+      result = bos.toString(StandardCharsets.UTF_8);
     } catch (IOException e) {
       LOG.error(e.getMessage(), e);
     }
@@ -351,13 +354,10 @@ public class RouteManagerService implements RouteManager {
   @NonNull
   public List<String> getRouteInputUris(@NonNull String routeId) {
     for (CamelContext ctx : getCamelContexts()) {
-      for (RouteDefinition rd : ctx.getRouteDefinitions()) {
+      var mcc = ctx.adapt(ModelCamelContext.class);
+      for (RouteDefinition rd : mcc.getRouteDefinitions()) {
         if (routeId.equals(rd.getId())) {
-          return rd.getInputs()
-              .stream()
-              .map(FromDefinition::getUri)
-              .filter(Objects::nonNull)
-              .collect(Collectors.toList());
+          return Collections.singletonList(rd.getInput().getUri());
         }
       }
     }
@@ -409,12 +409,12 @@ public class RouteManagerService implements RouteManager {
     Optional<CamelContext> c =
         getCamelContexts()
             .parallelStream()
-            .filter(cCtx -> cCtx.getRouteDefinition(routeId) != null)
+            .filter(cCtx -> cCtx.adapt(ModelCamelContext.class).getRouteDefinition(routeId) != null)
             .findAny();
 
     if (c.isPresent()) {
       try {
-        RouteDefinition rd = c.get().getRouteDefinition(routeId);
+        RouteDefinition rd = c.get().adapt(ModelCamelContext.class).getRouteDefinition(routeId);
         StringWriter writer = new StringWriter();
         new PrologPrinter().printSingleRoute(writer, rd);
         writer.flush();
@@ -436,7 +436,7 @@ public class RouteManagerService implements RouteManager {
   @Nullable
   public String getRouteAsString(@NonNull String routeId) {
     for (CamelContext c : getCamelContexts()) {
-      RouteDefinition rd = c.getRouteDefinition(routeId);
+      RouteDefinition rd = c.adapt(ModelCamelContext.class).getRouteDefinition(routeId);
       if (rd == null) {
         continue;
       }
@@ -471,7 +471,7 @@ public class RouteManagerService implements RouteManager {
       Route targetRoute = c.getRoute(routeId);
       if (targetRoute != null) {
         cCtx = c;
-        ServiceStatus serviceStatus = cCtx.getRouteStatus(routeId);
+        ServiceStatus serviceStatus = cCtx.getRouteController().getRouteStatus(routeId);
         routeStarted =
             serviceStatus == ServiceStatus.Started || serviceStatus == ServiceStatus.Starting;
         break;
@@ -487,7 +487,7 @@ public class RouteManagerService implements RouteManager {
     try (ByteArrayInputStream bis =
         new ByteArrayInputStream(routeRepresentation.getBytes(StandardCharsets.UTF_8))) {
       // Load route(s) from XML
-      RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
+      RoutesDefinition rd = ModelHelper.loadRoutesDefinition(cCtx, bis);
       routes = rd.getRoutes();
       Optional<String> id =
           routes.stream().map(RouteDefinition::getId).filter(rid -> !routeId.equals(rid)).findAny();
@@ -516,9 +516,9 @@ public class RouteManagerService implements RouteManager {
     // Add new route and start it if it was started/starting before save
     try {
       RouteDefinition routeDefinition = routes.get(0);
-      cCtx.addRouteDefinition(routeDefinition);
+      cCtx.adapt(ModelCamelContext.class).addRouteDefinition(routeDefinition);
       if (routeStarted) {
-        cCtx.startRoute(routeDefinition.getId());
+        cCtx.getRouteController().startRoute(routeDefinition.getId());
       }
       return routeDefinitionToObject(cCtx, routeDefinition);
     } catch (Exception e) {
@@ -543,7 +543,7 @@ public class RouteManagerService implements RouteManager {
     try (ByteArrayInputStream bis =
         new ByteArrayInputStream(routeRepresentation.getBytes(StandardCharsets.UTF_8))) {
       // Load route(s) from XML
-      RoutesDefinition rd = cCtx.loadRoutesDefinition(bis);
+      RoutesDefinition rd = ModelHelper.loadRoutesDefinition(cCtx, bis);
       List<RouteDefinition> routes = rd.getRoutes();
       // Check that intersection of existing and new routes is empty (=we do not allow overwriting
       // existing route ids)
@@ -557,7 +557,7 @@ public class RouteManagerService implements RouteManager {
         throw new RouteException(
             "Route id already exists. Will not overwrite it. " + String.join(", ", intersect));
       }
-      cCtx.addRouteDefinitions(routes);
+      cCtx.adapt(ModelCamelContext.class).addRouteDefinitions(routes);
       cCtx.start();
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);

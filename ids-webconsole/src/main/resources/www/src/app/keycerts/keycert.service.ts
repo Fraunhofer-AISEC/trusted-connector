@@ -12,15 +12,15 @@ export class CertificateService {
 
   constructor(private readonly http: HttpClient) { }
 
-  getIdentities(): Observable<Array<Certificate>> {
+  public getIdentities(): Observable<Array<Certificate>> {
     return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_identities');
   }
 
-  getCertificates(): Observable<Array<Certificate>> {
+  public getCertificates(): Observable<Array<Certificate>> {
     return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_certs');
   }
 
-  createIdentity(identity: Identity): Observable<string> {
+  public createIdentity(identity: Identity): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = JSON.stringify(identity);
 
@@ -30,7 +30,7 @@ export class CertificateService {
     });
   }
 
-  deleteCert(alias: string): Observable<string> {
+  public deleteCert(alias: string): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
     return this.http.post(environment.apiURL + '/certs/delete_cert', alias, {
@@ -39,7 +39,7 @@ export class CertificateService {
     });
   }
 
-  deleteIdentity(alias: string): Observable<string> {
+  public deleteIdentity(alias: string): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
     return this.http.post(environment.apiURL + '/certs/delete_identity', alias, {
@@ -48,7 +48,7 @@ export class CertificateService {
     });
   }
 
-  uploadCert(inFile: File): Observable<string> {
+  public uploadCert(inFile: File): Observable<string> {
     const formData: any = new FormData();
     formData.append('upfile', inFile, inFile.name);
 

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,45 @@ package de.fhg.aisec.ids.camel.ids;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.RatResult;
+import de.fhg.aisec.ids.api.settings.ConnectionSettings;
+import de.fhg.aisec.ids.api.settings.ConnectorConfig;
+import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.camel.ids.connectionmanagement.ConnectionManagerService;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSupport {
-  protected static final String TEST_MESSAGE = "Hello World!";
-  protected static final String TEST_MESSAGE_2 = "Hello Again!";
+  private static final String TEST_MESSAGE = "Hello World!";
+  private static final String TEST_MESSAGE_2 = "Hello Again!";
+
+  @Before
+  public void mockRequiredBundles() throws Exception {
+    CamelComponent cc = new CamelComponent();
+    Settings settings = mock(Settings.class);
+    ConnectorConfig connectorConfig = mock(ConnectorConfig.class);
+    when(settings.getConnectorConfig()).thenReturn(connectorConfig);
+    when(connectorConfig.getDapsUrl()).thenReturn("daps.mock.url");
+    when(settings.getConnectionSettings(anyString())).thenReturn(new ConnectionSettings());
+    cc.setSettings(settings);
+    TokenManager tm = mock(TokenManager.class);
+    when(tm.verifyJWT(anyString(), anyString(), anyString())).thenReturn(Collections.emptyMap());
+    doNothing().when(tm).validateDATSecurityAttributes(any(), any(ConnectionSettings.class));
+    cc.setTokenManager(tm);
+    CamelComponent.setInstance(cc);
+  }
 
   @Test
   public void testFromRouteAToB() throws InterruptedException {
@@ -40,19 +68,20 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     assertTrue(conm.listIncomingConnections().isEmpty());
 
     MockEndpoint mock = getMockEndpoint("mock:result");
+    mock.expectedBodiesReceived(TEST_MESSAGE);
 
     // Send a test message into begin of client route
     template.sendBody("direct:input", TEST_MESSAGE);
 
-    log.trace("mock is satisfied");
-
     // We expect that mock endpoint is happy and has received a message
     mock.assertIsSatisfied();
-    mock.expectedBodiesReceived(TEST_MESSAGE);
 
     // We expect one incoming connection to be listed by ConnectionManager
     List<IDSCPIncomingConnection> incomings = conm.listIncomingConnections();
-    assertEquals(1, incomings.size());
+    assertEquals(
+        "Incoming connection established, but ConnectionManager did not list it.",
+        1,
+        incomings.size());
 
     IDSCPIncomingConnection incomingConnection = incomings.get(0);
 
@@ -60,8 +89,8 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     RatResult ratResult = incomingConnection.getAttestationResult();
     assertEquals(RatResult.Status.FAILED, ratResult.getStatus());
 
-    // We expect some meta data about the remot endpoint
-    assertEquals( "{\"message\":\"No InfomodelManager loaded\"}", incomingConnection.getMetaData());
+    // We expect some meta data about the remote endpoint
+    assertEquals("{\"message\":\"Infomodel is not available\"}", incomingConnection.getMetaData());
 
     List<IDSCPOutgoingConnection> outgoings = conm.listOutgoingConnections();
     assertEquals(1, outgoings.size());
@@ -72,46 +101,43 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
 
     // ... and some meta data
     String meta = outgoingConnection.getMetaData();
-    assertEquals("{\"message\":\"No InfomodelManager loaded\"}",meta);
+    assertEquals("{\"message\":\"Infomodel is not available\"}", meta);
   }
 
   @Test
   public void testTwoRoutesRestartConsumer() throws Exception {
     MockEndpoint mock = getMockEndpoint("mock:result");
+
     resetMocks();
-
-    // Send a message
-    template.sendBody("direct:input", TEST_MESSAGE);
-
     mock.expectedBodiesReceived(TEST_MESSAGE);
+    template.sendBody("direct:input", TEST_MESSAGE);
     mock.assertIsSatisfied();
-
-    // Clean the mocks
-    resetMocks();
 
     // Now stop and start the client route
     log.info("Restarting client route");
-    context.stopRoute("client");
-    context.startRoute("client");
+    var routeController = context.getRouteController();
+    routeController.stopRoute("client");
+    routeController.startRoute("client");
 
-    template.sendBody("direct:input", TEST_MESSAGE_2);
+    resetMocks();
     mock.expectedBodiesReceived(TEST_MESSAGE_2);
+    template.sendBody("direct:input", TEST_MESSAGE_2);
     mock.assertIsSatisfied();
   }
 
   @Override
   protected RouteBuilder[] createRouteBuilders() {
     return new RouteBuilder[] {
-        new RouteBuilder() {
-          public void configure() {
-            from("direct:input").routeId("client").to("idsclientplain://localhost:9292/zero");
-          }
-        },
-        new RouteBuilder() {
-          public void configure() {
-            from("idsserver://0.0.0.0:9292/zero").routeId("server").to("mock:result");
-          }
+      new RouteBuilder() {
+        public void configure() {
+          from("direct:input").routeId("client").to("idsclientplain://localhost:9292/zero");
         }
+      },
+      new RouteBuilder() {
+        public void configure() {
+          from("idsserver://0.0.0.0:9292/zero").routeId("server").to("mock:result");
+        }
+      }
     };
   }
 }

@@ -10,78 +10,53 @@ build:
   image:
     name: fraunhoferaisec/docker-build:develop
     entrypoint: [""]
-  variables:
-    GRADLE_DIR: "/cache/.gradle"
-    M2_DIR: "/cache/.m2"
   before_script:
     # defined here because of https://gitlab.com/gitlab-org/gitlab-runner/issues/1809
     - export PROJECT_DIR="${CI_PROJECT_DIR}"
     # caching for gradle
-    - mkdir -p /cache/.gradle
+    - export GRADLE_DIR="${CI_PROJECT_DIR}/cache/.gradle"
+    - mkdir -p "$GRADLE_DIR"
     # caching for mvn (used for karaf-assembly)
-    - mkdir -p /cache/.m2
+    - export M2_DIR="${CI_PROJECT_DIR}/cache/.m2"
+    - mkdir -p "$M2_DIR"
   script:
     # yarnBuild is part of build, but we try to speed up the process a bit by prioritizing that long-running task
-    - /run.sh clean yarnBuild build check dockerize --parallel -PdockerTag=${CI_COMMIT_SHA:0:8}
+    - /run.sh yarnBuild build check dumpVersion --parallel
   artifacts:
     when: always
     paths:
       - "*/build/reports"
+      - "karaf-assembly/build/assembly"
+      - "rat-repository/build/libs"
+      - "version.txt"
+  cache:
+    key: tc-build
+    paths:
+      - "cache"
+      - "ids-webconsole/src/main/resources/www/node_modules"
 
-# tag develop builds as latest and push them to the internal registry
 push:
+  image: jonoh/docker-buildx-qemu
   stage: push
+  dependencies:
+    - build
+  before_script:
+    # Use docker-container driver to allow useful features (push/multi-platform)
+    - docker buildx create --driver docker-container --use --name tc_builder
+    - docker buildx inspect --bootstrap
+    - export TAG_NAME=$(if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then echo "latest"; else echo "${CI_COMMIT_REF_NAME}"; fi)
+    # Remove the prefixing "v" of version tags for docker registry
+    - if [[ "$TAG_NAME" =~ v[0-9]+\.[0-9]+\.[0-9]+ ]]; then export TAG_NAME=${TAG_NAME:1}; fi
   script:
-    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
-    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
-    - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:${CI_COMMIT_SHA:0:8}
-    - docker push registry.netsec.aisec.fraunhofer.de/ids/core-platform:latest
     - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
-    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} fraunhoferaisec/trusted-connector-core:develop
-    - docker tag fraunhoferaisec/ttpsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/ttpsim:develop
-    - docker tag fraunhoferaisec/tpmsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/tpmsim:develop
-    - docker tag fraunhoferaisec/example-client:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-client:develop
-    - docker tag fraunhoferaisec/example-server:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-server:develop
-    - docker push fraunhoferaisec/trusted-connector-core:develop
-    - docker push fraunhoferaisec/ttpsim:develop
-    - docker push fraunhoferaisec/tpmsim:develop
-    - docker push fraunhoferaisec/example-client:develop
-    - docker push fraunhoferaisec/example-server:develop
+    # Execute buildx script
+    - chmod +x ./buildx/docker-buildx.sh
+    - echo "Using image tag ${TAG_NAME}"
+    - ./buildx/docker-buildx.sh -t ${TAG_NAME} -f docker-compose.yml -f docker-bake-multi.hcl
+  after_script:
+    # Remove the buildx builder
+    - docker buildx rm tc_builder
   only:
     - develop
-
-# tag and push master to Docker Hub
-push_hub_master:
-  stage: push
-  script:
-    - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
-    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} fraunhoferaisec/trusted-connector-core:latest
-    - docker tag fraunhoferaisec/ttpsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/ttpsim:latest
-    - docker tag fraunhoferaisec/tpmsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/tpmsim:latest
-    - docker tag fraunhoferaisec/example-client:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-client:latest
-    - docker tag fraunhoferaisec/example-server:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-server:latest
-    - docker push fraunhoferaisec/trusted-connector-core:latest
-    - docker push fraunhoferaisec/ttpsim:latest
-    - docker push fraunhoferaisec/tpmsim:latest
-    - docker push fraunhoferaisec/example-client:latest
-    - docker push fraunhoferaisec/example-server:latest
-  only:
     - master
-
-# tag and push release versions to Docker Hub
-push_hub_version:
-  stage: push
-  script:
-    - echo "$DOCKER_PASS" | docker login --username "$DOCKER_USER" --password-stdin
-    - docker tag fraunhoferaisec/trusted-connector-core:${CI_COMMIT_SHA:0:8} fraunhoferaisec/trusted-connector-core:${CI_COMMIT_TAG:1}
-    - docker tag fraunhoferaisec/ttpsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/ttpsim:${CI_COMMIT_TAG:1}
-    - docker tag fraunhoferaisec/tpmsim:${CI_COMMIT_SHA:0:8} fraunhoferaisec/tpmsim:${CI_COMMIT_TAG:1}
-    - docker tag fraunhoferaisec/example-client:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-client:${CI_COMMIT_TAG:1}
-    - docker tag fraunhoferaisec/example-server:${CI_COMMIT_SHA:0:8} fraunhoferaisec/example-server:${CI_COMMIT_TAG:1}
-    - docker push fraunhoferaisec/trusted-connector-core:${CI_COMMIT_TAG:1}
-    - docker push fraunhoferaisec/ttpsim:${CI_COMMIT_TAG:1}
-    - docker push fraunhoferaisec/tpmsim:${CI_COMMIT_TAG:1}
-    - docker push fraunhoferaisec/example-client:${CI_COMMIT_TAG:1}
-    - docker push fraunhoferaisec/example-server:${CI_COMMIT_TAG:1}
-  only:
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/

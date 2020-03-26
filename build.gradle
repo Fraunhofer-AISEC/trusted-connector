@@ -1,13 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
     id 'java'
-    id 'com.google.protobuf' version '0.8.9'
-    id 'com.moowork.node' version '1.2.0'
-    id 'biz.aQute.bnd' version '4.1.0' apply false
+    id 'com.google.protobuf' version '0.8.10'
+    id 'com.moowork.node' version '1.3.1'
+    id 'biz.aQute.bnd' version '4.2.0' apply false
     id 'com.github.lburgazzoli.karaf' version '0.5.1'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.71'
     id 'com.github.jlouns.cpe' version '0.5.0'
     id 'com.benjaminsproule.swagger' version '1.0.6'
-    id 'com.bmuschko.docker-remote-api' version '3.4.3'
     id 'com.diffplug.gradle.spotless' version '3.13.0'
     id 'com.github.jk1.dependency-license-report' version '1.2'
 }
@@ -16,56 +21,32 @@ licenseReport {
     configurations = ['compile', 'providedByFeature', 'providedByBundle']
 }
 
-def getDockerTag() {
-    String commit = 'HEAD'
-
-    if (hasProperty('dockerTag')) {
-        return findProperty('dockerTag')
-    }
-
-    if (System.getenv('CI_COMMIT_SHA')) {
-        commit = System.getenv('CI_COMMIT_SHA')
-    } else {
-        String commandLine
-        if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-            commandLine = 'cmd /c '
-        } else {
-            commandLine = ''
-        }
-        def proc = (commandLine + 'git rev-parse HEAD').execute()
-        proc.in.eachLine { line -> commit = line }
-        proc.err.eachLine { line -> println line }
-        proc.waitFor()
-    }
-
-    if (commit == 'HEAD') {
-        commit
-    } else {
-        commit.substring(0, 8)
-    }
-}
-
 allprojects {
     group = 'de.fhg.aisec.ids'
-    version = '2.0.0'
+    version = '3.0.0'
 
     ext.libraryVersions = [
+            // Versions for modules that will be released as libraries
+            api                : '2.1.0',
+            idscp              : '1.1.0',
+
             // basically, the first requirement, all other libraries depend on this version
-            karaf              : '4.2.2',
+            karaf              : '4.2.7',
 
             // The used version of the infomodel from IESE
-            infomodel          : '1.0.2-20190326.094248-16',
-            infomodelSerializer: '1.0.2-20190326.155238-20',
+            infomodel          : '3.0.0',
+            infomodelSerializer: '3.0.0',
 
             // For javax.xml.bind support in newer java versions
             jaxb               : "2.2.11",
+            jaxActivation      : "1.2.0",
 
-            pax                : '7.2.5',
+            pax                : '7.2.10',
 
-            camel              : '2.22.3',
+            camel              : '3.0.0',
 
             // Camel ships with cxf, however it is slightly older so we want a newer version
-            cxf                : '3.2.4',
+            cxf                : '3.2.7',
 
             // OSGI libraries
             osgiCompendium     : '6.0.0',
@@ -76,29 +57,34 @@ allprojects {
             acme               : '2.3',
             checkerQual        : '2.5.2',
             guava              : '27.0-jre',
-            kotlin             : '1.3.21',
+            kotlin             : '1.3.71',
             tuprolog           : '3.3.0',
             log4j              : '2.6.2',
             junit4             : '4.12',
             mapdb              : '3.0.7',
             // must be consistent with jnr-ffi version in jnr-unixsocket-wrapper
             jnrunix            : '0.22',
-            protobuf           : '3.6.1',
+            protobuf           : '3.10.0',
             httpcore           : '4.4.11',
             httpclient         : '4.5.7',
 
             // it seems not all jetty components are in our BOM so we need to specify it here as well
-            jetty              : '9.4.12.v20180830',
+            jetty              : '9.4.20.v20190813',
 
             // we will pull in a newer version of jackson because of security fixes
-            jackson            : '2.9.8',
+            jackson            : '2.10.2',
 
             // needed for rat-repository, should be seperated 
             jersey             : '2.26',
-            mockito            : '1.10.19',
+            mockito            : '3.2.0',
+
+            // needed for token manager to assemble JWTs
+            jsonwebtoken  : '0.10.5',
+            okhttp        : '3.11.0',
+            okio          : '1.15.0',
 
             // for OSGi integration tests
-            paxExam            : '4.6.0'
+            paxExam            : '4.13.1'
     ]
 
     configurations {
@@ -121,10 +107,22 @@ allprojects {
         // OSGi core dependencies which will just be there during runtime
         osgiCore
 
-        // All OSGi dependencies will be required at compile time and for unit tests
-        compileOnly.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore
-        // Make compileOnly dependencies available for tests
+        // For artifacts that should be included as "compile" dependencies into published maven artifacts
+        publishCompile
+
+        // The "compile" configuration needs to be extended for dependency resolution of maven-publish
+        compile.extendsFrom providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle, osgiCore, publishCompile
+        // Some compileOnly dependencies are also needed for unit tests
         testImplementation.extendsFrom compileOnly
+    }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        // References IAIS repository that contains the infomodel artifacts
+        maven {
+            url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
+        }
     }
 }
 
@@ -132,9 +130,10 @@ subprojects {
     apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'java'
     apply plugin: 'maven'
+    apply plugin: 'kotlin'
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 
     test {
         exclude '**/*IT.*'
@@ -142,6 +141,14 @@ subprojects {
 
     task integrationTest(type: Test) {
         include '**/*IT.*'
+        systemProperty "project.version", "$project.version"
+    }
+
+    tasks.withType(Test) {
+        testLogging {
+            events "failed"
+            exceptionFormat "full"
+        }
     }
 
     check.dependsOn integrationTest
@@ -154,16 +161,34 @@ subprojects {
         // BOM for pax, for jetty, etc.
         bom group: 'org.ops4j.pax', name: 'web', version: libraryVersions.pax
 
-        testCompile "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
-        testCompile "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"
-        testCompile "org.ops4j.pax.exam:pax-exam:${libraryVersions.paxExam}"
-        testCompile "org.ops4j.pax.url:pax-url-aether:2.4.3"
-        testCompile "javax.inject:javax.inject:1"
-        testCompile "org.slf4j:slf4j-simple:1.7.12"
+        // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
+        compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
+
+        // Required for successful build with JDK 11
+        compileOnly group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+        testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+        testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+        testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
+        testImplementation group: 'com.sun.activation', name: 'javax.activation', version: libraryVersions.jaxActivation
+
+        testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
+        testImplementation "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"
+        testImplementation "org.ops4j.pax.exam:pax-exam:${libraryVersions.paxExam}"
+        testImplementation "org.ops4j.pax.url:pax-url-aether:2.4.3"
+        testImplementation "javax.inject:javax.inject:1"
+        testImplementation "org.slf4j:slf4j-simple:1.7.12"
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
     }
 
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
+//        options.compilerArgs << '-Xlint:unchecked'
+//        options.deprecation = true
     }
 
     tasks.withType(Jar) {
@@ -177,26 +202,9 @@ subprojects {
             }
         }
     }
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
-        // References local copy of the private IAIS repository that contains the necessary artifacts
-        maven {
-            url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
-        }
-//        maven {
-//            url "https://maven.iais.fraunhofer.de/artifactory/eis-ids-snapshot/"
-//            credentials {
-//                username = isstUser
-//                password = isstPassword
-//            }
-//        }
-    }
 }
 
-configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
+configure(subprojects.findAll { it.name != 'examples' }) {
     apply plugin: 'com.diffplug.gradle.spotless'
 
     spotless {
@@ -226,4 +234,84 @@ configure(subprojects.findAll { it.name != 'tpm2j' && it.name != 'examples' }) {
  */''').yearSeparator(' - ')
         }
     }
+}
+
+configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' }) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        from ('src/main') {
+            include 'proto/**'
+        }
+        archiveClassifier = 'sources'
+    }
+
+    task javadocJar(type: Jar) {
+        from javadoc
+        archiveClassifier = 'javadoc'
+    }
+
+    // Must disable gradle metadata because of infomodel SNAPSHOT dependencies
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
+
+    publishing {
+        publications {
+            idsLibrary(MavenPublication) {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+                pom {
+                    name = 'IDSCP Protocol Library'
+                    description = 'Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)'
+                    url = 'https://github.com/industrial-data-space/trusted-connector'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = 'Michael Lux'
+                            email = 'michael.lux@aisec.fraunhofer.de'
+                            organization = 'Fraunhofer AISEC'
+                            organizationUrl = 'aisec.fraunhofer.de'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com:industrial-data-space/trusted-connector.git'
+                        developerConnection = 'scm:git:ssh://github.com:industrial-data-space/trusted-connector.git'
+                        url = 'https://github.com/industrial-data-space/trusted-connector'
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+                credentials {
+                    username = project.findProperty('deployUsername')
+                    password = project.findProperty('deployPassword')
+                }
+            }
+        }
+    }
+
+    signing {
+        useGpgCmd()
+        sign publishing.publications.idsLibrary
+    }
+}
+
+// Always write project version to version.txt after build/install
+task dumpVersion {
+    new File(project.projectDir, "version.txt").text = project.version
 }

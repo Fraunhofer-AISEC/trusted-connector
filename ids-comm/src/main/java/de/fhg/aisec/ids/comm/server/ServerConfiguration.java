@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-comm
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,33 +32,27 @@ import java.security.KeyStore;
  * Configuration of the server-side (Provider) part of the IDSC protocol.
  *
  * @author Julian Schuette
+ * @author Gerd Brost
  */
 public class ServerConfiguration implements IdscpConfiguration {
   public static final int DEFAULT_PORT = 8080;
 
   private int port = DEFAULT_PORT;
-  @NonNull
-  private IdsAttestationType attestationType = IdsAttestationType.BASIC;
+  @NonNull private IdsAttestationType attestationType = IdsAttestationType.BASIC;
   private int attestationMask;
-  @NonNull
-  private CertificatePair certificatePair = new CertificatePair();
-  @Nullable
-  private KeyStore keyStore = null;
+  @NonNull private CertificatePair certificatePair = new CertificatePair();
+  @Nullable private KeyStore keyStore = null;
   @NonNull String rdfDescription = "";
-  @Nullable
-  private URI ttpUri = null;
-  @NonNull
-  private String keyStorePassword = "password";
-  @NonNull
-  private String keyManagerPassword = "password";
-  @NonNull
-  private String certAlias = "1";
+  @NonNull String dynamicAttributeToken = "";
+  @Nullable private URI ttpUri = null;
+  @NonNull private String keyStorePassword = "password";
+  @NonNull private String keyManagerPassword = "password";
+  @NonNull private String certAlias = "1";
 
   public static class Builder {
-	  @NonNull
-    private ServerConfiguration config = new ServerConfiguration();
+    @NonNull private ServerConfiguration config = new ServerConfiguration();
 
-	  @NonNull
+    @NonNull
     public Builder port(int port) {
       config.port = port;
       return this;
@@ -88,37 +82,42 @@ public class ServerConfiguration implements IdscpConfiguration {
       return this;
     }
 
+    @NonNull
+    public Builder dynamicAttributeToken(@NonNull String dynamicAttributeToken) {
+      config.dynamicAttributeToken = dynamicAttributeToken;
+      return this;
+    }
 
     @NonNull
-    public Builder ttpUrl(@NonNull URI ttpUri) {
-    	config.ttpUri = ttpUri;
-    	return this;
+    public Builder ttpUrl(@Nullable URI ttpUri) {
+      config.ttpUri = ttpUri;
+      return this;
     }
 
     @NonNull
     public Builder setKeyStore(@NonNull KeyStore keyStore) {
-    	config.keyStore = keyStore;
-    	return this;
+      config.keyStore = keyStore;
+      return this;
     }
-    
+
     @NonNull
     public Builder setKeyStorePassword(@NonNull String keyStorePassword) {
       config.keyStorePassword = keyStorePassword;
       return this;
     }
-    
+
     @NonNull
     public Builder setKeyPassword(@NonNull String keyPassword) {
       config.keyManagerPassword = keyPassword;
       return this;
     }
-    
+
     @NonNull
     public Builder setCertAlias(@NonNull String certAlias) {
       config.certAlias = certAlias;
       return this;
     }
-    
+
     @NonNull
     public ServerConfiguration build() {
       return config;
@@ -143,27 +142,38 @@ public class ServerConfiguration implements IdscpConfiguration {
     return certificatePair;
   }
 
-  @NonNull public String getRDFDescription() {return rdfDescription; }
+  @NonNull
+  public String getRDFDescription() {
+    return rdfDescription;
+  }
+
+  @NonNull
+  public String getDynamicAttributeToken() {
+    return dynamicAttributeToken;
+  }
 
   @Nullable
   public URI getTrustedThirdPartyURI() {
-	  return ttpUri;
+    return ttpUri;
   }
 
   @Nullable
   public KeyStore getKeyStore() {
-	  return keyStore;
+    return keyStore;
   }
 
+  @NonNull
   public String getKeyStorePassword() {
-    return keyStorePassword ;
+    return keyStorePassword;
   }
 
+  @NonNull
   public String getKeyManagerPassword() {
-	    return keyManagerPassword ;
- }
+    return keyManagerPassword;
+  }
 
+  @NonNull
   public String getCertAlias() {
-    return certAlias ;
+    return certAlias;
   }
 }

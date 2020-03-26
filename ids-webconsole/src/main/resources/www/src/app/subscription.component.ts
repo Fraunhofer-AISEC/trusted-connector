@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 export class SubscriptionComponent implements OnDestroy {
   protected subscriptions: Array<Subscription> = [];
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     // console.log('Unsubscribing...');
     for (const subscription of this.subscriptions) {
       subscription.unsubscribe();

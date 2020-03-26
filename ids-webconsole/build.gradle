@@ -26,16 +26,26 @@ swagger {
                 url = 'http://www.apache.org/licenses/LICENSE-2.0.html'
                 name = 'Apache 2.0'
             }
-            description ='''This is the internal API of the Trusted Connector.
+            description ='''This is the administrative REST API of the Trusted Connector.
 
 The API provides an administrative interface to manage the Trusted Connector at runtime
-and is used by the default administration dashboard ("webconsole").
-Please note that at the moment the Trusted Connector is in a prototype state
-and this API does not provide any authorization mechanism.
+and is used by the default administration dashboard ("web console").
 '''
         }
         swaggerDirectory = "${project.projectDir}/generated/swagger-ui"
         outputFormats = ['json','yaml']
+        securityDefinition {
+            // `name` can be used refer to this security schemes from elsewhere
+            name = 'oauth2'
+            type = 'oauth2'
+            // The flow used by the OAuth2 security scheme
+            flow = 'password'
+            tokenUrl = 'https://localhost:8181/user/login'
+            scope {
+                name = 'write:api'
+                description = 'Read and write access to the API'
+            }
+        }        
         /* the plugin could theoretically also generate the html files, however it currently only allows 
         for the generation of html OR swagger.json, not both. Therefore we still need to use spectacle using yarn */
         // templatePath = "${project.projectDir}/src/test/resources/strapdown.html.hbs"
@@ -44,7 +54,7 @@ and this API does not provide any authorization mechanism.
 }
 
 dependencies {
-    providedByBundle project(':ids-api')
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     // Actual implementation must be provided by ids-infomodel-manager
     compileOnly group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
@@ -73,6 +83,7 @@ dependencies {
     providedByBundle group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: libraryVersions.jackson
 
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
+    implementation group: 'com.auth0', name: 'java-jwt', version: '3.8.2'
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
@@ -86,7 +97,7 @@ dependencies {
     compileOnly group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.18'
 
     testImplementation group: 'junit', name: 'junit'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 
     testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local', version: libraryVersions.cxf
     testImplementation group: 'org.apache.cxf', name: 'cxf-rt-rs-client', version: libraryVersions.cxf
@@ -99,12 +110,13 @@ task yarnInstall(type: YarnTask) {
     outputs.cacheIf { true }
 
     workingDir = file('src/main/resources/www')
-    args = ['install']
+    args = ['install', '--ignore-optional']
 }
 
 task yarnBuild(type: YarnTask) {
     inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/angular.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('src/main/resources/www/src').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.dir('build/resources/main/www')
     outputs.cacheIf { true }
@@ -117,6 +129,7 @@ task yarnBuild(type: YarnTask) {
 task yarnLint(type: YarnTask) {
     inputs.file('src/main/resources/www/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('src/main/resources/www/yarn.lock').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('src/main/resources/www/tslint.json').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('src/main/resources/www/src').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.upToDateWhen { true }
     outputs.cacheIf { true }
@@ -126,22 +139,10 @@ task yarnLint(type: YarnTask) {
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
-task yarnApiDocs(type: YarnTask) {
-    workingDir = file('src/main/resources/www')
-    args = ['apidocs']
-    onlyIf { !rootProject.hasProperty("skipAngular") }
-}
-
 yarnBuild.dependsOn(yarnLint)
 
 // make sure, yarn install is executed first
 yarnBuild.dependsOn(yarnInstall)
-yarnApiDocs.dependsOn(yarnInstall)
 
 processResources.dependsOn(yarnBuild)
 
-// yarnApiDocs depends on swagger generation
-yarnApiDocs.dependsOn(generateSwaggerDocumentation)
-
-// build apidocs during build
-build.dependsOn(yarnApiDocs)

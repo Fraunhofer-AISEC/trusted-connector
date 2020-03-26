@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * rat-repository
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@
  */
 package de.fhg.aisec.ids.attestation;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -28,10 +31,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class RemoteAttestationServer {
   private Server server;
@@ -53,7 +52,7 @@ public class RemoteAttestationServer {
 
       // === jetty-https.xml ===
       // SSL Context Factory
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(
           Thread.currentThread()
               .getContextClassLoader()
@@ -86,7 +85,7 @@ public class RemoteAttestationServer {
               server,
               new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
               new HttpConnectionFactory(https_config));
-//      ServerConnector serverConnector = new ServerConnector(server);
+      //      ServerConnector serverConnector = new ServerConnector(server);
       serverConnector.setPort(port);
       server.addConnector(serverConnector);
       ServletContextHandler handler = new ServletContextHandler();

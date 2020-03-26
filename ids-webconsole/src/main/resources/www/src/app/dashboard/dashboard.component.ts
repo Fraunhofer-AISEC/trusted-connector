@@ -14,12 +14,12 @@ import { SubscriptionComponent } from '../subscription.component';
   providers: []
 })
 export class DashboardComponent extends SubscriptionComponent implements OnInit {
-  @Output() readonly changeTitle = new EventEmitter();
-  camelComponents: Array<RouteComponent>;
-  apps: Array<App>;
-  cmlVersion: string;
-  policies = 0;
-  metric: Array<String> = [];
+  @Output() public readonly changeTitle = new EventEmitter();
+  public camelComponents: Array<RouteComponent>;
+  public apps: Array<App>;
+  public cmlVersion: string;
+  public policies = 0;
+  public metric: Array<String> = [];
 
   constructor(private readonly titleService: Title, private readonly appService: AppService, private readonly routeService: RouteService,
               private readonly policyService: PolicyService, private readonly metricService: MetricService) {
@@ -32,7 +32,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
       });
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.changeTitle.emit('Dashboard');
     this.routeService.listComponents()
       .subscribe(result => { this.camelComponents = result; });
@@ -44,7 +44,7 @@ export class DashboardComponent extends SubscriptionComponent implements OnInit 
       .subscribe(result => { this.metric = result; });
   }
 
-  trackComponents(index: number, item: RouteComponent): string {
+  public trackComponents(index: number, item: RouteComponent): string {
     return item.bundle;
   }
 

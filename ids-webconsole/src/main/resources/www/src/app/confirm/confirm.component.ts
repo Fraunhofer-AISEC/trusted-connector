@@ -11,10 +11,10 @@ const KEY_ESC = 27;
 })
 export class ConfirmComponent implements OnInit {
 
-    title: string;
-    message: string;
-    okText: string;
-    cancelText: string;
+    public title: string;
+    public message: string;
+    public okText: string;
+    public cancelText: string;
 
     private readonly _defaults = {
         title: 'Confirmation',
@@ -31,20 +31,20 @@ export class ConfirmComponent implements OnInit {
         confirmService.activate = this.activate.bind(this);
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         this._confirmElement = document.getElementById('confirmationModal');
         this._cancelButton = document.getElementById('cancelButton');
         this._okButton = document.getElementById('okButton');
     }
 
-    _setLabels(message = this._defaults.message, title = this._defaults.title): void {
+    public _setLabels(message: string = this._defaults.message, title: string = this._defaults.title): void {
         this.title = title;
         this.message = message;
         this.okText = this._defaults.okText;
         this.cancelText = this._defaults.cancelText;
     }
 
-    async activate(message = this._defaults.message, title = this._defaults.title): Promise<boolean> {
+    public async activate(message: string = this._defaults.message, title: string = this._defaults.title): Promise<boolean> {
         this._setLabels(message, title);
 
         return new Promise<boolean>(resolve => {

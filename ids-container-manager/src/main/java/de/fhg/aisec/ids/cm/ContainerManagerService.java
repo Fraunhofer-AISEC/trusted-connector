@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-container-manager
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,24 +19,20 @@
  */
 package de.fhg.aisec.ids.cm;
 
-import de.fhg.aisec.ids.api.cm.ApplicationContainer;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
-import de.fhg.aisec.ids.api.cm.Decision;
-import de.fhg.aisec.ids.api.cm.Direction;
-import de.fhg.aisec.ids.api.cm.NoContainerExistsException;
-import de.fhg.aisec.ids.api.cm.Protocol;
+import de.fhg.aisec.ids.api.cm.*;
 import de.fhg.aisec.ids.cm.impl.docker.DockerCM;
 import de.fhg.aisec.ids.cm.impl.dummy.DummyCM;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Main entry point of the Container Management Layer.
@@ -56,7 +52,6 @@ public class ContainerManagerService implements ContainerManager {
     LOG.info("Activating Container Manager");
     // When activated, try to set container management instance
     containerManager = getDefaultCM();
-    assert containerManager != null;
     LOG.info("Default container management is {}", containerManager);
   }
 
@@ -69,7 +64,7 @@ public class ContainerManagerService implements ContainerManager {
     ContainerManager result;
     if (TrustXCM.isSupported()) {
       result = new TrustXCM();
-    } else if (DockerCM.isSupported()) {
+    } else if (DockerCM.Companion.isSupported()) {
       result = new DockerCM();
     } else {
       LOG.warn("No supported container management layer found. Using dummy");

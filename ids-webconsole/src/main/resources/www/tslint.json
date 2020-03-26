@@ -1,29 +1,26 @@
 {
   "rulesDirectory": [
-    "node_modules/codelyzer",
-    "node_modules/rxjs-tslint"
+    "node_modules/codelyzer"
   ],
   "extends": [
-    "angular-tslint-rules",
-    "rxjs-tslint-rules"
+    "@saritasa/tslint-config-angular"
   ],
   "rules": {
-    "rxjs-collapse-imports": true,
-    "rxjs-pipeable-operators-only": true,
-    "rxjs-no-static-observable-methods": true,
-    "rxjs-proper-imports": true,
-
-    "rxjs-no-internal": true,
-    "rxjs-no-subject-unsubscribe": true,
-    "rxjs-throw-error": true,
-    
     "curly": true,
     "comment-format": false,
-    
-    "i18n": false,
+    "component-selector": false,
+    "completed-docs": false,
+    "whitespace": false,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "template-i18n": false,
     "no-unused-css": false,
     "prefer-template": false,
-    "component-selector": false,
     "no-import-side-effect": false,
     "template-cyclomatic-complexity": false
   }

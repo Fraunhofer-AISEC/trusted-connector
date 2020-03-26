@@ -1,10 +1,11 @@
 dependencies {
-    providedByBundle project(':ids-api')
+    providedByBundle(project(':ids-api')) { transitive = false }
 
     // Bill of Materials (BOM) for Camel
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
     providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
+    providedByFeature group: 'org.apache.camel', name: 'camel-management', version: libraryVersions.camel
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
@@ -15,6 +16,6 @@ dependencies {
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
     testImplementation group: 'junit', name: 'junit'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: libraryVersions.mockito
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
     testImplementation group: 'org.apache.camel', name: 'camel-test', version: libraryVersions.camel
 }

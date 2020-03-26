@@ -13,22 +13,22 @@ declare var componentHandler: any;
 })
 
 export class CertificateCardComponent implements OnInit {
-  @Input() certificates: Array<Certificate>;
-  @Input() trusts: Array<Certificate>;
-  result: string;
+  @Input() public certificates: Array<Certificate>;
+  @Input() public trusts: Array<Certificate>;
+  public result: string;
   @Input() private readonly onDeleteCallback: Function;
 
   constructor(private readonly confirmService: ConfirmService) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     componentHandler.upgradeDom();
   }
 
-  trackCerts(index: number, item: Certificate): string {
+  public trackCerts(index: number, item: Certificate): string {
     return item.subjectCN + item.subjectOU + item.subjectO + item.subjectL;
   }
 
-  async onDelete(alias: string): Promise<void> {
+  public async onDelete(alias: string): Promise<void> {
     return this.confirmService.activate('Are you sure that you want to delete this item?')
       .then(res => {
         if (res) {

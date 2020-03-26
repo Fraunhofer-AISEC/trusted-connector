@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-ids
  * %%
- * Copyright (C) 2018 Fraunhofer AISEC
+ * Copyright (C) 2019 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.support.DefaultProducer;
 import org.asynchttpclient.netty.handler.StreamedResponsePublisher;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +87,7 @@ public class WebsocketProducer extends DefaultProducer implements WebsocketProdu
     super.doStop();
   }
 
-  Future<Void> sendMessage(DefaultWebsocket websocket, Object message) throws IOException {
+  Future<Void> sendMessage(DefaultWebsocket websocket, Object message) {
     Future<Void> future = null;
     // in case there is web socket and socket connection is open - send message
     if (websocket != null && websocket.getSession().isOpen()) {
