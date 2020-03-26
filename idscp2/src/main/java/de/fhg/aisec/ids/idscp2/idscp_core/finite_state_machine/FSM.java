@@ -310,7 +310,7 @@ public class FSM implements FsmListener{
         if (ratVerifierDriver == null){
             LOG.error("Cannot create instance of RAT_VERIFIER_DRIVER");
             currentRatVerifierId = "";
-            onControlMessage(InternalControlMessage.ERROR); //toDo geht das?
+            onControlMessage(InternalControlMessage.ERROR); //toDo geht das? nein
         } else {
             currentRatVerifierId = Long.toString(ratVerifierDriver.getId());
         }
@@ -330,7 +330,7 @@ public class FSM implements FsmListener{
         if (ratProverDriver == null){
             LOG.error("Cannot create instance of RAT_PROVER_DRIVER");
             currentRatProverId = "";
-            onControlMessage(InternalControlMessage.ERROR); //toDo geht das?
+            onControlMessage(InternalControlMessage.ERROR); //toDo geht das? nein
         } else {
             currentRatProverId = Long.toString(ratProverDriver.getId());
         }

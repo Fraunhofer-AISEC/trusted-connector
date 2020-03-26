@@ -1,8 +1,8 @@
 import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2Prover;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2Verifier;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
@@ -33,8 +33,8 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
 
         DapsDriver dapsDriver = new DefaultDapsDriver(config);
 
-        RatProverDriverRegistry.getInstance().registerDriver("TPM_2", TPM2Prover.class);
-        RatVerifierDriverRegistry.getInstance().registerDriver("TPM_2", TPM2Verifier.class);
+        RatProverDriverRegistry.getInstance().registerDriver("TPM_2", RatProverDummy.class);
+        RatVerifierDriverRegistry.getInstance().registerDriver("TPM_2", RatVerifierDummy.class);
 
         IDSCPv2Configuration clientConfig = new IDSCPv2Configuration(this,
                 dapsDriver, secureChannelDriver, settings.getExpectedAttestation(), settings.getSupportedAttestation());

@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
@@ -8,24 +8,18 @@ import de.fhg.aisec.ids.messages.IDSCPv2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A RatProver dummy, that sends two incoming messages from the remote rat verifier and also sends two messages
  */
-public class TPM2Prover extends RatProverDriver {
-    private static final Logger LOG = LoggerFactory.getLogger(TPM2Prover.class);
+public class RatProverDummy extends RatProverDriver {
+    private static final Logger LOG = LoggerFactory.getLogger(RatProverDummy.class);
 
     private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
 
-    public TPM2Prover(){
+    public RatProverDummy(){
         super();
     }
 
@@ -42,7 +36,7 @@ public class TPM2Prover extends RatProverDriver {
             try {
                 sleep(1000);
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,
-                        IdscpMessageFactory.getIdscpRatProverMessage());
+                        IdscpMessageFactory.getIdscpRatProverMessage("test".getBytes()));
                 LOG.debug("Prover waits");
                 IDSCPv2.IdscpMessage m = queue.take();
                 LOG.debug("Prover receives, send something");

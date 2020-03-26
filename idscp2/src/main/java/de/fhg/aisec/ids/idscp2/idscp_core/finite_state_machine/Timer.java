@@ -4,8 +4,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Timer {
 
-    //toDo real time FIFO synchronization for whole state machine
-
     private TimerThread thread = null;
     private final ReentrantLock fsmIsBusy;
     private final ReentrantLock mutex = new ReentrantLock(true);

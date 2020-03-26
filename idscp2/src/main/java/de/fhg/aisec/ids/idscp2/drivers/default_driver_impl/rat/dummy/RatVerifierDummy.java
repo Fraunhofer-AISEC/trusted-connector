@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class TPM2Verifier extends RatVerifierDriver {
-    private static final Logger LOG = LoggerFactory.getLogger(TPM2Verifier.class);
+public class RatVerifierDummy extends RatVerifierDriver {
+    private static final Logger LOG = LoggerFactory.getLogger(RatVerifierDummy.class);
 
     private BlockingQueue<IDSCPv2.IdscpMessage> queue = new LinkedBlockingQueue<>();
 
-    public TPM2Verifier(){
+    public RatVerifierDummy(){
         super();
     }
 
@@ -35,7 +35,7 @@ public class TPM2Verifier extends RatVerifierDriver {
                 IDSCPv2.IdscpMessage m = queue.take();
                 LOG.debug("Verifier receives, send something");
                 fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG,
-                        IdscpMessageFactory.getIdscpRatVerifierMessage());
+                        IdscpMessageFactory.getIdscpRatVerifierMessage("test".getBytes()));
                 if (--countDown == 0)
                     break;
             } catch (InterruptedException e) {

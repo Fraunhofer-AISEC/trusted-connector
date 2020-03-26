@@ -1,0 +1,147 @@
+syntax = "proto2";
+option java_package = "de.fhg.aisec.ids.messages";
+option java_outer_classname = "Tpm2dAttestation";
+
+// protobuf messages for communicating with TPM
+
+// type of attestation in the IDS context
+enum IdsAttestationType {
+  // kernel + core container (PCR 0 to 11)
+  BASIC = 0;
+
+  // everything (PCRs 0 to 23)
+  ALL = 1;
+
+  // PCRs must be specified manually
+  ADVANCED = 2;
+}
+
+enum HashAlgLen {
+  SHA1   = 20;
+  SHA256 = 32;
+  SHA384 = 48;
+}
+
+message Pcr {
+  // the PCR number (usually between 0 and 23)
+  optional int32 number = 1;
+
+  // the value of PCR<number>
+  optional bytes value = 2;
+}
+
+message RemoteToTpm2d {
+  enum Code {
+    ATTESTATION_REQ = 1;
+  }
+
+  required Code code = 1;
+
+  // type of attestation in the IDS context
+  optional IdsAttestationType atype = 2 [default = BASIC];
+
+  // qualifingData (i.e. external data provided by the caller, such as a nonce)
+  optional bytes qualifyingData = 3;
+
+  // pcr bitmask for AttestationType ADVANCED only
+  //  - for BASIC, the default PCRs are PCRs 0 to 11
+  //  - for ALL  , the default PCRs are PCRs 0 to 23
+  optional int32 pcrs = 4;
+}
+
+message Tpm2dToRemote {
+  enum Code {
+    ATTESTATION_RES = 1;
+  }
+
+  required Code code = 1;
+
+  // type of attestation in the IDS context
+  optional IdsAttestationType atype = 2 [default = BASIC];
+
+  // the hash algorith used to sign the quoted information
+  optional HashAlgLen halg = 3;
+
+  // the quoted information (a TPM2B_ATTEST data structure)
+  optional bytes quoted = 4;
+
+  // the signature over 'quoted' (a TPMT_SIGNATURE data structure)
+  optional bytes signature = 5;
+
+  // the explicit PCR values
+  repeated Pcr pcr_values = 6;
+
+  // an _optional_ certificate that includes the public key
+  optional bytes certificate = 7;
+
+  // the measurement list in ima style hex strings
+  repeated string ml_entry = 11;
+}
+
+
+// ******* Message Wrapper ********
+message Tpm2dMessageWrapper {
+  oneof body {
+    // RAT Repository
+    Tpm2dRepositoryRequest repositoryRequest = 1;
+    Tpm2dRepositoryResponse repositoryResponse = 2;
+
+    // RAT Exchange
+    Tpm2dRatChallenge ratChallenge = 3;
+    Tpm2dRatResponse ratResponse = 4;
+    Tpm2dRatResult ratResult = 5;
+  }
+}
+
+// ******** Rat Repository *********
+message Tpm2dRepositoryRequest {
+  required IdsAttestationType atype = 1;
+  // the explicit PCR values
+  repeated Pcr pcr_values = 2;
+}
+
+message Tpm2dRepositoryResponse {
+  required IdsAttestationType atype = 1;
+  //boolean for result
+  required bool result = 2;
+}
+
+// ******** RAT Exchange *********
+//Attestation Request, sent to other connector (from Verifier to Prover)
+message Tpm2dRatChallenge {
+  required IdsAttestationType atype = 1;
+  // nonce for attestation request
+  required bytes nonce = 2;
+  // optional PCR indices for aType = ADVANCED
+  optional fixed32 pcr_indices = 3;
+}
+
+//Attestation Response, coming from other connector (from Prover to Verifier)
+message Tpm2dRatResponse {
+  // type of attestation in the IDS context
+  required IdsAttestationType atype = 1;
+
+  // the hash algorithm used to sign the quoted information
+  optional string hash_alg = 2;
+
+  // the quoted information (a TPM2B_ATTEST data structure)
+  required bytes quoted = 3;
+
+  // the signature over 'quoted' (a TPMT_SIGNATURE data structure)
+  required bytes signature = 4;
+
+  // the explicit PCR values
+  repeated Pcr pcr_values = 5;
+
+  // AIK certificate that includes the public key
+  required bytes certificate = 6;
+
+  // Measurement list
+  optional bytes measurement_list = 7;
+}
+
+//Attestation Request, sent to other connector (Verifier to Prover)
+message Tpm2dRatResult {
+  //required IdsAttestationType atype = 1;
+  required bool result = 1;
+}

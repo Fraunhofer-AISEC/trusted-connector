@@ -71,16 +71,20 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpRatProverMessage(){
-        IdscpRatProver idscpRatProver = IdscpRatProver.newBuilder().build();
+    public static IdscpMessage getIdscpRatProverMessage(byte[] body){
+        IdscpRatProver idscpRatProver = IdscpRatProver.newBuilder()
+            .setData(ByteString.copyFrom(body))
+            .build();
 
         return IdscpMessage.newBuilder()
                 .setIdscpRatProver(idscpRatProver)
                 .build();
     }
 
-    public static IdscpMessage getIdscpRatVerifierMessage(){
-        IdscpRatVerifier idscpRatVerifier = IdscpRatVerifier.newBuilder().build();
+    public static IdscpMessage getIdscpRatVerifierMessage(byte[] body){
+        IdscpRatVerifier idscpRatVerifier = IdscpRatVerifier.newBuilder()
+            .setData(ByteString.copyFrom(body))
+            .build();
 
         return IdscpMessage.newBuilder()
                 .setIdscpRatVerifier(idscpRatVerifier)
