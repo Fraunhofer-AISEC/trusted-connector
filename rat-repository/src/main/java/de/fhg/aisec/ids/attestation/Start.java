@@ -20,13 +20,13 @@
 package de.fhg.aisec.ids.attestation;
 
 public class Start {
-  private static final String VERSION = "2.0.0";
+  private static final String VERSION = "3.0.0";
   private static final String URL = "rat-verify";
 
   private static String host = "127.0.0.1";
   private static int port = 31337;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     switch (args.length) {
       case 2:
         firstArg(args);
