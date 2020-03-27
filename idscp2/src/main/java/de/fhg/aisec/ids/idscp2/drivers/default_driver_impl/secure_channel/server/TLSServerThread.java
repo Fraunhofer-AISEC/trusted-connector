@@ -84,6 +84,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 //timeout catches safeStop() call and allows to send server_goodbye
                 //alternative: close sslSocket and catch SocketException
                 //continue
+
             } catch (EOFException e){
                 onClose();
                 running = false;
@@ -108,21 +109,23 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         }
     }
 
-    public void send(byte[] data) {
+    @Override
+    public boolean send(byte[] data) {
         if (!isConnected()){
             LOG.error("Server cannot send data because socket is not connected");
             closeSockets();
-            onError();
+            return false;
         } else {
             try {
                 out.writeInt(data.length);
                 out.write(data);
                 out.flush();
-                LOG.trace("Send message: " + new String(data));
+                LOG.debug("Send message: " + new String(data));
+                return true;
             } catch (IOException e){
                 LOG.error("ServerThread cannot send data.");
                 closeSockets();
-                onError();
+                return false;
             }
         }
     }

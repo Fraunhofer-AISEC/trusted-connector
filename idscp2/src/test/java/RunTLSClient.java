@@ -12,6 +12,7 @@ public class RunTLSClient {
                 getResource("ssl/client-truststore_new.jks").getPath())
             .setCertificateAlias("1.0.1")
             .setDapsKeyAlias("1")
+            .setRatTimeoutDelay(10)
             .build();
 
         IDSCPv2ClientInitiator initiator = new IDSCPv2ClientInitiator();

@@ -6,7 +6,6 @@ import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RatProverDriverRegistry {
-    //toDo  Reflections library
     private static RatProverDriverRegistry instance;
     private static ConcurrentHashMap<String, DriverWrapper> drivers = new ConcurrentHashMap<>();
 

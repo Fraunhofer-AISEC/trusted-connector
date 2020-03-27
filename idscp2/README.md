@@ -1,1 +1,1 @@
-The _ids-comm_ module wraps the IDSCP, providing secure communication and remote attestation between Connector instances.
+The _idscp2_ implements the second version of the IDS Communication Protocol

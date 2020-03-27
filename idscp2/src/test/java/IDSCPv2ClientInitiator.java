@@ -57,7 +57,7 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
             secureChannelDriver,
             settings.getExpectedAttestation(),
             settings.getSupportedAttestation(),
-            20
+            settings.getRatTimeoutDelay()
         );
         clientConfig.connect(settings);
     }

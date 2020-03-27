@@ -28,7 +28,7 @@ public class RatVerifierDummy extends RatVerifierDriver {
     @Override
     public void run(){
         int countDown = 2;
-        while (true){
+        while (running){
             try {
                 sleep(1000);
                 LOG.debug("Verifier waits");

@@ -22,6 +22,7 @@ public class IDSCPv2Settings {
     private String keyStoreKeyType = "RSA";
     private AttestationConfig supportedAttestation = new AttestationConfig();
     private AttestationConfig expectedAttestation = new AttestationConfig();
+    private int ratTimeoutDelay = 20;
 
     public static class Builder {
         @NonNull
@@ -87,6 +88,11 @@ public class IDSCPv2Settings {
             return this;
         }
 
+        public Builder setRatTimeoutDelay(int delay) {
+            this.settings.ratTimeoutDelay = delay;
+            return this;
+        }
+
         @NonNull
         public IDSCPv2Settings build() {
             return this.settings;
@@ -136,5 +142,9 @@ public class IDSCPv2Settings {
 
     public String getHost() {
         return host;
+    }
+
+    public int getRatTimeoutDelay() {
+        return ratTimeoutDelay;
     }
 }

@@ -108,8 +108,38 @@ public class FSM implements FsmListener{
         currentState = states.get(FSM_STATE.STATE_CLOSED);
     }
 
+    private void checkForFsmCircles() {
+
+        // check if current thread holds already the fsm lock, then we have a circle
+        // this runs into an issue: onControlMessage must be called only from other threads!
+        // if the current thread currently stuck within a fsm transition it will trigger another
+        // transition on the old state and undefined behaviour occurred
+        //
+        // The idscpv2 core and default driver will not run into this issue. It's a protection for
+        // avoiding incorrect usage of the idscpv2 library from further driver implementations
+        //
+        // Example:
+        // Thread A stuck within a transition t1 that calls a function that calls
+        // onControlMessage(InternalError). Then the error is handled in the current state
+        // state and the fsm will switch into state STATE_CLOSED and close all resources.
+        //
+        // Afterwards, the thread will continue the old transition t1 that might use some of the
+        // closed resources and switch in a non-closed STATE, e.g. STATE_ESTABLISHED.
+        // So our fsm would be broken and the behaviour is undefined and could leak security
+        // vulnerabilities
+        //
+        if (fsmIsBusy.isHeldByCurrentThread()) {
+            throw new RuntimeException("The current thread holds the fsm lock already. "
+                + "A circle might occur that could lead to undefined behaviour within the fsm");
+        }
+    }
+
     @Override
     public void onMessage(byte[] data){
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         //parse message and create new IDSCP Message Event, then pass it to current state and update new state
         IdscpMessage message;
         try {
@@ -124,6 +154,11 @@ public class FSM implements FsmListener{
         fsmIsBusy.lock();
         try {
             while (currentState.equals(states.get(FSM_STATE.STATE_CLOSED))){
+
+                if (fsmIsClosed) {
+                    return;
+                }
+
                 try {
                     onMessageBlock.await();
                 } catch (InterruptedException e) {
@@ -137,8 +172,7 @@ public class FSM implements FsmListener{
 
     }
 
-    @Override
-    public void onControlMessage(InternalControlMessage controlMessage) {
+    private void onControlMessage(InternalControlMessage controlMessage) {
         //create Internal Control Message Event and pass it to current state and update new state
         Event e = new Event(controlMessage);
 
@@ -152,6 +186,10 @@ public class FSM implements FsmListener{
 
     @Override
     public void onRatProverMessage(InternalControlMessage controlMessage, IdscpMessage idscpMessage) {
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         //only allow rat prover messages from current thread
         Event e;
         if (idscpMessage == null){
@@ -174,6 +212,10 @@ public class FSM implements FsmListener{
 
     @Override
     public void onRatVerifierMessage(InternalControlMessage controlMessage, IdscpMessage idscpMessage) {
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         //only allow rat verifier messages from current thread
         Event e;
         if (idscpMessage == null){
@@ -204,6 +246,10 @@ public class FSM implements FsmListener{
     }
 
     public void terminate(){
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         LOG.info("Close idscp connection");
         onControlMessage(InternalControlMessage.IDSCP_STOP);
         LOG.debug("Close secure channel");
@@ -211,6 +257,10 @@ public class FSM implements FsmListener{
     }
 
     public void startIdscpHandshake() throws IDSCPv2Exception {
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         fsmIsBusy.lock();
         try {
             if (currentState.equals(states.get(FSM_STATE.STATE_CLOSED))) {
@@ -241,18 +291,26 @@ public class FSM implements FsmListener{
         }
     }
 
-    void sendFromFSM(IdscpMessage msg){
+    boolean sendFromFSM(IdscpMessage msg){
         //send messages from fsm
-        secureChannel.send(msg.toByteArray());
+        return secureChannel.send(msg.toByteArray());
     }
 
     @Override
     public void onError(){
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         onControlMessage(InternalControlMessage.ERROR);
     }
 
     @Override
     public void onClose(){
+
+        //check for incorrect usage
+        checkForFsmCircles();
+
         onControlMessage(InternalControlMessage.ERROR);
     }
 
@@ -261,7 +319,10 @@ public class FSM implements FsmListener{
         fsmIsBusy.lock();
         try{
             if(isConnected()){
-                secureChannel.send(msg.toByteArray());
+                if (!secureChannel.send(msg.toByteArray())) {
+                    LOG.error("Cannot send IDSCP_DATA via secure channel");
+                    onControlMessage(InternalControlMessage.ERROR);
+                }
             } else {
                 LOG.error("Cannot send IDSCP_DATA because protocol is not established");
             }
@@ -301,16 +362,17 @@ public class FSM implements FsmListener{
         return localExpectedVerifier[0];
     }
 
-    void restartRatVerifierDriver(){
+    boolean restartRatVerifierDriver(){
         //assume verifier mechanism is set
         stopRatVerifierDriver();
         ratVerifierDriver = RatVerifierDriverRegistry.startRatVerifierDriver(verifierMechanism, this);
         if (ratVerifierDriver == null){
             LOG.error("Cannot create instance of RAT_VERIFIER_DRIVER");
             currentRatVerifierId = "";
-            onControlMessage(InternalControlMessage.ERROR); //toDo geht das? nein
+            return false;
         } else {
             currentRatVerifierId = Long.toString(ratVerifierDriver.getId());
+            return true;
         }
     }
 
@@ -321,16 +383,18 @@ public class FSM implements FsmListener{
         }
     }
 
-    void restartRatProverDriver(){
+
+    boolean restartRatProverDriver(){
         //assume prover mechanism is set
         stopRatProverDriver();
         ratProverDriver = RatProverDriverRegistry.startRatProverDriver(proverMechanism, this);
         if (ratProverDriver == null){
             LOG.error("Cannot create instance of RAT_PROVER_DRIVER");
             currentRatProverId = "";
-            onControlMessage(InternalControlMessage.ERROR); //toDo geht das? nein
+            return false;
         } else {
             currentRatProverId = Long.toString(ratProverDriver.getId());
+            return true;
         }
     }
 
@@ -366,7 +430,7 @@ public class FSM implements FsmListener{
             fsmIsClosed = true;
         } catch (NullPointerException ignored){}
 
-        //inform upper layer via handshake or closeListener
+        //notify upper layer via handshake or closeListener
         try {
             if (handshakeResultAvailable){
                 listenerLatch.await();

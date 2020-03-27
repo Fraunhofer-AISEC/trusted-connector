@@ -177,19 +177,21 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         disconnect();
     }
 
-    public void send(byte[] data){
+    @Override
+    public boolean send(byte[] data){
         if (!isConnected()){
             LOG.error("Client cannot send data because socket is not connected");
-            onError();
+            return false;
         } else {
             try {
                 out.writeInt(data.length);
                 out.write(data);
                 out.flush();
                 LOG.debug("Send message");
+                return true;
             } catch (IOException e){
                 LOG.error("Client cannot send data");
-                onError();
+                return false;
             }
         }
     }

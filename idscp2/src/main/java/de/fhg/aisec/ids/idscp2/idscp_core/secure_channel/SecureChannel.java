@@ -36,9 +36,9 @@ public class SecureChannel implements SecureChannelListener {
         endpoint.close();
     }
 
-    public void send(byte[] msg){
+    public boolean send(byte[] msg){
         LOG.debug("Send message via secure channel");
-        endpoint.send(msg);
+        return endpoint.send(msg);
     }
 
     @Override

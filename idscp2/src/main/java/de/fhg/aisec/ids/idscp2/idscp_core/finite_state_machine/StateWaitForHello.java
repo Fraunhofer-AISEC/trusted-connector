@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
 import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,8 +111,16 @@ public class StateWaitForHello extends State {
                     fsm.setRatMechanisms(proverMechanism, verifierMechanism);
 
                     LOG.debug("Start RAT Prover and Verifier");
-                    fsm.restartRatVerifierDriver();
-                    fsm.restartRatProverDriver();
+
+                    if (!fsm.restartRatVerifierDriver()) {
+                      LOG.error("Cannot run Rat verifier, close idscp connection");
+                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                    }
+
+                    if (!fsm.restartRatProverDriver()) {
+                      LOG.error("Cannot run Rat prover, close idscp connection");
+                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                    }
 
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT);
                 }

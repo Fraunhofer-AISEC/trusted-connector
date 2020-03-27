@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
 import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,13 @@ class StateClosed extends State {
                     LOG.debug("Send IDSCP_HELLO");
                     IDSCPv2.IdscpMessage idscpHello = IdscpMessageFactory.
                             getIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite);
-                    fsm.sendFromFSM(idscpHello);
+
+                    if (!fsm.sendFromFSM(idscpHello)) {
+                      LOG.error("Cannot send IdscpHello. Close connection");
+                      runEntryCode(fsm);
+                      onMessageLock.notifyAll();
+                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                    }
 
                     runExitCode(onMessageLock);
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_HELLO);

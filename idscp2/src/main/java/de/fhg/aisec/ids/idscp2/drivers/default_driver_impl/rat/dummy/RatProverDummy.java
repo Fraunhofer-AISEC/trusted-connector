@@ -32,7 +32,7 @@ public class RatProverDummy extends RatProverDriver {
     @Override
     public void run() {
         int countDown = 2;
-        while (true){
+        while (running){
             try {
                 sleep(1000);
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,

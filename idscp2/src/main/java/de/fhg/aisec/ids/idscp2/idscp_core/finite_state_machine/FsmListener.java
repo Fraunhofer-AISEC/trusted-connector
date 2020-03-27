@@ -4,7 +4,6 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 
 public interface FsmListener {
     void onMessage(byte[] data);
-    void onControlMessage(InternalControlMessage controlMessage);
     void onRatProverMessage(InternalControlMessage controlMessage, IDSCPv2.IdscpMessage idscpMessage);
     void onRatVerifierMessage(InternalControlMessage controlMessage, IDSCPv2.IdscpMessage idscpMessage);
     void onError();
