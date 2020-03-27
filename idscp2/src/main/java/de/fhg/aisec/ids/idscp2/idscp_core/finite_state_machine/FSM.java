@@ -58,10 +58,9 @@ public class FSM implements FsmListener{
     private Timer datTimer;
     private Timer ratTimer;
     private Timer handshakeTimer;
-    private final int ratTimeoutDelay = 20;
 
     public FSM(SecureChannel secureChannel, DapsDriver dapsDriver,
-               String[] localSupportedRatSuite, String[] localExpectedRatSuite){
+               String[] localSupportedRatSuite, String[] localExpectedRatSuite, int ratTimeout){
 
         this.secureChannel = secureChannel;
         secureChannel.setFsm(this);
@@ -83,7 +82,6 @@ public class FSM implements FsmListener{
             onControlMessage(InternalControlMessage.REPEAT_RAT);
         };
 
-        //toDo set correct delays
         this.handshakeTimer = new Timer(fsmIsBusy, handshakeTimeoutHandler);
         this.datTimer = new Timer(fsmIsBusy, datTimeoutHandler);
         this.ratTimer = new Timer(fsmIsBusy, ratTimeoutHandler);
@@ -94,11 +92,11 @@ public class FSM implements FsmListener{
         states.put(FSM_STATE.STATE_WAIT_FOR_HELLO, new StateWaitForHello(this,
                 handshakeTimer, datTimer, dapsDriver, localSupportedRatSuite, localExpectedRatSuite));
         states.put(FSM_STATE.STATE_WAIT_FOR_RAT, new StateWaitForRat(this, handshakeTimer, ratTimer,
-                ratTimeoutDelay, dapsDriver));
+                ratTimeout, dapsDriver));
         states.put(FSM_STATE.STATE_WAIT_FOR_RAT_PROVER, new StateWaitForRatProver(this, ratTimer, handshakeTimer,
                 dapsDriver));
         states.put(FSM_STATE.STATE_WAIT_FOR_RAT_VERIFIER, new StateWaitForRatVerifier(this, dapsDriver, ratTimer,
-                handshakeTimer, ratTimeoutDelay));
+                handshakeTimer, ratTimeout));
         states.put(FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT, new StateWaitForDatAndRat(this, handshakeTimer,
                 datTimer, dapsDriver));
         states.put(FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER, new StateWaitForDatAndRatVerifier(this,
@@ -294,13 +292,13 @@ public class FSM implements FsmListener{
     //calculate Prover mechanism (strongest remote expected), returns null if no match was found
     String getRatProverMechanism(String[] localSupportedProver, Object[] remoteExpectedVerifier){
         //toDo implement logic
-        return "TPM_2";
+        return localSupportedProver[0];
     }
 
     //calculate Verifier mechanism (strongest local expected), returns null if no match was found
     String getRatVerifierMechanism(String[] localExpectedVerifier, Object[] remoteSupportedProver){
         //toDo implement logic
-        return "TPM_2";
+        return localExpectedVerifier[0];
     }
 
     void restartRatVerifierDriver(){
@@ -355,16 +353,18 @@ public class FSM implements FsmListener{
     }
 
     void lockFsm(){
-        secureChannel.close();
-        this.datTimer.cancelTimeout();
-        this.datTimer = null;
-        this.ratTimer.cancelTimeout();
-        this.ratTimer = null;
-        this.handshakeTimer.cancelTimeout();
-        this.handshakeTimer = null;
-        this.stopRatProverDriver();
-        this.stopRatVerifierDriver();
-        fsmIsClosed = true;
+        try {
+            secureChannel.close();
+            this.datTimer.cancelTimeout();
+            this.datTimer = null;
+            this.ratTimer.cancelTimeout();
+            this.ratTimer = null;
+            this.handshakeTimer.cancelTimeout();
+            this.handshakeTimer = null;
+            this.stopRatProverDriver();
+            this.stopRatVerifierDriver();
+            fsmIsClosed = true;
+        } catch (NullPointerException ignored){}
 
         //inform upper layer via handshake or closeListener
         try {

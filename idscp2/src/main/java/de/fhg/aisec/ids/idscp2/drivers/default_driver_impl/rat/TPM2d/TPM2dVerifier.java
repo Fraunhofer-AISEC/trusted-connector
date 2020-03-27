@@ -34,10 +34,20 @@ public class TPM2dVerifier extends RatVerifierDriver {
   private static final Logger LOG = LoggerFactory.getLogger(TPM2dVerifier.class);
 
   private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
-  private Tpm2dConfig config = new Tpm2dConfig.Builder().build();
+  private Tpm2dVerifierConfig config = new Tpm2dVerifierConfig.Builder().build();
 
   public TPM2dVerifier(){
     super();
+  }
+
+  @Override
+  public void setConfig(Object config) {
+    if (config instanceof Tpm2dVerifierConfig) {
+      LOG.debug("Set rat verifier config");
+      this.config = (Tpm2dVerifierConfig) config;
+    } else {
+      LOG.warn("Invalid config");
+    }
   }
 
   @Override
@@ -56,7 +66,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
 
     // send challenge as RAT Verifier Message
     byte[] ratChallenge = TpmMessageFactory.getAttestationChallengeMessage(
-        nonce, config.getExpectedAType(), config.getAttestationMask()).toByteArray();
+        nonce, config.getExpectedAType(), config.getExpectedAttestationMask()).toByteArray();
 
     fsmListener.onRatVerifierMessage(
         InternalControlMessage.RAT_VERIFIER_MSG,
@@ -104,9 +114,10 @@ public class TPM2dVerifier extends RatVerifierDriver {
     Tpm2dRatResponse resp = tpm2dMessageWrapper.getRatResponse();
 
     LOG.debug("Validate rat response: signature and rat repository checks");
-    // validate signature //toDo add local certificate
+
+    // validate signature
     boolean result = true;
-    byte[] hash = TPM2dHelper.calculateHash(nonce, null);
+    byte[] hash = TPM2dHelper.calculateHash(nonce, config.getLocalCertificate());
 
     if (!checkSignature(resp, hash)) {
       result = false;

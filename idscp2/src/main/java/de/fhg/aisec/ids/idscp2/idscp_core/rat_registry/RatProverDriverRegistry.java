@@ -6,9 +6,9 @@ import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RatProverDriverRegistry {
-    //toDO  Reflections library
+    //toDo  Reflections library
     private static RatProverDriverRegistry instance;
-    private static ConcurrentHashMap<String, Class<? extends RatProverDriver>> drivers = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, DriverWrapper> drivers = new ConcurrentHashMap<>();
 
     private RatProverDriverRegistry(){}
 
@@ -21,11 +21,14 @@ public class RatProverDriverRegistry {
     }
 
     public static RatProverDriver startRatProverDriver(String instance, FsmListener listener){
-        Class<? extends RatProverDriver> driverClass = drivers.get(instance);
+        DriverWrapper driverWrapper = drivers.get(instance);
 
         try {
-            RatProverDriver driver = driverClass.getDeclaredConstructor().newInstance();
+            RatProverDriver driver = driverWrapper.driverClass.getDeclaredConstructor().newInstance();
             driver.setListener(listener);
+            if (driverWrapper.driverConfig != null) {
+                driver.setConfig(driverWrapper.driverConfig);
+            }
             driver.start();
             return driver;
 
@@ -35,12 +38,29 @@ public class RatProverDriverRegistry {
     }
 
 
-    public void registerDriver(String instance, Class<? extends RatProverDriver> driverClass){
-        drivers.put(instance, driverClass);
+    public void registerDriver(
+        String instance,
+        Class<? extends RatProverDriver> driverClass,
+        Object driverConfig
+    ){
+        drivers.put(instance, new DriverWrapper(driverClass, driverConfig));
     }
 
     public void unregisterDriver(String instance){
         drivers.remove(instance);
+    }
+
+    private static class DriverWrapper {
+        private Class<? extends RatProverDriver> driverClass;
+        private Object driverConfig;
+
+        private DriverWrapper(
+            Class<? extends RatProverDriver> driverClass,
+            Object driverConfig
+        ) {
+            this.driverClass = driverClass;
+            this.driverConfig = driverConfig;
+        }
     }
 
 }

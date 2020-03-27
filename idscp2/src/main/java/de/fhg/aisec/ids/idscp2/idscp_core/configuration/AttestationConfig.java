@@ -12,7 +12,7 @@ public class AttestationConfig {
     }
 
     public String[] getRatMechanisms(){
-        return new String[] {"TPM_2", "INTEL_SGX", "ARM_TRUST_ZONE"};
+        return new String[] {"Dummy", "TPM2d"};
     }
 
 }

@@ -8,7 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RatVerifierDriverRegistry {
     private static RatVerifierDriverRegistry instance;
-    private static ConcurrentHashMap<String, Class<? extends RatVerifierDriver>> drivers = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, DriverWrapper> drivers
+        = new ConcurrentHashMap<>();
 
     private RatVerifierDriverRegistry(){}
 
@@ -16,16 +17,18 @@ public class RatVerifierDriverRegistry {
         if (instance == null){
             instance = new RatVerifierDriverRegistry();
         }
-
         return instance;
     }
 
     public static RatVerifierDriver startRatVerifierDriver(String mechanism, FsmListener listener){
-        Class<? extends RatVerifierDriver> driverClass = drivers.get(mechanism);
+        DriverWrapper driverWrapper = drivers.get(mechanism);
 
         try {
-            RatVerifierDriver driver = driverClass.getDeclaredConstructor().newInstance();
+            RatVerifierDriver driver = driverWrapper.driverClass.getDeclaredConstructor().newInstance();
             driver.setListener(listener);
+            if (driverWrapper.driverConfig != null) {
+                driver.setConfig(driverWrapper.driverConfig);
+            }
             driver.start();
             return driver;
 
@@ -34,13 +37,28 @@ public class RatVerifierDriverRegistry {
         }
     }
 
-
-    public void registerDriver(String mechanism, Class<? extends RatVerifierDriver> driverClass){
-        drivers.put(mechanism, driverClass);
+    public void registerDriver(
+        String mechanism,
+        Class<? extends RatVerifierDriver> driverClass,
+        Object driverConfig
+    ){
+        drivers.put(mechanism, new DriverWrapper(driverClass, driverConfig));
     }
 
     public void unregisterDriver(String instance){
         drivers.remove(instance);
     }
 
+    private static class DriverWrapper {
+        private Class<? extends RatVerifierDriver> driverClass;
+        private Object driverConfig;
+
+        private DriverWrapper(
+            Class<? extends RatVerifierDriver> driver,
+            Object driverConfig
+        ) {
+            this.driverClass = driver;
+            this.driverConfig = driverConfig;
+        }
+    }
 }

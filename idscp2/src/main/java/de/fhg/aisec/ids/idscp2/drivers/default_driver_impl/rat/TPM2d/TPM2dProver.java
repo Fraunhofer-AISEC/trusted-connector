@@ -22,9 +22,20 @@ public class TPM2dProver extends RatProverDriver {
   private static final Logger LOG = LoggerFactory.getLogger(TPM2dProver.class);
 
   private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
+  private Tpm2dProverConfig config = new Tpm2dProverConfig.Builder().build();
 
   public TPM2dProver(){
     super();
+  }
+
+  @Override
+  public void setConfig(Object config) {
+    if (config instanceof Tpm2dProverConfig) {
+      LOG.debug("Set rat prover config");
+      this.config = (Tpm2dProverConfig) config;
+    } else {
+      LOG.warn("Invalid prover config");
+    }
   }
 
   @Override
@@ -77,20 +88,22 @@ public class TPM2dProver extends RatProverDriver {
     Tpm2dRatChallenge challenge = tpm2dMessageWrapper.getRatChallenge();
 
     LOG.debug("Requesting attestation from TPM ...");
-    // hash //toDo add remote certificate
-    byte[] hash = TPM2dHelper.calculateHash(challenge.getNonce().toByteArray(), null);
+
+    // hash
+    byte[] hash = TPM2dHelper.calculateHash(challenge.getNonce().toByteArray(),
+        config.getRemoteCertificate());
 
     // generate RemoteToTPM2dRequest
     RemoteToTpm2d tpmRequest = TpmMessageFactory.getRemoteToTPM2dMessage(
         challenge.getAtype(),
         hash,
-        challenge.hasPcrIndices() ? challenge.getPcrIndices() : 0 //toDo 0 okay?
+        challenge.hasPcrIndices() ? challenge.getPcrIndices() : 0
     );
 
     // get TPM response
     Tpm2dToRemote tpmResponse;
     try {
-      TPM2dSocket tpmSocket = new TPM2dSocket(""); //toDo add host
+      TPM2dSocket tpmSocket = new TPM2dSocket(config.getTpm2dHost());
       tpmResponse = tpmSocket.requestAttestation(tpmRequest);
     } catch (IOException e) {
       LOG.error("Cannot access TPM", e);

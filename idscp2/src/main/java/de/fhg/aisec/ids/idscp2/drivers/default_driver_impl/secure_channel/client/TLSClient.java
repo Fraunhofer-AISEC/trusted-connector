@@ -186,7 +186,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
                 out.writeInt(data.length);
                 out.write(data);
                 out.flush();
-                LOG.debug("Send message: {}", new String(data));
+                LOG.debug("Send message");
             } catch (IOException e){
                 LOG.error("Client cannot send data");
                 onError();

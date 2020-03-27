@@ -23,7 +23,7 @@ idea {
 }
 
 dependencies {
-    providedByBundle(project(':ids-api')) { transitive = false }
+    //providedByBundle(project(':ids-api')) { transitive = false }
 
     providedByBundle group: 'com.github.microsoft', name: 'TSS.Java', version: '0.3.0'
 
@@ -34,21 +34,20 @@ dependencies {
     
     publishCompile group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
-    providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
+    //providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
 
-    providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: libraryVersions.jetty
-    providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
+    //providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: libraryVersions.jetty
+    //providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
 
-    testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
-    testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
-    testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
+    //testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
+    //testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
+    //testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 
     providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
     providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
     providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
     providedByBundle group: 'org.json', name: 'json', version: '20180813'
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
-
     providedByBundle group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
 
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4

@@ -1,6 +1,10 @@
 import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.TPM2dProver;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.TPM2dVerifier;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.Tpm2dProverConfig;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.Tpm2dVerifierConfig;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
@@ -34,12 +38,27 @@ public class IDSCPv2ServerInitiator implements IDSCPv2Initiator {
                 .build();
         DapsDriver dapsDriver = new DefaultDapsDriver(config);
 
-        RatProverDriverRegistry.getInstance().registerDriver("TPM_2", RatProverDummy.class);
-        RatVerifierDriverRegistry.getInstance().registerDriver("TPM_2", RatVerifierDummy.class);
+        RatProverDriverRegistry.getInstance().registerDriver(
+            "Dummy", RatProverDummy.class, null);
+        RatVerifierDriverRegistry.getInstance().registerDriver(
+            "Dummy", RatVerifierDummy.class, null);
+        RatProverDriverRegistry.getInstance().registerDriver(
+            "TPM2d", TPM2dProver.class,
+            new Tpm2dProverConfig.Builder().build()
+        );
+        RatVerifierDriverRegistry.getInstance().registerDriver(
+            "TPM2d", TPM2dVerifier.class,
+            new Tpm2dVerifierConfig.Builder().build()
+        );
 
-        IDSCPv2Configuration idscpServerConfig = new IDSCPv2Configuration(this,
-                dapsDriver, secureChannelDriver, serverSettings.getExpectedAttestation(),
-                serverSettings.getSupportedAttestation());
+        IDSCPv2Configuration idscpServerConfig = new IDSCPv2Configuration(
+            this,
+            dapsDriver,
+            secureChannelDriver,
+            serverSettings.getExpectedAttestation(),
+            serverSettings.getSupportedAttestation(),
+            20);
+
         IDSCPv2Server idscPv2Server;
         try {
             idscPv2Server = idscpServerConfig.listen(serverSettings);

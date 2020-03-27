@@ -33,18 +33,22 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
     private SecureChannelDriver secureChannelDriver;
     private final String[] localExpectedRatCipher;
     private final String[] localSupportedRatCipher;
+    private int ratTimeout;
 
 
     public IDSCPv2Configuration(IDSCPv2Initiator initiator,
                                 DapsDriver dapsDriver,
                                 SecureChannelDriver secureChannelDriver,
                                 AttestationConfig expectedAttestation,
-                                AttestationConfig supportedAttestation){
+                                AttestationConfig supportedAttestation,
+                                int ratTimeout
+    ){
         this.user = initiator;
         this.dapsDriver = dapsDriver;
         this.secureChannelDriver = secureChannelDriver;
         this.localExpectedRatCipher = expectedAttestation.getRatMechanisms();
         this.localSupportedRatCipher = supportedAttestation.getRatMechanisms();
+        this.ratTimeout = ratTimeout;
     }
 
     public void connect(IDSCPv2Settings settings){
@@ -73,7 +77,8 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
             user.errorHandler("IDSCPv2 connect failed because no secure channel was established");
         } else {
             LOG.debug("A new secure channel for an outgoing idscpv2 connection was established");
-            FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher, localExpectedRatCipher);
+            FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher,
+                localExpectedRatCipher, ratTimeout);
 
             try {
                 fsm.startIdscpHandshake(); //blocking until handshake is done
@@ -93,7 +98,8 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
     public void secureChannelListenHandler(SecureChannel secureChannel, IdscpConnectionListener idscpServer) {
         if (secureChannel != null){
             LOG.debug("A new secure channel for an incoming idscpv2 connection was established");
-            FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher, localExpectedRatCipher);
+            FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher,
+                localExpectedRatCipher, ratTimeout);
 
             try {
                 fsm.startIdscpHandshake(); //blocking until handshake is done
