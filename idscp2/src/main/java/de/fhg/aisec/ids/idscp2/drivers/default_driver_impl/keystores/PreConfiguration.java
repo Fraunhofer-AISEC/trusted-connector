@@ -44,7 +44,7 @@ public class PreConfiguration {
             //allow only X509 Authentication
             if (myTrustManager.length == 1 && myTrustManager[0] instanceof X509ExtendedTrustManager) {
                 //toDo algorithm constraints
-                //toDo hostname verification is currently done by using https identification protocol
+                //hostname verification is currently done by using https identification protocol
                 return myTrustManager;
             } else {
                 throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(myTrustManager));

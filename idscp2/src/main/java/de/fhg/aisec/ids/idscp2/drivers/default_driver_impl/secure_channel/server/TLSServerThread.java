@@ -71,6 +71,16 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
 
     @Override
     public void run(){
+        // first run the tls handshake to enforce catching every error occurred during the handshake
+        // before reading from buffer. Else if there exists any non-catched exception during handshake
+        // the thread would wait forever in onError() until handshakeCompleteListener is called
+        try {
+            sslSocket.startHandshake();
+        } catch (IOException e) {
+            LOG.warn("SSLHandshakeException occurred. Quit server session");
+            running = false;
+        }
+
         //wait for new data while running
         byte[] buf;
         while (running){
@@ -80,7 +90,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 in.readFully(buf, 0, len);
                 onMessage(buf);
 
-            } catch (SocketTimeoutException e){
+            } catch (SocketTimeoutException e) {
                 //timeout catches safeStop() call and allows to send server_goodbye
                 //alternative: close sslSocket and catch SocketException
                 //continue
@@ -88,11 +98,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             } catch (EOFException e){
                 onClose();
                 running = false;
-            } catch (SSLHandshakeException e) {
-                LOG.warn("SSLHandshakeException occurred. Quit server session");
-                running = false;
             } catch (IOException e){
-                onError(); //FIXME ??? is there any other exception that could occur before fsm was created ??, if so -> Thread will run forever
+                onError();
                 running = false;
             }
         }
@@ -104,9 +111,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             out.close();
             in.close();
             sslSocket.close();
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
+        } catch (IOException ignore) {}
     }
 
     @Override

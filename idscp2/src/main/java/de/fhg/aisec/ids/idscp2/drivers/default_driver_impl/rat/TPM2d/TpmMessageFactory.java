@@ -69,7 +69,7 @@ public class TpmMessageFactory {
     ).build();
   }
 
-  static Tpm2dMessageWrapper getAttestationRepositoryRequestMessage(
+  /*static Tpm2dMessageWrapper getAttestationRepositoryRequestMessage(
       IdsAttestationType aType,
       List<Pcr> pcrValues
   ) {
@@ -84,10 +84,9 @@ public class TpmMessageFactory {
   static Tpm2dMessageWrapper getAttestationRepositoryResponseMessage() {
     return Tpm2dMessageWrapper.newBuilder().setRepositoryResponse(
         Tpm2dRepositoryResponse.newBuilder()
-            //toDo add values
             .build()
     ).build();
-  }
+  }*/
 
   static RemoteToTpm2d getRemoteToTPM2dMessage(
       IdsAttestationType aType,

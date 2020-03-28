@@ -22,7 +22,7 @@ public class StateEstablished extends State {
          * onICM: error ---> {timeouts.cancel(), send IDSCP_CLOSE} ---> STATE_CLOSED
          * onICM: stop ---> {timeouts.cancel()} ---> STATE_CLOSED
          * onICM: re_rat ---> {send IDSCP_RE_RAT, start RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT_VERIFIER
-         * //FIXME onICM: send_data ---> {send IDS_DATA} ---> STATE_ESTABLISHED
+         * //onICM: send_data ---> {send IDS_DATA} ---> STATE_ESTABLISHED
          * onICM: dat_timeout ---> {send IDSCP_DAT_EXPIRED} ---> STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER
          * onMessage: IDSCP_DATA ---> {delegate to connection} ---> STATE_ESTABLISHED
          * onMessage: IDSCP_RERAT ---> {start RAT_PROVER} ---> STATE_WAIT_FOR_RAT_PROVER

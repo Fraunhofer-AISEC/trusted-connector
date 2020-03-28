@@ -40,11 +40,9 @@ public class InputListenerThread extends Thread implements InputListener {
                 buf = new byte[len];
                 in.readFully(buf, 0, len);
                 this.listener.onMessage(buf);
-            } catch (SocketTimeoutException e) {
-                //timeout to catch safeStop() call, which allows save close and sending Client_Goodbye
-                //alternative: close socket / InputStream and catch exception
-                //continue;
-                //toDo offset when timeout while reading ???
+            } catch (SocketTimeoutException ignore) {
+                //timeout to catch safeStop() call
+                //alternative: close socket / InputStream and catch exception SocketException
 
             } catch (EOFException e){
                 listener.onClose();
@@ -61,7 +59,7 @@ public class InputListenerThread extends Thread implements InputListener {
         this.listener = listener;
     }
 
-
+    
     @Override
     public void safeStop() {
         this.running = false;
