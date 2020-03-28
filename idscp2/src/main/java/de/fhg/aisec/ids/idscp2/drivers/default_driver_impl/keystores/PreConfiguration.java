@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores;
 
+import java.util.Date;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,10 +34,23 @@ public class PreConfiguration {
             final TrustManagerFactory trustManagerFactory =
                     TrustManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
 
-            /* filterTrustAnchors for validation
+            /*
+             *  The following code will filter the certificates from the trustStore by the
+             *  revocation date. Only certificates that consist validity of at least one remaining
+             *  day will be accepted
+             *
+             * //toDo not working yet because root certificates do not have CRL and OSCP links for
+             *    revocation checks..
+             *
+            // filterTrustAnchors for validation, at least one day valid
+            Date validityDate = new Date();
+            validityDate.setTime(validityDate.getTime() + 86400000);
+
+            PKIXBuilderParameters pkixParamBuilder = filterTrustAnchors(trustStore, validityDate);
             ManagerFactoryParameters trustParams =
-                    new CertPathTrustManagerParameters(filterTrustAnchors(trustStore));
+                    new CertPathTrustManagerParameters(pkixParamBuilder);
             trustManagerFactory.init(trustParams);*/
+
             trustManagerFactory.init(trustStore);
             myTrustManager = trustManagerFactory.getTrustManagers();
 
@@ -44,7 +58,6 @@ public class PreConfiguration {
             //allow only X509 Authentication
             if (myTrustManager.length == 1 && myTrustManager[0] instanceof X509ExtendedTrustManager) {
                 //toDo algorithm constraints
-                //hostname verification is currently done by using https identification protocol
                 return myTrustManager;
             } else {
                 throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(myTrustManager));
@@ -118,7 +131,7 @@ public class PreConfiguration {
         }
     }
 
-    private static PKIXBuilderParameters filterTrustAnchors(KeyStore keyStore)
+    private static PKIXBuilderParameters filterTrustAnchors(KeyStore keyStore, Date validityUntilDate)
             throws KeyStoreException, InvalidAlgorithmParameterException {
         PKIXParameters params = new PKIXParameters(keyStore);
 
@@ -130,7 +143,7 @@ public class PreConfiguration {
                 myTrustAnchors.stream().filter(
                         ta -> {
                             try {
-                                ta.getTrustedCert().checkValidity(/* toDo expiration date*/);
+                                ta.getTrustedCert().checkValidity(validityUntilDate);
                             } catch (CertificateException e) {
                                 return false;
                             }

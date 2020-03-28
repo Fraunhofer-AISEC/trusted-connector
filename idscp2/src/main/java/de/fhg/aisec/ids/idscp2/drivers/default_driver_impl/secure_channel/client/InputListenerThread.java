@@ -1,15 +1,10 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client;
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 
 /**
  * A simple Listener thread that listens to an input stream and notifies all listeners when new data were received
@@ -42,8 +37,6 @@ public class InputListenerThread extends Thread implements InputListener {
                 this.listener.onMessage(buf);
             } catch (SocketTimeoutException ignore) {
                 //timeout to catch safeStop() call
-                //alternative: close socket / InputStream and catch exception SocketException
-
             } catch (EOFException e){
                 listener.onClose();
                 running = false; //terminate
@@ -59,7 +52,7 @@ public class InputListenerThread extends Thread implements InputListener {
         this.listener = listener;
     }
 
-    
+
     @Override
     public void safeStop() {
         this.running = false;

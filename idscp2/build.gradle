@@ -23,8 +23,6 @@ idea {
 }
 
 dependencies {
-    //providedByBundle(project(':ids-api')) { transitive = false }
-
     providedByBundle group: 'com.github.microsoft', name: 'TSS.Java', version: '0.3.0'
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
@@ -33,15 +31,6 @@ dependencies {
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
     
     publishCompile group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
-
-    //providedByBundle group: 'org.asynchttpclient', name: 'async-http-client', version: libraryVersions.ahc
-
-    //providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: libraryVersions.jetty
-    //providedByFeature group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: libraryVersions.jetty
-
-    //testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
-    //testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
-    //testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 
     providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
     providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken

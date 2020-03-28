@@ -62,9 +62,6 @@ public class FSM implements FsmListener{
     public FSM(SecureChannel secureChannel, DapsDriver dapsDriver,
                String[] localSupportedRatSuite, String[] localExpectedRatSuite, int ratTimeout){
 
-        this.secureChannel = secureChannel;
-        secureChannel.setFsm(this);
-
 
         /* ------------- Timeout Handler Routines ------------*/
         Runnable handshakeTimeoutHandler = () -> {
@@ -106,6 +103,9 @@ public class FSM implements FsmListener{
 
         //set initial state
         currentState = states.get(FSM_STATE.STATE_CLOSED);
+
+        this.secureChannel = secureChannel;
+        secureChannel.setFsm(this);
     }
 
     private void checkForFsmCircles() {

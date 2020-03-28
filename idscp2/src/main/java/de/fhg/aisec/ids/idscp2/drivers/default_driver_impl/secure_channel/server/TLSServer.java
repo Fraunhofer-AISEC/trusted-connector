@@ -85,9 +85,6 @@ public class TLSServer extends Thread implements SecureServer {
         sslParameters.setNeedClientAuth(true); //client must authenticate
         sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.3
         sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher suite
-        //FIXME uncomment hostname identification, this is deactivated because the client uses a certificate of an
-        // other identity in the examples at the moment
-        //sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
         sslServerSocket.setSSLParameters(sslParameters);
         LOG.debug("TLS server was initialized successfully");
     }

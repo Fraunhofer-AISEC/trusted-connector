@@ -40,7 +40,7 @@ class StateClosed extends State {
                     if (!fsm.sendFromFSM(idscpHello)) {
                       LOG.error("Cannot send IdscpHello. Close connection");
                       runEntryCode(fsm);
-                      onMessageLock.notifyAll();
+                      onMessageLock.signalAll();
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 

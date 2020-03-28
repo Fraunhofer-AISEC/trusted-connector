@@ -1,17 +1,16 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server;
 
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsSessionVerificationHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
-import javax.net.ssl.SSLHandshakeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.SocketTimeoutException;
@@ -51,6 +50,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     private IDSCPv2Callback configCallback;  //no race conditions
     private IdscpConnectionListener idscpServerCallback; //no race conditions
     private CountDownLatch listenerLatch = new CountDownLatch(1);
+    private CountDownLatch tlsVerificationLatch = new CountDownLatch(1);
 
 
     TLSServerThread(SSLSocket sslSocket, IDSCPv2Callback configCallback, IdscpConnectionListener idscpServerCallback){
@@ -76,8 +76,17 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         // the thread would wait forever in onError() until handshakeCompleteListener is called
         try {
             sslSocket.startHandshake();
+            //wait for tls session verification
+            while (true) {
+                try {
+                    tlsVerificationLatch.await();
+                    break;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         } catch (IOException e) {
-            LOG.warn("SSLHandshakeException occurred. Quit server session");
+            LOG.warn("SSLHandshakeException occurred. Quit server session", e);
             running = false;
         }
 
@@ -90,11 +99,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 in.readFully(buf, 0, len);
                 onMessage(buf);
 
-            } catch (SocketTimeoutException e) {
+            } catch (SocketTimeoutException ignore) {
                 //timeout catches safeStop() call and allows to send server_goodbye
-                //alternative: close sslSocket and catch SocketException
-                //continue
-
             } catch (EOFException e){
                 onClose();
                 running = false;
@@ -178,7 +184,24 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
 
     @Override
     public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
-        LOG.debug("TLS handshake was successful");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("TLS Handshake was successful");
+        }
+
+        // verify tls session on application layer: hostname verification, certificate validity
+        if (!TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession())) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("TLS session is not valid. Close TLS connection");
+            }
+            running = false; //set running false before tlsVerificationLatch is decremented
+            tlsVerificationLatch.countDown();
+            return;
+        } else {
+            LOG.debug("TLS session is valid");
+            tlsVerificationLatch.countDown();
+        }
+
+
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();

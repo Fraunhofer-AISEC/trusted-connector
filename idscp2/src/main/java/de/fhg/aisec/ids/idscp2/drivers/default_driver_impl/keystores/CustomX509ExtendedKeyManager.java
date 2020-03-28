@@ -40,10 +40,10 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     }
 
     @Override
-    public String[] getClientAliases(String s, Principal[] principals) {
-        String[] clientAliases = delegate.getClientAliases(s, principals);
+    public String[] getClientAliases(String keyType, Principal[] issuers) {
+        String[] clientAliases = delegate.getClientAliases(keyType, issuers);
         for (String alias : clientAliases)
-            cachedAliases.putIfAbsent(alias, new CachedAliasValue(s, principals));
+            cachedAliases.putIfAbsent(alias, new CachedAliasValue(keyType, null)); //toDo get issuer
         return clientAliases;
     }
 
@@ -54,7 +54,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
         if (Arrays.asList(keyTypes).contains(this.keyType)){
             if ((cachedAliases.containsKey(this.certAlias) &&
                     cachedAliases.get(this.certAlias).match(keyType, issuers))
-                    || Arrays.asList(getServerAliases(keyType, issuers)).contains(this.certAlias)) {
+                    || Arrays.asList(getClientAliases(keyType, issuers)).contains(this.certAlias)) {
                 LOG.debug("CertificateAlias is {}", this.certAlias);
                 return this.certAlias;
             } else {
@@ -70,10 +70,10 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     }
 
     @Override
-    public String[] getServerAliases(String s, Principal[] principals) {
-        String[] serverAliases = delegate.getServerAliases(s, principals);
+    public String[] getServerAliases(String keyType, Principal[] issuers) {
+        String[] serverAliases = delegate.getServerAliases(keyType, issuers);
         for (String alias : serverAliases)
-            cachedAliases.putIfAbsent(alias, new CachedAliasValue(s, principals));
+            cachedAliases.putIfAbsent(alias, new CachedAliasValue(keyType, null)); //toDo get issuer
         return serverAliases;
     }
 
@@ -135,17 +135,30 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
         return delegate.chooseEngineServerAlias(keyType, issuers, sslEngine);
     }
 
-    private class CachedAliasValue {
-        private String keyType;
-        private Principal[] issuers;
 
-        CachedAliasValue(String keyType, Principal[] issuers){
+    private static class CachedAliasValue {
+        private String keyType; //key algorithm type name
+        private Principal issuer; //certificate issuer
+
+        CachedAliasValue(String keyType, Principal issuer){
             this.keyType = keyType;
-            this.issuers = issuers;
+            this.issuer = issuer;
         }
 
-        boolean match(String keyType, Principal[] principals){
-            return this.keyType.equals(keyType) && (principals == null /* || //FIXME check issuers */);
+        /*
+         * This method is called for a given certificate alias and checks if the corresponding
+         * cached alias entry (contains keytype for certAlias and issuer of thee certificate)
+         * matches the requested conditions in thee TLS handshake.
+         *
+         * It must enforce checking if the certAlias belongs to a valid key algorithm type name,
+         * e.g. 'RSA' or 'EC' and it must check if the certificate issuer is one of the accepted
+         * issuer from the given principals list.
+         *
+         * returns true, if the keyAlias fulfills the requirements
+         */
+        boolean match(String keyType, Principal[] issuers){
+            return this.keyType.equals(keyType) && (issuers == null
+                || Arrays.asList(issuers).contains(issuer));
         }
     }
 }

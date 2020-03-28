@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.clien
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsSessionVerificationHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
@@ -91,9 +92,9 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         SSLParameters sslParameters = sslSocket.getSSLParameters();
         sslParameters.setUseCipherSuitesOrder(false); //use server priority order
         sslParameters.setNeedClientAuth(true);
-        sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.2
+        sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.3
         sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher
-        sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); //use https for hostname verification
+        //sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); is done in application layer
         sslSocket.setSSLParameters(sslParameters);
         LOG.debug("TLS Client was initialized successfully");
     }
@@ -200,14 +201,22 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         return clientSocket != null && clientSocket.isConnected();
     }
 
-    public SSLSession getSslSession() {
-        return ((SSLSocket)clientSocket).getSession();
-    }
-
     @Override
     public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent) {
         //start receiving listener after TLS Handshake was successful
-        LOG.debug("TLS Handshake was successful. Starting input listener thread");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("TLS Handshake was successful");
+        }
+
+        // verify tls session on application layer: hostname verification, certificate validity
+        if (!TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession())) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("TLS session is not valid. Close TLS connection");
+            }
+            disconnect();
+            callback.secureChannelConnectHandler(null);
+            return;
+        }
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();
