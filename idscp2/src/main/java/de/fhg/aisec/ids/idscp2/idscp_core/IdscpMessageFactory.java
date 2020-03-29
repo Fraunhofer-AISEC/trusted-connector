@@ -2,9 +2,13 @@ package de.fhg.aisec.ids.idscp2.idscp_core;
 
 import com.google.protobuf.ByteString;
 import de.fhg.aisec.ids.messages.IDSCPv2.*;
-
 import java.util.Arrays;
 
+/**
+ * A factory for creating IDSCPv2 messages
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class IdscpMessageFactory {
 
     public static IdscpMessage getIdscpHelloMessage(byte[] dat, String[] supportedRatSuite, String[] expectedRatSuite){

@@ -3,9 +3,10 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import java.util.function.Function;
 
 /**
- * Transition class for State machine, provides a doTransition method, that returns the next state for a given event
+ * Transition class for State machine, provides a doTransition method
+ * that returns the next state for a given event
  *
- * @author Leon Beckmann leon.beckmann@aisec.fraunhofer.de
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class Transition {
     private Function<Event,State> eventHandler;

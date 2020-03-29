@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
-
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
@@ -8,6 +7,15 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Wait_For_Hello State of the FSM of the IDSCPv2 protocol.
+ * Waits for the Idscpv2 Hellp Message that contains the protocol version, the supported and
+ * expected remote attestation cipher suites and the dynamic attribute token (DAT) of the peer.
+ *
+ * Goes into the WAIT_FOR_RAT State when valid Rat mechanisms were found and the DAT is valid
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class StateWaitForHello extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateWaitForHello.class);
 

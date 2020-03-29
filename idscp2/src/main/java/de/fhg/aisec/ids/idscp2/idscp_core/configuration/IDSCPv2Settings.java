@@ -4,7 +4,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.A;
 
 /**
- * IDSCPv2 configuration class, containing information about keyStore and TrustStores, Attestation Types, host, ...
+ * IDSCPv2 configuration class, contains information about keyStore and TrustStores,
+ * Attestation Types, host, DAPS, ...
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */

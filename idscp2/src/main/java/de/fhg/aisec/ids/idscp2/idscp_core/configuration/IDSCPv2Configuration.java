@@ -10,18 +10,10 @@ import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.UUID;
 
 /**
  * IDSCPv2Configuration class, provides IDSCPv2 API to the User (IDSCPv2Initiator)
- *
- * User API
- *
- * Methods:
- * void connect(IDSCPv2Settings)                    initiate idscpv2 connect to host from settings
- * SecureServer listen(IDSCPv2Settings)             initiate creation of a
- * void secureChannelConnectHandler(SecureChannel)
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -51,11 +43,18 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         this.ratTimeout = ratTimeout;
     }
 
+    /*
+     * User API to create a IDSCPv2 connection as a client
+     */
     public void connect(IDSCPv2Settings settings){
         LOG.info("Connect to an idscpv2 server ({})", settings.getHost());
         secureChannelDriver.connect(settings, this);
     }
 
+    /*
+     * User API to create a new IDSCPv2 Server that starts a Secure Server that listens to new
+     * secure channels
+     */
     public IDSCPv2Server listen(IDSCPv2Settings settings) throws IDSCPv2Exception {
         LOG.info("Starting new IDSCPv2 server at port {}", settings.getServerPort());
 
@@ -70,6 +69,16 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         return idscpServer;
     }
 
+    /*
+     * A callback implementation to receive a new established secure channel from an Secure client
+     *
+     * If the secure channel is null, no secure channel was established and an error is provided
+     * to the user
+     *
+     * If the secure channel was established, a new FSM is created for this connection and the
+     * IDSCPv2 handshake is started. After a successful handshake, a new IDSCPv2Connection is
+     * created and provided to the user
+     */
     @Override
     public void secureChannelConnectHandler(SecureChannel secureChannel) {
         if (secureChannel == null){
@@ -94,6 +103,16 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         }
     }
 
+    /*
+     * A callback implementation to receive a new established secure channel from an Secure server
+     *
+     * If the secure channel is null, no secure channel was established and the result will be
+     * ignored
+     *
+     * If the secure channel was established, a new FSM is created for this connection and the
+     * IDSCPv2 handshake is started. After a successful handshake, a new IDSCPv2Connection is
+     * created and provided to the user and the IDSCPv2 server
+     */
     @Override
     public void secureChannelListenHandler(SecureChannel secureChannel, IdscpConnectionListener idscpServer) {
         if (secureChannel != null){
@@ -117,11 +136,5 @@ public class IDSCPv2Configuration implements IDSCPv2Callback {
         } else {
             LOG.warn("An incoming idscpv2 client connection request failed because no secure channel was established");
         }
-    }
-
-    @Override
-    public void connectionClosedHandler(String connectionId) {
-        LOG.info("IDSCPv2 connection with id {} has been closed", connectionId);
-        user.connectionClosedHandler(connectionId);
     }
 }

@@ -7,6 +7,12 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Established State of the FSM of the IDSCPv2 protocol.
+ * Allows message exchange over the IDSCPv2 protocol between two connectors
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class StateEstablished extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateEstablished.class);
 

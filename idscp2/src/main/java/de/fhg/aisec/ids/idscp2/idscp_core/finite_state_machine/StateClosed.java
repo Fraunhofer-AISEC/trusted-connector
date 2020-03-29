@@ -10,7 +10,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.Condition;
 
-
+/**
+ * The Closed State of the FSM of the IDSCPv2 protocol.
+ * The FSM is in the Closed state either before any transition was triggered (in this case, the
+ * Closed State is the FSM Start state) or after the connection was closed (in this case, the
+ * Closed State is the FSM final state without any outgoing transitions)
+ *
+ * When the FSM go from any State into the Closed State again, the FSM is locked forever and all
+ * involved actors like RatDrivers and Timers will be terminated
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 class StateClosed extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateClosed.class);
 

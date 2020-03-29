@@ -10,6 +10,12 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * An IDSCPv2 Server that has the control about the underlying secure server and caches all active
+ * connections that belong to the secure server
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class IDSCPv2Server implements IdscpConnectionListener{
     private static final Logger LOG = LoggerFactory.getLogger(IDSCPv2Server.class);
 
@@ -17,15 +23,16 @@ public class IDSCPv2Server implements IdscpConnectionListener{
     private CountDownLatch secureServerLatch = new CountDownLatch(1);
     private ConcurrentHashMap<String, IDSCPv2Connection> connections = new ConcurrentHashMap<>();
 
-    public IDSCPv2Server(){
-
-    }
+    public IDSCPv2Server(){}
 
     public IDSCPv2Server(SecureServer secureServer){
         this.secureServer = secureServer;
         secureServerLatch.countDown();
     }
 
+    /*
+     * Terminate the IDSCPv2 server, the secure server and close all connections
+     */
     public void terminate(){
         LOG.info("Terminating idscp server {}", this.toString());
         try {
@@ -37,6 +44,9 @@ public class IDSCPv2Server implements IdscpConnectionListener{
         }
     }
 
+    /*
+     * Close all open IDSCPv2 connections of this server
+     */
     public void terminateAllSessions(){
         for (IDSCPv2Connection c : connections.values()){
             c.close();
@@ -45,6 +55,9 @@ public class IDSCPv2Server implements IdscpConnectionListener{
         }
     }
 
+    /*
+     * Check if the server is running
+     */
     public boolean isRunning(){
         try {
             secureServerLatch.await();
@@ -55,10 +68,18 @@ public class IDSCPv2Server implements IdscpConnectionListener{
         return false;
     }
 
+    /*
+     * Get a IDSCPv2Connection from the server cache by the connectionID
+     *
+     * return null if no connection was found with this ID
+     */
     public IDSCPv2Connection getConnectionById(String connectionId){
         return connections.get(connectionId);
     }
 
+    /*
+     * return a list of all open IDSCPv2 connections of this server
+     */
     public List<IDSCPv2Connection> getAllConnections(){
         return new ArrayList<>(connections.values());
     }
@@ -75,6 +96,9 @@ public class IDSCPv2Server implements IdscpConnectionListener{
         connections.remove(connectionId);
     }
 
+    /*
+     * Set the corresponding secure server
+     */
     public void setSecureServer(SecureServer secureServer) {
         this.secureServer = secureServer;
         secureServerLatch.countDown();

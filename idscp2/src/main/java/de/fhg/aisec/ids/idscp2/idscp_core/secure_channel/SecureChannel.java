@@ -3,21 +3,11 @@ package de.fhg.aisec.ids.idscp2.idscp_core.secure_channel;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A secureChannel which is the secure underlying basis of the IDSCPv2 protocol, that implements a secureChannelListener
- *
- * Developer API
- *
- * Methods:
- * void close()                                 to close the secureChannel
- * void send(IDSCPv2Message)                    to send an IDSCPv2Message as bytes via the secure channel
- * void onMessage(byte[] data)                  to receive new bytes via the secure channel
- * boolean isConnected()                        to check if the secure channel is still open
- * void registerMessageListener(IdscpMsgListener)   to register an idscpv2 message listener
- * void setEndpointConnectionId(String id)          to set the connectionId
+ * A secureChannel which is the secure underlying basis of the IDSCPv2 protocol,
+ * that implements a secureChannelListener
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -32,10 +22,18 @@ public class SecureChannel implements SecureChannelListener {
         this.endpoint = secureChannelEndpoint;
     }
 
+    /*
+     * close the secure channel forever
+     */
     public void close(){
         endpoint.close();
     }
 
+    /*
+     * Send data via the secure channel endpoint to the peer connector
+     *
+     * return true if the data were sent successfully, else false
+     */
     public boolean send(byte[] msg){
         LOG.debug("Send message via secure channel");
         return endpoint.send(msg);
@@ -78,6 +76,9 @@ public class SecureChannel implements SecureChannelListener {
         return endpoint.isConnected();
     }
 
+    /*
+     * set the corresponding finite state machine
+     */
     public void setFsm(FsmListener fsm) {
         this.fsm = fsm;
         fsmLatch.countDown();

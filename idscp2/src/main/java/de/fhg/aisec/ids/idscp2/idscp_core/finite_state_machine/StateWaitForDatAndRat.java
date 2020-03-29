@@ -7,6 +7,13 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Wait_For_Dat_And_Rat State of the FSM of the IDSCPv2 protocol.
+ * Waits for a new valid dynamic attribute token from the peer as well as for the RatProver and
+ * RatVerifier to decide whether the connection will be established or not
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class StateWaitForDatAndRat extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateWaitForDatAndRat.class);
 

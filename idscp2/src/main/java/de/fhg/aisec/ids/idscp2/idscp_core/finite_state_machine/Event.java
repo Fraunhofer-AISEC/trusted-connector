@@ -5,10 +5,10 @@ import de.fhg.aisec.ids.messages.IDSCPv2.*;
 import javax.swing.*;
 
 /**
- * An Event class for the Finite State Machine. Triggers a transition and holds either an idscpMessage or an
- * InternalControlMessage.
+ * An Event class for the Finite State Machine. Triggers a transition and holds
+ * either an IdscpMessage or an InternalControlMessage, or both in special cases.
  *
- * @author Leon Beckmann leon.beckmann@aisec.fraunhofer.de
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class Event {
     public enum EventType {
@@ -21,6 +21,9 @@ public class Event {
     private IdscpMessage idscpMessage;
     private InternalControlMessage controlMessage;
 
+    /*
+     * Create an Event with an Internal Control Message
+     */
     public Event(InternalControlMessage controlMessage){
         this.key = controlMessage.getValue();
         this.type = EventType.INTERNAL_CONTROL_MESSAGE;
@@ -28,6 +31,9 @@ public class Event {
         this.idscpMessage = null;
     }
 
+    /*
+     * Create an Event with an Idscpv2 Message
+     */
     public Event (IdscpMessage idscpMessage){
         this.key = idscpMessage.getMessageCase().getNumber();
         this.type = EventType.IDSCP_MESSAGE;
@@ -35,7 +41,11 @@ public class Event {
         this.controlMessage = null;
     }
 
-    //for outgoing ratProver and ratVerifier messages
+    /*
+     * Create a event for outgoing RatProver and RatVerifier messages
+     *
+     * throws an IllegalStateException if this event is requested for other purposes
+     */
     public Event (InternalControlMessage controlMessage, IdscpMessage idscpMessage){
         if (controlMessage.equals(InternalControlMessage.RAT_PROVER_MSG) ||
                 controlMessage.equals(InternalControlMessage.RAT_VERIFIER_MSG))
@@ -45,11 +55,14 @@ public class Event {
             this.idscpMessage = idscpMessage;
             this.controlMessage = controlMessage;
         } else {
-            throw new IllegalStateException("This constructor must only be by RAT_PROVER and " +
+            throw new IllegalStateException("This constructor must only be used by RAT_PROVER and " +
                     "RAT_VERIFIER for message passing");
         }
     }
 
+    //
+    // Getter methods
+    //
 
     public Object getKey() {
         return key;

@@ -1,5 +1,11 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
+/**
+ * An enum that wraps the internal control messages of the IDSCPv2 protocol to trigger transitions
+ * by non-idscpv2-message-events
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public enum InternalControlMessage {
     START_IDSCP_HANDSHAKE("ICM_START"),
     IDSCP_STOP("ICM_STOP"),

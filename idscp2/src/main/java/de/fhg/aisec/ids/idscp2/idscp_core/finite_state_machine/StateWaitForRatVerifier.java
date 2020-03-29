@@ -7,6 +7,12 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Wait_For_Rat_Verifier State of the FSM of the IDSCPv2 protocol.
+ * Waits only for the RatVerifier Result to decide whether the connection will be established
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class StateWaitForRatVerifier extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateWaitForRatVerifier.class);
 
