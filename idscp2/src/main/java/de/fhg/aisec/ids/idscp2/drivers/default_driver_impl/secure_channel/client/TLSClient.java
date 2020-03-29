@@ -209,14 +209,18 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         }
 
         // verify tls session on application layer: hostname verification, certificate validity
-        if (!TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession())) {
+        try {
+            TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
+            LOG.debug("TLS session is valid");
+        } catch (SSLPeerUnverifiedException e) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("TLS session is not valid. Close TLS connection");
+                LOG.warn("TLS session is not valid. Close TLS connection", e);
             }
             disconnect();
             callback.secureChannelConnectHandler(null);
             return;
         }
+
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();

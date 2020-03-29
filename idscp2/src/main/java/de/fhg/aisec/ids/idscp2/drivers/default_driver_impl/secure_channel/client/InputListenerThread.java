@@ -7,12 +7,8 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 
 /**
- * A simple Listener thread that listens to an input stream and notifies all listeners when new data were received
- *
- * API:
- * - run() to start the listener thread
- * - register(DataAvailableListener) to register a new DataAvailableListener who will be notified when receiving data
- * - safeStop() to stop the listener thread
+ * A simple Listener thread that listens to an input stream and notifies a listeners
+ * when new data were received
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -27,13 +23,19 @@ public class InputListenerThread extends Thread implements InputListener {
         this.in = new DataInputStream(in);
     }
 
+    /*
+     * Run the input listener thread that reads from wire and provides data to upper layer
+     */
     public void run(){
         byte[] buf;
         while (running){
             try {
+                //first read the length
                 int len = in.readInt();
                 buf = new byte[len];
+                //then read the data
                 in.readFully(buf, 0, len);
+                //provide to listener
                 this.listener.onMessage(buf);
             } catch (SocketTimeoutException ignore) {
                 //timeout to catch safeStop() call

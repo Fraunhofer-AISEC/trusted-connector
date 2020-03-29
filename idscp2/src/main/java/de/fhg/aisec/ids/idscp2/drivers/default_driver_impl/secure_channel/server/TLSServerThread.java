@@ -6,6 +6,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,18 +190,18 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         }
 
         // verify tls session on application layer: hostname verification, certificate validity
-        if (!TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession())) {
+        try {
+            TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
+            LOG.debug("TLS session is valid");
+            tlsVerificationLatch.countDown();
+        } catch (SSLPeerUnverifiedException e) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("TLS session is not valid. Close TLS connection");
+                LOG.warn("TLS session is not valid. Close TLS connection", e);
             }
             running = false; //set running false before tlsVerificationLatch is decremented
             tlsVerificationLatch.countDown();
             return;
-        } else {
-            LOG.debug("TLS session is valid");
-            tlsVerificationLatch.countDown();
         }
-
 
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
