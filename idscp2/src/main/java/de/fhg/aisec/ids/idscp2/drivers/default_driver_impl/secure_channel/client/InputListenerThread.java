@@ -13,7 +13,6 @@ import java.net.SocketTimeoutException;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class InputListenerThread extends Thread implements InputListener {
-    //private static final Logger LOG = LoggerFactory.getLogger(InputListenerThread.class);
 
     private DataInputStream in;
     private DataAvailableListener listener = null; //no race conditions, could be empty list

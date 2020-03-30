@@ -3,6 +3,11 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
 import java.security.cert.Certificate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+/**
+ * A configuration class for TPM2d RatPriver driver
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class Tpm2dProverConfig {
 
   private Certificate remoteCertificate;

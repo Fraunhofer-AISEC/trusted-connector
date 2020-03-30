@@ -17,19 +17,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * A TLS Server that listens on a given port from the IDSCPv2Settings and create new TLSServerThreads for incoming
- * connections
- *
- * Developer API
- *
- * constructors:
- * TLSServer(IDSCPv2Settings, IDSCPv2Callback) initializes the TLS Socket and all TLS Security configurations like
- *                                              sslParameters (protocol, cipher, ..), trustStore, keyStore
- *
- * Methods:
- * run()
- * safeStop()
- * isRunning()
+ * A TLS Server that listens on a given port from the IDSCPv2Settings and create new
+ * TLSServerThreads for incoming connections
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -80,6 +69,8 @@ public class TLSServer extends Thread implements SecureServer {
         serverSocket.setSoTimeout(5000);
 
         SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocket;
+
+        //set tls constraints
         SSLParameters sslParameters = sslServerSocket.getSSLParameters();
         sslParameters.setUseCipherSuitesOrder(true); //server determines priority-order of algorithms in CipherSuite
         sslParameters.setNeedClientAuth(true); //client must authenticate

@@ -2,6 +2,11 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+/**
+ * A Configuration class for the DefaultDapsDriver
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class DefaultDapsDriverConfig {
 
   @NonNull private String dapsUrl = "https://daps.aisec.fraunhofer.de";

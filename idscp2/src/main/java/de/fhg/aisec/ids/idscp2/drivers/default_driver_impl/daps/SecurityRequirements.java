@@ -3,6 +3,12 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+/**
+ * A Security-Requirements class using Builder pattern to store the connectors expected
+ * security attributes e.g. Audit Logging
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class SecurityRequirements {
 
   private int auditLogging;

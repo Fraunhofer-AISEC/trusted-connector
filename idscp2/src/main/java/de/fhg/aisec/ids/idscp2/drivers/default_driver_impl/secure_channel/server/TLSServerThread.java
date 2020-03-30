@@ -18,25 +18,10 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A TLSServerThread that notifies an IDSCPv2Config when a secure channel was created and the TLS handshake is done
- * When new data are available the serverThread transfers them to the SecureChannelListener
+ * A TLSServerThread that notifies an IDSCPv2Config when a secure channel was created and the
+ * TLS handshake is done
  *
- * Developer API
- *
- * constructors:
- * TLSServerThread(IDSCPv2Settings, IDSCPv2Callback) initializes the TLS Socket
- *
- * Methods:
- * run()    runs the serverThread and starts listening for new data
- *
- * close()  disconnects the serverThread
- *
- *
- * handshakeCompleted()        create a secureChannel, including this serverThread and provides it to the IDSCPv2Config
- *
- * send(byte[] data)            send data to the client
- *
- * onMessage(int len, byte[] rawData) is called when new data are available. Transfer them to the SecureChannelListener
+ * When new data are available the serverThread transfers it to the SecureChannelListener
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -203,6 +188,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             return;
         }
 
+        //provide secure channel to IDSCPv2 Config and register secure channel as listener
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();

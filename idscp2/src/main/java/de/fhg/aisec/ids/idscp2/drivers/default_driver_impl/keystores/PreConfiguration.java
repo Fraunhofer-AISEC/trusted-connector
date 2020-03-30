@@ -18,8 +18,13 @@ import java.util.stream.Collectors;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class PreConfiguration {
-    //private static final Logger LOG = LoggerFactory.getLogger(TLSPreConfiguration.class);
 
+    /*
+     * Get a secure X509ExtendedTrustManager for the SslContext
+     *
+     * throws IllegalStateException if number of available X509TrustManager is not one
+     * throws RuntimeException of creating TrustManager fails
+     */
     public static TrustManager[] getX509ExtTrustManager(
             String trustStorePath,
             String trustStorePassword
@@ -33,23 +38,6 @@ public class PreConfiguration {
             trustStore.load(jksTrustStoreIn, trustStorePassword.toCharArray());
             final TrustManagerFactory trustManagerFactory =
                     TrustManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
-
-            /*
-             *  The following code will filter the certificates from the trustStore by the
-             *  revocation date. Only certificates that consist validity of at least one remaining
-             *  day will be accepted
-             *
-             * //toDo not working yet because root certificates do not have CRL and OSCP links for
-             *    revocation checks..
-             *
-            // filterTrustAnchors for validation, at least one day valid
-            Date validityDate = new Date();
-            validityDate.setTime(validityDate.getTime() + 86400000);
-
-            PKIXBuilderParameters pkixParamBuilder = filterTrustAnchors(trustStore, validityDate);
-            ManagerFactoryParameters trustParams =
-                    new CertPathTrustManagerParameters(pkixParamBuilder);
-            trustManagerFactory.init(trustParams);*/
 
             trustManagerFactory.init(trustStore);
             myTrustManager = trustManagerFactory.getTrustManagers();
@@ -67,6 +55,12 @@ public class PreConfiguration {
         }
     }
 
+    /*
+     * Get a secure X509ExtendedKeyManager for the SslContext
+     *
+     * throws IllegalStateException if number of available X509KeyManager is not one
+     * throws RuntimeException of creating KeyManager fails
+     */
     public static KeyManager[] getX509ExtKeyManager(
             String keyStorePath,
             String keyStorePassword,
@@ -103,6 +97,11 @@ public class PreConfiguration {
         }
     }
 
+    /*
+     * Get a private key from a JKS Keystore
+     *
+     * throws RuntimeException if key is not available or key access was not permitted
+     */
     public static Key getKey(
         String keyStorePath,
         String keyStorePassword,
@@ -131,6 +130,10 @@ public class PreConfiguration {
         }
     }
 
+    /*
+     * This method can be used for filtering certificates in the trust store
+     * to avoid expired certificates
+     */
     private static PKIXBuilderParameters filterTrustAnchors(KeyStore keyStore, Date validityUntilDate)
             throws KeyStoreException, InvalidAlgorithmParameterException {
         PKIXParameters params = new PKIXParameters(keyStore);

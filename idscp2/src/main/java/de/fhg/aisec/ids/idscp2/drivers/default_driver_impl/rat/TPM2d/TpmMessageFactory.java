@@ -6,6 +6,11 @@ import de.fhg.aisec.ids.messages.Tpm2dAttestation.*;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.RemoteToTpm2d.Code;
 import java.util.List;
 
+/**
+ * A message factory for creating TPM2d RAT messages
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class TpmMessageFactory {
 
   static Tpm2dMessageWrapper getAttestationChallengeMessage(

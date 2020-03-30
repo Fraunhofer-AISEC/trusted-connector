@@ -36,19 +36,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
- * Default DAPS Driver for requesting valid dynamicAttributeToken and verifying DAT
+ * Default DAPS Driver Implementation for requesting valid dynamicAttributeToken and verifying DAT
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class DefaultDapsDriver implements DapsDriver {
     private static final  Logger LOG = LoggerFactory.getLogger(DefaultDapsDriver.class);
 
-    private SSLSocketFactory sslSocketFactory;
-    private X509ExtendedTrustManager trustManager;
-    private Key privateKey;
+    private SSLSocketFactory sslSocketFactory; //ssl socket factory can be reused
+    private X509ExtendedTrustManager trustManager; //trust manager can be reused
+    private Key privateKey; //private key can be reused
     private String connectorUUID;
     private String dapsUrl;
     private String targetAudience = "IDS_Connector";
@@ -58,7 +56,7 @@ public class DefaultDapsDriver implements DapsDriver {
         this.connectorUUID = config.getConnectorUUID();
         this.dapsUrl = config.getDapsUrl();
 
-        //create ssl context
+        //create ssl socket factory for secure
         privateKey = PreConfiguration.getKey(
             config.getKeyStorePath(),
             config.getKeyStorePassword(),
@@ -82,12 +80,17 @@ public class DefaultDapsDriver implements DapsDriver {
         }
     }
 
+    /*
+     * Receive the signed and valid dynamic attribute token from the DAPS
+     *
+     * return "INVALID_TOKEN" on failure
+     */
     @Override
     public byte[] getToken() {
         String invalidToken = "INVALID_TOKEN";
         String token;
 
-        LOG.info("Retrieving Dynamic Attribute Token...");
+        LOG.info("Retrieving Dynamic Attribute Token from Daps ...");
 
         //create signed JWT
         String jwt =
@@ -126,17 +129,23 @@ public class DefaultDapsDriver implements DapsDriver {
 
         try {
             //get http response from DAPS
-            LOG.debug("Acquire DAT from {}", dapsUrl);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Acquire DAT from {}", dapsUrl);
+            }
             Response response = client.newCall(request).execute();
 
             //check for valid response
             if (!response.isSuccessful()) {
-                LOG.error("Get unsuccessful http response: {}", response.toString());
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Get unsuccessful http response: {}", response.toString());
+                }
                 return invalidToken.getBytes();
             }
 
             if (response.body() == null) {
-                LOG.error("Get empty DAPS response");
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Get empty DAPS response");
+                }
                 return invalidToken.getBytes();
             }
 
@@ -145,10 +154,14 @@ public class DefaultDapsDriver implements DapsDriver {
                 token = json.getString("access_token");
                 LOG.info("Get access_token from DAPS: {}", token);
             } else if (json.has("error")) {
-                LOG.error("Get DAPS error response: {}", json.getString("error"));
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Get DAPS error response: {}", json.getString("error"));
+                }
                 return invalidToken.getBytes();
             } else {
-                LOG.error("Get unknown DAPS response format: {}", json.toString());
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Get unknown DAPS response format: {}", json.toString());
+                }
                 return invalidToken.getBytes();
             }
 
@@ -157,7 +170,9 @@ public class DefaultDapsDriver implements DapsDriver {
                 LOG.info("DAT is valid");
                 return token.getBytes();
             } else {
-                LOG.error("DAT validation failed");
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("DAT validation failed");
+                }
                 return invalidToken.getBytes();
             }
         } catch (IOException e) {
@@ -166,6 +181,15 @@ public class DefaultDapsDriver implements DapsDriver {
         }
     }
 
+    /*
+     * Verify a given dynamic attribute token
+     *
+     * If the security requirements is not null and an instance of the SecurityRequirements class
+     * the method will also check the provided security attributes of the connector that belongs
+     * to the provided DAT
+     *
+     * Return the number of seconds, des DAT is valid, or -1 if validation failed
+     */
     @Override
     public long verifyToken(byte[] dat, Object securityRequirements) {
 
@@ -202,23 +226,31 @@ public class DefaultDapsDriver implements DapsDriver {
         JwtClaims claims;
         NumericDate expTime;
 
-        LOG.debug("Request JWKS from DAPS for validating DAT");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Request JWKS from DAPS for validating DAT");
+        }
 
         try {
             claims = jwtConsumer.processToClaims(new String(dat));
             expTime = claims.getExpirationTime();
         } catch (InvalidJwtException e) {
-            LOG.error("DAPS response is not a valid DAT format", e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("DAPS response is not a valid DAT format", e);
+            }
             return -1;
         } catch (MalformedClaimException e) {
-            LOG.error("DAT does not contain expiration time", e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("DAT does not contain expiration time", e);
+            }
             return -1;
         }
         long validityTime = expTime.getValue() - NumericDate.now().getValue();
 
         //check security requirements
         if (securityRequirements != null) {
-            LOG.debug("Validate security attributes");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Validate security attributes");
+            }
 
             if (securityRequirements instanceof SecurityRequirements) {
                 SecurityRequirements secRequirements = (SecurityRequirements) securityRequirements;
@@ -235,12 +267,16 @@ public class DefaultDapsDriver implements DapsDriver {
                     LOG.info("DAT is valid and secure");
                     return validityTime;
                 } else {
-                    LOG.warn("DAT does not fulfill the security requirements");
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn("DAT does not fulfill the security requirements");
+                    }
                     return -1;
                 }
             } else {
                 //invalid security requirements format
-                LOG.error("Invalid security requirements format. Expected SecurityRequirements.class");
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Invalid security requirements format. Expected SecurityRequirements.class");
+                }
                 return -1;
             }
         } else {
@@ -253,20 +289,26 @@ public class DefaultDapsDriver implements DapsDriver {
         JSONObject asJson = new JSONObject(dynamicAttrToken);
 
         if (!asJson.has("ids_attributes")) {
-            LOG.error("DAT does not contain ids_attributes");
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("DAT does not contain ids_attributes");
+            }
             return null;
         }
         JSONObject idsAttributes = asJson.getJSONObject("ids_attributes");
 
         if (!idsAttributes.has("security_profile")) {
-            LOG.error("DAT does not contain security_profile");
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("DAT does not contain security_profile");
+            }
             return null;
         }
         JSONObject securityProfile = idsAttributes.getJSONObject("security_profile");
 
         //check if all security requirements are available
         if (!securityProfile.has("audit_logging")) {
-            LOG.error("DAT does not contain audit_logging");
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("DAT does not contain audit_logging");
+            }
             return null;
         }
 

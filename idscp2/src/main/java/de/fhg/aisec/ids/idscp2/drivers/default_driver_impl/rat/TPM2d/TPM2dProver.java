@@ -17,9 +17,47 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * A TPM2d RatProver Driver implementation that proves its identity to a remote peer using TPM2d
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class TPM2dProver extends RatProverDriver {
   private static final Logger LOG = LoggerFactory.getLogger(TPM2dProver.class);
+
+  /*
+   * ******************* Protocol *******************
+   *
+   * Verifier: (Challenger)
+   * -------------------------
+   * Generate NonceV
+   * create RatChallenge (NonceV, aType, pcr_mask)
+   * -------------------------
+   *
+   * Prover: (Responder)
+   * -------------------------
+   * get RatChallenge (NonceV, aType, pcr_mask)
+   * hash = calculateHash(nonceV, certV)
+   * req = generate RemoteToTPM2dRequest(hash, aType, pcr_mask)
+   * response = TPM2dToRemote = tpmSocket.attestationRequest(req)
+   * create AttestationResponse from tpm response
+   * -------------------------
+   *
+   * Verifier: (Responder)
+   * -------------------------
+   * get AttestationResponse
+   * hash = calculateHash(nonceV, certV)
+   * check signature(response, hash)
+   * check repo(aType, response, ttpUri)
+   * create RatResult
+   * -------------------------
+   *
+   * Prover: (Requester)
+   * -------------------------
+   * get AttestationResult
+   * -------------------------
+   *
+   */
 
   private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
   private Tpm2dProverConfig config = new Tpm2dProverConfig.Builder().build();
@@ -31,17 +69,23 @@ public class TPM2dProver extends RatProverDriver {
   @Override
   public void setConfig(Object config) {
     if (config instanceof Tpm2dProverConfig) {
-      LOG.debug("Set rat prover config");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Set rat prover config");
+      }
       this.config = (Tpm2dProverConfig) config;
     } else {
-      LOG.warn("Invalid prover config");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Invalid prover config");
+      }
     }
   }
 
   @Override
   public void delegate(IdscpMessage message) {
     queue.add(message);
-    LOG.debug("Delegated to prover");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Delegated to prover");
+    }
   }
 
   @Override
@@ -52,7 +96,9 @@ public class TPM2dProver extends RatProverDriver {
     IdscpMessage msg;
     try {
       msg = queue.take();
-      LOG.debug("Prover receives new message");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Prover receives new message");
+      }
     } catch (InterruptedException e) {
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
       return;
@@ -61,7 +107,9 @@ public class TPM2dProver extends RatProverDriver {
     // check if message is from rat verifier
     if (!msg.hasIdscpRatVerifier()) {
       //unexpected message
-      LOG.warn("Unexpected message from FSM: Expected IdscpRatProver");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Unexpected message from FSM: Expected IdscpRatProver");
+      }
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
       return;
     }
@@ -79,15 +127,21 @@ public class TPM2dProver extends RatProverDriver {
     // check if wrapper contains expected rat challenge
     if (!tpm2dMessageWrapper.hasRatChallenge()) {
       //unexpected message
-      LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatChallenge");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatChallenge");
+      }
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
       return;
     }
 
-    LOG.debug("Get rat challenge from rat verifier");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Get rat challenge from rat verifier");
+    }
     Tpm2dRatChallenge challenge = tpm2dMessageWrapper.getRatChallenge();
 
-    LOG.debug("Requesting attestation from TPM ...");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Requesting attestation from TPM ...");
+    }
 
     // hash
     byte[] hash = TPM2dHelper.calculateHash(challenge.getNonce().toByteArray(),
@@ -115,7 +169,9 @@ public class TPM2dProver extends RatProverDriver {
     byte[] response = TpmMessageFactory.getAttestationResponseMessage(tpmResponse)
         .toByteArray();
 
-    LOG.debug("Send rat response to verifier");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Send rat response to verifier");
+    }
     fsmListener.onRatProverMessage(
         InternalControlMessage.RAT_PROVER_MSG,
         IdscpMessageFactory.getIdscpRatProverMessage(response)
@@ -124,7 +180,9 @@ public class TPM2dProver extends RatProverDriver {
     // wait for result
     try {
       msg = queue.take();
-      LOG.debug("Prover receives new message");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Prover receives new message");
+      }
     } catch (InterruptedException e) {
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
       return;
@@ -133,7 +191,9 @@ public class TPM2dProver extends RatProverDriver {
     // check if message is from rat verifier
     if (!msg.hasIdscpRatVerifier()) {
       //unexpected message
-      LOG.warn("Unexpected message from FSM: Expected IdscpRatProver");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Unexpected message from FSM: Expected IdscpRatProver");
+      }
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
       return;
     }
@@ -150,20 +210,28 @@ public class TPM2dProver extends RatProverDriver {
     // check if wrapper contains expected rat result
     if (!tpm2dMessageWrapper.hasRatResult()) {
       //unexpected message
-      LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatResult");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatResult");
+      }
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
       return;
     }
 
-    LOG.debug("Get rat challenge from rat verifier");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Get rat challenge from rat verifier");
+    }
     Tpm2dRatResult result = tpm2dMessageWrapper.getRatResult();
 
     // notify fsm
     if (result.getResult()) {
-      LOG.debug("Attestation succeed");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Attestation succeed");
+      }
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_OK, null);
     } else {
-      LOG.warn("Attestation failed");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Attestation failed");
+      }
       fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
     }
   }

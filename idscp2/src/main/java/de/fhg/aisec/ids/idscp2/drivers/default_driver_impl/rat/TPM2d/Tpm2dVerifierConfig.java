@@ -6,6 +6,11 @@ import java.net.URISyntaxException;
 import java.security.cert.Certificate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+/**
+ * A configuration class for TPM2d RatVerifier Driver
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class Tpm2dVerifierConfig {
 
   private Certificate localCertificate;

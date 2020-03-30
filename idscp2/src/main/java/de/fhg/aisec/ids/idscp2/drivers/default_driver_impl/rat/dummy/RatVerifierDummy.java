@@ -10,6 +10,11 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * A RatVerifier dummy that exchanges messages with a remote RatProver dummy
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
 public class RatVerifierDummy extends RatVerifierDriver {
     private static final Logger LOG = LoggerFactory.getLogger(RatVerifierDummy.class);
 
@@ -22,7 +27,9 @@ public class RatVerifierDummy extends RatVerifierDriver {
     @Override
     public void delegate(IDSCPv2.IdscpMessage message) {
         queue.add(message);
-        LOG.debug("Delegated to Verifier");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Delegated to Verifier");
+        }
     }
 
     @Override
@@ -31,9 +38,13 @@ public class RatVerifierDummy extends RatVerifierDriver {
         while (running){
             try {
                 sleep(1000);
-                LOG.debug("Verifier waits");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Verifier waits");
+                }
                 IDSCPv2.IdscpMessage m = queue.take();
-                LOG.debug("Verifier receives, send something");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Verifier receives, send something");
+                }
                 fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG,
                         IdscpMessageFactory.getIdscpRatVerifierMessage("test".getBytes()));
                 if (--countDown == 0)

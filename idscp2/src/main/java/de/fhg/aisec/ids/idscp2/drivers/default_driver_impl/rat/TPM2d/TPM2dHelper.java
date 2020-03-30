@@ -39,8 +39,10 @@ public class TPM2dHelper {
       if (certificate != null) {
         digest.update(certificate.getEncoded());
       } else {
-        LOG.warn(
-            "No client certificate available. Cannot bind nonce to public key to prevent masquerading attack. TLS misconfiguration!");
+        if (LOG.isWarnEnabled()) {
+          LOG.warn(
+              "No client certificate available. Cannot bind nonce to public key to prevent masquerading attack. TLS misconfiguration!");
+        }
       }
       return digest.digest();
     } catch (Exception e1) {

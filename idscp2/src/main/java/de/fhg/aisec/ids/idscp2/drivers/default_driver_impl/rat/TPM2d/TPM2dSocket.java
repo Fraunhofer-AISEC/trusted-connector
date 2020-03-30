@@ -7,6 +7,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * A TPM2d Socket for communication with the Trusted Platform Module
+ */
 public class TPM2dSocket extends Socket {
 
   private final DataInputStream is;

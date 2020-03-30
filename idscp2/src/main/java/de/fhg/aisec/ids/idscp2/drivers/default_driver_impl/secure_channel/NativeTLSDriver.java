@@ -23,6 +23,9 @@ import java.util.Arrays;
 public class NativeTLSDriver implements SecureChannelDriver {
     private static final Logger LOG = LoggerFactory.getLogger(NativeTLSDriver.class);
 
+    /*
+     * Asynchronous client connect to a TLS server
+     */
     @Override
     public void connect(IDSCPv2Settings settings, IDSCPv2Callback callback) {
         try {
@@ -37,6 +40,11 @@ public class NativeTLSDriver implements SecureChannelDriver {
         }
     }
 
+    /*
+     * Starting TLS Server
+     *
+     * return null on failure
+     */
     @Override
     public SecureServer listen(IDSCPv2Settings settings, IDSCPv2Callback configCallback,
                                IdscpConnectionListener idscpServerCallback) {

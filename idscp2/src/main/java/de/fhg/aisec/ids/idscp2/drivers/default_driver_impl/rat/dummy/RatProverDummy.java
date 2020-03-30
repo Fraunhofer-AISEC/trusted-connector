@@ -12,7 +12,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * A RatProver dummy, that sends two incoming messages from the remote rat verifier and also sends two messages
+ * A RatProver dummy that exchanges rat messages with a remote RatVerifier
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class RatProverDummy extends RatProverDriver {
     private static final Logger LOG = LoggerFactory.getLogger(RatProverDummy.class);
@@ -26,7 +28,9 @@ public class RatProverDummy extends RatProverDriver {
     @Override
     public void delegate(IdscpMessage message) {
         queue.add(message);
-        LOG.debug("Delegated to prover");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Delegated to prover");
+        }
     }
 
     @Override
@@ -37,9 +41,13 @@ public class RatProverDummy extends RatProverDriver {
                 sleep(1000);
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,
                         IdscpMessageFactory.getIdscpRatProverMessage("test".getBytes()));
-                LOG.debug("Prover waits");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Prover waits");
+                }
                 IDSCPv2.IdscpMessage m = queue.take();
-                LOG.debug("Prover receives, send something");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Prover receives, send something");
+                }
                 if (--countDown == 0)
                     break;
             } catch (InterruptedException e) {

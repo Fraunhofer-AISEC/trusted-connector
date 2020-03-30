@@ -30,8 +30,45 @@ import tss.tpm.TPMS_SIGNATURE_RSASSA;
 import tss.tpm.TPMT_SIGNATURE;
 import tss.tpm.TPM_ALG_ID;
 
+/**
+ * A TPM2d RatVerifier driver that verifies the remote peer's identity using TPM2d
+ */
 public class TPM2dVerifier extends RatVerifierDriver {
   private static final Logger LOG = LoggerFactory.getLogger(TPM2dVerifier.class);
+
+  /*
+   * ******************* Protocol *******************
+   *
+   * Verifier: (Challenger)
+   * -------------------------
+   * Generate NonceV
+   * create RatChallenge (NonceV, aType, pcr_mask)
+   * -------------------------
+   *
+   * Prover: (Responder)
+   * -------------------------
+   * get RatChallenge (NonceV, aType, pcr_mask)
+   * hash = calculateHash(nonceV, certV)
+   * req = generate RemoteToTPM2dRequest(hash, aType, pcr_mask)
+   * response = TPM2dToRemote = tpmSocket.attestationRequest(req)
+   * create AttestationResponse from tpm response
+   * -------------------------
+   *
+   * Verifier: (Responder)
+   * -------------------------
+   * get AttestationResponse
+   * hash = calculateHash(nonceV, certV)
+   * check signature(response, hash)
+   * check repo(aType, response, ttpUri)
+   * create RatResult
+   * -------------------------
+   *
+   * Prover: (Requester)
+   * -------------------------
+   * get AttestationResult
+   * -------------------------
+   *
+   */
 
   private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
   private Tpm2dVerifierConfig config = new Tpm2dVerifierConfig.Builder().build();
@@ -259,38 +296,4 @@ public class TPM2dVerifier extends RatVerifierDriver {
       return false;
     }
   }
-
-  /*
-   * ******************* New Protocol *******************
-   *
-   * Verifier: (Challenger)
-   * -------------------------
-   * Generate NonceV
-   * create RatChallenge (NonceV, aType, pcr_mask)
-   * -------------------------
-   *
-   * Prover: (Responder)
-   * -------------------------
-   * get RatChallenge (NonceV, aType, pcr_mask)
-   * hash = calculateHash(nonceV, certV)
-   * req = generate RemoteToTPM2dRequest(hash, aType, pcr_mask)
-   * response = TPM2dToRemote = tpmSocket.attestationRequest(req)
-   * create AttestationResponse from tpm response
-   * -------------------------
-   *
-   * Verifier: (Responder)
-   * -------------------------
-   * get AttestationResponse
-   * hash = calculateHash(nonceV, certV)
-   * check signature(response, hash)
-   * check repo(aType, response, ttpUri)
-   * create RatResult
-   * -------------------------
-   *
-   * Prover: (Requester)
-   * -------------------------
-   * get AttestationResult
-   * -------------------------
-   *
-   */
 }

@@ -103,15 +103,16 @@ public class TlsSessionVerificationHelper {
         }
       }
 
-      //toDo localhost is matched manually to 127.0.0.1 for testing.. a matching file ip <-> dns
-      // would be nicer in the future
-      // automatic dns resolving via DNS service is not ann option since we cannot trust the DNS
+      //toDo localhost is matched manually to 127.0.0.1 for testing..
+      // automatic dns resolving via DNS service is not an option since we cannot trust the DNS
       if (acceptedDnsNames.contains("localhost")) {
         acceptedIpAddresses.add("127.0.0.1");
       }
 
 
       if (isIpAddress(host)) {
+        //FIXME The server should provide a possibility to validate clients dnsNames against SANs in
+        // Client certificate to avoid MITMs. This is an open issue
         //check ip addresses RFC 2818 (Section 3.1)
         if (!acceptedIpAddresses.contains(host)) {
           throw new SSLPeerUnverifiedException("Hostname verification failed. Peer certificate does "

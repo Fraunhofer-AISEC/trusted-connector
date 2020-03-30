@@ -21,29 +21,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A TLS Client that notifies an IDSCPv2Configuration when a secure channel was created and the TLS handshake is done
- * The client is notified from an InputListenerThread when new data are available and transfer them to the
- * SecureChannelListener
- *
- * Developer API
- *
- * constructors:
- * TLSClient(IDSCPv2Settings, IDSCPv2Callback) initializes the TLS Socket and all TLS Security configurations like
- *                                              sslParameters (protocol, cipher, ..), trustStore, keyStore
- *
- * Methods:
- * connect(String host, int port) connect the client asynchronous to the server and starts the TLS handshake
- *
- * close()  disconnects the client
- *
- *
- * handshakeCompleted()         create a secureChannel, including this client; start inputListenerThread and transfer
- *                              the secureChannel to the IDSCPv2Configuration
- *
- * send(byte[] data)            send data to the server
- *
- * onMessage(int len, byte[] rawData)   is a callback function for the InputListenerThread, that is called when new
- *                                      data are available. Transfer them to the SecureChannelListener
+ * A TLS Client that notifies an IDSCPv2Configuration when a secure channel was created and the
+ * TLS handshake is done. The client is notified from an InputListenerThread when new data are
+ * available and transfer it to the SecureChannelListener
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -89,6 +69,8 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         clientSocket = socketFactory.createSocket();
 
         SSLSocket sslSocket = (SSLSocket) clientSocket;
+
+        //set TLS constraints
         SSLParameters sslParameters = sslSocket.getSSLParameters();
         sslParameters.setUseCipherSuitesOrder(false); //use server priority order
         sslParameters.setNeedClientAuth(true);
@@ -100,6 +82,9 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
 
+    /*
+     * Connect to TLS server and start TLS Handshake
+     */
     public void connect(String hostname, int port){
         SSLSocket sslSocket = (SSLSocket) clientSocket;
         if (sslSocket == null || sslSocket.isClosed()){
@@ -221,6 +206,9 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             return;
         }
 
+        //Create secure channel, register secure channel as message listener and provide it to
+        // IDSCPv2 Configuration.
+        //Start Input Listener
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();
