@@ -35,6 +35,8 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import javax.json.Json
+import javax.json.JsonArray
+import javax.json.JsonString
 import javax.json.JsonValue
 import kotlin.math.abs
 
@@ -178,7 +180,15 @@ class DockerCM : ContainerManager {
                 app.created = info.getString("Created")
                 app.status = ContainerStatus.valueOf(state.getString("Status").toUpperCase())
                 app.ports = ports.entries
-                        .map { e: Map.Entry<String, JsonValue> -> e.key + ":" + e.value.toString() }
+                        .map { e: Map.Entry<String, JsonValue> ->
+                            if (e.value is JsonArray) {
+                                e.key + " -> " + e.value.asJsonArray()[0].asJsonObject().let {
+                                    (it["HostIp"] as JsonString).string + ":" + (it["HostPort"] as JsonString).string
+                                }
+                            } else {
+                                e.key
+                            }
+                        }
                         .toList()
                 app.names = name
                 if (running) {
@@ -191,7 +201,7 @@ class DockerCM : ContainerManager {
                 app.owner = labels.getOrDefault("ids.owner", JsonValue.NULL).toString()
                 app.description = labels.getOrDefault("ids.description", JsonValue.NULL).toString()
                 app.labels = labels.entries.stream()
-                        .collect(Collectors.toMap({ it.key }, { it.value }))
+                        .collect(Collectors.toMap({ it.key }, { it.value as Any }))
                 return@map app
             } catch (e: IOException) {
                 LOG.error("Container iteration error occurred, skipping container with id " + c.containerId(), e)
