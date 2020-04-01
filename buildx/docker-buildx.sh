@@ -95,10 +95,8 @@ elif [[ ! -d "../karaf-assembly/build/assembly" ]]; then
   printf "################################################################################\e[0m\n\n"
 fi
 
-echo "Fetching project version from build-container via \"./gradlew properties\"..."
 # shellcheck disable=SC2155
 PROJECT_VERSION=$(cat ../version.txt)
-
 # Export var for buildx bake yaml resolution
 export PROJECT_VERSION
 printf "######################################################################\n"
