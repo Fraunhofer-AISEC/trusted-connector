@@ -1,28 +1,3 @@
-import java.util.regex.Pattern
-
-def getCommitRefName() {
-    String refName
-    if (System.getenv('CI_COMMIT_REF_NAME') != null) {
-        // try to fetch commit ref name (GitLab CI)
-        refName = System.getenv('CI_COMMIT_REF_NAME')
-    } else if (findProperty('dockerTag')) {
-        // Try fallback to dockerTag if ref name not available (local build)
-        refName = findProperty('dockerTag')
-    } else {
-        return null
-    }
-
-    if (refName == 'develop') {
-        return 'develop'
-    } else if (refName == 'master' || refName == 'latest') {
-        return 'latest'
-    } else if (Pattern.compile('^[0-9]+\\.[0-9]+\\.[0-9]+$').matcher(refName).matches()) {
-        return refName
-    } else {
-        return null
-    }
-}
-
 // Copy example and example-localhost to build directory
 task copyExample(type: Copy) {
     from (project.projectDir) {
@@ -38,21 +13,21 @@ task processTemplates(type: Copy) {
     from 'templates'
     include '**/*.yaml'
     into project.buildDir
-    expand(dockerTag: getCommitRefName())
-    inputs.property 'dockerTag', getCommitRefName()
+    expand(exampleTag: findProperty('exampleTag'))
+    inputs.property 'exampleTag', findProperty('exampleTag')
     inputs.dir('templates').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.cacheIf { true }
 }
 processTemplates.dependsOn copyExample
-processTemplates.onlyIf { getCommitRefName() != null }
+processTemplates.onlyIf { findProperty('exampleTag') != null }
 
 // Create ZIP archive with example and example-localhost, see task copyExample
 task zipExample(type: Zip) {
     from fileTree(dir: project.buildDir)
-    archiveFileName = "${projectDir}/trusted-connector-examples_${getCommitRefName()}.zip"
+    archiveFileName = "${projectDir}/trusted-connector-examples_${findProperty('exampleTag')}.zip"
 }
 zipExample.dependsOn processTemplates
-zipExample.onlyIf { getCommitRefName() != null }
+zipExample.onlyIf { findProperty('exampleTag') != null }
 processResources.dependsOn zipExample
 
 // Delete the redundant build directory after install or build, if executed
