@@ -20,7 +20,7 @@
 package de.fhg.aisec.ids.attestation;
 
 public class Start {
-  private static final String VERSION = "3.0.0";
+  private static final String VERSION = "3.0.1";
   private static final String URL = "rat-verify";
 
   private static String host = "127.0.0.1";
