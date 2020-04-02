@@ -18,4 +18,4 @@ COPY run.sh .
 RUN chmod +x run.sh
 
 ENTRYPOINT ["/run.sh"]
-CMD ["build", "check", "--no-daemon", "--parallel"]
+CMD ["build", "check", "--parallel"]
