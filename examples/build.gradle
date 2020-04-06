@@ -1,5 +1,8 @@
 // Copy example and example-localhost to build directory
 task copyExample(type: Copy) {
+    doFirst {
+        delete project.buildDir
+    }
     from (project.projectDir) {
         include 'example-*/**', 'tpmsim/tpmsim_data.tar', 'tpmsim/rootCA.crt', 'cert-stores/*'
         exclude 'example-idscp/example-client'
@@ -11,7 +14,7 @@ task copyExample(type: Copy) {
 // Overwrite docker compose files with evaluated templates to use latest docker tag
 task processTemplates(type: Copy) {
     from 'templates'
-    include '**/*.yaml'
+    include '**/.env'
     into project.buildDir
     expand(exampleTag: findProperty('exampleTag'))
     inputs.property 'exampleTag', findProperty('exampleTag')
