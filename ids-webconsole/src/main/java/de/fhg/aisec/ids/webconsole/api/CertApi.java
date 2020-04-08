@@ -28,6 +28,13 @@ import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 import io.swagger.annotations.*;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,12 +52,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -128,9 +129,6 @@ public class CertApi {
   @AuthorizationRequired
   public List<Cert> listCerts() {
     File truststore = getKeystoreFile(TRUSTSTORE_FILE);
-    if (truststore == null) {
-      throw new NotFoundException("Truststore not found");
-    }
     return getKeystoreEntries(truststore);
   }
 
@@ -315,10 +313,8 @@ public class CertApi {
       LOG.error(e.getMessage(), e);
     }
 
-    LOG.warn(
-        "Keystore/truststore file could not be found. This will likely result in an error. "
-            + fileName);
-    return null;
+    throw new NotFoundException(
+        "Keystore/truststore file could not be found. Cannot continue. Given filename: " + fileName);
   }
 
   /** Returns all entries (private keys and certificates) from a Java keystore. */
@@ -384,11 +380,12 @@ public class CertApi {
     return certs;
   }
 
+  @SuppressWarnings("SameParameterValue")
   private void doGenKeyPair(
       String alias,
       Identity spec,
       String keyAlgName,
-      int keysize,
+      int keySize,
       String sigAlgName,
       File keyStoreFile)
       throws InterruptedException, IOException {
@@ -399,27 +396,29 @@ public class CertApi {
      * as sun.security.* or oracle.*.
      */
     String[] keytoolCmd =
-        new String[] {
-          "keytool",
-          "-genkey",
-          "-alias",
-          alias,
-          "-keyalg",
-          keyAlgName,
-          "-keysize",
-          Integer.toString(keysize),
-          "-sigalg",
-          sigAlgName,
-          "-keystore",
-          keyStoreFile.getAbsolutePath(),
-          "-dname",
-          "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s
-              + ", C=" + spec.c,
-          "-storepass",
-          KEYSTORE_PWD,
-          "-keypass",
-          KEYSTORE_PWD
-        };
+            new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "keytool",
+                    "-genkey",
+                    "-alias",
+                    alias,
+                    "-keyalg",
+                    keyAlgName,
+                    "-keysize",
+                    Integer.toString(keySize),
+                    "-sigalg",
+                    sigAlgName,
+                    "-keystore",
+                    keyStoreFile.getAbsolutePath(),
+                    "-dname",
+                    "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s
+                            + ", C=" + spec.c,
+                    "-storepass",
+                    KEYSTORE_PWD,
+                    "-keypass",
+                    KEYSTORE_PWD
+            };
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     new ProcessExecutor().execute(keytoolCmd, bos, bos);
     LOG.debug("Keytool: " + new String(bos.toByteArray(), StandardCharsets.UTF_8));
