@@ -19,8 +19,8 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
-public interface WebsocketProducerConsumer {
+public interface WebSocketProducerConsumer {
 
   /** Gets the endpoint */
-  WebsocketEndpoint getEndpoint();
+  WebSocketEndpoint getEndpoint();
 }

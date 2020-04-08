@@ -21,9 +21,9 @@ package de.fhg.aisec.ids.camel.ids.server;
 
 public class DefaultNodeSynchronization implements NodeSynchronization {
 
-  private final WebsocketStore memoryStore;
+  private final WebSocketStore memoryStore;
 
-  public DefaultNodeSynchronization(WebsocketStore memoryStore) {
+  public DefaultNodeSynchronization(WebSocketStore memoryStore) {
     this.memoryStore = memoryStore;
   }
 

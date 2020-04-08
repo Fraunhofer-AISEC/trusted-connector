@@ -17,18 +17,12 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.ids.server;
+package de.fhg.aisec.ids.camel.ids;
 
-public final class WebsocketConstants {
+/** */
+public final class IdscpConstants {
+  public static final String WS_PROTOCOL = "idsclientplain";
+  public static final String WSS_PROTOCOL = "idsclient";
 
-  public static final int DEFAULT_PORT = 9292;
-  public static final String DEFAULT_HOST = "0.0.0.0";
-
-  public static final String CONNECTION_KEY = "websocket.connectionKey";
-  public static final String SEND_TO_ALL = "websocket.sendToAll";
-
-  public static final String WS_PROTOCOL = "ws";
-  public static final String WSS_PROTOCOL = "wss";
-
-  private WebsocketConstants() {}
+  private IdscpConstants() {}
 }

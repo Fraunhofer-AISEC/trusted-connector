@@ -17,17 +17,17 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.ids.client;
+package de.fhg.aisec.ids.camel.ids;
 
-/** */
-public final class WsConstants {
+public final class WebSocketConstants {
 
-  public static final String CONTENT_TYPE_JAVA_SERIALIZED_OBJECT =
-      "application/x-java-serialized-object";
-  public static final String CONTENT_TYPE_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+  public static final String DEFAULT_PORT = "9292";
+  public static final String DEFAULT_HOST = "0.0.0.0";
 
-  public static final String WS_PROTOCOL = "idsclientplain";
-  public static final String WSS_PROTOCOL = "idsclient";
+  public static final String CONNECTION_KEY = "websocket.connectionKey";
 
-  private WsConstants() {}
+  public static final String WS_PROTOCOL = "ws";
+  public static final String WSS_PROTOCOL = "wss";
+
+  private WebSocketConstants() {}
 }

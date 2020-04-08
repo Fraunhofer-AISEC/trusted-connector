@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
+import de.fhg.aisec.ids.camel.ids.WebSocketConstants;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -34,7 +35,6 @@ import org.eclipse.jetty.server.Handler;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The websocket component provides websocket endpoints for communicating with clients using
@@ -46,19 +46,18 @@ import java.util.Map;
   scheme = "idsserver",
   title = "IDS Server Socket",
   syntax = "idsserver:host:port/resourceUri",
-  consumerClass = WebsocketConsumer.class,
   label = "idsserver"
 )
-public class WebsocketEndpoint extends DefaultEndpoint {
+public class WebSocketEndpoint extends DefaultEndpoint {
 
-  private WebsocketComponent component;
-  private URI uri;
+  private final WebSocketComponent component;
+  private final URI uri;
   private List<Handler> handlers;
 
-  @UriPath(defaultValue = "0.0.0.0")
+  @UriPath(defaultValue = WebSocketConstants.DEFAULT_HOST)
   private String host;
 
-  @UriPath(defaultValue = "9292")
+  @UriPath(defaultValue = WebSocketConstants.DEFAULT_PORT)
   private Integer port;
 
   @UriPath
@@ -117,11 +116,10 @@ public class WebsocketEndpoint extends DefaultEndpoint {
   )
   private Integer attestationMask = 0;
 
-  public WebsocketEndpoint(
-      WebsocketComponent component,
-      String uri,
-      String resourceUri,
-      Map<String, Object> parameters) {
+  public WebSocketEndpoint(
+          WebSocketComponent component,
+          String uri,
+          String resourceUri) {
     super(uri, component);
     this.resourceUri = resourceUri;
     this.component = component;
@@ -133,37 +131,37 @@ public class WebsocketEndpoint extends DefaultEndpoint {
   }
 
   @Override
-  public WebsocketComponent getComponent() {
+  public WebSocketComponent getComponent() {
     ObjectHelper.notNull(component, "component");
-    return (WebsocketComponent) super.getComponent();
+    return (WebSocketComponent) super.getComponent();
   }
 
   @Override
   public Consumer createConsumer(Processor processor) throws Exception {
     ObjectHelper.notNull(component, "component");
-    WebsocketConsumer consumer = new WebsocketConsumer(this, processor);
+    WebSocketConsumer consumer = new WebSocketConsumer(this, processor);
     configureConsumer(consumer);
     return consumer;
   }
 
   @Override
   public Producer createProducer() {
-    return new WebsocketProducer(this);
+    return new WebSocketProducer(this);
   }
 
-  public void connect(WebsocketConsumer consumer) throws Exception {
+  public void connect(WebSocketConsumer consumer) throws Exception {
     component.connect(consumer);
   }
 
-  public void disconnect(WebsocketConsumer consumer) throws Exception {
+  public void disconnect(WebSocketConsumer consumer) throws Exception {
     component.disconnect(consumer);
   }
 
-  public void connect(WebsocketProducer producer) throws Exception {
+  public void connect(WebSocketProducer producer) throws Exception {
     component.connect(producer);
   }
 
-  public void disconnect(WebsocketProducer producer) throws Exception {
+  public void disconnect(WebSocketProducer producer) throws Exception {
     component.disconnect(producer);
   }
 
@@ -172,6 +170,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     return true;
   }
 
+  @SuppressWarnings("unused")
   public URI getUri() {
     return uri;
   }
@@ -208,6 +207,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
    * Timeout in millis when sending to a websocket channel. The default timeout is 30000 (30
    * seconds).
    */
+  @SuppressWarnings("unused")
   public void setSendTimeout(Integer sendTimeout) {
     this.sendTimeout = sendTimeout;
   }
@@ -216,11 +216,13 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     return uri.getScheme();
   }
 
+  @SuppressWarnings("unused")
   public String getPath() {
     return uri.getPath();
   }
 
   /** Whether to enable session support which enables HttpSession for each http request. */
+  @SuppressWarnings("unused")
   public void setSessionSupport(boolean support) {
     sessionSupport = support;
   }
@@ -237,6 +239,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     return attestation;
   }
 
+  @SuppressWarnings("unused")
   public void setAttestation(int i) {
     attestation = i;
   }
@@ -245,6 +248,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     return attestationMask;
   }
 
+  @SuppressWarnings("unused")
   public void setAttestationMask(int i) {
     attestationMask = i;
   }
@@ -253,6 +257,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
    * Set the buffer size of the websocketServlet, which is also the max frame byte size (default
    * 8192)
    */
+  @SuppressWarnings("unused")
   public void setBufferSize(Integer bufferSize) {
     this.bufferSize = bufferSize;
   }
@@ -265,6 +270,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
    * Set the time in ms that the websocket created by the websocketServlet may be idle before
    * closing. (default is 300000)
    */
+  @SuppressWarnings("unused")
   public void setMaxIdleTime(Integer maxIdleTime) {
     this.maxIdleTime = maxIdleTime;
   }
@@ -277,6 +283,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
    * Can be used to set the size in characters that the websocket created by the websocketServlet
    * may be accept before closing.
    */
+  @SuppressWarnings("unused")
   public void setMaxTextMessageSize(Integer maxTextMessageSize) {
     this.maxTextMessageSize = maxTextMessageSize;
   }
@@ -289,6 +296,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
    * Can be used to set the size in bytes that the websocket created by the websocketServlet may be
    * accept before closing. (Default is -1 - or unlimited)
    */
+  @SuppressWarnings("unused")
   public void setMaxBinaryMessageSize(Integer maxBinaryMessageSize) {
     this.maxBinaryMessageSize = maxBinaryMessageSize;
   }
@@ -301,6 +309,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
    * Can be used to set the minimum protocol version accepted for the websocketServlet. (Default 13
    * - the RFC6455 version)
    */
+  @SuppressWarnings("unused")
   public void setMinVersion(Integer minVersion) {
     this.minVersion = minVersion;
   }
@@ -309,6 +318,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
     return handlers;
   }
 
+  @SuppressWarnings("unused")
   public void setHandlers(List<Handler> handlers) {
     this.handlers = handlers;
   }
@@ -327,6 +337,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
   }
 
   /** The CORS allowed origins. Use * to allow all. */
+  @SuppressWarnings("unused")
   public void setAllowedOrigins(String allowedOrigins) {
     this.allowedOrigins = allowedOrigins;
   }
@@ -336,6 +347,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
   }
 
   /** Whether to enable CORS */
+  @SuppressWarnings("unused")
   public void setCrossOriginFilterOn(boolean crossOriginFilterOn) {
     this.crossOriginFilterOn = crossOriginFilterOn;
   }
@@ -345,6 +357,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
   }
 
   /** Context path for filtering CORS */
+  @SuppressWarnings("unused")
   public void setFilterPath(String filterPath) {
     this.filterPath = filterPath;
   }
@@ -354,6 +367,7 @@ public class WebsocketEndpoint extends DefaultEndpoint {
   }
 
   /** Name of the websocket channel to use */
+  @SuppressWarnings("unused")
   public void setResourceUri(String resourceUri) {
     this.resourceUri = resourceUri;
   }

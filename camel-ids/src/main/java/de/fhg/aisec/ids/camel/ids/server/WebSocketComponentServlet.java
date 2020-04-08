@@ -19,49 +19,36 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WebsocketComponentServlet extends WebSocketServlet {
+import java.util.Map;
+
+public class WebSocketComponentServlet extends WebSocketServlet {
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(WebsocketComponentServlet.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WebSocketComponentServlet.class);
 
   private final NodeSynchronization sync;
   private final Map<String, WebSocketFactory> socketFactories;
   private final String pathSpec;
 
-  private WebsocketConsumer consumer;
-  private static final ConcurrentMap<String, WebsocketConsumer> consumers =
-      new ConcurrentHashMap<>();
+  private WebSocketConsumer consumer;
 
-  public WebsocketComponentServlet(
+  public WebSocketComponentServlet(
       NodeSynchronization sync, String pathSpec, Map<String, WebSocketFactory> socketFactories) {
     this.sync = sync;
     this.socketFactories = socketFactories;
     this.pathSpec = pathSpec;
   }
 
-  public WebsocketConsumer getConsumer() {
+  public WebSocketConsumer getConsumer() {
     return consumer;
   }
 
-  public void setConsumer(WebsocketConsumer consumer) {
+  public void setConsumer(WebSocketConsumer consumer) {
     this.consumer = consumer;
-  }
-
-  public void connect(WebsocketConsumer consumer) {
-    LOG.debug("Connecting consumer: {}", consumer);
-    consumers.put(consumer.getPath(), consumer);
-  }
-
-  public void disconnect(WebsocketConsumer consumer) {
-    LOG.debug("Disconnecting consumer: {}", consumer);
-    consumers.remove(consumer.getPath());
   }
 
   @Override

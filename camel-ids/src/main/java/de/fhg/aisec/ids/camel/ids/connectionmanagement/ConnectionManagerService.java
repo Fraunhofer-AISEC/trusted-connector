@@ -23,14 +23,14 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint;
-import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.camel.ids.client.WsEndpoint;
-import de.fhg.aisec.ids.camel.ids.server.WebsocketComponent;
-import de.fhg.aisec.ids.camel.ids.server.WebsocketComponentServlet;
+import de.fhg.aisec.ids.camel.ids.server.WebSocketComponent;
+import de.fhg.aisec.ids.camel.ids.server.WebSocketComponentServlet;
+import org.osgi.service.component.annotations.Component;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.osgi.service.component.annotations.*;
 
 /**
  * Main entry point of the Connection Management Layer.
@@ -45,7 +45,7 @@ public class ConnectionManagerService implements ConnectionManager {
 
   @Override
   public List<IDSCPServerEndpoint> listAvailableEndpoints() {
-    return WebsocketComponent.getConnectors()
+    return WebSocketComponent.getConnectors()
         .entrySet()
         .stream()
         .map(
@@ -62,12 +62,12 @@ public class ConnectionManagerService implements ConnectionManager {
 
   @Override
   public List<IDSCPIncomingConnection> listIncomingConnections() {
-    return WebsocketComponent.getConnectors()
+    return WebSocketComponent.getConnectors()
         .values()
         .stream()
         .flatMap(
             connectorRef -> {
-              WebsocketComponentServlet servlet = connectorRef.getServlet();
+              WebSocketComponentServlet servlet = connectorRef.getServlet();
               // Servlet only present if an incoming connection exists. If null, do not collect
               // consumer information.
               if (servlet != null) {

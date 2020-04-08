@@ -20,18 +20,19 @@
 package de.fhg.aisec.ids.camel.ids.server;
 
 import de.fhg.aisec.ids.comm.CertificatePair;
-import java.security.cert.X509Certificate;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Default websocket factory. Used when no custom websocket is needed. */
-public class DefaultWebsocketFactory implements WebSocketFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocketFactory.class);
+import java.security.cert.X509Certificate;
+
+/** Default WebSocket factory. Used when no custom WebSocket is needed. */
+public class DefaultWebSocketFactory implements WebSocketFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(DefaultWebSocketFactory.class);
 
   private final CertificatePair certificatePair;
 
-  public DefaultWebsocketFactory(CertificatePair certificatePair) {
+  public DefaultWebSocketFactory(CertificatePair certificatePair) {
     this.certificatePair = certificatePair;
   }
 
@@ -41,7 +42,7 @@ public class DefaultWebsocketFactory implements WebSocketFactory {
       String protocol,
       String pathSpec,
       NodeSynchronization sync,
-      WebsocketConsumer consumer) {
+      WebSocketConsumer consumer) {
     // Create final, complete pair from the local (server) certificate ...
     CertificatePair finalPair = new CertificatePair(certificatePair);
     // ... plus the remote (client) certificate from the request

@@ -19,15 +19,16 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
+import de.fhg.aisec.ids.camel.ids.WebSocketConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
 
-public class WebsocketConsumer extends DefaultConsumer implements WebsocketProducerConsumer {
+public class WebSocketConsumer extends DefaultConsumer implements WebSocketProducerConsumer {
 
-  private final WebsocketEndpoint endpoint;
+  private final WebSocketEndpoint endpoint;
 
-  public WebsocketConsumer(WebsocketEndpoint endpoint, Processor processor) {
+  public WebSocketConsumer(WebSocketEndpoint endpoint, Processor processor) {
     super(endpoint, processor);
     this.endpoint = endpoint;
   }
@@ -44,12 +45,8 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
     super.doStop();
   }
 
-  public WebsocketEndpoint getEndpoint() {
+  public WebSocketEndpoint getEndpoint() {
     return endpoint;
-  }
-
-  public String getPath() {
-    return endpoint.getPath();
   }
 
   public int getAttestationType() {
@@ -69,7 +66,7 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
     final Exchange exchange = getEndpoint().createExchange();
 
     // set header and body
-    exchange.getIn().setHeader(WebsocketConstants.CONNECTION_KEY, connectionKey);
+    exchange.getIn().setHeader(WebSocketConstants.CONNECTION_KEY, connectionKey);
     exchange.getIn().setBody(message);
 
     // send exchange using the async routing engine

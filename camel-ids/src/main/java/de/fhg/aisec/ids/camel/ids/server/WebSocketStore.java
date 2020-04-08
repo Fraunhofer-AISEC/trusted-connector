@@ -19,10 +19,11 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
-import java.util.Collection;
 import org.apache.camel.Service;
 
-public interface WebsocketStore extends Service {
+import java.util.Collection;
+
+public interface WebSocketStore extends Service {
 
   void add(DefaultWebsocket ws);
 

@@ -26,9 +26,9 @@ import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.DatException;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.camel.ids.CamelComponent;
-import de.fhg.aisec.ids.api.tokenm.DatException;
 import de.fhg.aisec.ids.comm.CertificatePair;
 import de.fhg.aisec.ids.comm.server.ServerConfiguration;
 import de.fhg.aisec.ids.comm.ws.protocol.ProtocolState;
@@ -54,19 +54,18 @@ import java.util.UUID;
 public class DefaultWebsocket implements EndpointConfigListener {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultWebsocket.class);
 
-    private final WebsocketConsumer consumer;
+    private final WebSocketConsumer consumer;
     private final NodeSynchronization sync;
     private Session session;
     private String connectionKey;
     private final String pathSpec;
     private FSM idsFsm;
-    private CertificatePair certificatePair;
-    private boolean isTokenValidated = false;
+    private final CertificatePair certificatePair;
 
     public DefaultWebsocket(
             NodeSynchronization sync,
             String pathSpec,
-            WebsocketConsumer consumer,
+            WebSocketConsumer consumer,
             CertificatePair certificatePair) {
         this.sync = sync;
         this.consumer = consumer;
@@ -281,11 +280,6 @@ public class DefaultWebsocket implements EndpointConfigListener {
     // Observer update function, that is called by the subject when endpoint settings have changed
     @Override
     public void updateTokenValidation() {
-        if (!isTokenValidated) {
-            // Not relevant because initial validation was not successful yet
-            return;
-        }
-
         if (LOG.isInfoEnabled()) {
             LOG.info("Endpoint config for endpoint {}:{} has changed. Verify DynamicAttributeToken again",
                     consumer.getEndpoint().getHost(), consumer.getEndpoint().getPort());

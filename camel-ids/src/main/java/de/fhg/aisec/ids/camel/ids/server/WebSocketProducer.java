@@ -19,21 +19,21 @@
  */
 package de.fhg.aisec.ids.camel.ids.server;
 
+import de.fhg.aisec.ids.camel.ids.WebSocketConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.support.DefaultProducer;
-import org.asynchttpclient.netty.handler.StreamedResponsePublisher;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class WebsocketProducer extends DefaultProducer implements WebsocketProducerConsumer {
+public class WebSocketProducer extends DefaultProducer implements WebSocketProducerConsumer {
 
-  private WebsocketStore store;
-  private final WebsocketEndpoint endpoint;
+  private WebSocketStore store;
+  private final WebSocketEndpoint endpoint;
 
-  public WebsocketProducer(WebsocketEndpoint endpoint) {
+  public WebSocketProducer(WebSocketEndpoint endpoint) {
     super(endpoint);
     this.endpoint = endpoint;
   }
@@ -47,16 +47,15 @@ public class WebsocketProducer extends DefaultProducer implements WebsocketProdu
     }
 
     // look for connection key and get Websocket
-    String connectionKey = in.getHeader(WebsocketConstants.CONNECTION_KEY, String.class);
+    String connectionKey = in.getHeader(WebSocketConstants.CONNECTION_KEY, String.class);
     if (connectionKey != null) {
       String pathSpec = "";
       if (endpoint.getResourceUri() != null) {
-        pathSpec = WebsocketComponent.createPathSpec(endpoint.getResourceUri());
+        pathSpec = WebSocketComponent.createPathSpec(endpoint.getResourceUri());
       }
       DefaultWebsocket websocket = store.get(connectionKey + pathSpec);
       log.debug("Sending to connection key {} -> {}", connectionKey, message);
       Future<Void> future = sendMessage(websocket, message);
-      StreamedResponsePublisher sp;
       if (future != null) {
         int timeout = endpoint.getSendTimeout();
         future.get(timeout, TimeUnit.MILLISECONDS);
@@ -71,7 +70,7 @@ public class WebsocketProducer extends DefaultProducer implements WebsocketProdu
     }
   }
 
-  public WebsocketEndpoint getEndpoint() {
+  public WebSocketEndpoint getEndpoint() {
     return endpoint;
   }
 
@@ -103,17 +102,8 @@ public class WebsocketProducer extends DefaultProducer implements WebsocketProdu
   }
 
   // Store is set/unset upon connect/disconnect of the producer
-  public void setStore(WebsocketStore store) {
+  public void setStore(WebSocketStore store) {
     this.store = store;
   }
 
-  /** Called when a sleep is interrupted; allows derived classes to handle this case differently */
-  protected void handleSleepInterruptedException(InterruptedException e, Exchange exchange)
-      throws InterruptedException {
-    if (log.isDebugEnabled()) {
-      log.debug("Sleep interrupted, are we stopping? {}", isStopping() || isStopped());
-    }
-    Thread.currentThread().interrupt();
-    throw e;
-  }
 }

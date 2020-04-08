@@ -19,21 +19,21 @@
  */
 package de.fhg.aisec.ids.camel.ids.client;
 
-import static de.fhg.aisec.ids.camel.ids.server.WebsocketConstants.WSS_PROTOCOL;
-import static de.fhg.aisec.ids.camel.ids.server.WebsocketConstants.WS_PROTOCOL;
-
-import java.net.URI;
+import de.fhg.aisec.ids.camel.ids.IdscpConstants;
+import de.fhg.aisec.ids.camel.ids.WebSocketConstants;
 import org.apache.camel.component.ahc.AhcComponent;
 import org.apache.camel.component.ahc.AhcEndpoint;
+
+import java.net.URI;
 
 public class WsComponent extends AhcComponent {
 
   @Override
   protected String createAddressUri(String uri, String remaining) {
-    if (uri.startsWith("idsclientplain:")) {
-      return uri.replaceFirst("idsclientplain", WS_PROTOCOL);
-    } else if (uri.startsWith("idsclient:")) {
-      return uri.replaceFirst("idsclient", WSS_PROTOCOL);
+    if (uri.startsWith(IdscpConstants.WSS_PROTOCOL + ":")) {
+      uri = uri.replaceFirst(IdscpConstants.WSS_PROTOCOL, WebSocketConstants.WSS_PROTOCOL);
+    } else if (uri.startsWith(IdscpConstants.WS_PROTOCOL + ":")) {
+      uri = uri.replaceFirst(IdscpConstants.WS_PROTOCOL, WebSocketConstants.WS_PROTOCOL);
     }
     // Should not happen
     return uri;

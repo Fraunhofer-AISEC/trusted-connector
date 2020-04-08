@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.camel.ids.server;
 
 import de.fhg.aisec.ids.camel.ids.ProxyX509TrustManager;
+import de.fhg.aisec.ids.camel.ids.WebSocketConstants;
 import de.fhg.aisec.ids.comm.CertificatePair;
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
@@ -27,17 +28,18 @@ import org.apache.camel.SSLContextParametersAware;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.support.jsse.SSLContextParameters;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
@@ -53,8 +55,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class WebsocketComponent extends DefaultComponent implements SSLContextParametersAware {
-  protected static final Logger LOG = LoggerFactory.getLogger(WebsocketComponent.class);
+public class WebSocketComponent extends DefaultComponent implements SSLContextParametersAware {
+  protected static final Logger LOG = LoggerFactory.getLogger(WebSocketComponent.class);
   protected static final Map<String, ConnectorRef> CONNECTORS = new HashMap<>();
 
   protected Map<String, WebSocketFactory> socketFactories;
@@ -69,8 +71,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
   @Metadata(label = "advanced")
   protected ThreadPool threadPool;
 
-  @Metadata(defaultValue = "9292")
-  protected Integer port = 9292;
+  @Metadata(defaultValue = WebSocketConstants.DEFAULT_PORT)
+  protected Integer port = Integer.parseInt(WebSocketConstants.DEFAULT_PORT);
 
   @Metadata(label = "advanced")
   protected Integer minThreads;
@@ -78,47 +80,35 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
   @Metadata(label = "advanced")
   protected Integer maxThreads;
 
-  @Metadata(defaultValue = "0.0.0.0")
-  protected String host = "0.0.0.0";
-
-  @Metadata(label = "consumer")
-  protected String staticResources;
-
-  @Metadata(label = "security", secret = true)
-  protected String sslKeyPassword;
-
-  @Metadata(label = "security", secret = true)
-  protected String sslPassword;
-
-  @Metadata(label = "security", secret = true)
-  protected String sslKeystore;
+  @Metadata(defaultValue = WebSocketConstants.DEFAULT_HOST)
+  protected String host = WebSocketConstants.DEFAULT_HOST;
 
   /**
-   * Map for storing servlets. {@link WebsocketComponentServlet} is identified by pathSpec {@link
+   * Map for storing servlets. {@link WebSocketComponentServlet} is identified by pathSpec {@link
    * String}.
    */
-  private Map<String, WebsocketComponentServlet> servlets = new HashMap<>();
+  private final Map<String, WebSocketComponentServlet> servlets = new HashMap<>();
 
-  public class ConnectorRef {
+  public static class ConnectorRef {
     Server server;
     ServerConnector connector;
-    WebsocketComponentServlet servlet;
-    MemoryWebsocketStore memoryStore;
+    WebSocketComponentServlet servlet;
+    MemoryWebSocketStore memoryStore;
     AtomicInteger refCount = new AtomicInteger(1);
 
     ConnectorRef(
         Server server,
         ServerConnector connector,
-        WebsocketComponentServlet servlet,
-        MemoryWebsocketStore memoryStore) {
+        WebSocketComponentServlet servlet,
+        MemoryWebSocketStore memoryStore) {
       this.server = server;
       this.connector = connector;
       this.servlet = servlet;
       this.memoryStore = memoryStore;
     }
 
-    public int increment() {
-      return refCount.incrementAndGet();
+    public void increment() {
+      refCount.incrementAndGet();
     }
 
     public int decrement() {
@@ -129,11 +119,11 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       return refCount.get();
     }
 
-    public MemoryWebsocketStore getMemoryStore() {
+    public MemoryWebSocketStore getMemoryStore() {
       return memoryStore;
     }
 
-    public WebsocketComponentServlet getServlet() {
+    public WebSocketComponentServlet getServlet() {
       return servlet;
     }
 
@@ -142,15 +132,15 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  public WebsocketComponent() {
+  public WebSocketComponent() {
     this.setUseGlobalSslContextParameters(true);
     // this will automatically set up the ids handler factory
     this.setSocketFactories(new HashMap<>());
   }
 
   /** Connects the URL specified on the endpoint to the specified processor. */
-  public void connect(WebsocketProducerConsumer prodcon) throws Exception {
-    WebsocketEndpoint endpoint = prodcon.getEndpoint();
+  public void connect(WebSocketProducerConsumer prodcon) throws Exception {
+    WebSocketEndpoint endpoint = prodcon.getEndpoint();
 
     String connectorKey = getConnectorKey(endpoint);
 
@@ -187,7 +177,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
         // Apply CORS (http://www.w3.org/TR/cors/)
         applyCrossOriginFiltering(endpoint, context);
 
-        MemoryWebsocketStore memoryStore = new MemoryWebsocketStore();
+        MemoryWebSocketStore memoryStore = new MemoryWebSocketStore();
 
         // Don't provide a Servlet object as Producer/Consumer will create them later on
         connectorRef = new ConnectorRef(server, connector, null, memoryStore);
@@ -201,7 +191,6 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
         connectorRef.server.start();
 
         CONNECTORS.put(connectorKey, connectorRef);
-
       } else {
         connectorRef.increment();
       }
@@ -212,26 +201,24 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       }
 
       NodeSynchronization sync = new DefaultNodeSynchronization(connectorRef.memoryStore);
-      WebsocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
-      if (prodcon instanceof WebsocketConsumer) {
-        WebsocketConsumer consumer = (WebsocketConsumer) prodcon;
+      WebSocketComponentServlet servlet = addServlet(sync, prodcon, endpoint.getResourceUri());
+      if (prodcon instanceof WebSocketConsumer) {
+        WebSocketConsumer consumer = (WebSocketConsumer) prodcon;
         if (servlet.getConsumer() == null) {
           servlet.setConsumer(consumer);
         }
-        // register the consumer here
-        servlet.connect(consumer);
       }
-      if (prodcon instanceof WebsocketProducer) {
-        WebsocketProducer producer = (WebsocketProducer) prodcon;
+      if (prodcon instanceof WebSocketProducer) {
+        WebSocketProducer producer = (WebSocketProducer) prodcon;
         producer.setStore(connectorRef.memoryStore);
       }
     }
   }
 
   /** Disconnects the URL specified on the endpoint from the specified processor. */
-  public void disconnect(WebsocketProducerConsumer prodcon) throws Exception {
+  public void disconnect(WebSocketProducerConsumer prodcon) throws Exception {
     // If the connector is not needed anymore then stop it
-    WebsocketEndpoint endpoint = prodcon.getEndpoint();
+    WebSocketEndpoint endpoint = prodcon.getEndpoint();
     String connectorKey = getConnectorKey(endpoint);
 
     synchronized (CONNECTORS) {
@@ -254,11 +241,8 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
           // Camel controls the lifecycle of these entities so remove the
           // registered MBeans when Camel is done with the managed objects.
         }
-        if (prodcon instanceof WebsocketConsumer) {
-          connectorRef.servlet.disconnect((WebsocketConsumer) prodcon);
-        }
-        if (prodcon instanceof WebsocketProducer) {
-          ((WebsocketProducer) prodcon).setStore(null);
+        if (prodcon instanceof WebSocketProducer) {
+          ((WebSocketProducer) prodcon).setStore(null);
         }
       }
     }
@@ -274,7 +258,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     int port = extractPortNumber(remaining);
     String host = extractHostName(remaining);
 
-    WebsocketEndpoint endpoint = new WebsocketEndpoint(this, uri, remaining, parameters);
+    WebSocketEndpoint endpoint = new WebSocketEndpoint(this, uri, remaining);
 
     // prefer to use endpoint configured over component configured
     if (sslContextParameters == null) {
@@ -294,7 +278,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
   }
 
   protected void setWebSocketComponentServletInitialParameter(
-      ServletContextHandler context, WebsocketEndpoint endpoint) {
+      ServletContextHandler context, WebSocketEndpoint endpoint) {
     if (endpoint.getBufferSize() != null) {
       context.setInitParameter("bufferSize", endpoint.getBufferSize().toString());
     }
@@ -357,61 +341,16 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     return server;
   }
 
-  protected Server createStaticResourcesServer(
-      Server server, ServletContextHandler context, String home) throws Exception {
-
-    context.setContextPath("/");
-
-    SessionHandler sh = new SessionHandler();
-    context.setSessionHandler(sh);
-
-    if (home != null) {
-      String[] resources = home.split(":");
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(">>> Protocol found: {}, and resource: {}", resources[0], resources[1]);
-      }
-
-      if (resources[0].equals("classpath")) {
-        context.setBaseResource(
-            new JettyClassPathResource(getCamelContext().getClassResolver(), resources[1]));
-      } else if (resources[0].equals("file")) {
-        context.setBaseResource(Resource.newResource(resources[1]));
-      }
-      DefaultServlet defaultServlet = new DefaultServlet();
-      ServletHolder holder = new ServletHolder(defaultServlet);
-
-      // avoid file locking on windows
-      // http://stackoverflow.com/questions/184312/how-to-make-jetty-dynamically-load-static-pages
-      holder.setInitParameter("useFileMappedBuffer", "false");
-      context.addServlet(holder, "/");
-    }
-
-    server.setHandler(context);
-
-    return server;
-  }
-
-  protected Server createStaticResourcesServer(
-      ServletContextHandler context, String host, int port, String home) throws Exception {
-    Server server = new Server();
-    HttpConfiguration httpConfig = new HttpConfiguration();
-    ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-    connector.setHost(host);
-    connector.setPort(port);
-    server.addConnector(connector);
-    return createStaticResourcesServer(server, context, home);
-  }
-
-  protected WebsocketComponentServlet addServlet(
-      NodeSynchronization sync, WebsocketProducerConsumer prodcon, String resourceUri)
+  protected WebSocketComponentServlet addServlet(
+          NodeSynchronization sync, WebSocketProducerConsumer prodcon, String resourceUri)
       throws Exception {
 
     // Get Connector from one of the Jetty Instances to add WebSocket Servlet
-    WebsocketEndpoint endpoint = prodcon.getEndpoint();
+    WebSocketEndpoint endpoint = prodcon.getEndpoint();
     String key = getConnectorKey(endpoint);
     ConnectorRef connectorRef = getConnectors().get(key);
 
-    WebsocketComponentServlet servlet;
+    WebSocketComponentServlet servlet;
 
     if (connectorRef != null) {
       String pathSpec = createPathSpec(resourceUri);
@@ -433,13 +372,13 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  protected WebsocketComponentServlet createServlet(
+  protected WebSocketComponentServlet createServlet(
       NodeSynchronization sync,
       String pathSpec,
-      Map<String, WebsocketComponentServlet> servlets,
+      Map<String, WebSocketComponentServlet> servlets,
       ServletContextHandler handler) {
-    WebsocketComponentServlet servlet =
-        new WebsocketComponentServlet(sync, pathSpec, getSocketFactories());
+    WebSocketComponentServlet servlet =
+        new WebSocketComponentServlet(sync, pathSpec, getSocketFactories());
     servlets.put(pathSpec, servlet);
     ServletHolder servletHolder = new ServletHolder(servlet);
     servletHolder.getInitParameters().putAll(handler.getInitParams());
@@ -498,7 +437,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
       try {
         ProxyX509TrustManager.bindCertificatePair(sslContextParameters, true, certificatePair);
       } catch (GeneralSecurityException | IOException e) {
-        LOG.error("Failed to patch TrustManager for WebsocketComponent", e);
+        LOG.error("Failed to patch TrustManager for WebSocketComponent", e);
       }
       SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setSslContext(sslContextParameters.createSSLContext(getCamelContext()));
@@ -538,12 +477,12 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  private static String getConnectorKey(WebsocketEndpoint endpoint) {
+  private static String getConnectorKey(WebSocketEndpoint endpoint) {
     return endpoint.getProtocol() + ":" + endpoint.getHost() + ":" + endpoint.getPort();
   }
 
   private void applyCrossOriginFiltering(
-      WebsocketEndpoint endpoint, ServletContextHandler context) {
+          WebSocketEndpoint endpoint, ServletContextHandler context) {
     if (endpoint.isCrossOriginFilterOn()) {
       FilterHolder filterHolder = new FilterHolder();
       CrossOriginFilter filter = new CrossOriginFilter();
@@ -554,117 +493,12 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     }
   }
 
-  // Properties
-  // -------------------------------------------------------------------------
-
-  public String getStaticResources() {
-    return staticResources;
-  }
-
-  /**
-   * Set a resource path for static resources (such as .html files etc).
-   *
-   * <p>The resources can be loaded from classpath, if you prefix with <tt>classpath:</tt>,
-   * otherwise the resources is loaded from file system or from JAR files.
-   *
-   * <p>For example to load from root classpath use <tt>classpath:.</tt>, or
-   * <tt>classpath:WEB-INF/static</tt>
-   *
-   * <p>If not configured (eg <tt>null</tt>) then no static resource is in use.
-   */
-  public void setStaticResources(String staticResources) {
-    this.staticResources = staticResources;
-  }
-
-  public String getHost() {
-    return host;
-  }
-
-  /** The hostname. The default value is <tt>0.0.0.0</tt> */
-  public void setHost(String host) {
-    this.host = host;
-  }
-
-  public Integer getPort() {
-    return port;
-  }
-
-  /** The port number. The default value is <tt>9292</tt> */
-  public void setPort(Integer port) {
-    this.port = port;
-  }
-
-  public String getSslKeyPassword() {
-    return sslKeyPassword;
-  }
-
-  public String getSslPassword() {
-    return sslPassword;
-  }
-
-  public String getSslKeystore() {
-    return sslKeystore;
-  }
-
-  /** The password for the keystore when using SSL. */
-  public void setSslKeyPassword(String sslKeyPassword) {
-    this.sslKeyPassword = sslKeyPassword;
-  }
-
-  /** The password when using SSL. */
-  public void setSslPassword(String sslPassword) {
-    this.sslPassword = sslPassword;
-  }
-
-  /** The path to the keystore. */
-  public void setSslKeystore(String sslKeystore) {
-    this.sslKeystore = sslKeystore;
-  }
-
-  public Integer getMinThreads() {
-    return minThreads;
-  }
-
-  /**
-   * To set a value for minimum number of threads in server thread pool. MaxThreads/minThreads or
-   * threadPool fields are required due to switch to Jetty9. The default values for minThreads is 1.
-   */
-  public void setMinThreads(Integer minThreads) {
-    this.minThreads = minThreads;
-  }
-
-  public Integer getMaxThreads() {
-    return maxThreads;
-  }
-
-  /**
-   * To set a value for maximum number of threads in server thread pool. MaxThreads/minThreads or
-   * threadPool fields are required due to switch to Jetty9. The default values for maxThreads is 1
-   * + 2 * noCores.
-   */
-  public void setMaxThreads(Integer maxThreads) {
-    this.maxThreads = maxThreads;
-  }
-
   public ThreadPool getThreadPool() {
     return threadPool;
   }
 
-  /**
-   * To use a custom thread pool for the server. MaxThreads/minThreads or threadPool fields are
-   * required due to switch to Jetty9.
-   */
-  public void setThreadPool(ThreadPool threadPool) {
-    this.threadPool = threadPool;
-  }
-
   public SSLContextParameters getSslContextParameters() {
     return sslContextParameters;
-  }
-
-  /** To configure security using SSLContextParameters */
-  public void setSslContextParameters(SSLContextParameters sslContextParameters) {
-    this.sslContextParameters = sslContextParameters;
   }
 
   @Override
@@ -692,7 +526,7 @@ public class WebsocketComponent extends DefaultComponent implements SSLContextPa
     this.socketFactories = socketFactories;
 
     if (!this.socketFactories.containsKey("ids")) {
-      this.socketFactories.put("ids", new DefaultWebsocketFactory(certificatePair));
+      this.socketFactories.put("ids", new DefaultWebSocketFactory(certificatePair));
     }
   }
 

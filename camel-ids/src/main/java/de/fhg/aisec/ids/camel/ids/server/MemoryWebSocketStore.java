@@ -22,8 +22,8 @@ package de.fhg.aisec.ids.camel.ids.server;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MemoryWebsocketStore extends ConcurrentHashMap<String, DefaultWebsocket>
-    implements WebsocketStore {
+public class MemoryWebSocketStore extends ConcurrentHashMap<String, DefaultWebsocket>
+    implements WebSocketStore {
 
   private static final long serialVersionUID = -2826843758230613922L;
 
