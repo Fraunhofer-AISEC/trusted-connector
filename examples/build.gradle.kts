@@ -38,8 +38,9 @@ zipExample.dependsOn(processTemplates)
 tasks.processResources.configure { dependsOn(zipExample) }
 
 // Remove build directory after all tasks have been executed
+val buildDir: File = project.buildDir.absoluteFile
 gradle.taskGraph.whenReady {
-    val remainingTasks = HashSet(gradle.taskGraph.allTasks)
+    val remainingTasks = HashSet(gradle.taskGraph.allTasks.filter { it.path.startsWith(":examples") })
     remainingTasks.forEach { t ->
         t.doLast {
             remainingTasks.filter { it.state.skipped }.forEach {
@@ -47,7 +48,7 @@ gradle.taskGraph.whenReady {
             }
             remainingTasks.remove(t)
             if (remainingTasks.isEmpty()) {
-                delete(project.buildDir)
+                delete(buildDir)
             }
         }
     }
