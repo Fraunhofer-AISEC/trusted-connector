@@ -49,7 +49,11 @@ public interface InfoModel {
   @NonNull
   String getConnectorAsJsonLd();
 
-  /** Set static connector self-description as JSON-LD, or remove if "null" is passed */
+  /**
+   * Set static connector self-description as JSON-LD, or remove if "null" is passed
+   *
+   * @param jsonLd JSON-LD self-description to use for this connector
+   */
   void setConnectorByJsonLd(@Nullable String jsonLd);
 
   /**
@@ -60,6 +64,11 @@ public interface InfoModel {
   @NonNull
   String getDynamicAttributeToken();
 
-  /** Set Dynamic Attribute Token or remove if "null" is passed */
+  /**
+   * Set Dynamic Attribute Token or remove if "null" is passed
+   *
+   * @param dynamicAttributeToken The DAT to use for this connector
+   * @return Whether storing the DAT has been successful
+   */
   boolean setDynamicAttributeToken(@NonNull String dynamicAttributeToken);
 }

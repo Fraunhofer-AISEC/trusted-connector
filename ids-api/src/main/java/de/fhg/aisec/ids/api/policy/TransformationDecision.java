@@ -31,14 +31,15 @@ import java.util.Set;
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 public class TransformationDecision {
-  private Set<String> labelsToAdd;
-  private Set<String> labelsToRemove;
+  private final Set<String> labelsToAdd;
+  private final Set<String> labelsToRemove;
 
   public TransformationDecision() {
     this.labelsToAdd = new HashSet<>();
     this.labelsToRemove = new HashSet<>();
   }
 
+  @SuppressWarnings("unused")
   public TransformationDecision(Set<String> labelsToAdd, Set<String> labelsToRemove) {
     super();
     if (labelsToAdd == null) {
@@ -54,7 +55,7 @@ public class TransformationDecision {
   /**
    * Returns a (possibly empty, but never null) set of labels that must be added to a message.
    *
-   * @return
+   * @return Labels to add to the data in this processing step
    */
   public Set<String> getLabelsToAdd() {
     return labelsToAdd;
@@ -63,7 +64,7 @@ public class TransformationDecision {
   /**
    * Returns a (possibly empty, but never null) set of labels that must be removed from a message.
    *
-   * @return
+   * @return Labels to remove from the data in this processing step
    */
   public Set<String> getLabelsToRemove() {
     return labelsToRemove;
