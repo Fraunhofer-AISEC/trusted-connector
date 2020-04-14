@@ -16,5 +16,5 @@ dependencies {
 
     implementation("org.shredzone.acme4j", "acme4j-client", libraryVersions["acme"])
     implementation("org.shredzone.acme4j", "acme4j-utils", libraryVersions["acme"])
-    implementation("org.nanohttpd", "nanohttpd", "2.3.1")
+    implementation("org.nanohttpd", "nanohttpd", libraryVersions["nanohttpd"])
 }

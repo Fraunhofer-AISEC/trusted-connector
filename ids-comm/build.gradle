@@ -3,7 +3,7 @@ version = libraryVersions.idscp
 dependencies {
     providedByBundle(project(':ids-api')) { transitive = false }
 
-    providedByBundle(group: 'com.github.microsoft', name: 'TSS.Java', version: '0.3.0') {
+    providedByBundle(group: 'com.github.microsoft', name: 'TSS.Java', version: libraryVersions.tssJava) {
         // JNA not needed, because we do not directly communicate with the TPM via this library
         exclude group: 'net.java.dev.jna', module: 'jna'
     }
