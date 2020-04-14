@@ -46,9 +46,10 @@ task assembleKaraf(type: CrossPlatformExec) {
 assembleKaraf.dependsOn(parsePom)
 jar.dependsOn(assembleKaraf)
 
-// make sure, all sub projects have finished their install task
+// Wait for all relevant sub projects before executing assembly process
 rootProject.subprojects.findAll() {
-    if (it.name != project.name) {
+    if (it.name.startsWith("ids-") || it.name.startsWith("camel-")
+            || it.name.endsWith("-patch") || it.name.endsWith("-wrapper")) {
         assembleKaraf.dependsOn(it.tasks.install)
     }
 }
