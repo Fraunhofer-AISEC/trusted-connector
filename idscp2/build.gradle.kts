@@ -30,7 +30,7 @@ configure<IdeaModel> {
 }
 
 dependencies {
-    providedByBundle("com.github.microsoft", "TSS.Java", "0.3.0")
+    providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 
     providedByBundle("org.apache.logging.log4j", "log4j-core", libraryVersions["log4j"])
     providedByBundle("org.apache.logging.log4j", "log4j-slf4j-impl", libraryVersions["log4j"])
@@ -42,8 +42,8 @@ dependencies {
     providedByBundle("io.jsonwebtoken", "jjwt-impl", libraryVersions["jsonwebtoken"])
     providedByBundle("io.jsonwebtoken", "jjwt-jackson", libraryVersions["jsonwebtoken"])
     providedByBundle("io.jsonwebtoken", "jjwt-api", libraryVersions["jsonwebtoken"])
-    providedByBundle("org.json", "json", "20180813")
-    providedByBundle("org.bitbucket.b_c", "jose4j", "0.6.5")
+    providedByBundle("org.json", "json", libraryVersions["orgJson"])
+    providedByBundle("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
     providedByBundle("com.squareup.okhttp3", "okhttp", libraryVersions["okhttp"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
