@@ -30,7 +30,7 @@ task parsePom(type: Copy) {
     from (project.projectDir) {
         include 'pom.template.xml'
     }
-    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf,
+    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf, 'paxVersion': libraryVersions.pax,
         'brandingFirst': getBrandingAligned("Trusted Connector Console (${project.version}), " +
                 "Apache Karaf (${libraryVersions.karaf})"),
         'brandingSecond': getBrandingAligned("Fraunhofer AISEC ${new Date()[Calendar.YEAR].toString()}"))
