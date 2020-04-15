@@ -8,6 +8,11 @@ import de.fhg.aisec.ids.messages.IDSCPv2;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dMessageWrapper;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dRatResponse;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tss.tpm.*;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,14 +26,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tss.tpm.TPMS_ATTEST;
-import tss.tpm.TPMS_SIGNATURE_RSAPSS;
-import tss.tpm.TPMS_SIGNATURE_RSASSA;
-import tss.tpm.TPMT_SIGNATURE;
-import tss.tpm.TPM_ALG_ID;
 
 /**
  * A TPM2d RatVerifier driver that verifies the remote peer's identity using TPM2d
@@ -70,7 +67,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
    *
    */
 
-  private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
   private Tpm2dVerifierConfig config = new Tpm2dVerifierConfig.Builder().build();
 
   public TPM2dVerifier(){
@@ -121,7 +118,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
     }
 
     // check if response is from rat prover
-    if (!msg.hasIdscpRatProver()) {
+    if (!msg.getMessageCase().equals(IdscpMessage.MessageCase.IDSCPRATPROVER)) {
       //unexpected message
       LOG.warn("Unexpected message from FSM: Expected IdscpRatVerifier");
       fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, null);

@@ -5,17 +5,13 @@ import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.InternalControlMessage;
 import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
+import de.fhg.aisec.ids.messages.Tpm2dAttestation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import de.fhg.aisec.ids.messages.Tpm2dAttestation.RemoteToTpm2d;
-import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dMessageWrapper;
-import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dRatChallenge;
-import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dRatResult;
-import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dToRemote;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A TPM2d RatProver Driver implementation that proves its identity to a remote peer using TPM2d
@@ -59,7 +55,7 @@ public class TPM2dProver extends RatProverDriver {
    *
    */
 
-  private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
   private Tpm2dProverConfig config = new Tpm2dProverConfig.Builder().build();
 
   public TPM2dProver(){
@@ -105,7 +101,7 @@ public class TPM2dProver extends RatProverDriver {
     }
 
     // check if message is from rat verifier
-    if (!msg.hasIdscpRatVerifier()) {
+    if (!msg.getMessageCase().equals(IdscpMessage.MessageCase.IDSCPRATVERIFIER)) {
       //unexpected message
       if (LOG.isWarnEnabled()) {
         LOG.warn("Unexpected message from FSM: Expected IdscpRatProver");
@@ -189,7 +185,7 @@ public class TPM2dProver extends RatProverDriver {
     }
 
     // check if message is from rat verifier
-    if (!msg.hasIdscpRatVerifier()) {
+    if (!msg.getMessageCase().equals(IdscpMessage.MessageCase.IDSCPRATVERIFIER)) {
       //unexpected message
       if (LOG.isWarnEnabled()) {
         LOG.warn("Unexpected message from FSM: Expected IdscpRatProver");
