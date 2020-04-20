@@ -28,10 +28,9 @@ import java.util.List;
  */
 public interface ConnectionManager {
 
-  /** List currently installed connections. */
-  public List<IDSCPIncomingConnection> listIncomingConnections();
+  List<IDSCPIncomingConnection> listIncomingConnections();
 
-  public List<IDSCPOutgoingConnection> listOutgoingConnections();
+  List<IDSCPOutgoingConnection> listOutgoingConnections();
 
-  public List<IDSCPServerEndpoint> listAvailableEndpoints();
+  List<IDSCPServerEndpoint> listAvailableEndpoints();
 }

@@ -24,6 +24,8 @@
 
 			<process ref="mpOutProcessor" />
 
+			<!-- Required for test logging, otherwise stream is "empty" after log component -->
+			<convertBodyTo type="java.lang.String"/>
 			<log message="Test message multipart body:\n${body}" />
 
 			<process ref="mpInProcessor" />

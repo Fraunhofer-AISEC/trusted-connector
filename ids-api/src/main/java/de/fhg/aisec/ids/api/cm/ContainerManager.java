@@ -36,9 +36,9 @@ public interface ContainerManager {
    *
    * <p>One of docker, trust-X, none.
    *
-   * @return
+   * @return Version of the container management engine
    */
-  public String getVersion();
+  String getVersion();
 
   /**
    * List currently installed containers.
@@ -46,16 +46,17 @@ public interface ContainerManager {
    * <p>The respective docker command is: <code>docker ps -a</code>.
    *
    * @param onlyRunning If set to true, only currently running containers are displayed.
-   * @return
+   * @return List of containers
    */
-  public List<ApplicationContainer> list(boolean onlyRunning);
+  List<ApplicationContainer> list(boolean onlyRunning);
 
   /**
    * Wipes are container from disk, i.e. removes it irreversibly.
    *
    * @param containerID Hash of the container.
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public void wipe(final String containerID) throws NoContainerExistsException;
+  void wipe(final String containerID) throws NoContainerExistsException;
 
   /**
    * Starts a container.
@@ -64,10 +65,11 @@ public interface ContainerManager {
    *
    * <p>The container must already exist, otherwise an exception will be thrown.
    *
-   * @param containerID
-   * @param key
+   * @param containerID ID of the container to start
+   * @param key Key to start the container, if required by container management engine
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public void startContainer(final String containerID, final String key)
+  void startContainer(final String containerID, final String key)
       throws NoContainerExistsException;
 
   /**
@@ -81,18 +83,20 @@ public interface ContainerManager {
    *
    * <p>The container must already exist, otherwise an exception will be thrown.
    *
-   * @param containerID
+   * @param containerID ID of the container to stop
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public void stopContainer(final String containerID) throws NoContainerExistsException;
+  void stopContainer(final String containerID) throws NoContainerExistsException;
 
   /**
    * Restarts a container without stopping it first.
    *
    * <p>The container must already exist, otherwise an exception will be thrown.
    *
-   * @param containerID
+   * @param containerID ID of the container to restart
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public void restartContainer(final String containerID) throws NoContainerExistsException;
+  void restartContainer(final String containerID) throws NoContainerExistsException;
 
   /**
    * Retrieves configuration data about a container.
@@ -105,19 +109,21 @@ public interface ContainerManager {
    *
    * @param containerID ID of the container. If does not exist, a NoContainerExistsException will be
    *     thrown.
-   * @return
+   * @return Information about the queried container, in implementation-dependent format
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public String inspectContainer(final String containerID) throws NoContainerExistsException;
+  String inspectContainer(final String containerID) throws NoContainerExistsException;
 
   /**
    * Returns metadata associated with the service running in the container.
    *
    * <p>The data format returned depends on the meta data implementation, but will usually be RDF.
    *
-   * @param containerID
-   * @return
+   * @param containerID ID of the container to get metadata for
+   * @return An object with metadata about the container, in implementation-dependent format
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public Object getMetadata(final String containerID) throws NoContainerExistsException;
+  Object getMetadata(final String containerID) throws NoContainerExistsException;
 
   /**
    * Pulls an image from the online registry.
@@ -128,10 +134,11 @@ public interface ContainerManager {
    * <p>This method blocks until the image has been pulled or an exception has occurred. As this is
    * a long running operation, it should always be called in a separate thread.
    *
-   * @param image
-   * @return
+   * @param app Metadata about the container to be created and started with given image data
+   * @return ID of the container, if started successfully
+   * @throws NoContainerExistsException If the given container was not found.
    */
-  public Optional<String> pullImage(final ApplicationContainer app)
+  Optional<String> pullImage(final ApplicationContainer app)
       throws NoContainerExistsException;
 
   /**
@@ -154,7 +161,7 @@ public interface ContainerManager {
    * @param protocol TPC or UDP.
    * @param decision ALLOW, DENY, or DROP
    */
-  public void setIpRule(
+  void setIpRule(
       String containerID,
       Direction direction,
       int srcPort,

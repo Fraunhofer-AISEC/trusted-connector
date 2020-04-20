@@ -19,11 +19,12 @@
  */
 package de.fhg.aisec.ids.api.router;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Interface of internal routing manager inside the Core Platform.
@@ -44,8 +45,9 @@ public interface RouteManager {
   List<RouteObject> getRoutes();
 
   /**
-   * Returns a list of currently installed routes.
+   * Returns a RouteObject for a given route ID.
    *
+   * @param id The ID of the route to fetch
    * @return The queried route or null
    */
   @Nullable
@@ -54,7 +56,8 @@ public interface RouteManager {
   /**
    * Starts a route.
    *
-   * @param routeId
+   * @param routeId ID of the route to start
+   * @throws RouteException If starting the route failed
    */
   void startRoute(@NonNull String routeId) throws RouteException;
 
@@ -62,23 +65,23 @@ public interface RouteManager {
    * Sends a request to stop a route. Camel will try to gracefully shut down the route and deliver
    * pending exchanges.
    *
-   * @param routeId
-   * @throws Exception
+   * @param routeId ID of the route to stop
+   * @throws RouteException If stopping the route failed
    */
   void stopRoute(@NonNull String routeId) throws RouteException;
 
   /**
    * List all supported components, i.e. supported endpoint protocols.
    *
-   * @return
+   * @return List of supported components
    */
   @NonNull
   List<RouteComponent> listComponents();
 
   /**
-   * List all route endpoints, i.e. all URLs to which routes exist.
+   * List all route endpoints, i.e. all URIs of routes existing in loaded Camel contexts
    *
-   * @return
+   * @return Map of Camel context names to contained endpoint URIs
    */
   @NonNull
   Map<String, Collection<String>> getEndpoints();
@@ -120,8 +123,9 @@ public interface RouteManager {
    *
    * <p>Endpoint declarations must be supported by the underlying implementation.
    *
-   * @param routeId
+   * @param routeId ID of the route to delete
    */
+  @SuppressWarnings("unused")
   void delRoute(@NonNull String routeId);
 
   /**
@@ -132,6 +136,7 @@ public interface RouteManager {
    *
    * <p>For Apache Camel, this method will return the XML-based Camel DSL configuration file.
    *
+   * @param routeId ID of the route to retrieve the String representation for
    * @return String representation of the route
    */
   String getRouteAsString(@NonNull String routeId);
@@ -148,7 +153,7 @@ public interface RouteManager {
   /**
    * Returns aggregated runtime metrics of all installed routes.
    *
-   * @return map<k,v> where k is a string indicating the route id.
+   * @return Map&lt;k,v&gt; where k is a string indicating the route id.
    */
   @NonNull
   Map<String, RouteMetrics> getRouteMetrics();

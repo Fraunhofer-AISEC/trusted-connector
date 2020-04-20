@@ -12,6 +12,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <branding.first>${brandingFirst}</branding.first>
         <branding.second>${brandingSecond}</branding.second>
+        <versions.karaf>${karafVersion}</versions.karaf>
+        <versions.pax>${paxVersion}</versions.pax>
     </properties>
 
     <dependencies>

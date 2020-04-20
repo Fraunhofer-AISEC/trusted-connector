@@ -6,22 +6,22 @@ target "jdk-base" {
 
 target "build-container" {
   output = ["type=registry"]
-  cache-to = ["fraunhoferaisec/build-container:cache"]
-  cache-from = ["fraunhoferaisec/build-container:cache"]
+  cache-to = ["registry.netsec.aisec.fraunhofer.de/tc-build-container:cache"]
+  cache-from = ["registry.netsec.aisec.fraunhofer.de/tc-build-container:cache"]
   platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
 }
 
 target "core" {
   output = ["type=registry"]
-  cache-to = ["fraunhoferaisec/trusted-connector-core:cache"]
-  cache-from = ["fraunhoferaisec/trusted-connector-core:cache"]
+  cache-to = ["registry.netsec.aisec.fraunhofer.de/tc-core:cache"]
+  cache-from = ["registry.netsec.aisec.fraunhofer.de/tc-core:cache"]
   platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
 }
 
 target "tpmsim" {
   output = ["type=registry"]
-  cache-to = ["fraunhoferaisec/tpmsim:cache"]
-  cache-from = ["fraunhoferaisec/tpmsim:cache"]
+  cache-to = ["registry.netsec.aisec.fraunhofer.de/tc-tpmsim:cache"]
+  cache-from = ["registry.netsec.aisec.fraunhofer.de/tc-tpmsim:cache"]
   platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
 }
 
@@ -33,14 +33,14 @@ target "ttpsim" {
 
 target "example-idscp-consumer-app" {
   output = ["type=registry"]
-  cache-to = ["fraunhoferaisec/example-server:cache"]
-  cache-from = ["fraunhoferaisec/example-server:cache"]
+  cache-to = ["registry.netsec.aisec.fraunhofer.de/tc-example-server:cache"]
+  cache-from = ["registry.netsec.aisec.fraunhofer.de/tc-example-server:cache"]
   platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
 }
 
 target "example-idscp-provider-app" {
   output = ["type=registry"]
-  cache-to = ["fraunhoferaisec/example-client:cache"]
-  cache-from = ["fraunhoferaisec/example-client:cache"]
+  cache-to = ["registry.netsec.aisec.fraunhofer.de/tc-example-client:cache"]
+  cache-from = ["registry.netsec.aisec.fraunhofer.de/tc-example-client:cache"]
   platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
 }

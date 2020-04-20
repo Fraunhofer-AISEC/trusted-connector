@@ -5,14 +5,14 @@ dependencies {
     bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
 
     providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
-	providedByFeature group: 'org.apache.camel', name: 'camel-http4', version: '3.0.0-M4'
+	providedByFeature group: 'org.apache.camel', name: 'camel-http4', version: libraryVersions.camelHttp4
 
     compileOnly group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
 
     providedByBundle group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: libraryVersions.httpcore
 	providedByBundle group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: libraryVersions.httpclient
     
-    providedByBundle group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
+    providedByBundle group: 'commons-fileupload', name: 'commons-fileupload', version: libraryVersions.commonsFileUpload
 
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j

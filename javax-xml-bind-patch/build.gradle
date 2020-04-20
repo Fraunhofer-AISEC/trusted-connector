@@ -4,5 +4,5 @@ dependencies {
     implementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
     implementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
 
-    implementation group: 'javax.xml.ws', name: 'jaxws-api', version: '2.3.1'
+    implementation group: 'javax.xml.ws', name: 'jaxws-api', version: libraryVersions.jaxwsApi
 }

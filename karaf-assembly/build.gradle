@@ -30,7 +30,7 @@ task parsePom(type: Copy) {
     from (project.projectDir) {
         include 'pom.template.xml'
     }
-    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf,
+    expand('projectVersion': project.version, 'karafVersion': libraryVersions.karaf, 'paxVersion': libraryVersions.pax,
         'brandingFirst': getBrandingAligned("Trusted Connector Console (${project.version}), " +
                 "Apache Karaf (${libraryVersions.karaf})"),
         'brandingSecond': getBrandingAligned("Fraunhofer AISEC ${new Date()[Calendar.YEAR].toString()}"))
@@ -46,9 +46,11 @@ task assembleKaraf(type: CrossPlatformExec) {
 assembleKaraf.dependsOn(parsePom)
 jar.dependsOn(assembleKaraf)
 
-// make sure, all sub projects have finished their install task
+// Wait for all relevant sub projects before executing assembly process
 rootProject.subprojects.findAll() {
-    if (it.name != project.name) {
+    if (it.name.startsWith("ids-") || it.name.startsWith("camel-")
+            || it.name.endsWith("-patch") || it.name.endsWith("-wrapper")
+            || it.name == "karaf-features-ids") {
         assembleKaraf.dependsOn(it.tasks.install)
     }
 }

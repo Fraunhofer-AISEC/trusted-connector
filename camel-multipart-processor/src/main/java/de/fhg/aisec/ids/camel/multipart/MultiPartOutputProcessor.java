@@ -20,8 +20,6 @@
 package de.fhg.aisec.ids.camel.multipart;
 
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
-import java.io.InputStream;
-import java.util.UUID;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.http.entity.ContentType;
@@ -29,6 +27,10 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /**
  * The MultiPartOutputProcessor will read the Exchange's header "ids" (if present) and the
@@ -123,14 +125,23 @@ public class MultiPartOutputProcessor implements Processor {
         new StringBody(rdfHeader, ContentType.APPLICATION_JSON));
 
     // Get the Exchange body and turn it into the second part named "payload"
-    InputStream payload = exchange.getIn().getBody(InputStream.class);
-    if (payload != null) {
-      multipartEntityBuilder.addPart(
-          MultiPartConstants.MULTIPART_PAYLOAD,
-          new InputStreamBody(
-              payload,
-              ContentType.create(
-                  exchange.getIn().getHeader("Content-Type").toString().split(";")[0])));
+    final var contentTypeString = exchange.getIn().getHeader("Content-Type");
+    if (contentTypeString != null) {
+      InputStream payload = exchange.getIn().getBody(InputStream.class);
+      if (payload != null) {
+        multipartEntityBuilder.addPart(
+            MultiPartConstants.MULTIPART_PAYLOAD,
+            new InputStreamBody(
+                payload,
+                ContentType.create(exchange.getIn().getHeader("Content-Type").toString().split(";")[0])));
+      }
+    } else {
+      String payload = exchange.getIn().getBody(String.class);
+      if (payload != null) {
+        multipartEntityBuilder.addPart(
+            MultiPartConstants.MULTIPART_PAYLOAD,
+            new StringBody(payload, ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), StandardCharsets.UTF_8)));
+      }
     }
 
     // Remove current Content-Type header before setting the new one

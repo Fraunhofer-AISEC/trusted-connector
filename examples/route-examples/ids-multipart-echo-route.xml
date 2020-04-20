@@ -28,8 +28,9 @@
 
             <log message="Test message header:\n${headers.idsMultipartHeader}" />
             <log message="Test message content type:\n${header[Content-Type]}" />
-            <!-- Enabling this will read the stream, causing the echo route to output no payload! -->
-            <!--<log message="Test message payload:\n${body}" />-->
+            <!-- Required for test logging, otherwise stream is "empty" after log component -->
+            <convertBodyTo type="java.lang.String"/>
+            <log message="Test message payload:\n${body}" />
 
             <process ref="mpOutProcessor" />
 

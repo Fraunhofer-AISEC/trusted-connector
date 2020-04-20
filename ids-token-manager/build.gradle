@@ -1,13 +1,3 @@
-apply plugin: 'com.google.protobuf'
-apply plugin: 'idea'
-
-idea {
-    module {
-        // mark as generated sources for IDEA
-        generatedSourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
-    }
-}
-
 dependencies {
     providedByBundle(project(':ids-api')) { transitive = false }
 
@@ -21,8 +11,8 @@ dependencies {
     providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
     providedByBundle group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
     providedByBundle group: 'com.squareup.okio', name: 'okio', version: libraryVersions.okio
-    providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.5'
-    providedByBundle group: 'org.json', name: 'json', version: '20180813'
+    providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: libraryVersions.jose4j
+    providedByBundle group: 'org.json', name: 'json', version: libraryVersions.orgJson
 
     testImplementation group: 'junit', name: 'junit'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito

@@ -23,9 +23,9 @@ dependencies {
     providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     // Provided dependency of docker-java-api
-    providedByBundle group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
+    providedByBundle group: 'org.glassfish', name: 'javax.json', version: libraryVersions.javaxJson
     // Required until our library PR has been accepted
-    providedByBundle(group: 'com.amihaiemil.web', name: 'docker-java-api', version: '0.0.11') {
+    providedByBundle(group: 'com.amihaiemil.web', name: 'docker-java-api', version: libraryVersions.dockerJavaApi) {
         exclude group: 'com.github.jnr', module: 'jnr-unixsocket'
     }
 
