@@ -19,19 +19,20 @@
  */
 package de.fhg.aisec.ids.camel.multipart;
 
-import static de.fhg.aisec.ids.camel.multipart.MultiPartConstants.MULTIPART_HEADER;
-import static de.fhg.aisec.ids.camel.multipart.MultiPartConstants.MULTIPART_PAYLOAD;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.UploadContext;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUpload;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.UploadContext;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+
+import static de.fhg.aisec.ids.camel.multipart.MultiPartConstants.MULTIPART_HEADER;
+import static de.fhg.aisec.ids.camel.multipart.MultiPartConstants.MULTIPART_PAYLOAD;
 
 public class MultiPartStringParser implements UploadContext {
 
@@ -41,12 +42,15 @@ public class MultiPartStringParser implements UploadContext {
   private InputStream payload;
   private String payloadContentType;
 
-  MultiPartStringParser(InputStream multipartInput) throws FileUploadException, IOException {
+  MultiPartStringParser(final InputStream multipartInput) throws FileUploadException, IOException {
     this.multipartInput = multipartInput;
-    this.multipartInput.mark(10240);
+    multipartInput.mark(10240);
     try (BufferedReader reader =
         new BufferedReader(new InputStreamReader(multipartInput, StandardCharsets.UTF_8))) {
       String boundaryLine = reader.readLine();
+      if (boundaryLine == null) {
+        throw new IOException("Message body appears to be empty, expected multipart boundary.");
+      }
       this.boundary = boundaryLine.substring(2).trim();
       this.multipartInput.reset();
       for (FileItem i : new FileUpload(new DiskFileItemFactory()).parseRequest(this)) {
