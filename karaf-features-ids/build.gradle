@@ -38,7 +38,7 @@ dependencies {
 
 karaf {
     features {
-        xsdVersion  = '1.2.0'
+        xsdVersion  = '1.3.0'
         // it seems to be best practice to include the version in the feature repository as well
         name = "ids-${project.version}"
         version = project.version
@@ -54,15 +54,12 @@ karaf {
             description = 'IDS Feature'
 
             // only specifiy the dependencies that will be provided by bundles, the rest will be specified via features
-            //noinspection GroovyAssignabilityCheck
             configurations(*project.ext.bundleConfigurations)
 
             // standard feature, but we need to explicitly state it here so that it gets installed in our bare Karaf
-            //noinspection GroovyAssignabilityCheck
             feature 'jetty'
 
             // CXF for REST APIs
-            //noinspection GroovyAssignabilityCheck
             feature 'cxf-jaxrs'
             feature 'cxf-jackson'
 
@@ -71,30 +68,21 @@ karaf {
              Notice: This should actually be a conditional dependency, only if shell is available.
              however the karaf assemble plugin does not seem to resolve these conditions during packaging.
             */
-            //noinspection GroovyAssignabilityCheck
             feature 'cxf-commands'
 
 		    // For Web Application Bundles, such as our WebConsole
-            //noinspection GroovyAssignabilityCheck
             feature 'war'
 
-            // Camel for routing
-            //noinspection GroovyAssignabilityCheck
-		    feature 'camel-jackson'
-            //noinspection GroovyAssignabilityCheck
-		    feature 'camel-milo'
-            //noinspection GroovyAssignabilityCheck
-		    feature 'camel-cxf'
-            //noinspection GroovyAssignabilityCheck
-		    feature 'camel-ahc'
-            //noinspection GroovyAssignabilityCheck
+            // Features for Apache Camel routing
+            feature 'camel-jackson'
+            feature 'camel-milo'
+            feature 'camel-cxf'
+            feature 'camel-ahc'
             feature 'camel-http'
-            //noinspection GroovyAssignabilityCheck
             feature 'camel-jetty'
-            //noinspection GroovyAssignabilityCheck
             feature 'camel-paho'
-            //noinspection GroovyAssignabilityCheck
             //feature 'camel-mqtt'
+            feature 'camel-jsonpath'
 
             // start our bundles a lit bit later
             bundle ('de.fhg.aisec.ids') {
