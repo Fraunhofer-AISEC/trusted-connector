@@ -43,6 +43,10 @@ parsePom.inputs.property('karafVersion', libraryVersions.karaf)
 task assembleKaraf(type: CrossPlatformExec) {
     commandLine "./mvnw", "--no-transfer-progress", "clean", "package"
 }
+// Sometimes required to fix an error caused by a non-existing folder (maybe caused by mvn clean)
+assembleKaraf.doLast {
+    mkdir("${project.buildDir}/classes/kotlin/test")
+}
 assembleKaraf.dependsOn(parsePom)
 jar.dependsOn(assembleKaraf)
 
