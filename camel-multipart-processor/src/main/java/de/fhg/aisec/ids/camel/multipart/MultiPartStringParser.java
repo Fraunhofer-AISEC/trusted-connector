@@ -24,6 +24,8 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.UploadContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import static de.fhg.aisec.ids.camel.multipart.MultiPartConstants.MULTIPART_PAYL
 
 public class MultiPartStringParser implements UploadContext {
 
+  private static final Logger LOG = LoggerFactory.getLogger(MultiPartStringParser.class);
   private final InputStream multipartInput;
   private final String boundary;
   private String header;
@@ -55,11 +58,20 @@ public class MultiPartStringParser implements UploadContext {
       this.multipartInput.reset();
       for (FileItem i : new FileUpload(new DiskFileItemFactory()).parseRequest(this)) {
         String fieldName = i.getFieldName();
+        if (LOG.isTraceEnabled()) {
+          LOG.trace("Found multipart field with name \"{}\"", fieldName);
+        }
         if (MULTIPART_HEADER.equals(fieldName)) {
           header = i.getString();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Found header:\n{}", header);
+          }
         } else if (MULTIPART_PAYLOAD.equals(fieldName)) {
           payload = i.getInputStream();
           payloadContentType = i.getContentType();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Found body with Content-Type \"{}\"", payloadContentType);
+          }
         } else {
           throw new IOException("Unknown multipart field name detected: " + fieldName);
         }
