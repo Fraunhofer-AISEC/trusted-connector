@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api;
+package de.fhg.aisec.ids.assembly;
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
@@ -47,7 +47,7 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class AssemblyTestIT extends KarafTestSupport {
+public class AssemblyIT extends KarafTestSupport {
 
   @Inject
   @Filter(timeout = 30000)
