@@ -19,91 +19,75 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import de.fhg.aisec.ids.api.acme.AcmeClient;
 import de.fhg.aisec.ids.api.conm.ConnectionManager;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
-import org.apache.karaf.features.BootFinished;
-import org.apache.karaf.features.FeaturesService;
-import org.junit.Ignore;
+import org.apache.karaf.itests.KarafTestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
-import org.ops4j.pax.exam.ProbeBuilder;
-import org.ops4j.pax.exam.TestProbeBuilder;
 import org.ops4j.pax.exam.junit.PaxExam;
-import org.ops4j.pax.exam.options.MavenUrlReference;
+import org.ops4j.pax.exam.karaf.options.KarafDistributionBaseConfigurationOption;
+import org.ops4j.pax.exam.karaf.options.KarafDistributionOption;
+import org.ops4j.pax.exam.karaf.options.LogLevelOption;
+import org.ops4j.pax.exam.options.MavenArtifactUrlReference;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
-import org.ops4j.pax.exam.spi.reactors.PerSuite;
+import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.ops4j.pax.exam.CoreOptions.junitBundles;
-import static org.ops4j.pax.exam.CoreOptions.maven;
-import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.*;
 
-@Ignore("Broken with Java 11, Pax Exam complains that container doesn't come up although it has been tested OK.")
 @RunWith(PaxExam.class)
-@ExamReactorStrategy(PerSuite.class)
-public class AssemblyTestIT {
-
-  @Inject protected BundleContext bundleContext;
-  @Inject protected FeaturesService featuresService;
-  @Inject protected BootFinished bootFinished;
+@ExamReactorStrategy(PerClass.class)
+public class AssemblyTestIT extends KarafTestSupport {
 
   @Inject
   @Filter(timeout = 30000)
-  private ConnectionManager conm;
-
-  @Inject
-  @Filter(timeout = 30000)
-  private AcmeClient acme;
+  private ConnectionManager connectionManager;
 
   @Inject
   @Filter(timeout = 30000)
   private Settings settings;
 
-  @ProbeBuilder
-  public TestProbeBuilder probeConfiguration(TestProbeBuilder probe) {
-    probe.setHeader(
-        Constants.DYNAMICIMPORT_PACKAGE, "*,org.apache.felix.service.*;status=provisional");
-    return probe;
+  @Override
+  public MavenArtifactUrlReference getKarafDistribution() {
+    return new MavenArtifactUrlReference() {
+      @Override
+      public String getURL() {
+        try {
+          return new File("build/karaf-assembly-" + System.getProperty("project.version") + ".tar.gz")
+              .toURI().toURL().toString();
+        } catch (MalformedURLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 
   @Configuration
-  public Option[] config() throws MalformedURLException {
-    MavenUrlReference camelRepo =
-        maven()
-            .groupId("org.apache.camel.karaf")
-            .artifactId("apache-camel")
-            .classifier("features")
-            .type("xml")
-            .version("2.21.2");
-    MavenUrlReference idsRepo =
-        maven()
-            .groupId("de.fhg.aisec.ids")
-            .artifactId("karaf-features-ids")
-            .classifier("features")
-            .type("xml")
-            .version(System.getProperty("project.version"));
-    File f = new File("build/karaf-assembly-" + System.getProperty("project.version") + ".tar.gz");
-    return new Option[] {
-      karafDistributionConfiguration()
-          .frameworkUrl(f.toURI().toURL().toString())
-          .unpackDirectory(new File("build/exam"))
-          .useDeployFolder(false),
-      keepRuntimeFolder(),
-      features(idsRepo, "ids"),
-      junitBundles()
-    };
+  public Option[] config() {
+    final var options = new LinkedList<>(Arrays.asList(super.config()));
+    // Modify distribution config
+    ((KarafDistributionBaseConfigurationOption) options.get(0))
+        .unpackDirectory(new File("build/exam"))
+        .useDeployFolder(false);
+    // Fix log level
+    options.replaceAll(o -> {
+      if (o instanceof LogLevelOption) {
+        return KarafDistributionOption.logLevel(LogLevelOption.LogLevel.TRACE);
+      } else {
+        return o;
+      }
+    });
+    return options.toArray(new Option[0]);
   }
 
   @Test
@@ -121,8 +105,8 @@ public class AssemblyTestIT {
 
   @Test
   public void testConnectionManager() {
-    assertNotNull(conm.listAvailableEndpoints());
-    assertNotNull(conm.listIncomingConnections());
-    assertNotNull(conm.listOutgoingConnections());
+    assertNotNull(connectionManager.listAvailableEndpoints());
+    assertNotNull(connectionManager.listIncomingConnections());
+    assertNotNull(connectionManager.listOutgoingConnections());
   }
 }

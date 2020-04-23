@@ -85,5 +85,9 @@ wsRsApi: "2.1"
 auth0Jwt: "3.8.2"
 swagger: "1.5.18"
 
-# For OSGi integration tests
-paxExam: "4.13.1"
+# Required for PaxExam integration tests
+paxExam: "4.13.3"
+# 4.x versions of awaitility are not supported because of old ServiceMix Hamcrest version
+awaitility: "3.1.6"
+servicemixHamcrest: "1.3_1"
+javaxAnnotation: "1.3.2"
