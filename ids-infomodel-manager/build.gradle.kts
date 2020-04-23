@@ -18,7 +18,4 @@ dependencies {
     infomodelBundle("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
 
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
-
-    compileOnly("org.apache.logging.log4j", "log4j-core", libraryVersions["log4j"])
-    compileOnly("org.apache.logging.log4j", "log4j-slf4j-impl", libraryVersions["log4j"])
 }

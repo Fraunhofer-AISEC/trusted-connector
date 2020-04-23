@@ -16,8 +16,5 @@ dependencies {
         exclude("org.jetbrains.kotlin", "*")
     }
 
-    providedByBundle("org.apache.logging.log4j", "log4j-core", libraryVersions["log4j"])
-    providedByBundle("org.apache.logging.log4j", "log4j-slf4j-impl", libraryVersions["log4j"])
-
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
 }

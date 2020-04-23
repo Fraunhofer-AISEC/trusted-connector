@@ -107,6 +107,9 @@ subprojects {
         // BOM for pax, for jetty, etc.
         bom group: 'org.ops4j.pax', name: 'web', version: libraryVersions.pax
 
+        // Logging API
+        providedByBundle group: 'org.slf4j', name: 'slf4j-simple', version: libraryVersions.slf4j
+
         // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
         compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
 
@@ -116,13 +119,6 @@ subprojects {
         testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
         testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
         testImplementation group: 'com.sun.activation', name: 'javax.activation', version: libraryVersions.jaxActivation
-
-        testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:${libraryVersions.paxExam}"
-        testImplementation "org.ops4j.pax.exam:pax-exam-junit4:${libraryVersions.paxExam}"
-        testImplementation "org.ops4j.pax.exam:pax-exam:${libraryVersions.paxExam}"
-        testImplementation "org.ops4j.pax.url:pax-url-aether:2.4.3"
-        testImplementation "javax.inject:javax.inject:1"
-        testImplementation "org.slf4j:slf4j-simple:1.7.12"
     }
 
     tasks.withType(KotlinCompile) {

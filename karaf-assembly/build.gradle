@@ -4,13 +4,18 @@ dependencies {
     osgiCore group: "org.apache.felix", name: "org.apache.felix.framework", version: libraryVersions.felixFramework
     osgiCore group: "org.osgi", name: "osgi.cmpn", version: libraryVersions.osgiCompendium
 
+    testImplementation group: "org.ops4j.pax.exam", name: "pax-exam", version: libraryVersions.paxExam
+    testImplementation group: "org.ops4j.pax.exam", name: "pax-exam-junit4", version: libraryVersions.paxExam
+    testImplementation group: "org.ops4j.pax.exam", name: "pax-exam-container-karaf",
+            version: libraryVersions.paxExam
     testImplementation group: "org.apache.karaf.itests", name: "common", version: libraryVersions.karaf
 
     testImplementation group: "org.apache.karaf", name: "apache-karaf", version: libraryVersions.karaf, ext: "pom"
     testImplementation group: "org.awaitility", name: "awaitility", version: libraryVersions.awaitility
     testImplementation group: "org.apache.servicemix.bundles", name: "org.apache.servicemix.bundles.hamcrest",
             version: libraryVersions.servicemixHamcrest
-    testImplementation group: "javax.annotation", name: "javax.annotation-api", version: libraryVersions.javaxAnnotation
+    testImplementation group: "javax.annotation", name: "javax.annotation-api",
+            version: libraryVersions.javaxAnnotation
 }
 
 static def getBrandingAligned(String branding, String space = "\\u0020") {
@@ -96,3 +101,4 @@ task makeMavenDependencies {
 
 integrationTest.dependsOn(makeMavenDependencies)
 integrationTest.dependsOn(assembleKaraf)
+integrationTest.outputs.upToDateWhen { false }

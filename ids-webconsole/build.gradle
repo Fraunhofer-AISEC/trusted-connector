@@ -86,13 +86,10 @@ dependencies {
     implementation group: 'com.auth0', name: 'java-jwt', version: libraryVersions.auth0Jwt
     osgiCore group: 'org.apache.felix', name: 'org.apache.felix.framework', version: libraryVersions.felixFramework
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
-    
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     compileOnly group: 'io.swagger', name: 'swagger-jaxrs', version: libraryVersions.swagger
 
-    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 
     testImplementation group: 'org.apache.cxf', name: 'cxf-rt-transports-local', version: libraryVersions.cxf

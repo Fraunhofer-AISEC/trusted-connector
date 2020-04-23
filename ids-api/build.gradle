@@ -10,6 +10,10 @@ protobuf {
 clean {
     delete protobuf.generatedFilesBaseDir
 }
+// Sometimes required to fix an error caused by a non-existing folder
+clean.doLast {
+    mkdir("${project.buildDir}/classes/kotlin/main")
+}
 
 idea {
   module {
@@ -19,9 +23,6 @@ idea {
 }
 
 dependencies {
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
-
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
 
     providedByBundle group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: libraryVersions.jackson

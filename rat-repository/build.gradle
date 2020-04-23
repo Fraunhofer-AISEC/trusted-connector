@@ -8,9 +8,6 @@ dependencies {
     implementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
     implementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
     implementation group: 'com.sun.activation', name: 'javax.activation', version: libraryVersions.jaxActivation
-
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
     
     implementation group: 'org.xerial', name: 'sqlite-jdbc', version: libraryVersions.sqliteJdbc
     implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: libraryVersions.jetty

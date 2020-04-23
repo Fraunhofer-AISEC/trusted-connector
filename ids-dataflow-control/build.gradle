@@ -4,9 +4,6 @@ dependencies {
     providedByBundle(group: 'com.google.guava', name: 'guava', version: libraryVersions.guava) {
         transitive = false  // Avoid pulling in of checker framework and other annotation stuff
     }
-  
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
 
     providedByBundle group: 'it.unibo.alice.tuprolog', name: 'tuprolog', version: libraryVersions.tuprolog
 

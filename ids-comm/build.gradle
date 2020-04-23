@@ -8,9 +8,6 @@ dependencies {
         exclude group: 'net.java.dev.jna', module: 'jna'
     }
 
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-core', version: libraryVersions.log4j
-    providedByBundle group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: libraryVersions.log4j
-
     providedByBundle group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf
     
     publishCompile group: 'org.checkerframework', name: 'checker-qual', version: libraryVersions.checkerQual
