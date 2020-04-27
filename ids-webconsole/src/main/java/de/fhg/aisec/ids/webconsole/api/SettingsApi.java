@@ -99,7 +99,6 @@ public class SettingsApi {
   @Path("/selfInformation")
   @Produces("application/ld+json")
   // TODO Document ApiOperation
-  @AuthorizationRequired
   public String getSelfInformation() {
     InfoModel im = WebConsoleComponent.getInfoModelManager();
     if (im == null) {
