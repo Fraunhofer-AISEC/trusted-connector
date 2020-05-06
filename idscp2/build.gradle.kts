@@ -32,9 +32,6 @@ configure<IdeaModel> {
 dependencies {
     providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 
-    providedByBundle("org.apache.logging.log4j", "log4j-core", libraryVersions["log4j"])
-    providedByBundle("org.apache.logging.log4j", "log4j-slf4j-impl", libraryVersions["log4j"])
-
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
     
     publishCompile("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])

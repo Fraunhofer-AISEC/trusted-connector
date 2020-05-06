@@ -62,7 +62,7 @@ jar.dependsOn(assembleKaraf)
 
 // Wait for all relevant sub projects before executing assembly process
 rootProject.subprojects.findAll() {
-    if (it.name.startsWith("ids-") || it.name.startsWith("camel-")
+    if (it.name.startsWith("ids") || it.name.startsWith("camel-")
             || it.name.endsWith("-patch") || it.name.endsWith("-wrapper")
             || it.name == "karaf-features-ids") {
         assembleKaraf.dependsOn(it.tasks.install)
