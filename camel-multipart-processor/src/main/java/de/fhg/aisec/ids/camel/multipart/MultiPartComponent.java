@@ -36,8 +36,9 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 @Component(name = "ids-multipart-component")
 public class MultiPartComponent {
 
+  @SuppressWarnings("unused")
   @Reference(cardinality = ReferenceCardinality.MANDATORY)
-  private InfoModel infoModel = null;
+  private InfoModel infoModel;
 
   private static MultiPartComponent instance;
 

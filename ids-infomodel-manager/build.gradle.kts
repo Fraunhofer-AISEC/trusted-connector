@@ -6,7 +6,6 @@ dependencies {
 
     infomodelBundle(project(":ids-api")) { isTransitive = false }
 
-    // MVN resolution problem workaround for infomodel until publicly released
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodelSerializer"])
 

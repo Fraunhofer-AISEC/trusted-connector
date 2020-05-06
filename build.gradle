@@ -11,25 +11,25 @@ buildscript {
 }
 
 plugins {
-    id 'java'
-    id 'com.google.protobuf' version '0.8.10'
-    id 'com.moowork.node' version '1.3.1'
-    id 'biz.aQute.bnd' version '4.2.0' apply false
-    id 'com.github.lburgazzoli.karaf' version '0.5.1'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.71'
-    id 'com.github.jlouns.cpe' version '0.5.0'
-    id 'com.benjaminsproule.swagger' version '1.0.6'
-    id 'com.diffplug.gradle.spotless' version '3.13.0'
-    id 'com.github.jk1.dependency-license-report' version '1.2'
+    id "java"
+    id "com.google.protobuf" version "0.8.10"
+    id "com.moowork.node" version "1.3.1"
+    id "biz.aQute.bnd" version "4.2.0" apply false
+    id "com.github.lburgazzoli.karaf" version "0.5.1"
+    id "org.jetbrains.kotlin.jvm" version "1.3.71"
+    id "com.github.jlouns.cpe" version "0.5.0"
+    id "com.benjaminsproule.swagger" version "1.0.6"
+    id "com.diffplug.gradle.spotless" version "3.13.0"
+    id "com.github.jk1.dependency-license-report" version "1.2"
 }
 
 licenseReport {
-    configurations = ['compile', 'providedByFeature', 'providedByBundle']
+    configurations = ["compile", "providedByFeature", "providedByBundle"]
 }
 
 allprojects {
-    group = 'de.fhg.aisec.ids'
-    version = '3.0.2'
+    group = "de.fhg.aisec.ids"
+    version = "3.0.2"
 
     ext.libraryVersions = new Yaml().loadAs(new FileInputStream(file("${rootDir}/libraryVersions.yaml")), Map.class)
 
@@ -67,26 +67,26 @@ allprojects {
         jcenter()
         // References IAIS repository that contains the infomodel artifacts
         maven {
-            url 'https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/'
+            url "https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/"
         }
     }
 }
 
 subprojects {
-    apply plugin: 'biz.aQute.bnd.builder'
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'kotlin'
+    apply plugin: "biz.aQute.bnd.builder"
+    apply plugin: "java"
+    apply plugin: "maven"
+    apply plugin: "kotlin"
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 
     test {
-        exclude '**/*IT.*'
+        exclude "**/*IT.*"
     }
 
     task integrationTest(type: Test) {
-        include '**/*IT.*'
+        include "**/*IT.*"
         systemProperty "project.version", "$project.version"
     }
 
@@ -102,23 +102,23 @@ subprojects {
     // define some Bill of Materials (BOM) for all subprojects
     dependencies {
         // BOM from Karaf, sets common version for OSGi libraries
-        bom group: 'org.apache.karaf', name: 'karaf', version: libraryVersions.karaf
+        bom group: "org.apache.karaf", name: "karaf", version: libraryVersions.karaf
 
         // BOM for pax, for jetty, etc.
-        bom group: 'org.ops4j.pax', name: 'web', version: libraryVersions.pax
+        bom group: "org.ops4j.pax", name: "web", version: libraryVersions.pax
 
         // Logging API
-        providedByBundle group: 'org.slf4j', name: 'slf4j-simple', version: libraryVersions.slf4j
+        providedByBundle group: "org.slf4j", name: "slf4j-simple", version: libraryVersions.slf4j
 
         // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
-        compileOnly group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: libraryVersions.kotlin
+        compileOnly group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8", version: libraryVersions.kotlin
 
         // Required for successful build with JDK 11
         compileOnly group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
         testImplementation group: "javax.xml.bind", name: "jaxb-api", version: libraryVersions.jaxb
         testImplementation group: "com.sun.xml.bind", name: "jaxb-core", version: libraryVersions.jaxb
         testImplementation group: "com.sun.xml.bind", name: "jaxb-impl", version: libraryVersions.jaxb
-        testImplementation group: 'com.sun.activation', name: 'javax.activation', version: libraryVersions.jaxActivation
+        testImplementation group: "com.sun.activation", name: "javax.activation", version: libraryVersions.jaxActivation
     }
 
     tasks.withType(KotlinCompile) {
@@ -128,26 +128,23 @@ subprojects {
     }
 
     tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-//        options.compilerArgs << '-Xlint:unchecked'
+        options.encoding = "UTF-8"
+//        options.compilerArgs << "-Xlint:unchecked"
 //        options.deprecation = true
     }
 
     tasks.withType(Jar) {
         jar {
             manifest {
-                // set the vendor
-                attributes 'Bundle-Vendor': 'Fraunhofer AISEC'
-
-                // TODO: this was set in most of the bnd files. do we really need this?
-                attributes '-noee': true
+                attributes "Bundle-Vendor": "Fraunhofer AISEC"
+                attributes "-noee": true
             }
         }
     }
 }
 
-configure(subprojects.findAll { it.name != 'examples' }) {
-    apply plugin: 'com.diffplug.gradle.spotless'
+configure(subprojects.findAll { it.name != "examples" }) {
+    apply plugin: "com.diffplug.gradle.spotless"
 
     spotless {
         java {
@@ -155,11 +152,11 @@ configure(subprojects.findAll { it.name != 'examples' }) {
 
             googleJavaFormat()
 
-            licenseHeader('''/*-
+            licenseHeader("""/*-
  * ========================LICENSE_START=================================
- * ''' + project.name + '''
- * %%
- * Copyright (C) $YEAR Fraunhofer AISEC
+ * """ + project.name + """
+" * %%
+ * Copyright (C) \$YEAR Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,26 +170,26 @@ configure(subprojects.findAll { it.name != 'examples' }) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * =========================LICENSE_END==================================
- */''').yearSeparator(' - ')
+ */""").yearSeparator(" - ")
         }
     }
 }
 
-configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' }) {
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+configure(subprojects.findAll { it.name == "ids-api" || it.name == "ids-comm" }) {
+    apply plugin: "maven-publish"
+    apply plugin: "signing"
 
     task sourcesJar(type: Jar) {
         from sourceSets.main.allSource
-        from ('src/main') {
-            include 'proto/**'
+        from ("src/main") {
+            include "proto/**"
         }
-        archiveClassifier = 'sources'
+        archiveClassifier = "sources"
     }
 
     task javadocJar(type: Jar) {
         from javadoc
-        archiveClassifier = 'javadoc'
+        archiveClassifier = "javadoc"
     }
 
     // Must disable gradle metadata because of infomodel SNAPSHOT dependencies
@@ -207,27 +204,27 @@ configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' })
                 artifact sourcesJar
                 artifact javadocJar
                 pom {
-                    name = 'IDSCP Protocol Library'
-                    description = 'Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)'
-                    url = 'https://github.com/industrial-data-space/trusted-connector'
+                    name = "IDSCP Protocol Library"
+                    description = "Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)"
+                    url = "https://github.com/industrial-data-space/trusted-connector"
                     licenses {
                         license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
                     }
                     developers {
                         developer {
-                            name = 'Michael Lux'
-                            email = 'michael.lux@aisec.fraunhofer.de'
-                            organization = 'Fraunhofer AISEC'
-                            organizationUrl = 'aisec.fraunhofer.de'
+                            name = "Michael Lux"
+                            email = "michael.lux@aisec.fraunhofer.de"
+                            organization = "Fraunhofer AISEC"
+                            organizationUrl = "aisec.fraunhofer.de"
                         }
                     }
                     scm {
-                        connection = 'scm:git:git://github.com:industrial-data-space/trusted-connector.git'
-                        developerConnection = 'scm:git:ssh://github.com:industrial-data-space/trusted-connector.git'
-                        url = 'https://github.com/industrial-data-space/trusted-connector'
+                        connection = "scm:git:git://github.com:industrial-data-space/trusted-connector.git"
+                        developerConnection = "scm:git:ssh://github.com:industrial-data-space/trusted-connector.git"
+                        url = "https://github.com/industrial-data-space/trusted-connector"
                     }
                 }
             }
@@ -237,11 +234,11 @@ configure(subprojects.findAll { it.name == 'ids-api' || it.name == 'ids-comm' })
             maven {
                 def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
                 def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
 
                 credentials {
-                    username = project.findProperty('deployUsername')
-                    password = project.findProperty('deployPassword')
+                    username = project.findProperty("deployUsername")
+                    password = project.findProperty("deployPassword")
                 }
             }
         }
