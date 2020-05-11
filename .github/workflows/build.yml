@@ -16,8 +16,8 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-        - name: Build
-          run: |
-            mkdir -p ~/.gradle
-            mkdir -p ~/.m2
-            ./build.sh
+      - name: Build
+        run: |
+          mkdir -p ~/.gradle
+          mkdir -p ~/.m2
+          ./build.sh
