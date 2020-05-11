@@ -5,8 +5,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Build
-        run: |
-          mkdir -p ~/.gradle
-          mkdir -p ~/.m2
-          ./build.sh
+      - name: Cache gradle modules
+        uses: actions/cache@v1
+        env:
+          cache-name: cache-gradle-modules
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/gradle.build') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+        - name: Build
+          run: |
+            mkdir -p ~/.gradle
+            mkdir -p ~/.m2
+            ./build.sh
