@@ -7,4 +7,7 @@ jobs:
       - uses: actions/checkout@master
       - name: Build
         run: |
+          mkdir -p /home/build/core-platform
+          mkdir -p /home/build/.gradle
+          mkdir -p /home/build/.m2
           ./build.sh
