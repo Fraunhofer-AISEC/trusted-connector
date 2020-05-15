@@ -67,9 +67,6 @@ public class StateEstablished extends State {
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
-                    LOG.debug("Set handshake timeout");
-                    handshakeTimer.resetTimeout(5);
-
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT_VERIFIER);
                 }
         ));
@@ -82,7 +79,11 @@ public class StateEstablished extends State {
                       LOG.error("Cannot send DatExpired message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
-                    return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER);
+
+                  LOG.debug("Set handshake timeout");
+                  handshakeTimer.resetTimeout(5);
+
+                  return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER);
                 }
         ));
 
@@ -112,9 +113,6 @@ public class StateEstablished extends State {
                       LOG.error("Cannot run Rat prover, close idscp connection");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
-
-                    LOG.debug("Set handshake timeout");
-                    handshakeTimer.resetTimeout(5);
 
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT_PROVER);
                 }

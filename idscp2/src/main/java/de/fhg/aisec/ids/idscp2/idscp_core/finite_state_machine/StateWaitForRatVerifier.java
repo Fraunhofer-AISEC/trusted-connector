@@ -20,6 +20,7 @@ public class StateWaitForRatVerifier extends State {
                                    DapsDriver dapsDriver,
                                    Timer ratTimer,
                                    Timer handshakeTimer,
+                                   Timer verifierHandshakeTimer,
                                    int ratTimeoutDelay) {
 
         /*---------------------------------------------------
@@ -72,6 +73,9 @@ public class StateWaitForRatVerifier extends State {
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
+                    LOG.debug("Start Handshake Timer");
+                    handshakeTimer.resetTimeout(5);
+
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER);
                 }
         ));
@@ -79,7 +83,7 @@ public class StateWaitForRatVerifier extends State {
         this.addTransition(InternalControlMessage.RAT_VERIFIER_OK.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received RAT_VERIFIER OK");
-                    handshakeTimer.cancelTimeout();
+                    verifierHandshakeTimer.cancelTimeout();
                     LOG.debug("Start RAT Timer");
                     ratTimer.resetTimeout(ratTimeoutDelay);
                     return fsm.getState(FSM.FSM_STATE.STATE_ESTABLISHED);

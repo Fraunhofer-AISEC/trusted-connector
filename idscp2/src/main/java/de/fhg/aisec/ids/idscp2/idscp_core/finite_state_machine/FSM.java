@@ -101,6 +101,8 @@ public class FSM implements FsmListener{
     private Timer datTimer;
     private Timer ratTimer;
     private Timer handshakeTimer;
+    private Timer proverHandshakeTimer;
+    private Timer verifierHandshakeTimer;
     /*  ----------------   end of Timer   --------------- */
 
     public FSM(SecureChannel secureChannel, DapsDriver dapsDriver,
@@ -123,27 +125,48 @@ public class FSM implements FsmListener{
             onControlMessage(InternalControlMessage.REPEAT_RAT);
         };
 
+        Runnable proverTimeoutHandler = () -> {
+            LOG.debug("RAT_PROVER_HANDSHAKE_TIMER_EXPIRED");
+            onControlMessage(InternalControlMessage.REPEAT_RAT);
+        };
+
+        Runnable verifierTimeoutHandler = () -> {
+            LOG.debug("RAT_VERIFIER_HANDSHAKE_TIMER_EXPIRED");
+            onControlMessage(InternalControlMessage.REPEAT_RAT);
+        };
+
         this.handshakeTimer = new Timer(fsmIsBusy, handshakeTimeoutHandler);
         this.datTimer = new Timer(fsmIsBusy, datTimeoutHandler);
         this.ratTimer = new Timer(fsmIsBusy, ratTimeoutHandler);
+        this.proverHandshakeTimer = new Timer(fsmIsBusy, proverTimeoutHandler);
+        this.verifierHandshakeTimer = new Timer(fsmIsBusy, verifierTimeoutHandler);
         /* ------------- end timeout routines ------------- */
 
         /* ------------- FSM STATE Initialization -------------*/
         states.put(FSM_STATE.STATE_CLOSED, new StateClosed(this, dapsDriver, onMessageBlock,
                 localSupportedRatSuite, localExpectedRatSuite));
+
         states.put(FSM_STATE.STATE_WAIT_FOR_HELLO, new StateWaitForHello(this,
-                handshakeTimer, datTimer, dapsDriver, localSupportedRatSuite, localExpectedRatSuite));
-        states.put(FSM_STATE.STATE_WAIT_FOR_RAT, new StateWaitForRat(this, handshakeTimer, ratTimer,
-                ratTimeout, dapsDriver));
-        states.put(FSM_STATE.STATE_WAIT_FOR_RAT_PROVER, new StateWaitForRatProver(this, ratTimer, handshakeTimer,
-                dapsDriver));
-        states.put(FSM_STATE.STATE_WAIT_FOR_RAT_VERIFIER, new StateWaitForRatVerifier(this, dapsDriver, ratTimer,
-                handshakeTimer, ratTimeout));
-        states.put(FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT, new StateWaitForDatAndRat(this, handshakeTimer,
-                datTimer, dapsDriver));
-        states.put(FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER, new StateWaitForDatAndRatVerifier(this,
-                handshakeTimer, datTimer, dapsDriver));
-        states.put(FSM_STATE.STATE_ESTABLISHED, new StateEstablished(this, dapsDriver, ratTimer, handshakeTimer));
+                handshakeTimer, datTimer, dapsDriver, localSupportedRatSuite, localExpectedRatSuite
+        ));
+
+        states.put(FSM_STATE.STATE_WAIT_FOR_RAT, new StateWaitForRat(this, handshakeTimer,
+            verifierHandshakeTimer, proverHandshakeTimer, ratTimer, ratTimeout, dapsDriver));
+
+        states.put(FSM_STATE.STATE_WAIT_FOR_RAT_PROVER, new StateWaitForRatProver(this,
+            ratTimer, handshakeTimer, proverHandshakeTimer, dapsDriver));
+
+        states.put(FSM_STATE.STATE_WAIT_FOR_RAT_VERIFIER, new StateWaitForRatVerifier(this,
+            dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, ratTimeout));
+
+        states.put(FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT, new StateWaitForDatAndRat(this,
+            handshakeTimer, proverHandshakeTimer, datTimer, dapsDriver));
+
+        states.put(FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER,
+            new StateWaitForDatAndRatVerifier(this, handshakeTimer, datTimer, dapsDriver));
+
+        states.put(FSM_STATE.STATE_ESTABLISHED, new StateEstablished(this, dapsDriver,
+            ratTimer, handshakeTimer));
 
 
         //set initial state
@@ -507,6 +530,8 @@ public class FSM implements FsmListener{
         } else {
             //safe the thread ID
             currentRatVerifierId = Long.toString(ratVerifierDriver.getId());
+            LOG.debug("Start verifier_handshake timeout");
+            this.verifierHandshakeTimer.resetTimeout(5);
             return true;
         }
     }
@@ -515,6 +540,7 @@ public class FSM implements FsmListener{
      * Terminate the RatVerifierDriver
      */
     void stopRatVerifierDriver(){
+        this.verifierHandshakeTimer.cancelTimeout();
         if (ratVerifierDriver != null && ratVerifierDriver.isAlive()){
             ratVerifierDriver.interrupt();
             ratVerifierDriver.terminate();
@@ -538,6 +564,8 @@ public class FSM implements FsmListener{
         } else {
             //safe the thread ID
             currentRatProverId = Long.toString(ratProverDriver.getId());
+            LOG.debug("Start prover_handshake timeout");
+            this.proverHandshakeTimer.resetTimeout(5);
             return true;
         }
     }
@@ -546,6 +574,7 @@ public class FSM implements FsmListener{
      * Terminate the RatProverDriver
      */
     void stopRatProverDriver(){
+        this.proverHandshakeTimer.cancelTimeout();
         if (ratProverDriver != null && ratProverDriver.isAlive()){
             ratProverDriver.interrupt();
             ratProverDriver.terminate();
@@ -565,6 +594,10 @@ public class FSM implements FsmListener{
             this.ratTimer = null;
             this.handshakeTimer.cancelTimeout();
             this.handshakeTimer = null;
+            this.proverHandshakeTimer.cancelTimeout();
+            this.proverHandshakeTimer = null;
+            this.verifierHandshakeTimer.cancelTimeout();
+            this.verifierHandshakeTimer = null;
             this.stopRatProverDriver();
             this.stopRatVerifierDriver();
             fsmIsClosed = true;

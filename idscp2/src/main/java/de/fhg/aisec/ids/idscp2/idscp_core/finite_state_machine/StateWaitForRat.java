@@ -17,15 +17,13 @@ import org.slf4j.LoggerFactory;
 public class StateWaitForRat extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateWaitForRat.class);
 
-    private final Timer handshakeTimer;
-
     public StateWaitForRat(FSM fsm,
                            Timer handshakeTimer,
+                           Timer verifierHandshakeTimer,
+                           Timer proverHandshakeTimer,
                            Timer ratTimer,
                            int ratTimerDelay,
                            DapsDriver dapsDriver){
-
-        this.handshakeTimer = handshakeTimer;
 
 
         /*---------------------------------------------------
@@ -66,6 +64,7 @@ public class StateWaitForRat extends State {
         this.addTransition(InternalControlMessage.RAT_PROVER_OK.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received RAT_PROVER OK");
+                    proverHandshakeTimer.cancelTimeout();
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT_VERIFIER);
                 }
         ));
@@ -73,6 +72,7 @@ public class StateWaitForRat extends State {
         this.addTransition(InternalControlMessage.RAT_VERIFIER_OK.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received RAT_VERIFIER OK");
+                    verifierHandshakeTimer.cancelTimeout();
                     ratTimer.resetTimeout(ratTimerDelay);
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT_PROVER);
                 }
@@ -134,6 +134,9 @@ public class StateWaitForRat extends State {
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
+                    LOG.debug("Start Handshake Timer");
+                    handshakeTimer.resetTimeout(5);
+
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT);
                 }
         ));
@@ -177,9 +180,6 @@ public class StateWaitForRat extends State {
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
-                    LOG.debug("Set handshake timeout");
-                    handshakeTimer.resetTimeout(5);
-
                     return this;
                 }
         ));
@@ -200,10 +200,8 @@ public class StateWaitForRat extends State {
         );
     }
 
-    @Override
+  @Override
     void runEntryCode(FSM fsm){
         LOG.debug("Switch to state STATE_WAIT_FOR_RAT");
-        LOG.debug("Set handshake timeout");
-        handshakeTimer.resetTimeout(5);
     }
 }

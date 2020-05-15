@@ -17,14 +17,12 @@ import org.slf4j.LoggerFactory;
 public class StateWaitForDatAndRat extends State {
     private static final Logger LOG = LoggerFactory.getLogger(StateWaitForDatAndRat.class);
 
-    private final Timer handshakeTimer;
-
     public StateWaitForDatAndRat(FSM fsm,
                                  Timer handshakeTimer,
+                                 Timer proverHandshakeTimer,
                                  Timer datTimer,
                                  DapsDriver dapsDriver
                                  ){
-        this.handshakeTimer = handshakeTimer;
 
         /*---------------------------------------------------
          * STATE_WAIT_FOR_DAT_AND_RAT - Transition Description
@@ -71,6 +69,7 @@ public class StateWaitForDatAndRat extends State {
         this.addTransition(InternalControlMessage.RAT_PROVER_OK.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received RAT_PROVER OK");
+                    proverHandshakeTimer.cancelTimeout();
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER);
                 }
         ));
@@ -177,7 +176,5 @@ public class StateWaitForDatAndRat extends State {
     @Override
     void runEntryCode(FSM fsm){
         LOG.debug("Switched to state STATE_WAIT_FOR_DAT_AND_RAT");
-        LOG.debug("Set handshake timeout");
-        handshakeTimer.resetTimeout(5);
     }
 }

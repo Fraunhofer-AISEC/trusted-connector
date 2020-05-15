@@ -19,6 +19,7 @@ public class StateWaitForRatProver extends State {
     public StateWaitForRatProver(FSM fsm,
                                  Timer ratTimer,
                                  Timer handshakeTimer,
+                                 Timer proverHandshakeTimer,
                                  DapsDriver dapsDriver){
 
 
@@ -73,6 +74,9 @@ public class StateWaitForRatProver extends State {
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
+                    LOG.debug("Start Handshake Timer");
+                    handshakeTimer.resetTimeout(5);
+
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT);
                 }
         ));
@@ -80,7 +84,7 @@ public class StateWaitForRatProver extends State {
         this.addTransition(InternalControlMessage.RAT_PROVER_OK.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received RAT_PROVER OK");
-                    handshakeTimer.cancelTimeout();
+                    proverHandshakeTimer.cancelTimeout();
                     return fsm.getState(FSM.FSM_STATE.STATE_ESTABLISHED);
                 }
         ));
@@ -148,8 +152,7 @@ public class StateWaitForRatProver extends State {
                       LOG.error("Cannot run Rat prover, close idscp connection");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
-                    LOG.debug("Set handshake timeout");
-                    handshakeTimer.resetTimeout(5);
+
                     return this;
                 }
         ));

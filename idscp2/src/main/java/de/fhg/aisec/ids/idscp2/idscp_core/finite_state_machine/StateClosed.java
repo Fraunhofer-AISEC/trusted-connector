@@ -55,6 +55,7 @@ class StateClosed extends State {
                     }
 
                     runExitCode(onMessageLock);
+
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_HELLO);
                 }
         ));
