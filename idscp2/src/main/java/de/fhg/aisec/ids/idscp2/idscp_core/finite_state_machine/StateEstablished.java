@@ -46,7 +46,7 @@ public class StateEstablished extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close",
+                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close",
                             IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -57,7 +57,7 @@ public class StateEstablished extends State {
                     LOG.debug("Request RAT repeat. Send IDSCP_RERAT, start RAT_VERIFIER");
                     ratTimer.cancelTimeout();
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.getIdscpReRatMessage(""))) {
+                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpReRatMessage(""))) {
                       LOG.error("Cannot send ReRat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -75,7 +75,7 @@ public class StateEstablished extends State {
                 event -> {
                     ratTimer.cancelTimeout();
                     LOG.debug("Remote DAT expired. Send IDSCP_DAT_EXPIRED");
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.getIdscpDatExpiredMessage())) {
+                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatExpiredMessage())) {
                       LOG.error("Cannot send DatExpired message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -104,7 +104,7 @@ public class StateEstablished extends State {
                 event -> {
                     LOG.debug("DAT expired. Send new DAT and repeat RAT");
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.getIdscpDatMessage(dapsDriver.getToken()))) {
+                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatMessage(dapsDriver.getToken()))) {
                       LOG.error("Cannot send Dat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }

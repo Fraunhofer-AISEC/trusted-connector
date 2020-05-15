@@ -11,7 +11,7 @@ import java.util.Arrays;
  */
 public class IdscpMessageFactory {
 
-    public static IdscpMessage getIdscpHelloMessage(byte[] dat, String[] supportedRatSuite, String[] expectedRatSuite){
+    public static IdscpMessage createIdscpHelloMessage(byte[] dat, String[] supportedRatSuite, String[] expectedRatSuite){
         IdscpDat idscpDat = IdscpDat.newBuilder()
                 .setToken(ByteString.copyFrom(dat))
                 .build();
@@ -28,7 +28,7 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpCloseMessage(String closeMsg, IdscpClose.CloseCause causeCode){
+    public static IdscpMessage createIdscpCloseMessage(String closeMsg, IdscpClose.CloseCause causeCode){
         IdscpClose idscpClose = IdscpClose.newBuilder()
                 .setCauseCode(causeCode)
                 .setCauseMsg(closeMsg)
@@ -39,13 +39,13 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpDatExpiredMessage(){
+    public static IdscpMessage createIdscpDatExpiredMessage(){
         return IdscpMessage.newBuilder()
                 .setIdscpDatExpired(IdscpDatExpired.newBuilder().build())
                 .build();
     }
 
-    public static IdscpMessage getIdscpDatMessage(byte[] dat){
+    public static IdscpMessage createIdscpDatMessage(byte[] dat){
         IdscpDat idscpDat = IdscpDat.newBuilder()
                 .setToken(ByteString.copyFrom(dat))
                 .build();
@@ -55,7 +55,7 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpReRatMessage(String cause){
+    public static IdscpMessage createIdscpReRatMessage(String cause){
         IdscpReRat idscpReRat = IdscpReRat.newBuilder()
                 .setCause(cause)
                 .build();
@@ -65,7 +65,7 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpDataMessage(byte[] data){
+    public static IdscpMessage createIdscpDataMessage(byte[] data){
         IdscpData idscpData = IdscpData.newBuilder()
                 .setData(ByteString.copyFrom(data))
                 .build();
@@ -75,7 +75,7 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpRatProverMessage(byte[] body){
+    public static IdscpMessage createIdscpRatProverMessage(byte[] body){
         IdscpRatProver idscpRatProver = IdscpRatProver.newBuilder()
             .setData(ByteString.copyFrom(body))
             .build();
@@ -85,7 +85,7 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage getIdscpRatVerifierMessage(byte[] body){
+    public static IdscpMessage createIdscpRatVerifierMessage(byte[] body){
         IdscpRatVerifier idscpRatVerifier = IdscpRatVerifier.newBuilder()
             .setData(ByteString.copyFrom(body))
             .build();

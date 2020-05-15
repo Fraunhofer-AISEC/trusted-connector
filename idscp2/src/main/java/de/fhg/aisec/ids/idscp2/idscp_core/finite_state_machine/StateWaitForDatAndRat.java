@@ -44,7 +44,7 @@ public class StateWaitForDatAndRat extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSC_CLOSE");
-                   fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close",
+                   fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close",
                             IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -60,7 +60,7 @@ public class StateWaitForDatAndRat extends State {
         this.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake timeout",
+                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("Handshake timeout",
                             IDSCPv2.IdscpClose.CloseCause.TIMEOUT));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -78,7 +78,7 @@ public class StateWaitForDatAndRat extends State {
                 event -> {
                     LOG.error("RAT_PROVER failed");
                     LOG.debug("Send IDSC_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("RAT_PROVER failed",
+                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("RAT_PROVER failed",
                             IDSCPv2.IdscpClose.CloseCause.RAT_PROVER_FAILED));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -111,7 +111,7 @@ public class StateWaitForDatAndRat extends State {
                     long datValidityPeriod;
                     if (0 > (datValidityPeriod = dapsDriver.verifyToken(dat, null))){
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage(
+                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage(
                             "No valid DAT", IDSCPv2.IdscpClose.CloseCause.NO_VALID_DAT));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
@@ -132,7 +132,7 @@ public class StateWaitForDatAndRat extends State {
                 event -> {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER");
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.getIdscpDatMessage(dapsDriver.getToken()))) {
+                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatMessage(dapsDriver.getToken()))) {
                       LOG.error("Cannot send Dat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }

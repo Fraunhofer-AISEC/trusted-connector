@@ -53,7 +53,7 @@ public class StateWaitForHello extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received stop signal from user. Send IDSC_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("User close",
+                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close",
                             IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -62,7 +62,7 @@ public class StateWaitForHello extends State {
         this.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("Handshake Timeout",
+                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("Handshake Timeout",
                             IDSCPv2.IdscpClose.CloseCause.TIMEOUT));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -87,7 +87,7 @@ public class StateWaitForHello extends State {
                             idscpHello.getExpectedRatSuiteList().toArray());
                     if (proverMechanism == null){
                         LOG.debug("Cannot find a match for RAT proverr. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No match for RAT Prover mechanism",
+                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("No match for RAT Prover mechanism",
                                 IDSCPv2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_PROVER));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
@@ -96,7 +96,7 @@ public class StateWaitForHello extends State {
                             idscpHello.getSupportedRatSuiteList().toArray());
                     if (verifierMechanism == null){
                         LOG.debug("Cannot find a match for RAT verifier. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No match for RAT Verifier mechanism",
+                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("No match for RAT Verifier mechanism",
                                 IDSCPv2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_VERIFIER));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
@@ -108,7 +108,7 @@ public class StateWaitForHello extends State {
                     if (!idscpHello.hasDynamicAttributeToken() || 0 > (datValidityPeriod = dapsDriver
                             .verifyToken(dat = idscpHello.getDynamicAttributeToken().getToken().toByteArray(), null))){
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.getIdscpCloseMessage("No valid DAT",
+                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("No valid DAT",
                                 IDSCPv2.IdscpClose.CloseCause.NO_VALID_DAT));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }

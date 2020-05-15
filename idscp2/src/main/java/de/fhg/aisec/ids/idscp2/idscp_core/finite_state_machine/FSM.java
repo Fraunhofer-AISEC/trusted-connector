@@ -286,7 +286,7 @@ public class FSM implements FsmListener{
         if (ratMessage == null){
             e = new Event(controlMessage);
         } else {
-            IdscpMessage idscpMessage = IdscpMessageFactory.getIdscpRatProverMessage(ratMessage);
+            IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpRatProverMessage(ratMessage);
             e = new Event(controlMessage, idscpMessage);
         }
 
@@ -324,7 +324,7 @@ public class FSM implements FsmListener{
         if (ratMessage == null){
             e = new Event(controlMessage);
         } else {
-            IdscpMessage idscpMessage = IdscpMessageFactory.getIdscpRatVerifierMessage(ratMessage);
+            IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpRatVerifierMessage(ratMessage);
             e = new Event(controlMessage, idscpMessage);
         }
 
@@ -456,7 +456,7 @@ public class FSM implements FsmListener{
         fsmIsBusy.lock();
         try{
             if(isConnected()){
-                IdscpMessage idscpMessage = IdscpMessageFactory.getIdscpDataMessage(msg);
+                IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpDataMessage(msg);
                 if (!secureChannel.send(idscpMessage.toByteArray())) {
                     LOG.error("Cannot send IDSCP_DATA via secure channel");
                     onControlMessage(InternalControlMessage.ERROR);

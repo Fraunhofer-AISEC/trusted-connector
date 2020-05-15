@@ -45,7 +45,7 @@ class StateClosed extends State {
 
                     LOG.debug("Send IDSCP_HELLO");
                     IDSCPv2.IdscpMessage idscpHello = IdscpMessageFactory.
-                            getIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite);
+                        createIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite);
 
                     if (!fsm.sendFromFSM(idscpHello)) {
                       LOG.error("Cannot send IdscpHello. Close connection");
