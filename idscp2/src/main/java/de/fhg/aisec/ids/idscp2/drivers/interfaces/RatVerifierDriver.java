@@ -1,7 +1,6 @@
 package de.fhg.aisec.ids.idscp2.drivers.interfaces;
 
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
-import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,13 +19,14 @@ public abstract class RatVerifierDriver extends Thread{
     /*
      * Delegate the IDSCPv2 message to the RatVerifier driver
      */
-    public void delegate(IdscpMessage message){}
+    public void delegate(byte[] message){}
 
     /*
      * Terminate and cancel the RatVerifier driver
      */
     public void terminate() {
         running = false;
+        this.interrupt();
     }
 
     public void setListener(FsmListener listener){

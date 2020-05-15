@@ -141,7 +141,9 @@ public class StateWaitForRatVerifier extends State {
         this.addTransition(IDSCPv2.IdscpMessage.IDSCPRATPROVER_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Delegate received IDSCP_RAT_PROVER to RAT_VERIFIER");
-                    fsm.getRatVerifierDriver().delegate(event.getIdscpMessage());
+                    assert event.getIdscpMessage().hasIdscpRatProver();
+                    fsm.getRatVerifierDriver().delegate(event.getIdscpMessage().getIdscpRatProver()
+                        .getData().toByteArray());
                     return this;
                 }
         ));

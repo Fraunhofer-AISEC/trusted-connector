@@ -43,8 +43,8 @@ public class IDSCPv2Connection implements IdscpMsgListener {
      * Send data to the peer idscp connector
      */
     public void send(byte[] msg) {
-        LOG.debug("Send idscp message");
-        fsm.send(IdscpMessageFactory.getIdscpDataMessage(msg));
+        LOG.debug("Send data ");
+        fsm.send(msg);
     }
 
     @Override

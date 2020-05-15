@@ -18,13 +18,13 @@ public interface FsmListener {
     /*
      * A method for providing RatProver messages from the RatProverDriver implementation to the FSM
      */
-    void onRatProverMessage(InternalControlMessage controlMessage, IdscpMessage idscpMessage);
+    void onRatProverMessage(InternalControlMessage controlMessage, byte[] ratMessage);
 
     /*
      * A method for providing RatVerifier messages from the RatVerifierDriver implementation to the
      * FSM
      */
-    void onRatVerifierMessage(InternalControlMessage controlMessage, IdscpMessage idscpMessage);
+    void onRatVerifierMessage(InternalControlMessage controlMessage, byte[] ratMessage);
 
     /*
      * A method for providing internal errors to the fsm

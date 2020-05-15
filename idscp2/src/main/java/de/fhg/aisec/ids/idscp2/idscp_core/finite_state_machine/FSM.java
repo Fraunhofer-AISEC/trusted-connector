@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.*;
 import de.fhg.aisec.ids.idscp2.error.IDSCPv2Exception;
+import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMsgListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry;
@@ -275,16 +276,17 @@ public class FSM implements FsmListener{
      * ignored, else the event is provided to the fsm
      */
     @Override
-    public void onRatProverMessage(InternalControlMessage controlMessage, IdscpMessage idscpMessage) {
+    public void onRatProverMessage(InternalControlMessage controlMessage, byte[] ratMessage) {
 
         //check for incorrect usage
         checkForFsmCircles();
 
         //only allow rat prover messages from current thread
         Event e;
-        if (idscpMessage == null){
+        if (ratMessage == null){
             e = new Event(controlMessage);
         } else {
+            IdscpMessage idscpMessage = IdscpMessageFactory.getIdscpRatProverMessage(ratMessage);
             e = new Event(controlMessage, idscpMessage);
         }
 
@@ -312,16 +314,17 @@ public class FSM implements FsmListener{
      * ignored, else the event is provided to the fsm
      */
     @Override
-    public void onRatVerifierMessage(InternalControlMessage controlMessage, IdscpMessage idscpMessage) {
+    public void onRatVerifierMessage(InternalControlMessage controlMessage, byte[] ratMessage) {
 
         //check for incorrect usage
         checkForFsmCircles();
 
         //only allow rat verifier messages from current thread
         Event e;
-        if (idscpMessage == null){
+        if (ratMessage == null){
             e = new Event(controlMessage);
         } else {
+            IdscpMessage idscpMessage = IdscpMessageFactory.getIdscpRatVerifierMessage(ratMessage);
             e = new Event(controlMessage, idscpMessage);
         }
 
@@ -448,12 +451,13 @@ public class FSM implements FsmListener{
     /*
      * Send idscp message from the User via the secure channel
      */
-    public void send(IdscpMessage msg){
+    public void send(byte[] msg){
         //send messages from user only when idscp connection is established
         fsmIsBusy.lock();
         try{
             if(isConnected()){
-                if (!secureChannel.send(msg.toByteArray())) {
+                IdscpMessage idscpMessage = IdscpMessageFactory.getIdscpDataMessage(msg);
+                if (!secureChannel.send(idscpMessage.toByteArray())) {
                     LOG.error("Cannot send IDSCP_DATA via secure channel");
                     onControlMessage(InternalControlMessage.ERROR);
                 }

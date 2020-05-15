@@ -1,10 +1,7 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.InternalControlMessage;
-import de.fhg.aisec.ids.messages.IDSCPv2;
-import de.fhg.aisec.ids.messages.IDSCPv2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,14 +16,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class RatProverDummy extends RatProverDriver {
     private static final Logger LOG = LoggerFactory.getLogger(RatProverDummy.class);
 
-    private BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 
     public RatProverDummy(){
         super();
     }
 
     @Override
-    public void delegate(IdscpMessage message) {
+    public void delegate(byte[] message) {
         queue.add(message);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Delegated to prover");
@@ -40,18 +37,20 @@ public class RatProverDummy extends RatProverDriver {
             try {
                 sleep(1000);
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,
-                        IdscpMessageFactory.getIdscpRatProverMessage("test".getBytes()));
+                    "test".getBytes());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Prover waits");
                 }
-                IDSCPv2.IdscpMessage m = queue.take();
+                byte[] m = queue.take();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Prover receives, send something");
                 }
                 if (--countDown == 0)
                     break;
             } catch (InterruptedException e) {
-                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
+                if (this.running) {
+                    fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, null);
+                }
                 return;
             }
         }

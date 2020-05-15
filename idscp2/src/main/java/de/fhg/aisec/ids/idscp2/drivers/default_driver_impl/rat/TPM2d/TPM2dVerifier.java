@@ -2,10 +2,7 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.InternalControlMessage;
-import de.fhg.aisec.ids.messages.IDSCPv2;
-import de.fhg.aisec.ids.messages.IDSCPv2.IdscpMessage;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dMessageWrapper;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dRatResponse;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -67,7 +64,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
    *
    */
 
-  private final BlockingQueue<IdscpMessage> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
   private Tpm2dVerifierConfig config = new Tpm2dVerifierConfig.Builder().build();
 
   public TPM2dVerifier(){
@@ -85,7 +82,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
   }
 
   @Override
-  public void delegate(IDSCPv2.IdscpMessage message) {
+  public void delegate(byte[] message) {
     queue.add(message);
     LOG.debug("Delegated to Verifier");
   }
@@ -102,33 +99,24 @@ public class TPM2dVerifier extends RatVerifierDriver {
     byte[] ratChallenge = TpmMessageFactory.getAttestationChallengeMessage(
         nonce, config.getExpectedAType(), config.getExpectedAttestationMask()).toByteArray();
 
-    fsmListener.onRatVerifierMessage(
-        InternalControlMessage.RAT_VERIFIER_MSG,
-        IdscpMessageFactory.getIdscpRatVerifierMessage(ratChallenge)
-    );
+    fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG, ratChallenge);
 
     // wait for attestation response
-    IdscpMessage msg;
+    byte[] msg;
     try {
       msg = queue.take();
       LOG.debug("Verifier receives new message");
     } catch (InterruptedException e) {
-      fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, null);
-      return;
-    }
-
-    // check if response is from rat prover
-    if (!msg.getMessageCase().equals(IdscpMessage.MessageCase.IDSCPRATPROVER)) {
-      //unexpected message
-      LOG.warn("Unexpected message from FSM: Expected IdscpRatVerifier");
-      fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, null);
+      if (this.running) {
+        fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, null);
+      }
       return;
     }
 
     // parse body to expected tpm2d message wrapper
     Tpm2dMessageWrapper tpm2dMessageWrapper;
     try {
-      tpm2dMessageWrapper = Tpm2dMessageWrapper.parseFrom(msg.getIdscpRatProver().getData());
+      tpm2dMessageWrapper = Tpm2dMessageWrapper.parseFrom(msg);
     } catch (InvalidProtocolBufferException e) {
       LOG.error("Cannot parse IdscpRatProver body", e);
       fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, null);
@@ -163,10 +151,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
     // create and send rat result
     LOG.debug("Send rat result to remote prover");
     byte[] ratResult = TpmMessageFactory.getAttestationResultMessage(result).toByteArray();
-    fsmListener.onRatVerifierMessage(
-        InternalControlMessage.RAT_VERIFIER_MSG,
-        IdscpMessageFactory.getIdscpRatVerifierMessage(ratResult)
-    );
+    fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG, ratResult);
 
     // notify fsm about result
     if (result) {
