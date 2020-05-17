@@ -80,7 +80,7 @@ class StateClosed extends State {
         //State Closed entry code
         LOG.debug("Switched to state STATE_CLOSED");
         LOG.debug("Terminate and free all resources and lock fsm forever");
-        fsm.lockFsm();
+        fsm.shutdownFsm();
     }
 
 }

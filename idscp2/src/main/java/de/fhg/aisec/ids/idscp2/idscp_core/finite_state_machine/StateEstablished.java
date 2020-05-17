@@ -120,7 +120,8 @@ public class StateEstablished extends State {
 
         this.addTransition(IDSCPv2.IdscpMessage.IDSCPDATA_FIELD_NUMBER, new Transition(
                 event -> {
-                    fsm.notifyIdscpMsgListener(event.getIdscpMessage().getIdscpData().toByteArray());
+                    IDSCPv2.IdscpData data = event.getIdscpMessage().getIdscpData();
+                    fsm.notifyIdscpMsgListener(data.getType(), data.getData().toByteArray());
                     return this;
                 }
         ));

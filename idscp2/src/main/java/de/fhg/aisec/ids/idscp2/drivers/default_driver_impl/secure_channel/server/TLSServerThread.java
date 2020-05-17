@@ -2,7 +2,7 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.serve
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsSessionVerificationHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
@@ -34,12 +34,12 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
     private DataOutputStream out;
     private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
     private IDSCPv2Callback configCallback;  //no race conditions
-    private IdscpConnectionListener idscpServerCallback; //no race conditions
+    private IdscpServerListener idscpServerCallback; //no race conditions
     private CountDownLatch listenerLatch = new CountDownLatch(1);
     private CountDownLatch tlsVerificationLatch = new CountDownLatch(1);
 
 
-    TLSServerThread(SSLSocket sslSocket, IDSCPv2Callback configCallback, IdscpConnectionListener idscpServerCallback){
+    TLSServerThread(SSLSocket sslSocket, IDSCPv2Callback configCallback, IdscpServerListener idscpServerCallback){
         this.sslSocket = sslSocket;
         this.configCallback = configCallback;
         this.idscpServerCallback = idscpServerCallback;

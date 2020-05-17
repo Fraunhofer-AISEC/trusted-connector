@@ -1,6 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 
 /**
@@ -21,7 +21,7 @@ public interface IDSCPv2Callback {
      */
     void secureChannelListenHandler(
         SecureChannel secureChannel,
-        IdscpConnectionListener idscpServer
+        IdscpServerListener idscpServer
     );
 
 }

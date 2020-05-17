@@ -65,14 +65,27 @@ public class IdscpMessageFactory {
                 .build();
     }
 
-    public static IdscpMessage createIdscpDataMessage(byte[] data){
-        IdscpData idscpData = IdscpData.newBuilder()
-                .setData(ByteString.copyFrom(data))
-                .build();
+    public static IdscpMessage createIdscpDataMessage(String type, Integer typeTag, byte[] data) {
+        IdscpData.Builder idscpData = IdscpData.newBuilder()
+                .setData(ByteString.copyFrom(data));
+        if (type != null) {
+            idscpData.setType(type);
+        }
+        if (typeTag != null) {
+            idscpData.setTypeTag(typeTag);
+        }
 
         return IdscpMessage.newBuilder()
                 .setIdscpData(idscpData)
                 .build();
+    }
+
+    public static IdscpMessage createIdscpDataMessage(int shortType, byte[] data) {
+        return createIdscpDataMessage(null, shortType, data);
+    }
+
+    public static IdscpMessage createIdscpDataMessage(String type, byte[] data) {
+        return createIdscpDataMessage(type, null, data);
     }
 
     public static IdscpMessage createIdscpRatProverMessage(byte[] body){

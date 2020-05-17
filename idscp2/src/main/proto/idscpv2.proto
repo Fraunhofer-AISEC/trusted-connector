@@ -17,12 +17,21 @@ message IdscpMessage {
   }
 }
 
-//IDSCP messages
+// IDSCP messages
+
 message IdscpHello {
-  int32 version = 1;                      //IDSCP protocol version
-  IdscpDat dynamicAttributeToken = 2;     //initial dynamicAttributeToken
-  repeated string supportedRatSuite = 3;  //RemoteAttestationCipher prover
-  repeated string expectedRatSuite = 4;   //RemoteAttestationCipher verifier
+  // IDSCP protocol version
+  int32 version = 1;
+  // Initial dynamic attribute token (DAT)
+  IdscpDat dynamicAttributeToken = 2;
+  // Set of supported remote attestation (RAT) methods (prover role)
+  repeated string supportedRatSuite = 3;
+  // Set of accepted RAT methods (verifier role)
+  repeated string expectedRatSuite = 4;
+  // Maximum number of supported message type cache entries
+  int32 maxCacheEntries = 5;
+  // Maximum supported total length of type cache entries in UTF-8
+  int32 maxTotalCacheSize = 6;
 }
 
 message IdscpClose {
@@ -42,15 +51,17 @@ message IdscpClose {
   string cause_msg = 2;
 }
 
-message IdscpDatExpired {           //request new dynamicAttributeToken
+// For requesting new DAT
+message IdscpDatExpired {
 }
 
 message IdscpDat {
   bytes token = 1;
 }
 
-message IdscpReRat {                //request new remoteAttestatio
-  string cause = 1;               //optional
+// For requesting new RAT
+message IdscpReRat {
+  string cause = 1;
 }
 
 message IdscpRatProver {
@@ -62,5 +73,10 @@ message IdscpRatVerifier {
 }
 
 message IdscpData {
-  bytes data = 1 ;
+  // Payload
+  bytes data = 1;
+  // Message type (e.g. MIME type) as string
+  string type = 2;
+  // Integer for cached types or type caching
+  int32 typeTag = 3;
 }

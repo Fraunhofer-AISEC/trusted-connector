@@ -6,7 +6,7 @@ import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,15 +47,14 @@ public class NativeTLSDriver implements SecureChannelDriver {
      */
     @Override
     public SecureServer listen(IDSCPv2Settings settings, IDSCPv2Callback configCallback,
-                               IdscpConnectionListener idscpServerCallback) {
+                               IdscpServerListener idscpServerCallback) {
         try {
             TLSServer tlsServer = new TLSServer(settings, configCallback, idscpServerCallback);
             tlsServer.start();
             return tlsServer;
 
         } catch (IOException | NoSuchAlgorithmException | KeyManagementException e){
-            LOG.error("listen() failed. {}", e.getMessage());
-            LOG.debug(Arrays.toString(e.getStackTrace()));
+            LOG.error("listen() failed.", e);
         }
 
         return null;

@@ -2,7 +2,7 @@ package de.fhg.aisec.ids.idscp2.drivers.interfaces;
 
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
 
 /**
  * An interface for the IDSCPv2 SecureChannelDriver class, that implements a connect() function
@@ -21,5 +21,5 @@ public interface SecureChannelDriver {
      * Starting a secure server
      */
     SecureServer listen(IDSCPv2Settings settings, IDSCPv2Callback configCallback,
-                        IdscpConnectionListener idscpServerCallback);
+                        IdscpServerListener idscpServerCallback);
 }

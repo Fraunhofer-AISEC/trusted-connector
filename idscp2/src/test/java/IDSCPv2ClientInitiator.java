@@ -10,17 +10,16 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifier
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IDSCPv2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.IdscpConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Configuration;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
 public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
-
-    private ConcurrentHashMap<String, IDSCPv2Connection> connections = new ConcurrentHashMap<>();
 
     public void init(IDSCPv2Settings settings){
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
@@ -63,19 +62,30 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
     }
 
     @Override
-    public void newConnectionHandler(IDSCPv2Connection connection) {
-        this.connections.put(connection.getConnectionId(), connection);
-        System.out.println("User: New connection with id " + connection.getConnectionId());
+    public void newConnectionHandler(Idscp2Connection connection) {
+        System.out.println("Client: New connection with id " + connection.getConnectionId());
+        connection.addConnectionListener(new IdscpConnectionListener() {
+            @Override
+            public void onError(String error) {
+                System.out.println("Client error occurred: " + error);
+            }
+
+            @Override
+            public void onClose(String connectionId) {
+                System.out.println("Client: Connection with id " + connectionId + " has been closed");
+            }
+        });
+        connection.addGenericMessageListener(((type, data) -> System.out.println(
+            "Received message of type \"" + type + "\":\n" + new String(data, StandardCharsets.UTF_8))));
+        // Register listener for server reply
+        connection.addMessageListener("pong", (type, data) ->
+            System.out.println("Received pong message: " + new String(data, StandardCharsets.UTF_8)));
+        System.out.println("Sending PING...");
+        connection.send("ping", "PING".getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
     public void errorHandler(String error) {
-        System.out.println("User: Error occurred: " + error);
-    }
-
-    @Override
-    public void connectionClosedHandler(String connectionId) {
-        System.out.println("User: Connection closed");
-        connections.remove(connectionId);
+        System.out.println("Client error occurred: " + error);
     }
 }

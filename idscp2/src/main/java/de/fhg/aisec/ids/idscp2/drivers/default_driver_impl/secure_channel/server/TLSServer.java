@@ -5,7 +5,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfigur
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpConnectionListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +26,12 @@ public class TLSServer extends Thread implements SecureServer {
     private static final Logger LOG = LoggerFactory.getLogger(TLSServer.class);
 
     private volatile boolean isRunning = false;
-    private ServerSocket serverSocket;
-    private IDSCPv2Callback idscpConfigCallback; //no race conditions
-    private IdscpConnectionListener idscpServerCallback;
+    private final ServerSocket serverSocket;
+    private final IDSCPv2Callback idscpConfigCallback; //no race conditions
+    private final IdscpServerListener idscpServerCallback;
 
     public TLSServer(IDSCPv2Settings serverSettings, IDSCPv2Callback configCallback,
-                     IdscpConnectionListener idscpServerCallback)
+                     IdscpServerListener idscpServerCallback)
             throws IOException, NoSuchAlgorithmException, KeyManagementException {
         this.idscpConfigCallback = configCallback;
         this.idscpServerCallback = idscpServerCallback;
@@ -115,7 +115,7 @@ public class TLSServer extends Thread implements SecureServer {
             server.start();
         }
 
-        if (serverSocket != null && !serverSocket.isClosed()){
+        if (!serverSocket.isClosed()){
             try {
                 serverSocket.close();
             } catch (IOException e) {

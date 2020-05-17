@@ -3,8 +3,8 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.*;
 import de.fhg.aisec.ids.idscp2.error.IDSCPv2Exception;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMsgListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
@@ -31,7 +31,7 @@ public class FSM implements FsmListener{
     private static final Logger LOG = LoggerFactory.getLogger(FSM.class);
 
     /*  -----------   IDSCPv2 Protocol States   ---------- */
-    private HashMap<FSM_STATE, State> states = new HashMap<>();
+    private final HashMap<FSM_STATE, State> states = new HashMap<>();
 
     enum FSM_STATE {
         STATE_CLOSED,
@@ -47,7 +47,7 @@ public class FSM implements FsmListener{
     private State currentState;
     /*  ----------------   end of states   --------------- */
 
-    private SecureChannel secureChannel; //secure underlying channel
+    private final SecureChannel secureChannel; //secure underlying channel
 
     private RatProverDriver ratProverDriver;
     private RatVerifierDriver ratVerifierDriver;
@@ -72,8 +72,8 @@ public class FSM implements FsmListener{
      * And a listener latch to ensure that the listener is available and the message does not get
      * lost
      */
-    private IdscpMsgListener listener = null;
-    private final CountDownLatch listenerLatch = new CountDownLatch(1);
+    private Idscp2Connection connection;
+    private final CountDownLatch connectionLatch = new CountDownLatch(1);
 
     /*
      * A FIFO-fair synchronization lock for the finite state machine
@@ -99,11 +99,11 @@ public class FSM implements FsmListener{
     private boolean fsmIsClosed = false;
 
     /* ---------------------- Timer ---------------------- */
-    private Timer datTimer;
-    private Timer ratTimer;
-    private Timer handshakeTimer;
-    private Timer proverHandshakeTimer;
-    private Timer verifierHandshakeTimer;
+    private final Timer datTimer;
+    private final Timer ratTimer;
+    private final Timer handshakeTimer;
+    private final Timer proverHandshakeTimer;
+    private final Timer verifierHandshakeTimer;
     /*  ----------------   end of Timer   --------------- */
 
     public FSM(SecureChannel secureChannel, DapsDriver dapsDriver,
@@ -451,18 +451,18 @@ public class FSM implements FsmListener{
     /*
      * Send idscp message from the User via the secure channel
      */
-    public void send(byte[] msg){
+    public void send(String type, byte[] msg){
         //send messages from user only when idscp connection is established
         fsmIsBusy.lock();
         try{
             if(isConnected()){
-                IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpDataMessage(msg);
+                IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpDataMessage(type, msg);
                 if (!secureChannel.send(idscpMessage.toByteArray())) {
                     LOG.error("Cannot send IDSCP_DATA via secure channel");
                     onControlMessage(InternalControlMessage.ERROR);
                 }
             } else {
-                LOG.error("Cannot send IDSCP_DATA because protocol is not established");
+                LOG.error("Cannot send IDSCP_DATA because connection is not established");
             }
         } finally {
             fsmIsBusy.unlock();
@@ -479,9 +479,9 @@ public class FSM implements FsmListener{
     /*
      * Register an IDSCPv2 message listener
      */
-    public void registerMessageListener(IdscpMsgListener listener){
-        this.listener = listener;
-        listenerLatch.countDown();
+    public void registerConnection(Idscp2Connection connection){
+        this.connection = connection;
+        connectionLatch.countDown();
     }
 
     /*
@@ -543,8 +543,8 @@ public class FSM implements FsmListener{
     /*
      * Terminate the RatVerifierDriver
      */
-    void stopRatVerifierDriver(){
-        this.verifierHandshakeTimer.cancelTimeout();
+    void stopRatVerifierDriver() {
+        verifierHandshakeTimer.cancelTimeout();
         if (ratVerifierDriver != null && ratVerifierDriver.isAlive()){
             ratVerifierDriver.interrupt();
             ratVerifierDriver.terminate();
@@ -578,7 +578,7 @@ public class FSM implements FsmListener{
      * Terminate the RatProverDriver
      */
     void stopRatProverDriver(){
-        this.proverHandshakeTimer.cancelTimeout();
+        proverHandshakeTimer.cancelTimeout();
         if (ratProverDriver != null && ratProverDriver.isAlive()){
             ratProverDriver.interrupt();
             ratProverDriver.terminate();
@@ -589,29 +589,22 @@ public class FSM implements FsmListener{
      * Lock the fsm forever, terminate the timers and drivers, close the secure channel
      * and notify User or handshake lock about closure
      */
-    void lockFsm(){
-        try {
-            secureChannel.close();
-            this.datTimer.cancelTimeout();
-            this.datTimer = null;
-            this.ratTimer.cancelTimeout();
-            this.ratTimer = null;
-            this.handshakeTimer.cancelTimeout();
-            this.handshakeTimer = null;
-            this.proverHandshakeTimer.cancelTimeout();
-            this.proverHandshakeTimer = null;
-            this.verifierHandshakeTimer.cancelTimeout();
-            this.verifierHandshakeTimer = null;
-            this.stopRatProverDriver();
-            this.stopRatVerifierDriver();
-            fsmIsClosed = true;
-        } catch (NullPointerException ignored){}
+    void shutdownFsm() {
+        secureChannel.close();
+        datTimer.cancelTimeout();
+        ratTimer.cancelTimeout();
+        handshakeTimer.cancelTimeout();
+        // Cancels proverHandshakeTimer
+        this.stopRatProverDriver();
+        // Cancels verifierHandshakeTimer
+        this.stopRatVerifierDriver();
+        fsmIsClosed = true;
 
         //notify upper layer via handshake or closeListener
         try {
-            if (handshakeResultAvailable){
-                listenerLatch.await();
-                listener.onClose();
+            if (handshakeResultAvailable) {
+                connectionLatch.await();
+                connection.onClose();
             } else {
                 notifyHandshakeCompleteLock();
             }
@@ -623,10 +616,10 @@ public class FSM implements FsmListener{
     /*
      * Provide IDSCPv2 message to the message listener
      */
-    void notifyIdscpMsgListener(byte[] data) {
+    void notifyIdscpMsgListener(String type, byte[] data) {
         try {
-            this.listenerLatch.await();
-            this.listener.onMessage(data);
+            this.connectionLatch.await();
+            this.connection.onMessage(type, data);
             LOG.debug("Idscp data were passed to connection listener");
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
