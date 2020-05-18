@@ -1,15 +1,14 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.units.qual.A;
 
 /**
- * IDSCPv2 configuration class, contains information about keyStore and TrustStores,
+ * IDSCP2 configuration class, contains information about keyStore and TrustStores,
  * Attestation Types, host, DAPS, ...
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class IDSCPv2Settings {
+public class Idscp2Settings {
     public static final int DEFAULT_SERVER_PORT = 8080;
 
     private int serverPort = DEFAULT_SERVER_PORT;
@@ -25,13 +24,20 @@ public class IDSCPv2Settings {
     private AttestationConfig expectedAttestation = new AttestationConfig();
     private int ratTimeoutDelay = 20;
 
+    @SuppressWarnings("unused")
     public static class Builder {
         @NonNull
-        private IDSCPv2Settings settings = new IDSCPv2Settings();
+        private final Idscp2Settings settings = new Idscp2Settings();
 
         @NonNull
         public Builder setHost(String host) {
             this.settings.host = host;
+            return this;
+        }
+
+        @NonNull
+        public Builder setServerPort(int serverPort) {
+            this.settings.serverPort = serverPort;
             return this;
         }
 
@@ -95,7 +101,7 @@ public class IDSCPv2Settings {
         }
 
         @NonNull
-        public IDSCPv2Settings build() {
+        public Idscp2Settings build() {
             return this.settings;
         }
 

@@ -1,9 +1,10 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d;
 
 
 import com.google.protobuf.ByteString;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.*;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.RemoteToTpm2d.Code;
+
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class TpmMessageFactory {
+public class TPM2dMessageFactory {
 
   static Tpm2dMessageWrapper getAttestationChallengeMessage(
       byte[] nonce,

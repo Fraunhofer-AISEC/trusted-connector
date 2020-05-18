@@ -1,11 +1,11 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server;
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Callback;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +15,10 @@ import java.net.ServerSocket;
 import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * A TLS Server that listens on a given port from the IDSCPv2Settings and create new
+ * A TLS Server that listens on a given port from the Idscp2Settings and create new
  * TLSServerThreads for incoming connections
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
@@ -27,14 +28,14 @@ public class TLSServer extends Thread implements SecureServer {
 
     private volatile boolean isRunning = false;
     private final ServerSocket serverSocket;
-    private final IDSCPv2Callback idscpConfigCallback; //no race conditions
-    private final IdscpServerListener idscpServerCallback;
+    private final Idscp2Callback idscpConfigCallback; //no race conditions
+    private final CompletableFuture<Idscp2Connection> connectionPromise;
 
-    public TLSServer(IDSCPv2Settings serverSettings, IDSCPv2Callback configCallback,
-                     IdscpServerListener idscpServerCallback)
+    public TLSServer(Idscp2Settings serverSettings, Idscp2Callback configCallback,
+                     CompletableFuture<Idscp2Connection> connectionPromise)
             throws IOException, NoSuchAlgorithmException, KeyManagementException {
         this.idscpConfigCallback = configCallback;
-        this.idscpServerCallback = idscpServerCallback;
+        this.connectionPromise = connectionPromise;
 
         /* init server for TCP/TLS communication */
 
@@ -110,7 +111,7 @@ public class TLSServer extends Thread implements SecureServer {
 
             //start new server thread
             LOG.debug("New TLS client has connected. Create new server session");
-            TLSServerThread server = new TLSServerThread(sslSocket, idscpConfigCallback, idscpServerCallback);
+            TLSServerThread server = new TLSServerThread(sslSocket, idscpConfigCallback, connectionPromise);
             sslSocket.addHandshakeCompletedListener(server);
             server.start();
         }

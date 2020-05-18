@@ -14,7 +14,7 @@ public class SecurityRequirements {
   private int auditLogging;
 
   public static class Builder {
-   @NonNull private SecurityRequirements requirements = new SecurityRequirements();
+   @NonNull private final SecurityRequirements requirements = new SecurityRequirements();
 
    @NonNull
    public Builder setAuditLogging(int auditLogging) {

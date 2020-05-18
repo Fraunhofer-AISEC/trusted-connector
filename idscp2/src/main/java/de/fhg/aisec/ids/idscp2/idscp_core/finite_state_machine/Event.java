@@ -1,8 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
-import de.fhg.aisec.ids.messages.IDSCPv2.*;
-
-import javax.swing.*;
+import de.fhg.aisec.ids.messages.IDSCP2.IdscpMessage;
 
 /**
  * An Event class for the Finite State Machine. Triggers a transition and holds
@@ -16,10 +14,10 @@ public class Event {
         INTERNAL_CONTROL_MESSAGE
     }
 
-    private Object key;
-    private EventType type;
-    private IdscpMessage idscpMessage;
-    private InternalControlMessage controlMessage;
+    private final Object key;
+    private final EventType type;
+    private final IdscpMessage idscpMessage;
+    private final InternalControlMessage controlMessage;
 
     /*
      * Create an Event with an Internal Control Message

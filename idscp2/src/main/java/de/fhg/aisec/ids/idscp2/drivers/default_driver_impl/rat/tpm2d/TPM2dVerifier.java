@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver;
@@ -65,7 +65,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
    */
 
   private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
-  private Tpm2dVerifierConfig config = new Tpm2dVerifierConfig.Builder().build();
+  private TPM2dVerifierConfig config = new TPM2dVerifierConfig.Builder().build();
 
   public TPM2dVerifier(){
     super();
@@ -73,9 +73,9 @@ public class TPM2dVerifier extends RatVerifierDriver {
 
   @Override
   public void setConfig(Object config) {
-    if (config instanceof Tpm2dVerifierConfig) {
+    if (config instanceof TPM2dVerifierConfig) {
       LOG.debug("Set rat verifier config");
-      this.config = (Tpm2dVerifierConfig) config;
+      this.config = (TPM2dVerifierConfig) config;
     } else {
       LOG.warn("Invalid config");
     }
@@ -96,7 +96,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
     byte[] nonce = TPM2dHelper.generateNonce(20);
 
     // send challenge as RAT Verifier Message
-    byte[] ratChallenge = TpmMessageFactory.getAttestationChallengeMessage(
+    byte[] ratChallenge = TPM2dMessageFactory.getAttestationChallengeMessage(
         nonce, config.getExpectedAType(), config.getExpectedAttestationMask()).toByteArray();
 
     fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG, ratChallenge);
@@ -150,7 +150,7 @@ public class TPM2dVerifier extends RatVerifierDriver {
 
     // create and send rat result
     LOG.debug("Send rat result to remote prover");
-    byte[] ratResult = TpmMessageFactory.getAttestationResultMessage(result).toByteArray();
+    byte[] ratResult = TPM2dMessageFactory.getAttestationResultMessage(result).toByteArray();
     fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_MSG, ratResult);
 
     // notify fsm about result

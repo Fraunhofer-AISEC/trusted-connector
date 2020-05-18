@@ -1,10 +1,12 @@
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
+package de.fhg.aisec.ids.idscp2.example;
 
-public class RunTLSServer{
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
+
+public class RunTLSServer {
 
     public static void main(String[] argv){
 
-        IDSCPv2Settings settings = new IDSCPv2Settings.Builder()
+        Idscp2Settings settings = new Idscp2Settings.Builder()
             .setKeyStore(RunTLSClient.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStore(RunTLSServer.class.getClassLoader().
@@ -14,7 +16,7 @@ public class RunTLSServer{
             .setRatTimeoutDelay(14)
             .build();
 
-        IDSCPv2ServerInitiator initiator = new IDSCPv2ServerInitiator();
+        Idscp2ServerInitiator initiator = new Idscp2ServerInitiator();
         initiator.init(settings);
     }
 }

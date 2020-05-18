@@ -1,14 +1,14 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCPv2;
+import de.fhg.aisec.ids.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Wait_For_Hello State of the FSM of the IDSCPv2 protocol.
+ * The Wait_For_Hello State of the FSM of the IDSCP2 protocol.
  * Waits for the Idscpv2 Hellp Message that contains the protocol version, the supported and
  * expected remote attestation cipher suites and the dynamic attribute token (DAT) of the peer.
  *
@@ -53,8 +53,8 @@ public class StateWaitForHello extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Received stop signal from user. Send IDSC_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close",
-                            IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            IDSCP2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -62,33 +62,33 @@ public class StateWaitForHello extends State {
         this.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("Handshake Timeout",
-                            IDSCPv2.IdscpClose.CloseCause.TIMEOUT));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake Timeout",
+                            IDSCP2.IdscpClose.CloseCause.TIMEOUT));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPHELLO_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPHELLO_FIELD_NUMBER, new Transition(
                 event -> {
                     handshakeTimer.cancelTimeout();
 
                     LOG.debug("Received IDSCP_HELLO");
-                    IDSCPv2.IdscpHello idscpHello = event.getIdscpMessage().getIdscpHello();
+                    IDSCP2.IdscpHello idscpHello = event.getIdscpMessage().getIdscpHello();
 
                     LOG.debug("Calculate Rat mechanisms");
                     String proverMechanism = fsm.getRatProverMechanism(localSupportedRatSuite,
                             idscpHello.getExpectedRatSuiteList().toArray());
                     if (proverMechanism == null){
                         LOG.debug("Cannot find a match for RAT proverr. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("No match for RAT Prover mechanism",
-                                IDSCPv2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_PROVER));
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No match for RAT Prover mechanism",
+                                IDSCP2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_PROVER));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
 
@@ -96,20 +96,19 @@ public class StateWaitForHello extends State {
                             idscpHello.getSupportedRatSuiteList().toArray());
                     if (verifierMechanism == null){
                         LOG.debug("Cannot find a match for RAT verifier. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("No match for RAT Verifier mechanism",
-                                IDSCPv2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_VERIFIER));
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No match for RAT Verifier mechanism",
+                                IDSCP2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_VERIFIER));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
 
                     LOG.debug("Verify received DAT");
                     //check if Dat is available and verify dat
-                    byte[] dat;
                     long datValidityPeriod;
                     if (!idscpHello.hasDynamicAttributeToken() || 0 > (datValidityPeriod = dapsDriver
-                            .verifyToken(dat = idscpHello.getDynamicAttributeToken().getToken().toByteArray(), null))){
+                            .verifyToken(idscpHello.getDynamicAttributeToken().getToken().toByteArray(), null))){
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("No valid DAT",
-                                IDSCPv2.IdscpClose.CloseCause.NO_VALID_DAT));
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No valid DAT",
+                                IDSCP2.IdscpClose.CloseCause.NO_VALID_DAT));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
 

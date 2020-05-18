@@ -3,10 +3,11 @@ package de.fhg.aisec.ids.idscp2.idscp_core.secure_channel;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FsmListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A secureChannel which is the secure underlying basis of the IDSCPv2 protocol,
+ * A secureChannel which is the secure underlying basis of the IDSCP2 protocol,
  * that implements a secureChannelListener
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
@@ -14,8 +15,8 @@ import java.util.concurrent.CountDownLatch;
 public class SecureChannel implements SecureChannelListener {
     private static final Logger LOG = LoggerFactory.getLogger(SecureChannel.class);
 
-    private SecureChannelEndpoint endpoint;
-    private CountDownLatch fsmLatch = new CountDownLatch(1);
+    private final SecureChannelEndpoint endpoint;
+    private final CountDownLatch fsmLatch = new CountDownLatch(1);
     private FsmListener fsm = null;
 
     public SecureChannel(SecureChannelEndpoint secureChannelEndpoint){

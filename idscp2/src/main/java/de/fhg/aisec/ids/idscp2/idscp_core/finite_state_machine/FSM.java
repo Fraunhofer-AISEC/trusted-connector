@@ -1,14 +1,16 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.*;
-import de.fhg.aisec.ids.idscp2.error.IDSCPv2Exception;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver;
+import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
-import de.fhg.aisec.ids.messages.IDSCPv2.*;
+import de.fhg.aisec.ids.messages.IDSCP2.IdscpMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +20,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * The finite state machine FSM of the IDSCPv2 protocol
+ * The finite state machine FSM of the IDSCP2 protocol
  *
- * Manages IDSCPv2 Handshake, Re-Attestation, DAT-ReRequest and DAT-Re-Validation. Delivers
+ * Manages IDSCP2 Handshake, Re-Attestation, DAT-ReRequest and DAT-Re-Validation. Delivers
  * Internal Control Messages and Idscpv2Messages to the target receivers,
  * creates and manages the states and its transitions and implements security restriction to protect
  * the protocol against misuse and faulty, insecure or evil driver implementations.
@@ -30,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class FSM implements FsmListener{
     private static final Logger LOG = LoggerFactory.getLogger(FSM.class);
 
-    /*  -----------   IDSCPv2 Protocol States   ---------- */
+    /*  -----------   IDSCP2 Protocol States   ---------- */
     private final HashMap<FSM_STATE, State> states = new HashMap<>();
 
     enum FSM_STATE {
@@ -68,7 +70,7 @@ public class FSM implements FsmListener{
     private String verifierMechanism = null; //RAT Verifier mechanism
 
     /*
-     * The idscp message listener, that should receive the IDSCPv2 messages from the fsm
+     * The idscp message listener, that should receive the IDSCP2 messages from the fsm
      * And a listener latch to ensure that the listener is available and the message does not get
      * lost
      */
@@ -205,7 +207,7 @@ public class FSM implements FsmListener{
     }
 
     /*
-     * Get a new IDSCPv2 Message from the secure channel and provide it as an event to the fsm
+     * Get a new IDSCP2 Message from the secure channel and provide it as an event to the fsm
      *
      * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
      * driver implementations
@@ -286,7 +288,7 @@ public class FSM implements FsmListener{
         if (ratMessage == null){
             e = new Event(controlMessage);
         } else {
-            IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpRatProverMessage(ratMessage);
+            IdscpMessage idscpMessage = Idscp2MessageHelper.createIdscpRatProverMessage(ratMessage);
             e = new Event(controlMessage, idscpMessage);
         }
 
@@ -324,7 +326,7 @@ public class FSM implements FsmListener{
         if (ratMessage == null){
             e = new Event(controlMessage);
         } else {
-            IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpRatVerifierMessage(ratMessage);
+            IdscpMessage idscpMessage = Idscp2MessageHelper.createIdscpRatVerifierMessage(ratMessage);
             e = new Event(controlMessage, idscpMessage);
         }
 
@@ -370,12 +372,12 @@ public class FSM implements FsmListener{
     }
 
     /*
-     * API for the user to start the IDSCPv2 handshake
+     * API for the user to start the IDSCP2 handshake
      *
      * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
      * driver implementations
      */
-    public void startIdscpHandshake() throws IDSCPv2Exception {
+    public void startIdscpHandshake() throws Idscp2Exception {
 
         //check for incorrect usage
         checkForFsmCircles();
@@ -384,7 +386,7 @@ public class FSM implements FsmListener{
         try {
             if (currentState.equals(states.get(FSM_STATE.STATE_CLOSED))) {
                 if (fsmIsClosed) {
-                    throw new IDSCPv2Exception("FSM is in a final closed state forever");
+                    throw new Idscp2Exception("FSM is in a final closed state forever");
                 }
 
                 //trigger handshake init
@@ -397,14 +399,14 @@ public class FSM implements FsmListener{
 
                 if (!isConnected()){
                     //handshake failed, throw exception
-                    throw new IDSCPv2Exception("Handshake failed");
+                    throw new Idscp2Exception("Handshake failed");
                 }
 
             } else {
-                throw new IDSCPv2Exception("Handshake has already been started");
+                throw new Idscp2Exception("Handshake has already been started");
             }
         } catch (InterruptedException e) {
-            throw new IDSCPv2Exception("Handshake failed because thread was interrupted");
+            throw new Idscp2Exception("Handshake failed because thread was interrupted");
         } finally {
             fsmIsBusy.unlock();
         }
@@ -456,7 +458,7 @@ public class FSM implements FsmListener{
         fsmIsBusy.lock();
         try{
             if(isConnected()){
-                IdscpMessage idscpMessage = IdscpMessageFactory.createIdscpDataMessage(type, msg);
+                IdscpMessage idscpMessage = Idscp2MessageHelper.createIdscpDataMessage(type, msg);
                 if (!secureChannel.send(idscpMessage.toByteArray())) {
                     LOG.error("Cannot send IDSCP_DATA via secure channel");
                     onControlMessage(InternalControlMessage.ERROR);
@@ -477,7 +479,7 @@ public class FSM implements FsmListener{
     }
 
     /*
-     * Register an IDSCPv2 message listener
+     * Register an IDSCP2 message listener
      */
     public void registerConnection(Idscp2Connection connection){
         this.connection = connection;
@@ -523,6 +525,7 @@ public class FSM implements FsmListener{
      *
      * return false if no match was found
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean restartRatVerifierDriver(){
         //assume verifier mechanism is set
         stopRatVerifierDriver();
@@ -557,6 +560,7 @@ public class FSM implements FsmListener{
      *
      * return false if no match was found
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean restartRatProverDriver(){
         //assume prover mechanism is set
         stopRatProverDriver();
@@ -614,7 +618,7 @@ public class FSM implements FsmListener{
     }
 
     /*
-     * Provide IDSCPv2 message to the message listener
+     * Provide IDSCP2 message to the message listener
      */
     void notifyIdscpMsgListener(String type, byte[] data) {
         try {

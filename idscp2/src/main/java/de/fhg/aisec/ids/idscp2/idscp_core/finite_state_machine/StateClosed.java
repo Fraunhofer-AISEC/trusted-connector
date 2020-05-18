@@ -2,16 +2,16 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCPv2;
+import de.fhg.aisec.ids.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.Condition;
 
 /**
- * The Closed State of the FSM of the IDSCPv2 protocol.
+ * The Closed State of the FSM of the IDSCP2 protocol.
  * The FSM is in the Closed state either before any transition was triggered (in this case, the
  * Closed State is the FSM Start state) or after the connection was closed (in this case, the
  * Closed State is the FSM final state without any outgoing transitions)
@@ -44,7 +44,7 @@ class StateClosed extends State {
                     byte[] dat = dapsDriver.getToken();
 
                     LOG.debug("Send IDSCP_HELLO");
-                    IDSCPv2.IdscpMessage idscpHello = IdscpMessageFactory.
+                    IDSCP2.IdscpMessage idscpHello = Idscp2MessageHelper.
                         createIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite);
 
                     if (!fsm.sendFromFSM(idscpHello)) {

@@ -1,11 +1,12 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TPM2dHelper {
   private static final Logger LOG = LoggerFactory.getLogger(TPM2dHelper.class);

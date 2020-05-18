@@ -1,27 +1,29 @@
-import de.fhg.aisec.ids.idscp2.IDSCPv2Initiator;
+package de.fhg.aisec.ids.idscp2.example;
+
+import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.TPM2dProver;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.TPM2dVerifier;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.Tpm2dProverConfig;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d.Tpm2dVerifierConfig;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProverConfig;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpConnectionListener;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Configuration;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry;
 
 import java.nio.charset.StandardCharsets;
 
-public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
+public class Idscp2ClientInitiator implements Idscp2EndpointListener {
 
-    public void init(IDSCPv2Settings settings){
+    public void init(Idscp2Settings settings){
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
         DefaultDapsDriverConfig config =
             new DefaultDapsDriverConfig.Builder()
@@ -43,14 +45,14 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
 
         RatProverDriverRegistry.getInstance().registerDriver(
             "TPM2d", TPM2dProver.class,
-            new Tpm2dProverConfig.Builder().build()
+            new TPM2dProverConfig.Builder().build()
         );
         RatVerifierDriverRegistry.getInstance().registerDriver(
             "TPM2d", TPM2dVerifier.class,
-            new Tpm2dVerifierConfig.Builder().build()
+            new TPM2dVerifierConfig.Builder().build()
         );
 
-        IDSCPv2Configuration clientConfig = new IDSCPv2Configuration(
+        Idscp2Configuration clientConfig = new Idscp2Configuration(
             this,
             dapsDriver,
             secureChannelDriver,
@@ -62,12 +64,12 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
     }
 
     @Override
-    public void newConnectionHandler(Idscp2Connection connection) {
+    public void onConnection(Idscp2Connection connection) {
         System.out.println("Client: New connection with id " + connection.getConnectionId());
-        connection.addConnectionListener(new IdscpConnectionListener() {
+        connection.addConnectionListener(new Idscp2ConnectionListener() {
             @Override
             public void onError(String error) {
-                System.out.println("Client error occurred: " + error);
+                System.out.println("Client connection error occurred: " + error);
             }
 
             @Override
@@ -85,7 +87,7 @@ public class IDSCPv2ClientInitiator implements IDSCPv2Initiator {
     }
 
     @Override
-    public void errorHandler(String error) {
-        System.out.println("Client error occurred: " + error);
+    public void onError(String error) {
+        System.out.println("Client endpoint error occurred: " + error);
     }
 }

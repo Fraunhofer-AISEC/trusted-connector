@@ -12,7 +12,7 @@ import java.util.function.Function;
  */
 public class State {
 
-    private ConcurrentHashMap<Object,Transition> transitions = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Object,Transition> transitions = new ConcurrentHashMap<>();
     private Function<Event,State> noTransitionHandler = null;
 
     /*

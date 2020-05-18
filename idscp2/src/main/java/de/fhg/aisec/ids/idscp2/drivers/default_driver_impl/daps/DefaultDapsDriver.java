@@ -4,22 +4,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfigur
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import java.io.IOException;
-import java.security.Key;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509ExtendedTrustManager;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 import org.jose4j.http.Get;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
@@ -36,6 +21,18 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
+import java.io.IOException;
+import java.security.Key;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Default DAPS Driver Implementation for requesting valid dynamicAttributeToken and verifying DAT
  *
@@ -44,12 +41,12 @@ import org.slf4j.LoggerFactory;
 public class DefaultDapsDriver implements DapsDriver {
     private static final  Logger LOG = LoggerFactory.getLogger(DefaultDapsDriver.class);
 
-    private SSLSocketFactory sslSocketFactory; //ssl socket factory can be reused
-    private X509ExtendedTrustManager trustManager; //trust manager can be reused
-    private Key privateKey; //private key can be reused
-    private String connectorUUID;
-    private String dapsUrl;
-    private String targetAudience = "IDS_Connector";
+    private final SSLSocketFactory sslSocketFactory; //ssl socket factory can be reused
+    private final X509ExtendedTrustManager trustManager; //trust manager can be reused
+    private final Key privateKey; //private key can be reused
+    private final String connectorUUID;
+    private final String dapsUrl;
+    private final String targetAudience = "IDS_Connector";
 
     public DefaultDapsDriver(DefaultDapsDriverConfig config) {
 

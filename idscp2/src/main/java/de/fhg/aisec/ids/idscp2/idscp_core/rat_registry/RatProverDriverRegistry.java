@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RatProverDriverRegistry {
     private static RatProverDriverRegistry instance;
-    private static ConcurrentHashMap<String, DriverWrapper> drivers = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, DriverWrapper> drivers = new ConcurrentHashMap<>();
 
     private RatProverDriverRegistry(){}
 
@@ -82,8 +82,8 @@ public class RatProverDriverRegistry {
      * An inner static wrapper class, that wraps driver config and driver class
      */
     private static class DriverWrapper {
-        private Class<? extends RatProverDriver> driverClass;
-        private Object driverConfig;
+        private final Class<? extends RatProverDriver> driverClass;
+        private final Object driverConfig;
 
         private DriverWrapper(
             Class<? extends RatProverDriver> driverClass,

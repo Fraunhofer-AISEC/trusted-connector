@@ -9,7 +9,7 @@ import java.util.function.Function;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class Transition {
-    private Function<Event,State> eventHandler;
+    private final Function<Event,State> eventHandler;
 
     Transition(Function<Event,State> eventHandler){
         this.eventHandler = eventHandler;

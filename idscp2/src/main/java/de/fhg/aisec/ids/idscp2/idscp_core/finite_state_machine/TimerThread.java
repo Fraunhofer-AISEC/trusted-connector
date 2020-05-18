@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class TimerThread extends Thread{
 
     private volatile boolean canceled = false;
-    private long delay; //timeout delay in seconds
+    private final long delay; //timeout delay in seconds
     private final Runnable timeoutHandler; //timeout handler routine
     private final ReentrantLock fsmIsBusy; //lock for the fsm
 

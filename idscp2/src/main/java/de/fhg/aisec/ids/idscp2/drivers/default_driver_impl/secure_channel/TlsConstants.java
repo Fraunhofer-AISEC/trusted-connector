@@ -113,5 +113,5 @@ public final class TlsConstants {
             "TLS_EMPTY_RENEGOTIATION_INFO_SCSV"*/
     };
 
-    private TlsConstants() {};
+    private TlsConstants() {}
 }

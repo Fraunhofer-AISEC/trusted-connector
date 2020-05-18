@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class RatVerifierDummy extends RatVerifierDriver {
     private static final Logger LOG = LoggerFactory.getLogger(RatVerifierDummy.class);
 
-    private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 
     public RatVerifierDummy(){
         super();

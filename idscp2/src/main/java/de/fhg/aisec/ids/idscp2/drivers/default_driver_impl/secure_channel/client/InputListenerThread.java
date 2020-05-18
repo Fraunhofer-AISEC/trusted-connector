@@ -14,7 +14,7 @@ import java.net.SocketTimeoutException;
  */
 public class InputListenerThread extends Thread implements InputListener {
 
-    private DataInputStream in;
+    private final DataInputStream in;
     private DataAvailableListener listener = null; //no race conditions, could be empty list
     private volatile boolean running = true;
 

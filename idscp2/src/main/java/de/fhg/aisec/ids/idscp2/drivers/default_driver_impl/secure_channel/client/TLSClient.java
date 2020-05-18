@@ -1,10 +1,10 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client;
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsSessionVerificationHelper;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Settings;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSessionVerificationHelper;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Callback;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
@@ -21,7 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A TLS Client that notifies an IDSCPv2Configuration when a secure channel was created and the
+ * A TLS Client that notifies an Idscp2Configuration when a secure channel was created and the
  * TLS handshake is done. The client is notified from an InputListenerThread when new data are
  * available and transfer it to the SecureChannelListener
  *
@@ -31,15 +31,15 @@ import java.util.concurrent.CountDownLatch;
 public class TLSClient implements HandshakeCompletedListener, DataAvailableListener, SecureChannelEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(TLSClient.class);
 
-    private Socket clientSocket;
+    private final Socket clientSocket;
     private DataOutputStream out;
     private InputListenerThread inputListenerThread;
     private SecureChannelListener listener; //race conditions are avoided using CountDownLatch
-    private CountDownLatch listenerLatch = new CountDownLatch(1);
-    private IDSCPv2Callback callback; //race conditions are avoided because callback is initialized in constructor
+    private final CountDownLatch listenerLatch = new CountDownLatch(1);
+    private final Idscp2Callback callback;
 
 
-    public TLSClient(IDSCPv2Settings clientSettings, IDSCPv2Callback callback)
+    public TLSClient(Idscp2Settings clientSettings, Idscp2Callback callback)
             throws IOException, KeyManagementException, NoSuchAlgorithmException{
         this.callback = callback;
         /* init TLS Client */
@@ -195,7 +195,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
         // verify tls session on application layer: hostname verification, certificate validity
         try {
-            TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
+            TLSSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
             LOG.debug("TLS session is valid");
         } catch (SSLPeerUnverifiedException e) {
             if (LOG.isWarnEnabled()) {
@@ -207,7 +207,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         }
 
         //Create secure channel, register secure channel as message listener and provide it to
-        // IDSCPv2 Configuration.
+        // IDSCP2 Configuration.
         //Start Input Listener
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;

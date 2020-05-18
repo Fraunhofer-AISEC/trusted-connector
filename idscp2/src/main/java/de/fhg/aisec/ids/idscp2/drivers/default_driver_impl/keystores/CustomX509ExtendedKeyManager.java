@@ -30,7 +30,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     // update on java 11. As we have to check in chooseClientAliases() and chooseServerAlias() if the alias exists in
     // the keystore and we cannot access the cached aliases without an overwritten X509KeyManagerImpl instance, we will
     // also cache the aliases and its properties in the following HashMap.
-    private HashMap<String, CachedAliasValue> cachedAliases = new HashMap<>();
+    private final HashMap<String, CachedAliasValue> cachedAliases = new HashMap<>();
 
     CustomX509ExtendedKeyManager(String alias, String keyType, final X509ExtendedKeyManager delegate){
         super();
@@ -137,8 +137,8 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
 
 
     private static class CachedAliasValue {
-        private String keyType; //key algorithm type name
-        private Principal issuer; //certificate issuer
+        private final String keyType; //key algorithm type name
+        private final Principal issuer; //certificate issuer
 
         CachedAliasValue(String keyType, Principal issuer){
             this.keyType = keyType;

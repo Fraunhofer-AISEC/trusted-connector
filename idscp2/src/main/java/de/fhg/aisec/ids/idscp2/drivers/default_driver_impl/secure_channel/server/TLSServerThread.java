@@ -1,24 +1,28 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server;
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsSessionVerificationHelper;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.IDSCPv2Callback;
-import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.IdscpServerListener;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSessionVerificationHelper;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A TLSServerThread that notifies an IDSCPv2Config when a secure channel was created and the
+ * A TLSServerThread that notifies an IDSCP2Config when a secure channel was created and the
  * TLS handshake is done
  *
  * When new data are available the serverThread transfers it to the SecureChannelListener
@@ -28,21 +32,22 @@ import java.util.concurrent.CountDownLatch;
 public class TLSServerThread extends Thread implements HandshakeCompletedListener, SecureChannelEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(TLSServerThread.class);
 
-    private SSLSocket sslSocket;
+    private final SSLSocket sslSocket;
     private volatile boolean running = true;
     private DataInputStream in;
     private DataOutputStream out;
     private SecureChannelListener listener = null;  // race conditions are avoided using CountDownLatch
-    private IDSCPv2Callback configCallback;  //no race conditions
-    private IdscpServerListener idscpServerCallback; //no race conditions
-    private CountDownLatch listenerLatch = new CountDownLatch(1);
-    private CountDownLatch tlsVerificationLatch = new CountDownLatch(1);
+    private final Idscp2Callback configCallback;
+    private final CompletableFuture<Idscp2Connection> connectionPromise;
+    private final CountDownLatch listenerLatch = new CountDownLatch(1);
+    private final CountDownLatch tlsVerificationLatch = new CountDownLatch(1);
 
 
-    TLSServerThread(SSLSocket sslSocket, IDSCPv2Callback configCallback, IdscpServerListener idscpServerCallback){
+    TLSServerThread(SSLSocket sslSocket, Idscp2Callback configCallback,
+                    CompletableFuture<Idscp2Connection> connectionPromise){
         this.sslSocket = sslSocket;
         this.configCallback = configCallback;
-        this.idscpServerCallback = idscpServerCallback;
+        this.connectionPromise = connectionPromise;
 
         try {
             //set timout for blocking read
@@ -176,7 +181,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
 
         // verify tls session on application layer: hostname verification, certificate validity
         try {
-            TlsSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
+            TLSSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
             LOG.debug("TLS session is valid");
             tlsVerificationLatch.countDown();
         } catch (SSLPeerUnverifiedException e) {
@@ -188,10 +193,10 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             return;
         }
 
-        //provide secure channel to IDSCPv2 Config and register secure channel as listener
+        //provide secure channel to IDSCP2 Config and register secure channel as listener
         SecureChannel secureChannel = new SecureChannel(this);
         this.listener = secureChannel;
         listenerLatch.countDown();
-        configCallback.secureChannelListenHandler(secureChannel, idscpServerCallback);
+        configCallback.secureChannelListenHandler(secureChannel, connectionPromise);
     }
 }

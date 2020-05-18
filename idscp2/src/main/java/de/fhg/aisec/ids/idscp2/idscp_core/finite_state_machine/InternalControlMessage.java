@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 /**
- * An enum that wraps the internal control messages of the IDSCPv2 protocol to trigger transitions
+ * An enum that wraps the internal control messages of the IDSCP2 protocol to trigger transitions
  * by non-idscpv2-message-events
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)

@@ -1,25 +1,26 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.security.cert.Certificate;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * A configuration class for TPM2d RatPriver driver
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class Tpm2dProverConfig {
+public class TPM2dProverConfig {
 
   private Certificate remoteCertificate;
   @NonNull private String tpm2dHost;
 
-  private Tpm2dProverConfig() {
+  private TPM2dProverConfig() {
     tpm2dHost = System.getenv("TPM_HOST") != null ?
         System.getenv("TPM_HOST") : "localhost";
   }
 
   public static class Builder {
-    private static Tpm2dProverConfig config = new Tpm2dProverConfig();
+    private static final TPM2dProverConfig config = new TPM2dProverConfig();
 
     @NonNull
     public Builder setRemoteCertificate(Certificate remoteCert) {
@@ -33,7 +34,7 @@ public class Tpm2dProverConfig {
       return this;
     }
 
-    public Tpm2dProverConfig build() {
+    public TPM2dProverConfig build() {
       return config;
     }
   }

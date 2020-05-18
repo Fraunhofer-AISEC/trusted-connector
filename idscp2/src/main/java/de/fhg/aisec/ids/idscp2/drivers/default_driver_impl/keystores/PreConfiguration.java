@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores;
 
-import java.util.Date;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +8,7 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.*;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,7 +68,7 @@ public class PreConfiguration {
             String keyType
     ) {
         try (
-                InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath));
+                InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
         ) {
             /* create KeyManager for remote authentication */
             final KeyManager[] myKeyManager;
@@ -108,7 +108,7 @@ public class PreConfiguration {
         String keyAlias
     ) {
         try (
-            InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath));
+            InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
         ) {
             /* create KeyManager for remote authentication */
             KeyStore keystore = KeyStore.getInstance("JKS");

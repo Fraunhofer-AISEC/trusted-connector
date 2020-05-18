@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
@@ -54,7 +54,7 @@ public class TPM2dProver extends RatProverDriver {
    */
 
   private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
-  private Tpm2dProverConfig config = new Tpm2dProverConfig.Builder().build();
+  private TPM2dProverConfig config = new TPM2dProverConfig.Builder().build();
 
   public TPM2dProver(){
     super();
@@ -62,11 +62,11 @@ public class TPM2dProver extends RatProverDriver {
 
   @Override
   public void setConfig(Object config) {
-    if (config instanceof Tpm2dProverConfig) {
+    if (config instanceof TPM2dProverConfig) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Set rat prover config");
       }
-      this.config = (Tpm2dProverConfig) config;
+      this.config = (TPM2dProverConfig) config;
     } else {
       if (LOG.isWarnEnabled()) {
         LOG.warn("Invalid prover config");
@@ -134,7 +134,7 @@ public class TPM2dProver extends RatProverDriver {
         config.getRemoteCertificate());
 
     // generate RemoteToTPM2dRequest
-    RemoteToTpm2d tpmRequest = TpmMessageFactory.getRemoteToTPM2dMessage(
+    RemoteToTpm2d tpmRequest = TPM2dMessageFactory.getRemoteToTPM2dMessage(
         challenge.getAtype(),
         hash,
         challenge.hasPcrIndices() ? challenge.getPcrIndices() : 0
@@ -152,7 +152,7 @@ public class TPM2dProver extends RatProverDriver {
     }
 
     // create Tpm2dResponse
-    byte[] response = TpmMessageFactory.getAttestationResponseMessage(tpmResponse)
+    byte[] response = TPM2dMessageFactory.getAttestationResponseMessage(tpmResponse)
         .toByteArray();
 
     if (LOG.isDebugEnabled()) {

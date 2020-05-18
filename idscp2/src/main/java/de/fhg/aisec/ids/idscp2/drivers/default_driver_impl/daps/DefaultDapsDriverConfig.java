@@ -18,7 +18,7 @@ public class DefaultDapsDriverConfig {
   @NonNull private String connectorUUID = "";
 
   public static class Builder {
-    @NonNull private DefaultDapsDriverConfig config = new DefaultDapsDriverConfig();
+    @NonNull private final DefaultDapsDriverConfig config = new DefaultDapsDriverConfig();
 
     @NonNull
     public Builder setDapsUrl(String dapsUrl) {

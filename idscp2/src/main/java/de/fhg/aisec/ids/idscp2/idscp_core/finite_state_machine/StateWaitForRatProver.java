@@ -1,14 +1,14 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCPv2;
+import de.fhg.aisec.ids.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Wait_For_Rat_Prover State of the FSM of the IDSCPv2 protocol.
+ * The Wait_For_Rat_Prover State of the FSM of the IDSCP2 protocol.
  * Waits only for the RatProver Result to decide whether the connection will be established
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
@@ -43,7 +43,7 @@ public class StateWaitForRatProver extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSC_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close", IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close", IDSCP2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -58,8 +58,8 @@ public class StateWaitForRatProver extends State {
         this.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("Handshake timeout",
-                            IDSCPv2.IdscpClose.CloseCause.TIMEOUT));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake timeout",
+                            IDSCP2.IdscpClose.CloseCause.TIMEOUT));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -69,7 +69,7 @@ public class StateWaitForRatProver extends State {
                     LOG.debug("DAT timeout occurred. Send IDSCP_DAT_EXPIRED");
                     ratTimer.cancelTimeout();
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatExpiredMessage())) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatExpiredMessage())) {
                       LOG.error("Cannot send DatExpired message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -93,8 +93,8 @@ public class StateWaitForRatProver extends State {
                 event -> {
                     LOG.error("RAT_PROVER failed");
                     LOG.debug("Send IDSC_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("RAT_PROVER failed",
-                            IDSCPv2.IdscpClose.CloseCause.RAT_PROVER_FAILED));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("RAT_PROVER failed",
+                            IDSCP2.IdscpClose.CloseCause.RAT_PROVER_FAILED));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -116,7 +116,7 @@ public class StateWaitForRatProver extends State {
                 event -> {
                     LOG.debug("Request RAT repeat. Send IDSCP_RE_RAT, start RAT_VERIFIER");
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpReRatMessage(""))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpReRatMessage(""))) {
                       LOG.error("Cannot send ReRat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -132,18 +132,18 @@ public class StateWaitForRatProver extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER");
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatMessage(dapsDriver.getToken()))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.getToken()))) {
                       LOG.error("Cannot send DAT message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -157,7 +157,7 @@ public class StateWaitForRatProver extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER");
                     assert event.getIdscpMessage().hasIdscpRatVerifier();
@@ -168,7 +168,7 @@ public class StateWaitForRatProver extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPRERAT_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPRERAT_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_RE_RAT. Restart RAT_PROVER");
                     if (!fsm.restartRatProverDriver()) {

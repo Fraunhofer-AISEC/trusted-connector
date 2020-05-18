@@ -1,14 +1,14 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCPv2;
+import de.fhg.aisec.ids.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Wait_For_Dat_And_Rat State of the FSM of the IDSCPv2 protocol.
+ * The Wait_For_Dat_And_Rat State of the FSM of the IDSCP2 protocol.
  * Waits for a new valid dynamic attribute token from the peer as well as for the RatProver and
  * RatVerifier to decide whether the connection will be established or not
  *
@@ -44,8 +44,8 @@ public class StateWaitForDatAndRat extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSC_CLOSE");
-                   fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close",
-                            IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
+                   fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            IDSCP2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -60,8 +60,8 @@ public class StateWaitForDatAndRat extends State {
         this.addTransition(InternalControlMessage.TIMEOUT.getValue(), new Transition(
                 event -> {
                     LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("Handshake timeout",
-                            IDSCPv2.IdscpClose.CloseCause.TIMEOUT));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake timeout",
+                            IDSCP2.IdscpClose.CloseCause.TIMEOUT));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -78,8 +78,8 @@ public class StateWaitForDatAndRat extends State {
                 event -> {
                     LOG.error("RAT_PROVER failed");
                     LOG.debug("Send IDSC_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("RAT_PROVER failed",
-                            IDSCPv2.IdscpClose.CloseCause.RAT_PROVER_FAILED));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("RAT_PROVER failed",
+                            IDSCP2.IdscpClose.CloseCause.RAT_PROVER_FAILED));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -95,14 +95,14 @@ public class StateWaitForDatAndRat extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_CLOSE");
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPDAT_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPDAT_FIELD_NUMBER, new Transition(
                 event -> {
                     handshakeTimer.cancelTimeout();
                     LOG.debug("Verify received DAT");
@@ -111,8 +111,8 @@ public class StateWaitForDatAndRat extends State {
                     long datValidityPeriod;
                     if (0 > (datValidityPeriod = dapsDriver.verifyToken(dat, null))){
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage(
-                            "No valid DAT", IDSCPv2.IdscpClose.CloseCause.NO_VALID_DAT));
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                            "No valid DAT", IDSCP2.IdscpClose.CloseCause.NO_VALID_DAT));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
 
@@ -128,11 +128,11 @@ public class StateWaitForDatAndRat extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER");
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatMessage(dapsDriver.getToken()))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.getToken()))) {
                       LOG.error("Cannot send Dat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -146,7 +146,7 @@ public class StateWaitForDatAndRat extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER");
                     assert event.getIdscpMessage().hasIdscpRatVerifier();
@@ -156,7 +156,7 @@ public class StateWaitForDatAndRat extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPRERAT_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPRERAT_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_RE_RAT. Restart RAT_PROVER");
                     if (!fsm.restartRatProverDriver()) {

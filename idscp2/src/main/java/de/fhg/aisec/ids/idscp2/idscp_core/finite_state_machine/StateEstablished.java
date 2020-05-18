@@ -1,15 +1,15 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
-import de.fhg.aisec.ids.idscp2.idscp_core.IdscpMessageFactory;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCPv2;
+import de.fhg.aisec.ids.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Established State of the FSM of the IDSCPv2 protocol.
- * Allows message exchange over the IDSCPv2 protocol between two connectors
+ * The Established State of the FSM of the IDSCP2 protocol.
+ * Allows message exchange over the IDSCP2 protocol between two connectors
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -46,8 +46,8 @@ public class StateEstablished extends State {
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
                     LOG.debug("Send IDSCP_CLOSE");
-                    fsm.sendFromFSM(IdscpMessageFactory.createIdscpCloseMessage("User close",
-                            IDSCPv2.IdscpClose.CloseCause.USER_SHUTDOWN));
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            IDSCP2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
         ));
@@ -57,7 +57,7 @@ public class StateEstablished extends State {
                     LOG.debug("Request RAT repeat. Send IDSCP_RERAT, start RAT_VERIFIER");
                     ratTimer.cancelTimeout();
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpReRatMessage(""))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpReRatMessage(""))) {
                       LOG.error("Cannot send ReRat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -75,7 +75,7 @@ public class StateEstablished extends State {
                 event -> {
                     ratTimer.cancelTimeout();
                     LOG.debug("Remote DAT expired. Send IDSCP_DAT_EXPIRED");
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatExpiredMessage())) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatExpiredMessage())) {
                       LOG.error("Cannot send DatExpired message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -87,7 +87,7 @@ public class StateEstablished extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPRERAT_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPRERAT_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Received IDSCP_RERAT. Start RAT_PROVER");
 
@@ -100,11 +100,11 @@ public class StateEstablished extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("DAT expired. Send new DAT and repeat RAT");
 
-                    if (!fsm.sendFromFSM(IdscpMessageFactory.createIdscpDatMessage(dapsDriver.getToken()))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.getToken()))) {
                       LOG.error("Cannot send Dat message");
                       return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
@@ -118,15 +118,15 @@ public class StateEstablished extends State {
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPDATA_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPDATA_FIELD_NUMBER, new Transition(
                 event -> {
-                    IDSCPv2.IdscpData data = event.getIdscpMessage().getIdscpData();
+                    IDSCP2.IdscpData data = event.getIdscpMessage().getIdscpData();
                     fsm.notifyIdscpMsgListener(data.getType(), data.getData().toByteArray());
                     return this;
                 }
         ));
 
-        this.addTransition(IDSCPv2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
+        this.addTransition(IDSCP2.IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, new Transition(
                 event -> {
                     LOG.debug("Receive IDSCP_CLOSED");
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);

@@ -1,20 +1,17 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel;
 
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
+import java.security.cert.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A class for verifying an established TLS Session on application layer
@@ -22,8 +19,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Leon Beckmann (leon.beckmannn@aisec.fraunhofer.de)
  */
-public class TlsSessionVerificationHelper {
-  private static final Logger LOG = LoggerFactory.getLogger(TlsSessionVerificationHelper.class);
+public class TLSSessionVerificationHelper {
+  private static final Logger LOG = LoggerFactory.getLogger(TLSSessionVerificationHelper.class);
 
   private static final String ipv4Pattern =
       "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
@@ -60,7 +57,7 @@ public class TlsSessionVerificationHelper {
        * According to RFC6125, hostname verification should be done against the certificate's
        * subject alternative name's (SANs) dNSName field or the SANs IPAddress. In some legacy
        * implementations, the check is done against the certificate's commonName, but this is
-       * deprecated for quite a while and is therefore not supported anymore in te IDSCPv2 protocol.
+       * deprecated for quite a while and is therefore not supported anymore in te IDSCP2 protocol.
        */
       Collection<List<?>> sans = peerCert.getSubjectAlternativeNames();
       if (sans == null) {

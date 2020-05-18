@@ -17,7 +17,7 @@ public abstract class RatVerifierDriver extends Thread{
     protected FsmListener fsmListener;
 
     /*
-     * Delegate the IDSCPv2 message to the RatVerifier driver
+     * Delegate the IDSCP2 message to the RatVerifier driver
      */
     public void delegate(byte[] message){}
 

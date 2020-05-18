@@ -1,17 +1,15 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
-import de.fhg.aisec.ids.messages.IDSCPv2.*;
-
 /**
  * An FSM Listener Interface implemented by the FSM to restrict FSM API to the drivers and the
- * secure channel class of the IDSCPv2
+ * secure channel class of the IDSCP2
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public interface FsmListener {
 
     /*
-     * A method for providing IDSCPv2 data from the secure channel to the FSM
+     * A method for providing IDSCP2 data from the secure channel to the FSM
      */
     void onMessage(byte[] data);
 

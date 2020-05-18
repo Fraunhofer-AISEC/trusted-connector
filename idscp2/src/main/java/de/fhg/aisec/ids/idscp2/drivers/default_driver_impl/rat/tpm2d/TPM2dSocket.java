@@ -1,7 +1,8 @@
-package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.TPM2d;
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d;
 
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.RemoteToTpm2d;
 import de.fhg.aisec.ids.messages.Tpm2dAttestation.Tpm2dToRemote;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

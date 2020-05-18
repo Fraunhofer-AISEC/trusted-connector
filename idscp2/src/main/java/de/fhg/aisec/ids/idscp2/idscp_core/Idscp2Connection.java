@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * The IDSCPv2 Connection class holds connections between connectors
+ * The IDSCP2 Connection class holds connections between connectors
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
@@ -18,9 +18,9 @@ public class Idscp2Connection {
 
     private final FSM fsm;
     private final String connectionId;
-    private final Set<IdscpConnectionListener> connectionListeners = new HashSet<>();
-    private final Set<IdscpMessageListener> genericMessageListeners = new HashSet<>();
-    private final Map<String, Set<IdscpMessageListener>> messageListeners = new HashMap<>();
+    private final Set<Idscp2ConnectionListener> connectionListeners = new HashSet<>();
+    private final Set<Idscp2MessageListener> genericMessageListeners = new HashSet<>();
+    private final Map<String, Set<Idscp2MessageListener>> messageListeners = new HashMap<>();
 
     public Idscp2Connection(FSM fsm, String connectionId) {
         this.fsm = fsm;
@@ -51,7 +51,7 @@ public class Idscp2Connection {
         synchronized (genericMessageListeners) {
             genericMessageListeners.forEach(l -> l.onMessage(type, msg));
         }
-        Set<IdscpMessageListener> listeners = messageListeners.get(type);
+        Set<Idscp2MessageListener> listeners = messageListeners.get(type);
         if (listeners != null) {
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (listeners) {
@@ -78,33 +78,33 @@ public class Idscp2Connection {
         return connectionId;
     }
 
-    public void addConnectionListener(IdscpConnectionListener listener) {
+    public void addConnectionListener(Idscp2ConnectionListener listener) {
         synchronized (connectionListeners) {
             connectionListeners.add(listener);
         }
     }
 
-    public boolean removeConnectionListener(IdscpConnectionListener listener) {
+    public boolean removeConnectionListener(Idscp2ConnectionListener listener) {
         synchronized (connectionListeners) {
             return connectionListeners.remove(listener);
         }
     }
 
-    public void addGenericMessageListener(IdscpMessageListener listener) {
+    public void addGenericMessageListener(Idscp2MessageListener listener) {
         synchronized (genericMessageListeners) {
             genericMessageListeners.add(listener);
         }
     }
 
-    public boolean removeGenericMessageListener(IdscpMessageListener listener) {
+    public boolean removeGenericMessageListener(Idscp2MessageListener listener) {
         synchronized (genericMessageListeners) {
             return genericMessageListeners.remove(listener);
         }
     }
 
-    public void addMessageListener(@Nullable String type, IdscpMessageListener listener) {
+    public void addMessageListener(@Nullable String type, Idscp2MessageListener listener) {
         synchronized (messageListeners) {
-            Set<IdscpMessageListener> messageTypeListeners
+            Set<Idscp2MessageListener> messageTypeListeners
                 = messageListeners.computeIfAbsent(type, k -> new HashSet<>());
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (messageTypeListeners) {
@@ -114,9 +114,9 @@ public class Idscp2Connection {
         }
     }
 
-    public boolean removeMessageListener(@Nullable String type, IdscpMessageListener listener) {
+    public boolean removeMessageListener(@Nullable String type, Idscp2MessageListener listener) {
         synchronized (messageListeners) {
-            Set<IdscpMessageListener> messageTypeListeners = messageListeners.get(type);
+            Set<Idscp2MessageListener> messageTypeListeners = messageListeners.get(type);
             if (messageTypeListeners == null) {
                 return false;
             }
