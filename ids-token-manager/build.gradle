@@ -11,7 +11,7 @@ dependencies {
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: libraryVersions.jose4j
     providedByBundle group: 'org.json', name: 'json', version: libraryVersions.orgJson
 
-    testImplementation group: 'junit', name: 'junit'
+    testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }
 

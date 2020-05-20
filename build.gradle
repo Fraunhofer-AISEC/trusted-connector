@@ -23,6 +23,9 @@ plugins {
     id "com.github.jk1.dependency-license-report" version "1.2"
 }
 
+ext.set("libraryVersions",
+        new Yaml().loadAs(new FileInputStream(file("${rootDir}/libraryVersions.yaml")), Map.class))
+
 licenseReport {
     configurations = ["compile", "providedByFeature", "providedByBundle"]
 }
@@ -30,8 +33,6 @@ licenseReport {
 allprojects {
     group = "de.fhg.aisec.ids"
     version = "3.0.2"
-
-    ext.libraryVersions = new Yaml().loadAs(new FileInputStream(file("${rootDir}/libraryVersions.yaml")), Map.class)
 
     configurations {
         // just to make bills of materials (bom) easier to see in the dependency tree

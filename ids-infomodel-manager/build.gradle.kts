@@ -1,8 +1,6 @@
-import org.yaml.snakeyaml.Yaml
-
 dependencies {
     @Suppress("UNCHECKED_CAST") val libraryVersions =
-            Yaml().load(File("${rootDir}/libraryVersions.yaml").inputStream()) as Map<String, String>
+            rootProject.ext.get("libraryVersions") as Map<String, String>
 
     infomodelBundle(project(":ids-api")) { isTransitive = false }
 
