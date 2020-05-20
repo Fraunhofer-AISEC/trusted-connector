@@ -1,0 +1,11 @@
+Bundle-Name: IDS :: Camel IDSCP Support
+Bundle-Description: Camel IDS protocol support
+Export-Package: de.fhg.camel.ids.server,\
+	de.fhg.camel.ids.connectionmanagement,\
+	de.fhg.camel.ids.client
+Import-Package: \
+	!org.checkerframework.checker.*,\
+	*
+DynamicImport-Package: \
+	org.asynchttpclient.netty.*,\
+	com.typesafe.netty.*
