@@ -8,5 +8,5 @@ public interface Idscp2MessageListener {
     /*
      * notify the listener about new data
      */
-    void onMessage(String type, byte[] data);
+    void onMessage(Idscp2Connection connection, String type, byte[] data);
 }

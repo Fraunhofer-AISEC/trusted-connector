@@ -49,13 +49,13 @@ public class Idscp2Connection {
     public void onMessage(String type, byte[] msg) {
         LOG.debug("Received new IDSCP Message: " + Arrays.toString(msg));
         synchronized (genericMessageListeners) {
-            genericMessageListeners.forEach(l -> l.onMessage(type, msg));
+            genericMessageListeners.forEach(l -> l.onMessage(this, type, msg));
         }
         Set<Idscp2MessageListener> listeners = messageListeners.get(type);
         if (listeners != null) {
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (listeners) {
-                listeners.forEach(l -> l.onMessage(type, msg));
+                listeners.forEach(l -> l.onMessage(this, type, msg));
             }
         }
     }

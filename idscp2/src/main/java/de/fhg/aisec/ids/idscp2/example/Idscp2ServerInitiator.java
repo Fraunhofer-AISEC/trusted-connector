@@ -93,12 +93,12 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
                 System.out.println("Server: Connection with id " + connectionId + " has been closed");
             }
         });
-        connection.addGenericMessageListener(((type, data) -> System.out.println(
+        connection.addGenericMessageListener(((c, type, data) -> System.out.println(
             "Received message of type \"" + type + "\":\n" + new String(data, StandardCharsets.UTF_8))));
-        connection.addMessageListener("ping", ((type, data) -> {
+        connection.addMessageListener("ping", ((c, type, data) -> {
             System.out.println("Received ping message:\n" + new String(data, StandardCharsets.UTF_8));
             System.out.println("Sending PONG...");
-            connection.send("pong", "PONG".getBytes(StandardCharsets.UTF_8));
+            c.send("pong", "PONG".getBytes(StandardCharsets.UTF_8));
         }));
     }
 
