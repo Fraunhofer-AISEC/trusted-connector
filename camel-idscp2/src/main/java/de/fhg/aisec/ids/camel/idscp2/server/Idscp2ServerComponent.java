@@ -20,17 +20,12 @@ import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.Idscp2Server;
 import org.apache.camel.Endpoint;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component("idscp2server")
 public class Idscp2ServerComponent extends DefaultComponent {
-    static final int DEFAULT_PORT = 29292;
-    private static final Logger LOG = LoggerFactory.getLogger(Idscp2ServerComponent.class);
-
     final Map<Integer, Idscp2Server> servers = new ConcurrentHashMap<>();
 
     public Idscp2ServerComponent() {
