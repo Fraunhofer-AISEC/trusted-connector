@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A Rat Prover Driver Registry
  * The User can register Driver implementation instances and its configurations to the registry
- *
+ * <p>
  * The Idscpv2 protocol will select during the idscp handshake a Rat Prover mechanism and will
  * check for this RatProver in this registry
  *
@@ -19,11 +19,12 @@ public class RatProverDriverRegistry {
     private static RatProverDriverRegistry instance;
     private static final ConcurrentHashMap<String, DriverWrapper> drivers = new ConcurrentHashMap<>();
 
-    private RatProverDriverRegistry(){}
+    private RatProverDriverRegistry() {
+    }
 
-    public static RatProverDriverRegistry getInstance(){
-        if (instance == null){
-           instance = new RatProverDriverRegistry();
+    public static RatProverDriverRegistry getInstance() {
+        if (instance == null) {
+            instance = new RatProverDriverRegistry();
         }
 
         return instance;
@@ -38,7 +39,7 @@ public class RatProverDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatProver.
      * The RatProver will be initialized with a configuration, if present. Then it is started.
      */
-    public static RatProverDriver startRatProverDriver(String instance, FsmListener listener){
+    public static RatProverDriver startRatProverDriver(String instance, FsmListener listener) {
         DriverWrapper driverWrapper = drivers.get(instance);
         if (driverWrapper == null) {
             return null;
@@ -54,7 +55,7 @@ public class RatProverDriverRegistry {
             return driver;
 
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
-            InvocationTargetException e) {
+                InvocationTargetException e) {
             return null;
         }
     }
@@ -64,17 +65,17 @@ public class RatProverDriverRegistry {
      * Register Rat Prover driver and an optional configuration in the registry
      */
     public void registerDriver(
-        String instance,
-        Class<? extends RatProverDriver> driverClass,
-        Object driverConfig
-    ){
+            String instance,
+            Class<? extends RatProverDriver> driverClass,
+            Object driverConfig
+    ) {
         drivers.put(instance, new DriverWrapper(driverClass, driverConfig));
     }
 
     /*
      * Unregister the driver from the registry
      */
-    public void unregisterDriver(String instance){
+    public void unregisterDriver(String instance) {
         drivers.remove(instance);
     }
 
@@ -86,8 +87,8 @@ public class RatProverDriverRegistry {
         private final Object driverConfig;
 
         private DriverWrapper(
-            Class<? extends RatProverDriver> driverClass,
-            Object driverConfig
+                Class<? extends RatProverDriver> driverClass,
+                Object driverConfig
         ) {
             this.driverClass = driverClass;
             this.driverConfig = driverConfig;

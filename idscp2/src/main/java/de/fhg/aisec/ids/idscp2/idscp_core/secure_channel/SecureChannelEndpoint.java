@@ -21,7 +21,7 @@ public interface SecureChannelEndpoint {
     /*
      * Send data from the secure channel endpoint to the peer connector
      *
-     * return true when data was sent, else false
+     * return true when data has been sent, else false
      */
     boolean send(byte[] bytes);
 

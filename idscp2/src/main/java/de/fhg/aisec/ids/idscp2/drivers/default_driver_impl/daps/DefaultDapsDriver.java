@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class DefaultDapsDriver implements DapsDriver {
-    private static final  Logger LOG = LoggerFactory.getLogger(DefaultDapsDriver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDapsDriver.class);
 
     private final SSLSocketFactory sslSocketFactory; //ssl socket factory can be reused
     private final X509ExtendedTrustManager trustManager; //trust manager can be reused
@@ -55,14 +55,14 @@ public class DefaultDapsDriver implements DapsDriver {
 
         //create ssl socket factory for secure
         privateKey = PreConfiguration.getKey(
-            config.getKeyStorePath(),
-            config.getKeyStorePassword(),
-            config.getKeyAlias()
+                config.getKeyStorePath(),
+                config.getKeyStorePassword(),
+                config.getKeyAlias()
         );
 
         TrustManager[] trustManagers = PreConfiguration.getX509ExtTrustManager(
-            config.getTrustStorePath(),
-            config.getTrustStorePassword()
+                config.getTrustStorePath(),
+                config.getTrustStorePassword()
         );
 
         this.trustManager = (X509ExtendedTrustManager) trustManagers[0];
@@ -91,38 +91,38 @@ public class DefaultDapsDriver implements DapsDriver {
 
         //create signed JWT
         String jwt =
-            Jwts.builder()
-            .setIssuer(connectorUUID)
-            .setSubject(connectorUUID)
-            .setExpiration(Date.from(Instant.now().plusSeconds(86400)))
-            .setIssuedAt(Date.from(Instant.now()))
-            .setNotBefore(Date.from(Instant.now()))
-            .setAudience(targetAudience)
-            .signWith(privateKey, SignatureAlgorithm.RS256).compact();
+                Jwts.builder()
+                        .setIssuer(connectorUUID)
+                        .setSubject(connectorUUID)
+                        .setExpiration(Date.from(Instant.now().plusSeconds(86400)))
+                        .setIssuedAt(Date.from(Instant.now()))
+                        .setNotBefore(Date.from(Instant.now()))
+                        .setAudience(targetAudience)
+                        .signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
         //build http client and request for DAPS
         RequestBody formBody =
-            new FormBody.Builder()
-                .add("grant_type", "client_credentials")
-                .add(
-                    "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-                .add("client_assertion", jwt)
-                .add("scope", "ids_connector")
-                .build();
+                new FormBody.Builder()
+                        .add("grant_type", "client_credentials")
+                        .add(
+                                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+                        .add("client_assertion", jwt)
+                        .add("scope", "ids_connector")
+                        .build();
 
         OkHttpClient client =
-            new OkHttpClient.Builder()
-                .sslSocketFactory(sslSocketFactory, trustManager)
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(15, TimeUnit.SECONDS)
-                .build();
+                new OkHttpClient.Builder()
+                        .sslSocketFactory(sslSocketFactory, trustManager)
+                        .connectTimeout(15, TimeUnit.SECONDS)
+                        .writeTimeout(15, TimeUnit.SECONDS)
+                        .readTimeout(15, TimeUnit.SECONDS)
+                        .build();
 
         Request request =
-            new Request.Builder()
-            .url(dapsUrl.concat("/token"))
-            .post(formBody)
-            .build();
+                new Request.Builder()
+                        .url(dapsUrl.concat("/token"))
+                        .post(formBody)
+                        .build();
 
         try {
             //get http response from DAPS
@@ -200,24 +200,24 @@ public class DefaultDapsDriver implements DapsDriver {
 
         // create new jwks key resolver, selects jwk based on key ID in jwt header
         HttpsJwksVerificationKeyResolver jwksKeyResolver
-            = new HttpsJwksVerificationKeyResolver(httpsJwks);
+                = new HttpsJwksVerificationKeyResolver(httpsJwks);
 
         //create validation requirements
         JwtConsumer jwtConsumer =
-            new JwtConsumerBuilder()
-                .setRequireExpirationTime()         // has expiration time
-                .setAllowedClockSkewInSeconds(30)   // leeway in validation time
-                .setRequireSubject()                // has subject
-                .setExpectedAudience(targetAudience)
-                .setExpectedIssuer(dapsUrl)         // e.g. https://daps.aisec.fraunhofer.de
-                .setVerificationKeyResolver(jwksKeyResolver) //get decryption key from jwks
-                .setJweAlgorithmConstraints(
-                    new AlgorithmConstraints(
-                        ConstraintType.WHITELIST,
-                        AlgorithmIdentifiers.RSA_USING_SHA256
-                    )
-                )
-                .build();
+                new JwtConsumerBuilder()
+                        .setRequireExpirationTime()         // has expiration time
+                        .setAllowedClockSkewInSeconds(30)   // leeway in validation time
+                        .setRequireSubject()                // has subject
+                        .setExpectedAudience(targetAudience)
+                        .setExpectedIssuer(dapsUrl)         // e.g. https://daps.aisec.fraunhofer.de
+                        .setVerificationKeyResolver(jwksKeyResolver) //get decryption key from jwks
+                        .setJweAlgorithmConstraints(
+                                new AlgorithmConstraints(
+                                        ConstraintType.WHITELIST,
+                                        AlgorithmIdentifiers.RSA_USING_SHA256
+                                )
+                        )
+                        .build();
 
         //verify dat
         JwtClaims claims;
@@ -252,15 +252,14 @@ public class DefaultDapsDriver implements DapsDriver {
             if (securityRequirements instanceof SecurityRequirements) {
                 SecurityRequirements secRequirements = (SecurityRequirements) securityRequirements;
                 SecurityRequirements providedSecurityProfile =
-                    parseSecurityRequirements(claims.toJson());
+                        parseSecurityRequirements(claims.toJson());
 
                 if (providedSecurityProfile == null) {
                     return -1;
                 }
 
                 //toDo add further security attribute validation
-                if (secRequirements.getAuditLogging() <= providedSecurityProfile.getAuditLogging())
-                {
+                if (secRequirements.getAuditLogging() <= providedSecurityProfile.getAuditLogging()) {
                     LOG.info("DAT is valid and secure");
                     return validityTime;
                 } else {
@@ -312,7 +311,7 @@ public class DefaultDapsDriver implements DapsDriver {
         //toDo parse further security attributes
 
         return new SecurityRequirements.Builder()
-            .setAuditLogging(securityProfile.getInt("audit_logging"))
-            .build();
+                .setAuditLogging(securityProfile.getInt("audit_logging"))
+                .build();
     }
 }

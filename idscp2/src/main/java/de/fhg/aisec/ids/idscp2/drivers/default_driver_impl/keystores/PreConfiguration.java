@@ -103,12 +103,12 @@ public class PreConfiguration {
      * throws RuntimeException if key is not available or key access was not permitted
      */
     public static Key getKey(
-        String keyStorePath,
-        String keyStorePassword,
-        String keyAlias
+            String keyStorePath,
+            String keyStorePassword,
+            String keyAlias
     ) {
         try (
-            InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
+                InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
         ) {
             /* create KeyManager for remote authentication */
             KeyStore keystore = KeyStore.getInstance("JKS");
@@ -125,7 +125,7 @@ public class PreConfiguration {
             }
 
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException
-            | UnrecoverableKeyException e) {
+                | UnrecoverableKeyException e) {
             throw new RuntimeException(e);
         }
     }
@@ -150,7 +150,8 @@ public class PreConfiguration {
                             } catch (CertificateException e) {
                                 return false;
                             }
-                            return true; }).collect(Collectors.toSet());
+                            return true;
+                        }).collect(Collectors.toSet());
 
         // Create PKIXBuilderParameters parameters
         return new PKIXBuilderParameters(validTrustAnchors, new X509CertSelector());

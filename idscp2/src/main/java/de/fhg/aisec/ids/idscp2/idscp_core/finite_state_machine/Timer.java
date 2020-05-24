@@ -15,12 +15,12 @@ public class Timer {
     private final ReentrantLock mutex = new ReentrantLock(true);
     private final Runnable timeoutHandler;
 
-    Timer(ReentrantLock fsmIsBusy, Runnable timeoutHandler){
+    Timer(ReentrantLock fsmIsBusy, Runnable timeoutHandler) {
         this.fsmIsBusy = fsmIsBusy;
         this.timeoutHandler = timeoutHandler;
     }
 
-    void resetTimeout(long delay){
+    void resetTimeout(long delay) {
         cancelTimeout();
         start(delay);
     }
@@ -28,7 +28,7 @@ public class Timer {
     /*
      * Start a timer thread that triggers the timeout handler routine after a given timout delay
      */
-    public void start(long delay){
+    public void start(long delay) {
         mutex.lock();
         thread = new TimerThread(delay, timeoutHandler, fsmIsBusy);
         thread.start();
@@ -38,9 +38,9 @@ public class Timer {
     /*
      * Cancel the current timer thread
      */
-    void cancelTimeout(){
+    void cancelTimeout() {
         mutex.lock();
-        if (thread != null){
+        if (thread != null) {
             thread.safeStop();
             thread = null;
         }

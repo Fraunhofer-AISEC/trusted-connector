@@ -12,8 +12,8 @@ import java.util.function.Function;
  */
 public class State {
 
-    private final ConcurrentHashMap<Object,Transition> transitions = new ConcurrentHashMap<>();
-    private Function<Event,State> noTransitionHandler = null;
+    private final ConcurrentHashMap<Object, Transition> transitions = new ConcurrentHashMap<>();
+    private Function<Event, State> noTransitionHandler = null;
 
     /*
      * A method for triggering aa transition of the current state by a given event
@@ -22,9 +22,9 @@ public class State {
      *
      * Returns the target state of the triggered transition (new current state of the fsm)
      */
-    State feedEvent(Event e){
+    State feedEvent(Event e) {
         Transition t = transitions.get(e.getKey());
-        if (t != null){
+        if (t != null) {
             return t.doTransition(e);
         } else {
             return noTransitionHandler.apply(e);
@@ -34,8 +34,8 @@ public class State {
     /*
      * Add ann outgoing transition to the state
      */
-    void addTransition(Object k, Transition t){
-        transitions.put(k,t);
+    void addTransition(Object k, Transition t) {
+        transitions.put(k, t);
     }
 
     /*
@@ -48,6 +48,7 @@ public class State {
     /*
      * run a sequence of code when the state is entered
      */
-    void runEntryCode(FSM fsm) {}
+    void runEntryCode(FSM fsm) {
+    }
 
 }

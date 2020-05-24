@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core;
 
 import com.google.protobuf.ByteString;
-import de.fhg.aisec.ids.messages.IDSCP2.*;
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2.*;
 
 import java.util.Arrays;
 
@@ -12,7 +12,7 @@ import java.util.Arrays;
  */
 public class Idscp2MessageHelper {
 
-    public static IdscpMessage createIdscpHelloMessage(byte[] dat, String[] supportedRatSuite, String[] expectedRatSuite){
+    public static IdscpMessage createIdscpHelloMessage(byte[] dat, String[] supportedRatSuite, String[] expectedRatSuite) {
         IdscpDat idscpDat = IdscpDat.newBuilder()
                 .setToken(ByteString.copyFrom(dat))
                 .build();
@@ -29,7 +29,7 @@ public class Idscp2MessageHelper {
                 .build();
     }
 
-    public static IdscpMessage createIdscpCloseMessage(String closeMsg, IdscpClose.CloseCause causeCode){
+    public static IdscpMessage createIdscpCloseMessage(String closeMsg, IdscpClose.CloseCause causeCode) {
         IdscpClose idscpClose = IdscpClose.newBuilder()
                 .setCauseCode(causeCode)
                 .setCauseMsg(closeMsg)
@@ -40,13 +40,13 @@ public class Idscp2MessageHelper {
                 .build();
     }
 
-    public static IdscpMessage createIdscpDatExpiredMessage(){
+    public static IdscpMessage createIdscpDatExpiredMessage() {
         return IdscpMessage.newBuilder()
                 .setIdscpDatExpired(IdscpDatExpired.newBuilder().build())
                 .build();
     }
 
-    public static IdscpMessage createIdscpDatMessage(byte[] dat){
+    public static IdscpMessage createIdscpDatMessage(byte[] dat) {
         IdscpDat idscpDat = IdscpDat.newBuilder()
                 .setToken(ByteString.copyFrom(dat))
                 .build();
@@ -56,7 +56,7 @@ public class Idscp2MessageHelper {
                 .build();
     }
 
-    public static IdscpMessage createIdscpReRatMessage(String cause){
+    public static IdscpMessage createIdscpReRatMessage(String cause) {
         IdscpReRat idscpReRat = IdscpReRat.newBuilder()
                 .setCause(cause)
                 .build();
@@ -89,20 +89,20 @@ public class Idscp2MessageHelper {
         return createIdscpDataMessage(type, null, data);
     }
 
-    public static IdscpMessage createIdscpRatProverMessage(byte[] body){
+    public static IdscpMessage createIdscpRatProverMessage(byte[] body) {
         IdscpRatProver idscpRatProver = IdscpRatProver.newBuilder()
-            .setData(ByteString.copyFrom(body))
-            .build();
+                .setData(ByteString.copyFrom(body))
+                .build();
 
         return IdscpMessage.newBuilder()
                 .setIdscpRatProver(idscpRatProver)
                 .build();
     }
 
-    public static IdscpMessage createIdscpRatVerifierMessage(byte[] body){
+    public static IdscpMessage createIdscpRatVerifierMessage(byte[] body) {
         IdscpRatVerifier idscpRatVerifier = IdscpRatVerifier.newBuilder()
-            .setData(ByteString.copyFrom(body))
-            .build();
+                .setData(ByteString.copyFrom(body))
+                .build();
 
         return IdscpMessage.newBuilder()
                 .setIdscpRatVerifier(idscpRatVerifier)

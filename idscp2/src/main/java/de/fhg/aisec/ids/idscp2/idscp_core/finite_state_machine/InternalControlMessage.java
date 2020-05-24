@@ -2,7 +2,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
 /**
  * An enum that wraps the internal control messages of the IDSCP2 protocol to trigger transitions
- * by non-idscpv2-message-events
+ * by non-IDSCP2-message-events
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
@@ -23,6 +23,12 @@ public enum InternalControlMessage {
 
     //set unique values that are different from IdscpMessage.MessageCase ot identify event.key
     private final String id;
-    InternalControlMessage(String id) {this.id = id;}
-    public String getValue() {return id;}
+
+    InternalControlMessage(String id) {
+        this.id = id;
+    }
+
+    public String getValue() {
+        return id;
+    }
 }

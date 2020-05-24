@@ -4,18 +4,20 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCP2;
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.concurrent.locks.Condition;
+import java.util.stream.Collectors;
 
 /**
  * The Closed State of the FSM of the IDSCP2 protocol.
  * The FSM is in the Closed state either before any transition was triggered (in this case, the
  * Closed State is the FSM Start state) or after the connection was closed (in this case, the
  * Closed State is the FSM final state without any outgoing transitions)
- *
+ * <p>
  * When the FSM go from any State into the Closed State again, the FSM is locked forever and all
  * involved actors like RatDrivers and Timers will be terminated
  *
@@ -28,7 +30,7 @@ class StateClosed extends State {
                        DapsDriver dapsDriver,
                        Condition onMessageLock,
                        String[] localSupportedRatSuite,
-                       String[] localExpectedRatSuite){
+                       String[] localExpectedRatSuite) {
 
 
         /*---------------------------------------------------
@@ -45,13 +47,13 @@ class StateClosed extends State {
 
                     LOG.debug("Send IDSCP_HELLO");
                     IDSCP2.IdscpMessage idscpHello = Idscp2MessageHelper.
-                        createIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite);
+                            createIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite);
 
                     if (!fsm.sendFromFSM(idscpHello)) {
-                      LOG.error("Cannot send IdscpHello. Close connection");
-                      runEntryCode(fsm);
-                      onMessageLock.signalAll();
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot send IdscpHello. Close connection");
+                        runEntryCode(fsm);
+                        onMessageLock.signalAll();
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     runExitCode(onMessageLock);
@@ -62,7 +64,12 @@ class StateClosed extends State {
 
         this.setNoTransitionHandler(
                 event -> {
-                    LOG.debug("No transition available for given event " + event.toString());
+                    LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
+                            event,
+                            Arrays.stream(Thread.currentThread().getStackTrace())
+                                    .skip(1)
+                                    .map(Object::toString)
+                                    .collect(Collectors.joining("\n")));
                     LOG.debug("Stay in state STATE_CLOSED");
                     return this;
                 }
@@ -70,13 +77,13 @@ class StateClosed extends State {
 
     }
 
-    private void runExitCode(Condition onMessageLock){
+    private void runExitCode(Condition onMessageLock) {
         //State Closed exit code
         onMessageLock.signalAll(); //enables fsm.onMessage()
     }
 
     @Override
-    void runEntryCode(FSM fsm){
+    void runEntryCode(FSM fsm) {
         //State Closed entry code
         LOG.debug("Switched to state STATE_CLOSED");
         LOG.debug("Terminate and free all resources and lock fsm forever");

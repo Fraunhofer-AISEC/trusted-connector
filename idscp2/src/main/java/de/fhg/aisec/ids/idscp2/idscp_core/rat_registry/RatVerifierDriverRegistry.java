@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A Rat Verifier Driver Registry
  * The User can register Driver implementation instances and its configurations to the registry
- *
+ * <p>
  * The Idscpv2 protocol will select during the idscp handshake a Rat Verifier mechanism and will
  * check for this RatVerifier in this registry
  *
@@ -18,12 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RatVerifierDriverRegistry {
     private static RatVerifierDriverRegistry instance;
     private static final ConcurrentHashMap<String, DriverWrapper> drivers
-        = new ConcurrentHashMap<>();
+            = new ConcurrentHashMap<>();
 
-    private RatVerifierDriverRegistry(){}
+    private RatVerifierDriverRegistry() {
+    }
 
-    public static RatVerifierDriverRegistry getInstance(){
-        if (instance == null){
+    public static RatVerifierDriverRegistry getInstance() {
+        if (instance == null) {
             instance = new RatVerifierDriverRegistry();
         }
         return instance;
@@ -39,7 +40,7 @@ public class RatVerifierDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatVerifier.
      * The RatVerifier will be initialized with a configuration, if present. Then it is started.
      */
-    public static RatVerifierDriver startRatVerifierDriver(String mechanism, FsmListener listener){
+    public static RatVerifierDriver startRatVerifierDriver(String mechanism, FsmListener listener) {
         DriverWrapper driverWrapper = drivers.get(mechanism);
 
         try {
@@ -60,17 +61,17 @@ public class RatVerifierDriverRegistry {
      * Register Rat Verifier driver and an optional configuration in the registry
      */
     public void registerDriver(
-        String mechanism,
-        Class<? extends RatVerifierDriver> driverClass,
-        Object driverConfig
-    ){
+            String mechanism,
+            Class<? extends RatVerifierDriver> driverClass,
+            Object driverConfig
+    ) {
         drivers.put(mechanism, new DriverWrapper(driverClass, driverConfig));
     }
 
     /*
      * Unregister the driver from the registry
      */
-    public void unregisterDriver(String instance){
+    public void unregisterDriver(String instance) {
         drivers.remove(instance);
     }
 
@@ -82,8 +83,8 @@ public class RatVerifierDriverRegistry {
         private final Object driverConfig;
 
         private DriverWrapper(
-            Class<? extends RatVerifierDriver> driver,
-            Object driverConfig
+                Class<? extends RatVerifierDriver> driver,
+                Object driverConfig
         ) {
             this.driverClass = driver;
             this.driverConfig = driverConfig;

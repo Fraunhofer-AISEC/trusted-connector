@@ -18,7 +18,7 @@ import java.util.HashMap;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
+public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager {
     private static final Logger LOG = LoggerFactory.getLogger(CustomX509ExtendedKeyManager.class);
 
     private final String certAlias;
@@ -32,7 +32,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     // also cache the aliases and its properties in the following HashMap.
     private final HashMap<String, CachedAliasValue> cachedAliases = new HashMap<>();
 
-    CustomX509ExtendedKeyManager(String alias, String keyType, final X509ExtendedKeyManager delegate){
+    CustomX509ExtendedKeyManager(String alias, String keyType, final X509ExtendedKeyManager delegate) {
         super();
         this.certAlias = alias;
         this.keyType = keyType;
@@ -51,7 +51,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     /* returns an existing certAlias that matches one of the given KeyTypes, or null;
        called only by client in TLS handshake */
     public String chooseClientAlias(String[] keyTypes, Principal[] issuers, Socket socket) {
-        if (Arrays.asList(keyTypes).contains(this.keyType)){
+        if (Arrays.asList(keyTypes).contains(this.keyType)) {
             if ((cachedAliases.containsKey(this.certAlias) &&
                     cachedAliases.get(this.certAlias).match(keyType, issuers))
                     || Arrays.asList(getClientAliases(keyType, issuers)).contains(this.certAlias)) {
@@ -81,7 +81,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     /* returns an existing certAlias that matches the given KeyType, or null;
        called only by server in TLS handshake*/
     public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-        if (keyType.equals(this.keyType)){
+        if (keyType.equals(this.keyType)) {
             if ((cachedAliases.containsKey(certAlias) && cachedAliases.get(this.certAlias).match(keyType, issuers))
                     || Arrays.asList(getServerAliases(keyType, issuers)).contains(this.certAlias)) {
                 LOG.debug("CertificateAlias is {}", this.certAlias);
@@ -101,7 +101,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     /* returns the certificate chain of a given certificateAlias;
        called by client and server in TLS Handshake after alias was chosen */
     public X509Certificate[] getCertificateChain(String certAlias) {
-        if (certAlias.equals(this.certAlias)){
+        if (certAlias.equals(this.certAlias)) {
             X509Certificate[] ret = delegate.getCertificateChain(certAlias);
             LOG.debug("Certificate Chain: {}", Arrays.toString(ret));
             return ret;
@@ -114,9 +114,9 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
 
     @Override
     /* returns a privateKey of a given certificateAlias;
-    *  called by client and server in TLS Handshake after alias was chosen */
+     *  called by client and server in TLS Handshake after alias was chosen */
     public PrivateKey getPrivateKey(String certAlias) {
-        if (certAlias.equals(this.certAlias)){
+        if (certAlias.equals(this.certAlias)) {
             return delegate.getPrivateKey(certAlias);
         } else {
             LOG.warn("Invalid certAlias '{}' in getPrivateKey() in class X509ExtendedKeyManager", certAlias);
@@ -126,12 +126,12 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
     }
 
     @Override
-    public String chooseEngineClientAlias(String[] keyType, Principal[] issuers, SSLEngine sslEngine){
+    public String chooseEngineClientAlias(String[] keyType, Principal[] issuers, SSLEngine sslEngine) {
         return delegate.chooseEngineClientAlias(keyType, issuers, sslEngine);
     }
 
     @Override
-    public String chooseEngineServerAlias(String keyType, Principal[] issuers, SSLEngine sslEngine){
+    public String chooseEngineServerAlias(String keyType, Principal[] issuers, SSLEngine sslEngine) {
         return delegate.chooseEngineServerAlias(keyType, issuers, sslEngine);
     }
 
@@ -140,7 +140,7 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
         private final String keyType; //key algorithm type name
         private final Principal issuer; //certificate issuer
 
-        CachedAliasValue(String keyType, Principal issuer){
+        CachedAliasValue(String keyType, Principal issuer) {
             this.keyType = keyType;
             this.issuer = issuer;
         }
@@ -156,9 +156,9 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager{
          *
          * returns true, if the keyAlias fulfills the requirements
          */
-        boolean match(String keyType, Principal[] issuers){
+        boolean match(String keyType, Principal[] issuers) {
             return this.keyType.equals(keyType) && (issuers == null
-                || Arrays.asList(issuers).contains(issuer));
+                    || Arrays.asList(issuers).contains(issuer));
         }
     }
 }

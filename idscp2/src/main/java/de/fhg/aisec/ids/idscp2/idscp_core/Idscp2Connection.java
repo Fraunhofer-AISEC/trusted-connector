@@ -18,28 +18,33 @@ public class Idscp2Connection {
 
     private final FSM fsm;
     private final String connectionId;
-    private final Set<Idscp2ConnectionListener> connectionListeners = new HashSet<>();
-    private final Set<Idscp2MessageListener> genericMessageListeners = new HashSet<>();
+    private final Set<Idscp2ConnectionListener> connectionListeners = Collections.synchronizedSet(new HashSet<>());
+    private final Set<Idscp2MessageListener> genericMessageListeners = Collections.synchronizedSet(new HashSet<>());
     private final Map<String, Set<Idscp2MessageListener>> messageListeners = new HashMap<>();
+    private final FastLatch messageLatch = new FastLatch();
 
     public Idscp2Connection(FSM fsm, String connectionId) {
         this.fsm = fsm;
         this.connectionId = connectionId;
     }
 
-    /*
+    public void unlockMessaging() {
+        messageLatch.unlock();
+    }
+
+    /**
      * Close the idscp connection
      */
     public void close() {
-        // unregister connection from the idscp server
-        synchronized (connectionListeners) {
-            connectionListeners.forEach(l -> l.onClose(connectionId));
+        // Unregister connection from the server
+        if (fsm.isNotClosed()) {
+            connectionListeners.forEach(l -> l.onClose(this));
         }
         fsm.terminate();
     }
 
-    /*
-     * Send data to the peer idscp connector
+    /**
+     * Send data to the peer IDSCP2 connector
      */
     public void send(String type, byte[] msg) {
         LOG.debug("Send data of type \"" + type + "\" ");
@@ -47,10 +52,10 @@ public class Idscp2Connection {
     }
 
     public void onMessage(String type, byte[] msg) {
+        // When unlock is called, although not synchronized, this will eventually stop blocking.
+        messageLatch.await();
         LOG.debug("Received new IDSCP Message: " + Arrays.toString(msg));
-        synchronized (genericMessageListeners) {
-            genericMessageListeners.forEach(l -> l.onMessage(this, type, msg));
-        }
+        genericMessageListeners.forEach(l -> l.onMessage(this, type, msg));
         Set<Idscp2MessageListener> listeners = messageListeners.get(type);
         if (listeners != null) {
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -61,74 +66,66 @@ public class Idscp2Connection {
     }
 
     public void onClose() {
-        LOG.debug("Connection with id {} has been closed, notify user", connectionId);
-        synchronized (connectionListeners) {
-            connectionListeners.forEach(l -> l.onClose(connectionId));
-        }
+        LOG.debug("Connection with id {} has been closed, notify listeners", connectionId);
+        connectionListeners.forEach(l -> l.onClose(this));
     }
 
-    /*
+    /**
      * Check if the idscp connection is currently established
+     *
+     * @return Connection established state
      */
+    @SuppressWarnings("unused")
     public boolean isConnected() {
         return fsm.isConnected();
     }
 
-    public String getConnectionId() {
+    public String getId() {
         return connectionId;
     }
 
     public void addConnectionListener(Idscp2ConnectionListener listener) {
-        synchronized (connectionListeners) {
-            connectionListeners.add(listener);
-        }
+        connectionListeners.add(listener);
     }
 
+    @SuppressWarnings("unused")
     public boolean removeConnectionListener(Idscp2ConnectionListener listener) {
-        synchronized (connectionListeners) {
-            return connectionListeners.remove(listener);
-        }
+        return connectionListeners.remove(listener);
     }
 
     public void addGenericMessageListener(Idscp2MessageListener listener) {
-        synchronized (genericMessageListeners) {
-            genericMessageListeners.add(listener);
-        }
+        genericMessageListeners.add(listener);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean removeGenericMessageListener(Idscp2MessageListener listener) {
-        synchronized (genericMessageListeners) {
-            return genericMessageListeners.remove(listener);
-        }
+        return genericMessageListeners.remove(listener);
     }
 
     public void addMessageListener(@Nullable String type, Idscp2MessageListener listener) {
-        synchronized (messageListeners) {
-            Set<Idscp2MessageListener> messageTypeListeners
+        Set<Idscp2MessageListener> messageTypeListeners
                 = messageListeners.computeIfAbsent(type, k -> new HashSet<>());
-            //noinspection SynchronizationOnLocalVariableOrMethodParameter
-            synchronized (messageTypeListeners) {
-                messageTypeListeners.add(listener);
-            }
-            messageListeners.put(type, messageTypeListeners);
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (messageTypeListeners) {
+            messageTypeListeners.add(listener);
         }
+        messageListeners.put(type, messageTypeListeners);
     }
 
+    @SuppressWarnings("unused")
     public boolean removeMessageListener(@Nullable String type, Idscp2MessageListener listener) {
-        synchronized (messageListeners) {
-            Set<Idscp2MessageListener> messageTypeListeners = messageListeners.get(type);
-            if (messageTypeListeners == null) {
-                return false;
-            }
-            final boolean ret;
-            //noinspection SynchronizationOnLocalVariableOrMethodParameter
-            synchronized (messageTypeListeners) {
-                ret = messageTypeListeners.remove(listener);
-            }
-            if (messageTypeListeners.isEmpty()) {
-                messageListeners.remove(type);
-            }
-            return ret;
+        Set<Idscp2MessageListener> messageTypeListeners = messageListeners.get(type);
+        if (messageTypeListeners == null) {
+            return false;
         }
+        final boolean ret;
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (messageTypeListeners) {
+            ret = messageTypeListeners.remove(listener);
+        }
+        if (messageTypeListeners.isEmpty()) {
+            messageListeners.remove(type);
+        }
+        return ret;
     }
 }

@@ -1,6 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 
-import de.fhg.aisec.ids.messages.IDSCP2.IdscpMessage;
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage;
 
 /**
  * An Event class for the Finite State Machine. Triggers a transition and holds
@@ -22,7 +22,7 @@ public class Event {
     /*
      * Create an Event with an Internal Control Message
      */
-    public Event(InternalControlMessage controlMessage){
+    public Event(InternalControlMessage controlMessage) {
         this.key = controlMessage.getValue();
         this.type = EventType.INTERNAL_CONTROL_MESSAGE;
         this.controlMessage = controlMessage;
@@ -32,7 +32,7 @@ public class Event {
     /*
      * Create an Event with an Idscpv2 Message
      */
-    public Event (IdscpMessage idscpMessage){
+    public Event(IdscpMessage idscpMessage) {
         this.key = idscpMessage.getMessageCase().getNumber();
         this.type = EventType.IDSCP_MESSAGE;
         this.idscpMessage = idscpMessage;
@@ -44,10 +44,9 @@ public class Event {
      *
      * throws an IllegalStateException if this event is requested for other purposes
      */
-    public Event (InternalControlMessage controlMessage, IdscpMessage idscpMessage){
+    public Event(InternalControlMessage controlMessage, IdscpMessage idscpMessage) {
         if (controlMessage.equals(InternalControlMessage.RAT_PROVER_MSG) ||
-                controlMessage.equals(InternalControlMessage.RAT_VERIFIER_MSG))
-        {
+                controlMessage.equals(InternalControlMessage.RAT_VERIFIER_MSG)) {
             this.key = controlMessage.getValue();
             this.type = EventType.INTERNAL_CONTROL_MESSAGE;
             this.idscpMessage = idscpMessage;
@@ -56,6 +55,16 @@ public class Event {
             throw new IllegalStateException("This constructor must only be used by RAT_PROVER and " +
                     "RAT_VERIFIER for message passing");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "key=" + key +
+                ", type=" + type +
+                ", idscpMessage=" + idscpMessage +
+                ", controlMessage=" + controlMessage +
+                '}';
     }
 
     //

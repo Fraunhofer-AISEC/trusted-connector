@@ -1,17 +1,18 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server;
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSConstants;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.ServerConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -23,117 +24,131 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class TLSServer extends Thread implements SecureServer {
+public class TLSServer implements Runnable, SecureServer {
     private static final Logger LOG = LoggerFactory.getLogger(TLSServer.class);
 
     private volatile boolean isRunning = false;
     private final ServerSocket serverSocket;
-    private final Idscp2Callback idscpConfigCallback; //no race conditions
-    private final CompletableFuture<Idscp2Connection> connectionPromise;
+    private final SecureChannelInitListener secureChannelInitListener;
+    private final CompletableFuture<ServerConnectionListener> serverListenerPromise;
+    private final Thread serverThread;
 
-    public TLSServer(Idscp2Settings serverSettings, Idscp2Callback configCallback,
-                     CompletableFuture<Idscp2Connection> connectionPromise)
+    public TLSServer(Idscp2Settings serverSettings, SecureChannelInitListener secureChannelInitListener,
+                     CompletableFuture<ServerConnectionListener> serverListenerPromise)
             throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        this.idscpConfigCallback = configCallback;
-        this.connectionPromise = connectionPromise;
+        this.secureChannelInitListener = secureChannelInitListener;
+        this.serverListenerPromise = serverListenerPromise;
 
         /* init server for TCP/TLS communication */
 
-        /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
-         * hostVerification and algorithm constraints */
-        LOG.debug("Create trust manager for tls server");
+        // Get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager,
+        // which enables host verification and algorithm constraints
+        LOG.debug("Creating trust manager for TLS server...");
         TrustManager[] myTrustManager = PreConfiguration.getX509ExtTrustManager(
                 serverSettings.getTrustStorePath(),
                 serverSettings.getTrustStorePassword()
         );
 
-        /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
-         * connection specific key selection via key alias*/
-        LOG.debug("Create key manager for tls server");
+        // Get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager,
+        // which enables connection specific key selection via key alias
+        LOG.debug("Creating key manager for TLS server...");
         KeyManager[] myKeyManager = PreConfiguration.getX509ExtKeyManager(
                 serverSettings.getKeyStorePath(),
                 serverSettings.getKeyStorePassword(),
-                serverSettings.getCertAlias(),
+                serverSettings.getCertificateAlias(),
                 serverSettings.getKeyStoreKeyType()
         );
 
-        LOG.debug("Set tls security attributes and create tls server socket");
-
-        // create tls context based on keyManager and trustManager
-        SSLContext sslContext = SSLContext.getInstance(TlsConstants.TLS_INSTANCE);
+        LOG.debug("Setting TLS security attributes and creating TLS server socket...");
+        // Create TLS context based on keyManager and trustManager
+        SSLContext sslContext = SSLContext.getInstance(TLSConstants.TLS_INSTANCE);
         sslContext.init(myKeyManager, myTrustManager, null);
         SSLServerSocketFactory socketFactory = sslContext.getServerSocketFactory();
 
-        //create server socket
-        serverSocket =  socketFactory.createServerSocket(serverSettings.getServerPort());
-        //set timeout for serverSocket.accept() to allow safeStop()
+        serverSocket = socketFactory.createServerSocket(serverSettings.getServerPort());
+        // Set timeout for serverSocket.accept()
         serverSocket.setSoTimeout(5000);
 
         SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocket;
 
-        //set tls constraints
+        // Set TLS constraints
         SSLParameters sslParameters = sslServerSocket.getSSLParameters();
         sslParameters.setUseCipherSuitesOrder(true); //server determines priority-order of algorithms in CipherSuite
         sslParameters.setNeedClientAuth(true); //client must authenticate
-        sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.3
-        sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher suite
+        sslParameters.setProtocols(TLSConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.3
+        sslParameters.setCipherSuites(TLSConstants.TLS_ENABLED_CIPHERS); //only allow strong cipher suite
         sslServerSocket.setSSLParameters(sslParameters);
-        LOG.debug("TLS server was initialized successfully");
+
+        LOG.debug("Starting TLS server...");
+        serverThread = new Thread(this, "TLS Server Thread "
+                + serverSettings.getHost() + ":" + serverSettings.getServerPort());
+        serverThread.start();
     }
 
     @Override
-    public void run(){
-        LOG.debug("Starting tls server");
-
-        if (serverSocket == null || serverSocket.isClosed()){
-            LOG.error("TLS Server socket is not available");
+    public void run() {
+        final ServerSocket serverSocket;
+        if ((serverSocket = this.serverSocket) == null || serverSocket.isClosed()) {
+            LOG.error("ServerSocket is not available, server thread is stopping now.");
             return;
         }
 
-        SSLSocket sslSocket;
         isRunning = true;
-        LOG.debug("TLS server is running");
-        while(isRunning){
+        LOG.debug("TLS server started, entering accept() loop...");
+        while (isRunning) {
             try {
-                sslSocket = (SSLSocket) serverSocket.accept();
-            } catch (SocketTimeoutException e){
+                final var sslSocket = (SSLSocket) serverSocket.accept();
+                try {
+                    // Start new server thread
+                    LOG.debug("New TLS client has connected. Creating new server thread...");
+                    final var serverThread = new TLSServerThread(sslSocket, secureChannelInitListener, serverListenerPromise);
+                    sslSocket.addHandshakeCompletedListener(serverThread);
+                    serverThread.start();
+                } catch (Exception serverThreadException) {
+                    LOG.error("Error whilst creating/starting TLSServerThread", serverThreadException);
+                }
+            } catch (SocketTimeoutException e) {
                 //timeout on serverSocket blocking functions was reached
                 //in this way we can catch safeStop() function, that makes isRunning false
                 //without closing the serverSocket, so we can stop and restart the server
                 //alternative: close serverSocket. But then we cannot reuse it
-                continue;
-            } catch (IOException e) {
-                LOG.error("TLS Server failed");
-                e.printStackTrace();
+            } catch (SocketException e) {
+                LOG.debug("Server socket has been closed.");
                 isRunning = false;
-                return;
+            } catch (IOException e) {
+                LOG.error("TLS server socket accept failed", e);
+                isRunning = false;
             }
-
-            //start new server thread
-            LOG.debug("New TLS client has connected. Create new server session");
-            TLSServerThread server = new TLSServerThread(sslSocket, idscpConfigCallback, connectionPromise);
-            sslSocket.addHandshakeCompletedListener(server);
-            server.start();
         }
 
-        if (!serverSocket.isClosed()){
+        if (!serverSocket.isClosed()) {
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                LOG.warn("Could not close TLS server socket");
-                e.printStackTrace();
+                LOG.warn("Could not close TLS server socket", e);
             }
         }
     }
 
     @Override
-    public void safeStop(){
+    public void safeStop() {
         LOG.debug("Stopping tls server");
         isRunning = false;
+//        try {
+//            serverSocket.close();
+//        } catch (IOException e) {
+//            LOG.warn("Trying to close server socket failed!", e);
+//        }
+        try {
+            this.serverThread.join();
+        } catch (InterruptedException e) {
+            LOG.warn("InterruptedException whilst waiting for server stop", e);
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
-    public boolean isRunning(){
+    public boolean isRunning() {
         return isRunning;
     }
 

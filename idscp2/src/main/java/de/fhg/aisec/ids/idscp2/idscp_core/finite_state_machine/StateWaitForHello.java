@@ -3,7 +3,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCP2;
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * The Wait_For_Hello State of the FSM of the IDSCP2 protocol.
  * Waits for the Idscpv2 Hellp Message that contains the protocol version, the supported and
  * expected remote attestation cipher suites and the dynamic attribute token (DAT) of the peer.
- *
+ * <p>
  * Goes into the WAIT_FOR_RAT State when valid Rat mechanisms were found and the DAT is valid
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
@@ -85,18 +85,20 @@ public class StateWaitForHello extends State {
                     LOG.debug("Calculate Rat mechanisms");
                     String proverMechanism = fsm.getRatProverMechanism(localSupportedRatSuite,
                             idscpHello.getExpectedRatSuiteList().toArray());
-                    if (proverMechanism == null){
+                    if (proverMechanism == null) {
                         LOG.debug("Cannot find a match for RAT proverr. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No match for RAT Prover mechanism",
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                "No match for RAT Prover mechanism",
                                 IDSCP2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_PROVER));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
 
                     String verifierMechanism = fsm.getRatVerifierMechanism(localExpectedRatSuite,
                             idscpHello.getSupportedRatSuiteList().toArray());
-                    if (verifierMechanism == null){
+                    if (verifierMechanism == null) {
                         LOG.debug("Cannot find a match for RAT verifier. Send IDSCP_CLOSE");
-                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No match for RAT Verifier mechanism",
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                "No match for RAT Verifier mechanism",
                                 IDSCP2.IdscpClose.CloseCause.NO_RAT_MECHANISM_MATCH_VERIFIER));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                     }
@@ -105,7 +107,7 @@ public class StateWaitForHello extends State {
                     //check if Dat is available and verify dat
                     long datValidityPeriod;
                     if (!idscpHello.hasDynamicAttributeToken() || 0 > (datValidityPeriod = dapsDriver
-                            .verifyToken(idscpHello.getDynamicAttributeToken().getToken().toByteArray(), null))){
+                            .verifyToken(idscpHello.getDynamicAttributeToken().getToken().toByteArray(), null))) {
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
                         fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No valid DAT",
                                 IDSCP2.IdscpClose.CloseCause.NO_VALID_DAT));
@@ -120,13 +122,13 @@ public class StateWaitForHello extends State {
                     LOG.debug("Start RAT Prover and Verifier");
 
                     if (!fsm.restartRatVerifierDriver()) {
-                      LOG.error("Cannot run Rat verifier, close idscp connection");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot run Rat verifier, close idscp connection");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     if (!fsm.restartRatProverDriver()) {
-                      LOG.error("Cannot run Rat prover, close idscp connection");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot run Rat prover, close idscp connection");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT);

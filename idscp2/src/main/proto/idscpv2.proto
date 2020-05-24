@@ -1,5 +1,5 @@
 syntax = "proto3";
-option java_package = "de.fhg.aisec.ids.messages";
+option java_package = "de.fhg.aisec.ids.idscp2.messages";
 option java_outer_classname = "IDSCP2";
 
 //IDSCP message frame

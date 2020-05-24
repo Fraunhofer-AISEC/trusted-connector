@@ -3,7 +3,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCP2;
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class StateWaitForRat extends State {
                            Timer proverHandshakeTimer,
                            Timer ratTimer,
                            int ratTimerDelay,
-                           DapsDriver dapsDriver){
+                           DapsDriver dapsDriver) {
 
 
         /*---------------------------------------------------
@@ -46,7 +46,7 @@ public class StateWaitForRat extends State {
          * ALL_OTHER_MESSAGES ---> {} ---> STATE_WAIT_FOR_RAT
          * --------------------------------------------------- */
         this.addTransition(InternalControlMessage.ERROR.getValue(), new Transition(
-                event ->  {
+                event -> {
                     LOG.debug("An internal control error occurred");
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
                 }
@@ -103,8 +103,8 @@ public class StateWaitForRat extends State {
                     LOG.debug("Send IDSCP_RAT_PROVER");
 
                     if (!fsm.sendFromFSM(event.getIdscpMessage())) {
-                      LOG.error("Cannot send rat prover message");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot send rat prover message");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     return this;
@@ -116,8 +116,8 @@ public class StateWaitForRat extends State {
                     LOG.debug("Send IDSCP_RAT_VERIFIER");
 
                     if (!fsm.sendFromFSM(event.getIdscpMessage())) {
-                      LOG.error("Cannot send rat verifier message");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot send rat verifier message");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     return this;
@@ -130,8 +130,8 @@ public class StateWaitForRat extends State {
                     fsm.stopRatVerifierDriver();
 
                     if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatExpiredMessage())) {
-                      LOG.error("Cannot send DatExpired message");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot send DatExpired message");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     LOG.debug("Start Handshake Timer");
@@ -155,7 +155,7 @@ public class StateWaitForRat extends State {
                     LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER");
                     assert event.getIdscpMessage().hasIdscpRatVerifier();
                     fsm.getRatProverDriver().delegate(event.getIdscpMessage().getIdscpRatVerifier()
-                        .getData().toByteArray());
+                            .getData().toByteArray());
 
                     return this;
                 }
@@ -166,7 +166,7 @@ public class StateWaitForRat extends State {
                     LOG.debug("Delegate received IDSCP_RAT_PROVER to RAT_VERIFIER");
                     assert event.getIdscpMessage().hasIdscpRatProver();
                     fsm.getRatVerifierDriver().delegate(event.getIdscpMessage().getIdscpRatProver()
-                        .getData().toByteArray());
+                            .getData().toByteArray());
 
                     return this;
                 }
@@ -177,13 +177,13 @@ public class StateWaitForRat extends State {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER");
 
                     if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.getToken()))) {
-                      LOG.error("Cannot send DAT message");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot send DAT message");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     if (!fsm.restartRatProverDriver()) {
-                      LOG.error("Cannot run Rat prover, close idscp connection");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot run Rat prover, close idscp connection");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     return this;
@@ -206,8 +206,8 @@ public class StateWaitForRat extends State {
         );
     }
 
-  @Override
-    void runEntryCode(FSM fsm){
+    @Override
+    void runEntryCode(FSM fsm) {
         LOG.debug("Switch to state STATE_WAIT_FOR_RAT");
     }
 }

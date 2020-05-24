@@ -1,9 +1,8 @@
 import com.google.protobuf.gradle.protobuf
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.yaml.snakeyaml.Yaml
 
 @Suppress("UNCHECKED_CAST") val libraryVersions =
-        Yaml().load(File("${rootDir}/libraryVersions.yaml").inputStream()) as Map<String, String>
+        rootProject.ext.get("libraryVersions") as Map<String, String>
 
 version = libraryVersions["idscp2"] ?: error("IDSCP2 version not specified")
 
@@ -30,15 +29,17 @@ configure<IdeaModel> {
 }
 
 dependencies {
+    providedByBundle(project(":ids-api")) { isTransitive = false }
+
     providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
     
     publishCompile("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
 
-    providedByBundle("io.jsonwebtoken", "jjwt-impl", libraryVersions["jsonwebtoken"])
-    providedByBundle("io.jsonwebtoken", "jjwt-jackson", libraryVersions["jsonwebtoken"])
-    providedByBundle("io.jsonwebtoken", "jjwt-api", libraryVersions["jsonwebtoken"])
+    implementation("io.jsonwebtoken", "jjwt-impl", libraryVersions["jsonwebtoken"])
+    implementation("io.jsonwebtoken", "jjwt-jackson", libraryVersions["jsonwebtoken"])
+    implementation("io.jsonwebtoken", "jjwt-api", libraryVersions["jsonwebtoken"])
     providedByBundle("org.json", "json", libraryVersions["orgJson"])
     providedByBundle("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
     providedByBundle("com.squareup.okhttp3", "okhttp", libraryVersions["okhttp"])

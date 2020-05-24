@@ -8,5 +8,5 @@ public interface Idscp2ConnectionListener {
 
     void onError(String error);
 
-    void onClose(String connectionId);
+    void onClose(Idscp2Connection connection);
 }

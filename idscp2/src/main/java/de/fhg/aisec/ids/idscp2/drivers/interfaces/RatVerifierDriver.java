@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public abstract class RatVerifierDriver extends Thread{
+public abstract class RatVerifierDriver extends Thread {
     private static final Logger LOG = LoggerFactory.getLogger(RatVerifierDriver.class);
 
     protected boolean running = true;
@@ -19,7 +19,8 @@ public abstract class RatVerifierDriver extends Thread{
     /*
      * Delegate the IDSCP2 message to the RatVerifier driver
      */
-    public void delegate(byte[] message){}
+    public void delegate(byte[] message) {
+    }
 
     /*
      * Terminate and cancel the RatVerifier driver
@@ -29,7 +30,7 @@ public abstract class RatVerifierDriver extends Thread{
         this.interrupt();
     }
 
-    public void setListener(FsmListener listener){
+    public void setListener(FsmListener listener) {
         fsmListener = listener;
     }
 

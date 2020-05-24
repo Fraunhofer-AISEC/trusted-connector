@@ -1,10 +1,10 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client;
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSConstants;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSessionVerificationHelper;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TlsConstants;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Callback;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
@@ -18,7 +18,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A TLS Client that notifies an Idscp2Configuration when a secure channel was created and the
@@ -34,62 +34,61 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private final Socket clientSocket;
     private DataOutputStream out;
     private InputListenerThread inputListenerThread;
-    private SecureChannelListener listener; //race conditions are avoided using CountDownLatch
-    private final CountDownLatch listenerLatch = new CountDownLatch(1);
-    private final Idscp2Callback callback;
+    private final CompletableFuture<SecureChannelListener> listenerPromise = new CompletableFuture<>();
+    private final SecureChannelInitListener secureChannelInitListener;
 
+    public TLSClient(Idscp2Settings clientSettings, SecureChannelInitListener secureChannelInitListener)
+            throws IOException, KeyManagementException, NoSuchAlgorithmException {
+        this.secureChannelInitListener = secureChannelInitListener;
 
-    public TLSClient(Idscp2Settings clientSettings, Idscp2Callback callback)
-            throws IOException, KeyManagementException, NoSuchAlgorithmException{
-        this.callback = callback;
-        /* init TLS Client */
+        // init TLS Client
 
-        /* get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
-         * hostVerification and algorithm constraints */
+        // get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
+        // hostVerification and algorithm constraints
         TrustManager[] myTrustManager = PreConfiguration.getX509ExtTrustManager(
                 clientSettings.getTrustStorePath(),
                 clientSettings.getTrustStorePassword()
         );
 
-        /* get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
-         * connection specific key selection via key alias*/
+        // get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
+        // connection specific key selection via key alias
         KeyManager[] myKeyManager = PreConfiguration.getX509ExtKeyManager(
                 clientSettings.getKeyStorePath(),
                 clientSettings.getKeyStorePassword(),
-                clientSettings.getCertAlias(),
+                clientSettings.getCertificateAlias(),
                 clientSettings.getKeyStoreKeyType()
         );
 
-        SSLContext sslContext = SSLContext.getInstance(TlsConstants.TLS_INSTANCE);
+        SSLContext sslContext = SSLContext.getInstance(TLSConstants.TLS_INSTANCE);
         sslContext.init(myKeyManager, myTrustManager, null);
 
         SSLSocketFactory socketFactory = sslContext.getSocketFactory();
 
-        //create server socket
+        // create server socket
         clientSocket = socketFactory.createSocket();
 
         SSLSocket sslSocket = (SSLSocket) clientSocket;
 
-        //set TLS constraints
+        // set TLS constraints
         SSLParameters sslParameters = sslSocket.getSSLParameters();
-        sslParameters.setUseCipherSuitesOrder(false); //use server priority order
+        sslParameters.setUseCipherSuitesOrder(false);  // use server priority order
         sslParameters.setNeedClientAuth(true);
-        sslParameters.setProtocols(TlsConstants.TLS_ENABLED_PROTOCOLS); //only TLSv1.3
-        sslParameters.setCipherSuites(TlsConstants.TLS_ENABLED_CIPHER_TLS13); //only allow strong cipher
-        //sslParameters.setEndpointIdentificationAlgorithm("HTTPS"); is done in application layer
+        sslParameters.setProtocols(TLSConstants.TLS_ENABLED_PROTOCOLS);  // only TLSv1.3
+        sslParameters.setCipherSuites(TLSConstants.TLS_ENABLED_CIPHERS);  // only allow strong cipher
+//        sslParameters.setEndpointIdentificationAlgorithm("HTTPS");  // is done in application layer
         sslSocket.setSSLParameters(sslParameters);
         LOG.debug("TLS Client was initialized successfully");
     }
 
 
-    /*
+    /**
      * Connect to TLS server and start TLS Handshake
      */
-    public void connect(String hostname, int port){
+    public void connect(String hostname, int port) {
         SSLSocket sslSocket = (SSLSocket) clientSocket;
-        if (sslSocket == null || sslSocket.isClosed()){
+        if (sslSocket == null || sslSocket.isClosed()) {
             LOG.warn("Client socket is not available");
-            callback.secureChannelConnectHandler(null);
+            secureChannelInitListener.onSecureChannel(null, null);
             return;
         }
 
@@ -111,25 +110,25 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             sslSocket.addHandshakeCompletedListener(this);
             LOG.debug("Start TLS Handshake");
             sslSocket.startHandshake();
-        } catch (SSLHandshakeException | SSLProtocolException e){
+        } catch (SSLHandshakeException | SSLProtocolException e) {
             LOG.warn("TLS Handshake failed: {}", e.getMessage());
             disconnect();
-            callback.secureChannelConnectHandler(null);
+            secureChannelInitListener.onSecureChannel(null, null);
         } catch (IOException e) {
             LOG.error("Connecting TLS client to server failed " + e.getMessage());
             disconnect();
-            callback.secureChannelConnectHandler(null);
+            secureChannelInitListener.onSecureChannel(null, null);
         }
     }
 
-    private void disconnect(){
+    private void disconnect() {
         LOG.debug("Disconnecting from tls server");
         //close listener
         if (inputListenerThread != null && inputListenerThread.isAlive()) {
             inputListenerThread.safeStop();
         }
 
-        if (clientSocket != null && !clientSocket.isClosed()){
+        if (clientSocket != null && !clientSocket.isClosed()) {
             try {
                 clientSocket.close();
             } catch (IOException e) {
@@ -139,23 +138,13 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     @Override
-    public void onClose(){
-        try {
-            listenerLatch.await();
-            listener.onClose();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    public void onClose() {
+        listenerPromise.thenAccept(SecureChannelListener::onClose);
     }
 
     @Override
-    public void onError(){
-        try {
-            listenerLatch.await();
-            listener.onError();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    public void onError() {
+        listenerPromise.thenAccept(SecureChannelListener::onError);
     }
 
     @Override
@@ -164,8 +153,8 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     @Override
-    public boolean send(byte[] data){
-        if (!isConnected()){
+    public boolean send(byte[] data) {
+        if (!isConnected()) {
             LOG.error("Client cannot send data because socket is not connected");
             return false;
         } else {
@@ -175,14 +164,14 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
                 out.flush();
                 LOG.debug("Send message");
                 return true;
-            } catch (IOException e){
+            } catch (IOException e) {
                 LOG.error("Client cannot send data");
                 return false;
             }
         }
     }
 
-    public boolean isConnected(){
+    public boolean isConnected() {
         return clientSocket != null && clientSocket.isConnected();
     }
 
@@ -202,27 +191,19 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
                 LOG.warn("TLS session is not valid. Close TLS connection", e);
             }
             disconnect();
-            callback.secureChannelConnectHandler(null);
+            secureChannelInitListener.onSecureChannel(null, null);
             return;
         }
 
-        //Create secure channel, register secure channel as message listener and provide it to
-        // IDSCP2 Configuration.
-        //Start Input Listener
+        // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.
         SecureChannel secureChannel = new SecureChannel(this);
-        this.listener = secureChannel;
-        listenerLatch.countDown();
+        this.listenerPromise.complete(secureChannel);
         inputListenerThread.start();
-        callback.secureChannelConnectHandler(secureChannel);
+        secureChannelInitListener.onSecureChannel(secureChannel, null);
     }
 
     @Override
     public void onMessage(byte[] data) {
-        try{
-            listenerLatch.await();
-            listener.onMessage(data);
-        } catch (InterruptedException e){
-            Thread.currentThread().interrupt();
-        }
+        listenerPromise.thenAccept(listener -> listener.onMessage(data));
     }
 }

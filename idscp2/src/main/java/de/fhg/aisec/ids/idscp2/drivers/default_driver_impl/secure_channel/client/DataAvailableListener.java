@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client;
 
 /**
- * An interface for DataAvailableListeners, that will be notified when new data were received
+ * An interface for DataAvailableListeners, that will be notified when new data has been received
  * at the sslSocket
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)

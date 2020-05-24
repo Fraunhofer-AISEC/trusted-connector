@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public abstract class RatProverDriver extends Thread{
+public abstract class RatProverDriver extends Thread {
     private static final Logger LOG = LoggerFactory.getLogger(RatProverDriver.class);
 
     protected boolean running = true;
@@ -19,7 +19,8 @@ public abstract class RatProverDriver extends Thread{
     /*
      * Delegate an IDSCP2 message to the RatProver driver
      */
-    public void delegate(byte[] message){}
+    public void delegate(byte[] message) {
+    }
 
     /*
      * Terminate and cancel the RatProver driver
@@ -29,11 +30,11 @@ public abstract class RatProverDriver extends Thread{
         this.interrupt();
     }
 
-    public void setListener(FsmListener listener){
+    public void setListener(FsmListener listener) {
         fsmListener = listener;
     }
 
-    public void setConfig(Object config){
+    public void setConfig(Object config) {
         LOG.warn("Method 'setConfig' for RatProverDriver is not implemented");
     }
 }

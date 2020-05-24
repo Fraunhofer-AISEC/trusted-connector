@@ -18,7 +18,7 @@ public class RatProverDummy extends RatProverDriver {
 
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 
-    public RatProverDummy(){
+    public RatProverDummy() {
         super();
     }
 
@@ -33,11 +33,11 @@ public class RatProverDummy extends RatProverDriver {
     @Override
     public void run() {
         int countDown = 2;
-        while (running){
+        while (running) {
             try {
                 sleep(1000);
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG,
-                    "test".getBytes());
+                        "test".getBytes());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Prover waits");
                 }

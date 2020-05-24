@@ -11,40 +11,41 @@ import java.security.cert.Certificate;
  */
 public class TPM2dProverConfig {
 
-  private Certificate remoteCertificate;
-  @NonNull private String tpm2dHost;
+    private Certificate remoteCertificate;
+    @NonNull
+    private String tpm2dHost;
 
-  private TPM2dProverConfig() {
-    tpm2dHost = System.getenv("TPM_HOST") != null ?
-        System.getenv("TPM_HOST") : "localhost";
-  }
+    private TPM2dProverConfig() {
+        tpm2dHost = System.getenv("TPM_HOST") != null ?
+                System.getenv("TPM_HOST") : "localhost";
+    }
 
-  public static class Builder {
-    private static final TPM2dProverConfig config = new TPM2dProverConfig();
+    public static class Builder {
+        private static final TPM2dProverConfig config = new TPM2dProverConfig();
+
+        @NonNull
+        public Builder setRemoteCertificate(Certificate remoteCert) {
+            config.remoteCertificate = remoteCert;
+            return this;
+        }
+
+        @NonNull
+        public Builder setTpmHost(String host) {
+            config.tpm2dHost = host;
+            return this;
+        }
+
+        public TPM2dProverConfig build() {
+            return config;
+        }
+    }
+
+    public Certificate getRemoteCertificate() {
+        return remoteCertificate;
+    }
 
     @NonNull
-    public Builder setRemoteCertificate(Certificate remoteCert) {
-      config.remoteCertificate = remoteCert;
-      return this;
+    public String getTpm2dHost() {
+        return tpm2dHost;
     }
-
-    @NonNull
-    public Builder setTpmHost(String host) {
-      config.tpm2dHost = host;
-      return this;
-    }
-
-    public TPM2dProverConfig build() {
-      return config;
-    }
-  }
-
-  public Certificate getRemoteCertificate() {
-    return remoteCertificate;
-  }
-
-  @NonNull
-  public String getTpm2dHost() {
-    return tpm2dHost;
-  }
 }

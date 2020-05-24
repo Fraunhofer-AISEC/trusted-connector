@@ -3,14 +3,14 @@ package de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM.FSM_STATE;
-import de.fhg.aisec.ids.messages.IDSCP2;
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * The Wait_For_Dat_And_Rat_Verifier State of the FSM of the IDSCP2 protocol.
  * Wait for a new dynamic attribute token from the peer, since the old one is not valid anymore
- * and waits for the RatVerifier after successful verification of the Dat to decide if the idscpv2
+ * and waits for the RatVerifier after successful verification of the Dat to decide if the IDSCP2
  * connection will be established
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
@@ -21,7 +21,7 @@ public class StateWaitForDatAndRatVerifier extends State {
     public StateWaitForDatAndRatVerifier(FSM fsm,
                                          Timer handshakeTimer,
                                          Timer datTimer,
-                                         DapsDriver dapsDriver){
+                                         DapsDriver dapsDriver) {
 
         /*---------------------------------------------------
          * STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER - Transition Description
@@ -75,7 +75,7 @@ public class StateWaitForDatAndRatVerifier extends State {
                     //check if Dat is available and verify dat
                     byte[] dat = event.getIdscpMessage().getIdscpDat().getToken().toByteArray();
                     long datValidityPeriod;
-                    if (0 > (datValidityPeriod = dapsDriver.verifyToken(dat, null))){
+                    if (0 > (datValidityPeriod = dapsDriver.verifyToken(dat, null))) {
                         LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE");
                         fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No valid DAT", IDSCP2.IdscpClose.CloseCause.NO_VALID_DAT));
                         return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);
@@ -84,8 +84,8 @@ public class StateWaitForDatAndRatVerifier extends State {
                     datTimer.resetTimeout(datValidityPeriod);
                     //start RAT Verifier
                     if (!fsm.restartRatVerifierDriver()) {
-                      LOG.error("Cannot run Rat verifier, close idscp connection");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot run Rat verifier, close idscp connection");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_RAT_VERIFIER);
@@ -97,13 +97,13 @@ public class StateWaitForDatAndRatVerifier extends State {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, start RAT_PROVER");
 
                     if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.getToken()))) {
-                      LOG.error("Cannot send DAT message");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot send DAT message");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
 
                     if (!fsm.restartRatProverDriver()) {
-                      LOG.error("Cannot run Rat prover, close idscp connection");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot run Rat prover, close idscp connection");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT);
                 }
@@ -113,8 +113,8 @@ public class StateWaitForDatAndRatVerifier extends State {
                 event -> {
                     LOG.debug("Received IDSCP_RE_RAT. Start RAT_PROVER");
                     if (!fsm.restartRatProverDriver()) {
-                      LOG.error("Cannot run Rat prover, close idscp connection");
-                      return fsm.getState(FSM_STATE.STATE_CLOSED);
+                        LOG.error("Cannot run Rat prover, close idscp connection");
+                        return fsm.getState(FSM_STATE.STATE_CLOSED);
                     }
                     return fsm.getState(FSM.FSM_STATE.STATE_WAIT_FOR_DAT_AND_RAT);
                 }
@@ -129,7 +129,7 @@ public class StateWaitForDatAndRatVerifier extends State {
     }
 
     @Override
-    void runEntryCode(FSM fsm){
+    void runEntryCode(FSM fsm) {
         LOG.debug("Switched to state STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER");
         LOG.debug("Set handshake timeout");
     }

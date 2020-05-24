@@ -17,7 +17,7 @@ public class Idscp2Settings {
     private String trustStorePassword = "password";
     private String keyStorePath = null;
     private String keyStorePassword = "password";
-    private String certAlias = "1.0.1";
+    private String certificateAlias = "1.0.1";
     private String dapsKeyAlias = "1";
     private String keyStoreKeyType = "RSA";
     private AttestationConfig supportedAttestation = new AttestationConfig();
@@ -42,32 +42,32 @@ public class Idscp2Settings {
         }
 
         @NonNull
-        public Builder setTrustStore(String path) {
+        public Builder setTrustStorePath(String path) {
             this.settings.trustStorePath = path;
             return this;
         }
 
         @NonNull
-        public Builder setKeyStore(String path) {
+        public Builder setKeyStorePath(String path) {
             this.settings.keyStorePath = path;
             return this;
         }
 
         @NonNull
-        public Builder setTrustStorePwd(String pwd) {
+        public Builder setTrustStorePassword(String pwd) {
             this.settings.trustStorePassword = pwd;
             return this;
         }
 
         @NonNull
-        public Builder setKeyStorePwd(String pwd) {
+        public Builder setKeyStorePassword(String pwd) {
             this.settings.keyStorePassword = pwd;
             return this;
         }
 
         @NonNull
         public Builder setCertificateAlias(String alias) {
-            this.settings.certAlias = alias;
+            this.settings.certificateAlias = alias;
             return this;
         }
 
@@ -84,13 +84,13 @@ public class Idscp2Settings {
         }
 
         @NonNull
-        public Builder setSupportedAttestationSuite(AttestationConfig suite) {
+        public Builder setSupportedAttestation(AttestationConfig suite) {
             this.settings.supportedAttestation = suite;
             return this;
         }
 
         @NonNull
-        public Builder setExpectedAttestationSuite(AttestationConfig suite) {
+        public Builder setExpectedAttestation(AttestationConfig suite) {
             this.settings.expectedAttestation = suite;
             return this;
         }
@@ -107,24 +107,12 @@ public class Idscp2Settings {
 
     }
 
-    public AttestationConfig getExpectedAttestation() {
-        return expectedAttestation;
-    }
-
-    public AttestationConfig getSupportedAttestation() {
-        return supportedAttestation;
-    }
-
     public int getServerPort() {
         return serverPort;
     }
 
-    public String getKeyStorePath() {
-        return keyStorePath;
-    }
-
-    public String getKeyStorePassword() {
-        return keyStorePassword;
+    public String getHost() {
+        return host;
     }
 
     public String getTrustStorePath() {
@@ -135,23 +123,36 @@ public class Idscp2Settings {
         return trustStorePassword;
     }
 
-    public String getKeyStoreKeyType() {
-        return keyStoreKeyType;
+    public String getKeyStorePath() {
+        return keyStorePath;
     }
 
-    public String getCertAlias() {
-        return certAlias;
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    public String getCertificateAlias() {
+        return certificateAlias;
     }
 
     public String getDapsKeyAlias() {
         return dapsKeyAlias;
     }
 
-    public String getHost() {
-        return host;
+    public String getKeyStoreKeyType() {
+        return keyStoreKeyType;
+    }
+
+    public AttestationConfig getSupportedAttestation() {
+        return supportedAttestation;
+    }
+
+    public AttestationConfig getExpectedAttestation() {
+        return expectedAttestation;
     }
 
     public int getRatTimeoutDelay() {
         return ratTimeoutDelay;
     }
+
 }

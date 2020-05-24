@@ -9,14 +9,14 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class TimerThread extends Thread{
+public class TimerThread extends Thread {
 
     private volatile boolean canceled = false;
     private final long delay; //timeout delay in seconds
     private final Runnable timeoutHandler; //timeout handler routine
     private final ReentrantLock fsmIsBusy; //lock for the fsm
 
-    TimerThread(long delay, Runnable timeoutHandler, ReentrantLock fsmIsBusy){
+    TimerThread(long delay, Runnable timeoutHandler, ReentrantLock fsmIsBusy) {
         this.delay = delay;
         this.timeoutHandler = timeoutHandler;
         this.fsmIsBusy = fsmIsBusy;
@@ -31,7 +31,7 @@ public class TimerThread extends Thread{
      * If the timout was not canceled so far, the timer thread calls a timeout handler
      * routine, that triggers the timeout transition in the fsm
      */
-    public void run(){
+    public void run() {
         try {
             Thread.sleep(delay * 1000);
         } catch (InterruptedException e) {
@@ -46,7 +46,7 @@ public class TimerThread extends Thread{
 
         fsmIsBusy.lock();
         try {
-            if (!canceled){
+            if (!canceled) {
                 timeoutHandler.run();
             }
         } finally {
@@ -57,7 +57,7 @@ public class TimerThread extends Thread{
     /*
      * A method to stop the execution of the timer thread and cancel the timeout
      */
-    public void safeStop(){
+    public void safeStop() {
         canceled = true;
         this.interrupt();
     }

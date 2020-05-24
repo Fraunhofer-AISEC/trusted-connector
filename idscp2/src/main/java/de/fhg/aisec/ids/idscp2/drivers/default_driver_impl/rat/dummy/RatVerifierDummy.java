@@ -18,7 +18,7 @@ public class RatVerifierDummy extends RatVerifierDriver {
 
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
 
-    public RatVerifierDummy(){
+    public RatVerifierDummy() {
         super();
     }
 
@@ -31,9 +31,9 @@ public class RatVerifierDummy extends RatVerifierDriver {
     }
 
     @Override
-    public void run(){
+    public void run() {
         int countDown = 2;
-        while (running){
+        while (running) {
             try {
                 sleep(1000);
                 if (LOG.isDebugEnabled()) {

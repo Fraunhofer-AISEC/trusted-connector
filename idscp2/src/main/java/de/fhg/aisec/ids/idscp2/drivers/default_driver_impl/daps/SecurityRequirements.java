@@ -11,24 +11,25 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 public class SecurityRequirements {
 
-  private int auditLogging;
+    private int auditLogging;
 
-  public static class Builder {
-   @NonNull private final SecurityRequirements requirements = new SecurityRequirements();
+    public static class Builder {
+        @NonNull
+        private final SecurityRequirements requirements = new SecurityRequirements();
 
-   @NonNull
-   public Builder setAuditLogging(int auditLogging) {
-     this.requirements.auditLogging = auditLogging;
-     return this;
-   }
+        @NonNull
+        public Builder setAuditLogging(int auditLogging) {
+            this.requirements.auditLogging = auditLogging;
+            return this;
+        }
 
-   @NonNull
-   public SecurityRequirements build() {
-     return requirements;
-   }
-  }
+        @NonNull
+        public SecurityRequirements build() {
+            return requirements;
+        }
+    }
 
-  public int getAuditLogging() {
-    return auditLogging;
-  }
+    public int getAuditLogging() {
+        return auditLogging;
+    }
 }

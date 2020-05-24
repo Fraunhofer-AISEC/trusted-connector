@@ -5,7 +5,7 @@ package de.fhg.aisec.ids.idscp2.error;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class Idscp2Exception extends Exception{
+public class Idscp2Exception extends RuntimeException {
     public Idscp2Exception(String message) {
         super(message);
     }

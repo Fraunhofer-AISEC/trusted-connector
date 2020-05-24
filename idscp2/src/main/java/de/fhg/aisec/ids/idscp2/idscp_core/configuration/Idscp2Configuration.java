@@ -3,11 +3,12 @@ package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.Idscp2Server;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.ServerConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public class Idscp2Configuration implements Idscp2Callback {
+public class Idscp2Configuration implements SecureChannelInitListener {
     private static final Logger LOG = LoggerFactory.getLogger(Idscp2Configuration.class);
 
     private final Idscp2EndpointListener endpointListener;
@@ -30,14 +31,13 @@ public class Idscp2Configuration implements Idscp2Callback {
     private final String[] localSupportedRatCipher;
     private final int ratTimeout;
 
-
     public Idscp2Configuration(Idscp2EndpointListener endpointListener,
                                DapsDriver dapsDriver,
                                SecureChannelDriver secureChannelDriver,
                                AttestationConfig expectedAttestation,
                                AttestationConfig supportedAttestation,
                                int ratTimeout
-    ){
+    ) {
         this.endpointListener = endpointListener;
         this.dapsDriver = dapsDriver;
         this.secureChannelDriver = secureChannelDriver;
@@ -46,11 +46,11 @@ public class Idscp2Configuration implements Idscp2Callback {
         this.ratTimeout = ratTimeout;
     }
 
-    /*
+    /**
      * User API to create a IDSCP2 connection as a client
      */
-    public void connect(Idscp2Settings settings){
-        LOG.info("Connect to an idscpv2 server ({})", settings.getHost());
+    public void connect(Idscp2Settings settings) {
+        LOG.info("Connect to an IDSCP2 server ({})", settings.getHost());
         secureChannelDriver.connect(settings, this);
     }
 
@@ -61,85 +61,61 @@ public class Idscp2Configuration implements Idscp2Callback {
     public Idscp2Server listen(Idscp2Settings settings) throws Idscp2Exception {
         LOG.info("Starting new IDSCP2 server at port {}", settings.getServerPort());
 
-        // requires Promise<Idscp2Connection>
-        final var connectionPromise = new CompletableFuture<Idscp2Connection>();
-        final SecureServer secureServer;
-
-        if ((secureServer = secureChannelDriver.listen(settings, this, connectionPromise)) == null) {
-            throw new Idscp2Exception("Idscpv2 listen() failed. Cannot create SecureServer");
-        }
-
-        return new Idscp2Server(secureServer, connectionPromise);
+        final var serverListenerPromise = new CompletableFuture<ServerConnectionListener>();
+        final var secureServer = secureChannelDriver.listen(settings, this, serverListenerPromise);
+        final var server = new Idscp2Server(secureServer);
+        serverListenerPromise.complete(server);
+        return server;
     }
 
-    /*
-     * A callback implementation to receive a new established secure channel from an Secure client
-     *
+    /**
+     * A callback implementation to receive a new established secure channel from an Secure client/server.
+     * <p>
      * If the secure channel is null, no secure channel was established and an error is provided
-     * to the user
-     *
+     * to the user (or the error is ignored, in server case).
+     * <p>
      * If the secure channel was established, a new FSM is created for this connection and the
      * IDSCP2 handshake is started. After a successful handshake, a new Idscp2Connection is
-     * created and provided to the user
+     * created and provided to the user (and the IDSCP2 server).
      */
     @Override
-    public void secureChannelConnectHandler(SecureChannel secureChannel) {
-        if (secureChannel == null){
-            LOG.warn("IDSCP2 connect failed because no secure channel was established");
-            endpointListener.onError("IDSCP2 connect failed because no secure channel was established");
+    public synchronized void onSecureChannel(SecureChannel secureChannel,
+                                             CompletableFuture<ServerConnectionListener> serverListenerPromise) {
+        if (secureChannel == null) {
+            LOG.warn("IDSCP2 connect failed because no secure channel available");
+            endpointListener.onError("IDSCP2 connect failed because no secure channel available");
         } else {
-            LOG.debug("A new secure channel for an outgoing idscpv2 connection was established");
+            LOG.trace("A new secure channel for an IDSCP2 connection was established");
             FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher,
-                localExpectedRatCipher, ratTimeout);
+                    localExpectedRatCipher, ratTimeout);
 
             try {
-                fsm.startIdscpHandshake(); //blocking until handshake is done
-            } catch (Idscp2Exception e){
+                // Blocking until handshake is done
+                fsm.startIdscpHandshake();
+            } catch (Idscp2Exception e) {
                 return;
             }
 
             String connectionId = UUID.randomUUID().toString();
+            // Threads calling onMessage() will be blocked until all listeners have been registered, see below
             Idscp2Connection newConnection = new Idscp2Connection(fsm, connectionId);
             fsm.registerConnection(newConnection);
-            LOG.info("A new IDSCP2 connection with id {} was created", connectionId);
-            endpointListener.onConnection(newConnection);
-        }
-    }
-
-    /*
-     * A callback implementation to receive a new established secure channel from an Secure server
-     *
-     * If the secure channel is null, no secure channel was established and the result will be
-     * ignored
-     *
-     * If the secure channel was established, a new FSM is created for this connection and the
-     * IDSCP2 handshake is started. After a successful handshake, a new Idscp2Connection is
-     * created and provided to the user and the IDSCP2 server
-     */
-    @Override
-    public void secureChannelListenHandler(SecureChannel secureChannel,
-                                           CompletableFuture<Idscp2Connection> connectionPromise) {
-        if (secureChannel != null){
-            LOG.debug("A new secure channel for an incoming idscpv2 connection was established");
-            FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher,
-                localExpectedRatCipher, ratTimeout);
-
-            try {
-                fsm.startIdscpHandshake(); //blocking until handshake is done
-            } catch (Idscp2Exception e){
-                return;
+            LOG.debug("A new IDSCP2 connection with id {} was created", connectionId);
+            if (serverListenerPromise != null) {
+                // Complete the connection promise for the IDSCP server
+                serverListenerPromise.thenAccept(serverListener -> {
+                    serverListener.onConnectionCreated(newConnection);
+                    newConnection.addConnectionListener(new Idscp2ConnectionAdapter() {
+                        @Override
+                        public void onClose(Idscp2Connection connection) {
+                            serverListener.onConnectionClose(connection);
+                        }
+                    });
+                });
             }
-
-            //create new Idscp2Connection
-            String connectionId = UUID.randomUUID().toString();
-            Idscp2Connection newConnection = new Idscp2Connection(fsm, connectionId);
-            fsm.registerConnection(newConnection);
-            LOG.info("A new idscpv2 connection with id {} was created", connectionId);
-            // Complete the connection promise for the IDSCP server
-            connectionPromise.complete(newConnection);
             endpointListener.onConnection(newConnection);
-        } else {
-            LOG.warn("An incoming idscpv2 client connection request failed because the secure channel is null.");
+            newConnection.unlockMessaging();
         }
     }
+
 }

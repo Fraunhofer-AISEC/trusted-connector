@@ -1,6 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
+import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.ServerConnectionListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 
 import java.util.concurrent.CompletableFuture;
@@ -11,19 +11,14 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-public interface Idscp2Callback {
+public interface SecureChannelInitListener {
 
-    /*
-     * Notify the client about a new secure channel
-     */
-    void secureChannelConnectHandler(SecureChannel secureChannel);
-
-    /*
+    /**
      * Notify the server about new secureChannel
      */
-    void secureChannelListenHandler(
-        SecureChannel secureChannel,
-        CompletableFuture<Idscp2Connection> connectionPromise
+    void onSecureChannel(
+            SecureChannel secureChannel,
+            CompletableFuture<ServerConnectionListener> serverListenerPromise
     );
 
 }

@@ -8,12 +8,12 @@ package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
  */
 public class AttestationConfig {
 
-    public AttestationConfig(){
+    public AttestationConfig() {
 
     }
 
-    public String[] getRatMechanisms(){
-        return new String[] {"Dummy", "TPM2d"};
+    public String[] getRatMechanisms() {
+        return new String[]{"Dummy", "TPM2d"};
     }
 
 }
