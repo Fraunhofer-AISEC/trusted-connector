@@ -16,6 +16,7 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server;
 
+import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent;
 import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
@@ -29,8 +30,6 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.Native
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
-import de.fhg.aisec.ids.idscp2.example.RunTLSClient;
-import de.fhg.aisec.ids.idscp2.example.RunTLSServer;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
@@ -66,11 +65,13 @@ public class Idscp2ServerEndpoint extends DefaultEndpoint implements Idscp2Endpo
 
     public Idscp2ServerEndpoint(String uri, String remaining, Idscp2ServerComponent component) {
         super(uri, component);
-        final var uriMatcher = URI_REGEX.matcher(remaining);
-        if (!uriMatcher.matches()) {
-            throw new IllegalArgumentException(remaining + " is not a valid URI.");
+        final var settings = Idscp2OsgiComponent.getSettings();
+
+        final var remainingMatcher = URI_REGEX.matcher(remaining);
+        if (!remainingMatcher.matches()) {
+            throw new IllegalArgumentException(remaining + " is not a valid URI remainder, must be \"host:port\".");
         }
-        final var matchResult = uriMatcher.toMatchResult();
+        final var matchResult = remainingMatcher.toMatchResult();
         final var host = matchResult.group(1);
         final var port = Integer.parseInt(matchResult.group(2));
 
@@ -79,14 +80,16 @@ public class Idscp2ServerEndpoint extends DefaultEndpoint implements Idscp2Endpo
         serverSettings = new Idscp2Settings.Builder()
             .setHost(host)
             .setServerPort(port)
-            .setKeyStore(RunTLSClient.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
-            .setTrustStore(RunTLSServer.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+            .setKeyStorePath("etc/idscp2/aisecconnector1-keystore.jks")
+            .setTrustStorePath("etc/idscp2/client-truststore_new.jks")
             .setCertificateAlias("1.0.1")
             .setDapsKeyAlias("1")
-            .setRatTimeoutDelay(14)
+            .setRatTimeoutDelay(300)
             .build();
+
+        if(settings == null) {
+            throw new RuntimeException("Settings not available");
+        }
 
         DefaultDapsDriverConfig config =
             new DefaultDapsDriverConfig.Builder()
@@ -96,7 +99,7 @@ public class Idscp2ServerEndpoint extends DefaultEndpoint implements Idscp2Endpo
                 .setKeyStorePassword(serverSettings.getKeyStorePassword())
                 .setTrustStorePassword(serverSettings.getTrustStorePassword())
                 .setKeyAlias(serverSettings.getDapsKeyAlias())
-                .setDapsUrl("https://daps.aisec.fraunhofer.de")
+                .setDapsUrl(settings.getConnectorConfig().getDapsUrl())
                 .build();
         DapsDriver dapsDriver = new DefaultDapsDriver(config);
 
@@ -169,6 +172,7 @@ public class Idscp2ServerEndpoint extends DefaultEndpoint implements Idscp2Endpo
     public synchronized void doStop() {
         LOG.debug("Stopping IDSCP2 server endpoint " + getEndpointUri());
         this.server.terminate();
+        ((Idscp2ServerComponent) this.getComponent()).removeServer(this.serverSettings.getServerPort());
     }
 
 }

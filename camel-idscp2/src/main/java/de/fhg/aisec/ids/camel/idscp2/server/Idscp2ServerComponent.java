@@ -42,6 +42,13 @@ public class Idscp2ServerComponent extends DefaultComponent {
         servers.put(port, server);
     }
 
+    public synchronized void removeServer(int port) {
+        final var server = servers.get(port);
+        if (server != null) {
+            servers.remove(port);
+        }
+    }
+
     @Override
     protected synchronized void doStop() throws Exception {
         for (Idscp2Server s : servers.values()) {
