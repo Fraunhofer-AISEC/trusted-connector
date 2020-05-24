@@ -1,6 +1,4 @@
 Bundle-Name: IDS :: Token Manager
 Import-Package: \
-   !com.android.org.conscrypt,\
-	*
-Private-Package: \
-    io.jsonwebtoken*;-split-package:=merge-last
+  !com.android.org.conscrypt,\
+  *
