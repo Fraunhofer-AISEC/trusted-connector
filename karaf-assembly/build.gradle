@@ -54,6 +54,7 @@ task assembleKaraf(type: CrossPlatformExec) {
     commandLine "./mvnw", "--no-transfer-progress", "clean", "package"
 }
 // Sometimes required to fix an error caused by a non-existing folder (maybe caused by mvn clean)
+mkdir("${project.buildDir}/classes/kotlin/test")
 assembleKaraf.doLast {
     mkdir("${project.buildDir}/classes/kotlin/test")
 }
