@@ -90,9 +90,9 @@ public class DockerCmIT {
 
     DockerCM d = new DockerCM();
 
-    var version = d.getVersion();
+    final var version = d.getVersion();
     assertFalse(version.isEmpty());
-    var regex = ".* \\([0-9.]+(?:-.+)?\\)";
+    final var regex = ".* \\([0-9.]+(?:.+)?\\)";
     if (!version.matches(regex)) {
       throw new AssertionError(
           "Error: Docker version has to match regex '" + regex + "', found '" + version + "'");
