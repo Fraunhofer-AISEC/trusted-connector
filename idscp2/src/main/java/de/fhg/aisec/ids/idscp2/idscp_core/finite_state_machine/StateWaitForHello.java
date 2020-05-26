@@ -52,7 +52,7 @@ public class StateWaitForHello extends State {
 
         this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
                 event -> {
-                    LOG.debug("Received stop signal from user. Send IDSC_CLOSE");
+                    LOG.debug("Received stop signal from user. Send IDSCP_CLOSE");
                     fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
                             IDSCP2.IdscpClose.CloseCause.USER_SHUTDOWN));
                     return fsm.getState(FSM.FSM_STATE.STATE_CLOSED);

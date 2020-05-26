@@ -62,15 +62,27 @@ class StateClosed extends State {
                 }
         ));
 
+        // This origins from onClose(), so just ignore it
+        this.addTransition(InternalControlMessage.IDSCP_STOP.getValue(), new Transition(
+                event -> {
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Received STOP in STATE_CLOSED, ignored.");
+                    }
+                    return this;
+                }
+        ));
+
         this.setNoTransitionHandler(
                 event -> {
-                    LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
-                            event,
-                            Arrays.stream(Thread.currentThread().getStackTrace())
-                                    .skip(1)
-                                    .map(Object::toString)
-                                    .collect(Collectors.joining("\n")));
-                    LOG.debug("Stay in state STATE_CLOSED");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
+                                event,
+                                Arrays.stream(Thread.currentThread().getStackTrace())
+                                        .skip(1)
+                                        .map(Object::toString)
+                                        .collect(Collectors.joining("\n")));
+                        LOG.debug("Stay in state STATE_CLOSED");
+                    }
                     return this;
                 }
         );
@@ -86,7 +98,6 @@ class StateClosed extends State {
     void runEntryCode(FSM fsm) {
         //State Closed entry code
         LOG.debug("Switched to state STATE_CLOSED");
-        LOG.debug("Terminate and free all resources and lock fsm forever");
         fsm.shutdownFsm();
     }
 

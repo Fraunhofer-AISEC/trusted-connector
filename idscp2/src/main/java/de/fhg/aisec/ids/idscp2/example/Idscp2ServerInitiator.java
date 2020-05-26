@@ -14,7 +14,7 @@ import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ServerFactory;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.Idscp2Server;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
@@ -57,7 +57,7 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
                 new TPM2dVerifierConfig.Builder().build()
         );
 
-        Idscp2Configuration serverConfig = new Idscp2Configuration(
+        Idscp2ServerFactory serverConfig = new Idscp2ServerFactory(
                 this,
                 settings,
                 dapsDriver,
@@ -66,12 +66,12 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
 
         Idscp2Server idscp2Server = serverConfig.listen(settings);
 
-        try {
-            Thread.sleep(40_000); //run server for 2 minutes
-        } catch (Exception ignored) {
-        } finally {
-            idscp2Server.terminate();
-        }
+//        try {
+//            Thread.sleep(40_000); //run server for 2 minutes
+//        } catch (Exception ignored) {
+//        } finally {
+//            idscp2Server.terminate();
+//        }
     }
 
     @Override

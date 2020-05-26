@@ -1,11 +1,15 @@
 package de.fhg.aisec.ids.idscp2.idscp_core;
 
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.finite_state_machine.FSM;
+import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The IDSCP2 Connection class holds connections between connectors
@@ -23,9 +27,19 @@ public class Idscp2Connection {
     private final Map<String, Set<Idscp2MessageListener>> messageListeners = new HashMap<>();
     private final FastLatch messageLatch = new FastLatch();
 
-    public Idscp2Connection(FSM fsm, String connectionId) {
-        this.fsm = fsm;
-        this.connectionId = connectionId;
+    public Idscp2Connection(SecureChannel secureChannel, Idscp2Settings settings, DapsDriver dapsDriver) {
+        this.connectionId = UUID.randomUUID().toString();
+        fsm = new FSM(
+                this,
+                secureChannel,
+                dapsDriver,
+                settings.getSupportedAttestation().getRatMechanisms(),
+                settings.getExpectedAttestation().getRatMechanisms(),
+                settings.getRatTimeoutDelay());
+        secureChannel.setFsm(fsm);
+        LOG.debug("A new IDSCP2 connection with id {} was created, starting handshake...", connectionId);
+        // Schedule IDSCP handshake asynchronously
+        CompletableFuture.runAsync(fsm::startIdscpHandshake);
     }
 
     public void unlockMessaging() {
@@ -36,11 +50,13 @@ public class Idscp2Connection {
      * Close the idscp connection
      */
     public void close() {
-        // Unregister connection from the server
+        LOG.debug("Closing connection {}...", connectionId);
+        // If server connection, this also unregisters the connection from the server.
         if (fsm.isNotClosed()) {
             connectionListeners.forEach(l -> l.onClose(this));
         }
         fsm.terminate();
+        LOG.debug("IDSCP2 connection {} closed", connectionId);
     }
 
     /**

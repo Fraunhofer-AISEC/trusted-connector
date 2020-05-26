@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class Idscp2Settings {
-    public static final int DEFAULT_SERVER_PORT = 8080;
+    public static final int DEFAULT_SERVER_PORT = 29292;
 
     private int serverPort = DEFAULT_SERVER_PORT;
     private String host = "localhost";

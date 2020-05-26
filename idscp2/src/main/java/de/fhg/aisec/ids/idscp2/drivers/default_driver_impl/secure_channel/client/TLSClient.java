@@ -3,9 +3,10 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.clien
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSConstants;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSessionVerificationHelper;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener;
@@ -22,7 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * A TLS Client that notifies an Idscp2Configuration when a secure channel was created and the
+ * A TLS Client that notifies an Idscp2ServerFactory when a secure channel was created and the
  * TLS handshake is done. The client is notified from an InputListenerThread when new data are
  * available and transfer it to the SecureChannelListener
  *
@@ -36,11 +37,17 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     private DataOutputStream out;
     private InputListenerThread inputListenerThread;
     private final CompletableFuture<SecureChannelListener> listenerPromise = new CompletableFuture<>();
-    private final SecureChannelInitListener secureChannelInitListener;
+    private final Idscp2Settings clientSettings;
+    private final DapsDriver dapsDriver;
+    private final CompletableFuture<Idscp2Connection> connectionFuture;
 
-    public TLSClient(Idscp2Settings clientSettings, SecureChannelInitListener secureChannelInitListener)
+    public TLSClient(Idscp2Settings clientSettings,
+                     DapsDriver dapsDriver,
+                     CompletableFuture<Idscp2Connection> connectionFuture)
             throws IOException, KeyManagementException, NoSuchAlgorithmException {
-        this.secureChannelInitListener = secureChannelInitListener;
+        this.clientSettings = clientSettings;
+        this.dapsDriver = dapsDriver;
+        this.connectionFuture = connectionFuture;
 
         // init TLS Client
 
@@ -92,8 +99,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         }
 
         try {
-            sslSocket.connect(new InetSocketAddress(hostname,
-                    port));
+            sslSocket.connect(new InetSocketAddress(hostname, port));
             LOG.debug("Client is connected to server {}:{}", hostname, port);
 
             //set clientSocket timeout to allow safeStop()
@@ -105,7 +111,6 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             inputListenerThread = new InputListenerThread(clientSocket.getInputStream());
             inputListenerThread.register(this);
 
-            //start tls handshake
             sslSocket.addHandshakeCompletedListener(this);
             LOG.debug("Start TLS Handshake");
             sslSocket.startHandshake();
@@ -119,7 +124,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     private void disconnect() {
-        LOG.debug("Disconnecting from tls server");
+        LOG.debug("Disconnecting from TLS server...");
         //close listener
         if (inputListenerThread != null && inputListenerThread.isAlive()) {
             inputListenerThread.safeStop();
@@ -129,7 +134,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                //nothing to do
+                onError(e);
             }
         }
     }
@@ -141,7 +146,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
     @Override
     public void onError(Throwable t) {
-        listenerPromise.thenAccept(secureChannelListener -> secureChannelListener.onError(t));
+        listenerPromise.thenAccept(listener -> listener.onError(t));
     }
 
     @Override
@@ -185,14 +190,15 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             LOG.debug("TLS session is valid");
         } catch (SSLPeerUnverifiedException e) {
             disconnect();
-            throw new Idscp2Exception("TLS session is not valid. Close TLS connection", e);
+            connectionFuture.completeExceptionally(
+                    new Idscp2Exception("TLS session is not valid. Close TLS connection", e));
         }
 
         // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.
         SecureChannel secureChannel = new SecureChannel(this);
         this.listenerPromise.complete(secureChannel);
+        this.connectionFuture.complete(new Idscp2Connection(secureChannel, clientSettings, dapsDriver));
         inputListenerThread.start();
-        secureChannelInitListener.onSecureChannel(secureChannel, null);
     }
 
     @Override

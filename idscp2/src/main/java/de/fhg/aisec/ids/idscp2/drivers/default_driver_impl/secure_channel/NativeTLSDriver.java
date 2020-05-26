@@ -2,9 +2,11 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel;
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.client.TLSClient;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.server.TLSServer;
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer;
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.ServerConnectionListener;
@@ -28,12 +30,14 @@ public class NativeTLSDriver implements SecureChannelDriver {
      * Performs an asynchronous client connect to a TLS server.
      */
     @Override
-    public void connect(Idscp2Settings settings, SecureChannelInitListener channelInitListener) {
+    public void connect(Idscp2Settings settings,
+                        DapsDriver dapsDriver,
+                        CompletableFuture<Idscp2Connection> connectionFuture) {
         try {
-            TLSClient tlsClient = new TLSClient(settings, channelInitListener);
+            TLSClient tlsClient = new TLSClient(settings, dapsDriver, connectionFuture);
             tlsClient.connect(settings.getHost(), settings.getServerPort());
         } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
-            throw new Idscp2Exception("Call to connect() has failed", e);
+            connectionFuture.completeExceptionally(new Idscp2Exception("Call to connect() has failed", e));
         }
     }
 
