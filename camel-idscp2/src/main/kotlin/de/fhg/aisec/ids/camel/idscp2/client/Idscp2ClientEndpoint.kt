@@ -14,10 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.fhg.aisec.ids.camel.idscp2.server
+package de.fhg.aisec.ids.camel.idscp2.client
 
+import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import org.apache.camel.Processor
 import org.apache.camel.Producer
@@ -28,24 +34,26 @@ import java.util.*
 import java.util.regex.Pattern
 
 @UriEndpoint(
-        scheme = "idscp2server",
-        title = "IDSCP2 Server Socket",
-        syntax = "idscp2server://host:port",
+        scheme = "idscp2client",
+        title = "IDSCP2 Client Socket",
+        syntax = "idscp2client://host:port",
         label = "ids"
 )
-class Idscp2ServerEndpoint(uri: String?, remaining: String, component: Idscp2ServerComponent?) :
+class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2ClientComponent?) :
         DefaultEndpoint(uri, component), Idscp2EndpointListener {
-    private val serverSettings: Idscp2Settings
-    private var server: CamelIdscp2Server? = null
-    private val consumers: MutableSet<Idscp2ServerConsumer> = HashSet()
+    private val clientConfiguration: Idscp2Configuration
+    private val clientSettings: Idscp2Settings
+    private var connection: Idscp2Connection? = null
+    private val consumers: MutableSet<Idscp2ClientConsumer> = HashSet()
 
     init {
+        val settings: Settings = Idscp2OsgiComponent.getSettings()
         val remainingMatcher = URI_REGEX.matcher(remaining)
         require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
         val matchResult = remainingMatcher.toMatchResult()
         val host = matchResult.group(1)
         val port = matchResult.group(2).toInt()
-        serverSettings = Idscp2Settings.Builder()
+        clientSettings = Idscp2Settings.Builder()
                 .setHost(host)
                 .setServerPort(port)
                 .setKeyStorePath("etc/idscp2/aisecconnector1-keystore.jks")
@@ -54,33 +62,48 @@ class Idscp2ServerEndpoint(uri: String?, remaining: String, component: Idscp2Ser
                 .setDapsKeyAlias("1")
                 .setRatTimeoutDelay(300)
                 .build()
+        val config = DefaultDapsDriverConfig.Builder()
+                .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
+                .setKeyStorePath(clientSettings.keyStorePath)
+                .setTrustStorePath(clientSettings.trustStorePath)
+                .setKeyStorePassword(clientSettings.keyStorePassword)
+                .setTrustStorePassword(clientSettings.trustStorePassword)
+                .setKeyAlias(clientSettings.dapsKeyAlias)
+                .setDapsUrl(settings.connectorConfig.dapsUrl)
+                .build()
+        clientConfiguration = Idscp2Configuration(
+                this,
+                clientSettings,
+                DefaultDapsDriver(config),
+                NativeTLSDriver()
+        )
     }
 
     @Synchronized
-    fun addConsumer(consumer: Idscp2ServerConsumer) {
+    fun addConsumer(consumer: Idscp2ClientConsumer) {
         consumers.add(consumer)
-        server?.let { server -> server.allConnections.forEach { it.addGenericMessageListener(consumer) } }
+        connection?.addGenericMessageListener(consumer)
     }
 
     @Synchronized
-    fun removeConsumer(consumer: Idscp2ServerConsumer) {
-        server?.let { server -> server.allConnections.forEach { it.removeGenericMessageListener(consumer) } }
+    fun removeConsumer(consumer: Idscp2ClientConsumer) {
         consumers.remove(consumer)
+        connection?.removeGenericMessageListener(consumer)
     }
 
     @Synchronized
     fun sendMessage(type: String, body: ByteArray) {
-        server?.let { server -> server.allConnections.forEach { it.send(type, body) } }
+        connection?.send(type, body)
     }
 
     @Synchronized
     override fun createProducer(): Producer {
-        return Idscp2ServerProducer(this)
+        return Idscp2ClientProducer(this)
     }
 
     @Synchronized
     override fun createConsumer(processor: Processor): org.apache.camel.Consumer {
-        return Idscp2ServerConsumer(this, processor)
+        return Idscp2ClientConsumer(this, processor)
     }
 
     @Synchronized
@@ -90,29 +113,23 @@ class Idscp2ServerEndpoint(uri: String?, remaining: String, component: Idscp2Ser
     }
 
     override fun onError(error: String) {
-        LOG.error("Error in IDSCP2 server endpoint $endpointUri:\n$error")
+        LOG.error("Error in IDSCP2 client endpoint $endpointUri:\n$error")
     }
 
     @Synchronized
     public override fun doStart() {
-        LOG.debug("Starting IDSCP2 server endpoint $endpointUri")
-        (component as Idscp2ServerComponent).getServer(serverSettings).let {
-            server = it
-            // Add this endpoint to this server's Idscp2EndpointListener set
-            it.listeners += this
-        }
+        LOG.debug("Starting IDSCP2 client endpoint $endpointUri")
+        clientConfiguration.connect(clientSettings)
     }
 
     @Synchronized
     public override fun doStop() {
-        LOG.debug("Stopping IDSCP2 server endpoint $endpointUri")
-        // Remove this endpoint from the server's Idscp2EndpointListener set
-        server?.let { it.listeners -= this }
-        (component as Idscp2ServerComponent).freeServer(serverSettings)
+        LOG.debug("Stopping IDSCP2 client endpoint $endpointUri")
+        connection?.close()
     }
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(Idscp2ServerEndpoint::class.java)
+        private val LOG = LoggerFactory.getLogger(Idscp2ClientEndpoint::class.java)
         private val URI_REGEX = Pattern.compile("(.*?):(\\d+)$")
     }
 }
