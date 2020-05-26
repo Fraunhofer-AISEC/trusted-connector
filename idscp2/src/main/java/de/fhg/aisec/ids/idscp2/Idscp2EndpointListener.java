@@ -18,5 +18,5 @@ public interface Idscp2EndpointListener {
     /*
      * Called when an error occurred in the underlying IDSCP2 protocol
      */
-    void onError(String error);
+    void onError(Throwable t);
 }

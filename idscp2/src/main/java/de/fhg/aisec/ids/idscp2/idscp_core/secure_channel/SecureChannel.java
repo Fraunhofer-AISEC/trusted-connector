@@ -46,9 +46,9 @@ public class SecureChannel implements SecureChannelListener {
     }
 
     @Override
-    public void onError() {
+    public void onError(Throwable t) {
         // Tell fsm an error occurred in secure channel
-        fsmPromise.thenAccept(FsmListener::onError);
+        fsmPromise.thenAccept(fsmListener -> fsmListener.onError(t));
     }
 
     @Override

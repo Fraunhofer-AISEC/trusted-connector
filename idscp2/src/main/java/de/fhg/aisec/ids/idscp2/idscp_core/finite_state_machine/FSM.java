@@ -429,7 +429,9 @@ public class FSM implements FsmListener {
      * driver implementations
      */
     @Override
-    public void onError() {
+    public void onError(Throwable t) {
+        // Broadcast the error to the respective listeners
+        connection.onError(t);
 
         //check for incorrect usage
         checkForFsmCircles();

@@ -33,8 +33,7 @@ public class NativeTLSDriver implements SecureChannelDriver {
             TLSClient tlsClient = new TLSClient(settings, channelInitListener);
             tlsClient.connect(settings.getHost(), settings.getServerPort());
         } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
-            LOG.error("Call to connect() has failed", e);
-            channelInitListener.onSecureChannel(null, null);
+            throw new Idscp2Exception("Call to connect() has failed", e);
         }
     }
 

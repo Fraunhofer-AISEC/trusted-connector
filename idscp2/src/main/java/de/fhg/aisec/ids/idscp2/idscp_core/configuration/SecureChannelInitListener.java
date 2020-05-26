@@ -21,4 +21,6 @@ public interface SecureChannelInitListener {
             CompletableFuture<ServerConnectionListener> serverListenerPromise
     );
 
+    void onError(Throwable t);
+
 }

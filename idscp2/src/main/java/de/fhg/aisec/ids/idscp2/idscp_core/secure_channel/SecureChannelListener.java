@@ -13,7 +13,7 @@ public interface SecureChannelListener {
     /*
      * Delegate an error from an secure channel endpoint to the secure channel
      */
-    void onError();
+    void onError(Throwable t);
 
     /*
      * Notify secure channel that secure channel endpoint has been closed

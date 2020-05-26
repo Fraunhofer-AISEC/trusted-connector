@@ -58,8 +58,9 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
             sslSocket.startHandshake();
             // Wait for TLS session verification
             tlsVerificationLatch.await();
-        } catch (IOException e) {
-            LOG.warn("Exception occurred during SSL handshake. Quiting server thread...", e);
+        } catch (Exception e) {
+            LOG.error("Exception occurred during SSL handshake. Quiting server thread...", e);
+            onError(e);
             running = false;
         }
 
@@ -77,7 +78,7 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 onClose();
                 running = false;
             } catch (IOException e) {
-                onError();
+                onError(e);
                 running = false;
             }
         }
@@ -104,10 +105,10 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
                 out.writeInt(data.length);
                 out.write(data);
                 out.flush();
-                LOG.trace("Send message: " + new String(data));
+                LOG.trace("Sent message: " + new String(data));
                 return true;
             } catch (IOException e) {
-                LOG.error("ServerThread cannot send data.");
+                LOG.error("Server could not send data.");
                 closeSockets();
                 return false;
             }
@@ -118,8 +119,8 @@ public class TLSServerThread extends Thread implements HandshakeCompletedListene
         channelListenerPromise.thenAccept(SecureChannelListener::onClose);
     }
 
-    private void onError() {
-        channelListenerPromise.thenAccept(SecureChannelListener::onError);
+    private void onError(Throwable t) {
+        channelListenerPromise.thenAccept(secureChannelListener -> secureChannelListener.onError(t));
     }
 
     @Override

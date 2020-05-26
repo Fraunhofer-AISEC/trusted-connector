@@ -75,45 +75,40 @@ public class Idscp2Configuration implements SecureChannelInitListener {
     @Override
     public synchronized void onSecureChannel(SecureChannel secureChannel,
                                              CompletableFuture<ServerConnectionListener> serverListenerPromise) {
-        if (secureChannel == null) {
-            LOG.warn("IDSCP2 connect failed because no secure channel available");
-            endpointListener.onError("IDSCP2 connect failed because no secure channel available");
-        } else {
-            LOG.trace("A new secure channel for an IDSCP2 connection was established");
-            FSM fsm = new FSM(
-                    secureChannel,
-                    dapsDriver,
-                    settings.getSupportedAttestation().getRatMechanisms(),
-                    settings.getExpectedAttestation().getRatMechanisms(),
-                    settings.getRatTimeoutDelay());
+        LOG.trace("A new secure channel for an IDSCP2 connection was established");
+        FSM fsm = new FSM(
+                secureChannel,
+                dapsDriver,
+                settings.getSupportedAttestation().getRatMechanisms(),
+                settings.getExpectedAttestation().getRatMechanisms(),
+                settings.getRatTimeoutDelay());
 
-            try {
-                // Blocking until handshake is done
-                fsm.startIdscpHandshake();
-            } catch (Idscp2Exception e) {
-                return;
-            }
+        fsm.startIdscpHandshake();
 
-            String connectionId = UUID.randomUUID().toString();
-            // Threads calling onMessage() will be blocked until all listeners have been registered, see below
-            Idscp2Connection newConnection = new Idscp2Connection(fsm, connectionId);
-            fsm.registerConnection(newConnection);
-            LOG.debug("A new IDSCP2 connection with id {} was created", connectionId);
-            if (serverListenerPromise != null) {
-                // Complete the connection promise for the IDSCP server
-                serverListenerPromise.thenAccept(serverListener -> {
-                    serverListener.onConnectionCreated(newConnection);
-                    newConnection.addConnectionListener(new Idscp2ConnectionAdapter() {
-                        @Override
-                        public void onClose(Idscp2Connection connection) {
-                            serverListener.onConnectionClose(connection);
-                        }
-                    });
+        String connectionId = UUID.randomUUID().toString();
+        // Threads calling onMessage() will be blocked until all listeners have been registered, see below
+        Idscp2Connection newConnection = new Idscp2Connection(fsm, connectionId);
+        fsm.registerConnection(newConnection);
+        LOG.debug("A new IDSCP2 connection with id {} was created", connectionId);
+        if (serverListenerPromise != null) {
+            // Complete the connection promise for the IDSCP server
+            serverListenerPromise.thenAccept(serverListener -> {
+                serverListener.onConnectionCreated(newConnection);
+                newConnection.addConnectionListener(new Idscp2ConnectionAdapter() {
+                    @Override
+                    public void onClose(Idscp2Connection connection) {
+                        serverListener.onConnectionClose(connection);
+                    }
                 });
-            }
-            endpointListener.onConnection(newConnection);
-            newConnection.unlockMessaging();
+            });
         }
+        endpointListener.onConnection(newConnection);
+        newConnection.unlockMessaging();
+    }
+
+    @Override
+    public void onError(Throwable t) {
+        endpointListener.onError(t);
     }
 
 }

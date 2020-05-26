@@ -116,7 +116,8 @@ public class TLSServer implements Runnable, SecureServer {
                 LOG.debug("Server socket has been closed.");
                 isRunning = false;
             } catch (IOException e) {
-                LOG.error("TLS server socket accept failed", e);
+                LOG.error("Error during TLS server socket accept, notifying error handlers...");
+                secureChannelInitListener.onError(e);
                 isRunning = false;
             }
         }

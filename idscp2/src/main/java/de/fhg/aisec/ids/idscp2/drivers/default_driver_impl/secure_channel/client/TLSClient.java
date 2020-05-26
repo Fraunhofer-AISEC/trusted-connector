@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.clien
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSConstants;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSessionVerificationHelper;
+import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel;
@@ -87,9 +88,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     public void connect(String hostname, int port) {
         SSLSocket sslSocket = (SSLSocket) clientSocket;
         if (sslSocket == null || sslSocket.isClosed()) {
-            LOG.warn("Client socket is not available");
-            secureChannelInitListener.onSecureChannel(null, null);
-            return;
+            throw new Idscp2Exception("Client socket is not available");
         }
 
         try {
@@ -111,13 +110,11 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             LOG.debug("Start TLS Handshake");
             sslSocket.startHandshake();
         } catch (SSLHandshakeException | SSLProtocolException e) {
-            LOG.warn("TLS Handshake failed: {}", e.getMessage());
             disconnect();
-            secureChannelInitListener.onSecureChannel(null, null);
+            throw new Idscp2Exception("TLS Handshake failed", e);
         } catch (IOException e) {
-            LOG.error("Connecting TLS client to server failed " + e.getMessage());
             disconnect();
-            secureChannelInitListener.onSecureChannel(null, null);
+            throw new Idscp2Exception("Connecting TLS client to server failed", e);
         }
     }
 
@@ -143,8 +140,8 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
     }
 
     @Override
-    public void onError() {
-        listenerPromise.thenAccept(SecureChannelListener::onError);
+    public void onError(Throwable t) {
+        listenerPromise.thenAccept(secureChannelListener -> secureChannelListener.onError(t));
     }
 
     @Override
@@ -187,12 +184,8 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             TLSSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
             LOG.debug("TLS session is valid");
         } catch (SSLPeerUnverifiedException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("TLS session is not valid. Close TLS connection", e);
-            }
             disconnect();
-            secureChannelInitListener.onSecureChannel(null, null);
-            return;
+            throw new Idscp2Exception("TLS session is not valid. Close TLS connection", e);
         }
 
         // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.

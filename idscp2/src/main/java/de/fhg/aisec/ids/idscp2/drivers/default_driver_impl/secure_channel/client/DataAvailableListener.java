@@ -16,7 +16,7 @@ public interface DataAvailableListener {
     /*
      * Notify listener that an error has occurred
      */
-    void onError();
+    void onError(Throwable e);
 
     /*
      * Notify listener that the socket has been closed

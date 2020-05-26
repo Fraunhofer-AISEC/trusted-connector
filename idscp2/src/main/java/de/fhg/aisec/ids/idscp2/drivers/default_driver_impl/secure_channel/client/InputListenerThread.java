@@ -42,7 +42,7 @@ public class InputListenerThread extends Thread implements InputListener {
                 listener.onClose();
                 running = false; //terminate
             } catch (IOException e) {
-                listener.onError();
+                listener.onError(e);
                 running = false;
             }
         }

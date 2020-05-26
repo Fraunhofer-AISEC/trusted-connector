@@ -79,8 +79,8 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
         System.out.println("Server: New connection with id " + connection.getId());
         connection.addConnectionListener(new Idscp2ConnectionAdapter() {
             @Override
-            public void onError(String error) {
-                LOG.error("Server connection error occurred: " + error);
+            public void onError(Throwable t) {
+                LOG.error("Server connection error occurred", t);
             }
 
             @Override
@@ -98,7 +98,7 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
     }
 
     @Override
-    public void onError(String error) {
-        LOG.error("Server endpoint error occurred: " + error);
+    public void onError(Throwable t) {
+        LOG.error("Server endpoint error occurred", t);
     }
 }

@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.idscp2.drivers.interfaces;
 
-import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings;
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener;
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.ServerConnectionListener;
@@ -24,5 +23,5 @@ public interface SecureChannelDriver {
      * Starting a secure server
      */
     SecureServer listen(Idscp2Settings settings, SecureChannelInitListener channelInitListener,
-                        CompletableFuture<ServerConnectionListener> serverListenerPromise) throws Idscp2Exception;
+                        CompletableFuture<ServerConnectionListener> serverListenerPromise);
 }

@@ -65,6 +65,10 @@ public class Idscp2Connection {
         }
     }
 
+    public void onError(Throwable t) {
+        connectionListeners.forEach(idscp2ConnectionListener -> idscp2ConnectionListener.onError(t));
+    }
+
     public void onClose() {
         LOG.debug("Connection with id {} has been closed, notify listeners", connectionId);
         connectionListeners.forEach(l -> l.onClose(this));

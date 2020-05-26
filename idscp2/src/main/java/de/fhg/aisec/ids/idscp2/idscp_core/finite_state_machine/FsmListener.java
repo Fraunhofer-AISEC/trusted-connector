@@ -27,7 +27,7 @@ public interface FsmListener {
     /*
      * A method for providing internal errors to the fsm
      */
-    void onError();
+    void onError(Throwable t);
 
     /*
      * A method for notifying the fsm about closure of the secure channel

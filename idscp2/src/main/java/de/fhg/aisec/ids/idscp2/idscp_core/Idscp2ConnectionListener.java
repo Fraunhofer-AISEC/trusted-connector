@@ -6,7 +6,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core;
  */
 public interface Idscp2ConnectionListener {
 
-    void onError(String error);
+    void onError(Throwable t);
 
     void onClose(Idscp2Connection connection);
 }
