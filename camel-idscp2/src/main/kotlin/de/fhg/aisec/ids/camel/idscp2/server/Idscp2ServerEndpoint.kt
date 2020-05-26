@@ -89,8 +89,8 @@ class Idscp2ServerEndpoint(uri: String?, remaining: String, component: Idscp2Ser
         consumers.forEach { connection.addGenericMessageListener(it) }
     }
 
-    override fun onError(error: String) {
-        LOG.error("Error in IDSCP2 server endpoint $endpointUri:\n$error")
+    override fun onError(t: Throwable) {
+        LOG.error("Error in IDSCP2 server endpoint $endpointUri", t)
     }
 
     @Synchronized

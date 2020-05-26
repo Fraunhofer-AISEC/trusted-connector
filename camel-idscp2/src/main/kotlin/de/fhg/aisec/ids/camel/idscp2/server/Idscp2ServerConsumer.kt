@@ -49,7 +49,9 @@ class Idscp2ServerConsumer(private val endpoint: Idscp2ServerEndpoint, processor
             // Handle response
             val response = exchange.message
             val responseType = response.getHeader("idscp2.type", String::class.java)
-            connection.send(responseType, response.getBody(ByteArray::class.java))
+            if (response.body != null && responseType != null) {
+                connection.send(responseType, response.getBody(ByteArray::class.java))
+            }
         } catch (e: Exception) {
             LOG.error("Error in Idscp2ServerConsumer.onMessage()", e)
         } finally {

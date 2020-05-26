@@ -21,20 +21,30 @@ import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
 import org.apache.camel.Processor
 import org.apache.camel.support.DefaultConsumer
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture
 
 /**
  * The IDSCP2 server consumer.
  */
 class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor: Processor) :
         DefaultConsumer(endpoint, processor), Idscp2MessageListener {
+    private val connectionFuture = CompletableFuture<Idscp2Connection>()
+
     override fun doStart() {
         super.doStart()
-        endpoint.addConsumer(this)
+        endpoint.makeConnection(connectionFuture)
+        connectionFuture.thenAccept { it.addGenericMessageListener(this) }
     }
 
-    override fun doStop() {
-        endpoint.removeConsumer(this)
-        super.doStop()
+    public override fun doStop() {
+        if (connectionFuture.isDone) {
+            val connection = connectionFuture.get()
+            LOG.debug("Stopping IDSCP2 client connection {}...", connection.id)
+            connection.close()
+        } else {
+            LOG.debug("Canceling IDSCP2 client connection...")
+            connectionFuture.cancel(true)
+        }
     }
 
     override fun onMessage(connection: Idscp2Connection, type: String, data: ByteArray) {
@@ -49,9 +59,11 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
             // Handle response
             val response = exchange.message
             val responseType = response.getHeader("idscp2.type", String::class.java)
-            connection.send(responseType, response.getBody(ByteArray::class.java))
+            if (response.body != null && responseType != null) {
+                connection.send(responseType, response.getBody(ByteArray::class.java))
+            }
         } catch (e: Exception) {
-            LOG.error("Error in Idscp2ServerConsumer.onMessage()", e)
+            LOG.error("Error in Idscp2ClientConsumer.onMessage()", e)
         } finally {
             doneUoW(exchange)
         }

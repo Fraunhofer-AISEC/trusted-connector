@@ -16,20 +16,46 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import org.apache.camel.Exchange
 import org.apache.camel.support.DefaultProducer
+import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture
 
 /**
  * The IDSCP2 server producer.
  * Sends each message to all clients connected to this server endpoint.
  */
 class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : DefaultProducer(endpoint) {
+    private val connectionFuture = CompletableFuture<Idscp2Connection>()
 
     override fun process(exchange: Exchange) {
         val message = exchange.getIn()
         val type = message.getHeader("idscp2.type", String::class.java)
         val body = message.getBody(ByteArray::class.java)
-        endpoint.sendMessage(type, body)
+        connectionFuture.get().let {
+            it.unlockMessaging()
+            it.send(type, body)
+        }
     }
 
+    override fun doStart() {
+        super.doStart()
+        endpoint.makeConnection(connectionFuture)
+    }
+
+    public override fun doStop() {
+        if (connectionFuture.isDone) {
+            val connection = connectionFuture.get()
+            LOG.debug("Stopping IDSCP2 client connection {}...", connection.id)
+            connection.close()
+        } else {
+            LOG.debug("Canceling IDSCP2 client connection...")
+            connectionFuture.cancel(true)
+        }
+    }
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(Idscp2ClientProducer::class.java)
+    }
 }

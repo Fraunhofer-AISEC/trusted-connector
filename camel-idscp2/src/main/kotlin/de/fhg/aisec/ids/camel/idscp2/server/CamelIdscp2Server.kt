@@ -6,7 +6,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDrive
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ServerFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.idscp_server.Idscp2Server
 import java.util.*
@@ -17,7 +17,7 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
 
     init {
         val dapsDriverConfig = DefaultDapsDriverConfig.Builder()
-                .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
+                .setConnectorUUID(Idscp2OsgiComponent.getSettings().connectorConfig.connectorUUID)
                 .setKeyStorePath(serverSettings.keyStorePath)
                 .setTrustStorePath(serverSettings.trustStorePath)
                 .setKeyStorePassword(serverSettings.keyStorePassword)
@@ -25,7 +25,7 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
                 .setKeyAlias(serverSettings.dapsKeyAlias)
                 .setDapsUrl(Idscp2OsgiComponent.getSettings().connectorConfig.dapsUrl)
                 .build()
-        val serverConfiguration = Idscp2Configuration(
+        val serverConfiguration = Idscp2ServerFactory(
                 this,
                 serverSettings,
                 DefaultDapsDriver(dapsDriverConfig),
@@ -38,8 +38,8 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
         listeners.forEach { it.onConnection(connection) }
     }
 
-    override fun onError(error: String) {
-        listeners.forEach { it.onError(error) }
+    override fun onError(t: Throwable) {
+        listeners.forEach { it.onError(t) }
     }
 
     val allConnections: Set<Idscp2Connection> = server.allConnections

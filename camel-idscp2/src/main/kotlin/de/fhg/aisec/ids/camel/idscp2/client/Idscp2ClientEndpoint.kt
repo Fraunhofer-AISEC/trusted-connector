@@ -18,19 +18,18 @@ package de.fhg.aisec.ids.camel.idscp2.client
 
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
-import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ClientFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import org.apache.camel.Processor
 import org.apache.camel.Producer
 import org.apache.camel.spi.UriEndpoint
 import org.apache.camel.support.DefaultEndpoint
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 
 @UriEndpoint(
@@ -40,11 +39,9 @@ import java.util.regex.Pattern
         label = "ids"
 )
 class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2ClientComponent?) :
-        DefaultEndpoint(uri, component), Idscp2EndpointListener {
-    private val clientConfiguration: Idscp2Configuration
+        DefaultEndpoint(uri, component) {
+    private val dapsDriverConfig: DefaultDapsDriverConfig
     private val clientSettings: Idscp2Settings
-    private var connection: Idscp2Connection? = null
-    private val consumers: MutableSet<Idscp2ClientConsumer> = HashSet()
 
     init {
         val settings: Settings = Idscp2OsgiComponent.getSettings()
@@ -62,8 +59,8 @@ class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2Cli
                 .setDapsKeyAlias("1")
                 .setRatTimeoutDelay(300)
                 .build()
-        val config = DefaultDapsDriverConfig.Builder()
-                .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
+        dapsDriverConfig = DefaultDapsDriverConfig.Builder()
+                .setConnectorUUID(settings.connectorConfig.connectorUUID)
                 .setKeyStorePath(clientSettings.keyStorePath)
                 .setTrustStorePath(clientSettings.trustStorePath)
                 .setKeyStorePassword(clientSettings.keyStorePassword)
@@ -71,61 +68,27 @@ class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2Cli
                 .setKeyAlias(clientSettings.dapsKeyAlias)
                 .setDapsUrl(settings.connectorConfig.dapsUrl)
                 .build()
-        clientConfiguration = Idscp2Configuration(
-                this,
-                clientSettings,
-                DefaultDapsDriver(config),
-                NativeTLSDriver()
-        )
     }
 
-    @Synchronized
-    fun addConsumer(consumer: Idscp2ClientConsumer) {
-        consumers.add(consumer)
-        connection?.addGenericMessageListener(consumer)
+    fun makeConnection(connectionFuture: CompletableFuture<Idscp2Connection>) {
+        return Idscp2ClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
+                .connect(clientSettings, connectionFuture)
     }
 
-    @Synchronized
-    fun removeConsumer(consumer: Idscp2ClientConsumer) {
-        consumers.remove(consumer)
-        connection?.removeGenericMessageListener(consumer)
-    }
-
-    @Synchronized
-    fun sendMessage(type: String, body: ByteArray) {
-        connection?.send(type, body)
-    }
-
-    @Synchronized
     override fun createProducer(): Producer {
         return Idscp2ClientProducer(this)
     }
 
-    @Synchronized
     override fun createConsumer(processor: Processor): org.apache.camel.Consumer {
         return Idscp2ClientConsumer(this, processor)
     }
 
-    @Synchronized
-    override fun onConnection(connection: Idscp2Connection) {
-        LOG.debug("New IDSCP2 connection on $endpointUri, register consumer listeners")
-        consumers.forEach { connection.addGenericMessageListener(it) }
-    }
-
-    override fun onError(error: String) {
-        LOG.error("Error in IDSCP2 client endpoint $endpointUri:\n$error")
-    }
-
-    @Synchronized
     public override fun doStart() {
         LOG.debug("Starting IDSCP2 client endpoint $endpointUri")
-        clientConfiguration.connect(clientSettings)
     }
 
-    @Synchronized
     public override fun doStop() {
         LOG.debug("Stopping IDSCP2 client endpoint $endpointUri")
-        connection?.close()
     }
 
     companion object {
