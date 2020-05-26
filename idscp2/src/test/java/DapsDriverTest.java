@@ -2,10 +2,12 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDrive
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.SecurityRequirements;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@Ignore("Some test rely on external server resources and are somewhat unreliable right now.")
 public class DapsDriverTest {
 
   @Test
