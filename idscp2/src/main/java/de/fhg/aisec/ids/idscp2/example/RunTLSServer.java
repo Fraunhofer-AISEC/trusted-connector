@@ -7,7 +7,7 @@ public class RunTLSServer {
     public static void main(String[] argv) {
 
         Idscp2Settings settings = new Idscp2Settings.Builder()
-                .setKeyStorePath(RunTLSClient.class.getClassLoader().
+                .setKeyStorePath(RunTLSServer.class.getClassLoader().
                         getResource("ssl/aisecconnector1-keystore.jks").getPath())
                 .setTrustStorePath(RunTLSServer.class.getClassLoader().
                         getResource("ssl/client-truststore_new.jks").getPath())

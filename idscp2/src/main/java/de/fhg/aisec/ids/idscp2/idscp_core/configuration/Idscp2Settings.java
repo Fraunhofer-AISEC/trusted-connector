@@ -2,6 +2,8 @@ package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.Objects;
+
 /**
  * IDSCP2 configuration class, contains information about keyStore and TrustStores,
  * Attestation Types, host, DAPS, ...
@@ -155,4 +157,29 @@ public class Idscp2Settings {
         return ratTimeoutDelay;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Idscp2Settings that = (Idscp2Settings) o;
+        return serverPort == that.serverPort &&
+                ratTimeoutDelay == that.ratTimeoutDelay &&
+                Objects.equals(host, that.host) &&
+                Objects.equals(trustStorePath, that.trustStorePath) &&
+                Objects.equals(trustStorePassword, that.trustStorePassword) &&
+                Objects.equals(keyStorePath, that.keyStorePath) &&
+                Objects.equals(keyStorePassword, that.keyStorePassword) &&
+                Objects.equals(certificateAlias, that.certificateAlias) &&
+                Objects.equals(dapsKeyAlias, that.dapsKeyAlias) &&
+                Objects.equals(keyStoreKeyType, that.keyStoreKeyType) &&
+                Objects.equals(supportedAttestation, that.supportedAttestation) &&
+                Objects.equals(expectedAttestation, that.expectedAttestation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serverPort, host, trustStorePath, trustStorePassword, keyStorePath,
+                keyStorePassword, certificateAlias, dapsKeyAlias, keyStoreKeyType, supportedAttestation,
+                expectedAttestation, ratTimeoutDelay);
+    }
 }

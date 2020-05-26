@@ -29,6 +29,7 @@ public class Idscp2ClientInitiator implements Idscp2EndpointListener {
 
     public void init(Idscp2Settings settings) {
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
+
         DefaultDapsDriverConfig config =
                 new DefaultDapsDriverConfig.Builder()
                         .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
@@ -58,12 +59,11 @@ public class Idscp2ClientInitiator implements Idscp2EndpointListener {
 
         Idscp2Configuration clientConfig = new Idscp2Configuration(
                 this,
+                settings,
                 dapsDriver,
-                secureChannelDriver,
-                settings.getExpectedAttestation(),
-                settings.getSupportedAttestation(),
-                settings.getRatTimeoutDelay()
+                secureChannelDriver
         );
+
         clientConfig.connect(settings);
     }
 

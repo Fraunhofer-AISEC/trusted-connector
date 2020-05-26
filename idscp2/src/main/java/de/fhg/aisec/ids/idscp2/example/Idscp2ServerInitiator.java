@@ -24,29 +24,30 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
-
 public class Idscp2ServerInitiator implements Idscp2EndpointListener {
     private static final Logger LOG = LoggerFactory.getLogger(Idscp2ServerInitiator.class);
 
-    public void init(Idscp2Settings serverSettings) {
+    public void init(Idscp2Settings settings) {
         SecureChannelDriver secureChannelDriver = new NativeTLSDriver();
 
         DefaultDapsDriverConfig config =
                 new DefaultDapsDriverConfig.Builder()
                         .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
-                        .setKeyStorePath(serverSettings.getKeyStorePath())
-                        .setTrustStorePath(serverSettings.getTrustStorePath())
-                        .setKeyStorePassword(serverSettings.getKeyStorePassword())
-                        .setTrustStorePassword(serverSettings.getTrustStorePassword())
-                        .setKeyAlias(serverSettings.getDapsKeyAlias())
+                        .setKeyStorePath(settings.getKeyStorePath())
+                        .setTrustStorePath(settings.getTrustStorePath())
+                        .setKeyStorePassword(settings.getKeyStorePassword())
+                        .setTrustStorePassword(settings.getTrustStorePassword())
+                        .setKeyAlias(settings.getDapsKeyAlias())
                         .setDapsUrl("https://daps.aisec.fraunhofer.de")
                         .build();
+
         DapsDriver dapsDriver = new DefaultDapsDriver(config);
 
         RatProverDriverRegistry.getInstance().registerDriver(
                 "Dummy", RatProverDummy.class, null);
         RatVerifierDriverRegistry.getInstance().registerDriver(
                 "Dummy", RatVerifierDummy.class, null);
+
         RatProverDriverRegistry.getInstance().registerDriver(
                 "TPM2d", TPM2dProver.class,
                 new TPM2dProverConfig.Builder().build()
@@ -56,16 +57,14 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
                 new TPM2dVerifierConfig.Builder().build()
         );
 
-        Idscp2Configuration idscpServerConfig = new Idscp2Configuration(
+        Idscp2Configuration serverConfig = new Idscp2Configuration(
                 this,
+                settings,
                 dapsDriver,
-                secureChannelDriver,
-                serverSettings.getExpectedAttestation(),
-                serverSettings.getSupportedAttestation(),
-                serverSettings.getRatTimeoutDelay()
+                secureChannelDriver
         );
 
-        Idscp2Server idscp2Server = idscpServerConfig.listen(serverSettings);
+        Idscp2Server idscp2Server = serverConfig.listen(settings);
 
         try {
             Thread.sleep(40_000); //run server for 2 minutes

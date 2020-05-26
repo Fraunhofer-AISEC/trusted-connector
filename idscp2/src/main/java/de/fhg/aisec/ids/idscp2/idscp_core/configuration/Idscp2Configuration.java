@@ -25,25 +25,19 @@ public class Idscp2Configuration implements SecureChannelInitListener {
     private static final Logger LOG = LoggerFactory.getLogger(Idscp2Configuration.class);
 
     private final Idscp2EndpointListener endpointListener;
+    private final Idscp2Settings settings;
     private final DapsDriver dapsDriver;
     private final SecureChannelDriver secureChannelDriver;
-    private final String[] localExpectedRatCipher;
-    private final String[] localSupportedRatCipher;
-    private final int ratTimeout;
 
     public Idscp2Configuration(Idscp2EndpointListener endpointListener,
+                               Idscp2Settings settings,
                                DapsDriver dapsDriver,
-                               SecureChannelDriver secureChannelDriver,
-                               AttestationConfig expectedAttestation,
-                               AttestationConfig supportedAttestation,
-                               int ratTimeout
+                               SecureChannelDriver secureChannelDriver
     ) {
         this.endpointListener = endpointListener;
+        this.settings = settings;
         this.dapsDriver = dapsDriver;
         this.secureChannelDriver = secureChannelDriver;
-        this.localExpectedRatCipher = expectedAttestation.getRatMechanisms();
-        this.localSupportedRatCipher = supportedAttestation.getRatMechanisms();
-        this.ratTimeout = ratTimeout;
     }
 
     /**
@@ -86,8 +80,12 @@ public class Idscp2Configuration implements SecureChannelInitListener {
             endpointListener.onError("IDSCP2 connect failed because no secure channel available");
         } else {
             LOG.trace("A new secure channel for an IDSCP2 connection was established");
-            FSM fsm = new FSM(secureChannel, dapsDriver, localSupportedRatCipher,
-                    localExpectedRatCipher, ratTimeout);
+            FSM fsm = new FSM(
+                    secureChannel,
+                    dapsDriver,
+                    settings.getSupportedAttestation().getRatMechanisms(),
+                    settings.getExpectedAttestation().getRatMechanisms(),
+                    settings.getRatTimeoutDelay());
 
             try {
                 // Blocking until handshake is done
