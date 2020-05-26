@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint https://camel.apache.org/schema/blueprint/camel-blueprint-3.3.0.xsd">
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+        <route id="idscp2Client">
+            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
+            <setBody>
+                <simple>PING</simple>
+            </setBody>
+            <setHeader name="idscp2.type">
+                <simple>ping</simple>
+            </setHeader>
+            <log message="Client sends: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+            <to uri="idscp2client://localhost:29292" />
+            <log message="Client received: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+        </route>
+
+    </camelContext>
+
+</blueprint>
