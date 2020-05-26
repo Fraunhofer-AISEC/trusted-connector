@@ -14,29 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.fhg.aisec.ids.camel.idscp2.server;
+package de.fhg.aisec.ids.camel.idscp2.server
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.support.DefaultProducer;
+import org.apache.camel.Exchange
+import org.apache.camel.support.DefaultProducer
 
 /**
  * The IDSCP2 server producer.
  * Sends each message to all clients connected to this server endpoint.
  */
-public class Idscp2ServerProducer extends DefaultProducer {
-    private final Idscp2ServerEndpoint endpoint;
+class Idscp2ServerProducer(private val endpoint: Idscp2ServerEndpoint) : DefaultProducer(endpoint) {
 
-    public Idscp2ServerProducer(Idscp2ServerEndpoint endpoint) {
-        super(endpoint);
-        this.endpoint = endpoint;
+    override fun process(exchange: Exchange) {
+        val message = exchange.getIn()
+        val type = message.getHeader("idscp.type", String::class.java)
+        val body = message.getBody(ByteArray::class.java)
+        endpoint.sendMessage(type, body)
     }
 
-    @Override
-    public void process(Exchange exchange) {
-        Message message = exchange.getIn();
-        String type = message.getHeader("idscp.type", String.class);
-        byte[] body = message.getBody(byte[].class);
-        endpoint.sendMessage(type, body);
-    }
 }
