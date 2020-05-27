@@ -88,13 +88,12 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager {
                 return this.certAlias;
             } else {
                 LOG.warn("certAlias '{}' was not found in keystore", this.certAlias);
-                return null;
             }
-        } else {
-            LOG.warn("Invalid keyType '{}' in chooseServerAlias() in class X509ExtendedKeyManager", keyType);
-            LOG.warn("Expected: '{}'", this.keyType);
-            return null;
+        } else if (LOG.isDebugEnabled()) {
+            LOG.debug("Different keyType '{}' in chooseServerAlias() in CustomX509ExtendedKeyManager, expected '{}'",
+                    keyType, this.keyType);
         }
+        return null;
     }
 
     @Override
@@ -102,12 +101,10 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager {
        called by client and server in TLS Handshake after alias was chosen */
     public X509Certificate[] getCertificateChain(String certAlias) {
         if (certAlias.equals(this.certAlias)) {
-            X509Certificate[] ret = delegate.getCertificateChain(certAlias);
-            LOG.debug("Certificate Chain: {}", Arrays.toString(ret));
-            return ret;
+            return delegate.getCertificateChain(certAlias);
         } else {
-            LOG.warn("Invalid certAlias '{}' in getCertificateChain() in class X509ExtendedKeyManager", certAlias);
-            LOG.warn("Expected: '{}'", this.certAlias);
+            LOG.warn("Different certAlias '{}' in getCertificateChain() in class X509ExtendedKeyManager, " +
+                    "expected: '{}'", certAlias, this.certAlias);
             return null;
         }
     }
@@ -119,8 +116,8 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager {
         if (certAlias.equals(this.certAlias)) {
             return delegate.getPrivateKey(certAlias);
         } else {
-            LOG.warn("Invalid certAlias '{}' in getPrivateKey() in class X509ExtendedKeyManager", certAlias);
-            LOG.warn("Expected: '{}'", this.certAlias);
+            LOG.warn("Different certAlias '{}' in getPrivateKey() in class X509ExtendedKeyManager, expected '{}'",
+                    certAlias, this.certAlias);
             return null;
         }
     }
