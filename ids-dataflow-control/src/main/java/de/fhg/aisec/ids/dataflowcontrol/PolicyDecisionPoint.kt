@@ -216,21 +216,21 @@ class PolicyDecisionPoint : PDP, PAP {
 
     override fun requestDecision(req: DecisionRequest): PolicyDecision {
         val dec = PolicyDecision()
-
-        LOG.debug(
-                "Decision requested " + req.from.endpoint + " -> " + req.to.endpoint)
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Decision requested " + req.from.endpoint + " -> " + req.to.endpoint)
+        }
 
         try {
             // Query Prolog engine for a policy decision
             val startTime = System.nanoTime()
             val query = this.createDecisionQuery(req.to, req.properties)
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Decision query: {}", query)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Decision query: {}", query)
             }
             val solveInfo = this.engine.query(query, true)
             val time = System.nanoTime() - startTime
-            if (LOG.isInfoEnabled) {
-                LOG.debug("Decision query took {} ms", time / 1e6f)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Decision query took {} ms", time / 1e6f)
             }
 
             // If there is no matching rule, deny by default
