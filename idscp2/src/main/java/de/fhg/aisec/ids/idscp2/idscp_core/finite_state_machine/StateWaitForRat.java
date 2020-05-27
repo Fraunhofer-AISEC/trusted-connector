@@ -22,7 +22,7 @@ public class StateWaitForRat extends State {
                            Timer verifierHandshakeTimer,
                            Timer proverHandshakeTimer,
                            Timer ratTimer,
-                           int ratTimerDelay,
+                           long ratTimerDelay,
                            DapsDriver dapsDriver) {
 
 

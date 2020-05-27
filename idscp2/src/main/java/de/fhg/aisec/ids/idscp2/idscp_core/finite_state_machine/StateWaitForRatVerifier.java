@@ -21,7 +21,7 @@ public class StateWaitForRatVerifier extends State {
                                    Timer ratTimer,
                                    Timer handshakeTimer,
                                    Timer verifierHandshakeTimer,
-                                   int ratTimeoutDelay) {
+                                   long ratTimeoutDelay) {
 
         /*---------------------------------------------------
          * STATE_WAIT_FOR_RAT_VERIFIER - Transition Description

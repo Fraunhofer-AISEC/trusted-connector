@@ -12,11 +12,13 @@ import java.util.Objects;
  */
 public class Idscp2Settings {
     public static final int DEFAULT_SERVER_PORT = 29292;
+    public static final String DEFAULT_RAT_TIMEOUT_DELAY = "600";
 
     private int serverPort = DEFAULT_SERVER_PORT;
     private String host = "localhost";
     private String trustStorePath = null;
     private String trustStorePassword = "password";
+    private String keyPassword = "password";
     private String keyStorePath = null;
     private String keyStorePassword = "password";
     private String certificateAlias = "1.0.1";
@@ -24,7 +26,7 @@ public class Idscp2Settings {
     private String keyStoreKeyType = "RSA";
     private AttestationConfig supportedAttestation = new AttestationConfig();
     private AttestationConfig expectedAttestation = new AttestationConfig();
-    private int ratTimeoutDelay = 20;
+    private long ratTimeoutDelay = Integer.parseInt(DEFAULT_RAT_TIMEOUT_DELAY);
 
     @SuppressWarnings("unused")
     public static class Builder {
@@ -40,6 +42,11 @@ public class Idscp2Settings {
         @NonNull
         public Builder setServerPort(int serverPort) {
             this.settings.serverPort = serverPort;
+            return this;
+        }
+
+        public Builder setKeyPassword(String pwd) {
+            this.settings.keyPassword = pwd;
             return this;
         }
 
@@ -97,7 +104,7 @@ public class Idscp2Settings {
             return this;
         }
 
-        public Builder setRatTimeoutDelay(int delay) {
+        public Builder setRatTimeoutDelay(long delay) {
             this.settings.ratTimeoutDelay = delay;
             return this;
         }
@@ -123,6 +130,10 @@ public class Idscp2Settings {
 
     public String getTrustStorePassword() {
         return trustStorePassword;
+    }
+
+    public String getKeyPassword() {
+        return keyPassword;
     }
 
     public String getKeyStorePath() {
@@ -153,7 +164,7 @@ public class Idscp2Settings {
         return expectedAttestation;
     }
 
-    public int getRatTimeoutDelay() {
+    public long getRatTimeoutDelay() {
         return ratTimeoutDelay;
     }
 

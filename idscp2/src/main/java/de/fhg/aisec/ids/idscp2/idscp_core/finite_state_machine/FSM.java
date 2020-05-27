@@ -102,7 +102,7 @@ public class FSM implements FsmListener {
     /*  ----------------   end of Timer   --------------- */
 
     public FSM(Idscp2Connection connection, SecureChannel secureChannel, DapsDriver dapsDriver,
-               String[] localSupportedRatSuite, String[] localExpectedRatSuite, int ratTimeout) {
+               String[] localSupportedRatSuite, String[] localExpectedRatSuite, long ratTimeout) {
 
 
         /* ------------- Timeout Handler Routines ------------*/

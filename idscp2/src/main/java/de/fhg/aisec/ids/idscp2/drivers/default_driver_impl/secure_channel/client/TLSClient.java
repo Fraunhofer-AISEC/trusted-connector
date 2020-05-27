@@ -61,6 +61,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
         // get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
         // connection specific key selection via key alias
         KeyManager[] myKeyManager = PreConfiguration.getX509ExtKeyManager(
+                clientSettings.getKeyPassword(),
                 clientSettings.getKeyStorePath(),
                 clientSettings.getKeyStorePassword(),
                 clientSettings.getCertificateAlias(),

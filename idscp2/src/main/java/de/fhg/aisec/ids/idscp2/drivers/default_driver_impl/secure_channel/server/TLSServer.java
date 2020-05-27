@@ -53,6 +53,7 @@ public class TLSServer implements Runnable, SecureServer {
         // which enables connection specific key selection via key alias
         LOG.debug("Creating key manager for TLS server...");
         KeyManager[] myKeyManager = PreConfiguration.getX509ExtKeyManager(
+                serverSettings.getKeyPassword(),
                 serverSettings.getKeyStorePath(),
                 serverSettings.getKeyStorePassword(),
                 serverSettings.getCertificateAlias(),

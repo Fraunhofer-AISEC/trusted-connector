@@ -62,6 +62,7 @@ public class PreConfiguration {
      * throws RuntimeException of creating KeyManager fails
      */
     public static KeyManager[] getX509ExtKeyManager(
+            String keyPassword,
             String keyStorePath,
             String keyStorePassword,
             String certAlias,
@@ -76,7 +77,7 @@ public class PreConfiguration {
             keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
             final KeyManagerFactory keyManagerFactory =
                     KeyManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
-            keyManagerFactory.init(keystore, keyStorePassword.toCharArray());
+            keyManagerFactory.init(keystore, keyPassword.toCharArray());
             myKeyManager = keyManagerFactory.getKeyManagers();
 
             /* set up keyManager config */
