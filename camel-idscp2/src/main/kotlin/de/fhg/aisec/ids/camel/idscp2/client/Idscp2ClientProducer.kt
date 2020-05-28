@@ -27,32 +27,26 @@ import java.util.concurrent.CompletableFuture
  * Sends each message to all clients connected to this server endpoint.
  */
 class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : DefaultProducer(endpoint) {
-    private val connectionFuture = CompletableFuture<Idscp2Connection>()
+    private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
 
     override fun process(exchange: Exchange) {
         val message = exchange.getIn()
         val type = message.getHeader("idscp2.type", String::class.java)
         val body = message.getBody(ByteArray::class.java)
-        connectionFuture.get().let {
-            it.unlockMessaging()
-            it.send(type, body)
-        }
+        connectionFuture.get().send(type, body)
     }
 
     override fun doStart() {
         super.doStart()
-        endpoint.makeConnection(connectionFuture)
+        connectionFuture = endpoint.makeConnection()
+        // Unlock messaging immediately after obtaining connection
+        connectionFuture.thenAccept { it.unlockMessaging() }
     }
 
     public override fun doStop() {
-        if (connectionFuture.isDone) {
-            val connection = connectionFuture.get()
-            LOG.debug("Stopping IDSCP2 client connection {}...", connection.id)
-            connection.close()
-        } else {
-            LOG.debug("Canceling IDSCP2 client connection...")
-            connectionFuture.cancel(true)
-        }
+        LOG.debug("Stopping/releasing IDSCP2 client producer connection {}...",
+                if (connectionFuture.isDone) connectionFuture.get().id else "<pending>")
+        endpoint.releaseConnection(connectionFuture)
     }
 
     companion object {

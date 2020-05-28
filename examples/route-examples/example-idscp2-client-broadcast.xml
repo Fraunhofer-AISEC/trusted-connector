@@ -5,7 +5,7 @@
  http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
  http://camel.apache.org/schema/blueprint https://camel.apache.org/schema/blueprint/camel-blueprint-3.3.0.xsd">
 
-    <camel:sslContextParameters id="serverSslContext" certAlias="1.0.1">
+    <camel:sslContextParameters id="clientSslContext" certAlias="1.0.1">
         <camel:keyManagers keyPassword="password">
             <camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.jks" password="password"/>
         </camel:keyManagers>
@@ -16,16 +16,11 @@
 
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 
-        <route id="idscp2Server">
-            <from uri="idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext"/>
-            <log message="Server received: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
-            <setBody>
-                <simple>PONG</simple>
-            </setBody>
-            <setHeader name="idscp2.type">
-                <simple>pong</simple>
-            </setHeader>
-            <log message="Server response: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+        <route id="idscp2ReceiverClient">
+            <from uri="idscp2client://localhost:29292?sslContextParameters=#clientSslContext"/>
+            <log message="Client received: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+            <!-- Prevents the client consumer from sending the message back to the server -->
+            <removeHeader headerName="idscp2.type"/>
         </route>
 
     </camelContext>

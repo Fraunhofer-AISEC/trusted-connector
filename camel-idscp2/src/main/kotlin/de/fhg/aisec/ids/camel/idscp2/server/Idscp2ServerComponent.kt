@@ -16,6 +16,7 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
+import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
@@ -28,11 +29,12 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.apache.camel.Endpoint
 import org.apache.camel.spi.annotations.Component
 import org.apache.camel.support.DefaultComponent
-import java.lang.IllegalStateException
 
 @Component("idscp2server")
 class Idscp2ServerComponent : DefaultComponent() {
-    private val servers: MutableMap<Idscp2Settings, Pair<Int, CamelIdscp2Server>> = HashMap()
+    private val servers = RefCountingHashMap<Idscp2Settings, CamelIdscp2Server> {
+        it.terminate()
+    }
 
     init {
         RatProverDriverRegistry.getInstance().registerDriver(
@@ -56,36 +58,14 @@ class Idscp2ServerComponent : DefaultComponent() {
     }
 
     @Synchronized
-    fun getServer(serverSettings: Idscp2Settings): CamelIdscp2Server {
-        if (serverSettings in servers) {
-            servers[serverSettings]?.let {
-                servers[serverSettings] = Pair(it.first + 1, it.second)
-                return it.second
-            } ?: throw IllegalStateException("This should never happen, please inform developers of this error!")
-        } else {
-            val server = CamelIdscp2Server(serverSettings)
-            servers[serverSettings] = Pair(1, server)
-            return server
-        }
-    }
+    fun getServer(serverSettings: Idscp2Settings) = servers.computeIfAbsent(serverSettings) { CamelIdscp2Server(it) }
 
     @Synchronized
-    fun freeServer(serverSettings: Idscp2Settings) {
-        servers[serverSettings]?.let {
-            if (it.first > 1) {
-                servers[serverSettings] = Pair(it.first - 1, it.second)
-            } else {
-                it.second.terminate()
-                servers.remove(serverSettings)
-            }
-        }
-    }
+    fun freeServer(serverSettings: Idscp2Settings) = servers.release(serverSettings)
 
     @Synchronized
     override fun doStop() {
-        servers.values.parallelStream()
-                .forEach { it.second.terminate() }
-        servers.clear()
+        servers.freeAll()
         super.doStop()
     }
 }

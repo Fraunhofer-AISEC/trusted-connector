@@ -18,6 +18,7 @@ package de.fhg.aisec.ids.camel.idscp2.client
 
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
+import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
@@ -27,7 +28,9 @@ import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import org.apache.camel.Processor
 import org.apache.camel.Producer
 import org.apache.camel.spi.UriEndpoint
+import org.apache.camel.spi.UriParam
 import org.apache.camel.support.DefaultEndpoint
+import org.apache.camel.support.jsse.SSLContextParameters
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
@@ -38,41 +41,51 @@ import java.util.regex.Pattern
         syntax = "idscp2client://host:port",
         label = "ids"
 )
-class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2ClientComponent?) :
+class Idscp2ClientEndpoint(uri: String?, private val remaining: String, component: Idscp2ClientComponent?) :
         DefaultEndpoint(uri, component) {
-    private val dapsDriverConfig: DefaultDapsDriverConfig
-    private val clientSettings: Idscp2Settings
+    private lateinit var dapsDriverConfig: DefaultDapsDriverConfig
+    private lateinit var clientSettings: Idscp2Settings
 
-    init {
-        val settings: Settings = Idscp2OsgiComponent.getSettings()
-        val remainingMatcher = URI_REGEX.matcher(remaining)
-        require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
-        val matchResult = remainingMatcher.toMatchResult()
-        val host = matchResult.group(1)
-        val port = matchResult.group(2).toInt()
-        clientSettings = Idscp2Settings.Builder()
-                .setHost(host)
-                .setServerPort(port)
-                .setKeyStorePath("etc/idscp2/aisecconnector1-keystore.jks")
-                .setTrustStorePath("etc/idscp2/client-truststore_new.jks")
-                .setCertificateAlias("1.0.1")
-                .setDapsKeyAlias("1")
-                .setRatTimeoutDelay(300)
-                .build()
-        dapsDriverConfig = DefaultDapsDriverConfig.Builder()
-                .setConnectorUUID(settings.connectorConfig.connectorUUID)
-                .setKeyStorePath(clientSettings.keyStorePath)
-                .setTrustStorePath(clientSettings.trustStorePath)
-                .setKeyStorePassword(clientSettings.keyStorePassword)
-                .setTrustStorePassword(clientSettings.trustStorePassword)
-                .setKeyAlias(clientSettings.dapsKeyAlias)
-                .setDapsUrl(settings.connectorConfig.dapsUrl)
-                .build()
+    @UriParam(
+            label = "security",
+            description = "The SSL context for the IDSCP2 endpoint"
+    )
+    var sslContextParameters: SSLContextParameters? = null
+    @UriParam(
+            label = "security",
+            description = "The alias of the DAPS key in the keystore provided by sslContextParameters"
+    )
+    var dapsKeyAlias: String? = null
+    @UriParam(
+            label = "security",
+            description = "The validity time of remote attestation and DAT in seconds",
+            defaultValue = "600"
+    )
+    var dapsRatTimeoutDelay: Long? = null
+    @UriParam(
+            label = "client",
+            description = "Used to make N endpoints share the same connection, " +
+                    "e.g. for using a consumer to receive responses to the requests of another producer"
+    )
+    var connectionShareId: String? = null
+
+    private fun makeConnectionInternal(): CompletableFuture<Idscp2Connection> {
+        val connectionFuture = CompletableFuture<Idscp2Connection>()
+        Idscp2ClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
+                .connect(clientSettings, connectionFuture)
+        return connectionFuture
     }
 
-    fun makeConnection(connectionFuture: CompletableFuture<Idscp2Connection>) {
-        return Idscp2ClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
-                .connect(clientSettings, connectionFuture)
+    fun makeConnection(): CompletableFuture<Idscp2Connection> {
+        connectionShareId?.let {
+            return sharedConnections.computeIfAbsent(it) {
+                makeConnectionInternal()
+            }
+        } ?: return makeConnectionInternal()
+    }
+
+    fun releaseConnection(connectionFuture: CompletableFuture<Idscp2Connection>) {
+        connectionShareId?.let { sharedConnections.release(it) } ?: releaseConnectionInternal(connectionFuture)
     }
 
     override fun createProducer(): Producer {
@@ -85,6 +98,37 @@ class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2Cli
 
     public override fun doStart() {
         LOG.debug("Starting IDSCP2 client endpoint $endpointUri")
+        val settings: Settings = Idscp2OsgiComponent.getSettings()
+        val remainingMatcher = URI_REGEX.matcher(remaining)
+        require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
+        val matchResult = remainingMatcher.toMatchResult()
+        val host = matchResult.group(1)
+        val port = matchResult.group(2)?.toInt() ?: Idscp2Settings.DEFAULT_SERVER_PORT
+        val clientSettingsBuilder = Idscp2Settings.Builder()
+                .setHost(host)
+                .setServerPort(port)
+                .setRatTimeoutDelay(dapsRatTimeoutDelay ?: Idscp2Settings.DEFAULT_RAT_TIMEOUT_DELAY.toLong())
+                .setDapsKeyAlias(dapsKeyAlias ?: "1")
+        sslContextParameters?.let {
+            clientSettingsBuilder
+                    .setKeyPassword(it.keyManagers?.keyPassword ?: "password")
+                    .setKeyStorePath(it.keyManagers?.keyStore?.resource)
+                    .setKeyStoreKeyType(it.keyManagers?.keyStore?.type ?: "RSA")
+                    .setKeyStorePassword(it.keyManagers?.keyStore?.password ?: "password")
+                    .setTrustStorePath(it.trustManagers?.keyStore?.resource)
+                    .setTrustStorePassword(it.trustManagers?.keyStore?.password ?: "password")
+                    .setCertificateAlias(it.certAlias ?: "1.0.1")
+        }
+        clientSettings = clientSettingsBuilder.build()
+        dapsDriverConfig = DefaultDapsDriverConfig.Builder()
+                .setConnectorUUID(settings.connectorConfig.connectorUUID)
+                .setDapsUrl(settings.connectorConfig.dapsUrl)
+                .setKeyAlias(clientSettings.dapsKeyAlias)
+                .setKeyStorePath(clientSettings.keyStorePath)
+                .setTrustStorePath(clientSettings.trustStorePath)
+                .setKeyStorePassword(clientSettings.keyStorePassword)
+                .setTrustStorePassword(clientSettings.trustStorePassword)
+                .build()
     }
 
     public override fun doStop() {
@@ -93,6 +137,16 @@ class Idscp2ClientEndpoint(uri: String?, remaining: String, component: Idscp2Cli
 
     companion object {
         private val LOG = LoggerFactory.getLogger(Idscp2ClientEndpoint::class.java)
-        private val URI_REGEX = Pattern.compile("(.*?):(\\d+)$")
+        private val URI_REGEX = Pattern.compile("(.*?)(?::(\\d+))?/?$")
+        private val sharedConnections = RefCountingHashMap<String, CompletableFuture<Idscp2Connection>> { connection ->
+            releaseConnectionInternal(connection)
+        }
+        private fun releaseConnectionInternal(connectionFuture: CompletableFuture<Idscp2Connection>) {
+            if (connectionFuture.isDone) {
+                connectionFuture.get().close()
+            } else if (!(connectionFuture.isCancelled || connectionFuture.isCompletedExceptionally)) {
+                connectionFuture.cancel(true)
+            }
+        }
     }
 }

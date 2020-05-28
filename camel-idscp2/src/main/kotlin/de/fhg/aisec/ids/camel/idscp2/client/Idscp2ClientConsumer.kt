@@ -17,6 +17,7 @@
 package de.fhg.aisec.ids.camel.idscp2.client
 
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
 import org.apache.camel.Processor
 import org.apache.camel.support.DefaultConsumer
@@ -28,23 +29,30 @@ import java.util.concurrent.CompletableFuture
  */
 class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor: Processor) :
         DefaultConsumer(endpoint, processor), Idscp2MessageListener {
-    private val connectionFuture = CompletableFuture<Idscp2Connection>()
+    private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
 
     override fun doStart() {
         super.doStart()
-        endpoint.makeConnection(connectionFuture)
-        connectionFuture.thenAccept { it.addGenericMessageListener(this) }
+        connectionFuture = endpoint.makeConnection()
+        connectionFuture.thenAccept {
+            it.addGenericMessageListener(this)
+            // Handle connection errors and closing
+            it.addConnectionListener(object : Idscp2ConnectionListener {
+                override fun onError(t: Throwable?) {
+                    LOG.error("Error in Idscp2ClientConsumer connection", t)
+                }
+                override fun onClose(connection: Idscp2Connection) {
+                    stop()
+                }
+            })
+            it.unlockMessaging()
+        }
     }
 
     public override fun doStop() {
-        if (connectionFuture.isDone) {
-            val connection = connectionFuture.get()
-            LOG.debug("Stopping IDSCP2 client connection {}...", connection.id)
-            connection.close()
-        } else {
-            LOG.debug("Canceling IDSCP2 client connection...")
-            connectionFuture.cancel(true)
-        }
+        LOG.debug("Stopping/releasing IDSCP2 client consumer connection {}...",
+                if (connectionFuture.isDone) connectionFuture.get().id else "<pending>")
+        endpoint.releaseConnection(connectionFuture)
     }
 
     override fun onMessage(connection: Idscp2Connection, type: String, data: ByteArray) {
@@ -62,8 +70,6 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
             if (response.body != null && responseType != null) {
                 connection.send(responseType, response.getBody(ByteArray::class.java))
             }
-        } catch (e: Exception) {
-            LOG.error("Error in Idscp2ClientConsumer.onMessage()", e)
         } finally {
             doneUoW(exchange)
         }

@@ -17,15 +17,15 @@
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 
         <route id="idscp2Server">
-            <from uri="idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext"/>
-            <log message="Server received: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
             <setBody>
-                <simple>PONG</simple>
+                <simple>BROADCAST</simple>
             </setBody>
             <setHeader name="idscp2.type">
-                <simple>pong</simple>
+                <simple>broadcast</simple>
             </setHeader>
-            <log message="Server response: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+            <log message="Server broadcast to connected clients: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+            <to uri="idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext"/>
         </route>
 
     </camelContext>
