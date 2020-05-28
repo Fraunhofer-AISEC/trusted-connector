@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * The IDSCP2 Connection class holds connections between connectors
@@ -37,7 +38,14 @@ public class Idscp2Connection {
                 settings.getExpectedAttestation().getRatMechanisms(),
                 settings.getRatTimeoutDelay());
         secureChannel.setFsm(fsm);
-        LOG.debug("A new IDSCP2 connection with id {} was created, starting handshake...", connectionId);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("A new IDSCP2 connection with id {} was created, starting handshake...", connectionId);
+        }
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Stack Trace of Idscp2Connection {} constructor:\n"
+                    + Arrays.stream(Thread.currentThread().getStackTrace())
+                    .skip(1).map(Object::toString).collect(Collectors.joining("\n")), connectionId);
+        }
         // Schedule IDSCP handshake asynchronously
         CompletableFuture.runAsync(fsm::startIdscpHandshake);
     }
@@ -51,11 +59,7 @@ public class Idscp2Connection {
      */
     public void close() {
         LOG.debug("Closing connection {}...", connectionId);
-        // If server connection, this also unregisters the connection from the server.
-        if (fsm.isNotClosed()) {
-            connectionListeners.forEach(l -> l.onClose(this));
-        }
-        fsm.terminate();
+        fsm.closeConnection();
         LOG.debug("IDSCP2 connection {} closed", connectionId);
     }
 
@@ -63,14 +67,16 @@ public class Idscp2Connection {
      * Send data to the peer IDSCP2 connector
      */
     public void send(String type, byte[] msg) {
-        LOG.debug("Send data of type \"" + type + "\" ");
+        LOG.debug("Send data of type \"" + type + "\" via connection {}", connectionId);
         fsm.send(type, msg);
     }
 
     public void onMessage(String type, byte[] msg) {
         // When unlock is called, although not synchronized, this will eventually stop blocking.
         messageLatch.await();
-        LOG.debug("Received new IDSCP Message: " + Arrays.toString(msg));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Received new IDSCP Message");
+        }
         genericMessageListeners.forEach(l -> l.onMessage(this, type, msg));
         Set<Idscp2MessageListener> listeners = messageListeners.get(type);
         if (listeners != null) {
@@ -86,7 +92,7 @@ public class Idscp2Connection {
     }
 
     public void onClose() {
-        LOG.debug("Connection with id {} has been closed, notify listeners", connectionId);
+        LOG.debug("Connection with id {} is closing, notify listeners...", connectionId);
         connectionListeners.forEach(l -> l.onClose(this));
     }
 

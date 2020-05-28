@@ -79,6 +79,7 @@ public class Idscp2ServerFactory implements SecureChannelInitListener {
             });
         });
         endpointListener.onConnection(newConnection);
+        // Listeners have been applied in onConnection() callback above, so we can safely unlock messaging now
         newConnection.unlockMessaging();
     }
 

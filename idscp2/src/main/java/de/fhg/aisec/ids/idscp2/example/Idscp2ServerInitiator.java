@@ -70,7 +70,7 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
 //            Thread.sleep(40_000); //run server for 2 minutes
 //        } catch (Exception ignored) {
 //        } finally {
-//            idscp2Server.terminate();
+//            idscp2Server.closeConnection();
 //        }
     }
 

@@ -59,14 +59,12 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager {
                 return this.certAlias;
             } else {
                 LOG.warn("certAlias '{}' was not found in keystore", this.certAlias);
-                return null;
             }
-        } else {
-            LOG.warn("Invalid keyType '{}' in chooseClientAlias() in class X509ExtendedKeyManager",
-                    Arrays.toString(keyTypes));
-            LOG.warn("Expected: '{}'", this.keyType);
-            return null;
+        } else if (LOG.isTraceEnabled()) {
+            LOG.trace("Different keyType '{}' in chooseClientAlias() in CustomX509ExtendedKeyManager, expected '{}'",
+                    keyType, this.keyType);
         }
+        return null;
     }
 
     @Override
@@ -89,8 +87,8 @@ public class CustomX509ExtendedKeyManager extends X509ExtendedKeyManager {
             } else {
                 LOG.warn("certAlias '{}' was not found in keystore", this.certAlias);
             }
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Different keyType '{}' in chooseServerAlias() in CustomX509ExtendedKeyManager, expected '{}'",
+        } else if (LOG.isTraceEnabled()) {
+            LOG.trace("Different keyType '{}' in chooseServerAlias() in CustomX509ExtendedKeyManager, expected '{}'",
                     keyType, this.keyType);
         }
         return null;

@@ -40,7 +40,7 @@ public class InputListenerThread extends Thread implements InputListener {
                 //timeout to catch safeStop() call
             } catch (EOFException e) {
                 listener.onClose();
-                running = false; //terminate
+                running = false;
             } catch (IOException e) {
                 listener.onError(e);
                 running = false;

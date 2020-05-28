@@ -354,7 +354,7 @@ public class FSM implements FsmListener {
      * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
      * driver implementations
      */
-    public void terminate() {
+    public void closeConnection() {
         //check for incorrect usage
         checkForFsmCircles();
 
@@ -574,11 +574,15 @@ public class FSM implements FsmListener {
 
     /*
      * Lock the fsm forever, terminate the timers and drivers, close the secure channel
-     * and notify User or handshake lock about closure
+     * and notify handshake lock if necessary
      */
     void shutdownFsm() {
         LOG.debug("Shutting down FSM of connection {}...", connection.getId());
 
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Running close handlers of connection {}...", connection.getId());
+        }
+        connection.onClose();
         if (LOG.isTraceEnabled()) {
             LOG.trace("Closing secure channel of connection {}...", connection.getId());
         }
@@ -615,7 +619,9 @@ public class FSM implements FsmListener {
      */
     void notifyIdscpMsgListener(String type, byte[] data) {
         this.connection.onMessage(type, data);
-        LOG.debug("Idscp data has been passed to connection listener");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Idscp data of type \"{}\" has been passed to connection listener", type);
+        }
     }
 
     //

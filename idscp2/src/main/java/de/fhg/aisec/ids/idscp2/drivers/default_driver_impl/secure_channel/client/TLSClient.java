@@ -108,7 +108,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
 
             out = new DataOutputStream(clientSocket.getOutputStream());
 
-            //add inputListener but start it not before handshake is complete
+            // Add inputListener but start it not before handshake is complete
             inputListenerThread = new InputListenerThread(clientSocket.getInputStream());
             inputListenerThread.register(this);
 
@@ -116,9 +116,11 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             LOG.debug("Start TLS Handshake");
             sslSocket.startHandshake();
         } catch (SSLHandshakeException | SSLProtocolException e) {
+            // FIXME: Any such disconnect makes the server maintain a broken connection
             disconnect();
             throw new Idscp2Exception("TLS Handshake failed", e);
         } catch (IOException e) {
+            // FIXME: Any such disconnect makes the server maintain a broken connection
             disconnect();
             throw new Idscp2Exception("Connecting TLS client to server failed", e);
         }
@@ -185,21 +187,32 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             LOG.debug("TLS Handshake was successful");
         }
 
+        if (!this.connectionFuture.isCancelled()) {
+            // TODO: When server behavior fixed, disconnect and return here instantly
+//            disconnect();
+//            return;
+        }
+
         // verify tls session on application layer: hostname verification, certificate validity
         try {
             TLSSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.getSession());
             LOG.debug("TLS session is valid");
+            // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.
+            SecureChannel secureChannel = new SecureChannel(this);
+            this.listenerPromise.complete(secureChannel);
+            final var connection = new Idscp2Connection(secureChannel, clientSettings, dapsDriver);
+            inputListenerThread.start();
+            // Try to complete, won't do anything if promise has been cancelled
+            this.connectionFuture.complete(connection);
+            if (this.connectionFuture.isCancelled()) {
+                connection.close();
+            }
         } catch (SSLPeerUnverifiedException e) {
+            // FIXME: Any such disconnect makes the server maintain a broken connection
             disconnect();
             connectionFuture.completeExceptionally(
                     new Idscp2Exception("TLS session is not valid. Close TLS connection", e));
         }
-
-        // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.
-        SecureChannel secureChannel = new SecureChannel(this);
-        this.listenerPromise.complete(secureChannel);
-        this.connectionFuture.complete(new Idscp2Connection(secureChannel, clientSettings, dapsDriver));
-        inputListenerThread.start();
     }
 
     @Override

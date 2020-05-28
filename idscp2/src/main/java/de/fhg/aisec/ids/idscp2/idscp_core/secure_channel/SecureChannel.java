@@ -35,13 +35,17 @@ public class SecureChannel implements SecureChannelListener {
      * return true if the data has been sent successfully, else false
      */
     public boolean send(byte[] msg) {
-        LOG.debug("Send message via secure channel");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Send message via secure channel");
+        }
         return endpoint.send(msg);
     }
 
     @Override
     public void onMessage(byte[] data) {
-        LOG.debug("New raw data has been received via the secure channel");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("New raw data has been received via the secure channel");
+        }
         fsmPromise.thenAccept(fsmListener -> fsmListener.onMessage(data));
     }
 
