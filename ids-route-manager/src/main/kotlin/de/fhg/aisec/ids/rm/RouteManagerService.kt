@@ -37,27 +37,21 @@ import org.apache.camel.management.DefaultManagementAgent
 import org.apache.camel.model.ModelCamelContext
 import org.apache.camel.model.ModelHelper
 import org.apache.camel.model.RouteDefinition
+import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon
 import org.apache.camel.support.dump.RouteStatDump
-import org.osgi.framework.FrameworkUtil
-import org.osgi.framework.InvalidSyntaxException
-import org.osgi.service.component.ComponentContext
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
+import org.springframework.stereotype.Component
 
 /**
  * Manages Camel routes.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(immediate = true, name = "ids-routemanager")
+@Component
 class RouteManagerService : RouteManager {
-    private lateinit var ctx: ComponentContext
-
-    @Activate
-    private fun activate(ctx: ComponentContext) {
-        this.ctx = ctx
-    }
+    @Autowired private lateinit var ctx: ApplicationContext
 
     override fun getRoutes(): List<RouteObject> {
         val result: MutableList<RouteObject> = ArrayList()
@@ -118,27 +112,23 @@ class RouteManagerService : RouteManager {
     }
 
     override fun listComponents(): List<RouteComponent> {
-        val componentNames: MutableList<RouteComponent> = ArrayList()
-        val bCtx =
-            FrameworkUtil.getBundle(RouteManagerService::class.java).bundleContext
-                ?: return componentNames
-        try {
-            val services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null)
-            for (sr in services) {
-                var bundle = sr.bundle.headers["Bundle-Name"]
-                if (bundle == null || "" == bundle) {
-                    bundle = sr.bundle.symbolicName
+        val beanNamesForType =
+            ctx.getBeanNamesForType(ComponentConfigurationPropertiesCommon::class.java)
+
+        // yes, this is a bit hacky but will do fow now
+        return Arrays.stream(beanNamesForType)
+            .map { name ->
+                val first = name.split("-org")[0]
+
+                if (first.equals("camel.component")) {
+                    return@map null
                 }
-                var description = sr.bundle.headers["Bundle-Description"]
-                if (description == null) {
-                    description = ""
-                }
-                componentNames.add(RouteComponent(bundle, description))
+
+                return@map RouteComponent("camel-" + first.split("camel.component.")[1], "")
             }
-        } catch (e: InvalidSyntaxException) {
-            LOG.error(e.message, e)
-        }
-        return componentNames
+            .filter { Objects.nonNull(it) }
+            .collect(Collectors.toList()) as
+            List<RouteComponent>
     }
 
     override fun getEndpoints(): Map<String, Collection<String>> {
@@ -228,12 +218,11 @@ class RouteManagerService : RouteManager {
     private val camelContexts: List<CamelContext>
         get() {
             return try {
-                ctx.bundleContext.getServiceReferences(CamelContext::class.java.name, null)?.run {
-                    mapNotNull { reference -> ctx.bundleContext.getService(reference) }
-                        .map { CamelContext::class.java.cast(it) }
-                        .sortedWith(Comparator.comparing { it.name })
-                }
-                    ?: emptyList()
+                val contexts = ctx.getBeansOfType(CamelContext::class.java).values.toMutableList()
+
+                contexts.sortWith(Comparator.comparing { it.name })
+
+                return contexts
             } catch (e: Exception) {
                 LOG.warn("Cannot retrieve the list of Camel contexts.", e)
                 emptyList()

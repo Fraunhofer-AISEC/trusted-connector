@@ -20,6 +20,8 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import io.swagger.annotations.*;
+import org.springframework.stereotype.Component;
+
 import java.lang.management.*;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import javax.ws.rs.core.MediaType;
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
+@Component
 @Path("/metric")
 @Api(
   value = "Runtime Metrics",

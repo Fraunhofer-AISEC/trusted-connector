@@ -4,6 +4,10 @@ dependencies {
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
+    implementation("org.apache.camel.springboot:camel-spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.apache.camel.springboot:camel-spring-boot-starter")
+
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
 
     providedByFeature("javax.xml.bind", "jaxb-api", libraryVersions["jaxbApi"])

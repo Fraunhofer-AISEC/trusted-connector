@@ -37,18 +37,20 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import javax.annotation.PostConstruct
 import org.osgi.service.component.ComponentContext
 import org.osgi.service.component.annotations.*
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
- * servicefactory=false is the default and actually not required. But we want to make clear that
- * this is a singleton, i.e. there will only be one instance of PolicyDecisionPoint within the whole
+ * This is a singleton, i.e. there will only be one instance of PolicyDecisionPoint within the whole
  * runtime.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Component(immediate = true, name = "ids-dataflow-control")
+@org.springframework.stereotype.Component
 class PolicyDecisionPoint : PDP, PAP {
 
     // Convenience val for this thread's LuconEngine instance
@@ -57,6 +59,7 @@ class PolicyDecisionPoint : PDP, PAP {
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     @Volatile
+    @Autowired(required = false)
     private var routeManager: RouteManager? = null
 
     private val transformationCache =
@@ -146,12 +149,16 @@ class PolicyDecisionPoint : PDP, PAP {
         loadPolicies()
     }
 
+    @PostConstruct
     fun loadPolicies() {
         // Try to load existing policies from deploy dir at activation
-        val dir = File(System.getProperty("karaf.base") + File.separator + "deploy")
-        val directoryListing = dir.listFiles()
-        if (directoryListing == null || !dir.isDirectory) {
-            LOG.warn("Unexpected or not running in karaf: Not a directory: " + dir.absolutePath)
+        // val dir = File(System.getProperty("karaf.base") + File.separator + "deploy")
+        val url = Thread.currentThread().contextClassLoader.getResource("deploy") ?: return
+        val file = File(url.path)
+
+        val directoryListing = file.listFiles()
+        if (directoryListing == null || !file.isDirectory) {
+            LOG.warn("Unexpected or not running in karaf: Not a directory: " + file.absolutePath)
             return
         }
 

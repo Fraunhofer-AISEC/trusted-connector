@@ -93,3 +93,5 @@ paxExam: "4.13.3"
 awaitility: "3.1.6"
 servicemixHamcrest: "1.3_1"
 javaxAnnotation: "1.3.2"
+
+springBoot: "2.3.4.RELEASE"

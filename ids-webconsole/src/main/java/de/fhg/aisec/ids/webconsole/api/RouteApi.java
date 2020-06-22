@@ -20,8 +20,10 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import de.fhg.aisec.ids.api.Result;
+import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.*;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import io.swagger.annotations.Api;
@@ -31,6 +33,8 @@ import io.swagger.annotations.Authorization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -49,6 +53,7 @@ import java.util.Map;
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
+@Component
 @Path("/routes")
 @Api(
   value = "Message Routing",
@@ -56,6 +61,12 @@ import java.util.Map;
 )
 public class RouteApi {
   private static final Logger LOG = LoggerFactory.getLogger(RouteApi.class);
+
+  private @NonNull RouteManager rm;
+
+  public RouteApi(@Autowired @NonNull RouteManager rm) {
+    this.rm = rm;
+  }
 
   /**
    * Returns map from camel context to list of camel routes.
@@ -77,10 +88,6 @@ public class RouteApi {
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public List<RouteObject> list() {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      return new ArrayList<>();
-    }
     return rm.getRoutes();
   }
 
@@ -90,10 +97,6 @@ public class RouteApi {
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public RouteObject get(@ApiParam(value = "Route ID") @PathParam("id") @NonNull String id) {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     RouteObject oRoute = rm.getRoute(id);
     if (oRoute == null) {
       throw new NotFoundException("Route not found");
@@ -107,10 +110,6 @@ public class RouteApi {
   @Produces(MediaType.TEXT_PLAIN)
   @AuthorizationRequired
   public String getAsString(@ApiParam(value = "Route ID") @PathParam("id") String id) {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     String routeAsString = rm.getRouteAsString(id);
     if (routeAsString == null) {
       throw new NotFoundException("Route not found");
@@ -126,10 +125,6 @@ public class RouteApi {
   @AuthorizationRequired
   public Result startRoute(@PathParam("id") String id) {
     try {
-      RouteManager rm = WebConsoleComponent.getRouteManager();
-      if (rm == null) {
-        throw new InternalServerErrorException();
-      }
       rm.startRoute(id);
       return new Result();
     } catch (Exception e) {
@@ -146,10 +141,6 @@ public class RouteApi {
   @AuthorizationRequired
   public Result saveRoute(@PathParam("id") @NonNull String id, @NonNull String routeDefinition) {
     try {
-      RouteManager rm = WebConsoleComponent.getRouteManager();
-      if (rm == null) {
-        throw new InternalServerErrorException();
-      }
       rm.saveRoute(id, routeDefinition);
       return new Result();
     } catch (Exception e) {
@@ -166,10 +157,6 @@ public class RouteApi {
   @AuthorizationRequired
   public Result addRoute(@NonNull String routeDefinition) {
     try {
-      RouteManager rm = WebConsoleComponent.getRouteManager();
-      if (rm == null) {
-        throw new InternalServerErrorException();
-      }
       rm.addRoute(routeDefinition);
       return new Result();
     } catch (Exception e) {
@@ -189,10 +176,6 @@ public class RouteApi {
   @AuthorizationRequired
   public Result stopRoute(@PathParam("id") String id) {
     try {
-      RouteManager rm = WebConsoleComponent.getRouteManager();
-      if (rm == null) {
-        throw new InternalServerErrorException();
-      }
       rm.stopRoute(id);
       return new Result();
     } catch (Exception e) {
@@ -207,10 +190,6 @@ public class RouteApi {
   @Path("/metrics/{id}")
   @AuthorizationRequired
   public RouteMetrics getMetrics(@PathParam("id") String routeId) {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     return rm.getRouteMetrics().get(routeId);
   }
 
@@ -223,10 +202,6 @@ public class RouteApi {
   @Path("/metrics")
   @AuthorizationRequired
   public RouteMetrics getMetrics() {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     return aggregateMetrics(rm.getRouteMetrics().values());
   }
 
@@ -271,10 +246,6 @@ public class RouteApi {
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public List<RouteComponent> getComponents() {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     return rm.listComponents();
   }
 
@@ -283,10 +254,6 @@ public class RouteApi {
   @Path("/list_endpoints")
   @AuthorizationRequired
   public Map<String, String> listEndpoints() {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     return rm.listEndpoints();
   }
 
@@ -316,10 +283,6 @@ public class RouteApi {
   @Produces(MediaType.TEXT_PLAIN)
   @AuthorizationRequired
   public String getRouteProlog(@PathParam("routeId") @NonNull String routeId) {
-    RouteManager rm = WebConsoleComponent.getRouteManager();
-    if (rm == null) {
-      throw new InternalServerErrorException();
-    }
     return rm.getRouteAsProlog(routeId);
   }
 }

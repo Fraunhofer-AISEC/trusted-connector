@@ -26,9 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * REST API interface for managing usage control policies in the connector.
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
+@Component
 @Path("/policies")
 @Api(
   value = "Usage Control Policies",
@@ -84,15 +87,15 @@ public class PolicyApi {
   }
 
   @POST
-  @OPTIONS
+  //@OPTIONS
   @Path("install")
   @ApiOperation(value = "Installs a new usage control policy as a Prolog theory file")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @AuthorizationRequired
   public String install(
-      @Multipart(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
-      @Multipart(value = "policy_description") @DefaultValue(value = "") String policyDescription,
-      @Multipart(value = "policy_file") String policy) {
+      @FormParam(value = "policy_name") @DefaultValue(value = "default policy") String policyName,
+      @FormParam(value = "policy_description") @DefaultValue(value = "") String policyDescription,
+      @FormParam(value = "policy_file") String policy) {
     LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription);
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {

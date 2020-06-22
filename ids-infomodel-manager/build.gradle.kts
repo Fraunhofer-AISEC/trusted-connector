@@ -38,4 +38,6 @@ dependencies {
     infomodelBundle("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
 
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
+
+    implementation("org.springframework.boot:spring-boot-starter")
 }
