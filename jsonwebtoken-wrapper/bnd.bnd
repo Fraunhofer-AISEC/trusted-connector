@@ -1,0 +1,8 @@
+Bundle-Name: JWT (JSON web token) Wrapper
+Bundle-Description: JWT (JSON web token) Wrapper Bundle
+Import-Package: \
+  !io.jsonwebtoken*,\
+  *
+# Merge split-package io.jsonwebtoken
+Export-Package: \
+  io.jsonwebtoken*;-split-package:=merge-last

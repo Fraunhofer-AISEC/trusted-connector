@@ -29,5 +29,5 @@ public interface WebSocketFactory {
       String protocol,
       String pathSpec,
       NodeSynchronization sync,
-      WebsocketConsumer consumer);
+      WebSocketConsumer consumer);
 }

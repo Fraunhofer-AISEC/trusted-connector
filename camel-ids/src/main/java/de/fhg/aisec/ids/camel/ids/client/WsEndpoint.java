@@ -23,8 +23,9 @@ import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.camel.ids.CamelComponent;
+import de.fhg.aisec.ids.camel.ids.IdscpConstants;
 import de.fhg.aisec.ids.camel.ids.ProxyX509TrustManager;
-import de.fhg.aisec.ids.camel.ids.server.WebsocketConstants;
+import de.fhg.aisec.ids.camel.ids.WebSocketConstants;
 import de.fhg.aisec.ids.comm.CertificatePair;
 import de.fhg.aisec.ids.comm.client.ClientConfiguration;
 import de.fhg.aisec.ids.comm.client.IdspClientSocket;
@@ -66,18 +67,17 @@ import java.util.concurrent.TimeUnit;
   extendsScheme = "ahc,ahc",
   title = "IDS Protocol",
   syntax = "idsclient:httpUri",
-  consumerClass = WsConsumer.class,
   label = "websocket"
 )
 public class WsEndpoint extends AhcEndpoint {
   private static final Logger LOG = LoggerFactory.getLogger(WsEndpoint.class);
 
-  private static List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<>();
+  private static final List<IDSCPOutgoingConnection> outgoingConnections = new ArrayList<>();
 
   private final Set<WsConsumer> consumers = new HashSet<>();
   private final WsListener listener = new WsListener(consumers, this);
   private WebSocket websocket;
-  private CertificatePair certificatePair = new CertificatePair();
+  private final CertificatePair certificatePair = new CertificatePair();
 
   @UriParam(label = "producer")
   private boolean useStreaming;
@@ -144,6 +144,7 @@ public class WsEndpoint extends AhcEndpoint {
     return websocket;
   }
 
+  @SuppressWarnings("unused")
   void setWebSocket(WebSocket websocket) {
     this.websocket = websocket;
   }
@@ -153,6 +154,7 @@ public class WsEndpoint extends AhcEndpoint {
   }
 
   /** To enable streaming to send data as multiple text fragments. */
+  @SuppressWarnings("unused")
   public void setUseStreaming(boolean useStreaming) {
     this.useStreaming = useStreaming;
   }
@@ -161,6 +163,7 @@ public class WsEndpoint extends AhcEndpoint {
     return sendMessageOnError;
   }
 
+  @SuppressWarnings("unused")
   public void setAttestation(int type) {
     this.attestation = type;
   }
@@ -169,6 +172,7 @@ public class WsEndpoint extends AhcEndpoint {
     return attestation;
   }
 
+  @SuppressWarnings("unused")
   public void setAttestationMask(int type) {
     this.attestationMask = type;
   }
@@ -178,6 +182,7 @@ public class WsEndpoint extends AhcEndpoint {
   }
 
   /** Whether to send an message if the web-socket listener received an error. */
+  @SuppressWarnings("unused")
   public void setSendMessageOnError(boolean sendMessageOnError) {
     this.sendMessageOnError = sendMessageOnError;
   }
@@ -192,10 +197,10 @@ public class WsEndpoint extends AhcEndpoint {
 
   public void connect() {
     String uri = getHttpUri().toASCIIString();
-    if (uri.startsWith("idsclient:")) {
-      uri = uri.replaceFirst("idsclient", WebsocketConstants.WSS_PROTOCOL);
-    } else if (uri.startsWith("idsclientplain:")) {
-      uri = uri.replaceFirst("idsclientplain", WebsocketConstants.WS_PROTOCOL);
+    if (uri.startsWith(IdscpConstants.WSS_PROTOCOL + ":")) {
+      uri = uri.replaceFirst(IdscpConstants.WSS_PROTOCOL, WebSocketConstants.WSS_PROTOCOL);
+    } else if (uri.startsWith(IdscpConstants.WS_PROTOCOL + ":")) {
+      uri = uri.replaceFirst(IdscpConstants.WS_PROTOCOL, WebSocketConstants.WS_PROTOCOL);
     }
 
     LOG.debug("Connecting to {}", uri);
@@ -204,6 +209,12 @@ public class WsEndpoint extends AhcEndpoint {
 
     LOG.debug("remote-attestation mode: {}", this.getAttestation());
     LOG.debug("remote-attestation mask: {}", this.getAttestationMask());
+
+    IdsAttestationType attestationType = IdsAttestationType.forNumber(this.getAttestation());
+    if (attestationType == null) {
+      throw new RuntimeException("Error: " + this.getAttestation()
+              + " does not seem to be a valid attestation type, aborting");
+    }
 
     // Execute IDS protocol immediately after connect
     Settings settings = CamelComponent.getSettings();
@@ -220,10 +231,14 @@ public class WsEndpoint extends AhcEndpoint {
     } catch (URISyntaxException e) {
       LOG.error("incorrect TTP URI syntax", e);
     }
+    if (ttpUri == null) {
+      throw new RuntimeException("Error: ttpUri required, aborting!");
+    }
+
     InfoModel infoModelManager = CamelComponent.getInfoModelManager();
     ClientConfiguration.Builder clientConfigBuilder =
         new ClientConfiguration.Builder()
-            .attestationType(IdsAttestationType.forNumber(this.getAttestation()))
+            .attestationType(attestationType)
             .attestationMask(this.getAttestationMask())
             .certificatePair(certificatePair)
             .ttpUrl(ttpUri);

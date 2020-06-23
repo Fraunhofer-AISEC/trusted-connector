@@ -3,9 +3,9 @@ dependencies {
 
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 
-    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
-    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
-    providedByBundle group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: libraryVersions.jsonwebtoken
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: libraryVersions.jsonwebtoken
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: libraryVersions.jsonwebtoken
     providedByBundle group: 'com.squareup.okhttp3', name: 'okhttp', version: libraryVersions.okhttp
     providedByBundle group: 'com.squareup.okio', name: 'okio', version: libraryVersions.okio
     providedByBundle group: 'org.bitbucket.b_c', name: 'jose4j', version: libraryVersions.jose4j

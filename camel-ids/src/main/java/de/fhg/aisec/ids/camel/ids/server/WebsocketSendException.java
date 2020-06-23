@@ -31,6 +31,7 @@ public class WebsocketSendException extends CamelExchangeException {
     super(message, exchange);
   }
 
+  @SuppressWarnings("unused")
   public WebsocketSendException(String message, Exchange exchange, Throwable cause) {
     super(message, exchange, cause);
   }

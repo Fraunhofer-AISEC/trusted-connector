@@ -31,7 +31,7 @@ import java.io.InputStream;
 public class WsProducer extends DefaultProducer {
   private static final int DEFAULT_STREAM_BUFFER_SIZE = 127;
 
-  private int streamBufferSize = DEFAULT_STREAM_BUFFER_SIZE;
+  private final int streamBufferSize = DEFAULT_STREAM_BUFFER_SIZE;
 
   public WsProducer(WsEndpoint endpoint) {
     super(endpoint);
