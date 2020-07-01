@@ -258,7 +258,9 @@ public class TokenManagerService implements TokenManager {
               .setRequireSubject() // the JWT must have a subject claim
               .setExpectedIssuer(
                   "https://daps.aisec.fraunhofer.de") // whom the JWT needs to have been issued by
-              .setExpectedAudience(targetAudience) // to whom the JWT is intended for
+              //.setExpectedAudience(targetAudience) // to whom the JWT is intended for
+              //FIXME: Evil hack to support both audience types from DAPSv1 and v2. We need to get versioning going and we need to get it right. Until then, just hack in second value
+              .setExpectedAudience(targetAudience, "idsc:IDS_CONNECTORS_ALL") // to whom the JWT is intended for
               .setVerificationKeyResolver(httpsJwksKeyResolver)
               .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the
                   // given context
