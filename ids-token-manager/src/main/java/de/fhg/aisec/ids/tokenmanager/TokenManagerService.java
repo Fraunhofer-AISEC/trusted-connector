@@ -101,6 +101,8 @@ public class TokenManagerService implements TokenManager {
       String connectorUUID) {
 
     String dynamicAttributeToken = "INVALID_TOKEN";
+    String targetAudience = "IDS_Connector";
+
     Map<String, Object> jwtClaims = null;
 
     // Try clause for setup phase (loading keys, building trust manager)
@@ -145,6 +147,7 @@ public class TokenManagerService implements TokenManager {
       } catch (GeneralSecurityException e) {
         throw new RuntimeException(e);
       }
+
 
       LOG.info("Retrieving Dynamic Attribute Token...");
 
