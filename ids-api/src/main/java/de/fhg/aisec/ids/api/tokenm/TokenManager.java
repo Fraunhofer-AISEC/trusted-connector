@@ -45,7 +45,6 @@ public interface TokenManager {
 
   Map<String, Object> verifyJWT(
       String dynamicAttributeToken,
-      String targetAudience,
       String dapsUrl) throws Exception;
 
   void validateDATSecurityAttributes(
