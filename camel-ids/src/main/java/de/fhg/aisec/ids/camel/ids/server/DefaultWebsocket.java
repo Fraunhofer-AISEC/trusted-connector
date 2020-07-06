@@ -234,13 +234,10 @@ public class DefaultWebsocket implements EndpointConfigListener {
         ConnectionSettings connectionSettings = settings.getConnectionSettings(consumer.getEndpoint().getHost() + ":"
                 + consumer.getEndpoint().getPort().toString());
 
-        // This is a bug in the DAPS.
-        // Audience should not be set to default value "IDS_Connector"
-        String targetAudience = "IDS_Connector";
 
         try {
             //validate token signature, target Audience, expire date
-            var claims = tokenManager.verifyJWT(dat, targetAudience, dapsUrl);
+            var claims = tokenManager.verifyJWT(dat, dapsUrl);
             //validate supported security attributes
             tokenManager.validateDATSecurityAttributes(claims, connectionSettings);
         } catch (Exception e) {

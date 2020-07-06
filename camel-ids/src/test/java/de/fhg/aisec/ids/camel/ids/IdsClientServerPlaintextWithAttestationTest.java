@@ -56,7 +56,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     when(settings.getConnectionSettings(anyString())).thenReturn(new ConnectionSettings());
     cc.setSettings(settings);
     TokenManager tm = mock(TokenManager.class);
-    when(tm.verifyJWT(anyString(), anyString(), anyString())).thenReturn(Collections.emptyMap());
+    when(tm.verifyJWT(anyString(), anyString())).thenReturn(Collections.emptyMap());
     doNothing().when(tm).validateDATSecurityAttributes(any(), any(ConnectionSettings.class));
     cc.setTokenManager(tm);
     CamelComponent.setInstance(cc);

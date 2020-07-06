@@ -99,9 +99,7 @@ public class TokenManagerService implements TokenManager {
       String keystoreAliasName,
       String trustStoreName,
       String connectorUUID) {
-    // This is a bug in the DAPS.
-    // Audience should not be set to default value "IDS_Connector"
-    String targetAudience = "IDS_Connector";
+
     String dynamicAttributeToken = "INVALID_TOKEN";
     Map<String, Object> jwtClaims = null;
 
@@ -202,7 +200,7 @@ public class TokenManagerService implements TokenManager {
 
       LOG.info("Dynamic Attribute Token: " + dynamicAttributeToken);
 
-      jwtClaims = verifyJWT(dynamicAttributeToken, targetAudience, dapsUrl);
+      jwtClaims = verifyJWT(dynamicAttributeToken, dapsUrl);
     } catch (KeyStoreException
         | NoSuchAlgorithmException
         | CertificateException
@@ -222,7 +220,6 @@ public class TokenManagerService implements TokenManager {
   @Override
   public Map<String, Object> verifyJWT(
       String dynamicAttributeToken,
-      String targetAudience,
       String dapsUrl) throws Exception {
     if (sslSocketFactory == null) {
       throw new JwtException("SSLSocketFactory is null, acquireToken() must be called first!");
@@ -258,9 +255,8 @@ public class TokenManagerService implements TokenManager {
               .setRequireSubject() // the JWT must have a subject claim
               .setExpectedIssuer(
                   "https://daps.aisec.fraunhofer.de") // whom the JWT needs to have been issued by
-              //.setExpectedAudience(targetAudience) // to whom the JWT is intended for
-              //FIXME: Evil hack to support both audience types from DAPSv1 and v2. We need to get versioning going and we need to get it right. Until then, just hack in second value
-              .setExpectedAudience(targetAudience, "idsc:IDS_CONNECTORS_ALL") // to whom the JWT is intended for
+              //FIXME: Hardcoded two v1 and v2 values. Need to add versioning to correctly handle tokens.
+              .setExpectedAudience(true, "IDS_Connector", "idsc:IDS_CONNECTORS_ALL") // to whom the JWT is intended for
               .setVerificationKeyResolver(httpsJwksKeyResolver)
               .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the
                   // given context
