@@ -57,6 +57,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class TokenManagerService implements TokenManager {
       KeyStore trustManagerKeyStore = KeyStore.getInstance("JKS");
 
       LOG.info("Loading key store: " + keyStoreName);
-      LOG.info("Loading trus store: " + trustStoreName);
+      LOG.info("Loading trust store: " + trustStoreName);
       keystore.load(jksKeyStoreInputStream, keyStorePassword.toCharArray());
       trustManagerKeyStore.load(jksTrustStoreInputStream, keyStorePassword.toCharArray());
       java.security.cert.Certificate[] certs = trustManagerKeyStore.getCertificateChain("ca");
@@ -130,6 +131,8 @@ public class TokenManagerService implements TokenManager {
       Key privKey = keystore.getKey(keystoreAliasName, keyStorePassword.toCharArray());
       // Get certificate of public key
       X509Certificate cert = (X509Certificate) keystore.getCertificate(keystoreAliasName);
+
+
 
       TrustManager[] trustManagers;
       try {
@@ -148,8 +151,16 @@ public class TokenManagerService implements TokenManager {
         throw new RuntimeException(e);
       }
 
-
+      LOG.info("\tCertificate Subject: " + cert.getSubjectDN());
+      //GET 2.5.29.14	SubjectKeyIdentifier / 2.5.29.35	AuthorityKeyIdentifier
+      String authorityKeyIndentifier = new String (cert.getExtensionValue("2.5.29.35"));
+      String subjectKeyIdenfier = new String (cert.getExtensionValue("2.5.29.14"));
+      LOG.info("AKI: " + authorityKeyIndentifier);
+      LOG.info("SKI: " + subjectKeyIdenfier);
+      //connectorUUID = subjectKeyIdenfier + ":" + authorityKeyIndentifier.substring(0, authorityKeyIndentifier.length() - 1);
+      LOG.info("ConnectorUUID: " + connectorUUID);
       LOG.info("Retrieving Dynamic Attribute Token...");
+
 
       // create signed JWT (JWS)
       // Create expiry date one day (86400 seconds) from now
@@ -158,12 +169,15 @@ public class TokenManagerService implements TokenManager {
           Jwts.builder()
               .setIssuer(connectorUUID)
               .setSubject(connectorUUID)
+              .claim("@context", "https://w3id.org/idsa/contexts/context.jsonld")
+              .claim("@type", "ids:DatRequestToken")
               .setExpiration(expiryDate)
               .setIssuedAt(Date.from(Instant.now()))
               .setAudience(targetAudience)
               .setNotBefore(Date.from(Instant.now()));
-      LOG.info("\tCertificate Subject: " + cert.getSubjectDN());
+
       String jws = jwtb.signWith(privKey, SignatureAlgorithm.RS256).compact();
+      LOG.info("Request token: " + jws);
 
       // build form body to embed client assertion into post request
       RequestBody formBody =
@@ -172,7 +186,7 @@ public class TokenManagerService implements TokenManager {
               .add(
                   "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
               .add("client_assertion", jws)
-              .add("scope", "ids_connector")
+              .add("scope", "idsc:IDS_CONNECTOR_ATTRIBUTES_ALL")
               .build();
 
       OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -186,7 +200,7 @@ public class TokenManagerService implements TokenManager {
               .readTimeout(15, TimeUnit.SECONDS)
               .build();
 
-      Request request = new Request.Builder().url(dapsUrl + "/token").post(formBody).build();
+      Request request = new Request.Builder().url(dapsUrl + "/v2/token").post(formBody).build();
       Response jwtResponse = client.newCall(request).execute();
       if (!jwtResponse.isSuccessful()) {
         throw new IOException("Unexpected code " + jwtResponse);
@@ -310,24 +324,22 @@ public class TokenManagerService implements TokenManager {
   public void validateDATSecurityAttributes(Map<String, Object> claims, ConnectionSettings connectionSettings)
       throws DatException {
     try {
-      Object idsAttributesObject = claims.get("ids_attributes");
-      Map<String, Object> securityProfile;
-      if (idsAttributesObject instanceof Map) {
-        var securityProfileObject = ((Map<String, Object>) idsAttributesObject).get("security_profile");
-        if (securityProfileObject instanceof Map) {
-          securityProfile = (Map<String, Object>) securityProfileObject;
-        } else {
-          throw new DatException("No security_profile found in claims " + securityProfileObject);
-        }
-      } else {
-        throw new DatException("No ids_attributes claims found in claims " + idsAttributesObject);
-      }
 
-      // Validate audit_logging
-      var auditLogging = Integer.parseInt(securityProfile.get("audit_logging").toString());
-      if (Integer.parseInt(connectionSettings.getAuditLogging()) > auditLogging) {
-        throw new DatException("Client does not support the security requirements for audit_logging.");
+      String securityProfile = claims.get("securityProfile").toString();
+
+      //FIXME: Validate security profile the proper way
+
+      ArrayList<String> validTrustProfiles=new ArrayList<String>();
+      validTrustProfiles.add("idsc:TRUST_SECURITY_PROFILE");
+      validTrustProfiles.add("idsc:BASE_SECURITY_PROFILE");
+      validTrustProfiles.add("idsc:TRUST+_SECURITY_PROFILE");
+
+      if (!validTrustProfiles.contains(securityProfile)) {
+        throw new DatException("Client does not support valid trust profile.");
       }
+      //TODO Check for trust profile
+      //if (Integer.parseInt(connectionSettings.getAuditLogging()) > auditLogging) {
+      //  throw new DatException("Client does not support the security requirements for audit_logging.");
 
       // TODO: validate further security attributes
     } catch (NumberFormatException e) {
