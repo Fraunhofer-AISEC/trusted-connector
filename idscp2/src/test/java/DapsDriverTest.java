@@ -30,15 +30,15 @@ public class DapsDriverTest {
     assertNotEquals(token, "INVALID_TOKEN");
 
     SecurityRequirements requirements = new SecurityRequirements.Builder()
-        .setAuditLogging(2)
+        .setRequiredSecurityLevel("idsc:TRUST_SECURITY_PROFILE")
         .build();
 
     SecurityRequirements requirements2 = new SecurityRequirements.Builder()
-        .setAuditLogging(1)
+        .setRequiredSecurityLevel("idsc:BASE_SECURITY_PROFILE")
         .build();
 
     assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) >= 0);
-    assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements2) >= 0);
+    assertFalse(dapsDriver.verifyToken(token.getBytes(), requirements2) >= 0);
   }
 
   @Test
