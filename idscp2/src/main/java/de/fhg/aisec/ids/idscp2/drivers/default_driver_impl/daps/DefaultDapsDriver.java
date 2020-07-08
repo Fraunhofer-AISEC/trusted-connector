@@ -259,15 +259,48 @@ public class DefaultDapsDriver implements DapsDriver {
                 }
 
                 //toDo add further security attribute validation
-                if (secRequirements.getAuditLogging() <= providedSecurityProfile.getAuditLogging()) {
-                    LOG.info("DAT is valid and secure");
-                    return validityTime;
+
+
+                if(secRequirements.getRequiredSecurityLevel().equals("idsc:BASE_SECURITY_PROFILE")) {
+                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:BASE_SECURITY_PROFILE") ||
+                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST_SECURITY_PROFILE") ||
+                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                        LOG.info("DAT is valid and secure");
+                        return validityTime;
+                    } else {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("DAT does not fulfill the security requirements");
+                        }
+                        return -1;
+                    }
+                } else if(secRequirements.getRequiredSecurityLevel().equals("idsc:TRUST_SECURITY_PROFILE")) {
+                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST_SECURITY_PROFILE") ||
+                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                        LOG.info("DAT is valid and secure");
+                        return validityTime;
+                    } else {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("DAT does not fulfill the security requirements, TRUST LEVEL not reached");
+                        }
+                        return -1;
+                    }
+                } else if(secRequirements.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                        LOG.info("DAT is valid and secure");
+                        return validityTime;
+                    } else {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("DAT does not fulfill the security requirements, TRUST+ LEVEL not reached");
+                        }
+                        return -1;
+                    }
                 } else {
                     if (LOG.isWarnEnabled()) {
-                        LOG.warn("DAT does not fulfill the security requirements");
+                        LOG.warn("DAT does not fulfill the security requirements, not supported trust level");
                     }
                     return -1;
                 }
+
             } else {
                 //invalid security requirements format
                 if (LOG.isWarnEnabled()) {
@@ -284,34 +317,16 @@ public class DefaultDapsDriver implements DapsDriver {
     private SecurityRequirements parseSecurityRequirements(String dynamicAttrToken) {
         JSONObject asJson = new JSONObject(dynamicAttrToken);
 
-        if (!asJson.has("ids_attributes")) {
+        if (!asJson.has("securityProfile")) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("DAT does not contain ids_attributes");
+                LOG.warn("DAT does not contain securityProfile");
             }
             return null;
         }
-        JSONObject idsAttributes = asJson.getJSONObject("ids_attributes");
-
-        if (!idsAttributes.has("security_profile")) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("DAT does not contain security_profile");
-            }
-            return null;
-        }
-        JSONObject securityProfile = idsAttributes.getJSONObject("security_profile");
-
-        //check if all security requirements are available
-        if (!securityProfile.has("audit_logging")) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("DAT does not contain audit_logging");
-            }
-            return null;
-        }
-
         //toDo parse further security attributes
-
+        //FIXME: Does this make sense? How are security requirements mapped?
         return new SecurityRequirements.Builder()
-                .setAuditLogging(securityProfile.getInt("audit_logging"))
+                .setRequiredSecurityLevel(asJson.getString("securityProfile"))
                 .build();
     }
 }

@@ -11,15 +11,15 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 public class SecurityRequirements {
 
-    private int auditLogging;
+    private String securityLevel;
 
     public static class Builder {
         @NonNull
         private final SecurityRequirements requirements = new SecurityRequirements();
 
         @NonNull
-        public Builder setAuditLogging(int auditLogging) {
-            this.requirements.auditLogging = auditLogging;
+        public Builder setRequiredSecurityLevel(String requiredSecurityLevel) {
+            this.requirements.securityLevel = requiredSecurityLevel;
             return this;
         }
 
@@ -29,7 +29,7 @@ public class SecurityRequirements {
         }
     }
 
-    public int getAuditLogging() {
-        return auditLogging;
+    public String getRequiredSecurityLevel() {
+        return securityLevel;
     }
 }

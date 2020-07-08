@@ -11,14 +11,7 @@ export class Configuration {
             this.settings = settings;
         } else {
             this.settings = {
-                integrityProtectionAndVerification: '1',
-                authentication: '1',
-                serviceIsolation: '1',
-                integrityProtectionVerificationScope: '1',
-                appExecutionResources: '1',
-                dataUsageControlSupport: '1',
-                auditLogging: '1',
-                localDataConfidentiality: '1'
+                securityProfile: 'idsc:BASE_SECURITY_PROFILE'
             };
         }
     }

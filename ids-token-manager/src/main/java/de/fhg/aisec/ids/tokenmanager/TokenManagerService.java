@@ -338,8 +338,42 @@ public class TokenManagerService implements TokenManager {
         throw new DatException("Client does not support valid trust profile.");
       }
       //TODO Check for trust profile
-      //if (Integer.parseInt(connectionSettings.getAuditLogging()) > auditLogging) {
-      //  throw new DatException("Client does not support the security requirements for audit_logging.");
+
+      if(connectionSettings.getRequiredSecurityProfile().equals("idsc:BASE_SECURITY_PROFILE")) {
+        if (!securityProfile.equals("idsc:BASE_SECURITY_PROFILE")
+            && !securityProfile.equals("idsc:TRUST_SECURITY_PROFILE")
+            && !securityProfile.equals("idsc:TRUST+_SECURITY_PROFILE")) {
+
+          throw new DatException(
+              "Client does not support required trust profile: Required: "
+                  + connectionSettings.getRequiredSecurityProfile()
+                  + " given: "
+                  + securityProfile);
+        }
+      } else if(connectionSettings.getRequiredSecurityProfile().equals("idsc:TRUST_SECURITY_PROFILE")) {
+        if (!securityProfile.equals("idsc:TRUST_SECURITY_PROFILE") &&
+            !securityProfile.equals("idsc:TRUST+_SECURITY_PROFILE")) {
+          throw new DatException(
+              "Client does not support required trust profile: Required: "
+                  + connectionSettings.getRequiredSecurityProfile()
+                  + " given: "
+                  + securityProfile);
+        }
+      } else if(connectionSettings.getRequiredSecurityProfile().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+          if (!securityProfile.equals("idsc:TRUST+_SECURITY_PROFILE")) {
+            throw new DatException(
+                "Client does not support required trust profile: Required: "
+                    + connectionSettings.getRequiredSecurityProfile()
+                    + " given: "
+                    + securityProfile);
+          }
+      } else {
+        throw new DatException(
+            "Client does not support any valid trust profile: Required: "
+                + connectionSettings.getRequiredSecurityProfile()
+                + " given: "
+                + securityProfile);
+      }
 
       // TODO: validate further security attributes
     } catch (NumberFormatException e) {
