@@ -117,7 +117,7 @@ class InfoModelService : InfoModel {
     // generates RDF description from Connector object and returns building success
     override fun setConnector(profile: ConnectorProfile): Boolean {
         if (profile.securityProfile == null) {
-            profile.securityProfile = SecurityProfile.BASE_CONNECTOR_SECURITY_PROFILE
+            profile.securityProfile = SecurityProfile.TRUSTED_CONNECTOR_SECURITY_PROFILE
         }
         return if (settings != null) {
             settings?.connectorProfile = profile

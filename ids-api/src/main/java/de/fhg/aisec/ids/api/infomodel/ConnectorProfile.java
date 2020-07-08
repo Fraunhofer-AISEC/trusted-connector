@@ -35,7 +35,7 @@ public final class ConnectorProfile implements Serializable {
   private List<PlainLiteral> connectorEntityNames;
 
   public ConnectorProfile() {
-    this.securityProfile = SecurityProfile.BASE_CONNECTOR_SECURITY_PROFILE;
+    this.securityProfile = SecurityProfile.TRUSTED_CONNECTOR_SECURITY_PROFILE;
     this.connectorUrl = null;
     this.maintainerUrl = null;
     this.connectorEntityNames = null;
