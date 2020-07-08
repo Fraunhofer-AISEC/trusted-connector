@@ -175,7 +175,7 @@ public class DapsDriverTest {
     assertNotEquals(token, "INVALID_TOKEN");
 
     SecurityRequirements requirements = new SecurityRequirements.Builder()
-        .setAuditLogging(3) //token has supports only audit_logging 2
+        .setRequiredSecurityLevel("\"idsc:TRUST+_SECURITY_PROFILE\"")() //token has supports only audit_logging 2
         .build();
 
     assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) < 0);
@@ -201,7 +201,7 @@ public class DapsDriverTest {
     System.out.println(token);
 
     SecurityRequirements requirements = new SecurityRequirements.Builder()
-        .setAuditLogging(2)
+        .setRequiredSecurityLevel("idsc:TRUST_SECURITY_PROFILE")
         .build();
 
     long ret;
