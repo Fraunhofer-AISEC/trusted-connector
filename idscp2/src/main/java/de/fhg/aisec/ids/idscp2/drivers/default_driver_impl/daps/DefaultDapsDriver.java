@@ -261,10 +261,10 @@ public class DefaultDapsDriver implements DapsDriver {
                 //toDo add further security attribute validation
 
 
-                if(secRequirements.getRequiredSecurityLevel().equals("idsc:BASE_SECURITY_PROFILE")) {
-                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:BASE_SECURITY_PROFILE") ||
-                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST_SECURITY_PROFILE") ||
-                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                if(secRequirements.getRequiredSecurityLevel().equals("idsc:BASE_CONNECTOR_SECURITY_PROFILE")) {
+                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:BASE_CONNECTOR_SECURITY_PROFILE") ||
+                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE") ||
+                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
                         LOG.info("DAT is valid and secure");
                         return validityTime;
                     } else {
@@ -273,9 +273,9 @@ public class DefaultDapsDriver implements DapsDriver {
                         }
                         return -1;
                     }
-                } else if(secRequirements.getRequiredSecurityLevel().equals("idsc:TRUST_SECURITY_PROFILE")) {
-                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST_SECURITY_PROFILE") ||
-                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                } else if(secRequirements.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")) {
+                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE") ||
+                        providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
                         LOG.info("DAT is valid and secure");
                         return validityTime;
                     } else {
@@ -284,8 +284,8 @@ public class DefaultDapsDriver implements DapsDriver {
                         }
                         return -1;
                     }
-                } else if(secRequirements.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
-                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUST+_SECURITY_PROFILE")) {
+                } else if(secRequirements.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
+                    if (providedSecurityProfile.getRequiredSecurityLevel().equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
                         LOG.info("DAT is valid and secure");
                         return validityTime;
                     } else {

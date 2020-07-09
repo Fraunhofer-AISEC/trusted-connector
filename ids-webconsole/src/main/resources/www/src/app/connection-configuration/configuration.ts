@@ -11,7 +11,7 @@ export class Configuration {
             this.settings = settings;
         } else {
             this.settings = {
-                securityProfile: 'idsc:BASE_SECURITY_PROFILE'
+                securityProfile: 'idsc:BASE_CONNECTOR_SECURITY_PROFILE'
             };
         }
     }

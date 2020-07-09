@@ -30,11 +30,11 @@ public class DapsDriverTest {
     assertNotEquals(token, "INVALID_TOKEN");
 
     SecurityRequirements requirements = new SecurityRequirements.Builder()
-        .setRequiredSecurityLevel("idsc:TRUST_SECURITY_PROFILE")
+        .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
         .build();
 
     SecurityRequirements requirements2 = new SecurityRequirements.Builder()
-        .setRequiredSecurityLevel("idsc:BASE_SECURITY_PROFILE")
+        .setRequiredSecurityLevel("idsc:BASE_CONNECTOR_SECURITY_PROFILE")
         .build();
 
     assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) >= 0);
@@ -175,7 +175,7 @@ public class DapsDriverTest {
     assertNotEquals(token, "INVALID_TOKEN");
 
     SecurityRequirements requirements = new SecurityRequirements.Builder()
-        .setRequiredSecurityLevel("idsc:TRUST+_SECURITY_PROFILE")
+        .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")
         .build();
 
     assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) < 0);
@@ -201,7 +201,7 @@ public class DapsDriverTest {
     System.out.println(token);
 
     SecurityRequirements requirements = new SecurityRequirements.Builder()
-        .setRequiredSecurityLevel("idsc:TRUST_SECURITY_PROFILE")
+        .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
         .build();
 
     long ret;
