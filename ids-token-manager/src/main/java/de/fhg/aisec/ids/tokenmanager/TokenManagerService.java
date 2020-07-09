@@ -330,19 +330,19 @@ public class TokenManagerService implements TokenManager {
       //FIXME: Validate security profile the proper way
 
       ArrayList<String> validTrustProfiles=new ArrayList<String>();
-      validTrustProfiles.add("idsc:TRUST_SECURITY_PROFILE");
-      validTrustProfiles.add("idsc:BASE_SECURITY_PROFILE");
-      validTrustProfiles.add("idsc:TRUST+_SECURITY_PROFILE");
+      validTrustProfiles.add("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE");
+      validTrustProfiles.add("idsc:BASE_CONNECTOR_SECURITY_PROFILE");
+      validTrustProfiles.add("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE");
 
       if (!validTrustProfiles.contains(securityProfile)) {
         throw new DatException("Client does not support valid trust profile.");
       }
       //TODO Check for trust profile
 
-      if(connectionSettings.getRequiredSecurityProfile().equals("idsc:BASE_SECURITY_PROFILE")) {
-        if (!securityProfile.equals("idsc:BASE_SECURITY_PROFILE")
-            && !securityProfile.equals("idsc:TRUST_SECURITY_PROFILE")
-            && !securityProfile.equals("idsc:TRUST+_SECURITY_PROFILE")) {
+      if(connectionSettings.getRequiredSecurityProfile().equals("idsc:BASE_CONNECTOR_SECURITY_PROFILE")) {
+        if (!securityProfile.equals("idsc:BASE_CONNECTOR_SECURITY_PROFILE")
+            && !securityProfile.equals("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
+            && !securityProfile.equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
 
           throw new DatException(
               "Client does not support required trust profile: Required: "
@@ -350,17 +350,17 @@ public class TokenManagerService implements TokenManager {
                   + " given: "
                   + securityProfile);
         }
-      } else if(connectionSettings.getRequiredSecurityProfile().equals("idsc:TRUST_SECURITY_PROFILE")) {
-        if (!securityProfile.equals("idsc:TRUST_SECURITY_PROFILE") &&
-            !securityProfile.equals("idsc:TRUST+_SECURITY_PROFILE")) {
+      } else if(connectionSettings.getRequiredSecurityProfile().equals("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")) {
+        if (!securityProfile.equals("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE") &&
+            !securityProfile.equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
           throw new DatException(
               "Client does not support required trust profile: Required: "
                   + connectionSettings.getRequiredSecurityProfile()
                   + " given: "
                   + securityProfile);
         }
-      } else if(connectionSettings.getRequiredSecurityProfile().equals("idsc:TRUST+_SECURITY_PROFILE")) {
-          if (!securityProfile.equals("idsc:TRUST+_SECURITY_PROFILE")) {
+      } else if(connectionSettings.getRequiredSecurityProfile().equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
+          if (!securityProfile.equals("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")) {
             throw new DatException(
                 "Client does not support required trust profile: Required: "
                     + connectionSettings.getRequiredSecurityProfile()

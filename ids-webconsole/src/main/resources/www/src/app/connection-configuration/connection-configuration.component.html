@@ -56,17 +56,17 @@
                     <input class="switch-button" type="radio" id="switch_2_left"
                            [(ngModel)]="model.settings.securityProfile"
                            name="securityProfile"
-                           [value]="'idsc:BASE_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:BASE_SECURITY_PROFILE'"/>
+                           [value]="'idsc:BASE_CONNECTOR_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:BASE_CONNECTOR_SECURITY_PROFILE'"/>
                     <label class="labelSmall" for="switch_2_left">Base Profile</label>
                     <input class="switch-button" type="radio" id="switch_2_center"
                            [(ngModel)]="model.settings.securityProfile"
                            name="securityProfile"
-                           [value]="'idsc:TRUST_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:TRUST_SECURITY_PROFILE'"/>
+                           [value]="'idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE'"/>
                     <label class="labelWide" for="switch_2_center">Trust Profile</label>
                     <input class="switch-button" type="radio" id="switch_2_right"
                            [(ngModel)]="model.settings.securityProfile"
                            name="securityProfile"
-                           [value]="'idsc:TRUST+_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:TRUST+_SECURITY_PROFILE'"/>
+                           [value]="'idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE'"/>
                     <label class="labelWide" for="switch_2_right">Trust+ Profile</label>
                   </div>
                 </form>
