@@ -102,7 +102,7 @@ public class TokenManagerService implements TokenManager {
       String connectorUUID) {
 
     String dynamicAttributeToken = "INVALID_TOKEN";
-    String targetAudience = "IDS_Connector";
+    String targetAudience = "idsc:IDS_CONNECTORS_ALL";
 
     Map<String, Object> jwtClaims = null;
 

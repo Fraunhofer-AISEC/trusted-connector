@@ -46,7 +46,7 @@ public class DefaultDapsDriver implements DapsDriver {
     private final Key privateKey; //private key can be reused
     private final String connectorUUID;
     private final String dapsUrl;
-    private final String targetAudience = "IDS_Connector";
+    private final String targetAudience = "idsc:IDS_CONNECTORS_ALL";
 
     public DefaultDapsDriver(DefaultDapsDriverConfig config) {
 
