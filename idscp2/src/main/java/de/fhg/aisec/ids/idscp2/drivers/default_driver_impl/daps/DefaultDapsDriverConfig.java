@@ -21,8 +21,6 @@ public class DefaultDapsDriverConfig {
     private String trustStorePath = "";
     @NonNull
     private String trustStorePassword = "password";
-    @NonNull
-    private String connectorUUID = "";
 
     public static class Builder {
         @NonNull
@@ -65,12 +63,6 @@ public class DefaultDapsDriverConfig {
         }
 
         @NonNull
-        public Builder setConnectorUUID(String uuid) {
-            this.config.connectorUUID = uuid;
-            return this;
-        }
-
-        @NonNull
         public DefaultDapsDriverConfig build() {
             return config;
         }
@@ -106,8 +98,4 @@ public class DefaultDapsDriverConfig {
         return trustStorePassword;
     }
 
-    @NonNull
-    public String getConnectorUUID() {
-        return connectorUUID;
-    }
 }

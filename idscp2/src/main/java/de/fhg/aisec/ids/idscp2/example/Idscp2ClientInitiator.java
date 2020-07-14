@@ -32,7 +32,6 @@ public class Idscp2ClientInitiator {
 
         DefaultDapsDriverConfig config =
                 new DefaultDapsDriverConfig.Builder()
-                        .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
                         .setKeyStorePath(settings.getKeyStorePath())
                         .setTrustStorePath(settings.getTrustStorePath())
                         .setKeyStorePassword(settings.getKeyStorePassword())

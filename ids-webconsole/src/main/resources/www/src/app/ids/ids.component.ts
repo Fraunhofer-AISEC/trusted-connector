@@ -56,8 +56,7 @@ export class IdsComponent implements OnInit {
                     keystoreName: response.keystoreName,
                     keystorePassword: response.keystorePassword,
                     keystoreAliasName: response.keystoreAliasName,
-                    truststoreName: response.truststoreName,
-                    connectorUUID: response.connectorUUID
+                    truststoreName: response.truststoreName
 
                 });
                 this.subscribeToFormChanges();

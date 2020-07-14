@@ -132,6 +132,40 @@ public class PreConfiguration {
     }
 
     /*
+     * Get the certificate from the key store
+     *
+     * throws RuntimeException if key is not available or key access was not permitted
+     */
+    public static X509Certificate getCertificate(
+        String keyStorePath,
+        String keyStorePassword,
+        String keyAlias
+    ) {
+        try (
+            InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
+        ) {
+            /* create KeyManager for remote authentication */
+            KeyStore keystore = KeyStore.getInstance("JKS");
+
+            //load keystore
+            keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
+
+            // get private key
+            X509Certificate cert = (X509Certificate) keystore.getCertificate(keyAlias);
+            Key key = keystore.getKey(keyAlias, keyStorePassword.toCharArray());
+            if (cert == null) {
+                throw new RuntimeException("No cert was found in keystore for given alias");
+            } else {
+                return cert;
+            }
+
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException
+            | UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*
      * This method can be used for filtering certificates in the trust store
      * to avoid expired certificates
      */

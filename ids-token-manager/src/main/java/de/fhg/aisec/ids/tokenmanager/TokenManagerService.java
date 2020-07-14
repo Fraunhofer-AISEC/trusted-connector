@@ -29,6 +29,11 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import okhttp3.*;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.jose4j.http.Get;
 import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -82,14 +87,12 @@ public class TokenManagerService implements TokenManager {
    * (DAPS)
    *
    * @param targetDirectory   The directory the keystore resides in
-   * @param dapsUrl           The token aquiry URL (e.g., http://daps.aisec.fraunhofer.de/token
+   * @param dapsUrl           The token aquiry URL (e.g., http://daps.aisec.fraunhofer.de
    * @param keyStoreName      Name of the keystore file (e.g., server-keystore.jks)
    * @param keyStorePassword  Password of keystore
    * @param keystoreAliasName Alias of the connector's key entry. For default keystores with only
    *                          one entry, this is '1'
    * @param trustStoreName    Name of the truststore file
-   * @param connectorUUID     The UUID used to register the connector at the DAPS. Should be replaced by
-   *                          working code that does this automatically
    */
   @Override
   public Map<String, Object> acquireToken(
@@ -98,8 +101,7 @@ public class TokenManagerService implements TokenManager {
       String keyStoreName,
       String keyStorePassword,
       String keystoreAliasName,
-      String trustStoreName,
-      String connectorUUID) {
+      String trustStoreName) {
 
     String dynamicAttributeToken = "INVALID_TOKEN";
     String targetAudience = "idsc:IDS_CONNECTORS_ALL";
@@ -151,13 +153,26 @@ public class TokenManagerService implements TokenManager {
         throw new RuntimeException(e);
       }
 
-      LOG.info("\tCertificate Subject: " + cert.getSubjectDN());
+      // Get AKI
       //GET 2.5.29.14	SubjectKeyIdentifier / 2.5.29.35	AuthorityKeyIdentifier
-      String authorityKeyIndentifier = new String (cert.getExtensionValue("2.5.29.35"));
-      String subjectKeyIdenfier = new String (cert.getExtensionValue("2.5.29.14"));
-      LOG.info("AKI: " + authorityKeyIndentifier);
-      LOG.info("SKI: " + subjectKeyIdenfier);
-      //connectorUUID = subjectKeyIdenfier + ":" + authorityKeyIndentifier.substring(0, authorityKeyIndentifier.length() - 1);
+      String aki_oid = Extension.authorityKeyIdentifier.getId();
+      byte[] rawAuthorityKeyIdentifier = cert.getExtensionValue(aki_oid);
+      ASN1OctetString akiOc = ASN1OctetString.getInstance(rawAuthorityKeyIdentifier);
+      AuthorityKeyIdentifier aki = AuthorityKeyIdentifier.getInstance(akiOc.getOctets());
+      byte[] authorityKeyIdentifier = aki.getKeyIdentifier();
+
+      //GET SKI
+      String ski_oid = Extension.subjectKeyIdentifier.getId();
+      byte[] rawSubjectKeyIdentifier = cert.getExtensionValue(ski_oid);
+      ASN1OctetString ski0c = ASN1OctetString.getInstance(rawSubjectKeyIdentifier);
+      SubjectKeyIdentifier ski = SubjectKeyIdentifier.getInstance(ski0c.getOctets());
+      byte[] subjectKeyIdentifier = ski.getKeyIdentifier();
+
+      String aki_result = beatifyHex(encodeHexString(authorityKeyIdentifier).toUpperCase());
+      String ski_result = beatifyHex(encodeHexString(subjectKeyIdentifier).toUpperCase());
+
+      String connectorUUID = ski_result + "keyid:" + aki_result.substring(0, aki_result.length() - 1);
+
       LOG.info("ConnectorUUID: " + connectorUUID);
       LOG.info("Retrieving Dynamic Attribute Token...");
 
@@ -381,6 +396,59 @@ public class TokenManagerService implements TokenManager {
     }
   }
 
+  /***
+   * Split string ever len chars and return string array
+   * @param src
+   * @param len
+   * @return
+   */
+  public static String[] split(String src, int len) {
+    String[] result = new String[(int)Math.ceil((double)src.length()/(double)len)];
+    for (int i=0; i<result.length; i++)
+      result[i] = src.substring(i*len, Math.min(src.length(), (i+1)*len));
+    return result;
+  }
+
+  /***
+   * Beautyfies Hex strings and will generate a result later used to create the client id (XX:YY:ZZ)
+   * @param hexString HexString to be beautified
+   * @return beautifiedHex result
+   */
+  private String beatifyHex(String hexString) {
+    String[] splitString = split(hexString, 2);
+    StringBuffer sb = new StringBuffer();
+    for(int i =0; i < splitString.length; i++) {
+      sb.append(splitString[i]);
+      sb.append(":");
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Convert byte array to hex without any dependencies to libraries.
+   * @param num
+   * @return
+   */
+  private String byteToHex(byte num) {
+    char[] hexDigits = new char[2];
+    hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+    hexDigits[1] = Character.forDigit((num & 0xF), 16);
+    return new String(hexDigits);
+  }
+
+  /**
+   * Encode a byte array to an hex string
+   * @param byteArray
+   * @return
+   */
+  private String encodeHexString(byte[] byteArray) {
+    StringBuffer hexStringBuffer = new StringBuffer();
+    for (int i = 0; i < byteArray.length; i++) {
+      hexStringBuffer.append(byteToHex(byteArray[i]));
+    }
+    return hexStringBuffer.toString();
+  }
+
   @Activate
   public void run() {
     LOG.info("Token renewal triggered.");
@@ -392,8 +460,7 @@ public class TokenManagerService implements TokenManager {
           config.getKeystoreName(),
           config.getKeystorePassword(),
           config.getKeystoreAliasName(),
-          config.getTruststoreName(),
-          config.getConnectorUUID());
+          config.getTruststoreName());
 
     } catch (Exception e) {
       LOG.error("Token renewal failed", e);

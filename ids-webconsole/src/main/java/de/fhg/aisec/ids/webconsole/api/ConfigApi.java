@@ -106,8 +106,7 @@ public class ConfigApi {
           config.getKeystoreName(),
           config.getKeystorePassword(),
           config.getKeystoreAliasName(),
-          config.getTruststoreName(),
-          config.getConnectorUUID());
+          config.getTruststoreName());
     } catch (Exception e) {
       e.printStackTrace();
     }
