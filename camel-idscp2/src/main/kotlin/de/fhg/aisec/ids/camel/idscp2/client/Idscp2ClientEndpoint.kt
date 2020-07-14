@@ -121,7 +121,6 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         }
         clientSettings = clientSettingsBuilder.build()
         dapsDriverConfig = DefaultDapsDriverConfig.Builder()
-                .setConnectorUUID(settings.connectorConfig.connectorUUID)
                 .setDapsUrl(settings.connectorConfig.dapsUrl)
                 .setKeyAlias(clientSettings.dapsKeyAlias)
                 .setKeyStorePath(clientSettings.keyStorePath)

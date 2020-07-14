@@ -79,6 +79,7 @@ okhttp: "3.11.0"
 okio: "1.15.0"
 orgJson: "20180813"
 jose4j: "0.6.5"
+bouncycastle: "1.66"
 
 # Needed for web console
 javaxServlet: "4.0.1"

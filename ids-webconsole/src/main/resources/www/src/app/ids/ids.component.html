@@ -116,13 +116,6 @@
           <span class="mdl-textfield__error"> Valid truststore name required </span>
         </div>
 
-        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="connectorUUID"	type="string" formControlName="connectorUUID"
-                 required minlength="1">
-          <label class="mdl-textfield__label" for="connectorUUID">Connector UUID</label>
-          <span class="mdl-textfield__error"> Valid UUID required </span>
-        </div>
-
         <div class="mdl-cell--12-col">
 					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved}">
 						Save Settings

@@ -14,7 +14,6 @@ public class DapsDriverTest {
   public void testValidToken() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -40,12 +39,31 @@ public class DapsDriverTest {
     assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) >= 0);
     assertFalse(dapsDriver.verifyToken(token.getBytes(), requirements2) >= 0);
   }
-
+  /****
   @Test
   public void testInvalidClient() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("INVALID_CLIENT")
+            .setKeyStorePath(DapsDriverTest.class.getClassLoader().
+                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+            .setTrustStorePath(DapsDriverTest.class.getClassLoader().
+                getResource("ssl/client-truststore_new.jks").getPath())
+            .setKeyStorePassword("password")
+            .setTrustStorePassword("password")
+            .setKeyAlias("1")
+            .setDapsUrl("https://daps.aisec.fraunhofer.de")
+            .build();
+
+    DapsDriver dapsDriver = new DefaultDapsDriver(config);
+    String token = new String(dapsDriver.getToken());
+    assertEquals(token, "INVALID_TOKEN");
+  }
+   **/
+
+  @Test
+  public void testInvalidUrlNonSecure() {
+    DefaultDapsDriverConfig config =
+        new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -62,30 +80,9 @@ public class DapsDriverTest {
   }
 
   @Test
-  public void testInvalidUrlNonSecure() {
-    DefaultDapsDriverConfig config =
-        new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
-            .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
-            .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
-            .setKeyStorePassword("password")
-            .setTrustStorePassword("password")
-            .setKeyAlias("1")
-            .setDapsUrl("http://daps.aisec.fraunhofer.de")
-            .build();
-
-    DapsDriver dapsDriver = new DefaultDapsDriver(config);
-    String token = new String(dapsDriver.getToken());
-    assertEquals(token, "INVALID_TOKEN");
-  }
-
-  @Test
   public void testInvalidUrl404() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -93,7 +90,7 @@ public class DapsDriverTest {
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
-            .setDapsUrl("https://daps.aisec.fraunhofer.de/token")
+            .setDapsUrl("https://daps.aisec.fraunhofer.de")
             .build();
 
     DapsDriver dapsDriver = new DefaultDapsDriver(config);
@@ -105,7 +102,6 @@ public class DapsDriverTest {
   public void testInvalidPassword1() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -123,7 +119,6 @@ public class DapsDriverTest {
   public void testInvalidPassword2() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -141,7 +136,6 @@ public class DapsDriverTest {
   public void testInvalidKeyAlias() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -159,7 +153,6 @@ public class DapsDriverTest {
   public void testInvalidAuditLogging() {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
@@ -185,7 +178,6 @@ public class DapsDriverTest {
     //get token
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
-            .setConnectorUUID("edc5d7b3-a398-48f0-abb0-3751530c4fed")
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
                 getResource("ssl/aisecconnector1-keystore.jks").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().

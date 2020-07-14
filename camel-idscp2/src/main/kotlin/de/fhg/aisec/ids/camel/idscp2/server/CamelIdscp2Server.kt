@@ -33,7 +33,6 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
 
     init {
         val dapsDriverConfig = DefaultDapsDriverConfig.Builder()
-                .setConnectorUUID(Idscp2OsgiComponent.getSettings().connectorConfig.connectorUUID)
                 .setDapsUrl(Idscp2OsgiComponent.getSettings().connectorConfig.dapsUrl)
                 .setKeyAlias(serverSettings.dapsKeyAlias)
                 .setKeyStorePath(serverSettings.keyStorePath)

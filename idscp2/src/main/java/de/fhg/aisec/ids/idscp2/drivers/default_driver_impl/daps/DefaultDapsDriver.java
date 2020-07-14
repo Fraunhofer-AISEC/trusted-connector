@@ -17,6 +17,11 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +34,7 @@ import java.io.IOException;
 import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  * Default DAPS Driver Implementation for requesting valid dynamicAttributeToken and verifying DAT
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
 public class DefaultDapsDriver implements DapsDriver {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDapsDriver.class);
@@ -44,13 +51,11 @@ public class DefaultDapsDriver implements DapsDriver {
     private final SSLSocketFactory sslSocketFactory; //ssl socket factory can be reused
     private final X509ExtendedTrustManager trustManager; //trust manager can be reused
     private final Key privateKey; //private key can be reused
-    private final String connectorUUID;
     private final String dapsUrl;
     private final String targetAudience = "idsc:IDS_CONNECTORS_ALL";
+    private final X509Certificate cert;
 
     public DefaultDapsDriver(DefaultDapsDriverConfig config) {
-
-        this.connectorUUID = config.getConnectorUUID();
         this.dapsUrl = config.getDapsUrl();
 
         //create ssl socket factory for secure
@@ -59,6 +64,11 @@ public class DefaultDapsDriver implements DapsDriver {
                 config.getKeyStorePassword(),
                 config.getKeyAlias()
         );
+
+        cert = PreConfiguration.getCertificate(
+            config.getKeyStorePath(),
+            config.getKeyStorePassword(),
+            config.getKeyAlias());
 
         TrustManager[] trustManagers = PreConfiguration.getX509ExtTrustManager(
                 config.getTrustStorePath(),
@@ -88,6 +98,34 @@ public class DefaultDapsDriver implements DapsDriver {
         String token;
 
         LOG.info("Retrieving Dynamic Attribute Token from Daps ...");
+
+        //Create connectorUUID
+        // Get AKI
+        //GET 2.5.29.14	SubjectKeyIdentifier / 2.5.29.35	AuthorityKeyIdentifier
+        String aki_oid = Extension.authorityKeyIdentifier.getId();
+        byte[] rawAuthorityKeyIndentifier = cert.getExtensionValue(aki_oid);
+        ASN1OctetString akiOc = ASN1OctetString.getInstance(rawAuthorityKeyIndentifier);
+        AuthorityKeyIdentifier aki = AuthorityKeyIdentifier.getInstance(akiOc.getOctets());
+        byte[] authorityKeyIndentifier = aki.getKeyIdentifier();
+
+        //GET SKI
+        byte[] octets = DEROctetString.getInstance(rawAuthorityKeyIndentifier).getOctets();
+        AuthorityKeyIdentifier authorityKeyIdentifier = AuthorityKeyIdentifier.getInstance(octets);
+        byte[] keyIdentifier = authorityKeyIdentifier.getKeyIdentifier();
+        String ski_oid = Extension.subjectKeyIdentifier.getId();
+        byte[] rawSubjectKeyIdenfier = cert.getExtensionValue(ski_oid);
+        ASN1OctetString ski0c = ASN1OctetString.getInstance(rawSubjectKeyIdenfier);
+        SubjectKeyIdentifier ski = SubjectKeyIdentifier.getInstance(ski0c.getOctets());
+
+        byte[] subjectKeyIdentifier = ski.getKeyIdentifier();
+
+        DEROctetString dos = new DEROctetString(authorityKeyIndentifier);
+        String aki_result = beatifyHex(encodeHexString(authorityKeyIndentifier).toUpperCase());
+        String ski_result = beatifyHex(encodeHexString(subjectKeyIdentifier).toUpperCase());
+        LOG.info("AKI: " + aki_result);
+        LOG.info("SKI: " + ski_result);
+
+        String connectorUUID = ski_result + "keyid:" + aki_result.substring(0, aki_result.length() - 1);
 
         //create signed JWT
         String jwt =
@@ -328,5 +366,58 @@ public class DefaultDapsDriver implements DapsDriver {
         return new SecurityRequirements.Builder()
                 .setRequiredSecurityLevel(asJson.getString("securityProfile"))
                 .build();
+    }
+
+    /***
+     * Split string ever len chars and return string array
+     * @param src
+     * @param len
+     * @return
+     */
+    public static String[] split(String src, int len) {
+        String[] result = new String[(int)Math.ceil((double)src.length()/(double)len)];
+        for (int i=0; i<result.length; i++)
+            result[i] = src.substring(i*len, Math.min(src.length(), (i+1)*len));
+        return result;
+    }
+
+    /***
+     * Beautyfies Hex strings and will generate a result later used to create the client id (XX:YY:ZZ)
+     * @param hexString HexString to be beautified
+     * @return beautifiedHex result
+     */
+    private String beatifyHex(String hexString) {
+        String[] splitString = split(hexString, 2);
+        StringBuffer sb = new StringBuffer();
+        for(int i =0; i < splitString.length; i++) {
+            sb.append(splitString[i]);
+            sb.append(":");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Convert byte array to hex without any dependencies to libraries.
+     * @param num
+     * @return
+     */
+    private String byteToHex(byte num) {
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+        hexDigits[1] = Character.forDigit((num & 0xF), 16);
+        return new String(hexDigits);
+    }
+
+    /**
+     * Encode a byte array to an hex string
+     * @param byteArray
+     * @return
+     */
+    private String encodeHexString(byte[] byteArray) {
+        StringBuffer hexStringBuffer = new StringBuffer();
+        for (int i = 0; i < byteArray.length; i++) {
+            hexStringBuffer.append(byteToHex(byteArray[i]));
+        }
+        return hexStringBuffer.toString();
     }
 }

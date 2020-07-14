@@ -40,8 +40,7 @@ public interface TokenManager {
       String keyStoreName,
       String keyStorePassword,
       String keystoreAliasName,
-      String trustStoreName,
-      String connectorUUID);
+      String trustStoreName);
 
   Map<String, Object> verifyJWT(
       String dynamicAttributeToken,
