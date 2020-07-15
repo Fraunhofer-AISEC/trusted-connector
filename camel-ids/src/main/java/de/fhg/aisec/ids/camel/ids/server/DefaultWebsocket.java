@@ -241,7 +241,8 @@ public class DefaultWebsocket implements EndpointConfigListener {
             //validate supported security attributes
             tokenManager.validateDATSecurityAttributes(claims, connectionSettings);
         } catch (Exception e) {
-            throw new DatException("DAT verification failed!", e);
+            LOG.debug("Dat Verification failed: Message: " + e.getMessage() + "\n Trace:" + e.getStackTrace());
+            throw new DatException(e.getMessage(), e);
         }
     }
 

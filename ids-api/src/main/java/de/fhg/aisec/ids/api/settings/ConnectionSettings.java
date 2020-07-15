@@ -27,7 +27,7 @@ public final class ConnectionSettings implements Serializable {
   private final String securityProfile;
 
   public ConnectionSettings() {
-    securityProfile = "1";
+    securityProfile = "idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE";
   }
 
   public String getRequiredSecurityProfile() {
