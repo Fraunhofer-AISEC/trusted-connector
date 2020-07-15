@@ -8,20 +8,20 @@
     <!-- Define TLS configuration for data consumer -->
     <camel:sslContextParameters id="serverSslContext">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/server-keystore.jks" password="password"/>
+            <camel:keyStore resource="etc/consumer-keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
-            <camel:keyStore resource="etc/server-truststore.jks" password="password"/>
+            <camel:keyStore resource="etc/truststore.p12" password="password"/>
         </camel:trustManagers>
     </camel:sslContextParameters>
 
     <!-- Define TLS configuration for data provider -->
     <camel:sslContextParameters id="clientSslContext">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/client-keystore.jks" password="password"/>
+            <camel:keyStore resource="etc/provider-keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
-            <camel:keyStore resource="etc/client-truststore.jks" password="password"/>
+            <camel:keyStore resource="etc/truststore.p12" password="password"/>
         </camel:trustManagers>
     </camel:sslContextParameters>
 
