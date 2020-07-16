@@ -68,8 +68,8 @@ import java.util.UUID;
 public class CertApi {
   private static final Logger LOG = LoggerFactory.getLogger(CertApi.class);
   private static final String KEYSTORE_PWD = "password";
-  private static final String TRUSTSTORE_FILE = "client-truststore.jks";
-  private static final String KEYSTORE_FILE = "client-keystore.jks";
+  private static final String TRUSTSTORE_FILE = "truststore.p12";
+  private static final String KEYSTORE_FILE = "provider-keystore.p12";
 
   @GET
   @ApiOperation(value = "Starts ACME renewal over X509v3 certificates")
