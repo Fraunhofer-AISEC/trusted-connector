@@ -49,10 +49,10 @@ public final class ConnectorConfig implements Serializable {
     acmePortWebcon = 80;
     tosAcceptWebcon = false;
     dapsUrl = "https://daps.aisec.fraunhofer.de";
-    keystoreName = "client-keystore.jks";
+    keystoreName = "provider-keystore.p12";
     keystorePassword = "password";
     keystoreAliasName = "1";
-    truststoreName = "client-truststore.jks";
+    truststoreName = "truststore.p12";
   }
 
   public String getAppstoreUrl() {
