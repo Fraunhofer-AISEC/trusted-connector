@@ -27,9 +27,9 @@ import org.asynchttpclient.ws.WebSocket;
 import java.io.IOException;
 import java.io.InputStream;
 
-/** */
+
 public class WsProducer extends DefaultProducer {
-  private static final int DEFAULT_STREAM_BUFFER_SIZE = 127;
+  private static final int DEFAULT_STREAM_BUFFER_SIZE = 8192;
 
   private final int streamBufferSize = DEFAULT_STREAM_BUFFER_SIZE;
 
@@ -64,14 +64,17 @@ public class WsProducer extends DefaultProducer {
   }
 
   private void sendMessage(WebSocket webSocket, String msg, boolean streaming) {
-    if (streaming) {
+    if (streaming && msg.length() > streamBufferSize) {
       int p = 0;
       while (p < msg.length()) {
         if (msg.length() - p < streamBufferSize) {
           webSocket.sendContinuationFrame(msg.substring(p), true, 0);
           p = msg.length();
+        } else if (p == 0) {
+          webSocket.sendTextFrame(msg.substring(0, streamBufferSize), false, 0);
+          p = streamBufferSize;
         } else {
-          webSocket.sendContinuationFrame(msg.substring(p, streamBufferSize), false, 0);
+          webSocket.sendContinuationFrame(msg.substring(p, p + streamBufferSize), false, 0);
           p += streamBufferSize;
         }
       }
@@ -81,26 +84,24 @@ public class WsProducer extends DefaultProducer {
   }
 
   private void sendMessage(WebSocket webSocket, byte[] msg, boolean streaming) {
-    if (streaming) {
+    if (streaming && msg.length > streamBufferSize) {
       int p = 0;
       byte[] writebuf = new byte[streamBufferSize];
       while (p < msg.length) {
         if (msg.length - p < streamBufferSize) {
           int rest = msg.length - p;
           // bug in grizzly? we need to create a byte array with the exact length
-          // webSocket.stream(msg, p, rest, true);
-          System.arraycopy(msg, p, writebuf, 0, rest);
           byte[] tmpbuf = new byte[rest];
-          System.arraycopy(writebuf, 0, tmpbuf, 0, rest);
-          webSocket.sendContinuationFrame(tmpbuf, false, 0);
-          // ends
+          System.arraycopy(msg, p, tmpbuf, 0, rest);
+          webSocket.sendContinuationFrame(tmpbuf, true, 0);
           p = msg.length;
+        } else if (p == 0) {
+          System.arraycopy(msg, p, writebuf, 0, streamBufferSize);
+          webSocket.sendBinaryFrame(writebuf, false, 0);
+          p = streamBufferSize;
         } else {
-          // bug in grizzly? we need to create a byte array with the exact length
-          // webSocket.stream(msg, p, streamBufferSize, false);
           System.arraycopy(msg, p, writebuf, 0, streamBufferSize);
           webSocket.sendContinuationFrame(writebuf, false, 0);
-          // ends
           p += streamBufferSize;
         }
       }
