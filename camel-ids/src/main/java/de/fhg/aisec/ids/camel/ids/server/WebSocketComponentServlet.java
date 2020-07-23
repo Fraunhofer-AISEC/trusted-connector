@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 public class WebSocketComponentServlet extends WebSocketServlet {
+  public static final int MAX_MESSAGE_SIZE = 100 * 1024 * 1024;
+
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(WebSocketComponentServlet.class);
 
@@ -53,6 +55,8 @@ public class WebSocketComponentServlet extends WebSocketServlet {
 
   @Override
   public void configure(WebSocketServletFactory factory) {
+    factory.getPolicy().setMaxBinaryMessageSize(MAX_MESSAGE_SIZE);
+    factory.getPolicy().setMaxTextMessageSize(MAX_MESSAGE_SIZE);
     factory.setCreator(
         (req, resp) -> {
           String protocolKey = "ids";

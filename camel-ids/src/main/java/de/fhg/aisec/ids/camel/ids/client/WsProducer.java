@@ -29,9 +29,7 @@ import java.io.InputStream;
 
 
 public class WsProducer extends DefaultProducer {
-  private static final int DEFAULT_STREAM_BUFFER_SIZE = 8192;
-
-  private final int streamBufferSize = DEFAULT_STREAM_BUFFER_SIZE;
+  public static final int STREAM_BUFFER_SIZE = 8192;
 
   public WsProducer(WsEndpoint endpoint) {
     super(endpoint);
@@ -63,19 +61,20 @@ public class WsProducer extends DefaultProducer {
     }
   }
 
-  private void sendMessage(WebSocket webSocket, String msg, boolean streaming) {
-    if (streaming && msg.length() > streamBufferSize) {
+  public static void sendMessage(WebSocket webSocket, String msg, boolean streaming) {
+    if (streaming && msg.length() > STREAM_BUFFER_SIZE) {
       int p = 0;
       while (p < msg.length()) {
-        if (msg.length() - p < streamBufferSize) {
+        if (msg.length() - p < STREAM_BUFFER_SIZE) {
           webSocket.sendContinuationFrame(msg.substring(p), true, 0);
           p = msg.length();
         } else if (p == 0) {
-          webSocket.sendTextFrame(msg.substring(0, streamBufferSize), false, 0);
-          p = streamBufferSize;
+          p = STREAM_BUFFER_SIZE;
+          webSocket.sendTextFrame(msg.substring(0, STREAM_BUFFER_SIZE), false, 0);
         } else {
-          webSocket.sendContinuationFrame(msg.substring(p, p + streamBufferSize), false, 0);
-          p += streamBufferSize;
+          var substring = msg.substring(p, p + STREAM_BUFFER_SIZE);
+          p += STREAM_BUFFER_SIZE;
+          webSocket.sendContinuationFrame(substring, msg.length() == p, 0);
         }
       }
     } else {
@@ -83,26 +82,26 @@ public class WsProducer extends DefaultProducer {
     }
   }
 
-  private void sendMessage(WebSocket webSocket, byte[] msg, boolean streaming) {
-    if (streaming && msg.length > streamBufferSize) {
+  public static void sendMessage(WebSocket webSocket, byte[] msg, boolean streaming) {
+    if (streaming && msg.length > STREAM_BUFFER_SIZE) {
       int p = 0;
-      byte[] writebuf = new byte[streamBufferSize];
+      byte[] writebuf = new byte[STREAM_BUFFER_SIZE];
       while (p < msg.length) {
-        if (msg.length - p < streamBufferSize) {
+        if (msg.length - p < STREAM_BUFFER_SIZE) {
           int rest = msg.length - p;
           // bug in grizzly? we need to create a byte array with the exact length
           byte[] tmpbuf = new byte[rest];
           System.arraycopy(msg, p, tmpbuf, 0, rest);
-          webSocket.sendContinuationFrame(tmpbuf, true, 0);
           p = msg.length;
+          webSocket.sendContinuationFrame(tmpbuf, true, 0);
         } else if (p == 0) {
-          System.arraycopy(msg, p, writebuf, 0, streamBufferSize);
+          System.arraycopy(msg, p, writebuf, 0, STREAM_BUFFER_SIZE);
+          p = STREAM_BUFFER_SIZE;
           webSocket.sendBinaryFrame(writebuf, false, 0);
-          p = streamBufferSize;
         } else {
-          System.arraycopy(msg, p, writebuf, 0, streamBufferSize);
-          webSocket.sendContinuationFrame(writebuf, false, 0);
-          p += streamBufferSize;
+          System.arraycopy(msg, p, writebuf, 0, STREAM_BUFFER_SIZE);
+          p += STREAM_BUFFER_SIZE;
+          webSocket.sendContinuationFrame(writebuf, msg.length == p, 0);
         }
       }
     } else {
@@ -110,26 +109,39 @@ public class WsProducer extends DefaultProducer {
     }
   }
 
-  private void sendStreamMessage(WebSocket webSocket, InputStream in) throws IOException {
-    byte[] readbuf = new byte[streamBufferSize];
-    byte[] writebuf = new byte[streamBufferSize];
-    int rn;
-    int wn = 0;
+  public static void sendStreamMessage(WebSocket webSocket, InputStream in) throws IOException {
     try (in) {
-      while ((rn = in.read(readbuf, 0, readbuf.length)) != -1) {
-        if (wn > 0) {
-          webSocket.sendContinuationFrame(writebuf, false, 0);
+      byte[] buffer = new byte[STREAM_BUFFER_SIZE];
+      int rn;
+      if ((rn = in.read(buffer, 0, STREAM_BUFFER_SIZE)) < STREAM_BUFFER_SIZE) {
+        if (rn >= 0) {
+          byte[] smallBuffer = new byte[rn];
+          if (rn > 0) {
+            System.arraycopy(buffer, 0, smallBuffer, 0, rn);
+          }
+          webSocket.sendBinaryFrame(smallBuffer, true, 0);
         }
-        System.arraycopy(readbuf, 0, writebuf, 0, rn);
-        wn = rn;
+      } else {
+        byte[] nextBuffer = new byte[STREAM_BUFFER_SIZE];
+        int rnNext = in.read(nextBuffer, 0, STREAM_BUFFER_SIZE);
+        // Send first (maybe last) frame
+        webSocket.sendBinaryFrame(buffer, rnNext <= 0, 0);
+        while (rnNext == STREAM_BUFFER_SIZE) {
+          // swap buffer and nextBuffer
+          byte[] swap = buffer;
+          buffer = nextBuffer;
+          nextBuffer = swap;
+          rnNext = in.read(nextBuffer, 0, STREAM_BUFFER_SIZE);
+          // Send chunk read in previous round
+          webSocket.sendContinuationFrame(buffer, rnNext <= 0, 0);
+        }
+        // Send final chunk with length-adjusted byte array
+        if (rnNext > 0) {
+          byte[] finalBuffer = new byte[rnNext];
+          System.arraycopy(nextBuffer, 0, finalBuffer, 0, rnNext);
+          webSocket.sendContinuationFrame(finalBuffer, true, 0);
+        }
       }
-      // a bug in grizzly? we need to create a byte array with the exact length
-      if (wn < writebuf.length) {
-        byte[] tmpbuf = writebuf;
-        writebuf = new byte[wn];
-        System.arraycopy(tmpbuf, 0, writebuf, 0, wn);
-      } // ends
-      webSocket.sendContinuationFrame(writebuf, true, 0);
     }
   }
 

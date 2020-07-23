@@ -23,9 +23,11 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 public class ServerSocketServlet extends WebSocketServlet {
+  public static final int MAX_MESSAGE_SIZE = 100 * 1024 * 1024;
+
   private static final long serialVersionUID = -3504454673920877370L;
   private final ServerConfiguration config;
-  private SocketListener socketListener;
+  private final SocketListener socketListener;
 
   public ServerSocketServlet(ServerConfiguration config, SocketListener socketListener) {
     this.config = config;
@@ -34,6 +36,8 @@ public class ServerSocketServlet extends WebSocketServlet {
 
   @Override
   public void configure(WebSocketServletFactory factory) {
+    factory.getPolicy().setMaxBinaryMessageSize(MAX_MESSAGE_SIZE);
+    factory.getPolicy().setMaxTextMessageSize(MAX_MESSAGE_SIZE);
     factory.setCreator(new IdscpWebSocketCreator(this.config, this.socketListener));
   }
 }
