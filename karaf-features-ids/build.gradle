@@ -83,6 +83,7 @@ karaf {
             feature 'camel-paho'
             //feature 'camel-mqtt'
             feature 'camel-jsonpath'
+            feature 'camel-csv'
 
             // start our bundles a lit bit later
             bundle ('de.fhg.aisec.ids') {
