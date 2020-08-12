@@ -1,9 +1,10 @@
 Bundle-Name: IDS :: Information Model Manager
 Export-Package: \
+  com.fasterxml.jackson.annotation,\
+  com.github.jsonldjava*,\
   de.fhg.aisec.ids.informationmodelmanager.deserializer,\
   de.fraunhofer.iais.eis*;-split-package:=merge-last,\
   org.eclipse.rdf4j*,\
-  com.github.jsonldjava*,\
   !org.apache.logging*,\
   org.apache*
 Import-Package: \

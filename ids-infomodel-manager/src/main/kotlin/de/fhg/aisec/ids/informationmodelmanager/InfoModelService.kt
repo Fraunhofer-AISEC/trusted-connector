@@ -7,8 +7,7 @@ import de.fhg.aisec.ids.api.settings.Settings
 import de.fraunhofer.iais.eis.*
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
-import de.fraunhofer.iais.eis.util.PlainLiteral
-import de.fraunhofer.iais.eis.util.Util
+import de.fraunhofer.iais.eis.util.TypedLiteral
 import org.osgi.service.component.annotations.Component
 import org.osgi.service.component.annotations.Reference
 import org.osgi.service.component.annotations.ReferenceCardinality
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.*
+import javax.xml.datatype.DatatypeFactory
 
 
 /**
@@ -33,17 +33,41 @@ class InfoModelService : InfoModel {
         get() = settings?.connectorProfile
 
     /**
+     * Build ConnectorAvailableMessage for IDS message headers
+     */
+    fun getConnectorAvailableMessage(): ConnectorUpdateMessage {
+        val builder = ConnectorUpdateMessageBuilder()
+        settings?.let { settings ->
+            builder._securityToken_(
+                    DynamicAttributeTokenBuilder()
+                            ._tokenFormat_(TokenFormat.JWT)
+                            ._tokenValue_(settings.dynamicAttributeToken)
+                            .build())
+            settings.connectorProfile.maintainerUrl?.let {
+                builder._senderAgent_(it)
+            }
+            settings.connectorProfile.connectorUrl?.let {
+                builder._issuerConnector_(it)._affectedConnector_(it)
+            }
+        }
+        builder._issued_(DatatypeFactory.newInstance().newXMLGregorianCalendar(
+                GregorianCalendar().apply { timeInMillis = System.currentTimeMillis() }))
+        builder._modelVersion_(BuildConfig.INFOMODEL_VERSION)
+        return builder.build()
+    }
+
+    /**
      * Build Connector Entity Names from preferences
      */
-    private val connectorEntityNames: List<PlainLiteral>
+    private val connectorEntityNames: List<TypedLiteral>
         get() = connectorProfile?.connectorEntityNames.also {
             if (it == null) {
                 LOG.warn("Settings or ConnectorProfile not available, or no connector entity names provided")
             }
         } ?: emptyList()
 
-    private val catalog: Catalog
-        get() = CatalogBuilder()._offer_(ArrayList(resources)).build()
+    private val catalog: ArrayList<ResourceCatalog>
+        get() = arrayListOf(ResourceCatalogBuilder()._offeredResource_(ArrayList(resources)).build())
 
     /**
      * Build current endpoints as given by connectionManager
@@ -54,8 +78,7 @@ class InfoModelService : InfoModel {
         get() = connectionManager?.let { cm ->
             cm.listAvailableEndpoints().map {
                 val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
-                val host = HostBuilder()._accessUrl_(url)._protocol_(Protocol.IDSCP).build()
-                val endpoint = StaticEndpointBuilder()._endpointHost_(host).build()
+                val endpoint = ConnectorEndpointBuilder()._accessURL_(url).build()
                 ResourceBuilder()._resourceEndpoint_(arrayListOf(endpoint)).build()
             }
         } ?: emptyList()
@@ -72,9 +95,11 @@ class InfoModelService : InfoModel {
             }
         }
 
-    // creates and returns Connector object based on stored preferences
-    // returns random connector_url if none is stored in preferences
-    // op_url and entityNames can not be null
+    /**
+     * Creates and returns Connector object based on stored preferences.
+     * Returns random connector_url if none is stored in preferences.
+     * The fields op_url and entityNames cannot be null.
+     */
     override fun getConnector(): Connector? {
         val maintainerUrl = connectorProfile?.maintainerUrl
         val connectorUrl = connectorProfile?.connectorUrl
@@ -91,13 +116,11 @@ class InfoModelService : InfoModel {
                     TrustedConnectorBuilder()
                 } else {
                     TrustedConnectorBuilder(connectorUrl)
-                            ._host_(Util.asList<Host>(HostBuilder()
-                            ._accessUrl_(connectorUrl).build()))
                 }
                 trustedConnectorBuilder._maintainer_(maintainerUrl)
                 return trustedConnectorBuilder._title_(ArrayList(entityNames))
                         ._securityProfile_(securityProfile)
-                        ._catalog_(catalog)
+                        ._resourceCatalog_(catalog)
                         ._description_(ArrayList(entityNames)).build()
             } catch (ex: ConstraintViolationException) {
                 LOG.error("Caught ConstraintViolationException while building Connector", ex)
@@ -112,12 +135,14 @@ class InfoModelService : InfoModel {
         }
     }
 
-    // store or update new Connector description to preferences
-    // creates random connector_url if null and succeeds only if maintainerUrl and entityNames != null
-    // generates RDF description from Connector object and returns building success
+    /**
+     * Store or update new Connector description to preferences.
+     * Creates random connector_url if null and succeeds only if maintainerUrl and entityNames != null
+     * Generates RDF description from Connector object and returns building success
+     */
     override fun setConnector(profile: ConnectorProfile): Boolean {
         if (profile.securityProfile == null) {
-            profile.securityProfile = SecurityProfile.TRUSTED_CONNECTOR_SECURITY_PROFILE
+            profile.securityProfile = SecurityProfile.TRUST_SECURITY_PROFILE
         }
         return if (settings != null) {
             settings?.connectorProfile = profile

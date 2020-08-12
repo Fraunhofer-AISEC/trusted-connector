@@ -1,7 +1,30 @@
-dependencies {
-    @Suppress("UNCHECKED_CAST") val libraryVersions =
-            rootProject.ext.get("libraryVersions") as Map<String, String>
+import org.gradle.plugins.ide.idea.model.IdeaModel
 
+plugins {
+    id("com.github.gmazzo.buildconfig") version "2.0.1"
+}
+
+@Suppress("UNCHECKED_CAST") val libraryVersions =
+        rootProject.ext.get("libraryVersions") as Map<String, String>
+
+apply(plugin = "idea")
+
+buildConfig {
+    sourceSets.getByName("main") {
+        packageName("de.fhg.aisec.ids.informationmodelmanager")
+        buildConfigField("String", "INFOMODEL_VERSION",
+                "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\"")
+    }
+}
+
+configure<IdeaModel> {
+    module {
+        // mark as generated sources for IDEA
+        generatedSourceDirs.add(File("${buildDir}/generated/source/buildConfig/main/main"))
+    }
+}
+
+dependencies {
     infomodelBundle(project(":ids-api")) { isTransitive = false }
 
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])

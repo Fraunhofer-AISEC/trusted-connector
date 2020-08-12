@@ -9,8 +9,8 @@ karaf: "4.2.8"
 jetty: "9.4.22.v20191022"
 
 # The used version of the infomodel from IESE
-infomodel: "3.1.0"
-infomodelSerializer: "3.1.0"
+infomodel: "4.0.0"
+infomodelSerializer: "4.0.0"
 
 # For javax.xml.bind support in newer java versions
 jaxb: "2.2.11"
