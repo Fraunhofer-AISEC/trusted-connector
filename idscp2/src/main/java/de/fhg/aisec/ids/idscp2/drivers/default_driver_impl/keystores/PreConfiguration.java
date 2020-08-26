@@ -6,11 +6,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
-import java.security.cert.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A class for creating pre-configured TrustManagers and KeyManagers for TLS Server and TLS Client
@@ -18,6 +16,17 @@ import java.util.stream.Collectors;
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 public class PreConfiguration {
+
+    public static KeyStore getKeyStoreInstanceByPath(String path) throws KeyStoreException {
+        if (path.endsWith(".jks")) {
+            return KeyStore.getInstance("JKS");
+        } else if (path.endsWith(".p12")) {
+            return KeyStore.getInstance("PKCS12");
+        } else {
+            throw new KeyStoreException("Unknown file extension \"" + path.substring(path.lastIndexOf('.')) +
+                    "\", " + "only JKS (.jks) and PKCS12 (.p12) are supported.");
+        }
+    }
 
     /*
      * Get a secure X509ExtendedTrustManager for the SslContext
@@ -30,12 +39,12 @@ public class PreConfiguration {
             String trustStorePassword
     ) {
         try (
-                InputStream jksTrustStoreIn = Files.newInputStream(Paths.get(trustStorePath))
+                InputStream trustStoreInputStream = Files.newInputStream(Paths.get(trustStorePath))
         ) {
             /* create TrustManager */
             final TrustManager[] myTrustManager;
-            KeyStore trustStore = KeyStore.getInstance("JKS");
-            trustStore.load(jksTrustStoreIn, trustStorePassword.toCharArray());
+            final KeyStore trustStore = getKeyStoreInstanceByPath(trustStorePath);
+            trustStore.load(trustStoreInputStream, trustStorePassword.toCharArray());
             final TrustManagerFactory trustManagerFactory =
                     TrustManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
 
@@ -69,12 +78,12 @@ public class PreConfiguration {
             String keyType
     ) {
         try (
-                InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
+                InputStream keyStoreInputStream = Files.newInputStream(Paths.get(keyStorePath))
         ) {
             /* create KeyManager for remote authentication */
             final KeyManager[] myKeyManager;
-            KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
+            KeyStore keystore = getKeyStoreInstanceByPath(keyStorePath);
+            keystore.load(keyStoreInputStream, keyStorePassword.toCharArray());
             final KeyManagerFactory keyManagerFactory =
                     KeyManagerFactory.getInstance("PKIX"); //PKIX from SunJSSE
             keyManagerFactory.init(keystore, keyPassword.toCharArray());
@@ -109,13 +118,13 @@ public class PreConfiguration {
             String keyAlias
     ) {
         try (
-                InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
+                InputStream keyStoreInputStream = Files.newInputStream(Paths.get(keyStorePath))
         ) {
             /* create KeyManager for remote authentication */
-            KeyStore keystore = KeyStore.getInstance("JKS");
+            KeyStore keystore = getKeyStoreInstanceByPath(keyStorePath);
 
             //load keystore
-            keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
+            keystore.load(keyStoreInputStream, keyStorePassword.toCharArray());
 
             // get private key
             Key key = keystore.getKey(keyAlias, keyStorePassword.toCharArray());
@@ -142,17 +151,18 @@ public class PreConfiguration {
         String keyAlias
     ) {
         try (
-            InputStream jksKeyStoreIn = Files.newInputStream(Paths.get(keyStorePath))
+            InputStream keyStoreInputStream = Files.newInputStream(Paths.get(keyStorePath))
         ) {
             /* create KeyManager for remote authentication */
-            KeyStore keystore = KeyStore.getInstance("JKS");
+            KeyStore keystore = getKeyStoreInstanceByPath(keyStorePath);
 
             //load keystore
-            keystore.load(jksKeyStoreIn, keyStorePassword.toCharArray());
+            keystore.load(keyStoreInputStream, keyStorePassword.toCharArray());
 
             // get private key
             X509Certificate cert = (X509Certificate) keystore.getCertificate(keyAlias);
-            Key key = keystore.getKey(keyAlias, keyStorePassword.toCharArray());
+            // Probe key alias
+            keystore.getKey(keyAlias, keyStorePassword.toCharArray());
             if (cert == null) {
                 throw new RuntimeException("No cert was found in keystore for given alias");
             } else {
@@ -169,26 +179,26 @@ public class PreConfiguration {
      * This method can be used for filtering certificates in the trust store
      * to avoid expired certificates
      */
-    private static PKIXBuilderParameters filterTrustAnchors(KeyStore keyStore, Date validityUntilDate)
-            throws KeyStoreException, InvalidAlgorithmParameterException {
-        PKIXParameters params = new PKIXParameters(keyStore);
-
-        // Obtain CA root certificates
-        Set<TrustAnchor> myTrustAnchors = params.getTrustAnchors();
-
-        // Create new set of CA certificates that are still valid for specified date
-        Set<TrustAnchor> validTrustAnchors =
-                myTrustAnchors.stream().filter(
-                        ta -> {
-                            try {
-                                ta.getTrustedCert().checkValidity(validityUntilDate);
-                            } catch (CertificateException e) {
-                                return false;
-                            }
-                            return true;
-                        }).collect(Collectors.toSet());
-
-        // Create PKIXBuilderParameters parameters
-        return new PKIXBuilderParameters(validTrustAnchors, new X509CertSelector());
-    }
+//    private static PKIXBuilderParameters filterTrustAnchors(KeyStore keyStore, Date validityUntilDate)
+//            throws KeyStoreException, InvalidAlgorithmParameterException {
+//        PKIXParameters params = new PKIXParameters(keyStore);
+//
+//        // Obtain CA root certificates
+//        Set<TrustAnchor> myTrustAnchors = params.getTrustAnchors();
+//
+//        // Create new set of CA certificates that are still valid for specified date
+//        Set<TrustAnchor> validTrustAnchors =
+//                myTrustAnchors.stream().filter(
+//                        ta -> {
+//                            try {
+//                                ta.getTrustedCert().checkValidity(validityUntilDate);
+//                            } catch (CertificateException e) {
+//                                return false;
+//                            }
+//                            return true;
+//                        }).collect(Collectors.toSet());
+//
+//        // Create PKIXBuilderParameters parameters
+//        return new PKIXBuilderParameters(validTrustAnchors, new X509CertSelector());
+//    }
 }
