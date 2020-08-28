@@ -26,10 +26,10 @@
   <!-- Use our own Acme-enhanced SslContextFacctory instead of standard org.eclipse.jetty.util.ssl.SslContextFactory -->
   <New id="sslContextFactory" class="de.fhg.aisec.ids.dynamictls.AcmeSslContextFactory">
     <Set name="KeyStorePath">
-      <SystemProperty name="karaf.home"/>/etc/tls-webconsole/keystore_latest.jks
+      <SystemProperty name="karaf.home"/>/etc/tls-webconsole/keystore_latest.p12
     </Set>
-    <Set name="KeyStorePassword">ids</Set>
-    <Set name="KeyManagerPassword">ids</Set>
+    <Set name="KeyStorePassword">password</Set>
+    <Set name="KeyManagerPassword">password</Set>
     <Set name="EndpointIdentificationAlgorithm"/>
 
     <!-- Recent bad/weak protocols and ciphers, taken from defaults in org.eclipse.jetty.util.ssl.SslContextFactory -->

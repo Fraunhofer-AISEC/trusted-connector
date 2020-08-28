@@ -15,9 +15,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
@@ -45,9 +45,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
@@ -65,9 +65,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
@@ -84,9 +84,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
@@ -103,9 +103,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("INVALID_PASSWORD")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
@@ -120,9 +120,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("INVALID_PASSWORD")
             .setKeyAlias("1")
@@ -137,9 +137,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("INVALID_ALIAS")
@@ -154,9 +154,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")
@@ -179,9 +179,9 @@ public class DapsDriverTest {
     DefaultDapsDriverConfig config =
         new DefaultDapsDriverConfig.Builder()
             .setKeyStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/aisecconnector1-keystore.jks").getPath())
+                getResource("ssl/aisecconnector1-keystore.p12").getPath())
             .setTrustStorePath(DapsDriverTest.class.getClassLoader().
-                getResource("ssl/client-truststore_new.jks").getPath())
+                getResource("ssl/client-truststore_new.p12").getPath())
             .setKeyStorePassword("password")
             .setTrustStorePassword("password")
             .setKeyAlias("1")

@@ -259,18 +259,18 @@ class AcmeClientService : AcmeClient, Runnable {
                             // Download and save certificate
                             val certificate = order.certificate
                             certificate!!.writeCertificate(chainWriter)
-                            // Create JKS keystore from key and certificate chain
-                            val keyStorePath = targetDirectory.resolve("keystore_$timestamp.jks")
+                            // Create PKCS12 keystore from key and certificate chain
+                            val keyStorePath = targetDirectory.resolve("keystore_$timestamp.p12")
                             try {
-                                Files.newOutputStream(keyStorePath).use { jksOutputStream ->
-                                    val store = KeyStore.getInstance("JKS")
+                                Files.newOutputStream(keyStorePath).use { ksOutputStream ->
+                                    val store = KeyStore.getInstance("PKCS12")
                                     store.load(null)
                                     store.setKeyEntry(
                                             "ids",
                                             domainKeyPair.private,
-                                            "ids".toCharArray(),
+                                            "password".toCharArray(),
                                             certificate.certificateChain.toTypedArray<X509Certificate>())
-                                    store.store(jksOutputStream, "ids".toCharArray())
+                                    store.store(ksOutputStream, "password".toCharArray())
                                     // If there is a SslContextFactoryReloader, make it refresh the TLS connections.
                                     LOG.info(
                                             "Reloading of {} SslContextFactoryReloadable implementations...",
@@ -312,9 +312,9 @@ class AcmeClientService : AcmeClient, Runnable {
             return
         }
         try {
-            Files.newInputStream(targetDirectory.resolve(KEYSTORE_LATEST)).use { jksInputStream ->
-                val store = KeyStore.getInstance("JKS")
-                store.load(jksInputStream, "ids".toCharArray())
+            Files.newInputStream(targetDirectory.resolve(KEYSTORE_LATEST)).use { ksInputStream ->
+                val store = KeyStore.getInstance("PKCS12")
+                store.load(ksInputStream, "password".toCharArray())
                 val cert = store.getCertificateChain("ids")[0] as X509Certificate
                 val now = Date().time
                 val notBeforeTime = cert.notBefore.time
@@ -371,7 +371,7 @@ class AcmeClientService : AcmeClient, Runnable {
     companion object {
 
         const val RENEWAL_THRESHOLD = 100.0 / 3.0
-        const val KEYSTORE_LATEST = "keystore_latest.jks"
+        const val KEYSTORE_LATEST = "keystore_latest.p12"
         private val LOG = LoggerFactory.getLogger(AcmeClientService::class.java)!!
         private val challengeMap = HashMap<String, String>()
     }

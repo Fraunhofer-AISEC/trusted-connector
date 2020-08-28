@@ -7,10 +7,10 @@
 
     <camel:sslContextParameters id="serverSslContext" certAlias="1.0.1">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.jks" password="password"/>
+            <camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
-            <camel:keyStore resource="etc/idscp2/client-truststore_new.jks" password="password"/>
+            <camel:keyStore resource="etc/idscp2/client-truststore_new.p12" password="password"/>
         </camel:trustManagers>
     </camel:sslContextParameters>
 
