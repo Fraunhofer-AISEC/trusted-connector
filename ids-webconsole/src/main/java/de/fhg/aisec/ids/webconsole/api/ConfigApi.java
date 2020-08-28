@@ -32,15 +32,15 @@ import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.*;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.nio.file.FileSystems;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * REST API interface for configurations in the connector.
@@ -100,13 +100,13 @@ public class ConfigApi {
     }
 
     try {
+      var ksPath = FileSystems.getDefault().getPath("etc");
       tokenManager.acquireToken(
-          FileSystems.getDefault().getPath("etc"),
           config.getDapsUrl(),
-          config.getKeystoreName(),
+          ksPath.resolve(config.getKeystoreName()),
           config.getKeystorePassword(),
           config.getKeystoreAliasName(),
-          config.getTruststoreName());
+          ksPath.resolve(config.getTruststoreName()));
     } catch (Exception e) {
       e.printStackTrace();
     }

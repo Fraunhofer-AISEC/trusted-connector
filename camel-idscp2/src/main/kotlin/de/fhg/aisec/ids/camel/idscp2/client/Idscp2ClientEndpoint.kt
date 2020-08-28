@@ -19,7 +19,7 @@ package de.fhg.aisec.ids.camel.idscp2.client
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
+import de.fhg.aisec.ids.camel.idscp2.TrustedConnectorDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
@@ -71,7 +71,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
 
     private fun makeConnectionInternal(): CompletableFuture<Idscp2Connection> {
         val connectionFuture = CompletableFuture<Idscp2Connection>()
-        Idscp2ClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
+        Idscp2ClientFactory(TrustedConnectorDapsDriver(dapsDriverConfig), NativeTLSDriver())
                 .connect(clientSettings, connectionFuture)
         return connectionFuture
     }

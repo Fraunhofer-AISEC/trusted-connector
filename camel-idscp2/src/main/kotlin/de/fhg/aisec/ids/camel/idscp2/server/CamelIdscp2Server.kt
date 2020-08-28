@@ -17,8 +17,8 @@
 package de.fhg.aisec.ids.camel.idscp2.server
 
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
+import de.fhg.aisec.ids.camel.idscp2.TrustedConnectorDapsDriver
 import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
@@ -43,7 +43,7 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
         val serverConfiguration = Idscp2ServerFactory(
                 this,
                 serverSettings,
-                DefaultDapsDriver(dapsDriverConfig),
+                TrustedConnectorDapsDriver(dapsDriverConfig),
                 NativeTLSDriver()
         )
         server = serverConfiguration.listen(serverSettings)

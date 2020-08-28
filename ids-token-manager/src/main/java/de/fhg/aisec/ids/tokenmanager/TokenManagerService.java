@@ -30,7 +30,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import okhttp3.*;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
@@ -78,6 +77,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenManagerService implements TokenManager {
   private static final Logger LOG = LoggerFactory.getLogger(TokenManagerService.class);
 
+  @SuppressWarnings("FieldMayBeFinal")
   @Reference(cardinality = ReferenceCardinality.MANDATORY)
   private Settings settings = null;
   private SSLSocketFactory sslSocketFactory = null;
@@ -86,22 +86,20 @@ public class TokenManagerService implements TokenManager {
    * Method to aquire a Dynamic Attribute Token (DAT) from a Dynamic Attribute Provisioning Service
    * (DAPS)
    *
-   * @param targetDirectory   The directory the keystore resides in
    * @param dapsUrl           The token aquiry URL (e.g., http://daps.aisec.fraunhofer.de
-   * @param keyStoreName      Name of the keystore file (e.g., server-keystore.jks)
+   * @param keyStorePath      Name of the keystore file (e.g., server-keystore.jks)
    * @param keyStorePassword  Password of keystore
    * @param keystoreAliasName Alias of the connector's key entry. For default keystores with only
    *                          one entry, this is '1'
-   * @param trustStoreName    Name of the truststore file
+   * @param trustStorePath    Name of the truststore file
    */
   @Override
   public Map<String, Object> acquireToken(
-      Path targetDirectory,
-      String dapsUrl,
-      String keyStoreName,
-      String keyStorePassword,
-      String keystoreAliasName,
-      String trustStoreName) {
+          String dapsUrl,
+          Path keyStorePath,
+          String keyStorePassword,
+          String keystoreAliasName,
+          Path trustStorePath) {
 
     String dynamicAttributeToken = "INVALID_TOKEN";
     String targetAudience = "idsc:IDS_CONNECTORS_ALL";
@@ -110,16 +108,14 @@ public class TokenManagerService implements TokenManager {
 
     // Try clause for setup phase (loading keys, building trust manager)
     try {
-      InputStream jksKeyStoreInputStream =
-          Files.newInputStream(targetDirectory.resolve(keyStoreName));
-      InputStream jksTrustStoreInputStream =
-          Files.newInputStream(targetDirectory.resolve(trustStoreName));
+      InputStream jksKeyStoreInputStream = Files.newInputStream(keyStorePath);
+      InputStream jksTrustStoreInputStream = Files.newInputStream(trustStorePath);
 
       KeyStore keystore = KeyStore.getInstance("JKS");
       KeyStore trustManagerKeyStore = KeyStore.getInstance("JKS");
 
-      LOG.info("Loading key store: " + keyStoreName);
-      LOG.info("Loading trust store: " + trustStoreName);
+      LOG.info("Loading key store: " + keyStorePath);
+      LOG.info("Loading trust store: " + trustStorePath);
       keystore.load(jksKeyStoreInputStream, keyStorePassword.toCharArray());
       trustManagerKeyStore.load(jksTrustStoreInputStream, keyStorePassword.toCharArray());
       java.security.cert.Certificate[] certs = trustManagerKeyStore.getCertificateChain("ca");
@@ -454,13 +450,13 @@ public class TokenManagerService implements TokenManager {
     LOG.info("Token renewal triggered.");
     try {
       ConnectorConfig config = settings.getConnectorConfig();
+      var ksRoot = FileSystems.getDefault().getPath("etc");
       acquireToken(
-          FileSystems.getDefault().getPath("etc"),
           config.getDapsUrl(),
-          config.getKeystoreName(),
+          ksRoot.resolve(config.getKeystoreName()),
           config.getKeystorePassword(),
           config.getKeystoreAliasName(),
-          config.getTruststoreName());
+          ksRoot.resolve(config.getTruststoreName()));
 
     } catch (Exception e) {
       LOG.error("Token renewal failed", e);

@@ -35,12 +35,11 @@ import java.util.Map;
 public interface TokenManager {
 
   Map<String, Object> acquireToken(
-      Path targetDirectory,
-      String dapsUrl,
-      String keyStoreName,
-      String keyStorePassword,
-      String keystoreAliasName,
-      String trustStoreName);
+          String dapsUrl,
+          Path keyStorePath,
+          String keyStorePassword,
+          String keystoreAliasName,
+          Path trustStorePath);
 
   Map<String, Object> verifyJWT(
       String dynamicAttributeToken,
