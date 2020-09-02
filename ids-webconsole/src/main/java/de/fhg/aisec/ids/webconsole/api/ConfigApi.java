@@ -101,12 +101,15 @@ public class ConfigApi {
 
     try {
       var ksPath = FileSystems.getDefault().getPath("etc");
+      var password = config.getKeystorePassword().toCharArray();
       tokenManager.acquireToken(
-          config.getDapsUrl(),
-          ksPath.resolve(config.getKeystoreName()),
-          config.getKeystorePassword(),
-          config.getKeystoreAliasName(),
-          ksPath.resolve(config.getTruststoreName()));
+              config.getDapsUrl(),
+              ksPath.resolve(config.getKeystoreName()),
+              password,
+              config.getKeystoreAliasName(),
+              password,
+              ksPath.resolve(config.getTruststoreName()),
+              password);
     } catch (Exception e) {
       e.printStackTrace();
     }

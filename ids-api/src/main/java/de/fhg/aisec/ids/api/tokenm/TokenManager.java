@@ -22,7 +22,6 @@ package de.fhg.aisec.ids.api.tokenm;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 
 import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * Interface of the Token Manager.
@@ -34,19 +33,17 @@ import java.util.Map;
  */
 public interface TokenManager {
 
-  Map<String, Object> acquireToken(
+  void acquireToken(
           String dapsUrl,
           Path keyStorePath,
-          String keyStorePassword,
+          char[] keyStorePassword,
           String keystoreAliasName,
-          Path trustStorePath);
+          char[] keyPassword,
+          Path trustStorePath,
+          char[] trustStorePassword);
 
-  Map<String, Object> verifyJWT(
+  void verifyJWT(
       String dynamicAttributeToken,
-      String dapsUrl) throws Exception;
-
-  void validateDATSecurityAttributes(
-      Map<String, Object> claims,
-          ConnectionSettings connectionSettings) throws DatException;
+      ConnectionSettings connectionSettings) throws Exception;
 
 }

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.UUID;
 
 @WebSocket
@@ -236,12 +237,11 @@ public class DefaultWebsocket implements EndpointConfigListener {
 
 
         try {
-            //validate token signature, target Audience, expire date
-            var claims = tokenManager.verifyJWT(dat, dapsUrl);
-            //validate supported security attributes
-            tokenManager.validateDATSecurityAttributes(claims, connectionSettings);
+            //validate token signature, target Audience, expire date and security attributes
+            tokenManager.verifyJWT(dat, connectionSettings);
         } catch (Exception e) {
-            LOG.debug("Dat Verification failed: Message: " + e.getMessage() + "\n Trace:" + e.getStackTrace());
+            LOG.debug("Dat Verification failed: Message: " + e.getMessage() + "\n Trace:" +
+                    Arrays.toString(e.getStackTrace()));
             throw new DatException(e.getMessage(), e);
         }
     }

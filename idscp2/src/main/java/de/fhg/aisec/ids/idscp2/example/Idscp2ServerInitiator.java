@@ -37,6 +37,7 @@ public class Idscp2ServerInitiator implements Idscp2EndpointListener {
                         .setKeyStorePassword(settings.getKeyStorePassword())
                         .setTrustStorePassword(settings.getTrustStorePassword())
                         .setKeyAlias(settings.getDapsKeyAlias())
+                        .setKeyPassword(settings.getKeyPassword())
                         .setDapsUrl("https://daps.aisec.fraunhofer.de")
                         .build();
 

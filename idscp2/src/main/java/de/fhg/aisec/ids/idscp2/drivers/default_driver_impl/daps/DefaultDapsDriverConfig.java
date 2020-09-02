@@ -2,6 +2,9 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
  * A Configuration class for the DefaultDapsDriver
  *
@@ -12,15 +15,17 @@ public class DefaultDapsDriverConfig {
     @NonNull
     private String dapsUrl = "https://daps.aisec.fraunhofer.de";
     @NonNull
-    private String keyStorePath = "";
+    private Path keyStorePath = Paths.get("DUMMY-FILENAME.p12");
     @NonNull
-    private String keyStorePassword = "password";
+    private char[] keyStorePassword = "password".toCharArray();
     @NonNull
     private String keyAlias = "1";
     @NonNull
-    private String trustStorePath = "";
+    private char[] keyPassword = "password".toCharArray();
     @NonNull
-    private String trustStorePassword = "password";
+    private Path trustStorePath = Paths.get("DUMMY-FILENAME.p12");
+    @NonNull
+    private char[] trustStorePassword = "password".toCharArray();
 
     public static class Builder {
         @NonNull
@@ -33,13 +38,13 @@ public class DefaultDapsDriverConfig {
         }
 
         @NonNull
-        public Builder setKeyStorePath(String path) {
+        public Builder setKeyStorePath(Path path) {
             this.config.keyStorePath = path;
             return this;
         }
 
         @NonNull
-        public Builder setKeyStorePassword(String password) {
+        public Builder setKeyStorePassword(char[] password) {
             this.config.keyStorePassword = password;
             return this;
         }
@@ -51,13 +56,19 @@ public class DefaultDapsDriverConfig {
         }
 
         @NonNull
-        public Builder setTrustStorePath(String path) {
+        public Builder setKeyPassword(char[] password) {
+            this.config.keyPassword = password;
+            return this;
+        }
+
+        @NonNull
+        public Builder setTrustStorePath(Path path) {
             this.config.trustStorePath = path;
             return this;
         }
 
         @NonNull
-        public Builder setTrustStorePassword(String password) {
+        public Builder setTrustStorePassword(char[] password) {
             this.config.trustStorePassword = password;
             return this;
         }
@@ -74,12 +85,12 @@ public class DefaultDapsDriverConfig {
     }
 
     @NonNull
-    public String getKeyStorePath() {
+    public Path getKeyStorePath() {
         return keyStorePath;
     }
 
     @NonNull
-    public String getKeyStorePassword() {
+    public char[] getKeyStorePassword() {
         return keyStorePassword;
     }
 
@@ -89,12 +100,17 @@ public class DefaultDapsDriverConfig {
     }
 
     @NonNull
-    public String getTrustStorePath() {
+    public char[] getKeyPassword() {
+        return keyPassword;
+    }
+
+    @NonNull
+    public Path getTrustStorePath() {
         return trustStorePath;
     }
 
     @NonNull
-    public String getTrustStorePassword() {
+    public char[] getTrustStorePassword() {
         return trustStorePassword;
     }
 

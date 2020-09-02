@@ -31,12 +31,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -56,8 +53,7 @@ public class IdsClientServerPlaintextWithAttestationTest extends CamelTestSuppor
     when(settings.getConnectionSettings(anyString())).thenReturn(new ConnectionSettings());
     cc.setSettings(settings);
     TokenManager tm = mock(TokenManager.class);
-    when(tm.verifyJWT(anyString(), anyString())).thenReturn(Collections.emptyMap());
-    doNothing().when(tm).validateDATSecurityAttributes(any(), any(ConnectionSettings.class));
+    doNothing().when(tm).verifyJWT(anyString(), any(ConnectionSettings.class));
     cc.setTokenManager(tm);
     CamelComponent.setInstance(cc);
   }

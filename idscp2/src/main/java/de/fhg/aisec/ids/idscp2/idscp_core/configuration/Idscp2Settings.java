@@ -2,6 +2,8 @@ package de.fhg.aisec.ids.idscp2.idscp_core.configuration;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -16,11 +18,11 @@ public class Idscp2Settings {
 
     private int serverPort = DEFAULT_SERVER_PORT;
     private String host = "localhost";
-    private String trustStorePath = null;
-    private String trustStorePassword = "password";
-    private String keyPassword = "password";
-    private String keyStorePath = null;
-    private String keyStorePassword = "password";
+    private Path trustStorePath = null;
+    private char[] trustStorePassword = "password".toCharArray();
+    private char[] keyPassword = "password".toCharArray();
+    private Path keyStorePath = null;
+    private char[] keyStorePassword = "password".toCharArray();
     private String certificateAlias = "1.0.1";
     private String dapsKeyAlias = "1";
     private String keyStoreKeyType = "RSA";
@@ -45,31 +47,31 @@ public class Idscp2Settings {
             return this;
         }
 
-        public Builder setKeyPassword(String pwd) {
+        public Builder setKeyPassword(char[] pwd) {
             this.settings.keyPassword = pwd;
             return this;
         }
 
         @NonNull
-        public Builder setTrustStorePath(String path) {
+        public Builder setTrustStorePath(Path path) {
             this.settings.trustStorePath = path;
             return this;
         }
 
         @NonNull
-        public Builder setKeyStorePath(String path) {
+        public Builder setKeyStorePath(Path path) {
             this.settings.keyStorePath = path;
             return this;
         }
 
         @NonNull
-        public Builder setTrustStorePassword(String pwd) {
+        public Builder setTrustStorePassword(char[] pwd) {
             this.settings.trustStorePassword = pwd;
             return this;
         }
 
         @NonNull
-        public Builder setKeyStorePassword(String pwd) {
+        public Builder setKeyStorePassword(char[] pwd) {
             this.settings.keyStorePassword = pwd;
             return this;
         }
@@ -124,23 +126,23 @@ public class Idscp2Settings {
         return host;
     }
 
-    public String getTrustStorePath() {
+    public Path getTrustStorePath() {
         return trustStorePath;
     }
 
-    public String getTrustStorePassword() {
+    public char[] getTrustStorePassword() {
         return trustStorePassword;
     }
 
-    public String getKeyPassword() {
+    public char[] getKeyPassword() {
         return keyPassword;
     }
 
-    public String getKeyStorePath() {
+    public Path getKeyStorePath() {
         return keyStorePath;
     }
 
-    public String getKeyStorePassword() {
+    public char[] getKeyStorePassword() {
         return keyStorePassword;
     }
 
@@ -177,9 +179,9 @@ public class Idscp2Settings {
                 ratTimeoutDelay == that.ratTimeoutDelay &&
                 Objects.equals(host, that.host) &&
                 Objects.equals(trustStorePath, that.trustStorePath) &&
-                Objects.equals(trustStorePassword, that.trustStorePassword) &&
+                Arrays.equals(trustStorePassword, that.trustStorePassword) &&
                 Objects.equals(keyStorePath, that.keyStorePath) &&
-                Objects.equals(keyStorePassword, that.keyStorePassword) &&
+                Arrays.equals(keyStorePassword, that.keyStorePassword) &&
                 Objects.equals(certificateAlias, that.certificateAlias) &&
                 Objects.equals(dapsKeyAlias, that.dapsKeyAlias) &&
                 Objects.equals(keyStoreKeyType, that.keyStoreKeyType) &&

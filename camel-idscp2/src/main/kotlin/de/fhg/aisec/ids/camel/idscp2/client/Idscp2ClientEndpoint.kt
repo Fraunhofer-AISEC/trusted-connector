@@ -19,7 +19,7 @@ package de.fhg.aisec.ids.camel.idscp2.client
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
-import de.fhg.aisec.ids.camel.idscp2.TrustedConnectorDapsDriver
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
@@ -32,6 +32,7 @@ import org.apache.camel.spi.UriParam
 import org.apache.camel.support.DefaultEndpoint
 import org.apache.camel.support.jsse.SSLContextParameters
 import org.slf4j.LoggerFactory
+import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 
@@ -71,7 +72,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
 
     private fun makeConnectionInternal(): CompletableFuture<Idscp2Connection> {
         val connectionFuture = CompletableFuture<Idscp2Connection>()
-        Idscp2ClientFactory(TrustedConnectorDapsDriver(dapsDriverConfig), NativeTLSDriver())
+        Idscp2ClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
                 .connect(clientSettings, connectionFuture)
         return connectionFuture
     }
@@ -111,18 +112,22 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
                 .setDapsKeyAlias(dapsKeyAlias ?: "1")
         sslContextParameters?.let {
             clientSettingsBuilder
-                    .setKeyPassword(it.keyManagers?.keyPassword ?: "password")
-                    .setKeyStorePath(it.keyManagers?.keyStore?.resource)
+                    .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
                     .setKeyStoreKeyType(it.keyManagers?.keyStore?.type ?: "RSA")
-                    .setKeyStorePassword(it.keyManagers?.keyStore?.password ?: "password")
-                    .setTrustStorePath(it.trustManagers?.keyStore?.resource)
-                    .setTrustStorePassword(it.trustManagers?.keyStore?.password ?: "password")
+                    .setKeyStorePassword(it.keyManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setTrustStorePath(Paths.get(it.trustManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
         }
         clientSettings = clientSettingsBuilder.build()
         dapsDriverConfig = DefaultDapsDriverConfig.Builder()
                 .setDapsUrl(settings.connectorConfig.dapsUrl)
                 .setKeyAlias(clientSettings.dapsKeyAlias)
+                .setKeyPassword(clientSettings.keyPassword)
                 .setKeyStorePath(clientSettings.keyStorePath)
                 .setTrustStorePath(clientSettings.trustStorePath)
                 .setKeyStorePassword(clientSettings.keyStorePassword)

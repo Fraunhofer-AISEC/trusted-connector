@@ -27,6 +27,7 @@ import org.apache.camel.spi.UriParam
 import org.apache.camel.support.DefaultEndpoint
 import org.apache.camel.support.jsse.SSLContextParameters
 import org.slf4j.LoggerFactory
+import java.nio.file.Paths
 import java.util.*
 import java.util.regex.Pattern
 
@@ -121,12 +122,15 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
                 .setDapsKeyAlias(dapsKeyAlias)
         sslContextParameters?.let {
             clientSettingsBuilder
-                    .setKeyPassword(it.keyManagers?.keyPassword ?: "password")
-                    .setKeyStorePath(it.keyManagers?.keyStore?.resource)
+                    .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
                     .setKeyStoreKeyType(it.keyManagers?.keyStore?.type ?: "RSA")
-                    .setKeyStorePassword(it.keyManagers?.keyStore?.password ?: "password")
-                    .setTrustStorePath(it.trustManagers?.keyStore?.resource)
-                    .setTrustStorePassword(it.trustManagers?.keyStore?.password ?: "password")
+                    .setKeyStorePassword(it.keyManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setTrustStorePath(Paths.get(it.trustManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
         }
         serverSettings = clientSettingsBuilder.build()

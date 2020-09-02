@@ -1,5 +1,6 @@
 dependencies {
     providedByBundle(project(':ids-api')) { transitive = false }
+    providedByBundle(project(':idscp2')) { transitive = false }
 
     osgiCore group: 'org.osgi', name: 'osgi.cmpn', version: libraryVersions.osgiCompendium
 

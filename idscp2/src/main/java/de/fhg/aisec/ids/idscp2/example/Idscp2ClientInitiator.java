@@ -37,6 +37,7 @@ public class Idscp2ClientInitiator {
                         .setKeyStorePassword(settings.getKeyStorePassword())
                         .setTrustStorePassword(settings.getTrustStorePassword())
                         .setKeyAlias(settings.getDapsKeyAlias())
+                        .setKeyPassword(settings.getKeyPassword())
                         .setDapsUrl("https://daps.aisec.fraunhofer.de")
                         .build();
 
@@ -80,8 +81,8 @@ public class Idscp2ClientInitiator {
                 CompletableFuture.runAsync(c::close);  // FSM error if run from the same thread
             });
             connection.unlockMessaging();
-            System.out.println("Sending PING...");
             connection.send("ping", "PING".getBytes(StandardCharsets.UTF_8));
+            System.out.println("Sent PING...");
         }).exceptionally(t -> {
             LOG.error("Client endpoint error occurred", t);
             return null;
