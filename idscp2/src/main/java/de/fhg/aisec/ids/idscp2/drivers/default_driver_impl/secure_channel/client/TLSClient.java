@@ -199,6 +199,7 @@ public class TLSClient implements HandshakeCompletedListener, DataAvailableListe
             LOG.debug("TLS session is valid");
             // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.
             SecureChannel secureChannel = new SecureChannel(this);
+            // Try to complete, won't do anything if promise has been cancelled
             this.listenerPromise.complete(secureChannel);
             final var connection = new Idscp2Connection(secureChannel, clientSettings, dapsDriver);
             inputListenerThread.start();

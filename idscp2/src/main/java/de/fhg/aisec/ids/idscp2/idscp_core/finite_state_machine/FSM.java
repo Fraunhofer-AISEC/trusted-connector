@@ -5,6 +5,7 @@ import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver;
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver;
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception;
+import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection;
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper;
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry;
@@ -87,6 +88,7 @@ public class FSM implements FsmListener {
      */
     private final Condition idscpHandshakeLock = fsmIsBusy.newCondition();
     private boolean handshakeResultAvailable = false;
+    private final FastLatch idscpHandshakeCompletedLatch = new FastLatch();
 
     /*
      * Check if FSM is closed forever
@@ -445,7 +447,8 @@ public class FSM implements FsmListener {
      * Send idscp message from the User via the secure channel
      */
     public void send(String type, byte[] msg) {
-        //send messages from user only when idscp connection is established
+        // Send messages from user only when idscp connection is established
+        idscpHandshakeCompletedLatch.await();
         fsmIsBusy.lock();
         try {
             if (isConnected()) {
@@ -477,6 +480,7 @@ public class FSM implements FsmListener {
         try {
             handshakeResultAvailable = true;
             idscpHandshakeLock.signal();
+            idscpHandshakeCompletedLatch.unlock();
         } finally {
             fsmIsBusy.unlock();
         }

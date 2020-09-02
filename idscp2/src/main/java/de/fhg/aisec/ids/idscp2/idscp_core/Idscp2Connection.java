@@ -28,7 +28,9 @@ public class Idscp2Connection {
     private final Map<String, Set<Idscp2MessageListener>> messageListeners = new HashMap<>();
     private final FastLatch messageLatch = new FastLatch();
 
-    public Idscp2Connection(SecureChannel secureChannel, Idscp2Settings settings, DapsDriver dapsDriver) {
+    public Idscp2Connection(SecureChannel secureChannel,
+                            Idscp2Settings settings,
+                            DapsDriver dapsDriver) {
         this.connectionId = UUID.randomUUID().toString();
         fsm = new FSM(
                 this,
