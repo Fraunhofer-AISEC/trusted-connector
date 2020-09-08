@@ -23,15 +23,16 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fraunhofer.iais.eis.Connector;
-import de.fraunhofer.iais.eis.util.PlainLiteral;
+import de.fraunhofer.iais.eis.util.TypedLiteral;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
-import java.util.stream.Collectors;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.stream.Collectors;
 
 /**
  * REST API interface for Connector settings in the connector.
@@ -87,7 +88,7 @@ public class SettingsApi {
           c.getSecurityProfile(),
           c.getId(),
           c.getMaintainer(),
-          c.getDescription().stream().map(PlainLiteral.class::cast).collect(Collectors.toList()));
+          c.getDescription().stream().map(TypedLiteral.class::cast).collect(Collectors.toList()));
     }
   }
 
