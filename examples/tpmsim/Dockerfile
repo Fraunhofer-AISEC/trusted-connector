@@ -17,7 +17,7 @@ RUN apt-get update -qq && apt-get install -qq gawk libseccomp-dev \
   # Removed selinux-policy-dev because of build error
   net-tools python3 python3-twisted trousers tpm-tools gnutls-bin gnutls-dev \
   libtasn1-6 libtasn1-6-dev build-essential devscripts equivs socat
-RUN git clone https://github.com/stefanberger/swtpm.git && cd swtpm && \
+RUN git clone https://github.com/stefanberger/swtpm.git && cd swtpm && git checkout stable-0.3.0 && \
   ./autogen.sh && make -j4 && checkinstall --fstrans=no --pkgname=swtpm -y && cp swtpm*.deb ${BUILD_DIR}
 
 # tpm2d dependencies
