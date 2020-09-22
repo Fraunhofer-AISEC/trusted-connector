@@ -1,0 +1,202 @@
+package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d
+
+import com.google.protobuf.InvalidProtocolBufferException
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.InternalControlMessage
+import de.fhg.aisec.ids.idscp2.messages.Tpm2dAttestation
+import de.fhg.aisec.ids.idscp2.messages.Tpm2dAttestation.Tpm2dMessageWrapper
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.LinkedBlockingQueue
+
+/**
+ * A TPM2d RatProver Driver implementation that proves its identity to a remote peer using TPM2d
+ *
+ * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
+ */
+class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
+    /*
+     * ******************* Protocol *******************
+     *
+     * Verifier: (Challenger)
+     * -------------------------
+     * Generate NonceV
+     * create RatChallenge (NonceV, aType, pcr_mask)
+     * -------------------------
+     *
+     * Prover: (Responder)
+     * -------------------------
+     * get RatChallenge (NonceV, aType, pcr_mask)
+     * hash = calculateHash(nonceV, certV)
+     * req = generate RemoteToTPM2dRequest(hash, aType, pcr_mask)
+     * response = TPM2dToRemote = tpmSocket.attestationRequest(req)
+     * create AttestationResponse from tpm response
+     * -------------------------
+     *
+     * Verifier: (Responder)
+     * -------------------------
+     * get AttestationResponse
+     * hash = calculateHash(nonceV, certV)
+     * check signature(response, hash)
+     * check repo(aType, response, ttpUri)
+     * create RatResult
+     * -------------------------
+     *
+     * Prover: (Requester)
+     * -------------------------
+     * get AttestationResult
+     * -------------------------
+     *
+     */
+    private val queue: BlockingQueue<ByteArray> = LinkedBlockingQueue()
+    private var config = TPM2dProverConfig.Builder().build()
+    override fun setConfig(config: Any) {
+        if (config is TPM2dProverConfig) {
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Set rat prover config")
+            }
+            this.config = config
+        } else {
+            if (LOG.isWarnEnabled) {
+                LOG.warn("Invalid prover config")
+            }
+        }
+    }
+
+    override fun delegate(message: ByteArray) {
+        queue.add(message)
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Delegated to prover")
+        }
+    }
+
+    override fun run() {
+        //TPM2d Challenge-Response Protocol
+
+        // wait for RatChallenge from Verifier
+        var msg: ByteArray?
+        try {
+            msg = queue.take()
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Prover receives new message")
+            }
+        } catch (e: InterruptedException) {
+            if (running) {
+                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            }
+            return
+        }
+
+        // parse body to expected tpm2d message wrapper
+        var tpm2dMessageWrapper: Tpm2dMessageWrapper
+        tpm2dMessageWrapper = try {
+            Tpm2dMessageWrapper.parseFrom(msg)
+        } catch (e: InvalidProtocolBufferException) {
+            LOG.error("Cannot parse IdscpRatVerifier body", e)
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            return
+        }
+
+        // check if wrapper contains expected rat challenge
+        if (!tpm2dMessageWrapper.hasRatChallenge()) {
+            //unexpected message
+            if (LOG.isWarnEnabled) {
+                LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatChallenge")
+            }
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            return
+        }
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Get rat challenge from rat verifier")
+        }
+        val challenge = tpm2dMessageWrapper.ratChallenge
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Requesting attestation from TPM ...")
+        }
+
+        // hash
+        val hash = TPM2dHelper.calculateHash(challenge.nonce.toByteArray(),
+                config.remoteCertificate)
+
+        // generate RemoteToTPM2dRequest
+        val tpmRequest = TPM2dMessageFactory.getRemoteToTPM2dMessage(
+                challenge.atype,
+                hash,
+                if (challenge.hasPcrIndices()) challenge.pcrIndices else 0
+        )
+
+        // get TPM response
+        val tpmResponse: Tpm2dAttestation.Tpm2dToRemote
+        tpmResponse = try {
+            val tpmSocket = TPM2dSocket(config.tpm2dHost)
+            tpmSocket.requestAttestation(tpmRequest)
+        } catch (e: IOException) {
+            LOG.error("Cannot access TPM", e)
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            return
+        }
+
+        // create Tpm2dResponse
+        val response = TPM2dMessageFactory.getAttestationResponseMessage(tpmResponse)
+                .toByteArray()
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Send rat response to verifier")
+        }
+        fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_MSG, response)
+
+        // wait for result
+        try {
+            msg = queue.take()
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Prover receives new message")
+            }
+        } catch (e: InterruptedException) {
+            if (running) {
+                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            }
+            return
+        }
+
+        // parse body to expected tpm2d message wrapper
+        tpm2dMessageWrapper = try {
+            Tpm2dMessageWrapper.parseFrom(msg)
+        } catch (e: InvalidProtocolBufferException) {
+            LOG.error("Cannot parse IdscpRatVerifier body", e)
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            return
+        }
+
+        // check if wrapper contains expected rat result
+        if (!tpm2dMessageWrapper.hasRatResult()) {
+            //unexpected message
+            if (LOG.isWarnEnabled) {
+                LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatResult")
+            }
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            return
+        }
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Get rat challenge from rat verifier")
+        }
+        val result = tpm2dMessageWrapper.ratResult
+
+        // notify fsm
+        if (result.result) {
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Attestation succeed")
+            }
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_OK, ByteArray(0))
+        } else {
+            if (LOG.isWarnEnabled) {
+                LOG.warn("Attestation failed")
+            }
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+        }
+    }
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(TPM2dProver::class.java)
+    }
+}

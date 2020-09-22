@@ -29,13 +29,9 @@ configure<IdeaModel> {
 }
 
 dependencies {
-    providedByBundle(project(":ids-api")) { isTransitive = false }
-
     providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
-    
-    publishCompile("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
 
     implementation("io.jsonwebtoken", "jjwt-impl", libraryVersions["jsonwebtoken"])
     implementation("io.jsonwebtoken", "jjwt-jackson", libraryVersions["jsonwebtoken"])
