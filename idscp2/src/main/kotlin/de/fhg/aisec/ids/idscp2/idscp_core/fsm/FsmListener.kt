@@ -15,12 +15,14 @@ interface FsmListener {
     /*
      * A method for providing RatProver messages from the RatProverDriver implementation to the FSM
      */
+    fun onRatProverMessage(controlMessage: InternalControlMessage)
     fun onRatProverMessage(controlMessage: InternalControlMessage, ratMessage: ByteArray)
 
     /*
      * A method for providing RatVerifier messages from the RatVerifierDriver implementation to the
      * FSM
      */
+    fun onRatVerifierMessage(controlMessage: InternalControlMessage)
     fun onRatVerifierMessage(controlMessage: InternalControlMessage, ratMessage: ByteArray)
 
     /*

@@ -19,11 +19,11 @@ package de.fhg.aisec.ids.camel.idscp2.client
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerClientFactory
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ClientFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import org.apache.camel.Processor
 import org.apache.camel.Producer
@@ -70,14 +70,12 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
     )
     var connectionShareId: String? = null
 
-    private fun makeConnectionInternal(): CompletableFuture<Idscp2Connection> {
-        val connectionFuture = CompletableFuture<Idscp2Connection>()
-        Idscp2ClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
-                .connect(clientSettings, connectionFuture)
-        return connectionFuture
+    private fun makeConnectionInternal(): CompletableFuture<AppLayerConnection> {
+        return AppLayerClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
+                .connect(clientSettings)
     }
 
-    fun makeConnection(): CompletableFuture<Idscp2Connection> {
+    fun makeConnection(): CompletableFuture<AppLayerConnection> {
         connectionShareId?.let {
             return sharedConnections.computeIfAbsent(it) {
                 makeConnectionInternal()
@@ -85,7 +83,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         } ?: return makeConnectionInternal()
     }
 
-    fun releaseConnection(connectionFuture: CompletableFuture<Idscp2Connection>) {
+    fun releaseConnection(connectionFuture: CompletableFuture<AppLayerConnection>) {
         connectionShareId?.let { sharedConnections.release(it) } ?: releaseConnectionInternal(connectionFuture)
     }
 
@@ -142,13 +140,13 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
     companion object {
         private val LOG = LoggerFactory.getLogger(Idscp2ClientEndpoint::class.java)
         private val URI_REGEX = Pattern.compile("(.*?)(?::(\\d+))?/?$")
-        private val sharedConnections = RefCountingHashMap<String, CompletableFuture<Idscp2Connection>> { connection ->
-            releaseConnectionInternal(connection)
+        private val sharedConnections = RefCountingHashMap<String, CompletableFuture<AppLayerConnection>> {
+            releaseConnectionInternal(it)
         }
-        private fun releaseConnectionInternal(connectionFuture: CompletableFuture<Idscp2Connection>) {
+        private fun releaseConnectionInternal(connectionFuture: CompletableFuture<AppLayerConnection>) {
             if (connectionFuture.isDone) {
                 connectionFuture.get().close()
-            } else if (!(connectionFuture.isCancelled || connectionFuture.isCompletedExceptionally)) {
+            } else if (!connectionFuture.isCompletedExceptionally) {
                 connectionFuture.cancel(true)
             }
         }

@@ -6,5 +6,5 @@ package de.fhg.aisec.ids.idscp2.idscp_core
  */
 interface Idscp2ConnectionListener {
     fun onError(t: Throwable)
-    fun onClose(connection: Idscp2Connection)
+    fun onClose()
 }

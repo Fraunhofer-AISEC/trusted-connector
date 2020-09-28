@@ -9,6 +9,7 @@ import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener
+import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.server.ServerConnectionListener
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -21,15 +22,16 @@ import java.util.concurrent.CompletableFuture
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class NativeTLSDriver : SecureChannelDriver {
+class NativeTLSDriver<CC: Idscp2Connection> : SecureChannelDriver<CC> {
     /**
      * Performs an asynchronous client connect to a TLS server.
      */
-    override fun connect(settings: Idscp2Settings,
+    override fun connect(connectionFactory: (SecureChannel, Idscp2Settings, DapsDriver) -> CC,
+                         settings: Idscp2Settings,
                          dapsDriver: DapsDriver,
-                         connectionFuture: CompletableFuture<Idscp2Connection>) {
+                         connectionFuture: CompletableFuture<CC>) {
         try {
-            val tlsClient = TLSClient(settings, dapsDriver, connectionFuture)
+            val tlsClient = TLSClient(connectionFactory, settings, dapsDriver, connectionFuture)
             tlsClient.connect(settings.host, settings.serverPort)
         } catch (e: IOException) {
             connectionFuture.completeExceptionally(Idscp2Exception("Call to connect() has failed", e))
@@ -46,10 +48,10 @@ class NativeTLSDriver : SecureChannelDriver {
      * @return The SecureServer instance
      * @throws Idscp2Exception If any error occurred during server creation/start
      */
-    override fun listen(settings: Idscp2Settings, channelInitListener: SecureChannelInitListener,
-                        serverListenerPromise: CompletableFuture<ServerConnectionListener>): SecureServer {
+    override fun listen(settings: Idscp2Settings, channelInitListener: SecureChannelInitListener<CC>,
+                        serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>): SecureServer {
         return try {
-            TLSServer(settings, channelInitListener, serverListenerPromise)
+            TLSServer<CC>(settings, channelInitListener, serverListenerPromise)
         } catch (e: IOException) {
             throw Idscp2Exception("Error while trying to to start SecureServer", e)
         } catch (e: NoSuchAlgorithmException) {

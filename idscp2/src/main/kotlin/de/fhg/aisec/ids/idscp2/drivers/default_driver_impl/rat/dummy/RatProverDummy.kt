@@ -38,12 +38,12 @@ class RatProverDummy(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
                 if (--countDown == 0) break
             } catch (e: InterruptedException) {
                 if (running) {
-                    fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+                    fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
                 }
                 return
             }
         }
-        fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_OK, ByteArray(0))
+        fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_OK)
     }
 
     companion object {

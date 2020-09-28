@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.rat_registry
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -15,12 +16,13 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 object RatVerifierDriverRegistry {
+    private val LOG by lazy { LoggerFactory.getLogger(RatVerifierDriverRegistry::class.java) }
 
     /**
      * An inner static wrapper class, that wraps driver config and driver class
      */
     private class DriverWrapper(
-            val driverClass: Class<out RatVerifierDriver>,
+            val driverFactory: (FsmListener) -> RatVerifierDriver,
             val driverConfig: Any?
     )
     private val drivers = ConcurrentHashMap<String, DriverWrapper>()
@@ -30,10 +32,10 @@ object RatVerifierDriverRegistry {
      */
     fun registerDriver(
             mechanism: String,
-            driverClass: Class<out RatVerifierDriver>,
+            driverFactory: (FsmListener) -> RatVerifierDriver,
             driverConfig: Any?
     ) {
-        drivers[mechanism] = DriverWrapper(driverClass, driverConfig)
+        drivers[mechanism] = DriverWrapper(driverFactory, driverConfig)
     }
 
     /**
@@ -56,13 +58,14 @@ object RatVerifierDriverRegistry {
     fun startRatVerifierDriver(mechanism: String?, listener: FsmListener): RatVerifierDriver? {
         val driverWrapper = drivers[mechanism]
         return try {
-            val driver = driverWrapper!!.driverClass.getDeclaredConstructor().newInstance(listener)
+            val driver = driverWrapper!!.driverFactory(listener)
             if (driverWrapper.driverConfig != null) {
                 driver.setConfig(driverWrapper.driverConfig)
             }
             driver.start()
             driver
         } catch (e: Exception) {
+            LOG.error("Error during RAT verifier start", e)
             null
         }
     }

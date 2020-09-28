@@ -8,11 +8,11 @@ import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-interface Idscp2EndpointListener {
+interface Idscp2EndpointListener<T: Idscp2Connection> {
     /*
      * Called when a new connection is established
      */
-    fun onConnection(connection: Idscp2Connection)
+    fun onConnection(connection: T)
 
     /*
      * Called when an error occurred in the underlying IDSCP2 protocol

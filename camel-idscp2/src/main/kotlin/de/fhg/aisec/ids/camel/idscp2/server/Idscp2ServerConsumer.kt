@@ -16,8 +16,8 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import org.apache.camel.Processor
 import org.apache.camel.support.DefaultConsumer
 import org.slf4j.LoggerFactory
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
  * The IDSCP2 server consumer.
  */
 class Idscp2ServerConsumer(private val endpoint: Idscp2ServerEndpoint, processor: Processor) :
-        DefaultConsumer(endpoint, processor), Idscp2MessageListener {
+        DefaultConsumer(endpoint, processor), GenericMessageListener {
     override fun doStart() {
         super.doStart()
         endpoint.addConsumer(this)
@@ -37,7 +37,10 @@ class Idscp2ServerConsumer(private val endpoint: Idscp2ServerEndpoint, processor
         super.doStop()
     }
 
-    override fun onMessage(connection: Idscp2Connection, type: String, data: ByteArray) {
+    override fun onMessage(connection: AppLayerConnection, type: String, data: ByteArray) {
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Idscp2ServerConsumer received GenericMessage of type {}", type)
+        }
         val exchange = endpoint.createExchange()
         try {
             createUoW(exchange)
@@ -50,7 +53,7 @@ class Idscp2ServerConsumer(private val endpoint: Idscp2ServerEndpoint, processor
             val response = exchange.message
             val responseType = response.getHeader("idscp2.type", String::class.java)
             if (response.body != null && responseType != null) {
-                connection.send(responseType, response.getBody(ByteArray::class.java))
+                connection.sendGenericMessage(responseType, response.getBody(ByteArray::class.java))
             }
         } catch (e: Exception) {
             LOG.error("Error in Idscp2ServerConsumer.onMessage()", e)

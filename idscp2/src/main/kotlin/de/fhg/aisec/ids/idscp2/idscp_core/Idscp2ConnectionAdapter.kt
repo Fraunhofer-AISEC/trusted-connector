@@ -7,7 +7,7 @@ open class Idscp2ConnectionAdapter : Idscp2ConnectionListener {
         LOG.error("Error received in Idscp2ConnectionAdapter", t)
     }
 
-    override fun onClose(connection: Idscp2Connection) {}
+    override fun onClose() {}
 
     companion object {
         private val LOG = LoggerFactory.getLogger(Idscp2ConnectionAdapter::class.java)

@@ -16,9 +16,9 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
 import org.apache.camel.Processor
 import org.apache.camel.support.DefaultConsumer
 import org.slf4j.LoggerFactory
@@ -28,8 +28,8 @@ import java.util.concurrent.CompletableFuture
  * The IDSCP2 server consumer.
  */
 class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor: Processor) :
-        DefaultConsumer(endpoint, processor), Idscp2MessageListener {
-    private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
+        DefaultConsumer(endpoint, processor), GenericMessageListener {
+    private lateinit var connectionFuture: CompletableFuture<AppLayerConnection>
 
     override fun doStart() {
         super.doStart()
@@ -38,10 +38,10 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
             it.addGenericMessageListener(this)
             // Handle connection errors and closing
             it.addConnectionListener(object : Idscp2ConnectionListener {
-                override fun onError(t: Throwable?) {
+                override fun onError(t: Throwable) {
                     LOG.error("Error in Idscp2ClientConsumer connection", t)
                 }
-                override fun onClose(connection: Idscp2Connection) {
+                override fun onClose() {
                     stop()
                 }
             })
@@ -55,7 +55,10 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
         endpoint.releaseConnection(connectionFuture)
     }
 
-    override fun onMessage(connection: Idscp2Connection, type: String, data: ByteArray) {
+    override fun onMessage(connection: AppLayerConnection, type: String, data: ByteArray) {
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Idscp2ClientConsumer received GenericMessage of type {}", type)
+        }
         val exchange = endpoint.createExchange()
         try {
             createUoW(exchange)
@@ -68,7 +71,7 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
             val response = exchange.message
             val responseType = response.getHeader("idscp2.type", String::class.java)
             if (response.body != null && responseType != null) {
-                connection.send(responseType, response.getBody(ByteArray::class.java))
+                connection.sendGenericMessage(responseType, response.getBody(ByteArray::class.java))
             }
         } finally {
             doneUoW(exchange)

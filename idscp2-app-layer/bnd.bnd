@@ -1,6 +1,6 @@
 Bundle-Name: IDS :: IDS Communication Protocol
 Bundle-Description: IDS Communication Protocol
 Export-Package: \
-  de.fhg.aisec.ids.idscp2*
+  de.fhg.aisec.ids.idscp2.app_layer*
 Import-Package: \
   *

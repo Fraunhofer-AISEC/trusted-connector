@@ -16,7 +16,7 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import org.apache.camel.Exchange
 import org.apache.camel.support.DefaultProducer
 import org.slf4j.LoggerFactory
@@ -27,13 +27,13 @@ import java.util.concurrent.CompletableFuture
  * Sends each message to all clients connected to this server endpoint.
  */
 class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : DefaultProducer(endpoint) {
-    private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
+    private lateinit var connectionFuture: CompletableFuture<AppLayerConnection>
 
     override fun process(exchange: Exchange) {
         val message = exchange.getIn()
         val type = message.getHeader("idscp2.type", String::class.java)
         val body = message.getBody(ByteArray::class.java)
-        connectionFuture.get().send(type, body)
+        connectionFuture.get().sendGenericMessage(type, body)
     }
 
     override fun doStart() {

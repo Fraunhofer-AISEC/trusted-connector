@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.rat_registry
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -15,12 +16,13 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 object RatProverDriverRegistry {
+    private val LOG by lazy { LoggerFactory.getLogger(RatProverDriverRegistry::class.java) }
 
     /**
      * An inner static wrapper class, that wraps driver config and driver class
      */
     private class DriverWrapper(
-            val driverClass: Class<out RatProverDriver>,
+            val driverFactory: (FsmListener) -> RatProverDriver,
             val driverConfig: Any?
     )
 
@@ -31,10 +33,10 @@ object RatProverDriverRegistry {
      */
     fun registerDriver(
             instance: String,
-            driverClass: Class<out RatProverDriver>,
+            driverFactory: (FsmListener) -> RatProverDriver,
             driverConfig: Any?
     ) {
-        drivers[instance] = DriverWrapper(driverClass, driverConfig)
+        drivers[instance] = DriverWrapper(driverFactory, driverConfig)
     }
 
     /**
@@ -53,16 +55,17 @@ object RatProverDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatProver.
      * The RatProver will be initialized with a configuration, if present. Then it is started.
      */
-    fun startRatProverDriver(instance: String?, listener: FsmListener?): RatProverDriver? {
-        val driverWrapper = drivers[instance] ?: return null
+    fun startRatProverDriver(instance: String?, listener: FsmListener): RatProverDriver? {
+        val driverWrapper = drivers[instance]
         return try {
-            val driver = driverWrapper.driverClass.getDeclaredConstructor().newInstance(listener)
+            val driver = driverWrapper!!.driverFactory(listener)
             if (driverWrapper.driverConfig != null) {
                 driver.setConfig(driverWrapper.driverConfig)
             }
             driver.start()
             driver
         } catch (e: Exception) {
+            LOG.error("Error during RAT prover start", e)
             null
         }
     }

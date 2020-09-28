@@ -91,7 +91,7 @@ class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
             LOG.debug("Verifier receives new message")
         } catch (e: InterruptedException) {
             if (running) {
-                fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, ByteArray(0))
+                fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED)
             }
             return
         }
@@ -102,7 +102,7 @@ class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
             Tpm2dMessageWrapper.parseFrom(msg)
         } catch (e: InvalidProtocolBufferException) {
             LOG.error("Cannot parse IdscpRatProver body", e)
-            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, ByteArray(0))
+            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED)
             return
         }
 
@@ -110,7 +110,7 @@ class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
         if (!tpm2dMessageWrapper.hasRatResponse()) {
             //unexpected message
             LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatResponse")
-            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, ByteArray(0))
+            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED)
             return
         }
         LOG.debug("Get rat response from remote prover")
@@ -135,9 +135,9 @@ class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
 
         // notify fsm about result
         if (result) {
-            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_OK, ByteArray(0))
+            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_OK)
         } else {
-            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, ByteArray(0))
+            fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED)
         }
     }
 

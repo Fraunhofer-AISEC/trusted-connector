@@ -4,7 +4,7 @@ idscp: "1.1.0"
 idscp2: "1.0.0"
 
 # basically, the first requirement, all other libraries depend on this version
-karaf: "4.2.8"
+karaf: "4.2.9"
 # Jetty version should fit bundled version in karaf
 jetty: "9.4.22.v20191022"
 

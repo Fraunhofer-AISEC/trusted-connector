@@ -84,7 +84,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             }
         } catch (e: InterruptedException) {
             if (running) {
-                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             }
             return
         }
@@ -95,7 +95,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             Tpm2dMessageWrapper.parseFrom(msg)
         } catch (e: InvalidProtocolBufferException) {
             LOG.error("Cannot parse IdscpRatVerifier body", e)
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             return
         }
 
@@ -105,7 +105,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             if (LOG.isWarnEnabled) {
                 LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatChallenge")
             }
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             return
         }
         if (LOG.isDebugEnabled) {
@@ -134,7 +134,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             tpmSocket.requestAttestation(tpmRequest)
         } catch (e: IOException) {
             LOG.error("Cannot access TPM", e)
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             return
         }
 
@@ -154,7 +154,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             }
         } catch (e: InterruptedException) {
             if (running) {
-                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+                fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             }
             return
         }
@@ -164,7 +164,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             Tpm2dMessageWrapper.parseFrom(msg)
         } catch (e: InvalidProtocolBufferException) {
             LOG.error("Cannot parse IdscpRatVerifier body", e)
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             return
         }
 
@@ -174,7 +174,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             if (LOG.isWarnEnabled) {
                 LOG.warn("Unexpected message from RatProver: Expected Tpm2dRatResult")
             }
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             return
         }
         if (LOG.isDebugEnabled) {
@@ -187,12 +187,12 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
             if (LOG.isDebugEnabled) {
                 LOG.debug("Attestation succeed")
             }
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_OK, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_OK)
         } else {
             if (LOG.isWarnEnabled) {
                 LOG.warn("Attestation failed")
             }
-            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED, ByteArray(0))
+            fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
         }
     }
 

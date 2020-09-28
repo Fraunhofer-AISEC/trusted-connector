@@ -38,12 +38,12 @@ class RatVerifierDummy(fsmListener: FsmListener) : RatVerifierDriver(fsmListener
                 if (--countDown == 0) break
             } catch (e: InterruptedException) {
                 if (running) {
-                    fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED, ByteArray(0))
+                    fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED)
                 }
                 return
             }
         }
-        fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_OK, ByteArray(0))
+        fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_OK)
     }
 
     companion object {

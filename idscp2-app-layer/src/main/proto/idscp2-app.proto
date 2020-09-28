@@ -1,0 +1,16 @@
+syntax = "proto3";
+option java_package = "de.fhg.aisec.ids.idscp2.app_layer.messages";
+option java_outer_classname = "AppLayer";
+
+message AppLayerMessage {
+  oneof message {
+    GenericMessage genericMessage = 1;
+  }
+}
+
+message GenericMessage {
+  // Arbitrary header string
+  string type = 1;
+  // The actual, generic message payload
+  bytes payload = 2;
+}

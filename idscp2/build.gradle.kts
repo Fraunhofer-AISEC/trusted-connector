@@ -29,13 +29,16 @@ configure<IdeaModel> {
 }
 
 dependencies {
+    // For standalone running of examples
+    implementation("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
+
     providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 
-    implementation("io.jsonwebtoken", "jjwt-impl", libraryVersions["jsonwebtoken"])
-    implementation("io.jsonwebtoken", "jjwt-jackson", libraryVersions["jsonwebtoken"])
-    implementation("io.jsonwebtoken", "jjwt-api", libraryVersions["jsonwebtoken"])
+    providedByBundle("io.jsonwebtoken", "jjwt-impl", libraryVersions["jsonwebtoken"])
+    providedByBundle("io.jsonwebtoken", "jjwt-jackson", libraryVersions["jsonwebtoken"])
+    providedByBundle("io.jsonwebtoken", "jjwt-api", libraryVersions["jsonwebtoken"])
     providedByBundle("org.json", "json", libraryVersions["orgJson"])
     providedByBundle("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
     providedByBundle("com.squareup.okhttp3", "okhttp", libraryVersions["okhttp"])

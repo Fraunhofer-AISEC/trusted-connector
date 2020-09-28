@@ -37,16 +37,16 @@ class Idscp2ServerComponent : DefaultComponent() {
     }
 
     init {
-        RatProverDriverRegistry.getInstance().registerDriver(
-                "Dummy", RatProverDummy::class.java, null)
-        RatVerifierDriverRegistry.getInstance().registerDriver(
-                "Dummy", RatVerifierDummy::class.java, null)
-        RatProverDriverRegistry.getInstance().registerDriver(
-                "TPM2d", TPM2dProver::class.java,
+        RatProverDriverRegistry.registerDriver(
+                "Dummy", ::RatProverDummy, null)
+        RatVerifierDriverRegistry.registerDriver(
+                "Dummy", ::RatVerifierDummy, null)
+        RatProverDriverRegistry.registerDriver(
+                "TPM2d", ::TPM2dProver,
                 TPM2dProverConfig.Builder().build()
         )
-        RatVerifierDriverRegistry.getInstance().registerDriver(
-                "TPM2d", TPM2dVerifier::class.java,
+        RatVerifierDriverRegistry.registerDriver(
+                "TPM2d", ::TPM2dVerifier,
                 TPM2dVerifierConfig.Builder().build()
         )
     }

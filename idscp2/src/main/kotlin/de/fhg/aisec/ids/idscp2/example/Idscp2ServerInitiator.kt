@@ -11,9 +11,9 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifi
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ServerFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
@@ -21,9 +21,9 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 
-class Idscp2ServerInitiator : Idscp2EndpointListener {
+class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
     fun init(settings: Idscp2Settings) {
-        val secureChannelDriver: SecureChannelDriver = NativeTLSDriver()
+        val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
         val config = DefaultDapsDriverConfig.Builder()
                 .setKeyStorePath(settings.keyStorePath)
                 .setTrustStorePath(settings.trustStorePath)
@@ -35,16 +35,17 @@ class Idscp2ServerInitiator : Idscp2EndpointListener {
                 .build()
         val dapsDriver: DapsDriver = DefaultDapsDriver(config)
         RatProverDriverRegistry.registerDriver(
-                "Dummy", RatProverDummy::class.java, null)
+                "Dummy", ::RatProverDummy, null)
         RatVerifierDriverRegistry.registerDriver(
-                "Dummy", RatVerifierDummy::class.java, null)
+                "Dummy", ::RatVerifierDummy, null)
         RatProverDriverRegistry.registerDriver(
-                "TPM2d", TPM2dProver::class.java, TPM2dProverConfig.Builder().build()
+                "TPM2d", ::TPM2dProver, TPM2dProverConfig.Builder().build()
         )
         RatVerifierDriverRegistry.registerDriver(
-                "TPM2d", TPM2dVerifier::class.java, TPM2dVerifierConfig.Builder().build()
+                "TPM2d", ::TPM2dVerifier, TPM2dVerifierConfig.Builder().build()
         )
         val serverConfig = Idscp2ServerFactory(
+                ::Idscp2ConnectionImpl,
                 this,
                 settings,
                 dapsDriver,
@@ -67,7 +68,7 @@ class Idscp2ServerInitiator : Idscp2EndpointListener {
                 LOG.error("Server connection error occurred", t)
             }
 
-            override fun onClose(connection: Idscp2Connection) {
+            override fun onClose() {
                 LOG.info("Server: Connection with id " + connection.id + " has been closed")
             }
         })

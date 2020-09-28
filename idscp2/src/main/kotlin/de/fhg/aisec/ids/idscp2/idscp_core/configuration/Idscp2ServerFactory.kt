@@ -17,21 +17,23 @@ import java.util.concurrent.CompletableFuture
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class Idscp2ServerFactory(private val endpointListener: Idscp2EndpointListener,
-                          private val settings: Idscp2Settings,
-                          private val dapsDriver: DapsDriver,
-                          private val secureChannelDriver: SecureChannelDriver
-) : SecureChannelInitListener {
-    /*
+class Idscp2ServerFactory<CC: Idscp2Connection>(
+        private val connectionFactory: (SecureChannel, Idscp2Settings, DapsDriver) -> CC,
+        private val endpointListener: Idscp2EndpointListener<CC>,
+        private val settings: Idscp2Settings,
+        private val dapsDriver: DapsDriver,
+        private val secureChannelDriver: SecureChannelDriver<CC>
+) : SecureChannelInitListener<CC> {
+    /**
      * User API to create a new IDSCP2 Server that starts a Secure Server that listens to new
      * secure channels
      */
     @Throws(Idscp2Exception::class)
-    fun listen(settings: Idscp2Settings): Idscp2Server {
+    fun listen(settings: Idscp2Settings): Idscp2Server<CC> {
         LOG.info("Starting new IDSCP2 server at port {}", settings.serverPort)
-        val serverListenerPromise = CompletableFuture<ServerConnectionListener>()
+        val serverListenerPromise = CompletableFuture<ServerConnectionListener<CC>>()
         val secureServer = secureChannelDriver.listen(settings, this, serverListenerPromise)
-        val server = Idscp2Server(secureServer)
+        val server = Idscp2Server<CC>(secureServer)
         serverListenerPromise.complete(server)
         return server
     }
@@ -39,10 +41,8 @@ class Idscp2ServerFactory(private val endpointListener: Idscp2EndpointListener,
     /**
      * A callback implementation to receive a new established secure channel from an Secure client/server.
      *
-     *
      * If the secure channel is null, no secure channel was established and an error is provided
      * to the user (or the error is ignored, in server case).
-     *
      *
      * If the secure channel was established, a new FSM is created for this connection and the
      * IDSCP2 handshake is started. After a successful handshake, a new Idscp2Connection is
@@ -50,16 +50,16 @@ class Idscp2ServerFactory(private val endpointListener: Idscp2EndpointListener,
      */
     @Synchronized
     override fun onSecureChannel(secureChannel: SecureChannel,
-                                 serverListenerPromise: CompletableFuture<ServerConnectionListener>) {
+                                 serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>) {
         LOG.trace("A new secure channel for an IDSCP2 connection was established")
         // Threads calling onMessage() will be blocked until all listeners have been registered, see below
-        val newConnection = Idscp2Connection(secureChannel, settings, dapsDriver)
+        val newConnection = connectionFactory(secureChannel, settings, dapsDriver)
         // Complete the connection promise for the IDSCP server
-        serverListenerPromise.thenAccept { serverListener: ServerConnectionListener ->
+        serverListenerPromise.thenAccept { serverListener: ServerConnectionListener<CC> ->
             serverListener.onConnectionCreated(newConnection)
             newConnection.addConnectionListener(object : Idscp2ConnectionAdapter() {
-                override fun onClose(connection: Idscp2Connection) {
-                    serverListener.onConnectionClose(connection)
+                override fun onClose() {
+                    serverListener.onConnectionClose(newConnection)
                 }
             })
         }

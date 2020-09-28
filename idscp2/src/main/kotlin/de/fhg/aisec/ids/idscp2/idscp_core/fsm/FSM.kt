@@ -93,7 +93,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     private val handshakeTimer: Timer
     private val proverHandshakeTimer: Timer
     private val verifierHandshakeTimer: Timer
-    private fun checkForFsmCircles() {
+    private fun checkForFsmCycles() {
         // check if current thread holds already the fsm lock, then we have a circle
         // this runs into an issue: onControlMessage must be called only from other threads!
         // if the current thread currently stuck within a fsm transition it will trigger another
@@ -124,13 +124,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Get a new IDSCP2 Message from the secure channel and provide it as an event to the fsm
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      */
     override fun onMessage(data: ByteArray) {
 
         //check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
 
         //parse message and create new IDSCP Message event, then pass it to current state and
         // update new state
@@ -175,68 +175,70 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         }
     }
 
+    override fun onRatProverMessage(controlMessage: InternalControlMessage, ratMessage: ByteArray) {
+        processRatProverEvent(Event(controlMessage, Idscp2MessageHelper.createIdscpRatProverMessage(ratMessage)))
+    }
+
+    override fun onRatProverMessage(controlMessage: InternalControlMessage) {
+        processRatProverEvent(Event(controlMessage))
+    }
+
     /**
      * API for RatProver to provide Prover Messages to the fsm
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      *
-     * Afterwards the event for the fsm is created and the fsm lock is requested
+     * Afterwards the fsm lock is requested
      *
      * When the RatProverThread does not match the active prover tread id, the event will be
      * ignored, else the event is provided to the fsm
      */
-    override fun onRatProverMessage(controlMessage: InternalControlMessage, ratMessage: ByteArray) {
-
+    private fun processRatProverEvent(e: Event) {
         //check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
 
-        //only allow rat prover messages from current thread
-        val e: Event
-        e = run {
-            val idscpMessage = Idscp2MessageHelper.createIdscpRatProverMessage(ratMessage)
-            Event(controlMessage, idscpMessage)
-        }
         fsmIsBusy.lock()
         try {
             if (Thread.currentThread().id.toString() == currentRatProverId) {
                 feedEvent(e)
             } else {
-                LOG.warn("An old or unknown identity calls onRatProverMessage()")
+                LOG.error("An old or unknown Thread (${Thread.currentThread().id}) calls onRatProverMessage()")
             }
         } finally {
             fsmIsBusy.unlock()
         }
     }
 
+    override fun onRatVerifierMessage(controlMessage: InternalControlMessage, ratMessage: ByteArray) {
+        processRatVerifierEvent(Event(controlMessage, Idscp2MessageHelper.createIdscpRatVerifierMessage(ratMessage)))
+    }
+
+    override fun onRatVerifierMessage(controlMessage: InternalControlMessage) {
+        processRatVerifierEvent(Event(controlMessage))
+    }
+
     /**
      * API for RatVerifier to provide Verifier Messages to the fsm
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      *
-     * Afterwards the event for the fsm is created and the fsm lock is requested
+     * Afterwards the fsm lock is requested
      *
-     * When the RatVerifierDriver does not match the active verifier tread id, the event will be
+     * When the RatVerifierDriver does not match the active verifier thread id, the event will be
      * ignored, else the event is provided to the fsm
      */
-    override fun onRatVerifierMessage(controlMessage: InternalControlMessage, ratMessage: ByteArray) {
-
+    private fun processRatVerifierEvent(e: Event) {
         //check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
 
-        //only allow rat verifier messages from current thread
-        val e: Event
-        e = run {
-            val idscpMessage = Idscp2MessageHelper.createIdscpRatVerifierMessage(ratMessage)
-            Event(controlMessage, idscpMessage)
-        }
         fsmIsBusy.lock()
         try {
             if (Thread.currentThread().id.toString() == currentRatVerifierId) {
                 feedEvent(e)
             } else {
-                LOG.warn("An old or unknown identity calls onRatVerifierMessage()")
+                LOG.error("An old or unknown Thread (${Thread.currentThread().id}) calls onRatVerifierMessage()")
             }
         } finally {
             fsmIsBusy.unlock()
@@ -257,12 +259,12 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * API to terminate the idscp connection by the user
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      */
     fun closeConnection() {
         //check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
         LOG.debug("Sending stop message to connection peer...")
         onControlMessage(InternalControlMessage.IDSCP_STOP)
     }
@@ -270,13 +272,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * API for the user to start the IDSCP2 handshake
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      */
     @Throws(Idscp2Exception::class)
     fun startIdscpHandshake() {
         //check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
         fsmIsBusy.lock()
         try {
             if (currentState == states[FsmState.STATE_CLOSED]) {
@@ -316,7 +318,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Provide an Internal Control Message to the FSM
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      */
     override fun onError(t: Throwable) {
@@ -324,19 +326,19 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         connection.onError(t)
 
         // Check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
         onControlMessage(InternalControlMessage.ERROR)
     }
 
     /**
      * Provide an Internal Control Message to the FSM, caused by a secure channel closure
      *
-     * The checkForFsmCircles method first checks for risky thread circles that occur by incorrect
+     * The checkForFsmCycles method first checks for risky thread cycles that occur by incorrect
      * driver implementations
      */
     override fun onClose() {
         // Check for incorrect usage
-        checkForFsmCircles()
+        checkForFsmCycles()
         onControlMessage(InternalControlMessage.IDSCP_STOP)
     }
 

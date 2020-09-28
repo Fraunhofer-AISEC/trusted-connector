@@ -9,7 +9,6 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ClientFactory
@@ -21,9 +20,10 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
 
 class Idscp2ClientInitiator {
-    private val connectionFuture = CompletableFuture<Idscp2Connection>()
+    private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
+
     fun init(settings: Idscp2Settings) {
-        val secureChannelDriver: SecureChannelDriver = NativeTLSDriver()
+        val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
         val config = DefaultDapsDriverConfig.Builder()
                 .setKeyStorePath(settings.keyStorePath)
                 .setTrustStorePath(settings.trustStorePath)
@@ -34,22 +34,22 @@ class Idscp2ClientInitiator {
                 .setDapsUrl("https://daps.aisec.fraunhofer.de")
                 .build()
         RatProverDriverRegistry.registerDriver(
-                "Dummy", RatProverDummy::class.java, null)
+                "Dummy", ::RatProverDummy, null)
         RatVerifierDriverRegistry.registerDriver(
-                "Dummy", RatVerifierDummy::class.java, null)
+                "Dummy", ::RatVerifierDummy, null)
         RatProverDriverRegistry.registerDriver(
-                "TPM2d", TPM2dProver::class.java,
+                "TPM2d", ::TPM2dProver,
                 TPM2dProverConfig.Builder().build()
         )
         RatVerifierDriverRegistry.registerDriver(
-                "TPM2d", TPM2dVerifier::class.java,
+                "TPM2d", ::TPM2dVerifier,
                 TPM2dVerifierConfig.Builder().build()
         )
         val clientConfig = Idscp2ClientFactory(
                 DefaultDapsDriver(config),
                 secureChannelDriver
         )
-        clientConfig.connect(settings, connectionFuture)
+        connectionFuture = clientConfig.connect(settings)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             println("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {
@@ -57,7 +57,7 @@ class Idscp2ClientInitiator {
                     LOG.error("Client connection error occurred", t)
                 }
 
-                override fun onClose(connection: Idscp2Connection) {
+                override fun onClose() {
                     LOG.info("Client: Connection with id " + connection.id + " has been closed")
                 }
             })

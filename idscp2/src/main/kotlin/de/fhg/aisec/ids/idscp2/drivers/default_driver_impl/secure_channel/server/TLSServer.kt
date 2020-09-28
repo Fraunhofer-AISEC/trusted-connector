@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.serve
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.keystores.PreConfiguration
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSConstants
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureServer
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.server.ServerConnectionListener
@@ -22,8 +23,10 @@ import javax.net.ssl.SSLSocket
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class TLSServer(serverSettings: Idscp2Settings, private val secureChannelInitListener: SecureChannelInitListener,
-                private val serverListenerPromise: CompletableFuture<ServerConnectionListener>) : Runnable, SecureServer {
+class TLSServer<CC: Idscp2Connection>(serverSettings: Idscp2Settings,
+                private val secureChannelInitListener: SecureChannelInitListener<CC>,
+                private val serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>):
+        Runnable, SecureServer {
     @Volatile
     override var isRunning = false
         private set
@@ -42,7 +45,7 @@ class TLSServer(serverSettings: Idscp2Settings, private val secureChannelInitLis
                 try {
                     // Start new server thread
                     LOG.debug("New TLS client has connected. Creating new server thread...")
-                    val serverThread = TLSServerThread(sslSocket, secureChannelInitListener, serverListenerPromise)
+                    val serverThread = TLSServerThread<CC>(sslSocket, secureChannelInitListener, serverListenerPromise)
                     sslSocket.addHandshakeCompletedListener(serverThread)
                     serverThread.start()
                 } catch (serverThreadException: Exception) {

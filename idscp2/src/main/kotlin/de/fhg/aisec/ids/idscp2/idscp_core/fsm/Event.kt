@@ -44,14 +44,15 @@ class Event {
      * throws an IllegalStateException if this event is requested for other purposes
      */
     constructor(controlMessage: InternalControlMessage, idscpMessage: IdscpMessage) {
-        if (controlMessage == InternalControlMessage.RAT_PROVER_MSG || controlMessage == InternalControlMessage.RAT_VERIFIER_MSG) {
+        if (controlMessage == InternalControlMessage.RAT_PROVER_MSG
+                || controlMessage == InternalControlMessage.RAT_VERIFIER_MSG) {
             key = controlMessage.value
             type = EventType.INTERNAL_CONTROL_MESSAGE
             this.idscpMessage = idscpMessage
             this.controlMessage = controlMessage
         } else {
             throw IllegalStateException("This constructor must only be used by RAT_PROVER and " +
-                    "RAT_VERIFIER for message passing")
+                    "RAT_VERIFIER for message passing, encountered $controlMessage")
         }
     }
 
@@ -59,8 +60,8 @@ class Event {
         return "Event{" +
                 "key=" + key +
                 ", type=" + type +
-                ", idscpMessage=" + idscpMessage +
-                ", controlMessage=" + controlMessage +
+                ", idscpMessage=" + if(::idscpMessage.isInitialized) idscpMessage else null +
+                ", controlMessage=" + if(::controlMessage.isInitialized) controlMessage else null +
                 '}'
     }
 }

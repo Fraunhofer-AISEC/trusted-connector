@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.serve
 
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSessionVerificationHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint
@@ -25,15 +26,16 @@ import javax.net.ssl.SSLSocket
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class TLSServerThread internal constructor(sslSocket: SSLSocket, configCallback: SecureChannelInitListener,
-                                           serverListenerPromise: CompletableFuture<ServerConnectionListener>) : Thread(), HandshakeCompletedListener, SecureChannelEndpoint, Closeable {
+class TLSServerThread<CC : Idscp2Connection> internal constructor(
+        private val sslSocket: SSLSocket,
+        private val configCallback: SecureChannelInitListener<CC>,
+        private val serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>) :
+        Thread(), HandshakeCompletedListener, SecureChannelEndpoint, Closeable
+{
     @Volatile
     private var running = true
     private val `in`: DataInputStream
     private val out: DataOutputStream
-    private val sslSocket: SSLSocket?
-    private val configCallback: SecureChannelInitListener
-    private val serverListenerPromise: CompletableFuture<ServerConnectionListener>
     private val channelListenerPromise = CompletableFuture<SecureChannelListener>()
     private val tlsVerificationLatch = FastLatch()
     override fun run() {
@@ -41,7 +43,7 @@ class TLSServerThread internal constructor(sslSocket: SSLSocket, configCallback:
         // before reading from buffer. Else if there exists any non-catched exception during handshake
         // the thread would wait forever in onError() until handshakeCompleteListener is called
         try {
-            sslSocket!!.startHandshake()
+            sslSocket.startHandshake()
             // Wait for TLS session verification
             tlsVerificationLatch.await()
         } catch (e: Exception) {
@@ -75,7 +77,7 @@ class TLSServerThread internal constructor(sslSocket: SSLSocket, configCallback:
         try {
             out.close()
             `in`.close()
-            sslSocket!!.close()
+            sslSocket.close()
         } catch (ignore: IOException) {
         }
     }
@@ -90,10 +92,9 @@ class TLSServerThread internal constructor(sslSocket: SSLSocket, configCallback:
                 out.writeInt(bytes.size)
                 out.write(bytes)
                 out.flush()
-                LOG.trace("Sent message: " + String(bytes))
                 true
             } catch (e: IOException) {
-                LOG.error("Server could not send data.")
+                LOG.error("Server could not send data", e)
                 closeSockets()
                 false
             }
@@ -121,7 +122,7 @@ class TLSServerThread internal constructor(sslSocket: SSLSocket, configCallback:
     }
 
     override val isConnected: Boolean
-        get() = sslSocket != null && sslSocket.isConnected
+        get() = sslSocket.isConnected
 
     override fun handshakeCompleted(handshakeCompletedEvent: HandshakeCompletedEvent) {
         if (LOG.isDebugEnabled) {
@@ -153,9 +154,6 @@ class TLSServerThread internal constructor(sslSocket: SSLSocket, configCallback:
     }
 
     init {
-        this.sslSocket = sslSocket
-        this.configCallback = configCallback
-        this.serverListenerPromise = serverListenerPromise
         // Set timeout for blocking read
         sslSocket.soTimeout = 5000
         `in` = DataInputStream(sslSocket.inputStream)
