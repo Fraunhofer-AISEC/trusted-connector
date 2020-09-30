@@ -28,8 +28,8 @@ class NativeTLSDriver<CC: Idscp2Connection> : SecureChannelDriver<CC> {
      */
     override fun connect(connectionFactory: (SecureChannel, Idscp2Settings, DapsDriver) -> CC,
                          settings: Idscp2Settings,
-                         dapsDriver: DapsDriver,
-                         connectionFuture: CompletableFuture<CC>) {
+                         dapsDriver: DapsDriver): CompletableFuture<CC> {
+        val connectionFuture = CompletableFuture<CC>()
         try {
             val tlsClient = TLSClient(connectionFactory, settings, dapsDriver, connectionFuture)
             tlsClient.connect(settings.host, settings.serverPort)
@@ -40,6 +40,7 @@ class NativeTLSDriver<CC: Idscp2Connection> : SecureChannelDriver<CC> {
         } catch (e: KeyManagementException) {
             connectionFuture.completeExceptionally(Idscp2Exception("Call to connect() has failed", e))
         }
+        return connectionFuture
     }
 
     /**
@@ -51,7 +52,7 @@ class NativeTLSDriver<CC: Idscp2Connection> : SecureChannelDriver<CC> {
     override fun listen(settings: Idscp2Settings, channelInitListener: SecureChannelInitListener<CC>,
                         serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>): SecureServer {
         return try {
-            TLSServer<CC>(settings, channelInitListener, serverListenerPromise)
+            TLSServer(settings, channelInitListener, serverListenerPromise)
         } catch (e: IOException) {
             throw Idscp2Exception("Error while trying to to start SecureServer", e)
         } catch (e: NoSuchAlgorithmException) {

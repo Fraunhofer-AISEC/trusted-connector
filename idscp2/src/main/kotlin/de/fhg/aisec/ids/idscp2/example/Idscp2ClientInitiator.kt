@@ -11,7 +11,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifi
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ClientFactory
+import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
@@ -24,7 +24,7 @@ class Idscp2ClientInitiator {
 
     fun init(settings: Idscp2Settings) {
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
-        val config = DefaultDapsDriverConfig.Builder()
+        val dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
                 .setKeyStorePath(settings.keyStorePath)
                 .setTrustStorePath(settings.trustStorePath)
                 .setKeyStorePassword(settings.keyStorePassword)
@@ -32,7 +32,7 @@ class Idscp2ClientInitiator {
                 .setKeyAlias(settings.dapsKeyAlias)
                 .setKeyPassword(settings.keyPassword)
                 .setDapsUrl("https://daps.aisec.fraunhofer.de")
-                .build()
+                .build())
         RatProverDriverRegistry.registerDriver(
                 "Dummy", ::RatProverDummy, null)
         RatVerifierDriverRegistry.registerDriver(
@@ -45,11 +45,7 @@ class Idscp2ClientInitiator {
                 "TPM2d", ::TPM2dVerifier,
                 TPM2dVerifierConfig.Builder().build()
         )
-        val clientConfig = Idscp2ClientFactory(
-                DefaultDapsDriver(config),
-                secureChannelDriver
-        )
-        connectionFuture = clientConfig.connect(settings)
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, settings, dapsDriver)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             println("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {

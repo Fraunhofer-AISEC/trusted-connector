@@ -32,10 +32,10 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
                         AppLayer.AppLayerMessage.MessageCase.GENERICMESSAGE -> {
                             genericMessageListeners.forEach {
                                 val genericMessage = appLayerMessage.genericMessage
-                                it.onMessage(this, genericMessage.type, genericMessage.payload.toByteArray())
+                                it.onMessage(this, genericMessage.header, genericMessage.payload.toByteArray())
                             }
                         }
-                        else -> LOG.warn("Unknown app layer message type encountered.")
+                        else -> LOG.warn("Unknown app layer message header encountered.")
                     }
                 } catch (e: Exception) {
                     LOG.error("Error processing AppLayerMessage", e)
@@ -46,10 +46,10 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
         }
     }
 
-    fun sendGenericMessage(type: String, payload: ByteArray) {
+    fun sendGenericMessage(header: String, payload: ByteArray) {
         val message = AppLayer.AppLayerMessage.newBuilder()
                 .setGenericMessage(AppLayer.GenericMessage.newBuilder()
-                        .setType(type)
+                        .setHeader(header)
                         .setPayload(ByteString.copyFrom(payload)))
                 .build()
         idscp2Connection.send(message.toByteArray())

@@ -55,16 +55,16 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
         endpoint.releaseConnection(connectionFuture)
     }
 
-    override fun onMessage(connection: AppLayerConnection, type: String, data: ByteArray) {
+    override fun onMessage(connection: AppLayerConnection, header: String, payload: ByteArray) {
         if (LOG.isTraceEnabled) {
-            LOG.trace("Idscp2ClientConsumer received GenericMessage of type {}", type)
+            LOG.trace("Idscp2ClientConsumer received GenericMessage with header:\n{}", header)
         }
         val exchange = endpoint.createExchange()
         try {
             createUoW(exchange)
             // Set relevant information
-            exchange.getIn().setHeader("idscp2.type", type)
-            exchange.getIn().setBody(data, ByteArray::class.java)
+            exchange.getIn().setHeader("idscp2.type", header)
+            exchange.getIn().setBody(payload, ByteArray::class.java)
             // Do processing
             processor.process(exchange)
             // Handle response

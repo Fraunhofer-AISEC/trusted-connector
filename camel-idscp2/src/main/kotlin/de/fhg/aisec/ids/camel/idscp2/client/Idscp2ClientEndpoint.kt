@@ -19,11 +19,12 @@ package de.fhg.aisec.ids.camel.idscp2.client
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
-import de.fhg.aisec.ids.idscp2.app_layer.AppLayerClientFactory
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
+import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import org.apache.camel.Processor
 import org.apache.camel.Producer
@@ -44,7 +45,8 @@ import java.util.regex.Pattern
 )
 class Idscp2ClientEndpoint(uri: String?, private val remaining: String, component: Idscp2ClientComponent?) :
         DefaultEndpoint(uri, component) {
-    private lateinit var dapsDriverConfig: DefaultDapsDriverConfig
+    private lateinit var secureChannelDriver: SecureChannelDriver<AppLayerConnection>
+    private lateinit var dapsDriver: DapsDriver
     private lateinit var clientSettings: Idscp2Settings
 
     @UriParam(
@@ -71,8 +73,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
     var connectionShareId: String? = null
 
     private fun makeConnectionInternal(): CompletableFuture<AppLayerConnection> {
-        return AppLayerClientFactory(DefaultDapsDriver(dapsDriverConfig), NativeTLSDriver())
-                .connect(clientSettings)
+        return secureChannelDriver.connect(::AppLayerConnection, clientSettings, dapsDriver)
     }
 
     fun makeConnection(): CompletableFuture<AppLayerConnection> {
@@ -121,8 +122,9 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
                             ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
         }
+        secureChannelDriver = NativeTLSDriver()
         clientSettings = clientSettingsBuilder.build()
-        dapsDriverConfig = DefaultDapsDriverConfig.Builder()
+        dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
                 .setDapsUrl(settings.connectorConfig.dapsUrl)
                 .setKeyAlias(clientSettings.dapsKeyAlias)
                 .setKeyPassword(clientSettings.keyPassword)
@@ -130,7 +132,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
                 .setTrustStorePath(clientSettings.trustStorePath)
                 .setKeyStorePassword(clientSettings.keyStorePassword)
                 .setTrustStorePassword(clientSettings.trustStorePassword)
-                .build()
+                .build())
     }
 
     public override fun doStop() {
