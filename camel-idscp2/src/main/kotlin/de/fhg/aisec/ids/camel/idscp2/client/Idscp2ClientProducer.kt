@@ -31,7 +31,7 @@ class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : Default
 
     override fun process(exchange: Exchange) {
         val message = exchange.getIn()
-        val type = message.getHeader("idscp2.type", String::class.java)
+        val type = message.getHeader("idscp2-header", String::class.java)
         val body = message.getBody(ByteArray::class.java)
         connectionFuture.get().sendGenericMessage(type, body)
     }

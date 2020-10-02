@@ -45,13 +45,13 @@ class Idscp2ServerConsumer(private val endpoint: Idscp2ServerEndpoint, processor
         try {
             createUoW(exchange)
             // Set relevant information
-            exchange.getIn().setHeader("idscp2.type", header)
+            exchange.getIn().setHeader("idscp2-header", header)
             exchange.getIn().setBody(payload, ByteArray::class.java)
             // Do processing
             processor.process(exchange)
             // Handle response
             val response = exchange.message
-            val responseType = response.getHeader("idscp2.type", String::class.java)
+            val responseType = response.getHeader("idscp2-header", String::class.java)
             if (response.body != null && responseType != null) {
                 connection.sendGenericMessage(responseType, response.getBody(ByteArray::class.java))
             }

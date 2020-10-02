@@ -21,10 +21,10 @@
             <setBody>
                 <simple>BROADCAST</simple>
             </setBody>
-            <setHeader name="idscp2.type">
+            <setHeader name="idscp2-header">
                 <simple>broadcast</simple>
             </setHeader>
-            <log message="Server broadcast to connected clients: ${body} (idscp2.type: ${headers[idscp2.type]})"/>
+            <log message="Server broadcast to connected clients: ${body} (Header: ${headers[idscp2-header]})"/>
             <to uri="idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext"/>
         </route>
 
