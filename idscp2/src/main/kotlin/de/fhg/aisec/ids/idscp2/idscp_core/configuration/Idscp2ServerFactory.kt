@@ -29,7 +29,7 @@ class Idscp2ServerFactory<CC: Idscp2Connection>(
      * secure channels
      */
     @Throws(Idscp2Exception::class)
-    fun listen(settings: Idscp2Settings): Idscp2Server<CC> {
+    fun listen(): Idscp2Server<CC> {
         LOG.info("Starting new IDSCP2 server at port {}", settings.serverPort)
         val serverListenerPromise = CompletableFuture<ServerConnectionListener<CC>>()
         val secureServer = secureChannelDriver.listen(settings, this, serverListenerPromise)

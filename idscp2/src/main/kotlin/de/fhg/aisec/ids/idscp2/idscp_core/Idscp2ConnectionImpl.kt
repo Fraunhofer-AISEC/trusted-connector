@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
-import java.util.stream.Collectors
 
 /**
  * The IDSCP2 Connection class holds connections between connectors
@@ -108,11 +107,11 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         if (LOG.isDebugEnabled) {
             LOG.debug("A new IDSCP2 connection with id {} was created, starting handshake...", id)
         }
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Stack Trace of Idscp2Connection {} constructor:\n"
-                    + Arrays.stream(Thread.currentThread().stackTrace)
-                    .skip(1).map { obj: StackTraceElement -> obj.toString() }.collect(Collectors.joining("\n")), id)
-        }
+//        if (LOG.isTraceEnabled) {
+//            LOG.trace("Stack Trace of Idscp2Connection {} constructor:\n"
+//                    + Arrays.stream(Thread.currentThread().stackTrace)
+//                    .skip(1).map { obj: StackTraceElement -> obj.toString() }.collect(Collectors.joining("\n")), id)
+//        }
         // Schedule IDSCP handshake asynchronously
         CompletableFuture.runAsync { fsm.startIdscpHandshake() }
     }

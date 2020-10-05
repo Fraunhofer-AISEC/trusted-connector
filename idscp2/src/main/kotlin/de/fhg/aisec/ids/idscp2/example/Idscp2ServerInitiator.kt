@@ -51,7 +51,7 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
                 dapsDriver,
                 secureChannelDriver
         )
-        @Suppress("UNUSED_VARIABLE") val idscp2Server = serverConfig.listen(settings)
+        @Suppress("UNUSED_VARIABLE") val idscp2Server = serverConfig.listen()
 
 //        try {
 //            Thread.sleep(40_000); //run server for 2 minutes

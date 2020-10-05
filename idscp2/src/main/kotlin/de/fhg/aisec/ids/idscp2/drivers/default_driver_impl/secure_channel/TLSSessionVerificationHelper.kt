@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel
 
 import org.slf4j.LoggerFactory
+import java.net.InetAddress
 import java.security.cert.CertificateExpiredException
 import java.security.cert.CertificateNotYetValidException
 import java.security.cert.CertificateParsingException
@@ -49,9 +50,9 @@ object TLSSessionVerificationHelper {
 
             /*
              * According to RFC6125, hostname verification should be done against the certificate's
-             * subject alternative name's (SANs) dNSName field or the SANs IPAddress. In some legacy
+             * subject alternative name's (SANs) DNSName field or the SANs IPAddress. In some legacy
              * implementations, the check is done against the certificate's commonName, but this is
-             * deprecated for quite a while and is therefore not supported anymore in te IDSCP2 protocol.
+             * deprecated for quite a while and is therefore not supported anymore in the IDSCP2 protocol.
              */
             val sans = peerCert.subjectAlternativeNames
                     ?: throw SSLPeerUnverifiedException("No Subject alternative names for hostname "
@@ -62,7 +63,7 @@ object TLSSessionVerificationHelper {
                 if (subjectAltName.size != 2) {
                     continue
                 }
-                val value = subjectAltName[1]!!
+                val value = subjectAltName[1]
                 when (subjectAltName[0] as Int?) {
                     2 -> if (value is String) {
                         acceptedDnsNames.add(value)
@@ -74,32 +75,40 @@ object TLSSessionVerificationHelper {
                     } else if (value is ByteArray) {
                         acceptedIpAddresses.add(String(value))
                     }
-                    0, 1, 3, 4, 5, 6, 8 -> {
-                    }
                     else -> {
+                        if (LOG.isDebugEnabled) {
+                            LOG.debug("Unhandled SAN type \"{}\" with value \"{}\"", subjectAltName[0], value)
+                        }
                     }
                 }
             }
 
-            //toDo localhost is matched manually to 127.0.0.1 for testing..
-            // automatic dns resolving via DNS service is not an option since we cannot trust the DNS
-            if (acceptedDnsNames.contains("localhost")) {
-                acceptedIpAddresses.add("127.0.0.1")
-            }
             if (isIpAddress(host)) {
-                //FIXME The server should provide a possibility to validate clients dnsNames against SANs in
-                // Client certificate to avoid MITMs. This is an open issue
-                //check ip addresses RFC 2818 (Section 3.1)
+                // First, check IP addresses directly given by type-7-SANs
                 if (!acceptedIpAddresses.contains(host)) {
-                    throw SSLPeerUnverifiedException("Hostname verification failed. Peer certificate does "
-                            + "not belong to peer host")
+                    // Check IP addresses using DNS resolving
+                    // This check is *weak* and should be accompanied by DAT fingerprint checking later on
+                    val resolvedIps = acceptedDnsNames.flatMap {
+                        try {
+                            InetAddress.getAllByName(it).toList()
+                        } catch (e: Throwable) {
+                            emptyList()
+                        }
+                    }.map { it.hostAddress }
+                    if (LOG.isDebugEnabled) {
+                        LOG.debug("Resolved IPs: {}", resolvedIps.toSet().joinToString())
+                    }
+                    if (!resolvedIps.contains(host)) {
+                        throw SSLPeerUnverifiedException("Hostname verification failed. Peer certificate does "
+                                + "not belong to peer host")
+                    }
                 }
             } else {
-                //check hostname
-                val hostLabels = host.split("\\.".toRegex()).toTypedArray()
+                // Check hostname
+                val hostLabels = host.split(".")
                 var found = false
                 for (entry in acceptedDnsNames) {
-                    if (checkHostname(entry.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray(), hostLabels)) {
+                    if (checkHostname(entry.trimEnd('.').split("."), hostLabels)) {
                         found = true
                         break
                     }
@@ -140,7 +149,7 @@ object TLSSessionVerificationHelper {
     /*
      * match dNS Name
      */
-    private fun checkHostname(dnsNameLabels: Array<String>, hostNameLabels: Array<String>): Boolean {
+    private fun checkHostname(dnsNameLabels: List<String>, hostNameLabels: List<String>): Boolean {
 
         /*
          * support wildcard matching of DNS names as described in RFC6125 Section 6.4.3

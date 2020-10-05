@@ -8,7 +8,7 @@ object RunTLSClient {
     @JvmStatic
     fun main(args: Array<String>) {
         val settings = Idscp2Settings.Builder()
-                .setKeyStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/aisecconnector1-keystore.p12")).path))
+                .setKeyStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/aisecconnector2-keystore.p12")).path))
                 .setTrustStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/client-truststore_new.p12")).path))
                 .setCertificateAlias("1.0.1")
                 .setDapsKeyAlias("1")

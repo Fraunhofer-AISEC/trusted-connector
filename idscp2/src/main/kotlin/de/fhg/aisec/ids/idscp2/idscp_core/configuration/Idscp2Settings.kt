@@ -133,6 +133,17 @@ class Idscp2Settings {
                 expectedAttestation, ratTimeoutDelay)
     }
 
+    override fun toString(): String {
+        return "Idscp2Settings(serverPort=$serverPort, host='$host', trustStorePath=$trustStorePath, " +
+                "trustStorePassword=${trustStorePassword.contentToString()}, " +
+                "keyPassword=${keyPassword.contentToString()}, keyStorePath=$keyStorePath, " +
+                "keyStorePassword=${keyStorePassword.contentToString()}, certificateAlias='$certificateAlias', " +
+                "dapsKeyAlias='$dapsKeyAlias', keyStoreKeyType='$keyStoreKeyType', " +
+                "supportedAttestation=$supportedAttestation, expectedAttestation=$expectedAttestation, " +
+                "ratTimeoutDelay=$ratTimeoutDelay)"
+    }
+
+
     companion object {
         const val DEFAULT_SERVER_PORT = 29292
         const val DEFAULT_RAT_TIMEOUT_DELAY = "600"

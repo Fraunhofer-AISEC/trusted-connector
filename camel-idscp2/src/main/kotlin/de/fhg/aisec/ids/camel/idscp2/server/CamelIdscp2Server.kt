@@ -48,7 +48,7 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
                 DefaultDapsDriver(dapsDriverConfig),
                 NativeTLSDriver()
         )
-        server = serverFactory.listen(serverSettings)
+        server = serverFactory.listen()
     }
 
     override fun onConnection(connection: AppLayerConnection) {

@@ -28,7 +28,10 @@ class CustomX509ExtendedKeyManager internal constructor(
 
     override fun getClientAliases(keyType: String, issuers: Array<Principal>?): Array<String> {
         val clientAliases = delegate.getClientAliases(keyType, issuers)
-        for (alias in clientAliases) cachedAliases.putIfAbsent(alias, CachedAliasValue(keyType, null)) //toDo get issuer
+        for (alias in clientAliases) {
+            // TODO get issuer
+            cachedAliases.putIfAbsent(alias, CachedAliasValue(keyType, null))
+        }
         return clientAliases
     }
 
@@ -36,8 +39,7 @@ class CustomX509ExtendedKeyManager internal constructor(
     called only by client in TLS handshake */
     override fun chooseClientAlias(keyTypes: Array<String>, issuers: Array<Principal>?, socket: Socket): String? {
         if (listOf(*keyTypes).contains(keyType)) {
-            if (cachedAliases.containsKey(certAlias) &&
-                    cachedAliases[certAlias]!!.match(keyType, issuers)
+            if (cachedAliases[certAlias]?.match(keyType, issuers) == true
                     || listOf(*getClientAliases(keyType, issuers)).contains(certAlias)) {
                 LOG.debug("CertificateAlias is {}", certAlias)
                 return certAlias
@@ -46,14 +48,17 @@ class CustomX509ExtendedKeyManager internal constructor(
             }
         } else if (LOG.isTraceEnabled) {
             LOG.trace("Different keyType '{}' in chooseClientAlias() in CustomX509ExtendedKeyManager, expected '{}'",
-                    keyType, keyType)
+                    keyType, this.keyType)
         }
         return null
     }
 
     override fun getServerAliases(keyType: String, issuers: Array<Principal>?): Array<String> {
         val serverAliases = delegate.getServerAliases(keyType, issuers)
-        for (alias in serverAliases) cachedAliases.putIfAbsent(alias, CachedAliasValue(keyType, null)) //toDo get issuer
+        for (alias in serverAliases) {
+            // TODO get issuer
+            cachedAliases.putIfAbsent(alias, CachedAliasValue(keyType, null))
+        }
         return serverAliases
     }
 
@@ -63,8 +68,8 @@ class CustomX509ExtendedKeyManager internal constructor(
      */
     override fun chooseServerAlias(keyType: String, issuers: Array<Principal>?, socket: Socket): String? {
         if (keyType == this.keyType) {
-            if (cachedAliases.containsKey(certAlias) && cachedAliases[certAlias]!!.match(keyType, issuers)
-                    || listOf(*getServerAliases(keyType, issuers ?: emptyArray())).contains(certAlias)) {
+            if (cachedAliases[certAlias]?.match(keyType, issuers) == true
+                    || listOf(*getServerAliases(keyType, issuers)).contains(certAlias)) {
                 LOG.debug("CertificateAlias is {}", certAlias)
                 return certAlias
             } else {

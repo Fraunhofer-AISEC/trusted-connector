@@ -32,4 +32,8 @@ dependencies {
     providedByBundle(project(":idscp2")) { isTransitive = false }
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
+
+    // Supplied by ids-infomodel-manager
+    compileOnly("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
+    compileOnly("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodelSerializer"])
 }
