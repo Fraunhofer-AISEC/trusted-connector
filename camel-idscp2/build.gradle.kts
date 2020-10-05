@@ -12,7 +12,7 @@ dependencies {
 
     providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
 
-    osgiCore("org.osgi", "org.osgi.core", libraryVersions["osgi"])
+    osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
 
     providedByFeature("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 
