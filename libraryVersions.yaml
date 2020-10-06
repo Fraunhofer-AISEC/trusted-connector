@@ -45,7 +45,7 @@ mapdb: "3.0.7"
 # jnrunix and jnrffi must be consistent
 jnrunix: "0.22"
 jnrffi: "2.1.5"
-protobuf: "3.10.0"
+protobuf: "3.13.0"
 httpcore: "4.4.11"
 httpclient: "4.5.7"
 jaxwsApi: "2.3.1"
