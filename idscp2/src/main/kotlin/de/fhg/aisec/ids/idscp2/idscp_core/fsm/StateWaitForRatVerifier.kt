@@ -20,7 +20,8 @@ class StateWaitForRatVerifier(fsm: FSM,
                               ratTimer: Timer,
                               handshakeTimer: Timer,
                               verifierHandshakeTimer: Timer,
-                              ratTimeoutDelay: Long) : State() {
+                              ratTimeoutDelay: Long,
+                              ackTimer: Timer) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_WAIT_FOR_RAT_VERIFIER")
     }
@@ -38,9 +39,10 @@ class StateWaitForRatVerifier(fsm: FSM,
          * onICM: close ---> {send IDSCP_CLOSE, stop RAT_VERIFIER} ---> STATE_CLOSED
          * onICM: dat_timeout ---> {send IDSCP_DAT_EXPIRED, cancel ratV} ---> STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER
          * onICM: timeout ---> {send IDSCP_CLOSE, stop RAT_VERIFIER} ---> STATE_CLOSED
-         * onICM: rat_verifier_ok ---> {set rat timeout} ---> STATE_ESTABLISHED
+         * onICM: rat_verifier_ok ---> {set rat timeout} ---> STATE_ESTABLISHED / STATE_WAIT_FOR_ACK
          * onICM: rat_verifier_failed ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
          * onICM: rat_verifier_msg ---> {send IDSCP_RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT_VERIFIER
+         * onMessage: IDSCP_ACK ---> {cancel Ack flag} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_DAT_EXPIRED ---> {send IDSCP_DAT, start RAT_PROVER} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_CLOSE ---> {stop RAT_VERIFIER} ---> STATE_CLOSED
          * onMessage: IDSCP_RAT_PROVER ---> {delegat to RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT_VERIFIER
@@ -75,13 +77,20 @@ class StateWaitForRatVerifier(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER)
                 }
         ))
-        addTransition(InternalControlMessage.RAT_VERIFIER_OK.value, Transition {
-            LOG.debug("Received RAT_VERIFIER OK")
-            verifierHandshakeTimer.cancelTimeout()
-            LOG.debug("Start RAT Timer")
-            ratTimer.resetTimeout(ratTimeoutDelay)
-            fsm.getState(FsmState.STATE_ESTABLISHED)
-        })
+        addTransition(InternalControlMessage.RAT_VERIFIER_OK.value, Transition (
+                Function {
+                    LOG.debug("Received RAT_VERIFIER OK")
+                    verifierHandshakeTimer.cancelTimeout()
+                    LOG.debug("Start RAT Timer")
+                    ratTimer.resetTimeout(ratTimeoutDelay)
+                    if (fsm.getAckFlag) {
+                        ackTimer.start(1)
+                        return@Function fsm.getState(FsmState.STATE_WAIT_FOR_ACK)
+                    } else {
+                        return@Function fsm.getState(FsmState.STATE_ESTABLISHED)
+                    }
+                }
+        ))
         addTransition(InternalControlMessage.RAT_VERIFIER_FAILED.value, Transition {
             LOG.error("RAT_VERIFIER failed")
             LOG.debug("Send IDSC_CLOSE")
@@ -132,6 +141,17 @@ class StateWaitForRatVerifier(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     fsm.getState(FsmState.STATE_WAIT_FOR_RAT)
+                }
+        ))
+        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
+                Function {
+                    if (fsm.getAckFlag) {
+                        LOG.debug("Received IdscpAck, cancel flag in fsm")
+                        fsm.setAckFlag(false)
+                    } else {
+                        LOG.warn("Received unexpected IdscpAck")
+                    }
+                    this
                 }
         ))
         setNoTransitionHandler { event: Event? ->

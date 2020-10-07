@@ -84,4 +84,10 @@ object Idscp2MessageHelper {
                 .setIdscpRatVerifier(idscpRatVerifier)
                 .build()
     }
+
+    fun createIdscpAckMessage(): IdscpMessage {
+        return IdscpMessage.newBuilder()
+                .setIdscpAck(IdscpAck.newBuilder().build())
+                .build()
+    }
 }

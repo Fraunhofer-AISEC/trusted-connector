@@ -59,11 +59,14 @@ class Idscp2ClientInitiator {
             })
             connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
                 println("Received ping message: " + String(data, StandardCharsets.UTF_8))
-                CompletableFuture.runAsync { c.close() } // FSM error if run from the same thread
+                CompletableFuture.runAsync {
+                    println("Close Connection")
+                    c.close()
+                } // FSM error if run from the same thread
             }
             connection.unlockMessaging()
+            println("Send PING ...")
             connection.send("PING".toByteArray(StandardCharsets.UTF_8))
-            println("Sent PING...")
         }.exceptionally { t: Throwable? ->
             LOG.error("Client endpoint error occurred", t)
             null

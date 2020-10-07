@@ -33,7 +33,15 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     private val states = HashMap<FsmState, State>()
 
     enum class FsmState {
-        STATE_CLOSED, STATE_WAIT_FOR_HELLO, STATE_WAIT_FOR_RAT, STATE_WAIT_FOR_RAT_VERIFIER, STATE_WAIT_FOR_RAT_PROVER, STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER, STATE_WAIT_FOR_DAT_AND_RAT, STATE_ESTABLISHED
+        STATE_CLOSED,
+        STATE_WAIT_FOR_HELLO,
+        STATE_WAIT_FOR_RAT,
+        STATE_WAIT_FOR_RAT_VERIFIER,
+        STATE_WAIT_FOR_RAT_PROVER,
+        STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER,
+        STATE_WAIT_FOR_DAT_AND_RAT,
+        STATE_ESTABLISHED,
+        STATE_WAIT_FOR_ACK
     }
 
     private var currentState: State?
@@ -75,7 +83,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     private val onMessageBlock = fsmIsBusy.newCondition()
 
     /**
-     * A condition for the dscpv2 handshake to wait until the handshake was successful and the
+     * A condition for the idscpv2 handshake to wait until the handshake was successful and the
      * connection is established or the handshake failed and the fsm is locked forever
      */
     private val idscpHandshakeLock = fsmIsBusy.newCondition()
@@ -87,12 +95,20 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     private var fsmTerminated = false
 
+    /**
+     * Check if AckFlag is set
+     */
+    private var ackFlag = false
+    private var bufferedIdscpData: IdscpMessage? = null
+
     /* ---------------------- Timer ---------------------- */
     private val datTimer: Timer
     private val ratTimer: Timer
     private val handshakeTimer: Timer
     private val proverHandshakeTimer: Timer
     private val verifierHandshakeTimer: Timer
+    private val ackTimer: Timer
+
     private fun checkForFsmCycles() {
         // check if current thread holds already the fsm lock, then we have a circle
         // this runs into an issue: onControlMessage must be called only from other threads!
@@ -348,17 +364,12 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     fun send(msg: ByteArray?) {
         // Send messages from user only when idscp connection is established
         idscpHandshakeCompletedLatch.await()
+        checkForFsmCycles()
+        val idscpMessage = Idscp2MessageHelper.createIdscpDataMessage(msg)
+        val e = Event(InternalControlMessage.SEND_DATA, idscpMessage)
         fsmIsBusy.lock()
         try {
-            if (isConnected) {
-                val idscpMessage = Idscp2MessageHelper.createIdscpDataMessage(msg)
-                if (!secureChannel.send(idscpMessage.toByteArray())) {
-                    LOG.error("Cannot send IDSCP_DATA via secure channel")
-                    onControlMessage(InternalControlMessage.ERROR)
-                }
-            } else {
-                LOG.error("Cannot send IDSCP_DATA because connection is not established")
-            }
+            feedEvent(e)
         } finally {
             fsmIsBusy.unlock()
         }
@@ -368,7 +379,8 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      * Check if FSM is in STATE ESTABLISHED
      */
     val isConnected: Boolean
-        get() = currentState == states[FsmState.STATE_ESTABLISHED]
+        get() = currentState == states[FsmState.STATE_ESTABLISHED] ||
+                currentState == states[FsmState.STATE_WAIT_FOR_ACK]
 
     /**
      * Notify handshake lock about result
@@ -494,6 +506,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         datTimer.cancelTimeout()
         ratTimer.cancelTimeout()
         handshakeTimer.cancelTimeout()
+        ackTimer.cancelTimeout()
         if (LOG.isTraceEnabled) {
             LOG.trace("Stopping RAT components...")
         }
@@ -537,6 +550,23 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         this.verifierMechanism = verifierMechanism
     }
 
+    val getAckFlag: Boolean
+        get() = ackFlag
+
+    val getBufferedIdscpMessage: IdscpMessage?
+        get() = bufferedIdscpData
+
+    fun setAckFlag(value: Boolean) {
+        this.ackFlag = value;
+        if (!value) {
+            this.bufferedIdscpData = null
+        }
+    }
+
+    fun setBufferedIdscpData(msg: IdscpMessage) {
+        this.bufferedIdscpData = msg
+    }
+
     companion object {
         private val LOG = LoggerFactory.getLogger(FSM::class.java)
     }
@@ -556,17 +586,23 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         }
         val proverTimeoutHandler = Runnable {
             LOG.debug("RAT_PROVER_HANDSHAKE_TIMER_EXPIRED")
-            onControlMessage(InternalControlMessage.REPEAT_RAT)
+            onControlMessage(InternalControlMessage.TIMEOUT)
         }
         val verifierTimeoutHandler = Runnable {
             LOG.debug("RAT_VERIFIER_HANDSHAKE_TIMER_EXPIRED")
-            onControlMessage(InternalControlMessage.REPEAT_RAT)
+            onControlMessage(InternalControlMessage.TIMEOUT)
         }
+        val ackTimeoutHandler = Runnable {
+            LOG.debug("ACK_TIMER_EXPIRED")
+            onControlMessage(InternalControlMessage.ACK_TIMER_EXPIRED)
+        }
+
         handshakeTimer = Timer(fsmIsBusy, handshakeTimeoutHandler)
         datTimer = Timer(fsmIsBusy, datTimeoutHandler)
         ratTimer = Timer(fsmIsBusy, ratTimeoutHandler)
         proverHandshakeTimer = Timer(fsmIsBusy, proverTimeoutHandler)
         verifierHandshakeTimer = Timer(fsmIsBusy, verifierTimeoutHandler)
+        ackTimer = Timer(fsmIsBusy, ackTimeoutHandler)
 
         /* ------------- FSM STATE Initialization -------------*/
         states[FsmState.STATE_CLOSED] = StateClosed(
@@ -576,15 +612,17 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         states[FsmState.STATE_WAIT_FOR_RAT] = StateWaitForRat(
                 this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer, ratTimeout, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_RAT_PROVER] = StateWaitForRatProver(
-                this, ratTimer, handshakeTimer, proverHandshakeTimer, dapsDriver)
+                this, ratTimer, handshakeTimer, proverHandshakeTimer, dapsDriver, ackTimer)
         states[FsmState.STATE_WAIT_FOR_RAT_VERIFIER] = StateWaitForRatVerifier(
-                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, ratTimeout)
+                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, ratTimeout, ackTimer)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT] = StateWaitForDatAndRat(
                 this, handshakeTimer, proverHandshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER] = StateWaitForDatAndRatVerifier(
                 this, handshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_ESTABLISHED] = StateEstablished(
-                this, dapsDriver, ratTimer, handshakeTimer)
+                this, dapsDriver, ratTimer, handshakeTimer, ackTimer)
+        states[FsmState.STATE_WAIT_FOR_ACK] = StateWaitForAck(
+                this, dapsDriver, ratTimer, handshakeTimer, ackTimer)
 
         // Set initial state
         currentState = states[FsmState.STATE_CLOSED]

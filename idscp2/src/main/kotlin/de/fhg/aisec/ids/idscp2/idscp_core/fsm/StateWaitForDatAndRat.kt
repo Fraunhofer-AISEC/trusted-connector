@@ -41,6 +41,7 @@ class StateWaitForDatAndRat(fsm: FSM,
          * onICM: rat_prover_ok ---> {} ---> STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER
          * onICM: rat_prover_failed ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
          * onICM: rat_prover_msg ---> {send IDSCP_RAT_PROVER} ---> STATE_WAIT_FOR_DAT_AND_RAT
+         * onMessage: IDSCP_ACK ---> {cancel Ack flag} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_CLOSE ---> {ratP.stop(), timeouts.stop()} ---> STATE_CLOSED
          * onMessage: IDSCP_DAT(success) ---> {verify dat, start dat_timeout, start RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_DAT(failed) ---> {verify dat, send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
@@ -141,6 +142,17 @@ class StateWaitForDatAndRat(fsm: FSM,
                     if (!fsm.restartRatProverDriver()) {
                         LOG.error("Cannot run Rat prover, close idscp connection")
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
+                    }
+                    this
+                }
+        ))
+        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
+                Function {
+                    if (fsm.getAckFlag) {
+                        LOG.debug("Received IdscpAck, cancel flag in fsm")
+                        fsm.setAckFlag(false)
+                    } else {
+                        LOG.warn("Received unexpected IdscpAck")
                     }
                     this
                 }

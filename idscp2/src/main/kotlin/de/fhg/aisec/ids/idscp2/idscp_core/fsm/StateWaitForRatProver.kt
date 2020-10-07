@@ -19,7 +19,8 @@ class StateWaitForRatProver(fsm: FSM,
                             ratTimer: Timer,
                             handshakeTimer: Timer,
                             proverHandshakeTimer: Timer,
-                            dapsDriver: DapsDriver) : State() {
+                            dapsDriver: DapsDriver,
+                            ackTimer: Timer) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_WAIT_FOR_RAT_PROVER")
     }
@@ -38,10 +39,11 @@ class StateWaitForRatProver(fsm: FSM,
          * onICM: error ---> {stop RAT_PROVER} ---> STATE_CLOSED
          * onICM: timeout ---> {send IDSCP_CLOSE, stop RAT_PROVER} ---> STATE_CLOSED
          * onICM: dat_timeout ---> {send IDSCP_DAT_EXPIRED} ---> STATE_WAIT_FOR_DAT_AND_RAT
-         * onICM: rat_prover_ok ---> {} ---> STATE_ESTABLISHED
+         * onICM: rat_prover_ok ---> {} ---> STATE_ESTABLISHED / STATE_WAIT_FOR_ACK
          * onICM: rat_prover_failed ---> {send IDSCP_CLOSE, terminate ratP, cancel timeouts} ---> STATE_CLOSED
          * onICM: rat_prover_msg ---> {send IDSCP_RAT_PROVER} ---> STATE_WAIT_FOR_RAT_PROVER
          * onICM: repeat_rat ---> {send IDSCP_RE_RAT, start RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT
+         * onMessage: IDSCP_ACK ---> {cancel Ack flag} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_CLOSE ---> {} ---> STATE_CLOSED
          * onMessage: IDSCP_DAT_EXPIRED ---> {send IDSCP_DAT, restart RAT_PROVER} ---> STATE_WAIT_FOR_RAT_PROVER
          * onMessage: IDSCP_RAT_VERIFIER ---> {delegate to RAT_PROVER} ---> STATE_WAIT_FOR_RAT_PROVER
@@ -76,11 +78,18 @@ class StateWaitForRatProver(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT)
                 }
         ))
-        addTransition(InternalControlMessage.RAT_PROVER_OK.value, Transition {
-            LOG.debug("Received RAT_PROVER OK")
-            proverHandshakeTimer.cancelTimeout()
-            fsm.getState(FsmState.STATE_ESTABLISHED)
-        })
+        addTransition(InternalControlMessage.RAT_PROVER_OK.value, Transition (
+                Function {
+                    LOG.debug("Received RAT_PROVER OK")
+                    proverHandshakeTimer.cancelTimeout()
+                    if (fsm.getAckFlag) {
+                        ackTimer.start(1)
+                        return@Function fsm.getState(FsmState.STATE_WAIT_FOR_ACK)
+                    } else {
+                        return@Function fsm.getState(FsmState.STATE_ESTABLISHED)
+                    }
+                }
+        ))
         addTransition(InternalControlMessage.RAT_PROVER_FAILED.value, Transition {
             LOG.error("RAT_PROVER failed")
             LOG.debug("Send IDSC_CLOSE")
@@ -144,6 +153,17 @@ class StateWaitForRatProver(fsm: FSM,
                     if (!fsm.restartRatProverDriver()) {
                         LOG.error("Cannot run Rat prover, close idscp connection")
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
+                    }
+                    this
+                }
+        ))
+        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
+                Function {
+                    if (fsm.getAckFlag) {
+                        LOG.debug("Received IdscpAck, cancel flag in fsm")
+                        fsm.setAckFlag(false)
+                    } else {
+                        LOG.warn("Received unexpected IdscpAck")
                     }
                     this
                 }

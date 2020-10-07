@@ -20,6 +20,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
 
 class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
     fun init(settings: Idscp2Settings) {
@@ -74,8 +75,10 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
         })
         connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
             println("Received ping message: ${String(data, StandardCharsets.UTF_8)}".trimIndent())
-            println("Sending PONG...")
-            c.send("PONG".toByteArray(StandardCharsets.UTF_8))
+            CompletableFuture.runAsync {
+                println("Sending PONG...")
+                c.send("PONG".toByteArray(StandardCharsets.UTF_8)) //FSM error if run from the same thread
+            }
         }
     }
 

@@ -47,6 +47,7 @@ class StateWaitForRat(fsm: FSM,
          * onICM: rat_verifier_msg ---> {send IDSCP_RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT
          * onICM: dat_timeout ---> {send DAT_EXPIRED, ratV.cancel()} ---> STATE_WAIT_FOR_DAT_AND_RAT
          * onICM: handshake_timeout ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
+         * onMessage: IDSCP_ACK ---> {cancel Ack flag} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_RAT_VERIFIER ---> {delegate to RAT_PROVER} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_RAT_PROVER ---> {delegate to RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_DAT_EXPIRED ---> {send DAT, ratP.restart()} ---> STATE_WAIT_FOR_RAT
@@ -127,6 +128,17 @@ class StateWaitForRat(fsm: FSM,
                     CloseCause.TIMEOUT))
             fsm.getState(FsmState.STATE_CLOSED)
         })
+        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
+                Function {
+                    if (fsm.getAckFlag) {
+                        LOG.debug("Received IdscpAck, cancel flag in fsm")
+                        fsm.setAckFlag(false)
+                    } else {
+                        LOG.warn("Received unexpected IdscpAck")
+                    }
+                    this
+                }
+        ))
         addTransition(IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, Transition { event: Event ->
             LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER")
             assert(event.idscpMessage.hasIdscpRatVerifier())

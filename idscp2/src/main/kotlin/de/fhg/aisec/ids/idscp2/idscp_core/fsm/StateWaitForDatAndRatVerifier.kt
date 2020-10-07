@@ -37,6 +37,7 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
          * onICM: stop ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
          * onICM: error ---> {} ---> STATE_CLOSED
          * onICM: timeout ---> {send IDSCP_CLOSE} ---> STATE_CLOSED
+         * onMessage: IDSCP_ACK ---> {cancel Ack flag} ---> STATE_WAIT_FOR_RAT
          * onMessage: IDSCP_CLOSE ---> {} ---> STATE_CLOSED
          * onMessage: IDSCP_DAT(success) --> {verify DAT, set det_timeout, start RAT_VERIFIER} ---> STATE_WAIT_FOR_RAT_VERIFEIER
          * onMessage: IDSCP_DAT(failed) --> {verify DAT, send IDSCP_CLOSE} ---> STATE_CLOSED
@@ -109,6 +110,17 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
             }
             fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT)
         }
+        ))
+        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
+                Function {
+                    if (fsm.getAckFlag) {
+                        LOG.debug("Received IdscpAck, cancel flag in fsm")
+                        fsm.setAckFlag(false)
+                    } else {
+                        LOG.warn("Received unexpected IdscpAck")
+                    }
+                    this
+                }
         ))
         setNoTransitionHandler { event: Event? ->
             LOG.debug("No transition available for given event " + event.toString())

@@ -26,6 +26,7 @@ internal class StateClosed(fsm: FSM,
                            onMessageLock: Condition,
                            localSupportedRatSuite: Array<String>,
                            localExpectedRatSuite: Array<String>) : State() {
+
     private fun runExitCode(onMessageLock: Condition) {
         //State Closed exit code
         onMessageLock.signalAll() //enables fsm.onMessage()
