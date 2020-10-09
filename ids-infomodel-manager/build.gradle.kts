@@ -11,6 +11,7 @@ apply(plugin = "idea")
 
 buildConfig {
     sourceSets.getByName("main") {
+        useKotlinOutput { topLevelConstants = true }
         packageName("de.fhg.aisec.ids.informationmodelmanager")
         buildConfigField("String", "INFOMODEL_VERSION",
                 "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\"")

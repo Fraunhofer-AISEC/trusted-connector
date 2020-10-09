@@ -25,19 +25,19 @@ import javax.xml.datatype.DatatypeFactory
 class InfoModelService : InfoModel {
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
-    private var settings: Settings? = null
+    private lateinit var settings: Settings
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     private var connectionManager: ConnectionManager? = null
 
-    private val connectorProfile: ConnectorProfile?
-        get() = settings?.connectorProfile
+    private val connectorProfile: ConnectorProfile
+        get() = settings.connectorProfile
 
     /**
      * Build ConnectorAvailableMessage for IDS message headers
      */
     fun getConnectorAvailableMessage(): ConnectorUpdateMessage {
         val builder = ConnectorUpdateMessageBuilder()
-        settings?.let { settings ->
+        settings.let { settings ->
             builder._securityToken_(
                     DynamicAttributeTokenBuilder()
                             ._tokenFormat_(TokenFormat.JWT)
@@ -60,7 +60,7 @@ class InfoModelService : InfoModel {
      * Build Connector Entity Names from preferences
      */
     private val connectorEntityNames: List<TypedLiteral>
-        get() = connectorProfile?.connectorEntityNames.also {
+        get() = connectorProfile.connectorEntityNames.also {
             if (it == null) {
                 LOG.warn("Settings or ConnectorProfile not available, or no connector entity names provided")
             }
@@ -89,7 +89,7 @@ class InfoModelService : InfoModel {
      * @return
      */
     private val securityProfile: SecurityProfile?
-        get() = connectorProfile?.securityProfile.also {
+        get() = connectorProfile.securityProfile.also {
             if (it == null) {
                 LOG.warn("Settings, ConnectorProfile not available, or no SecurityProfile provided")
             }
@@ -101,8 +101,8 @@ class InfoModelService : InfoModel {
      * The fields op_url and entityNames cannot be null.
      */
     override fun getConnector(): Connector? {
-        val maintainerUrl = connectorProfile?.maintainerUrl
-        val connectorUrl = connectorProfile?.connectorUrl
+        val maintainerUrl = connectorProfile.maintainerUrl
+        val connectorUrl = connectorProfile.connectorUrl
         val entityNames = connectorEntityNames
 
         if (LOG.isTraceEnabled) {
@@ -144,8 +144,8 @@ class InfoModelService : InfoModel {
         if (profile.securityProfile == null) {
             profile.securityProfile = SecurityProfile.TRUST_SECURITY_PROFILE
         }
-        return if (settings != null) {
-            settings?.connectorProfile = profile
+        return run {
+            settings.connectorProfile = profile
 
             try {
                 connector != null
@@ -153,18 +153,15 @@ class InfoModelService : InfoModel {
                 LOG.error("ConstraintViolationException while building Connector.", ex)
                 false
             }
-        } else {
-            LOG.warn("Couldn't store connector object: Settings not available.")
-            false
         }
     }
 
-    override fun getConnectorAsJsonLd(): String = settings?.connectorJsonLd
+    override fun getConnectorAsJsonLd(): String = settings.connectorJsonLd
             ?: connector?.let { serializer.serialize(it) }
             ?: throw NullPointerException("Connector is not available")
 
     override fun setConnectorByJsonLd(jsonLd: String?) {
-        settings?.let { settings ->
+        settings.let { settings ->
             if (jsonLd != null) {
                 try {
                     serializer.deserialize(jsonLd, TrustedConnector::class.java)
@@ -174,19 +171,16 @@ class InfoModelService : InfoModel {
                 }
             }
             settings.connectorJsonLd = jsonLd
-        } ?: LOG.warn("Couldn't store connector object: Settings not available.")
+        }
     }
 
-    override fun getDynamicAttributeToken(): String = settings?.dynamicAttributeToken
+    override fun getDynamicAttributeToken(): String = settings.dynamicAttributeToken
             ?: throw NullPointerException("DAPS token is not available")
 
     override fun setDynamicAttributeToken(dynamicAttributeToken: String) =
-            if (settings != null) {
-                settings?.dynamicAttributeToken = dynamicAttributeToken
+            run {
+                settings.dynamicAttributeToken = dynamicAttributeToken
                 true
-            } else {
-                LOG.warn("Couldn't store connector object: Settings not available.")
-                false
             }
 
     companion object {
