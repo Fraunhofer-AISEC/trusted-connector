@@ -16,6 +16,7 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.util.*
 import javax.xml.datatype.DatatypeFactory
+import javax.xml.datatype.XMLGregorianCalendar
 
 
 /**
@@ -32,27 +33,33 @@ class InfoModelService : InfoModel {
     private val connectorProfile: ConnectorProfile
         get() = settings.connectorProfile
 
+    override val modelVersion = BuildConfig.INFOMODEL_VERSION
+
+    override fun <T: Any> initMessageBuilder(builder: T): T {
+        val builderClass = builder::class.java
+        builderClass.getMethod("_securityToken_", DynamicAttributeToken::class.java)
+                .invoke(builder, DynamicAttributeTokenBuilder()
+                        ._tokenFormat_(TokenFormat.JWT)
+                        ._tokenValue_(settings.dynamicAttributeToken)
+                        .build())
+        builderClass.getMethod("_senderAgent_", URI::class.java)
+                .invoke(builder, settings.connectorProfile.maintainerUrl)
+        builderClass.getMethod("_issuerConnector_", URI::class.java)
+                .invoke(builder, settings.connectorProfile.connectorUrl)
+        builderClass.getMethod("_issued_", XMLGregorianCalendar::class.java)
+                .invoke(builder, DatatypeFactory.newInstance().newXMLGregorianCalendar(
+                        GregorianCalendar().apply { timeInMillis = System.currentTimeMillis() }))
+        builderClass.getMethod("_modelVersion_", String::class.java)
+                .invoke(builder, modelVersion)
+        return builder
+    }
+
     /**
      * Build ConnectorAvailableMessage for IDS message headers
      */
     fun getConnectorAvailableMessage(): ConnectorUpdateMessage {
         val builder = ConnectorUpdateMessageBuilder()
-        settings.let { settings ->
-            builder._securityToken_(
-                    DynamicAttributeTokenBuilder()
-                            ._tokenFormat_(TokenFormat.JWT)
-                            ._tokenValue_(settings.dynamicAttributeToken)
-                            .build())
-            settings.connectorProfile.maintainerUrl?.let {
-                builder._senderAgent_(it)
-            }
-            settings.connectorProfile.connectorUrl?.let {
-                builder._issuerConnector_(it)._affectedConnector_(it)
-            }
-        }
-        builder._issued_(DatatypeFactory.newInstance().newXMLGregorianCalendar(
-                GregorianCalendar().apply { timeInMillis = System.currentTimeMillis() }))
-        builder._modelVersion_(BuildConfig.INFOMODEL_VERSION)
+        initMessageBuilder(builder)
         return builder.build()
     }
 
@@ -100,40 +107,41 @@ class InfoModelService : InfoModel {
      * Returns random connector_url if none is stored in preferences.
      * The fields op_url and entityNames cannot be null.
      */
-    override fun getConnector(): Connector? {
-        val maintainerUrl = connectorProfile.maintainerUrl
-        val connectorUrl = connectorProfile.connectorUrl
-        val entityNames = connectorEntityNames
+    override val connector: Connector?
+        get() {
+            val maintainerUrl = connectorProfile.maintainerUrl
+            val connectorUrl = connectorProfile.connectorUrl
+            val entityNames = connectorEntityNames
 
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Maintainer URL: {}, Connector URL: {}, Entity Names: {}",
-                    maintainerUrl, connectorUrl, entityNames)
-        }
-
-        if (maintainerUrl != null) {
-            try {
-                val trustedConnectorBuilder = if (connectorUrl == null) {
-                    TrustedConnectorBuilder()
-                } else {
-                    TrustedConnectorBuilder(connectorUrl)
-                }
-                trustedConnectorBuilder._maintainer_(maintainerUrl)
-                return trustedConnectorBuilder._title_(ArrayList(entityNames))
-                        ._securityProfile_(securityProfile)
-                        ._resourceCatalog_(catalog)
-                        ._description_(ArrayList(entityNames)).build()
-            } catch (ex: ConstraintViolationException) {
-                LOG.error("Caught ConstraintViolationException while building Connector", ex)
-                return null
-            } catch (ex: URISyntaxException) {
-                LOG.error("Caught URISyntaxException while building Connector", ex)
-                return null
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Maintainer URL: {}, Connector URL: {}, Entity Names: {}",
+                        maintainerUrl, connectorUrl, entityNames)
             }
-        } else {
-            LOG.warn("Connector couldn't be built: Maintainer URL is required!")
-            return null
+
+            return if (maintainerUrl != null) {
+                try {
+                    val trustedConnectorBuilder = if (connectorUrl == null) {
+                        TrustedConnectorBuilder()
+                    } else {
+                        TrustedConnectorBuilder(connectorUrl)
+                    }
+                    trustedConnectorBuilder._maintainer_(maintainerUrl)
+                            ._title_(ArrayList(entityNames))
+                            ._securityProfile_(securityProfile)
+                            ._resourceCatalog_(catalog)
+                            ._description_(ArrayList(entityNames)).build()
+                } catch (ex: ConstraintViolationException) {
+                    LOG.error("Caught ConstraintViolationException while building Connector", ex)
+                    null
+                } catch (ex: URISyntaxException) {
+                    LOG.error("Caught URISyntaxException while building Connector", ex)
+                    null
+                }
+            } else {
+                LOG.warn("Connector couldn't be built: Maintainer URL is required!")
+                null
+            }
         }
-    }
 
     /**
      * Store or update new Connector description to preferences.
@@ -156,9 +164,10 @@ class InfoModelService : InfoModel {
         }
     }
 
-    override fun getConnectorAsJsonLd(): String = settings.connectorJsonLd
-            ?: connector?.let { serializer.serialize(it) }
-            ?: throw NullPointerException("Connector is not available")
+    override val connectorAsJsonLd: String
+        get() = settings.connectorJsonLd
+                ?: connector?.let { serializer.serialize(it) }
+                ?: throw NullPointerException("Connector is not available")
 
     override fun setConnectorByJsonLd(jsonLd: String?) {
         settings.let { settings ->
@@ -174,14 +183,13 @@ class InfoModelService : InfoModel {
         }
     }
 
-    override fun getDynamicAttributeToken(): String = settings.dynamicAttributeToken
-            ?: throw NullPointerException("DAPS token is not available")
+    override val dynamicAttributeToken: String
+        get() = settings.dynamicAttributeToken
+                ?: throw NullPointerException("DAPS token is not available")
 
-    override fun setDynamicAttributeToken(dynamicAttributeToken: String) =
-            run {
-                settings.dynamicAttributeToken = dynamicAttributeToken
-                true
-            }
+    override fun setDynamicAttributeToken(dynamicAttributeToken: String?) {
+        settings.dynamicAttributeToken = dynamicAttributeToken
+    }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(InfoModelService::class.java)

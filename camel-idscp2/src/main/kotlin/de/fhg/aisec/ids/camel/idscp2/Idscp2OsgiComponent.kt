@@ -23,7 +23,10 @@ import de.fhg.aisec.ids.api.endpointconfig.EndpointConfigManager
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.api.tokenm.TokenManager
-import org.osgi.service.component.annotations.*
+import org.osgi.service.component.annotations.Activate
+import org.osgi.service.component.annotations.Component
+import org.osgi.service.component.annotations.Reference
+import org.osgi.service.component.annotations.ReferenceCardinality
 
 @Component
 class Idscp2OsgiComponent {
@@ -44,11 +47,6 @@ class Idscp2OsgiComponent {
         instance = this
     }
 
-    @Deactivate
-    fun deactivate() {
-        instance = null
-    }
-
     fun setSettings(settings: Settings) {
         this.settings = settings
     }
@@ -66,10 +64,10 @@ class Idscp2OsgiComponent {
     }
 
     companion object {
-        private var instance: Idscp2OsgiComponent? = null
+        private lateinit var instance: Idscp2OsgiComponent
 
-        fun setInstance(instance: Idscp2OsgiComponent?) {
-            Companion.instance = instance
+        fun setInstance(instance: Idscp2OsgiComponent) {
+            this.instance = instance
         }
 
         /**
@@ -77,25 +75,17 @@ class Idscp2OsgiComponent {
          * but instance might be null for Unit Tests
          * @return Token-Manager instance
          */
-        fun getSettings(): Settings {
-            return instance!!.settings
-        }
+        val settings get() = instance.settings
 
         /**
          * Is never null due to ReferenceCardinality.MANDATORY,
          * but instance might be null for Unit Tests
          * @return Info-Model-Manager instance
          */
-        fun getInfoModelManager(): InfoModel {
-            return instance!!.infoModelManager
-        }
+        val infoModelManager get() = instance.infoModelManager
 
-        fun getTokenManager(): TokenManager? {
-            return instance?.tokenManager
-        }
+        val tokenManager get() = instance.tokenManager
 
-        fun getEndpointConfigManager(): EndpointConfigManager? {
-            return instance?.endpointConfigManager
-        }
+        val endpointConfigManager get() = instance.endpointConfigManager
     }
 }

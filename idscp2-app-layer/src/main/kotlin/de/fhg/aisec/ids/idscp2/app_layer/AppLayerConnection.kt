@@ -12,13 +12,13 @@ import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class AppLayerConnection private constructor(private val idscp2Connection: Idscp2Connection):
+class AppLayerConnection private constructor(private val idscp2Connection: Idscp2Connection) :
         Idscp2Connection by idscp2Connection {
     private var idscp2MessageListener: Idscp2MessageListener? = null
     private val genericMessageListeners: MutableSet<GenericMessageListener> = Collections.synchronizedSet(HashSet())
 
-    constructor(secureChannel: SecureChannel, settings: Idscp2Settings, dapsDriver: DapsDriver):
-        this(Idscp2ConnectionImpl(secureChannel, settings, dapsDriver))
+    constructor(secureChannel: SecureChannel, settings: Idscp2Settings, dapsDriver: DapsDriver) :
+            this(Idscp2ConnectionImpl(secureChannel, settings, dapsDriver))
 
     private fun assureMessageListener() {
         if (idscp2MessageListener == null) {
@@ -32,7 +32,9 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
                         AppLayer.AppLayerMessage.MessageCase.GENERICMESSAGE -> {
                             genericMessageListeners.forEach {
                                 val genericMessage = appLayerMessage.genericMessage
-                                it.onMessage(this, genericMessage.header, genericMessage.payload.toByteArray())
+                                it.onMessage(this,
+                                        genericMessage.header,
+                                        genericMessage.payload?.toByteArray())
                             }
                         }
                         else -> LOG.warn("Unknown app layer message header encountered.")
@@ -46,11 +48,18 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
         }
     }
 
-    fun sendGenericMessage(header: String, payload: ByteArray) {
+    fun sendGenericMessage(header: String?, payload: ByteArray?) {
         val message = AppLayer.AppLayerMessage.newBuilder()
                 .setGenericMessage(AppLayer.GenericMessage.newBuilder()
-                        .setHeader(header)
-                        .setPayload(ByteString.copyFrom(payload)))
+                        .also {
+                            if (header != null) {
+                                it.header = header
+                            }
+                            if (payload != null) {
+                                it.payload = ByteString.copyFrom(payload)
+                            }
+                        }
+                        .build())
                 .build()
         idscp2Connection.send(message.toByteArray())
     }

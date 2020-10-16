@@ -74,7 +74,7 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
     }
 
     @Synchronized
-    fun sendMessage(type: String, body: ByteArray) {
+    fun sendMessage(type: String?, body: ByteArray?) {
         server?.let { server -> server.allConnections.forEach { it.sendGenericMessage(type, body) } }
     }
 

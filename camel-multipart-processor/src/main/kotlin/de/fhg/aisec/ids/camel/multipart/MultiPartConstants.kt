@@ -17,12 +17,9 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.multipart;
+package de.fhg.aisec.ids.camel.multipart
 
-final class MultiPartConstants {
-
-  private MultiPartConstants() {}
-
-  static final String MULTIPART_HEADER = "header";
-  static final String MULTIPART_PAYLOAD = "payload";
+internal object MultiPartConstants {
+    const val MULTIPART_HEADER = "header"
+    const val MULTIPART_PAYLOAD = "payload"
 }

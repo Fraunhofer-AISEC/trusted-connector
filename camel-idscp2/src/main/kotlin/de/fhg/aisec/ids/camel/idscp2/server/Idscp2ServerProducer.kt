@@ -29,7 +29,9 @@ class Idscp2ServerProducer(private val endpoint: Idscp2ServerEndpoint) : Default
         val message = exchange.getIn()
         val type = message.getHeader("idscp2-header", String::class.java)
         val body = message.getBody(ByteArray::class.java)
-        endpoint.sendMessage(type, body)
+        if (type != null || body != null) {
+            endpoint.sendMessage(type, body)
+        }
     }
 
 }

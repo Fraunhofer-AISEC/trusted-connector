@@ -17,38 +17,36 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.multipart;
+package de.fhg.aisec.ids.camel.multipart
 
-import de.fhg.aisec.ids.api.infomodel.InfoModel;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
+import de.fhg.aisec.ids.api.infomodel.InfoModel
+import org.osgi.service.component.annotations.Activate
+import org.osgi.service.component.annotations.Component
+import org.osgi.service.component.annotations.Reference
+import org.osgi.service.component.annotations.ReferenceCardinality
 
 /**
  * The only purpose of this OSGi component is to connect to the InfoModelManager.
  *
- * <p>This is required for the MultiPartComponent to use a proper IDS self description in the
+ *
+ * This is required for the MultiPartComponent to use a proper IDS self description in the
  * multipart messages.
  *
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 @Component(name = "ids-multipart-component")
-public class MultiPartComponent {
+class MultiPartComponent {
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
+    lateinit var infoModelManager: InfoModel
 
-  @SuppressWarnings("unused")
-  @Reference(cardinality = ReferenceCardinality.MANDATORY)
-  private InfoModel infoModel;
+    @Activate
+    fun activate() {
+        instance = this
+    }
 
-  private static MultiPartComponent instance;
+    companion object {
+        private lateinit var instance: MultiPartComponent
 
-  @Activate
-  @SuppressWarnings("squid:S2696")
-  protected void activate() {
-    instance = this;
-  }
-
-  public static InfoModel getInfoModelManager() {
-    return instance.infoModel;
-  }
+        val infoModelManager get() = instance.infoModelManager
+    }
 }

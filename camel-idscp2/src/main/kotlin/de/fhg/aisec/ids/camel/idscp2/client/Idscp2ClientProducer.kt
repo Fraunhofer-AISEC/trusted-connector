@@ -33,7 +33,9 @@ class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : Default
         val message = exchange.getIn()
         val type = message.getHeader("idscp2-header", String::class.java)
         val body = message.getBody(ByteArray::class.java)
-        connectionFuture.get().sendGenericMessage(type, body)
+        if (type != null || body != null) {
+            connectionFuture.get().sendGenericMessage(type, body)
+        }
     }
 
     override fun doStart() {

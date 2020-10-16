@@ -17,20 +17,19 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.multipart;
+package de.fhg.aisec.ids.camel.multipart
 
-import de.fhg.aisec.ids.api.infomodel.InfoModel;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.entity.mime.content.StringBody;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import de.fhg.aisec.ids.api.infomodel.InfoModel
+import org.apache.camel.Exchange
+import org.apache.camel.Processor
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.HttpMultipartMode
+import org.apache.http.entity.mime.MultipartEntityBuilder
+import org.apache.http.entity.mime.content.InputStreamBody
+import org.apache.http.entity.mime.content.StringBody
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.util.*
 
 /**
  * The MultiPartOutputProcessor will read the Exchange's header "ids" (if present) and the
@@ -101,54 +100,52 @@ import java.util.UUID;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
-public class MultiPartOutputProcessor implements Processor {
+class MultiPartOutputProcessor : Processor {
+    @Throws(Exception::class)
+    override fun process(exchange: Exchange) {
+        val boundary = UUID.randomUUID().toString()
+        val multipartEntityBuilder = MultipartEntityBuilder.create()
+        multipartEntityBuilder.setMode(HttpMultipartMode.STRICT)
+        multipartEntityBuilder.setBoundary(boundary)
 
-  @Override
-  public void process(Exchange exchange) throws Exception {
-    String boundary = UUID.randomUUID().toString();
+        // Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
+        // will be sent as a multipart "header"
+        val infoModel: InfoModel = MultiPartComponent.infoModelManager
+        val rdfHeader = infoModel.connectorAsJsonLd
 
-    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-    multipartEntityBuilder.setMode(HttpMultipartMode.STRICT);
-    multipartEntityBuilder.setBoundary(boundary);
-
-    // Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
-    // will be sent as a multipart "header"
-    InfoModel infoModel = MultiPartComponent.getInfoModelManager();
-    String rdfHeader = "";
-    if (infoModel != null) {
-      rdfHeader = infoModel.getConnectorAsJsonLd();
-    }
-
-    // Use the self-description provided by the InfoModelManager as "header"
-    multipartEntityBuilder.addPart(
-        MultiPartConstants.MULTIPART_HEADER,
-        new StringBody(rdfHeader, ContentType.APPLICATION_JSON));
-
-    // Get the Exchange body and turn it into the second part named "payload"
-    final var contentTypeString = exchange.getIn().getHeader("Content-Type");
-    if (contentTypeString != null) {
-      InputStream payload = exchange.getIn().getBody(InputStream.class);
-      if (payload != null) {
+        // Use the self-description provided by the InfoModelManager as "header"
         multipartEntityBuilder.addPart(
-            MultiPartConstants.MULTIPART_PAYLOAD,
-            new InputStreamBody(
-                payload,
-                ContentType.create(exchange.getIn().getHeader("Content-Type").toString().split(";")[0])));
-      }
-    } else {
-      String payload = exchange.getIn().getBody(String.class);
-      if (payload != null) {
-        multipartEntityBuilder.addPart(
-            MultiPartConstants.MULTIPART_PAYLOAD,
-            new StringBody(payload, ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), StandardCharsets.UTF_8)));
-      }
-    }
+                MultiPartConstants.MULTIPART_HEADER,
+                StringBody(rdfHeader, ContentType.APPLICATION_JSON))
 
-    // Remove current Content-Type header before setting the new one
-    exchange.getIn().removeHeader("Content-Type");
-    // Set Content-Type for multipart message
-    exchange.getIn().setHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
-    // Using InputStream as source for the message body
-    exchange.getIn().setBody(multipartEntityBuilder.build().getContent());
-  }
+        // Get the Exchange body and turn it into the second part named "payload"
+        val contentTypeString = exchange.getIn().getHeader("Content-Type")
+        if (contentTypeString != null) {
+            val payload = exchange.getIn().getBody(InputStream::class.java)
+            if (payload != null) {
+                multipartEntityBuilder.addPart(
+                        MultiPartConstants.MULTIPART_PAYLOAD,
+                        InputStreamBody(
+                                payload,
+                                ContentType.create(exchange.getIn().getHeader("Content-Type").toString()
+                                        .split(";").toTypedArray()[0])))
+            }
+        } else {
+            val payload = exchange.getIn().getBody(String::class.java)
+            if (payload != null) {
+                multipartEntityBuilder.addPart(
+                        MultiPartConstants.MULTIPART_PAYLOAD,
+                        StringBody(payload, ContentType.create(
+                                ContentType.TEXT_PLAIN.mimeType,
+                                StandardCharsets.UTF_8)))
+            }
+        }
+
+        // Remove current Content-Type header before setting the new one
+        exchange.getIn().removeHeader("Content-Type")
+        // Set Content-Type for multipart message
+        exchange.getIn().setHeader("Content-Type", "multipart/mixed; boundary=$boundary")
+        // Using InputStream as source for the message body
+        exchange.getIn().body = multipartEntityBuilder.build().content
+    }
 }

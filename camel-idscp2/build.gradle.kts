@@ -7,6 +7,9 @@ dependencies {
     providedByBundle(project(":ids-api")) { isTransitive = false }
     providedByBundle(project(":idscp2-app-layer"))
 
+    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
+    implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodelSerializer"])
+
     // Bill of Materials (BOM) for Camel
     bom("org.apache.camel", "camel-parent", libraryVersions["camel"])
 

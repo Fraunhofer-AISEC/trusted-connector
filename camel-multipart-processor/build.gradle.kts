@@ -3,17 +3,12 @@ dependencies {
             rootProject.ext.get("libraryVersions") as Map<String, String>
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
-
-    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-    implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodelSerializer"])
     
     // Bill of Materials (BOM) for Camel
     bom("org.apache.camel", "camel-parent", libraryVersions["camel"])
 
     providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
 	providedByFeature("org.apache.camel", "camel-http4", libraryVersions["camelHttp4"])
-
-    compileOnly("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
 
     providedByBundle("org.apache.httpcomponents", "httpcore-osgi", libraryVersions["httpcore"])
 	providedByBundle("org.apache.httpcomponents", "httpclient-osgi", libraryVersions["httpclient"])

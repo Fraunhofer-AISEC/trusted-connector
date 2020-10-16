@@ -1,7 +1,4 @@
 Bundle-Name: IDS :: Camel Multipart Processor
 Bundle-Description: Mime/Multipart support for Camel messages
-Export-Package: \
-	de.fhg.aisec.ids.camel.multipart
-Import-Package: \
-	!org.checkerframework.checker*,\
-	*
+Export-Package: de.fhg.aisec.ids.camel.multipart
+Import-Package: *

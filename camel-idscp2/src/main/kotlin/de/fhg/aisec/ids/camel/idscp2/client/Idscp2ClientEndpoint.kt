@@ -16,7 +16,6 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
-import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
@@ -98,7 +97,6 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
 
     public override fun doStart() {
         LOG.debug("Starting IDSCP2 client endpoint $endpointUri")
-        val settings: Settings = Idscp2OsgiComponent.getSettings()
         val remainingMatcher = URI_REGEX.matcher(remaining)
         require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
         val matchResult = remainingMatcher.toMatchResult()
@@ -125,7 +123,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         secureChannelDriver = NativeTLSDriver()
         clientSettings = clientSettingsBuilder.build()
         dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
-                .setDapsUrl(settings.connectorConfig.dapsUrl)
+                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
                 .setKeyAlias(clientSettings.dapsKeyAlias)
                 .setKeyPassword(clientSettings.keyPassword)
                 .setKeyStorePath(clientSettings.keyStorePath)
