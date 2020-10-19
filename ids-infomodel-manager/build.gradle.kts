@@ -1,7 +1,7 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 plugins {
-    id("com.github.gmazzo.buildconfig") version "2.0.1"
+    id("com.github.gmazzo.buildconfig") version "2.0.2"
 }
 
 @Suppress("UNCHECKED_CAST") val libraryVersions =
@@ -11,7 +11,6 @@ apply(plugin = "idea")
 
 buildConfig {
     sourceSets.getByName("main") {
-        useKotlinOutput { topLevelConstants = true }
         packageName("de.fhg.aisec.ids.informationmodelmanager")
         buildConfigField("String", "INFOMODEL_VERSION",
                 "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\"")
