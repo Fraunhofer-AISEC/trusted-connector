@@ -21,19 +21,23 @@ object RatVerifierDriverRegistry {
     /**
      * An inner static wrapper class, that wraps driver config and driver class
      */
-    private class DriverWrapper(
-            val driverFactory: (FsmListener) -> RatVerifierDriver,
-            val driverConfig: Any?
-    )
-    private val drivers = ConcurrentHashMap<String, DriverWrapper>()
+    private class DriverWrapper<VC>(
+            val driverFactory: (FsmListener) -> RatVerifierDriver<VC>,
+            val driverConfig: VC?
+    ) {
+        fun getInstance(listener: FsmListener) = driverFactory.invoke(listener).also {d ->
+            driverConfig?.let { d.setConfig(it) }
+        }
+    }
+    private val drivers = ConcurrentHashMap<String, DriverWrapper<*>>()
 
     /**
      * Register Rat Verifier driver and an optional configuration in the registry
      */
-    fun registerDriver(
+    fun <VC> registerDriver(
             mechanism: String,
-            driverFactory: (FsmListener) -> RatVerifierDriver,
-            driverConfig: Any?
+            driverFactory: (FsmListener) -> RatVerifierDriver<VC>,
+            driverConfig: VC?
     ) {
         drivers[mechanism] = DriverWrapper(driverFactory, driverConfig)
     }
@@ -55,15 +59,10 @@ object RatVerifierDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatVerifier.
      * The RatVerifier will be initialized with a configuration, if present. Then it is started.
      */
-    fun startRatVerifierDriver(mechanism: String?, listener: FsmListener): RatVerifierDriver? {
+    fun startRatVerifierDriver(mechanism: String?, listener: FsmListener): RatVerifierDriver<*>? {
         val driverWrapper = drivers[mechanism]
         return try {
-            val driver = driverWrapper!!.driverFactory(listener)
-            if (driverWrapper.driverConfig != null) {
-                driver.setConfig(driverWrapper.driverConfig)
-            }
-            driver.start()
-            driver
+            driverWrapper!!.getInstance(listener).also { it.start() }
         } catch (e: Exception) {
             LOG.error("Error during RAT verifier start", e)
             null

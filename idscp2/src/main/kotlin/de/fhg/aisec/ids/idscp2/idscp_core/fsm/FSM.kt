@@ -41,9 +41,9 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /*  ----------------   end of states   --------------- */
     private val connection: Idscp2Connection
     private val secureChannel: SecureChannel
-    var ratProverDriver: RatProverDriver? = null
+    var ratProverDriver: RatProverDriver<*>? = null
         private set
-    var ratVerifierDriver: RatVerifierDriver? = null
+    var ratVerifierDriver: RatVerifierDriver<*>? = null
         private set
 
     /**

@@ -22,7 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * A TPM2d RatVerifier driver that verifies the remote peer's identity using TPM2d
  */
-class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
+class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver<TPM2dVerifierConfig>(fsmListener) {
     /*
      * ******************* Protocol *******************
      *
@@ -58,13 +58,9 @@ class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
      */
     private val queue: BlockingQueue<ByteArray> = LinkedBlockingQueue()
     private var config = TPM2dVerifierConfig.Builder().build()
-    override fun setConfig(config: Any) {
-        if (config is TPM2dVerifierConfig) {
-            LOG.debug("Set rat verifier config")
-            this.config = config
-        } else {
-            LOG.warn("Invalid config")
-        }
+    override fun setConfig(config: TPM2dVerifierConfig) {
+        LOG.debug("Set rat verifier config")
+        this.config = config
     }
 
     override fun delegate(message: ByteArray) {

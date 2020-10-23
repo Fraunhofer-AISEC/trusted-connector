@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class RatVerifierDummy(fsmListener: FsmListener) : RatVerifierDriver(fsmListener) {
+class RatVerifierDummy(fsmListener: FsmListener) : RatVerifierDriver<Unit>(fsmListener) {
     private val queue: BlockingQueue<ByteArray> = LinkedBlockingQueue()
     override fun delegate(message: ByteArray) {
         queue.add(message)

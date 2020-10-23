@@ -18,5 +18,5 @@ interface DapsDriver {
      *
      * Return the number of seconds, the DAT is valid
      */
-    fun verifyToken(dat: ByteArray?, securityRequirements: Any?): Long
+    fun verifyToken(dat: ByteArray, securityRequirements: Any?): Long
 }

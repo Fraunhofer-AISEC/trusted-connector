@@ -21,20 +21,24 @@ object RatProverDriverRegistry {
     /**
      * An inner static wrapper class, that wraps driver config and driver class
      */
-    private class DriverWrapper(
-            val driverFactory: (FsmListener) -> RatProverDriver,
-            val driverConfig: Any?
-    )
+    private class DriverWrapper<PC>(
+            val driverFactory: (FsmListener) -> RatProverDriver<PC>,
+            val driverConfig: PC?
+    ) {
+        fun getInstance(listener: FsmListener) = driverFactory.invoke(listener).also {d ->
+            driverConfig?.let { d.setConfig(it) }
+        }
+    }
 
-    private val drivers = ConcurrentHashMap<String, DriverWrapper>()
+    private val drivers = ConcurrentHashMap<String, DriverWrapper<*>>()
 
     /**
      * Register Rat Prover driver and an optional configuration in the registry
      */
-    fun registerDriver(
+    fun <PC> registerDriver(
             instance: String,
-            driverFactory: (FsmListener) -> RatProverDriver,
-            driverConfig: Any?
+            driverFactory: (FsmListener) -> RatProverDriver<PC>,
+            driverConfig: PC?
     ) {
         drivers[instance] = DriverWrapper(driverFactory, driverConfig)
     }
@@ -55,15 +59,10 @@ object RatProverDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatProver.
      * The RatProver will be initialized with a configuration, if present. Then it is started.
      */
-    fun startRatProverDriver(instance: String?, listener: FsmListener): RatProverDriver? {
+    fun startRatProverDriver(instance: String?, listener: FsmListener): RatProverDriver<*>? {
         val driverWrapper = drivers[instance]
         return try {
-            val driver = driverWrapper!!.driverFactory(listener)
-            if (driverWrapper.driverConfig != null) {
-                driver.setConfig(driverWrapper.driverConfig)
-            }
-            driver.start()
-            driver
+            driverWrapper!!.getInstance(listener).also { it.start() }
         } catch (e: Exception) {
             LOG.error("Error during RAT prover start", e)
             null

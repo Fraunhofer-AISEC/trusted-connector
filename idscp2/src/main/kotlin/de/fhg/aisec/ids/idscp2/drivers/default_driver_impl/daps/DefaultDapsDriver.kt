@@ -185,7 +185,7 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
      *
      * @return The number of seconds this DAT is valid
      */
-    override fun verifyToken(dat: ByteArray?, securityRequirements: Any?): Long {
+    override fun verifyToken(dat: ByteArray, securityRequirements: Any?): Long {
         if (LOG.isDebugEnabled) {
             LOG.debug("Verifying dynamic attribute token...")
         }
@@ -217,7 +217,7 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
         val validityTime: Long
         val claims: JwtClaims
         try {
-            claims = jwtConsumer.processToClaims(String(dat!!, StandardCharsets.UTF_8))
+            claims = jwtConsumer.processToClaims(String(dat, StandardCharsets.UTF_8))
             val expTime = claims.expirationTime
             validityTime = expTime.value - NumericDate.now().value
         } catch (e: Exception) {

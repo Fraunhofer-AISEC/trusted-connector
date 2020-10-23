@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-abstract class RatProverDriver(protected val fsmListener: FsmListener) : Thread() {
+abstract class RatProverDriver<in PC>(protected val fsmListener: FsmListener) : Thread() {
     protected var running = true
 
     /*
@@ -25,7 +25,7 @@ abstract class RatProverDriver(protected val fsmListener: FsmListener) : Thread(
         interrupt()
     }
 
-    open fun setConfig(config: Any) {
+    open fun setConfig(config: PC) {
         LOG.warn("Method 'setConfig' for RatProverDriver is not implemented")
     }
 

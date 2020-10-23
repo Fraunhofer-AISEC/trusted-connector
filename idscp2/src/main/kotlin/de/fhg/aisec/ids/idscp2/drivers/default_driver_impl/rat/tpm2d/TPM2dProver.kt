@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
+class TPM2dProver(fsmListener: FsmListener) : RatProverDriver<TPM2dProverConfig>(fsmListener) {
     /*
      * ******************* Protocol *******************
      *
@@ -52,17 +52,11 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver(fsmListener) {
      */
     private val queue: BlockingQueue<ByteArray> = LinkedBlockingQueue()
     private var config = TPM2dProverConfig.Builder().build()
-    override fun setConfig(config: Any) {
-        if (config is TPM2dProverConfig) {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Set rat prover config")
-            }
-            this.config = config
-        } else {
-            if (LOG.isWarnEnabled) {
-                LOG.warn("Invalid prover config")
-            }
+    override fun setConfig(config: TPM2dProverConfig) {
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Set rat prover config")
         }
+        this.config = config
     }
 
     override fun delegate(message: ByteArray) {
