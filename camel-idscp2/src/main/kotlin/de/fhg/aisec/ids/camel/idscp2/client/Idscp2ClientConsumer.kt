@@ -64,15 +64,18 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
         try {
             createUoW(exchange)
             // Set relevant information
-            exchange.getIn().setHeader(IDSCP2_HEADER, header)
-            exchange.getIn().setBody(payload, ByteArray::class.java)
+            exchange.message.let {
+                it.setHeader(IDSCP2_HEADER, header)
+                it.setBody(payload, ByteArray::class.java)
+            }
             // Do processing
             processor.process(exchange)
             // Handle response
-            val response = exchange.message
-            val responseHeader = response.getHeader(IDSCP2_HEADER, String::class.java)
-            if (response.body != null || responseHeader != null) {
-                connection.sendGenericMessage(responseHeader, response.getBody(ByteArray::class.java))
+            exchange.message.let {
+                val responseHeader = it.getHeader(IDSCP2_HEADER, String::class.java)
+                if (it.body != null || responseHeader != null) {
+                    connection.sendGenericMessage(responseHeader, it.getBody(ByteArray::class.java))
+                }
             }
         } finally {
             doneUoW(exchange)

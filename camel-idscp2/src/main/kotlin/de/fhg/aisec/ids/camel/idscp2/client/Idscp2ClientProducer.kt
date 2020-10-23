@@ -31,11 +31,12 @@ class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : Default
     private lateinit var connectionFuture: CompletableFuture<AppLayerConnection>
 
     override fun process(exchange: Exchange) {
-        val message = exchange.getIn()
-        val type = message.getHeader(IDSCP2_HEADER, String::class.java)
-        val body = message.getBody(ByteArray::class.java)
-        if (type != null || body != null) {
-            connectionFuture.get().sendGenericMessage(type, body)
+        exchange.message.let {
+            val type = it.getHeader(IDSCP2_HEADER, String::class.java)
+            val body = it.getBody(ByteArray::class.java)
+            if (type != null || body != null) {
+                connectionFuture.get().sendGenericMessage(type, body)
+            }
         }
     }
 

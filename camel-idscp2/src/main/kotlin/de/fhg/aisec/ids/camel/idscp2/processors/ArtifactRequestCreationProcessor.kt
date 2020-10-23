@@ -25,7 +25,7 @@ class ArtifactRequestCreationProcessor : Processor {
         if (LOG.isDebugEnabled) {
             LOG.debug("ArtifactRequestMessage serialization: {}", requestMessageSerialization)
         }
-        exchange.`in`.setHeader(IDSCP2_HEADER, requestMessageSerialization)
+        exchange.message.setHeader(IDSCP2_HEADER, requestMessageSerialization)
     }
 
     companion object {
