@@ -1,8 +1,9 @@
 package de.fhg.aisec.ids.camel.idscp2.processors
 
+import de.fhg.aisec.ids.camel.idscp2.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
+import de.fhg.aisec.ids.camel.idscp2.processors.Utils.SERIALIZER
 import de.fraunhofer.iais.eis.ArtifactRequestMessageBuilder
-import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
@@ -24,14 +25,13 @@ class ArtifactRequestCreationProcessor : Processor {
         if (LOG.isDebugEnabled) {
             LOG.debug("ArtifactRequestMessage serialization: {}", requestMessageSerialization)
         }
-        exchange.`in`.setHeader("idscp2-header", requestMessageSerialization)
+        exchange.`in`.setHeader(IDSCP2_HEADER, requestMessageSerialization)
     }
 
     companion object {
         const val ARTIFACT_URI_PROPERTY = "artifactUri"
 
         private val LOG = LoggerFactory.getLogger(ArtifactRequestCreationProcessor::class.java)
-        private val SERIALIZER: Serializer by lazy { Serializer() }
     }
 
 }

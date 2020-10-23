@@ -16,6 +16,7 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
+import de.fhg.aisec.ids.camel.idscp2.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
@@ -63,13 +64,13 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
         try {
             createUoW(exchange)
             // Set relevant information
-            exchange.getIn().setHeader("idscp2-header", header)
+            exchange.getIn().setHeader(IDSCP2_HEADER, header)
             exchange.getIn().setBody(payload, ByteArray::class.java)
             // Do processing
             processor.process(exchange)
             // Handle response
             val response = exchange.message
-            val responseHeader = response.getHeader("idscp2-header", String::class.java)
+            val responseHeader = response.getHeader(IDSCP2_HEADER, String::class.java)
             if (response.body != null || responseHeader != null) {
                 connection.sendGenericMessage(responseHeader, response.getBody(ByteArray::class.java))
             }
