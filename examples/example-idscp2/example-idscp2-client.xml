@@ -33,6 +33,9 @@
             <log message="Client received: ${body} (Header: ${headers[idscp2-header]})"/>
             <!-- Prevents the client consumer from sending the message back to the server -->
             <removeHeader headerName="idscp2-header"/>
+            <setBody>
+                <simple>null</simple>
+            </setBody>
         </route>
 
     </camelContext>

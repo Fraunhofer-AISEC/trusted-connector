@@ -7,20 +7,23 @@
 
     <camel:sslContextParameters id="clientSslContext" certAlias="1.0.1">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.p12" password="password"/>
+            <camel:keyStore resource="etc/provider-keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
-            <camel:keyStore resource="etc/idscp2/client-truststore_new.p12" password="password"/>
+            <camel:keyStore resource="etc/truststore.p12" password="password"/>
         </camel:trustManagers>
     </camel:sslContextParameters>
 
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 
         <route id="idscp2ReceiverClient">
-            <from uri="idscp2client://localhost:29292?sslContextParameters=#clientSslContext"/>
+            <from uri="idscp2client://consumer-core:29292?sslContextParameters=#clientSslContext"/>
             <log message="Client received: ${body} (Header: ${headers[idscp2-header]})"/>
             <!-- Prevents the client consumer from sending the message back to the server -->
             <removeHeader headerName="idscp2-header"/>
+            <setBody>
+                <simple>null</simple>
+            </setBody>
         </route>
 
     </camelContext>
