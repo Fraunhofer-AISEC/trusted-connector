@@ -118,34 +118,36 @@ class MultiPartOutputProcessor : Processor {
                 MultiPartConstants.MULTIPART_HEADER,
                 StringBody(rdfHeader, ContentType.APPLICATION_JSON))
 
-        // Get the Exchange body and turn it into the second part named "payload"
-        val contentTypeString = exchange.getIn().getHeader("Content-Type")
-        if (contentTypeString != null) {
-            val payload = exchange.getIn().getBody(InputStream::class.java)
-            if (payload != null) {
-                multipartEntityBuilder.addPart(
-                        MultiPartConstants.MULTIPART_PAYLOAD,
-                        InputStreamBody(
-                                payload,
-                                ContentType.create(exchange.getIn().getHeader("Content-Type").toString()
-                                        .split(";").toTypedArray()[0])))
+        exchange.message.let {
+            // Get the Exchange body and turn it into the second part named "payload"
+            val contentTypeString = it.getHeader("Content-Type")
+            if (contentTypeString != null) {
+                val payload = it.getBody(InputStream::class.java)
+                if (payload != null) {
+                    multipartEntityBuilder.addPart(
+                            MultiPartConstants.MULTIPART_PAYLOAD,
+                            InputStreamBody(
+                                    payload,
+                                    ContentType.create(contentTypeString.toString()
+                                            .split(";").toTypedArray()[0])))
+                }
+            } else {
+                val payload = it.getBody(String::class.java)
+                if (payload != null) {
+                    multipartEntityBuilder.addPart(
+                            MultiPartConstants.MULTIPART_PAYLOAD,
+                            StringBody(payload, ContentType.create(
+                                    ContentType.TEXT_PLAIN.mimeType,
+                                    StandardCharsets.UTF_8)))
+                }
             }
-        } else {
-            val payload = exchange.getIn().getBody(String::class.java)
-            if (payload != null) {
-                multipartEntityBuilder.addPart(
-                        MultiPartConstants.MULTIPART_PAYLOAD,
-                        StringBody(payload, ContentType.create(
-                                ContentType.TEXT_PLAIN.mimeType,
-                                StandardCharsets.UTF_8)))
-            }
-        }
 
-        // Remove current Content-Type header before setting the new one
-        exchange.getIn().removeHeader("Content-Type")
-        // Set Content-Type for multipart message
-        exchange.getIn().setHeader("Content-Type", "multipart/mixed; boundary=$boundary")
-        // Using InputStream as source for the message body
-        exchange.getIn().body = multipartEntityBuilder.build().content
+            // Remove current Content-Type header before setting the new one
+            it.removeHeader("Content-Type")
+            // Set Content-Type for multipart message
+            it.setHeader("Content-Type", "multipart/mixed; boundary=$boundary")
+            // Using InputStream as source for the message body
+            it.body = multipartEntityBuilder.build().content
+        }
     }
 }

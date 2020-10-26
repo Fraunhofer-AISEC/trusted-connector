@@ -26,15 +26,17 @@ import java.io.InputStream
 class MultiPartInputProcessor : Processor {
     @Throws(Exception::class)
     override fun process(exchange: Exchange) {
-        // Parse Multipart message
-        val parser = MultiPartStringParser(exchange.getIn().getBody(InputStream::class.java))
-        // Parser JSON Header (should be an InfoModel object)
-        exchange.getIn().setHeader("idsMultipartHeader", parser.header)
-        // Remove current Content-Type header before setting the new one
-        exchange.getIn().removeHeader("Content-Type")
-        // Copy Content-Type from payload part
-        exchange.getIn().setHeader("Content-Type", parser.payloadContentType)
-        // Populate body with extracted payload
-        exchange.getIn().body = parser.payload
+        exchange.message.let {
+            // Parse Multipart message
+            val parser = MultiPartStringParser(it.getBody(InputStream::class.java))
+            // Parser JSON Header (should be an InfoModel object)
+            it.setHeader("idsMultipartHeader", parser.header)
+            // Remove current Content-Type header before setting the new one
+            it.removeHeader("Content-Type")
+            // Copy Content-Type from payload part
+            it.setHeader("Content-Type", parser.payloadContentType)
+            // Populate body with extracted payload
+            it.body = parser.payload
+        }
     }
 }
