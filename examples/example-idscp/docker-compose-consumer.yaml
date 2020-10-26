@@ -22,6 +22,7 @@ services:
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
       - ../cert-stores/consumer-keystore.p12:/root/etc/consumer-keystore.p12
       - ../cert-stores/truststore.p12:/root/etc/truststore.p12
+      - ./settings-consumer.mapdb:/root/etc/settings.mapdb
       - ./example-consumer-routes.xml:/root/deploy/example-consumer-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-consumer

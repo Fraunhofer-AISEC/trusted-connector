@@ -22,6 +22,7 @@ services:
       - ../tpmsim/rootCA.crt:/root/etc/rootca-cert.pem
       - ../cert-stores/provider-keystore.p12:/root/etc/provider-keystore.p12
       - ../cert-stores/truststore.p12:/root/etc/truststore.p12
+      - ./settings-provider.mapdb:/root/etc/settings.mapdb
       - ./example-provider-routes.xml:/root/deploy/example-provider-routes.xml
     environment:
       - TPM_HOST=ids-tpmsim-provider
