@@ -34,7 +34,7 @@
             <!-- Prevents the client consumer from sending the message back to the server -->
             <removeHeader headerName="idscp2-header"/>
             <setBody>
-                <simple>null</simple>
+                <simple>${null}</simple>
             </setBody>
         </route>
 
