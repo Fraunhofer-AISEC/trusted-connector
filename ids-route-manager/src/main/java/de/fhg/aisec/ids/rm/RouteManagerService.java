@@ -19,7 +19,6 @@
  */
 package de.fhg.aisec.ids.rm;
 
-import de.fhg.aisec.ids.api.ReferenceUnbind;
 import de.fhg.aisec.ids.api.policy.PDP;
 import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot;
@@ -61,6 +60,7 @@ import java.util.stream.Collectors;
 public class RouteManagerService implements RouteManager {
   private static final Logger LOG = LoggerFactory.getLogger(RouteManagerService.class);
 
+  @SuppressWarnings("unused")
   @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
   private volatile PDP pdp;
 
@@ -71,40 +71,9 @@ public class RouteManagerService implements RouteManager {
     this.ctx = ctx;
   }
 
-  @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-  public void bindCamelContext(CamelContext cCtx) {
-    try {
-      cCtx.stop();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-    CamelInterceptor interceptor = new CamelInterceptor(this);
-    var routeController = cCtx.getRouteController();
-    var ecc = cCtx.adapt(ExtendedCamelContext.class);
-    ecc.addInterceptStrategy(interceptor);
-    for (Route r : cCtx.getRoutes()) {
-      try {
-        routeController.stopRoute(r.getId());
-        routeController.startRoute(r.getId());
-      } catch (Exception e) {
-        LOG.error(e.getMessage(), e);
-      }
-    }
-    try {
-      cCtx.start();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-  }
-
-  @ReferenceUnbind
-  public void unbindCamelContext(CamelContext cCtx) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Unbound from CamelContext " + cCtx);
-    }
-  }
-
-  PDP getPdp() {
+  @Override
+  @Nullable
+  public PDP getPdp() {
     return pdp;
   }
 

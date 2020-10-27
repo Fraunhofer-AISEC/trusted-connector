@@ -19,18 +19,20 @@
  */
 package de.fhg.aisec.ids.rm;
 
+import de.fhg.aisec.ids.api.router.RouteManager;
 import org.apache.camel.CamelContext;
 import org.apache.camel.NamedNode;
 import org.apache.camel.Processor;
 import org.apache.camel.spi.InterceptStrategy;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
+@Component(immediate = true, name = "ids-camel-interceptor")
 public class CamelInterceptor implements InterceptStrategy {
-  private RouteManagerService rm;
-
-  CamelInterceptor(@NonNull RouteManagerService rm) {
-    this.rm = rm;
-  }
+  @SuppressWarnings("unused")
+  @Reference(cardinality = ReferenceCardinality.MANDATORY)
+  private RouteManager rm;
 
   @Override
   public Processor wrapProcessorInInterceptors(
@@ -38,6 +40,6 @@ public class CamelInterceptor implements InterceptStrategy {
       final NamedNode node,
       final Processor target,
       final Processor nextTarget) {
-    return new PolicyEnforcementPoint(context, node, target, this.rm);
+    return new PolicyEnforcementPoint(node, target, this.rm);
   }
 }
