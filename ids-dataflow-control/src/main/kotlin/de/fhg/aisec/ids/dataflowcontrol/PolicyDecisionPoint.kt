@@ -19,7 +19,12 @@
  */
 package de.fhg.aisec.ids.dataflowcontrol
 
-import alice.tuprolog.*
+import alice.tuprolog.SolveInfo
+import alice.tuprolog.Var
+import alice.tuprolog.exceptions.MalformedGoalException
+import alice.tuprolog.exceptions.NoMoreSolutionException
+import alice.tuprolog.exceptions.NoSolutionException
+import alice.tuprolog.exceptions.PrologException
 import com.google.common.cache.CacheBuilder
 import de.fhg.aisec.ids.api.policy.*
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision

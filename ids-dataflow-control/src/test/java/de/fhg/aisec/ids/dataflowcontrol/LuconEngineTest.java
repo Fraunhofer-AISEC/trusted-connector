@@ -24,10 +24,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import alice.tuprolog.InvalidTheoryException;
-import alice.tuprolog.MalformedGoalException;
-import alice.tuprolog.NoSolutionException;
 import alice.tuprolog.SolveInfo;
+import alice.tuprolog.exceptions.InvalidTheoryException;
+import alice.tuprolog.exceptions.MalformedGoalException;
+import alice.tuprolog.exceptions.NoSolutionException;
 import com.google.common.collect.Sets;
 import de.fhg.aisec.ids.api.policy.*;
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision;
@@ -194,8 +194,6 @@ public class LuconEngineTest {
   public void testLoadingTheoryGood() throws InvalidTheoryException {
     LuconEngine e = new LuconEngine(null);
     e.loadPolicy(HANOI_THEORY);
-    String json = e.getTheoryAsJSON();
-    assertTrue(json.startsWith("{\"theory\":\"move(1,X,Y,"));
     String prolog = e.getTheory();
     assertTrue(prolog.trim().startsWith("move(1,X,Y"));
   }

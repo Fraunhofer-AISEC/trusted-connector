@@ -19,9 +19,15 @@
  */
 package de.fhg.aisec.ids.dataflowcontrol.lucon
 
-import alice.tuprolog.*
+import alice.tuprolog.Prolog
+import alice.tuprolog.SolveInfo
+import alice.tuprolog.Theory
 import alice.tuprolog.event.LibraryEvent
-import alice.tuprolog.event.LibraryListener
+import alice.tuprolog.exceptions.InvalidLibraryException
+import alice.tuprolog.exceptions.InvalidTheoryException
+import alice.tuprolog.exceptions.MalformedGoalException
+import alice.tuprolog.exceptions.NoSolutionException
+import alice.tuprolog.interfaces.event.LibraryListener
 import de.fhg.aisec.ids.api.router.CounterExample
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import org.slf4j.LoggerFactory
@@ -55,33 +61,33 @@ class LuconEngine
             return t?.toString() ?: ""
         }
 
-    val theoryAsJSON: String
-        get() {
-            val t = p.theory
-            return if (t == null) "" else t.toJSON()
-        }
-
     init {
         try {
-            p.theory = Theory(defaultPolicy)
+            p.theory = Theory.parseWithStandardOperators(defaultPolicy)
         } catch (e: Exception) {
             LOG.error("Error loading default policy", e)
         }
 
         // Add some listeners for logging/debugging
         p.addExceptionListener { ex -> LOG.error("Exception in Prolog reasoning: " + ex.msg) }
-        p.addQueryListener { q -> LOG.trace("Prolog query " + q.solveInfo.query.toString()) }
-        p.addLibraryListener(
-                object : LibraryListener {
-                    override fun libraryLoaded(e: LibraryEvent) {
-                        LOG.debug("Prolog library loaded " + e.libraryName)
-                    }
+        if (LOG.isTraceEnabled) {
+            p.addQueryListener { q -> LOG.trace("Prolog query " + q.solveInfo.query.toString()) }
+        }
+        if (LOG.isDebugEnabled) {
+            p.addLibraryListener(
+                    object : LibraryListener {
+                        override fun libraryLoaded(e: LibraryEvent) {
+                            LOG.debug("Prolog library loaded " + e.libraryName)
+                        }
 
-                    override fun libraryUnloaded(e: LibraryEvent) {
-                        LOG.debug("Prolog library unloaded " + e.libraryName)
-                    }
-                })
-        p.addSpyListener { l -> LOG.trace(l.msg + " " + l.source) }
+                        override fun libraryUnloaded(e: LibraryEvent) {
+                            LOG.debug("Prolog library unloaded " + e.libraryName)
+                        }
+                    })
+        }
+        if (LOG.isTraceEnabled) {
+            p.addSpyListener { l -> LOG.trace(l.msg + " " + l.source) }
+        }
         p.addWarningListener { warningEvent ->
             val w = warningEvent.msg
             if (WARNING_FILTER.matcher(w).matches()) {
@@ -128,7 +134,7 @@ class LuconEngine
      */
     @Throws(InvalidTheoryException::class)
     fun loadPolicy(theory: String) {
-        val t = Theory(theory)
+        val t = Theory.parseWithStandardOperators(theory)
         LOG.debug("Loading theory:\n$t")
         p.theory = t
     }
@@ -189,7 +195,7 @@ class LuconEngine
         try {
             // Get policy as prolog, add Camel route and init new Prolog engine with combined theory
             val t = p.theory
-            t.append(Theory(routePl))
+            t.append(Theory.parseWithStandardOperators(routePl))
             val newP = Prolog()
             newP.loadLibrary(LuconLibrary())
             newP.theory = t

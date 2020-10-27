@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.rm;
 
 import de.fhg.aisec.ids.api.policy.*;
+import de.fhg.aisec.ids.api.router.RouteManager;
 import org.apache.camel.*;
 import org.apache.camel.model.RouteDefinition;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -32,17 +33,14 @@ import java.util.concurrent.CompletableFuture;
 
 public class PolicyEnforcementPoint implements AsyncProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(PolicyEnforcementPoint.class);
-  private CamelContext ctx;
-  private NamedNode node;
-  private Processor target;
-  private RouteManagerService rm;
+  private final NamedNode node;
+  private final Processor target;
+  private final RouteManager rm;
 
   PolicyEnforcementPoint(
-      @NonNull CamelContext ctx,
-      @NonNull NamedNode node,
-      @NonNull Processor target,
-      @NonNull RouteManagerService rm) {
-    this.ctx = ctx;
+          @NonNull NamedNode node,
+          @NonNull Processor target,
+          @NonNull RouteManager rm) {
     this.node = node;
     this.target = target;
     this.rm = rm;
@@ -62,18 +60,7 @@ public class PolicyEnforcementPoint implements AsyncProcessor {
       return false;
     }
 
-    if (target == null) {
-      if (LOG.isWarnEnabled()) {
-        LOG.warn("Cannot check data flow policy. The target is null.");
-      }
-      return false;
-    }
-
     // Strict policy: If no PDP is available, block every checked data flow
-    if (rm == null) {
-      LOG.error("RouteManager is not available, aborting...");
-      return false;
-    }
     PDP pdp = rm.getPdp();
     if (pdp == null) {
       LOG.error("PDP is not available, aborting...");
