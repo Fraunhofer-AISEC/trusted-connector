@@ -15,8 +15,8 @@ export class AppService {
     constructor(private readonly http: HttpClient) {
     }
 
-    public getApps(): Observable<Array<App>> {
-        return this.http.get<Array<App>>(environment.apiURL + '/app/list/');
+    public getApps(): Observable<App[]> {
+        return this.http.get<App[]>(environment.apiURL + '/app/list/');
     }
 
     public stopApp(appId: string): Observable<Result> {
@@ -48,11 +48,11 @@ export class AppService {
         return this.http.get<Cml>(environment.apiURL + '/app/cml_version');
     }
 
-    public searchApps(term: string): Observable<Array<App>> {
+    public searchApps(term: string): Observable<App[]> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         const searchTerm = new AppSearchTerm();
         searchTerm.searchTerm = term;
-        const result = this.http.post<Array<App>>(environment.apiURL + '/app/search',
+        const result = this.http.post<App[]>(environment.apiURL + '/app/search',
                 searchTerm, {headers});
 
         return result;

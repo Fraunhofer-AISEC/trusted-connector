@@ -10,7 +10,7 @@ declare var componentHandler: any;
 })
 export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
   @Output() public readonly changeTitle = new EventEmitter();
-  private _policies?: Array<string>;
+  private _policies?: string[];
   private _isLoaded = false;
 
   constructor(private readonly titleService: Title, private readonly policyService: PolicyService) {
@@ -31,7 +31,7 @@ export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
     componentHandler.upgradeAllRegistered();
   }
 
-  get policies(): Array<string> {
+  get policies(): string[] {
     return this._policies;
   }
 

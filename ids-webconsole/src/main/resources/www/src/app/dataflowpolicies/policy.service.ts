@@ -11,8 +11,8 @@ import { Policy } from './policy.interface';
 export class PolicyService {
     constructor(private readonly http: HttpClient) { }
 
-    public getPolicies(): Observable<Array<string>> {
-        return this.http.get<Array<string>>(environment.apiURL + '/policies/list');
+    public getPolicies(): Observable<string[]> {
+        return this.http.get<string[]>(environment.apiURL + '/policies/list');
     }
 
     // Installs a LUCON policy through the PAP

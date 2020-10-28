@@ -7,23 +7,21 @@ import { PolicyService } from '../dataflowpolicies/policy.service';
 import { MetricService } from '../metric/metric.service';
 import { RouteComponent } from '../routes/route';
 import { RouteService } from '../routes/route.service';
-import { SubscriptionComponent } from '../subscription.component';
 
 @Component({
   templateUrl: './dashboard.component.html',
   providers: []
 })
-export class DashboardComponent extends SubscriptionComponent implements OnInit {
+export class DashboardComponent implements OnInit {
   @Output() public readonly changeTitle = new EventEmitter();
-  public camelComponents: Array<RouteComponent>;
-  public apps: Array<App>;
+  public camelComponents: RouteComponent[];
+  public apps: App[];
   public cmlVersion: string;
   public policies = 0;
-  public metric: Array<String> = [];
+  public metric: string[] = [];
 
   constructor(private readonly titleService: Title, private readonly appService: AppService, private readonly routeService: RouteService,
               private readonly policyService: PolicyService, private readonly metricService: MetricService) {
-    super();
     this.titleService.setTitle('Overview');
 
     this.appService.getApps()

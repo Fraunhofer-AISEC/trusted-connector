@@ -14,12 +14,12 @@ export class AppCardComponent implements OnInit {
     @Input() public app: App;
     public statusIcon: string;
     public statusColor: string;
-    private portDefs: Array<PortDef>;
+    private portDefs: PortDef[];
 
     constructor(private readonly appService: AppService, private readonly appsComponent: AppsComponent) { }
     // the linter forces to mark 'appsComponent' as readonly which could be misleading; see method 'onDeleteBtnClick' below
 
-    get ports(): Array<PortDef> {
+    get ports(): PortDef[] {
         if (!this.portDefs) {
             this.portDefs = this.app.ports
                 .map(list => list.split(',')

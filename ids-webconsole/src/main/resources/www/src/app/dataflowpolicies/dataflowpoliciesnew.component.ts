@@ -13,7 +13,7 @@ export class NewDataflowPolicyComponent implements OnInit {
     public myForm: FormGroup;
     public data: Policy;
     public policyFileLabel = 'Select lucon file ...';
-    public events: Array<any> = [];
+    public events: any[] = [];
     public multiple: false;
     public fileUpload: AbstractControl;
 

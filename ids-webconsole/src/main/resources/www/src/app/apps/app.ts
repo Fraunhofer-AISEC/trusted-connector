@@ -10,8 +10,8 @@ export interface App {
     uptime: string;
     signature: string;
     owner: string;
-    labels: Array<Map<string, any>>;
-    ports: Array<string>;
+    labels: Map<string, any>[];
+    ports: string[];
 
     // Further portainer attributes:
     repository: any;
@@ -21,17 +21,17 @@ export interface App {
     title: string;
     description: string;
     note: string;
-    categories: Array<string>;
+    categories: string[];
     platform: string;
     logo: string;
     registry: string;
     command: string;
     network: string;
-    env: Array<Map<string, any>>;
+    env: Map<string, any>[];
     privileged: boolean;
     interactive: boolean;
     restartPolicy: string;
-    volumes: Array<any>;
+    volumes: any[];
 }
 
 export class AppSearchTerm {

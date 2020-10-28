@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 
 @Injectable()
 export class MetricService implements OnDestroy {
-    private readonly metricObservable: Observable<Array<String>>;
+    private readonly metricObservable: Observable<string[]>;
     private alive = false;
 
     constructor(private readonly http: HttpClient) {
@@ -23,11 +23,11 @@ export class MetricService implements OnDestroy {
         this.alive = false;
     }
 
-    public getMetric(): Observable<Array<String>> {
-        return this.http.get<Array<String>>(environment.apiURL + '/metric/get');
+    public getMetric(): Observable<string[]> {
+        return this.http.get<string[]>(environment.apiURL + '/metric/get');
     }
 
-    public getMetricObservable(): Observable<Array<String>> {
+    public getMetricObservable(): Observable<string[]> {
         return this.metricObservable;
     }
 }

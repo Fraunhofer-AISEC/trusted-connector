@@ -10,8 +10,8 @@ import { CertificateService } from './keycert.service';
 })
 export class KeycertsComponent implements OnInit {
     public title = 'Current Certificates';
-    public identities: Array<Certificate>;
-    public certificates: Array<Certificate>;
+    public identities: Certificate[];
+    public certificates: Certificate[];
 
     @Output() public readonly changeTitle = new EventEmitter();
 

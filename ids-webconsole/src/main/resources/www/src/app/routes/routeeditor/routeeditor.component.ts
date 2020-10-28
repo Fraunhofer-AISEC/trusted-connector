@@ -7,7 +7,8 @@ import { ReplaySubject } from 'rxjs';
 import { Result } from '../../result';
 import { Route } from '../route';
 import { RouteService } from '../route.service';
-import { CounterExample, ValidationInfo } from '../validation';
+import { CounterExample } from '../counter-example';
+import { ValidationInfo } from '../validation-info';
 
 @Component({
   selector: 'routeeditor',

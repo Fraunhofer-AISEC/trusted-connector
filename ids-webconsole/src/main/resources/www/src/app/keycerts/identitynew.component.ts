@@ -13,7 +13,7 @@ export class NewIdentityComponent implements OnInit {
     @Output() public readonly changeTitle = new EventEmitter();
     public myForm: FormGroup;
     public data: Identity;
-    public events: Array<any> = [];
+    public events: any[] = [];
 
     constructor(private readonly _fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
                 private readonly router: Router) {

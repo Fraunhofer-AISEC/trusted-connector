@@ -1,7 +1,8 @@
 import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from './_guards/auth.guard';
-import { AppsComponent, AppsSearchComponent } from './apps/apps.component';
+import { AppsComponent } from './apps/apps.component';
+import { AppsSearchComponent } from './apps/apps-search.component';
 import { ConnectionConfigurationComponent } from './connection-configuration/connection-configuration.component';
 import { ConnectionReportComponent } from './connection-report/connection-report.component';
 import { DashboardComponent } from './dashboard/dashboard.component';

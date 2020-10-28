@@ -7,11 +7,11 @@ import { environment } from '../environments/environment';
 
 export interface RequestOptions {
   headers?: HttpHeaders | {
-    [header: string]: string | Array<string>;
+    [header: string]: string | string[];
   };
   observe?: 'body';
   params?: HttpParams | {
-    [param: string]: string | Array<string>;
+    [param: string]: string | string[];
   };
   reportProgress?: boolean;
   responseType?: 'json' | 'text';
@@ -51,7 +51,7 @@ export interface ApplicationHttpClient {
    * @param params Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  put<T>(endPoint: string, params: Object, options?: RequestOptions): Observable<T>;
+  put<T>(endPoint: string, params: object, options?: RequestOptions): Observable<T>;
 
   /**
    * DELETE request
@@ -105,7 +105,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
    * @param params Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  public put(endPoint: string, params: Object, options?: any): any {
+  public put(endPoint: string, params: object, options?: any): any {
     return this.http.put(environment.apiURL + endPoint, params, options);
   }
 

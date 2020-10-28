@@ -3,13 +3,16 @@
     "node_modules/codelyzer"
   ],
   "extends": [
-    "@saritasa/tslint-config-angular"
+    "tslint:recommended"
   ],
   "rules": {
     "curly": true,
     "comment-format": false,
     "component-selector": false,
     "completed-docs": false,
+    "deprecation": {
+      "severity": "warning"
+    },
     "whitespace": false,
     "trailing-comma": [
       true,

@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AfterViewInit, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { App } from './app';
@@ -12,7 +11,7 @@ declare var componentHandler: any;
   providers: []
 })
 export class AppsComponent implements AfterViewInit {
-  public apps: Array<App>;
+  public apps: App[];
 
   constructor(private readonly appService: AppService, private readonly titleService: Title) {
     this.titleService.setTitle('Apps');
@@ -30,42 +29,4 @@ export class AppsComponent implements AfterViewInit {
   public trackApps(index: number, item: App): string {
     return item.id;
   }
-}
-
-@Component({
-  templateUrl: './apps-search.component.html',
-  providers: []
-})
-export class AppsSearchComponent implements OnInit, AfterViewInit {
-    public myForm: FormGroup;
-    public submitted: boolean;
-    public saved: boolean;
-    public searchResults: Array<App> = [];
-
-    constructor(private readonly _fb: FormBuilder, private readonly _appService: AppService) {
-        this.saved = true;
-        this.submitted = false;
-    }
-
-    public ngOnInit(): void {
-        // the short way
-        this.myForm = this._fb.group({
-            apps_search: ['', [Validators.required as any, Validators.minLength(3) as any]]
-        });
-    }
-
-    public ngAfterViewInit(): void {
-        componentHandler.upgradeAllRegistered();
-    }
-
-    public save(model: any, isValid: boolean): void {
-      this.submitted = true;
-      this._appService
-        .searchApps(model.apps_search)
-        .subscribe(res => { this.searchResults = res; });
-    }
-
-    public trackApps(index: number, item: App): string {
-      return item.id;
-    }
 }

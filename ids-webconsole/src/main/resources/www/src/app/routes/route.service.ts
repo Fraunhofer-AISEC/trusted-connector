@@ -3,11 +3,12 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { Result, RouteResult } from '../result';
+import { Result } from '../result';
+import { RouteResult } from '../route-result';
 
 import { Route, RouteComponent } from './route';
 import { RouteMetrics } from './route-metrics';
-import { ValidationInfo } from './validation';
+import { ValidationInfo } from './validation-info';
 
 @Injectable()
 export class RouteService {
@@ -29,8 +30,8 @@ export class RouteService {
     return this.httpClient.get(environment.apiURL + '/routes/metrics') as Observable<RouteMetrics>;
   }
 
-  public getRoutes(): Observable<Array<Route>> {
-    return this.httpClient.get(environment.apiURL + '/routes/list/') as Observable<Array<Route>>;
+  public getRoutes(): Observable<Route[]> {
+    return this.httpClient.get(environment.apiURL + '/routes/list/') as Observable<Route[]>;
   }
 
   public stopRoute(routeId: string): Observable<Result> {
@@ -61,7 +62,7 @@ export class RouteService {
       routeString, { headers }) as Observable<Result>;
   }
 
-  public listComponents(): Observable<Array<RouteComponent>> {
-    return this.httpClient.get<Array<RouteComponent>>(environment.apiURL + '/routes/components');
+  public listComponents(): Observable<RouteComponent[]> {
+    return this.httpClient.get<RouteComponent[]>(environment.apiURL + '/routes/components');
   }
 }
