@@ -28,7 +28,6 @@ import com.google.common.cache.CacheLoader
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 
 /**
  * Plugins and default theories for tuProlog engine.
@@ -41,13 +40,10 @@ class LuconLibrary : Library() {
     private val regexCache = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.DAYS)
             .maximumWeight(1e6.toLong())
-            .weigher<String, Pattern> { k, _ -> k.length }
-            .build<String, Pattern>(
-                    object : CacheLoader<String, Pattern>() {
-                        override fun load(key: String): Pattern {
-                            return Pattern.compile(key)
-                        }
-                    })
+            .weigher<String, Regex> { k, _ -> k.length }
+            .build(object : CacheLoader<String, Regex>() {
+                override fun load(key: String) = Regex(key, RegexOption.DOT_MATCHES_ALL)
+            })
 
     override fun getTheory(): String = """
 set_of(In, Out) :-  % get a pairwise different, sorted set from a list
@@ -188,7 +184,7 @@ trace_walk(A, B, Log, T) :-              % We can walk from A to B if  [ O(|Ep_S
         } else try {
             val regexString = TuPrologHelper.unquote(regex.term.toString())
             val inputString = TuPrologHelper.unquote(input.term.toString())
-            val match = regexCache[regexString].matcher(inputString).matches()
+            val match = regexCache[regexString].matches(inputString)
             if (LOG.isTraceEnabled) {
                 LOG.trace("regex_match: $regexString , $inputString: $match")
             }
