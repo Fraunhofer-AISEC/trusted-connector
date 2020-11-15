@@ -38,15 +38,15 @@ class Idscp2ServerComponent : DefaultComponent() {
 
     init {
         RatProverDriverRegistry.registerDriver(
-                "Dummy", ::RatProverDummy, null)
+                RatProverDummy.RAT_PROVER_DUMMY_ID, ::RatProverDummy, null)
         RatVerifierDriverRegistry.registerDriver(
-                "Dummy", ::RatVerifierDummy, null)
+                RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
         RatProverDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dProver,
+                TPM2dProver.TPM_RAT_PROVER_ID, ::TPM2dProver,
                 TPM2dProverConfig.Builder().build()
         )
         RatVerifierDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dVerifier,
+                TPM2dVerifier.TPM_RAT_VERIFIER_ID, ::TPM2dVerifier,
                 TPM2dVerifierConfig.Builder().build()
         )
     }

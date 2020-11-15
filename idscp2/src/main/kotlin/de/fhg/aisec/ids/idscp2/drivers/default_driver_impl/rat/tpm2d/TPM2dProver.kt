@@ -191,6 +191,7 @@ class TPM2dProver(fsmListener: FsmListener) : RatProverDriver<TPM2dProverConfig>
     }
 
     companion object {
+        val TPM_RAT_PROVER_ID = "TPM2d"
         private val LOG = LoggerFactory.getLogger(TPM2dProver::class.java)
     }
 }

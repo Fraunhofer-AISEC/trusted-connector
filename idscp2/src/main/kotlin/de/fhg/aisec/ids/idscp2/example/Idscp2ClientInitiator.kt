@@ -36,9 +36,10 @@ class Idscp2ClientInitiator {
 
         // register rat drivers
         RatProverDriverRegistry.registerDriver(
-                "Dummy", ::RatProverDummy, null)
+                RatProverDummy.RAT_PROVER_DUMMY_ID, ::RatProverDummy, null)
+
         RatVerifierDriverRegistry.registerDriver(
-                "Dummy", ::RatVerifierDummy, null)
+                RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
 
         // connect to idscp2 server
         connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, dapsDriver)

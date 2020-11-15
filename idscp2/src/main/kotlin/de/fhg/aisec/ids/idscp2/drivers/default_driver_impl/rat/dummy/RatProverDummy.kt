@@ -47,6 +47,7 @@ class RatProverDummy(fsmListener: FsmListener) : RatProverDriver<Unit>(fsmListen
     }
 
     companion object {
+        val RAT_PROVER_DUMMY_ID = "Dummy"
         private val LOG = LoggerFactory.getLogger(RatProverDummy::class.java)
     }
 }

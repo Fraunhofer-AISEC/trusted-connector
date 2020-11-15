@@ -21,6 +21,10 @@ import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
+import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.SecureChannelDriver
@@ -61,8 +65,8 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
     var dapsKeyAlias: String? = null
     @UriParam(
             label = "security",
-            description = "The validity time of remote attestation and DAT in seconds",
-            defaultValue = "600"
+            description = "The validity time of remote attestation and DAT in milliseconds",
+            defaultValue = "600000"
     )
     var dapsRatTimeoutDelay: Long? = null
     @UriParam(
@@ -104,8 +108,8 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         val host = matchResult.group(1)
         val port = matchResult.group(2)?.toInt() ?: Idscp2Configuration.DEFAULT_SERVER_PORT
         val localAttestationConfig = AttestationConfig.Builder()
-                .setSupportedRatSuite(arrayOf("Dummy", "TPM2d"))
-                .setExpectedRatSuite(arrayOf("Dummy", "TPM2d"))
+                .setSupportedRatSuite(arrayOf(RatProverDummy.RAT_PROVER_DUMMY_ID, TPM2dProver.TPM_RAT_PROVER_ID))
+                .setExpectedRatSuite(arrayOf(RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, TPM2dVerifier.TPM_RAT_VERIFIER_ID))
                 .setRatTimeoutDelay(dapsRatTimeoutDelay ?: AttestationConfig.DEFAULT_RAT_TIMEOUT_DELAY.toLong())
                 .build()
         val clientConfigurationBuilder = Idscp2Configuration.Builder()

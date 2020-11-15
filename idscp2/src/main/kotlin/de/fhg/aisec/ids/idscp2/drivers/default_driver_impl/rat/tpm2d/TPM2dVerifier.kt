@@ -257,6 +257,7 @@ class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver<TPM2dVerifierC
     }
 
     companion object {
+        val TPM_RAT_VERIFIER_ID = "TPM2d"
         private val LOG = LoggerFactory.getLogger(TPM2dVerifier::class.java)
     }
 }

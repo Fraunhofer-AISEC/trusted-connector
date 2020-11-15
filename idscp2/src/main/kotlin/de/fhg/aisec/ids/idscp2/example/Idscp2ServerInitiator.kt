@@ -40,9 +40,10 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
 
         // register rat drivers
         RatProverDriverRegistry.registerDriver(
-                "Dummy", ::RatProverDummy, null)
+                RatProverDummy.RAT_PROVER_DUMMY_ID, ::RatProverDummy, null)
+
         RatVerifierDriverRegistry.registerDriver(
-                "Dummy", ::RatVerifierDummy, null)
+                RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
 
         // create server config
         val serverConfig = Idscp2ServerFactory(
