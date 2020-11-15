@@ -129,21 +129,21 @@ class StateWaitForAck(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_RAT_PROVER)
                 }
         ))
-        addTransition(IdscpMessage.IDSCPDATA_FIELD_NUMBER, Transition { event: Event ->
-            // send Idscp Ack
-            if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpAckMessage())) {
-                LOG.warn("Cannot send ACK")
+        addTransition(IdscpMessage.IDSCPDATA_FIELD_NUMBER, Transition (
+            Function {
+                fsm.recvData(it.idscpMessage.idscpData)
+                this
             }
-            val data = event.idscpMessage.idscpData
-            fsm.notifyIdscpMsgListener(data.data.toByteArray())
-            this
-        })
-        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition {
-            LOG.debug("Received IdscpAck, cancel AckFlag")
-            ackTimer.cancelTimeout()
-            fsm.setAckFlag(false)
-            fsm.getState(FsmState.STATE_ESTABLISHED)
-        })
+        ))
+        addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
+            Function{
+                if (fsm.recvAck(it.idscpMessage.idscpAck)) {
+                    fsm.getState(FsmState.STATE_ESTABLISHED)
+                } else {
+                    this
+                }
+            }
+        ))
         addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
             LOG.debug("Receive IDSCP_CLOSED")
             fsm.getState(FsmState.STATE_CLOSED)

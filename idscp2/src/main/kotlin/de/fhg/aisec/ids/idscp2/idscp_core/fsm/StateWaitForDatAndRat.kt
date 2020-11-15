@@ -148,12 +148,7 @@ class StateWaitForDatAndRat(fsm: FSM,
         ))
         addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
                 Function {
-                    if (fsm.getAckFlag) {
-                        LOG.debug("Received IdscpAck, cancel flag in fsm")
-                        fsm.setAckFlag(false)
-                    } else {
-                        LOG.warn("Received unexpected IdscpAck")
-                    }
+                    fsm.recvAck(it.idscpMessage.idscpAck)
                     this
                 }
         ))

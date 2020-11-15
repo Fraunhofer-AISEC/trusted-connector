@@ -72,7 +72,9 @@ message IdscpRatVerifier {
 message IdscpData {
   // Payload
   bytes data = 1;
+  bool alternatingBit = 2;
 }
 
 message IdscpAck {
+  bool alternatingBit = 1;
 }

@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core
 
 import com.google.protobuf.ByteString
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.AlternatingBit
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.*
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
 
@@ -62,6 +63,17 @@ object Idscp2MessageHelper {
     fun createIdscpDataMessage(data: ByteArray?): IdscpMessage {
         val idscpData = IdscpData.newBuilder()
                 .setData(ByteString.copyFrom(data))
+                .build()
+        return IdscpMessage.newBuilder()
+                .setIdscpData(idscpData)
+                .build()
+    }
+
+    fun createIdscpDataMessageWithAltBit(data: ByteArray?, alternatingBit: AlternatingBit): IdscpMessage {
+        val idscpData = IdscpData.newBuilder()
+                .setData(ByteString.copyFrom(data))
+                .setAlternatingBit(alternatingBit.asBoolean())
+                .build()
         return IdscpMessage.newBuilder()
                 .setIdscpData(idscpData)
                 .build()
@@ -85,9 +97,10 @@ object Idscp2MessageHelper {
                 .build()
     }
 
-    fun createIdscpAckMessage(): IdscpMessage {
+    fun createIdscpAckMessage(alternatingBit: Boolean): IdscpMessage {
         return IdscpMessage.newBuilder()
-                .setIdscpAck(IdscpAck.newBuilder().build())
-                .build()
+                .setIdscpAck(
+                        IdscpAck.newBuilder().setAlternatingBit(alternatingBit).build()
+                ).build()
     }
 }

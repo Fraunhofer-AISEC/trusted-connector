@@ -13,6 +13,8 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpAck
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpData
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -101,6 +103,12 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     private var ackFlag = false
     private var bufferedIdscpData: IdscpMessage? = null
+
+    /**
+     * Alternating Bit
+     */
+    private var expectedAlternatingBit = AlternatingBit()
+    private var nextSendAlternatingBit = AlternatingBit()
 
     /* ---------------------- Timers ---------------------- */
     private val datTimer: DynamicTimer
@@ -564,6 +572,46 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         }
     }
 
+    /**
+     * Handle IdscpAck
+     * @return true if everything if ack flag was cleared correctly, else false
+     */
+    fun recvAck(ack: IdscpAck): Boolean {
+        if (ackFlag) {
+            LOG.debug("Received IdscpAck with alternating bit {}, cancel flag in fsm", ack.alternatingBit)
+            if (nextSendAlternatingBit.asBoolean() != ack.alternatingBit) {
+                LOG.debug("Received IdscpAck with wrong alternating bit. Ignoring")
+            } else {
+                setAckFlag(false)
+                ackTimer.cancelTimeout()
+                LOG.debug("Alternate nextSend bit from {}", nextSendAlternatingBit.asBoolean())
+                nextSendAlternatingBit.alternate()
+                return true
+            }
+        } else {
+            LOG.warn("Received unexpected IdscpAck")
+        }
+        return false
+    }
+
+    fun recvData(data: IdscpData) {
+        LOG.debug("Received IdscpData with alternating bit {}", data.alternatingBit)
+
+        if (data.alternatingBit != expectedAlternatingBit.asBoolean()) {
+            LOG.debug("Received IdscpData with unexpected alternating bit. Could be an old packet replayed. Ignore it.")
+        } else {
+            LOG.debug("Send IdscpAck with received alternating bit {}", data.alternatingBit)
+            if (!sendFromFSM(Idscp2MessageHelper.createIdscpAckMessage(data.alternatingBit))) {
+                LOG.error("Cannot send ACK")
+            }
+            LOG.debug("Alternate expected bit from {}", expectedAlternatingBit.asBoolean())
+            expectedAlternatingBit.alternate()
+
+            // forward payload data to upper layer
+            notifyIdscpMsgListener(data.data.toByteArray())
+        }
+    }
+
     fun setBufferedIdscpData(msg: IdscpMessage) {
         this.bufferedIdscpData = msg
     }
@@ -621,7 +669,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER] = StateWaitForDatAndRatVerifier(
                 this, handshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_ESTABLISHED] = StateEstablished(
-                this, dapsDriver, ratTimer, handshakeTimer, ackTimer)
+                this, dapsDriver, ratTimer, handshakeTimer, ackTimer, nextSendAlternatingBit)
         states[FsmState.STATE_WAIT_FOR_ACK] = StateWaitForAck(
                 this, dapsDriver, ratTimer, handshakeTimer, ackTimer)
 

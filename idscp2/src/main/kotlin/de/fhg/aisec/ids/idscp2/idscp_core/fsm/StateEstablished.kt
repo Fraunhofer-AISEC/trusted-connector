@@ -18,7 +18,8 @@ class StateEstablished(fsm: FSM,
                        dapsDriver: DapsDriver,
                        ratTimer: StaticTimer,
                        handshakeTimer: StaticTimer,
-                       ackTimer: StaticTimer) : State() {
+                       ackTimer: StaticTimer,
+                       alternatingBit: AlternatingBit) : State() {
 
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_ESTABLISHED")
@@ -58,11 +59,16 @@ class StateEstablished(fsm: FSM,
         })
         addTransition(InternalControlMessage.SEND_DATA.value, Transition(
                 Function {
+                    // repack data, include alternating bit
+                    val idscpMessage = Idscp2MessageHelper.createIdscpDataMessageWithAltBit(
+                            it.idscpMessage.idscpData.data.toByteArray(), alternatingBit)
+
+                    // send repacked data
                     LOG.debug("Send IdscpData")
-                    if (fsm.sendFromFSM(it.idscpMessage)) {
+                    if (fsm.sendFromFSM(idscpMessage)) {
                         //Set Ack Flag
                         fsm.setAckFlag(true)
-                        fsm.setBufferedIdscpData(it.idscpMessage)
+                        fsm.setBufferedIdscpData(idscpMessage)
                         ackTimer.start()
                         return@Function fsm.getState(FsmState.STATE_WAIT_FOR_ACK)
                     } else {
@@ -123,17 +129,14 @@ class StateEstablished(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_RAT_PROVER)
                 }
         ))
-        addTransition(IdscpMessage.IDSCPDATA_FIELD_NUMBER, Transition { event: Event ->
-            // send Idscp Ack
-            LOG.debug("Received IdscpData")
-            LOG.debug("Send IdscpAck")
-            if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpAckMessage())) {
-                LOG.warn("Cannot send ACK")
-            }
-            val data = event.idscpMessage.idscpData
-            fsm.notifyIdscpMsgListener(data.data.toByteArray())
-            this
-        })
+
+        addTransition(IdscpMessage.IDSCPDATA_FIELD_NUMBER, Transition (
+                Function {
+                    fsm.recvData(it.idscpMessage.idscpData)
+                    this
+                }
+        ))
+
         addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
             LOG.debug("Receive IDSCP_CLOSED")
             fsm.getState(FsmState.STATE_CLOSED)
