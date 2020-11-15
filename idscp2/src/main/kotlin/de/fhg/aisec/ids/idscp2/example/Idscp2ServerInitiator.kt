@@ -5,17 +5,13 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDrive
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProverConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ServerFactory
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
@@ -23,43 +19,41 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
 
 class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
-    fun init(settings: Idscp2Settings) {
+    fun init(configuration: Idscp2Configuration) {
+
+        // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
-        val config = DefaultDapsDriverConfig.Builder()
-                .setKeyStorePath(settings.keyStorePath)
-                .setTrustStorePath(settings.trustStorePath)
-                .setKeyStorePassword(settings.keyStorePassword)
-                .setTrustStorePassword(settings.trustStorePassword)
-                .setKeyAlias(settings.dapsKeyAlias)
-                .setKeyPassword(settings.keyPassword)
+
+        // create daps config
+        val dapsConfig = DefaultDapsDriverConfig.Builder()
+                .setKeyStorePath(configuration.keyStorePath)
+                .setTrustStorePath(configuration.trustStorePath)
+                .setKeyStorePassword(configuration.keyStorePassword)
+                .setTrustStorePassword(configuration.trustStorePassword)
+                .setKeyAlias(configuration.dapsKeyAlias)
+                .setKeyPassword(configuration.keyPassword)
                 .setDapsUrl("https://daps.aisec.fraunhofer.de")
                 .build()
-        val dapsDriver: DapsDriver = DefaultDapsDriver(config)
+
+        // create daps
+        val dapsDriver: DapsDriver = DefaultDapsDriver(dapsConfig)
+
+        // register rat drivers
         RatProverDriverRegistry.registerDriver(
                 "Dummy", ::RatProverDummy, null)
         RatVerifierDriverRegistry.registerDriver(
                 "Dummy", ::RatVerifierDummy, null)
-        RatProverDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dProver, TPM2dProverConfig.Builder().build()
-        )
-        RatVerifierDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dVerifier, TPM2dVerifierConfig.Builder().build()
-        )
+
+        // create server config
         val serverConfig = Idscp2ServerFactory(
                 ::Idscp2ConnectionImpl,
                 this,
-                settings,
+                configuration,
                 dapsDriver,
                 secureChannelDriver
         )
+        // run idscp2 server
         @Suppress("UNUSED_VARIABLE") val idscp2Server = serverConfig.listen()
-
-//        try {
-//            Thread.sleep(40_000); //run server for 2 minutes
-//        } catch (Exception ignored) {
-//        } finally {
-//            idscp2Server.closeConnection();
-//        }
     }
 
     override fun onConnection(connection: Idscp2Connection) {

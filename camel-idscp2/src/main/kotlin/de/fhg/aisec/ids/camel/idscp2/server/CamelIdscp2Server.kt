@@ -22,29 +22,29 @@ import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2ServerFactory
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.server.Idscp2Server
 import java.util.*
 
-class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener<AppLayerConnection> {
+class CamelIdscp2Server(serverConfiguration: Idscp2Configuration) : Idscp2EndpointListener<AppLayerConnection> {
     private val server: Idscp2Server<AppLayerConnection>
     val listeners: MutableSet<Idscp2EndpointListener<AppLayerConnection>> = Collections.synchronizedSet(HashSet())
 
     init {
         val dapsDriverConfig = DefaultDapsDriverConfig.Builder()
                 .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
-                .setKeyAlias(serverSettings.dapsKeyAlias)
-                .setKeyPassword(serverSettings.keyPassword)
-                .setKeyStorePath(serverSettings.keyStorePath)
-                .setTrustStorePath(serverSettings.trustStorePath)
-                .setKeyStorePassword(serverSettings.keyStorePassword)
-                .setTrustStorePassword(serverSettings.trustStorePassword)
+                .setKeyAlias(serverConfiguration.dapsKeyAlias)
+                .setKeyPassword(serverConfiguration.keyPassword)
+                .setKeyStorePath(serverConfiguration.keyStorePath)
+                .setTrustStorePath(serverConfiguration.trustStorePath)
+                .setKeyStorePassword(serverConfiguration.keyStorePassword)
+                .setTrustStorePassword(serverConfiguration.trustStorePassword)
                 .build()
         val serverFactory = Idscp2ServerFactory(
                 ::AppLayerConnection,
                 this,
-                serverSettings,
+                serverConfiguration,
                 DefaultDapsDriver(dapsDriverConfig),
                 NativeTLSDriver()
         )

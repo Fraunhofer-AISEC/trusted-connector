@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage
@@ -22,8 +23,7 @@ class StateWaitForHello(fsm: FSM,
                         private val handshakeTimer: Timer,
                         datTimer: Timer,
                         dapsDriver: DapsDriver,
-                        localSupportedRatSuite: Array<String>,
-                        localExpectedRatSuite: Array<String>) : State() {
+                        attestationConfig: AttestationConfig) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_WAIT_FOR_HELLO")
         LOG.debug("Set handshake timeout to 5 seconds")
@@ -75,9 +75,9 @@ class StateWaitForHello(fsm: FSM,
                     val idscpHello = event.idscpMessage.idscpHello
                     LOG.debug("Received IDSCP_HELLO")
                     LOG.debug("Calculate Rat mechanisms")
-                    val proverMechanism = fsm.getRatProverMechanism(localSupportedRatSuite,
+                    val proverMechanism = fsm.getRatProverMechanism(attestationConfig.supportedAttestationSuite,
                             idscpHello.expectedRatSuiteList.toTypedArray())
-                    val verifierMechanism = fsm.getRatVerifierMechanism(localExpectedRatSuite,
+                    val verifierMechanism = fsm.getRatVerifierMechanism(attestationConfig.expectedAttestationSuite,
                             idscpHello.supportedRatSuiteList.toTypedArray())
                     LOG.debug("Verify received DAT")
                     //check if Dat is available and verify dat

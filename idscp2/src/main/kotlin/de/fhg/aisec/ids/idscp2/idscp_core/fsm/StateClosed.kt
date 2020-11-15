@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -24,8 +25,7 @@ import java.util.stream.Collectors
 internal class StateClosed(fsm: FSM,
                            dapsDriver: DapsDriver,
                            onMessageLock: Condition,
-                           localSupportedRatSuite: Array<String>,
-                           localExpectedRatSuite: Array<String>) : State() {
+                           attestationConfig: AttestationConfig) : State() {
 
     private fun runExitCode(onMessageLock: Condition) {
         //State Closed exit code
@@ -55,7 +55,11 @@ internal class StateClosed(fsm: FSM,
             LOG.debug("Get DAT Token vom DAT_DRIVER")
             val dat = dapsDriver.token
             LOG.debug("Send IDSCP_HELLO")
-            val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite)
+            val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(
+                    dat,
+                    attestationConfig.supportedAttestationSuite,
+                    attestationConfig.expectedAttestationSuite
+            )
             if (!fsm.sendFromFSM(idscpHello)) {
                 LOG.error("Cannot send IdscpHello. Close connection")
                 runEntryCode(fsm)

@@ -6,7 +6,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.TLSSes
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelEndpoint
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener
@@ -26,8 +26,8 @@ import javax.net.ssl.*
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class TLSClient<CC: Idscp2Connection>(
-        private val connectionFactory: (SecureChannel, Idscp2Settings, DapsDriver) -> CC,
-        private val clientSettings: Idscp2Settings,
+        private val connectionFactory: (SecureChannel, Idscp2Configuration, DapsDriver) -> CC,
+        private val clientConfiguration: Idscp2Configuration,
         private val dapsDriver: DapsDriver,
         private val connectionFuture: CompletableFuture<CC>
 ) : HandshakeCompletedListener, DataAvailableListener, SecureChannelEndpoint {
@@ -139,7 +139,7 @@ class TLSClient<CC: Idscp2Connection>(
             val secureChannel = SecureChannel(this)
             // Try to complete, won't do anything if promise has been cancelled
             listenerPromise.complete(secureChannel)
-            val connection = connectionFactory(secureChannel, clientSettings, dapsDriver)
+            val connection = connectionFactory(secureChannel, clientConfiguration, dapsDriver)
             inputListenerThread!!.start()
             // Try to complete, won't do anything if promise has been cancelled
             connectionFuture.complete(connection)
@@ -169,18 +169,18 @@ class TLSClient<CC: Idscp2Connection>(
         // get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
         // hostVerification and algorithm constraints
         val myTrustManager = PreConfiguration.getX509ExtTrustManager(
-                clientSettings.trustStorePath,
-                clientSettings.trustStorePassword
+                clientConfiguration.trustStorePath,
+                clientConfiguration.trustStorePassword
         )
 
         // get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
         // connection specific key selection via key alias
         val myKeyManager = PreConfiguration.getX509ExtKeyManager(
-                clientSettings.keyPassword,
-                clientSettings.keyStorePath,
-                clientSettings.keyStorePassword,
-                clientSettings.certificateAlias,
-                clientSettings.keyStoreKeyType
+                clientConfiguration.keyPassword,
+                clientConfiguration.keyStorePath,
+                clientConfiguration.keyStorePassword,
+                clientConfiguration.certificateAlias,
+                clientConfiguration.keyStoreKeyType
         )
         val sslContext = SSLContext.getInstance(TLSConstants.TLS_INSTANCE)
         sslContext.init(myKeyManager, myTrustManager, null)

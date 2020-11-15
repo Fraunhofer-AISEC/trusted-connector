@@ -18,9 +18,9 @@ import java.util.concurrent.CompletableFuture
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class Idscp2ServerFactory<CC: Idscp2Connection>(
-        private val connectionFactory: (SecureChannel, Idscp2Settings, DapsDriver) -> CC,
+        private val connectionFactory: (SecureChannel, Idscp2Configuration, DapsDriver) -> CC,
         private val endpointListener: Idscp2EndpointListener<CC>,
-        private val settings: Idscp2Settings,
+        private val configuration: Idscp2Configuration,
         private val dapsDriver: DapsDriver,
         private val secureChannelDriver: SecureChannelDriver<CC>
 ) : SecureChannelInitListener<CC> {
@@ -30,9 +30,9 @@ class Idscp2ServerFactory<CC: Idscp2Connection>(
      */
     @Throws(Idscp2Exception::class)
     fun listen(): Idscp2Server<CC> {
-        LOG.info("Starting new IDSCP2 server at port {}", settings.serverPort)
+        LOG.info("Starting new IDSCP2 server at port {}", configuration.serverPort)
         val serverListenerPromise = CompletableFuture<ServerConnectionListener<CC>>()
-        val secureServer = secureChannelDriver.listen(settings, this, serverListenerPromise)
+        val secureServer = secureChannelDriver.listen(configuration, this, serverListenerPromise)
         val server = Idscp2Server<CC>(secureServer)
         serverListenerPromise.complete(server)
         return server
@@ -53,7 +53,7 @@ class Idscp2ServerFactory<CC: Idscp2Connection>(
                                  serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>) {
         LOG.trace("A new secure channel for an IDSCP2 connection was established")
         // Threads calling onMessage() will be blocked until all listeners have been registered, see below
-        val newConnection = connectionFactory(secureChannel, settings, dapsDriver)
+        val newConnection = connectionFactory(secureChannel, configuration, dapsDriver)
         // Complete the connection promise for the IDSCP server
         serverListenerPromise.thenAccept { serverListener: ServerConnectionListener<CC> ->
             serverListener.onConnectionCreated(newConnection)

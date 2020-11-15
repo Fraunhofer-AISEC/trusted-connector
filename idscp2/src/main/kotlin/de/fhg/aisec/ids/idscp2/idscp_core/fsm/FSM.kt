@@ -8,6 +8,7 @@ import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
@@ -28,7 +29,7 @@ import java.util.concurrent.locks.ReentrantLock
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver: DapsDriver,
-          localSupportedRatSuite: Array<String>, localExpectedRatSuite: Array<String>, ratTimeout: Long) : FsmListener {
+          attestationConfig: AttestationConfig) : FsmListener {
     /*  -----------   IDSCP2 Protocol States   ---------- */
     private val states = HashMap<FsmState, State>()
 
@@ -557,7 +558,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         get() = bufferedIdscpData
 
     fun setAckFlag(value: Boolean) {
-        this.ackFlag = value;
+        this.ackFlag = value
         if (!value) {
             this.bufferedIdscpData = null
         }
@@ -606,15 +607,15 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
 
         /* ------------- FSM STATE Initialization -------------*/
         states[FsmState.STATE_CLOSED] = StateClosed(
-                this, dapsDriver, onMessageBlock, localSupportedRatSuite, localExpectedRatSuite)
+                this, dapsDriver, onMessageBlock, attestationConfig)
         states[FsmState.STATE_WAIT_FOR_HELLO] = StateWaitForHello(
-                this, handshakeTimer, datTimer, dapsDriver, localSupportedRatSuite, localExpectedRatSuite)
+                this, handshakeTimer, datTimer, dapsDriver, attestationConfig)
         states[FsmState.STATE_WAIT_FOR_RAT] = StateWaitForRat(
-                this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer, ratTimeout, dapsDriver)
+                this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer, attestationConfig.ratTimeoutDelay, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_RAT_PROVER] = StateWaitForRatProver(
                 this, ratTimer, handshakeTimer, proverHandshakeTimer, dapsDriver, ackTimer)
         states[FsmState.STATE_WAIT_FOR_RAT_VERIFIER] = StateWaitForRatVerifier(
-                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, ratTimeout, ackTimer)
+                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, attestationConfig.ratTimeoutDelay, ackTimer)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT] = StateWaitForDatAndRat(
                 this, handshakeTimer, proverHandshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER] = StateWaitForDatAndRatVerifier(

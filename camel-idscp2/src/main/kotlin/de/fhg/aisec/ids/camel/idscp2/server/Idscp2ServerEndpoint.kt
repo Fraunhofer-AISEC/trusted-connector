@@ -19,7 +19,8 @@ package de.fhg.aisec.ids.camel.idscp2.server
 import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import org.apache.camel.Processor
 import org.apache.camel.Producer
 import org.apache.camel.spi.UriEndpoint
@@ -39,7 +40,7 @@ import java.util.regex.Pattern
 )
 class Idscp2ServerEndpoint(uri: String?, private val remaining: String, component: Idscp2ServerComponent?) :
         DefaultEndpoint(uri, component), Idscp2EndpointListener<AppLayerConnection> {
-    private lateinit var serverSettings: Idscp2Settings
+    private lateinit var serverConfiguration: Idscp2Configuration
     private var server: CamelIdscp2Server? = null
     private val consumers: MutableSet<Idscp2ServerConsumer> = HashSet()
 
@@ -59,7 +60,7 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
             description = "The validity time of remote attestation and DAT in seconds",
             defaultValue = "600"
     )
-    var dapsRatTimeoutDelay: Long = Idscp2Settings.DEFAULT_RAT_TIMEOUT_DELAY.toLong()
+    var dapsRatTimeoutDelay: Long = AttestationConfig.DEFAULT_RAT_TIMEOUT_DELAY.toLong()
 
     @Synchronized
     fun addConsumer(consumer: Idscp2ServerConsumer) {
@@ -114,14 +115,19 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
         require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
         val matchResult = remainingMatcher.toMatchResult()
         val host = matchResult.group(1)
-        val port = matchResult.group(2)?.toInt() ?: Idscp2Settings.DEFAULT_SERVER_PORT
-        val clientSettingsBuilder = Idscp2Settings.Builder()
+        val port = matchResult.group(2)?.toInt() ?: Idscp2Configuration.DEFAULT_SERVER_PORT
+        val localAttestationConfig = AttestationConfig.Builder()
+                .setSupportedRatSuite(arrayOf("Dummy", "TPM2d"))
+                .setExpectedRatSuite(arrayOf("Dummy", "TPM2d"))
+                .setRatTimeoutDelay(dapsRatTimeoutDelay)
+                .build()
+        val serverConfigurationBuilder = Idscp2Configuration.Builder()
                 .setHost(host)
                 .setServerPort(port)
-                .setRatTimeoutDelay(dapsRatTimeoutDelay)
+                .setAttestationConfig(localAttestationConfig)
                 .setDapsKeyAlias(dapsKeyAlias)
         sslContextParameters?.let {
-            clientSettingsBuilder
+            serverConfigurationBuilder
                     .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
                             ?: "password".toCharArray())
                     .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
@@ -133,8 +139,8 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
                             ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
         }
-        serverSettings = clientSettingsBuilder.build()
-        (component as Idscp2ServerComponent).getServer(serverSettings).let {
+        serverConfiguration = serverConfigurationBuilder.build()
+        (component as Idscp2ServerComponent).getServer(serverConfiguration).let {
             server = it
             // Add this endpoint to this server's Idscp2EndpointListener set
             it.listeners += this
@@ -146,7 +152,7 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
         LOG.debug("Stopping IDSCP2 server endpoint $endpointUri")
         // Remove this endpoint from the server's Idscp2EndpointListener set
         server?.let { it.listeners -= this }
-        (component as Idscp2ServerComponent).freeServer(serverSettings)
+        (component as Idscp2ServerComponent).freeServer(serverConfiguration)
     }
 
     companion object {

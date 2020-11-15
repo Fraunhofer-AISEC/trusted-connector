@@ -23,7 +23,7 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.apache.camel.Endpoint
@@ -32,7 +32,7 @@ import org.apache.camel.support.DefaultComponent
 
 @Component("idscp2server")
 class Idscp2ServerComponent : DefaultComponent() {
-    private val servers = RefCountingHashMap<Idscp2Settings, CamelIdscp2Server> {
+    private val servers = RefCountingHashMap<Idscp2Configuration, CamelIdscp2Server> {
         it.terminate()
     }
 
@@ -58,10 +58,10 @@ class Idscp2ServerComponent : DefaultComponent() {
     }
 
     @Synchronized
-    fun getServer(serverSettings: Idscp2Settings) = servers.computeIfAbsent(serverSettings) { CamelIdscp2Server(it) }
+    fun getServer(serverConfiguration: Idscp2Configuration) = servers.computeIfAbsent(serverConfiguration) { CamelIdscp2Server(it) }
 
     @Synchronized
-    fun freeServer(serverSettings: Idscp2Settings) = servers.release(serverSettings)
+    fun freeServer(serverConfiguration: Idscp2Configuration) = servers.release(serverConfiguration)
 
     @Synchronized
     override fun doStop() {

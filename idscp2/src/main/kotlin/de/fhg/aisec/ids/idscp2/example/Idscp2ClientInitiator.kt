@@ -4,15 +4,11 @@ import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDrive
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProverConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
@@ -22,30 +18,30 @@ import java.util.concurrent.CompletableFuture
 class Idscp2ClientInitiator {
     private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
 
-    fun init(settings: Idscp2Settings) {
+    fun init(configuration: Idscp2Configuration) {
+
+        // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
+
+        // create daps driver
         val dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
-                .setKeyStorePath(settings.keyStorePath)
-                .setTrustStorePath(settings.trustStorePath)
-                .setKeyStorePassword(settings.keyStorePassword)
-                .setTrustStorePassword(settings.trustStorePassword)
-                .setKeyAlias(settings.dapsKeyAlias)
-                .setKeyPassword(settings.keyPassword)
+                .setKeyStorePath(configuration.keyStorePath)
+                .setTrustStorePath(configuration.trustStorePath)
+                .setKeyStorePassword(configuration.keyStorePassword)
+                .setTrustStorePassword(configuration.trustStorePassword)
+                .setKeyAlias(configuration.dapsKeyAlias)
+                .setKeyPassword(configuration.keyPassword)
                 .setDapsUrl("https://daps.aisec.fraunhofer.de")
                 .build())
+
+        // register rat drivers
         RatProverDriverRegistry.registerDriver(
                 "Dummy", ::RatProverDummy, null)
         RatVerifierDriverRegistry.registerDriver(
                 "Dummy", ::RatVerifierDummy, null)
-        RatProverDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dProver,
-                TPM2dProverConfig.Builder().build()
-        )
-        RatVerifierDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dVerifier,
-                TPM2dVerifierConfig.Builder().build()
-        )
-        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, settings, dapsDriver)
+
+        // connect to idscp2 server
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, dapsDriver)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             println("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {

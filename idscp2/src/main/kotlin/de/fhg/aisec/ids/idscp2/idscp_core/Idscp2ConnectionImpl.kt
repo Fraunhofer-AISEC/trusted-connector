@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core
 
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import org.slf4j.LoggerFactory
@@ -16,15 +16,14 @@ import java.util.function.Consumer
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 class Idscp2ConnectionImpl(secureChannel: SecureChannel,
-                           settings: Idscp2Settings,
+                           configuration: Idscp2Configuration,
                            dapsDriver: DapsDriver): Idscp2Connection {
     private val fsm: FSM = FSM(
             this,
             secureChannel,
             dapsDriver,
-            settings.supportedAttestation.ratMechanisms,
-            settings.expectedAttestation.ratMechanisms,
-            settings.ratTimeoutDelay)
+            configuration.attestationConfig
+    )
     override val id: String = UUID.randomUUID().toString()
     private val connectionListeners = Collections.synchronizedSet(HashSet<Idscp2ConnectionListener>())
     private val messageListeners = Collections.synchronizedSet(HashSet<Idscp2MessageListener>())
