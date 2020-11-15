@@ -17,11 +17,10 @@ import java.util.function.Function
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class StateWaitForRat(fsm: FSM,
-                      handshakeTimer: Timer,
-                      verifierHandshakeTimer: Timer,
-                      proverHandshakeTimer: Timer,
-                      ratTimer: Timer,
-                      ratTimerDelay: Long,
+                      handshakeTimer: StaticTimer,
+                      verifierHandshakeTimer: StaticTimer,
+                      proverHandshakeTimer: StaticTimer,
+                      ratTimer: StaticTimer,
                       dapsDriver: DapsDriver) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switch to state STATE_WAIT_FOR_RAT")
@@ -72,7 +71,7 @@ class StateWaitForRat(fsm: FSM,
         addTransition(InternalControlMessage.RAT_VERIFIER_OK.value, Transition {
             LOG.debug("Received RAT_VERIFIER OK")
             verifierHandshakeTimer.cancelTimeout()
-            ratTimer.resetTimeout(ratTimerDelay)
+            ratTimer.resetTimeout()
             fsm.getState(FsmState.STATE_WAIT_FOR_RAT_PROVER)
         })
         addTransition(InternalControlMessage.RAT_PROVER_FAILED.value, Transition {
@@ -118,7 +117,7 @@ class StateWaitForRat(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     LOG.debug("Start Handshake Timer")
-                    handshakeTimer.resetTimeout(5)
+                    handshakeTimer.resetTimeout()
                     fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT)
                 }
         ))

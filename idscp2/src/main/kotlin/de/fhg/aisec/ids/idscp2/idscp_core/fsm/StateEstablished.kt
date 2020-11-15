@@ -16,9 +16,9 @@ import java.util.function.Function
  */
 class StateEstablished(fsm: FSM,
                        dapsDriver: DapsDriver,
-                       ratTimer: Timer,
-                       handshakeTimer: Timer,
-                       ackTimer: Timer) : State() {
+                       ratTimer: StaticTimer,
+                       handshakeTimer: StaticTimer,
+                       ackTimer: StaticTimer) : State() {
 
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_ESTABLISHED")
@@ -63,7 +63,7 @@ class StateEstablished(fsm: FSM,
                         //Set Ack Flag
                         fsm.setAckFlag(true)
                         fsm.setBufferedIdscpData(it.idscpMessage)
-                        ackTimer.start(1)
+                        ackTimer.start()
                         return@Function fsm.getState(FsmState.STATE_WAIT_FOR_ACK)
                     } else {
                         LOG.warn("Cannot send IdscpData, shutdown FSM")
@@ -95,7 +95,7 @@ class StateEstablished(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     LOG.debug("Set handshake timeout")
-                    handshakeTimer.resetTimeout(5)
+                    handshakeTimer.resetTimeout()
                     fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER)
                 }
         ))

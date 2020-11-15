@@ -22,7 +22,9 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
             this,
             secureChannel,
             dapsDriver,
-            configuration.attestationConfig
+            configuration.attestationConfig,
+            configuration.ackTimeoutDelay,
+            configuration.handshakeTimeoutDelay
     )
     override val id: String = UUID.randomUUID().toString()
     private val connectionListeners = Collections.synchronizedSet(HashSet<Idscp2ConnectionListener>())

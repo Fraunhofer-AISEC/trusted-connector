@@ -12,7 +12,7 @@ object RunTLSServer {
         val localAttestationConfig = AttestationConfig.Builder()
                 .setSupportedRatSuite(arrayOf("Dummy"))
                 .setExpectedRatSuite(arrayOf("Dummy"))
-                .setRatTimeoutDelay(300)
+                .setRatTimeoutDelay(300 * 1000) // 300 seconds
                 .build()
 
         val settings = Idscp2Configuration.Builder()

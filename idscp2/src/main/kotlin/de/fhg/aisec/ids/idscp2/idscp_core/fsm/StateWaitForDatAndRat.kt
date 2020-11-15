@@ -17,9 +17,9 @@ import java.util.function.Function
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class StateWaitForDatAndRat(fsm: FSM,
-                            handshakeTimer: Timer,
-                            proverHandshakeTimer: Timer,
-                            datTimer: Timer,
+                            handshakeTimer: StaticTimer,
+                            proverHandshakeTimer: StaticTimer,
+                            datTimer: DynamicTimer,
                             dapsDriver: DapsDriver
 ) : State() {
     override fun runEntryCode(fsm: FSM) {
@@ -106,7 +106,7 @@ class StateWaitForDatAndRat(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     LOG.debug("Remote DAT is valid. Set dat timeout")
-                    datTimer.resetTimeout(datValidityPeriod)
+                    datTimer.resetTimeout(datValidityPeriod * 1000)
                     //start RAT Verifier
                     if (!fsm.restartRatVerifierDriver()) {
                         LOG.error("Cannot run Rat verifier, close idscp connection")

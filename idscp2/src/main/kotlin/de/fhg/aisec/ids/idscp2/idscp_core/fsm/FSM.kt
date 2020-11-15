@@ -29,7 +29,7 @@ import java.util.concurrent.locks.ReentrantLock
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver: DapsDriver,
-          attestationConfig: AttestationConfig) : FsmListener {
+          attestationConfig: AttestationConfig, ackTimeoutDelay: Long, handshakeTimeoutDelay: Long) : FsmListener {
     /*  -----------   IDSCP2 Protocol States   ---------- */
     private val states = HashMap<FsmState, State>()
 
@@ -102,13 +102,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     private var ackFlag = false
     private var bufferedIdscpData: IdscpMessage? = null
 
-    /* ---------------------- Timer ---------------------- */
-    private val datTimer: Timer
-    private val ratTimer: Timer
-    private val handshakeTimer: Timer
-    private val proverHandshakeTimer: Timer
-    private val verifierHandshakeTimer: Timer
-    private val ackTimer: Timer
+    /* ---------------------- Timers ---------------------- */
+    private val datTimer: DynamicTimer
+    private val ratTimer: StaticTimer
+    private val handshakeTimer: StaticTimer
+    private val proverHandshakeTimer: StaticTimer
+    private val verifierHandshakeTimer: StaticTimer
+    private val ackTimer: StaticTimer
 
     private fun checkForFsmCycles() {
         // check if current thread holds already the fsm lock, then we have a circle
@@ -435,7 +435,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
             //safe the thread ID
             currentRatVerifierId = ratVerifierDriver!!.id.toString()
             LOG.debug("Start verifier_handshake timeout")
-            verifierHandshakeTimer.resetTimeout(5)
+            verifierHandshakeTimer.resetTimeout()
             true
         }
     }
@@ -471,7 +471,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
             //safe the thread ID
             currentRatProverId = ratProverDriver!!.id.toString()
             LOG.debug("Start prover_handshake timeout")
-            proverHandshakeTimer.resetTimeout(5)
+            proverHandshakeTimer.resetTimeout()
             true
         }
     }
@@ -598,12 +598,12 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
             onControlMessage(InternalControlMessage.ACK_TIMER_EXPIRED)
         }
 
-        handshakeTimer = Timer(fsmIsBusy, handshakeTimeoutHandler)
-        datTimer = Timer(fsmIsBusy, datTimeoutHandler)
-        ratTimer = Timer(fsmIsBusy, ratTimeoutHandler)
-        proverHandshakeTimer = Timer(fsmIsBusy, proverTimeoutHandler)
-        verifierHandshakeTimer = Timer(fsmIsBusy, verifierTimeoutHandler)
-        ackTimer = Timer(fsmIsBusy, ackTimeoutHandler)
+        datTimer = DynamicTimer(fsmIsBusy, datTimeoutHandler)
+        handshakeTimer = StaticTimer(fsmIsBusy, handshakeTimeoutHandler, handshakeTimeoutDelay)
+        proverHandshakeTimer = StaticTimer(fsmIsBusy, proverTimeoutHandler, handshakeTimeoutDelay)
+        verifierHandshakeTimer = StaticTimer(fsmIsBusy, verifierTimeoutHandler, handshakeTimeoutDelay)
+        ratTimer = StaticTimer(fsmIsBusy, ratTimeoutHandler, attestationConfig.ratTimeoutDelay)
+        ackTimer = StaticTimer(fsmIsBusy, ackTimeoutHandler, ackTimeoutDelay)
 
         /* ------------- FSM STATE Initialization -------------*/
         states[FsmState.STATE_CLOSED] = StateClosed(
@@ -611,11 +611,11 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         states[FsmState.STATE_WAIT_FOR_HELLO] = StateWaitForHello(
                 this, handshakeTimer, datTimer, dapsDriver, attestationConfig)
         states[FsmState.STATE_WAIT_FOR_RAT] = StateWaitForRat(
-                this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer, attestationConfig.ratTimeoutDelay, dapsDriver)
+                this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_RAT_PROVER] = StateWaitForRatProver(
                 this, ratTimer, handshakeTimer, proverHandshakeTimer, dapsDriver, ackTimer)
         states[FsmState.STATE_WAIT_FOR_RAT_VERIFIER] = StateWaitForRatVerifier(
-                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, attestationConfig.ratTimeoutDelay, ackTimer)
+                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, ackTimer)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT] = StateWaitForDatAndRat(
                 this, handshakeTimer, proverHandshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER] = StateWaitForDatAndRatVerifier(

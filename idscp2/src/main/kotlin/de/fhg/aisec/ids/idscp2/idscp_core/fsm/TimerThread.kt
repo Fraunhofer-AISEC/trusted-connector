@@ -3,13 +3,13 @@ package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 import java.util.concurrent.locks.ReentrantLock
 
 /**
- * A Timer Thread that triggers timeouts in the fsm
+ * A Timer Thread that triggers timeouts (ms) in the fsm
  * The thread will only trigger the fsm if it has the fsm lock and the timeout
  * was not canceled before
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class TimerThread internal constructor(//timeout delay in seconds
+class TimerThread internal constructor(//timeout delay in milliseconds
         private val delay: Long, //timeout handler routine
         private val timeoutHandler: Runnable, //lock for the fsm
         private val fsmIsBusy: ReentrantLock) : Thread() {
@@ -27,7 +27,7 @@ class TimerThread internal constructor(//timeout delay in seconds
      */
     override fun run() {
         try {
-            sleep(delay * 1000)
+            sleep(delay)
         } catch (e: InterruptedException) {
             if (!canceled) {
                 currentThread().interrupt()

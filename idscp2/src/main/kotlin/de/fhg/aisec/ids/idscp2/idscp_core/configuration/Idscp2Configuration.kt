@@ -2,7 +2,6 @@ package de.fhg.aisec.ids.idscp2.idscp_core.configuration
 
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
 
 /**
  * IDSCP2 configuration class, contains information about keyStore and TrustStores,
@@ -33,9 +32,9 @@ class Idscp2Configuration {
         private set
     lateinit var attestationConfig: AttestationConfig
         private set
-    var handshakeTimeoutDelay = DEFAULT_HANDSHAKE_TIMEOUT_DELAY.toInt().toLong()
+    var handshakeTimeoutDelay = DEFAULT_HANDSHAKE_TIMEOUT_DELAY.toInt().toLong() //in ms
         private set
-    var ackTimeoutDelay = DEFAULT_ACK_TIMEOUT_DELAY.toInt().toLong()
+    var ackTimeoutDelay = DEFAULT_ACK_TIMEOUT_DELAY.toInt().toLong() //in ms
         private set
 
     class Builder {
@@ -161,7 +160,7 @@ class Idscp2Configuration {
 
     companion object {
         const val DEFAULT_SERVER_PORT = 29292
-        const val DEFAULT_ACK_TIMEOUT_DELAY = "1"
-        const val DEFAULT_HANDSHAKE_TIMEOUT_DELAY = "5"
+        const val DEFAULT_ACK_TIMEOUT_DELAY = "200" // (in ms)
+        const val DEFAULT_HANDSHAKE_TIMEOUT_DELAY = "5000" // (in ms)
     }
 }

@@ -17,11 +17,10 @@ import java.util.function.Function
  */
 class StateWaitForRatVerifier(fsm: FSM,
                               dapsDriver: DapsDriver,
-                              ratTimer: Timer,
-                              handshakeTimer: Timer,
-                              verifierHandshakeTimer: Timer,
-                              ratTimeoutDelay: Long,
-                              ackTimer: Timer) : State() {
+                              ratTimer: StaticTimer,
+                              handshakeTimer: StaticTimer,
+                              verifierHandshakeTimer: StaticTimer,
+                              ackTimer: StaticTimer) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_WAIT_FOR_RAT_VERIFIER")
     }
@@ -73,7 +72,7 @@ class StateWaitForRatVerifier(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     LOG.debug("Start Handshake Timer")
-                    handshakeTimer.resetTimeout(5)
+                    handshakeTimer.resetTimeout()
                     fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER)
                 }
         ))
@@ -82,9 +81,9 @@ class StateWaitForRatVerifier(fsm: FSM,
                     LOG.debug("Received RAT_VERIFIER OK")
                     verifierHandshakeTimer.cancelTimeout()
                     LOG.debug("Start RAT Timer")
-                    ratTimer.resetTimeout(ratTimeoutDelay)
+                    ratTimer.resetTimeout()
                     if (fsm.getAckFlag) {
-                        ackTimer.start(1)
+                        ackTimer.start()
                         return@Function fsm.getState(FsmState.STATE_WAIT_FOR_ACK)
                     } else {
                         return@Function fsm.getState(FsmState.STATE_ESTABLISHED)

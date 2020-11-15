@@ -13,7 +13,7 @@ class AttestationConfig {
         private set
     lateinit var expectedAttestationSuite: Array<String>
         private set
-    var ratTimeoutDelay = DEFAULT_RAT_TIMEOUT_DELAY.toInt().toLong()
+    var ratTimeoutDelay = DEFAULT_RAT_TIMEOUT_DELAY.toInt().toLong() // in ms
         private set
 
     class Builder {
@@ -54,6 +54,6 @@ class AttestationConfig {
     }
 
     companion object {
-        const val DEFAULT_RAT_TIMEOUT_DELAY = "600"
+        const val DEFAULT_RAT_TIMEOUT_DELAY = "600000" // in ms: 600 seconds
     }
 }

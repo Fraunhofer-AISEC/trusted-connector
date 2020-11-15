@@ -20,14 +20,14 @@ import java.util.function.Function
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class StateWaitForHello(fsm: FSM,
-                        private val handshakeTimer: Timer,
-                        datTimer: Timer,
+                        private val handshakeTimer: StaticTimer,
+                        datTimer: DynamicTimer,
                         dapsDriver: DapsDriver,
                         attestationConfig: AttestationConfig) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_WAIT_FOR_HELLO")
         LOG.debug("Set handshake timeout to 5 seconds")
-        handshakeTimer.resetTimeout(5)
+        handshakeTimer.resetTimeout()
     }
 
     companion object {
@@ -91,7 +91,7 @@ class StateWaitForHello(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     LOG.debug("Remote DAT is valid. Set dat timeout to its validity period")
-                    datTimer.resetTimeout(datValidityPeriod)
+                    datTimer.resetTimeout(datValidityPeriod * 1000)
                     fsm.setRatMechanisms(proverMechanism, verifierMechanism)
                     LOG.debug("Start RAT Prover and Verifier")
                     if (!fsm.restartRatVerifierDriver()) {

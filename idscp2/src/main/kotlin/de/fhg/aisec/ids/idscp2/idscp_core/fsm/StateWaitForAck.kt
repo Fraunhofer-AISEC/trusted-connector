@@ -15,10 +15,10 @@ import java.util.function.Function
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class StateWaitForAck(fsm: FSM,
-                       dapsDriver: DapsDriver,
-                       ratTimer: Timer,
-                       handshakeTimer: Timer,
-                       ackTimer: Timer) : State() {
+                      dapsDriver: DapsDriver,
+                      ratTimer: StaticTimer,
+                      handshakeTimer: StaticTimer,
+                      ackTimer: StaticTimer) : State() {
 
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switched to state STATE_WAIT_FOR_ACK")
@@ -87,7 +87,7 @@ class StateWaitForAck(fsm: FSM,
                         return@Function fsm.getState(FsmState.STATE_CLOSED)
                     }
                     LOG.debug("Set handshake timeout")
-                    handshakeTimer.resetTimeout(5)
+                    handshakeTimer.resetTimeout()
                     fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER)
                 }
         ))
@@ -95,7 +95,7 @@ class StateWaitForAck(fsm: FSM,
                 Function {
                     LOG.debug("ACK_timeout occurred. Send buffered IdscpData again")
                     if (fsm.getBufferedIdscpMessage != null || fsm.sendFromFSM(fsm.getBufferedIdscpMessage)) {
-                        ackTimer.start(1)
+                        ackTimer.start()
                         return@Function fsm.getState(FsmState.STATE_WAIT_FOR_ACK)
                     } else {
                         LOG.warn("Cannot send IdscpData, shutdown FSM")
