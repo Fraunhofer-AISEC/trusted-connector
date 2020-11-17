@@ -47,16 +47,22 @@ class StateWaitForAck(fsm: FSM,
          * onMessage: IDSCP_CLOSE ---> {timeouts.cancel()} ---> STATE_CLOSED
          * ALL_OTHER_MESSAGES ---> {} ---> STATE_ESTABLISHED
          * --------------------------------------------------- */
-        addTransition(InternalControlMessage.ERROR.value, Transition {
-            LOG.debug("Error occurred, close idscp connection")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
-            LOG.debug("Send IDSCP_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
-                    CloseCause.USER_SHUTDOWN))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
+        addTransition(InternalControlMessage.ERROR.value, Transition (
+                Function {
+                    LOG.debug("Error occurred, close idscp connection")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition (
+                Function {
+                    LOG.debug("Send IDSCP_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            CloseCause.USER_SHUTDOWN))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
         addTransition(InternalControlMessage.REPEAT_RAT.value, Transition(
                 Function {
                     LOG.debug("Request RAT repeat. Send IDSCP_RERAT, start RAT_VERIFIER")
@@ -73,10 +79,14 @@ class StateWaitForAck(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_RAT_VERIFIER)
                 }
         ))
-        addTransition(InternalControlMessage.SEND_DATA.value, Transition {
-            LOG.warn("Cannot send data in STATE_WAIT_FOR_ACK")
-            this
-        })
+
+        addTransition(InternalControlMessage.SEND_DATA.value, Transition (
+                Function {
+                    LOG.warn("Cannot send data in STATE_WAIT_FOR_ACK")
+                    this
+                }
+        ))
+
         addTransition(InternalControlMessage.DAT_TIMER_EXPIRED.value, Transition(
                 Function {
                     ratTimer.cancelTimeout()
@@ -144,14 +154,21 @@ class StateWaitForAck(fsm: FSM,
                 }
             }
         ))
-        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
-            LOG.debug("Receive IDSCP_CLOSED")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        setNoTransitionHandler { event: Event? ->
-            LOG.debug("No transition available for given event " + event.toString())
-            LOG.debug("Stay in state STATE_WAIT_FOR_ACK")
-            this
-        }
+
+        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition (
+                Function {
+                    LOG.debug("Receive IDSCP_CLOSED")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        setNoTransitionHandler (
+                Function {
+                    LOG.debug("No transition available for given event $it")
+                    LOG.debug("Stay in state STATE_WAIT_FOR_ACK")
+                    this
+                }
+        )
+
     }
 }

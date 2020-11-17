@@ -24,10 +24,10 @@ class AlternatingBit(value: Boolean = false) {
 
 
     fun alternate() {
-        if (bit == Bit.ZERO) {
-            bit = Bit.ONE
+        bit = if (bit == Bit.ZERO) {
+            Bit.ONE
         } else {
-            bit = Bit.ZERO
+            Bit.ZERO
         }
     }
 

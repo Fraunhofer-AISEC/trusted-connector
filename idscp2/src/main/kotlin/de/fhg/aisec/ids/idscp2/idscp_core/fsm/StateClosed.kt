@@ -51,43 +51,50 @@ internal class StateClosed(fsm: FSM,
          * onICM: start_handshake --> {send IDSCP_HELLO, set handshake_timeout} --> STATE_WAIT_FOR_HELLO
          * ALL_OTHER_MESSAGES ---> STATE_CLOSED
          * --------------------------------------------------- */
-        addTransition(InternalControlMessage.START_IDSCP_HANDSHAKE.value, Transition(Function {
-            LOG.debug("Get DAT Token vom DAT_DRIVER")
-            val dat = dapsDriver.token
-            LOG.debug("Send IDSCP_HELLO")
-            val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(
-                    dat,
-                    attestationConfig.supportedAttestationSuite,
-                    attestationConfig.expectedAttestationSuite
-            )
-            if (!fsm.sendFromFSM(idscpHello)) {
-                LOG.error("Cannot send IdscpHello. Close connection")
-                runEntryCode(fsm)
-                onMessageLock.signalAll()
-                return@Function fsm.getState(FsmState.STATE_CLOSED)
+        addTransition(InternalControlMessage.START_IDSCP_HANDSHAKE.value, Transition(
+            Function {
+                LOG.debug("Get DAT Token vom DAT_DRIVER")
+                val dat = dapsDriver.token
+                LOG.debug("Send IDSCP_HELLO")
+                val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(
+                        dat,
+                        attestationConfig.supportedAttestationSuite,
+                        attestationConfig.expectedAttestationSuite
+                )
+                if (!fsm.sendFromFSM(idscpHello)) {
+                    LOG.error("Cannot send IdscpHello. Close connection")
+                    runEntryCode(fsm)
+                    onMessageLock.signalAll()
+                    return@Function fsm.getState(FsmState.STATE_CLOSED)
+                }
+                runExitCode(onMessageLock)
+                fsm.getState(FsmState.STATE_WAIT_FOR_HELLO)
             }
-            runExitCode(onMessageLock)
-            fsm.getState(FsmState.STATE_WAIT_FOR_HELLO)
-        }))
+        ))
 
         // This origins from onClose(), so just ignore it
-        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
-            if (LOG.isTraceEnabled) {
-                LOG.trace("Received STOP in STATE_CLOSED, ignored.")
-            }
-            this
-        })
-        setNoTransitionHandler { event: Event? ->
-            if (LOG.isDebugEnabled) {
-                LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
-                        event,
-                        Arrays.stream(Thread.currentThread().stackTrace)
-                                .skip(1)
-                                .map { obj: StackTraceElement -> obj.toString() }
-                                .collect(Collectors.joining("\n")))
-                LOG.debug("Stay in state STATE_CLOSED")
-            }
-            this
-        }
+        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition (
+                Function {
+                    if (LOG.isTraceEnabled) {
+                        LOG.trace("Received STOP in STATE_CLOSED, ignored.")
+                    }
+                    this
+                }
+        ))
+
+        setNoTransitionHandler(
+                Function {
+                    if (LOG.isDebugEnabled) {
+                        LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
+                                it,
+                                Arrays.stream(Thread.currentThread().stackTrace)
+                                        .skip(1)
+                                        .map { obj: StackTraceElement -> obj.toString() }
+                                        .collect(Collectors.joining("\n")))
+                        LOG.debug("Stay in state STATE_CLOSED")
+                    }
+                    this
+                }
+        )
     }
 }

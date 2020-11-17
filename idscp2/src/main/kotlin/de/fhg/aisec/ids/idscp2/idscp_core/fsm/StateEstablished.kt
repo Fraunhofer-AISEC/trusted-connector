@@ -47,16 +47,22 @@ class StateEstablished(fsm: FSM,
          * onMessage: IDSCP_CLOSE ---> {timeouts.cancel()} ---> STATE_CLOSED
          * ALL_OTHER_MESSAGES ---> {} ---> STATE_ESTABLISHED
          * --------------------------------------------------- */
-        addTransition(InternalControlMessage.ERROR.value, Transition {
-            LOG.debug("Error occurred, close idscp connection")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
-            LOG.debug("Send IDSCP_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
-                    CloseCause.USER_SHUTDOWN))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
+        addTransition(InternalControlMessage.ERROR.value, Transition (
+                Function {
+                    LOG.debug("Error occurred, close idscp connection")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition (
+                Function {
+                    LOG.debug("Send IDSCP_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            CloseCause.USER_SHUTDOWN))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
         addTransition(InternalControlMessage.SEND_DATA.value, Transition(
                 Function {
                     // repack data, include alternating bit
@@ -137,14 +143,19 @@ class StateEstablished(fsm: FSM,
                 }
         ))
 
-        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
-            LOG.debug("Receive IDSCP_CLOSED")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        setNoTransitionHandler { event: Event? ->
-            LOG.debug("No transition available for given event " + event.toString())
-            LOG.debug("Stay in state STATE_ESTABLISHED")
-            this
-        }
+        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition (
+                Function {
+                    LOG.debug("Receive IDSCP_CLOSED")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        setNoTransitionHandler (
+                Function {
+                    LOG.debug("No transition available for given event $it")
+                    LOG.debug("Stay in state STATE_ESTABLISHED")
+                    this
+                }
+        )
     }
 }

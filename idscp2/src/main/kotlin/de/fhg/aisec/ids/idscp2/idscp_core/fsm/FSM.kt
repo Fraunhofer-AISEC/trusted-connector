@@ -18,6 +18,7 @@ import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpData
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.jvm.Throws
 
 /**
  * The finite state machine FSM of the IDSCP2 protocol
@@ -487,7 +488,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Terminate the RatProverDriver
      */
-    fun stopRatProverDriver() {
+    private fun stopRatProverDriver() {
         proverHandshakeTimer.cancelTimeout()
         if (ratProverDriver != null && ratProverDriver!!.isAlive) {
             ratProverDriver!!.interrupt()
@@ -540,7 +541,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Provide IDSCP2 message to the message listener
      */
-    fun notifyIdscpMsgListener(data: ByteArray) {
+    private fun notifyIdscpMsgListener(data: ByteArray) {
         connection.onMessage(data)
         if (LOG.isTraceEnabled) {
             LOG.trace("Idscp data has been passed to connection listener")

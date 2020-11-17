@@ -49,26 +49,38 @@ class StateWaitForHello(fsm: FSM,
          *                                        set handshake_timeout} ---> STATE_WAIT_FOR_RAT
          * ALL_OTHER_MESSAGES ---> {} ---> STATE_WAIT_FOR_HELLO
          * --------------------------------------------------- */
-        addTransition(InternalControlMessage.ERROR.value, Transition {
-            LOG.debug("An internal control error occurred")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
-            LOG.debug("Received stop signal from user. Send IDSCP_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
-                    CloseCause.USER_SHUTDOWN))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.TIMEOUT.value, Transition {
-            LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake Timeout",
-                    CloseCause.TIMEOUT))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
-            LOG.debug("Received IDSCP_CLOSE")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
+        addTransition(InternalControlMessage.ERROR.value, Transition (
+                Function {
+                    LOG.debug("An internal control error occurred")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition (
+                Function {
+                    LOG.debug("Received stop signal from user. Send IDSCP_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            CloseCause.USER_SHUTDOWN))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.TIMEOUT.value, Transition (
+                Function {
+                    LOG.debug("STATE_WAIT_FOR_HELLO timeout. Send IDSCP_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake Timeout",
+                            CloseCause.TIMEOUT))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition (
+                Function {
+                    LOG.debug("Received IDSCP_CLOSE")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
         addTransition(IdscpMessage.IDSCPHELLO_FIELD_NUMBER, Transition(
                 Function { event: Event ->
                     handshakeTimer.cancelTimeout()
@@ -105,10 +117,13 @@ class StateWaitForHello(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_RAT)
                 }
         ))
-        setNoTransitionHandler { event: Event? ->
-            LOG.debug("No transition available for given event " + event.toString())
-            LOG.debug("Stay in state STATE_WAIT_FOR_HELLO")
-            this
-        }
+
+        setNoTransitionHandler (
+                Function {
+                    LOG.debug("No transition available for given event $it")
+                    LOG.debug("Stay in state STATE_WAIT_FOR_HELLO")
+                    this
+                }
+        )
     }
 }

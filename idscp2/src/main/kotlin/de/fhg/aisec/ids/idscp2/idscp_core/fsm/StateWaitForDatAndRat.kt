@@ -50,34 +50,49 @@ class StateWaitForDatAndRat(fsm: FSM,
          * onMessage: IDSCP_RE_RAT ---> {restart RAT_PROVER} ---> STATE_WAIT_FOR_DAT_AND_RAT
          * ALL_OTHER_MESSAGES ---> {} ---> STATE_ESTABLISHED
          * --------------------------------------------------- */
-        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
-            LOG.debug("Send IDSC_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
-                    CloseCause.USER_SHUTDOWN))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.ERROR.value, Transition {
-            LOG.debug("An internal control error occurred")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.TIMEOUT.value, Transition {
-            LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake timeout",
-                    CloseCause.TIMEOUT))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
-        addTransition(InternalControlMessage.RAT_PROVER_OK.value, Transition {
-            LOG.debug("Received RAT_PROVER OK")
-            proverHandshakeTimer.cancelTimeout()
-            fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER)
-        })
-        addTransition(InternalControlMessage.RAT_PROVER_FAILED.value, Transition {
-            LOG.error("RAT_PROVER failed")
-            LOG.debug("Send IDSC_CLOSE")
-            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("RAT_PROVER failed",
-                    CloseCause.RAT_PROVER_FAILED))
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
+        addTransition(InternalControlMessage.IDSCP_STOP.value, Transition (
+                Function {
+                    LOG.debug("Send IDSC_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("User close",
+                            CloseCause.USER_SHUTDOWN))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.ERROR.value, Transition (
+                Function {
+                    LOG.debug("An internal control error occurred")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.TIMEOUT.value, Transition (
+                Function {
+                    LOG.debug("Handshake timeout occurred. Send IDSCP_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("Handshake timeout",
+                            CloseCause.TIMEOUT))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
+        addTransition(InternalControlMessage.RAT_PROVER_OK.value, Transition (
+                Function {
+                    LOG.debug("Received RAT_PROVER OK")
+                    proverHandshakeTimer.cancelTimeout()
+                    fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER)
+                }
+        ))
+
+        addTransition(InternalControlMessage.RAT_PROVER_FAILED.value, Transition (
+                Function {
+                    LOG.error("RAT_PROVER failed")
+                    LOG.debug("Send IDSC_CLOSE")
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("RAT_PROVER failed",
+                            CloseCause.RAT_PROVER_FAILED))
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
         addTransition(InternalControlMessage.RAT_PROVER_MSG.value, Transition(
                 Function { event: Event ->
                     LOG.debug("Send IDSCP_RAT_PROVER")
@@ -88,10 +103,14 @@ class StateWaitForDatAndRat(fsm: FSM,
                     this
                 }
         ))
-        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
-            LOG.debug("Received IDSCP_CLOSE")
-            fsm.getState(FsmState.STATE_CLOSED)
-        })
+
+        addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition (
+                Function {
+                    LOG.debug("Received IDSCP_CLOSE")
+                    fsm.getState(FsmState.STATE_CLOSED)
+                }
+        ))
+
         addTransition(IdscpMessage.IDSCPDAT_FIELD_NUMBER, Transition(
                 Function { event: Event ->
                     handshakeTimer.cancelTimeout()
@@ -115,6 +134,7 @@ class StateWaitForDatAndRat(fsm: FSM,
                     fsm.getState(FsmState.STATE_WAIT_FOR_RAT)
                 }
         ))
+
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition(
                 Function {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER")
@@ -129,13 +149,17 @@ class StateWaitForDatAndRat(fsm: FSM,
                     this
                 }
         ))
-        addTransition(IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, Transition { event: Event ->
-            LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER")
-            assert(event.idscpMessage.hasIdscpRatVerifier())
-            fsm.ratProverDriver?.delegate(event.idscpMessage.idscpRatVerifier.data.toByteArray())
-                    ?: throw Idscp2Exception("RAT prover driver not available")
-            this
-        })
+
+        addTransition(IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, Transition (
+                Function { event: Event ->
+                    LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER")
+                    assert(event.idscpMessage.hasIdscpRatVerifier())
+                    fsm.ratProverDriver?.delegate(event.idscpMessage.idscpRatVerifier.data.toByteArray())
+                            ?: throw Idscp2Exception("RAT prover driver not available")
+                    this
+                }
+        ))
+
         addTransition(IdscpMessage.IDSCPRERAT_FIELD_NUMBER, Transition(
                 Function {
                     LOG.debug("Received IDSCP_RE_RAT. Restart RAT_PROVER")
@@ -146,15 +170,19 @@ class StateWaitForDatAndRat(fsm: FSM,
                     this
                 }
         ))
+
         addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition (
                 Function {
                     fsm.recvAck(it.idscpMessage.idscpAck)
                     this
                 }
         ))
-        setNoTransitionHandler { event: Event? ->
-            LOG.debug("No transition available for given event " + event.toString())
-            this
-        }
+
+        setNoTransitionHandler (
+                Function {
+                    LOG.debug("No transition available for given event $it")
+                    this
+                }
+        )
     }
 }
