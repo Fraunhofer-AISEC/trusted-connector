@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.api.configuration
 
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -26,11 +27,11 @@ class Idscp2Configuration {
         private set
     var certificateAlias = "1.0.1"
         private set
-    var dapsKeyAlias = "1"
-        private set
     var keyStoreKeyType = "RSA"
         private set
     lateinit var attestationConfig: AttestationConfig
+        private set
+    lateinit var dapsDriver: DapsDriver
         private set
     var handshakeTimeoutDelay = DEFAULT_HANDSHAKE_TIMEOUT_DELAY.toInt().toLong() //in ms
         private set
@@ -79,11 +80,6 @@ class Idscp2Configuration {
             return this
         }
 
-        fun setDapsKeyAlias(alias: String): Builder {
-            settings.dapsKeyAlias = alias
-            return this
-        }
-
         fun setKeyStoreKeyType(keyType: String): Builder {
             settings.keyStoreKeyType = keyType
             return this
@@ -91,6 +87,11 @@ class Idscp2Configuration {
 
         fun setAttestationConfig(config: AttestationConfig): Builder {
             settings.attestationConfig = config
+            return this
+        }
+
+        fun setDapsDriver(dapsDriver: DapsDriver): Builder {
+            settings.dapsDriver = dapsDriver
             return this
         }
 
@@ -123,9 +124,9 @@ class Idscp2Configuration {
         if (keyStorePath != other.keyStorePath) return false
         if (!keyStorePassword.contentEquals(other.keyStorePassword)) return false
         if (certificateAlias != other.certificateAlias) return false
-        if (dapsKeyAlias != other.dapsKeyAlias) return false
         if (keyStoreKeyType != other.keyStoreKeyType) return false
         if (attestationConfig != other.attestationConfig) return false
+        if (dapsDriver != other.dapsDriver) return false
         if (handshakeTimeoutDelay != other.handshakeTimeoutDelay) return false
         if (ackTimeoutDelay != other.ackTimeoutDelay) return false
 
@@ -141,9 +142,9 @@ class Idscp2Configuration {
         result = 31 * result + keyStorePath.hashCode()
         result = 31 * result + keyStorePassword.contentHashCode()
         result = 31 * result + certificateAlias.hashCode()
-        result = 31 * result + dapsKeyAlias.hashCode()
         result = 31 * result + keyStoreKeyType.hashCode()
         result = 31 * result + attestationConfig.hashCode()
+        result = 31 *  result + dapsDriver.hashCode()
         result = 31 * result + handshakeTimeoutDelay.hashCode()
         result = 31 * result + ackTimeoutDelay.hashCode()
         return result
@@ -153,9 +154,10 @@ class Idscp2Configuration {
         return "Idscp2Configuration(serverPort=$serverPort, host='$host', trustStorePath=$trustStorePath, " +
                 "trustStorePassword=${trustStorePassword.contentToString()}, " +
                 "keyStorePath=$keyStorePath, keyStorePassword=${keyStorePassword.contentToString()}, " +
-                "certificateAlias='$certificateAlias', dapsKeyAlias='$dapsKeyAlias', " +
+                "certificateAlias='$certificateAlias', " +
                 "keyStoreKeyType='$keyStoreKeyType', attestationConfig=$attestationConfig, " +
-                "handshakeTimeoutDelay=$handshakeTimeoutDelay, ackTimeoutDelay=$ackTimeoutDelay)"
+                "dapsDriver=$dapsDriver, handshakeTimeoutDelay=$handshakeTimeoutDelay, " +
+                "ackTimeoutDelay=$ackTimeoutDelay)"
     }
 
     companion object {

@@ -1,8 +1,7 @@
-package de.fhg.aisec.ids.idscp2.idscp_core.api.configuration
+package de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server
 
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.ServerConnectionListener
 import java.util.concurrent.CompletableFuture
 
 /**

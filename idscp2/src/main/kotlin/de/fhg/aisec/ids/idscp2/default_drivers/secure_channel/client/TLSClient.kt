@@ -26,9 +26,8 @@ import javax.net.ssl.*
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class TLSClient<CC: Idscp2Connection>(
-        private val connectionFactory: (SecureChannel, Idscp2Configuration, DapsDriver) -> CC,
+        private val connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
         private val clientConfiguration: Idscp2Configuration,
-        private val dapsDriver: DapsDriver,
         private val connectionFuture: CompletableFuture<CC>
 ) : HandshakeCompletedListener, DataAvailableListener, SecureChannelEndpoint {
     private val clientSocket: Socket?
@@ -139,7 +138,7 @@ class TLSClient<CC: Idscp2Connection>(
             val secureChannel = SecureChannel(this)
             // Try to complete, won't do anything if promise has been cancelled
             listenerPromise.complete(secureChannel)
-            val connection = connectionFactory(secureChannel, clientConfiguration, dapsDriver)
+            val connection = connectionFactory(secureChannel, clientConfiguration)
             inputListenerThread!!.start()
             // Try to complete, won't do anything if promise has been cancelled
             connectionFuture.complete(connection)

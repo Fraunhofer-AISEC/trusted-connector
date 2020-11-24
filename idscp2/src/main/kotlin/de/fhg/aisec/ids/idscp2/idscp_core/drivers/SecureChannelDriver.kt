@@ -2,7 +2,7 @@ package de.fhg.aisec.ids.idscp2.idscp_core.drivers
 
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.SecureChannelInitListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.ServerConnectionListener
 import java.util.concurrent.CompletableFuture
@@ -17,9 +17,8 @@ interface SecureChannelDriver<CC : Idscp2Connection> {
     /*
      * Asynchronous method to create a secure connection to a secure server
      */
-    fun connect(connectionFactory: (SecureChannel, Idscp2Configuration, DapsDriver) -> CC,
-                configuration: Idscp2Configuration,
-                dapsDriver: DapsDriver): CompletableFuture<CC>
+    fun connect(connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
+                configuration: Idscp2Configuration): CompletableFuture<CC>
 
     /*
      * Starting a secure server

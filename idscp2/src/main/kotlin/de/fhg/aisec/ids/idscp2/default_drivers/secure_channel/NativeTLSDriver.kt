@@ -8,7 +8,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureServer
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.SecureChannelInitListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.ServerConnectionListener
 import org.slf4j.LoggerFactory
@@ -26,12 +26,11 @@ class NativeTLSDriver<CC: Idscp2Connection> : SecureChannelDriver<CC> {
     /**
      * Performs an asynchronous client connect to a TLS server.
      */
-    override fun connect(connectionFactory: (SecureChannel, Idscp2Configuration, DapsDriver) -> CC,
-                         configuration: Idscp2Configuration,
-                         dapsDriver: DapsDriver): CompletableFuture<CC> {
+    override fun connect(connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
+                         configuration: Idscp2Configuration): CompletableFuture<CC> {
         val connectionFuture = CompletableFuture<CC>()
         try {
-            val tlsClient = TLSClient(connectionFactory, configuration, dapsDriver, connectionFuture)
+            val tlsClient = TLSClient(connectionFactory, configuration, connectionFuture)
             tlsClient.connect(configuration.host, configuration.serverPort)
         } catch (e: IOException) {
             connectionFuture.completeExceptionally(Idscp2Exception("Call to connect() has failed", e))

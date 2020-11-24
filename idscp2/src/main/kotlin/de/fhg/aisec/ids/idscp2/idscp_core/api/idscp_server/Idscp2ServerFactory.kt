@@ -1,14 +1,13 @@
-package de.fhg.aisec.ids.idscp2.idscp_core.api.configuration
+package de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server
 
 import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelDriver
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2Server
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.ServerConnectionListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 
@@ -18,10 +17,9 @@ import java.util.concurrent.CompletableFuture
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class Idscp2ServerFactory<CC: Idscp2Connection>(
-        private val connectionFactory: (SecureChannel, Idscp2Configuration, DapsDriver) -> CC,
+        private val connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
         private val endpointListener: Idscp2EndpointListener<CC>,
         private val configuration: Idscp2Configuration,
-        private val dapsDriver: DapsDriver,
         private val secureChannelDriver: SecureChannelDriver<CC>
 ) : SecureChannelInitListener<CC> {
     /**
@@ -53,7 +51,7 @@ class Idscp2ServerFactory<CC: Idscp2Connection>(
                                  serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>) {
         LOG.trace("A new secure channel for an IDSCP2 connection was established")
         // Threads calling onMessage() will be blocked until all listeners have been registered, see below
-        val newConnection = connectionFactory(secureChannel, configuration, dapsDriver)
+        val newConnection = connectionFactory(secureChannel, configuration)
         // Complete the connection promise for the IDSCP server
         serverListenerPromise.thenAccept { serverListener: ServerConnectionListener<CC> ->
             serverListener.onConnectionCreated(newConnection)

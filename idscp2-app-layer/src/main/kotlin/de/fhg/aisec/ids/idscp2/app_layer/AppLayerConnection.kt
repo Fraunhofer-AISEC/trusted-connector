@@ -3,7 +3,6 @@ package de.fhg.aisec.ids.idscp2.app_layer
 import com.google.protobuf.ByteString
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import de.fhg.aisec.ids.idscp2.app_layer.messages.AppLayer
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2MessageListener
@@ -17,8 +16,8 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
     private var idscp2MessageListener: Idscp2MessageListener? = null
     private val genericMessageListeners: MutableSet<GenericMessageListener> = Collections.synchronizedSet(HashSet())
 
-    constructor(secureChannel: SecureChannel, configuration: Idscp2Configuration, dapsDriver: DapsDriver):
-        this(Idscp2ConnectionImpl(secureChannel, configuration, dapsDriver))
+    constructor(secureChannel: SecureChannel, configuration: Idscp2Configuration):
+        this(Idscp2ConnectionImpl(secureChannel, configuration))
 
     private fun assureMessageListener() {
         if (idscp2MessageListener == null) {

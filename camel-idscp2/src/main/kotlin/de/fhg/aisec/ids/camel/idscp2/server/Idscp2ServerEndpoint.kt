@@ -16,8 +16,11 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
+import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
@@ -120,16 +123,25 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
         val matchResult = remainingMatcher.toMatchResult()
         val host = matchResult.group(1)
         val port = matchResult.group(2)?.toInt() ?: Idscp2Configuration.DEFAULT_SERVER_PORT
+
+        // create attestation config
         val localAttestationConfig = AttestationConfig.Builder()
                 .setSupportedRatSuite(arrayOf(RatProverDummy.RAT_PROVER_DUMMY_ID, TPM2dProver.TPM_RAT_PROVER_ID))
                 .setExpectedRatSuite(arrayOf(RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, TPM2dVerifier.TPM_RAT_VERIFIER_ID))
                 .setRatTimeoutDelay(dapsRatTimeoutDelay)
                 .build()
+
+        // create daps config
+        val dapsDriverConfigBuilder = DefaultDapsDriverConfig.Builder()
+                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
+                .setKeyAlias(dapsKeyAlias)
+
+        // create idscp config
         val serverConfigurationBuilder = Idscp2Configuration.Builder()
                 .setHost(host)
                 .setServerPort(port)
                 .setAttestationConfig(localAttestationConfig)
-                .setDapsKeyAlias(dapsKeyAlias)
+
         sslContextParameters?.let {
             serverConfigurationBuilder
                     .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
@@ -142,7 +154,18 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
                     .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
                             ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
+
+            dapsDriverConfigBuilder
+                    .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
+                        ?: "password".toCharArray())
+                    .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setKeyStorePassword(it.keyManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setTrustStorePath(Paths.get(it.trustManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
         }
+        serverConfigurationBuilder.setDapsDriver(DefaultDapsDriver(dapsDriverConfigBuilder.build()))
         serverConfiguration = serverConfigurationBuilder.build()
         (component as Idscp2ServerComponent).getServer(serverConfiguration).let {
             server = it

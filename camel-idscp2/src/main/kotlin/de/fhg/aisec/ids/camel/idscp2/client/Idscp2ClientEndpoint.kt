@@ -26,7 +26,6 @@ import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
@@ -50,7 +49,6 @@ import java.util.regex.Pattern
 class Idscp2ClientEndpoint(uri: String?, private val remaining: String, component: Idscp2ClientComponent?) :
         DefaultEndpoint(uri, component) {
     private lateinit var secureChannelDriver: SecureChannelDriver<AppLayerConnection>
-    private lateinit var dapsDriver: DapsDriver
     private lateinit var clientConfiguration: Idscp2Configuration
 
     @UriParam(
@@ -77,7 +75,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
     var connectionShareId: String? = null
 
     private fun makeConnectionInternal(): CompletableFuture<AppLayerConnection> {
-        return secureChannelDriver.connect(::AppLayerConnection, clientConfiguration, dapsDriver)
+        return secureChannelDriver.connect(::AppLayerConnection, clientConfiguration)
     }
 
     fun makeConnection(): CompletableFuture<AppLayerConnection> {
@@ -107,16 +105,25 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         val matchResult = remainingMatcher.toMatchResult()
         val host = matchResult.group(1)
         val port = matchResult.group(2)?.toInt() ?: Idscp2Configuration.DEFAULT_SERVER_PORT
+
+        // create attestation config
         val localAttestationConfig = AttestationConfig.Builder()
                 .setSupportedRatSuite(arrayOf(RatProverDummy.RAT_PROVER_DUMMY_ID, TPM2dProver.TPM_RAT_PROVER_ID))
                 .setExpectedRatSuite(arrayOf(RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, TPM2dVerifier.TPM_RAT_VERIFIER_ID))
                 .setRatTimeoutDelay(dapsRatTimeoutDelay ?: AttestationConfig.DEFAULT_RAT_TIMEOUT_DELAY.toLong())
                 .build()
+
+        // create daps config builder
+        val dapsDriverConfigBuilder = DefaultDapsDriverConfig.Builder()
+                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
+                .setKeyAlias(dapsKeyAlias ?: "1")
+
+        // create idscp configuration
         val clientConfigurationBuilder = Idscp2Configuration.Builder()
                 .setHost(host)
                 .setServerPort(port)
                 .setAttestationConfig(localAttestationConfig)
-                .setDapsKeyAlias(dapsKeyAlias ?: "1")
+
         sslContextParameters?.let {
             clientConfigurationBuilder
                     .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
@@ -129,18 +136,21 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
                     .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
                             ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
+
+            dapsDriverConfigBuilder
+                    .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setKeyStorePassword(it.keyManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setTrustStorePath(Paths.get(it.trustManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
         }
-        secureChannelDriver = NativeTLSDriver()
+
+        clientConfigurationBuilder.setDapsDriver(DefaultDapsDriver(dapsDriverConfigBuilder.build()))
         clientConfiguration = clientConfigurationBuilder.build()
-        dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
-                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
-                .setKeyAlias(clientConfiguration.dapsKeyAlias)
-                .setKeyPassword(clientConfiguration.keyPassword)
-                .setKeyStorePath(clientConfiguration.keyStorePath)
-                .setTrustStorePath(clientConfiguration.trustStorePath)
-                .setKeyStorePassword(clientConfiguration.keyStorePassword)
-                .setTrustStorePassword(clientConfiguration.trustStorePassword)
-                .build())
+        secureChannelDriver = NativeTLSDriver()
     }
 
     public override fun doStop() {

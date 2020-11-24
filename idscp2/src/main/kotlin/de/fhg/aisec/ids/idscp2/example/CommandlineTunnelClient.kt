@@ -24,9 +24,6 @@ class CommandlineTunnelClient {
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
 
-        // create daps driver
-        val dapsDriver = NullDaps()
-
         // register rat drivers
         RatProverDriverRegistry.registerDriver(
                 RatProverDummy.RAT_PROVER_DUMMY_ID, ::RatProverDummy, null)
@@ -36,7 +33,7 @@ class CommandlineTunnelClient {
 
         // connect to idscp2 server
         LOG.info("connecting to {}:{}", configuration.host, configuration.serverPort)
-        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, dapsDriver)
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration)
 
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             println("Client: New connection with id " + connection.id)

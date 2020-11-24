@@ -17,12 +17,11 @@ import java.util.function.Consumer
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
 class Idscp2ConnectionImpl(secureChannel: SecureChannel,
-                           configuration: Idscp2Configuration,
-                           dapsDriver: DapsDriver): Idscp2Connection {
+                           configuration: Idscp2Configuration): Idscp2Connection {
     private val fsm: FSM = FSM(
             this,
             secureChannel,
-            dapsDriver,
+            configuration.dapsDriver,
             configuration.attestationConfig,
             configuration.ackTimeoutDelay,
             configuration.handshakeTimeoutDelay

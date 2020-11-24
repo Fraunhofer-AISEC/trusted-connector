@@ -10,7 +10,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2ServerFactory
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2ServerFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
@@ -21,9 +21,6 @@ class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
         LOG.info("setting up IDSCP listener")
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
-
-        // create daps
-        val dapsDriver: DapsDriver = NullDaps()
 
         // register rat drivers
         RatProverDriverRegistry.registerDriver(
@@ -37,7 +34,6 @@ class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
                 ::Idscp2ConnectionImpl,
                 this,
                 configuration,
-                dapsDriver,
                 secureChannelDriver
         )
 

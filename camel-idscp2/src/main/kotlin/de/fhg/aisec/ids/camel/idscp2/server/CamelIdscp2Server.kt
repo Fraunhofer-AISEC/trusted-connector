@@ -16,14 +16,11 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
-import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2ServerFactory
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2ServerFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2Server
 import java.util.*
 
@@ -32,20 +29,11 @@ class CamelIdscp2Server(serverConfiguration: Idscp2Configuration) : Idscp2Endpoi
     val listeners: MutableSet<Idscp2EndpointListener<AppLayerConnection>> = Collections.synchronizedSet(HashSet())
 
     init {
-        val dapsDriverConfig = DefaultDapsDriverConfig.Builder()
-                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
-                .setKeyAlias(serverConfiguration.dapsKeyAlias)
-                .setKeyPassword(serverConfiguration.keyPassword)
-                .setKeyStorePath(serverConfiguration.keyStorePath)
-                .setTrustStorePath(serverConfiguration.trustStorePath)
-                .setKeyStorePassword(serverConfiguration.keyStorePassword)
-                .setTrustStorePassword(serverConfiguration.trustStorePassword)
-                .build()
+
         val serverFactory = Idscp2ServerFactory(
                 ::AppLayerConnection,
                 this,
                 serverConfiguration,
-                DefaultDapsDriver(dapsDriverConfig),
                 NativeTLSDriver()
         )
         server = serverFactory.listen()

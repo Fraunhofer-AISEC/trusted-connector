@@ -3,7 +3,7 @@ package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.server
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSSessionVerificationHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.SecureChannelInitListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelEndpoint
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener

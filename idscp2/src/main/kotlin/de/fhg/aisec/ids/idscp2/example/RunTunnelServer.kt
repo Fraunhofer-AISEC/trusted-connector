@@ -1,9 +1,11 @@
 package de.fhg.aisec.ids.idscp2.example
 
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.NullDaps
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import java.nio.file.Paths
 import java.util.*
 
@@ -17,13 +19,15 @@ object RunTunnelServer {
                 .setRatTimeoutDelay(60 * 1000) // 60 seconds
                 .build()
 
+        val dapsDriver: DapsDriver = NullDaps()
+
         val settings = Idscp2Configuration.Builder()
                 .setKeyStorePath(Paths.get(Objects.requireNonNull(RunTLSServer::class.java.classLoader.getResource("ssl/aisecconnector1-keystore.p12")).path))
                 .setTrustStorePath(Paths.get(Objects.requireNonNull(RunTLSServer::class.java.classLoader.getResource("ssl/client-truststore_new.p12")).path))
                 .setCertificateAlias("1.0.1")
-                .setDapsKeyAlias("1")
                 .setAttestationConfig(localAttestationConfig)
                 .setServerPort(1234)
+                .setDapsDriver(dapsDriver)
                 .build()
 
         val initiator = CommandlineTunnelServer()

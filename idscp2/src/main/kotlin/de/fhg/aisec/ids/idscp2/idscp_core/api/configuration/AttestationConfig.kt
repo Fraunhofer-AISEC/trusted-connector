@@ -54,6 +54,6 @@ class AttestationConfig {
     }
 
     companion object {
-        const val DEFAULT_RAT_TIMEOUT_DELAY = "600000" // in ms: 600 seconds
+        const val DEFAULT_RAT_TIMEOUT_DELAY = "3600000" // in ms: 1 hour
     }
 }

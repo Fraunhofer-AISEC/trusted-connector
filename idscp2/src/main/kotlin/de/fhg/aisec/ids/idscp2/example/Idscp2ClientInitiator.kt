@@ -23,17 +23,6 @@ class Idscp2ClientInitiator {
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
 
-        // create daps driver
-        val dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
-                .setKeyStorePath(configuration.keyStorePath)
-                .setTrustStorePath(configuration.trustStorePath)
-                .setKeyStorePassword(configuration.keyStorePassword)
-                .setTrustStorePassword(configuration.trustStorePassword)
-                .setKeyAlias(configuration.dapsKeyAlias)
-                .setKeyPassword(configuration.keyPassword)
-                .setDapsUrl("https://daps.aisec.fraunhofer.de")
-                .build())
-
         // register rat drivers
         RatProverDriverRegistry.registerDriver(
                 RatProverDummy.RAT_PROVER_DUMMY_ID, ::RatProverDummy, null)
@@ -42,7 +31,7 @@ class Idscp2ClientInitiator {
                 RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
 
         // connect to idscp2 server
-        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, dapsDriver)
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             println("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {

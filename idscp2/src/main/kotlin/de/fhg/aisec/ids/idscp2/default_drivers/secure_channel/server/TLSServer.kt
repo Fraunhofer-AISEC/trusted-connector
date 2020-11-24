@@ -5,7 +5,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSConstants
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureServer
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.SecureChannelInitListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.ServerConnectionListener
 import org.slf4j.LoggerFactory
 import java.io.IOException

@@ -11,7 +11,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2ServerFactory
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2ServerFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
@@ -23,20 +23,6 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
 
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
-
-        // create daps config
-        val dapsConfig = DefaultDapsDriverConfig.Builder()
-                .setKeyStorePath(configuration.keyStorePath)
-                .setTrustStorePath(configuration.trustStorePath)
-                .setKeyStorePassword(configuration.keyStorePassword)
-                .setTrustStorePassword(configuration.trustStorePassword)
-                .setKeyAlias(configuration.dapsKeyAlias)
-                .setKeyPassword(configuration.keyPassword)
-                .setDapsUrl("https://daps.aisec.fraunhofer.de")
-                .build()
-
-        // create daps
-        val dapsDriver: DapsDriver = DefaultDapsDriver(dapsConfig)
 
         // register rat drivers
         RatProverDriverRegistry.registerDriver(
@@ -50,7 +36,6 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
                 ::Idscp2ConnectionImpl,
                 this,
                 configuration,
-                dapsDriver,
                 secureChannelDriver
         )
         // run idscp2 server
