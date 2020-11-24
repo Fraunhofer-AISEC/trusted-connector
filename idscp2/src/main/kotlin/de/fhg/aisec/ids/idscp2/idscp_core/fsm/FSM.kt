@@ -386,6 +386,16 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     }
 
     /**
+     * Repeat RAT Verification if remote peer, triggered by User
+     */
+    fun repeatRat() {
+        // repeat rat only when idscp connection is established
+        idscpHandshakeCompletedLatch.await()
+        checkForFsmCycles()
+        onControlMessage(InternalControlMessage.REPEAT_RAT)
+    }
+
+    /**
      * Check if FSM is in STATE ESTABLISHED
      */
     val isConnected: Boolean

@@ -15,6 +15,7 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
 
 class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
     fun init(configuration: Idscp2Configuration) {

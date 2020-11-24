@@ -57,6 +57,13 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         fsm.send(msg)
     }
 
+    override fun repeatRat() {
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Sending data via connection {}...", id)
+        }
+        fsm.repeatRat()
+    }
+
     override fun onMessage(msg: ByteArray) {
         // When unlock is called, although not synchronized, this will eventually stop blocking.
         messageLatch.await()

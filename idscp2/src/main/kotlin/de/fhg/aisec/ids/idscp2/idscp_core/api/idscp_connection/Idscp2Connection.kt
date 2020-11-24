@@ -21,6 +21,11 @@ interface Idscp2Connection {
      */
     fun send(msg: ByteArray)
 
+    /**
+     * Repeat remote attestation verification of remote peer
+     */
+    fun repeatRat()
+
     fun onMessage(msg: ByteArray)
 
     fun onError(t: Throwable)
