@@ -1,8 +1,8 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import org.slf4j.LoggerFactory
 import java.util.*

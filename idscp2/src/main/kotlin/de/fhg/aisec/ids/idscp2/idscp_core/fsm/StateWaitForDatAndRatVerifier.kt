@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage

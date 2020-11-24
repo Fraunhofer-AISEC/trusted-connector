@@ -16,12 +16,12 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProverConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProverConfig
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifierConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.apache.camel.Endpoint

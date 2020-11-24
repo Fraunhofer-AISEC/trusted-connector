@@ -16,15 +16,15 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
-import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import org.apache.camel.Processor
 import org.apache.camel.Producer
 import org.apache.camel.spi.UriEndpoint

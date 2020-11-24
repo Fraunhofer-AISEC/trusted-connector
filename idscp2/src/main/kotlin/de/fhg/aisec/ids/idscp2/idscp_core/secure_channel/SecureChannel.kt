@@ -1,5 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.secure_channel
 
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelEndpoint
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture

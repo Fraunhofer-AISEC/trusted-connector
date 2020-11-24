@@ -1,14 +1,14 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
 import com.google.protobuf.InvalidProtocolBufferException
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatProverDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatVerifierDriver
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel

@@ -1,9 +1,9 @@
 package de.fhg.aisec.ids.idscp2.example
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.AttestationConfig
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import java.nio.file.Paths
 import java.util.*
 

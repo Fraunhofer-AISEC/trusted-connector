@@ -1,6 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.rat_registry
 
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatProverDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap

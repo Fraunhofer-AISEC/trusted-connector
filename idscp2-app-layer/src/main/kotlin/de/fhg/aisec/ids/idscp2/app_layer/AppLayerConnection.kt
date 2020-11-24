@@ -3,11 +3,11 @@ package de.fhg.aisec.ids.idscp2.app_layer
 import com.google.protobuf.ByteString
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import de.fhg.aisec.ids.idscp2.app_layer.messages.AppLayer
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2MessageListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import org.slf4j.LoggerFactory
 import java.util.*

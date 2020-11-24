@@ -1,14 +1,14 @@
 package de.fhg.aisec.ids.idscp2.example
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
