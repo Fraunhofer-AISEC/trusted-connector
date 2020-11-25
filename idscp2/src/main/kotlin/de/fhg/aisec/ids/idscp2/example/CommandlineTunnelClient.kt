@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.idscp2.example
 
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.NullDaps
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
@@ -36,7 +35,7 @@ class CommandlineTunnelClient {
         connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration)
 
         connectionFuture.thenAccept { connection: Idscp2Connection ->
-            println("Client: New connection with id " + connection.id)
+            LOG.info("Client: New connection with id " + connection.id)
             var runningUserJob = true
 
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {
@@ -51,8 +50,8 @@ class CommandlineTunnelClient {
                 }
             })
 
-            connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
-                println("Received message: " + String(data, StandardCharsets.UTF_8))
+            connection.addMessageListener { _: Idscp2Connection, data: ByteArray ->
+                LOG.info("Received message: " + String(data, StandardCharsets.UTF_8))
             }
 
             connection.unlockMessaging()

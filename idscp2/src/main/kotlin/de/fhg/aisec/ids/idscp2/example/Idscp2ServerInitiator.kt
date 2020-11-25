@@ -43,7 +43,7 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
     }
 
     override fun onConnection(connection: Idscp2Connection) {
-        println("Server: New connection with id " + connection.id)
+        LOG.info("Server: New connection with id " + connection.id)
         connection.addConnectionListener(object : Idscp2ConnectionAdapter() {
             override fun onError(t: Throwable) {
                 LOG.error("Server connection error occurred", t)
@@ -54,11 +54,10 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
             }
         })
         connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
-            println("Received ping message: ${String(data, StandardCharsets.UTF_8)}".trimIndent())
-            CompletableFuture.runAsync {
-                println("Sending PONG...")
-                c.send("PONG".toByteArray(StandardCharsets.UTF_8)) //FSM error if run from the same thread
-            }
+            LOG.info("Received ping message: ${String(data, StandardCharsets.UTF_8)}".trimIndent())
+
+            LOG.info("Sending PONG...")
+            c.send("PONG".toByteArray(StandardCharsets.UTF_8))
         }
     }
 

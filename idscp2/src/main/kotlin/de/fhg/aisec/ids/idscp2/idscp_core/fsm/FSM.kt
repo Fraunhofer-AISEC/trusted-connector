@@ -15,6 +15,8 @@ import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpAck
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpData
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -349,7 +351,11 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     override fun onError(t: Throwable) {
         // Broadcast the error to the respective listeners
-        connection.onError(t)
+
+        // run in async fire-and-forget coroutine to avoid cycles cause by protocol misuse
+        GlobalScope.launch {
+            connection.onError(t)
+        }
 
         // Check for incorrect usage
         checkForFsmCycles()
@@ -467,7 +473,11 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         ratVerifierDriver?.let {
             if (it.isAlive) {
                 it.interrupt()
-                it.terminate()
+
+                // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+                GlobalScope.launch {
+                    it.terminate()
+                }
             }
         }
     }
@@ -502,7 +512,11 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         proverHandshakeTimer.cancelTimeout()
         if (ratProverDriver != null && ratProverDriver!!.isAlive) {
             ratProverDriver!!.interrupt()
-            ratProverDriver!!.terminate()
+
+            // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+            GlobalScope.launch {
+                ratProverDriver!!.terminate()
+            }
         }
     }
 
@@ -515,11 +529,20 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         if (LOG.isTraceEnabled) {
             LOG.trace("Running close handlers of connection {}...", connection.id)
         }
-        connection.onClose()
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Closing secure channel of connection {}...", connection.id)
+
+        // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+        GlobalScope.launch {
+            connection.onClose()
         }
-        secureChannel.close()
+
+        // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+        GlobalScope.launch {
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Closing secure channel of connection {}...", connection.id)
+            }
+            secureChannel.close()
+        }
+
         if (LOG.isTraceEnabled) {
             LOG.trace("Clearing timeouts...")
         }
@@ -552,9 +575,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      * Provide IDSCP2 message to the message listener
      */
     private fun notifyIdscpMsgListener(data: ByteArray) {
-        connection.onMessage(data)
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Idscp data has been passed to connection listener")
+        // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+        GlobalScope.launch {
+            connection.onMessage(data)
+
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Idscp data has been passed to connection listener")
+            }
         }
     }
 

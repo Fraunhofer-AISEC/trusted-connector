@@ -42,7 +42,7 @@ class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
     }
 
     override fun onConnection(connection: Idscp2Connection) {
-        println("Server: New connection with id " + connection.id)
+        LOG.info("Server: New connection with id " + connection.id)
 
         connection.addConnectionListener(object : Idscp2ConnectionAdapter() {
             override fun onError(t: Throwable) {
@@ -54,8 +54,8 @@ class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
             }
         })
 
-        connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
-            println("Received message: ${String(data, StandardCharsets.UTF_8)}".trimIndent())
+        connection.addMessageListener { _: Idscp2Connection, data: ByteArray ->
+            LOG.info("Received message: ${String(data, StandardCharsets.UTF_8)}".trimIndent())
         }
 
     }

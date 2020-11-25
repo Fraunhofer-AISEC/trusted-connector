@@ -31,6 +31,7 @@ configure<IdeaModel> {
 dependencies {
     // For standalone running of examples
     implementation("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
 
     providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 

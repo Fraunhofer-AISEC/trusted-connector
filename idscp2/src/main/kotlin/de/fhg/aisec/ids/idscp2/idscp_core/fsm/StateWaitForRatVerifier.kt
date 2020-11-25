@@ -6,6 +6,8 @@ import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.function.Function
 
@@ -148,8 +150,13 @@ class StateWaitForRatVerifier(fsm: FSM,
                 Function { event: Event ->
                     LOG.debug("Delegate received IDSCP_RAT_PROVER to RAT_VERIFIER")
                     assert(event.idscpMessage.hasIdscpRatProver())
-                    fsm.ratVerifierDriver?.delegate(event.idscpMessage.idscpRatProver.data.toByteArray())
-                            ?: throw Idscp2Exception("RAT verifier driver not available")
+
+                    // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+                    GlobalScope.launch {
+                        fsm.ratVerifierDriver?.delegate(event.idscpMessage.idscpRatProver.data.toByteArray())
+                                ?: throw Idscp2Exception("RAT verifier driver not available")
+                    }
+
                     this
                 }
         ))

@@ -33,7 +33,7 @@ class Idscp2ClientInitiator {
         // connect to idscp2 server
         connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
-            println("Client: New connection with id " + connection.id)
+            LOG.info("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {
                 override fun onError(t: Throwable) {
                     LOG.error("Client connection error occurred", t)
@@ -44,14 +44,13 @@ class Idscp2ClientInitiator {
                 }
             })
             connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
-                println("Received ping message: " + String(data, StandardCharsets.UTF_8))
-                CompletableFuture.runAsync {
-                    println("Close Connection")
-                    c.close()
-                } // FSM error if run from the same thread
+                LOG.info("Received ping message: " + String(data, StandardCharsets.UTF_8))
+
+                LOG.info("Close Connection")
+                c.close()
             }
             connection.unlockMessaging()
-            println("Send PING ...")
+            LOG.info("Send PING ...")
             connection.send("PING".toByteArray(StandardCharsets.UTF_8))
         }.exceptionally { t: Throwable? ->
             LOG.error("Client endpoint error occurred", t)
