@@ -5,6 +5,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.daps.NullDaps
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
@@ -18,7 +19,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
 
 class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
-    fun init(configuration: Idscp2Configuration) {
+    fun init(configuration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) {
         LOG.info("setting up IDSCP listener")
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
@@ -35,7 +36,8 @@ class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
                 ::Idscp2ConnectionImpl,
                 this,
                 configuration,
-                secureChannelDriver
+                secureChannelDriver,
+                nativeTlsConfiguration
         )
 
         @Suppress("UNUSED_VARIABLE") val idscp2Server = serverConfig.listen()

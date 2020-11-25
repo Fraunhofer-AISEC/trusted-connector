@@ -1,12 +1,10 @@
 package de.fhg.aisec.ids.idscp2.example
 
 import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
@@ -16,10 +14,9 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.CompletableFuture
 
 class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
-    fun init(configuration: Idscp2Configuration) {
+    fun init(configuration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) {
 
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
@@ -36,7 +33,8 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
                 ::Idscp2ConnectionImpl,
                 this,
                 configuration,
-                secureChannelDriver
+                secureChannelDriver,
+                nativeTlsConfiguration
         )
         // run idscp2 server
         @Suppress("UNUSED_VARIABLE") val idscp2Server = serverConfig.listen()

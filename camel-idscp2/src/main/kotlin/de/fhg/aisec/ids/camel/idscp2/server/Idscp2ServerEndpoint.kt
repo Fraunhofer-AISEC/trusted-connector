@@ -25,6 +25,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
@@ -48,6 +49,7 @@ import java.util.regex.Pattern
 class Idscp2ServerEndpoint(uri: String?, private val remaining: String, component: Idscp2ServerComponent?) :
         DefaultEndpoint(uri, component), Idscp2EndpointListener<AppLayerConnection> {
     private lateinit var serverConfiguration: Idscp2Configuration
+    private lateinit var secureChannelConfig: NativeTlsConfiguration
     private var server: CamelIdscp2Server? = null
     private val consumers: MutableSet<Idscp2ServerConsumer> = HashSet()
 
@@ -122,7 +124,7 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
         require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
         val matchResult = remainingMatcher.toMatchResult()
         val host = matchResult.group(1)
-        val port = matchResult.group(2)?.toInt() ?: Idscp2Configuration.DEFAULT_SERVER_PORT
+        val port = matchResult.group(2)?.toInt() ?: NativeTlsConfiguration.DEFAULT_SERVER_PORT
 
         // create attestation config
         val localAttestationConfig = AttestationConfig.Builder()
@@ -136,14 +138,12 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
                 .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
                 .setKeyAlias(dapsKeyAlias)
 
-        // create idscp config
-        val serverConfigurationBuilder = Idscp2Configuration.Builder()
+        val secureChannelConfigBuilder = NativeTlsConfiguration.Builder()
                 .setHost(host)
                 .setServerPort(port)
-                .setAttestationConfig(localAttestationConfig)
 
         sslContextParameters?.let {
-            serverConfigurationBuilder
+            secureChannelConfigBuilder
                     .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
                             ?: "password".toCharArray())
                     .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
@@ -165,9 +165,16 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
                     .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
                             ?: "password".toCharArray())
         }
-        serverConfigurationBuilder.setDapsDriver(DefaultDapsDriver(dapsDriverConfigBuilder.build()))
-        serverConfiguration = serverConfigurationBuilder.build()
-        (component as Idscp2ServerComponent).getServer(serverConfiguration).let {
+
+        // create idscp config
+        serverConfiguration = Idscp2Configuration.Builder()
+                .setAttestationConfig(localAttestationConfig)
+                .setDapsDriver(DefaultDapsDriver(dapsDriverConfigBuilder.build()))
+                .build()
+
+        secureChannelConfig = secureChannelConfigBuilder.build()
+
+        (component as Idscp2ServerComponent).getServer(serverConfiguration, secureChannelConfig).let {
             server = it
             // Add this endpoint to this server's Idscp2EndpointListener set
             it.listeners += this

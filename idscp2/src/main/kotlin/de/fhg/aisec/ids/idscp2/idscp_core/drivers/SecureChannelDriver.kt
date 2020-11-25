@@ -13,16 +13,18 @@ import java.util.concurrent.CompletableFuture
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-interface SecureChannelDriver<CC : Idscp2Connection> {
+interface SecureChannelDriver<CC : Idscp2Connection, SecureChannelConfiguration> {
     /*
      * Asynchronous method to create a secure connection to a secure server
      */
     fun connect(connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
-                configuration: Idscp2Configuration): CompletableFuture<CC>
+                     configuration: Idscp2Configuration,
+                     secureChannelConfig: SecureChannelConfiguration): CompletableFuture<CC>
 
     /*
      * Starting a secure server
      */
-    fun listen(configuration: Idscp2Configuration, channelInitListener: SecureChannelInitListener<CC>,
-               serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>): SecureServer
+    fun listen(channelInitListener: SecureChannelInitListener<CC>,
+               serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>,
+                secureChannelConfig: SecureChannelConfiguration): SecureServer
 }

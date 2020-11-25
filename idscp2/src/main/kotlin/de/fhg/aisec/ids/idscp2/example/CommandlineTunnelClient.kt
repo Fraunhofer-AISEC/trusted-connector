@@ -3,6 +3,7 @@ package de.fhg.aisec.ids.idscp2.example
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
@@ -17,7 +18,7 @@ import kotlin.concurrent.thread
 class CommandlineTunnelClient {
     private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
 
-    fun init(configuration: Idscp2Configuration) {
+    fun init(configuration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) {
         LOG.info("Setting up IDSCP connection")
 
         // create secure channel driver
@@ -31,8 +32,8 @@ class CommandlineTunnelClient {
                 RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
 
         // connect to idscp2 server
-        LOG.info("connecting to {}:{}", configuration.host, configuration.serverPort)
-        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration)
+        LOG.info("connecting to {}:{}", nativeTlsConfiguration.host, nativeTlsConfiguration.serverPort)
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, nativeTlsConfiguration)
 
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             LOG.info("Client: New connection with id " + connection.id)

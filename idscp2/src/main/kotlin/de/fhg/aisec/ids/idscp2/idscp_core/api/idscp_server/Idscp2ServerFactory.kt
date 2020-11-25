@@ -16,21 +16,23 @@ import java.util.concurrent.CompletableFuture
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class Idscp2ServerFactory<CC: Idscp2Connection>(
+class Idscp2ServerFactory<CC: Idscp2Connection, SecureChannelConfiguration>(
         private val connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
         private val endpointListener: Idscp2EndpointListener<CC>,
         private val configuration: Idscp2Configuration,
-        private val secureChannelDriver: SecureChannelDriver<CC>
+        private val secureChannelDriver: SecureChannelDriver<CC, SecureChannelConfiguration>,
+        private val secureChannelConfig: SecureChannelConfiguration
 ) : SecureChannelInitListener<CC> {
+
     /**
      * User API to create a new IDSCP2 Server that starts a Secure Server that listens to new
      * secure channels
      */
     @Throws(Idscp2Exception::class)
     fun listen(): Idscp2Server<CC> {
-        LOG.info("Starting new IDSCP2 server at port {}", configuration.serverPort)
+        LOG.info("Starting new IDSCP2 server")
         val serverListenerPromise = CompletableFuture<ServerConnectionListener<CC>>()
-        val secureServer = secureChannelDriver.listen(configuration, this, serverListenerPromise)
+        val secureServer = secureChannelDriver.listen(this, serverListenerPromise, secureChannelConfig)
         val server = Idscp2Server<CC>(secureServer)
         serverListenerPromise.complete(server)
         return server

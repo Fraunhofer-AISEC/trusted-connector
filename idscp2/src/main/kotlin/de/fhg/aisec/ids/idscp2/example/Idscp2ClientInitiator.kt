@@ -5,6 +5,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
@@ -18,7 +19,7 @@ import java.util.concurrent.CompletableFuture
 class Idscp2ClientInitiator {
     private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
 
-    fun init(configuration: Idscp2Configuration) {
+    fun init(configuration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) {
 
         // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
@@ -31,7 +32,7 @@ class Idscp2ClientInitiator {
                 RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
 
         // connect to idscp2 server
-        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration)
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, nativeTlsConfiguration)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
             LOG.info("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {

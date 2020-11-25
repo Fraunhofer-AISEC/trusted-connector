@@ -19,12 +19,14 @@ package de.fhg.aisec.ids.camel.idscp2.server
 import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2ServerFactory
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.Idscp2Server
 import java.util.*
 
-class CamelIdscp2Server(serverConfiguration: Idscp2Configuration) : Idscp2EndpointListener<AppLayerConnection> {
+class CamelIdscp2Server(serverConfiguration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration)
+    : Idscp2EndpointListener<AppLayerConnection> {
     private val server: Idscp2Server<AppLayerConnection>
     val listeners: MutableSet<Idscp2EndpointListener<AppLayerConnection>> = Collections.synchronizedSet(HashSet())
 
@@ -34,7 +36,8 @@ class CamelIdscp2Server(serverConfiguration: Idscp2Configuration) : Idscp2Endpoi
                 ::AppLayerConnection,
                 this,
                 serverConfiguration,
-                NativeTLSDriver()
+                NativeTLSDriver(),
+                nativeTlsConfiguration
         )
         server = serverFactory.listen()
     }

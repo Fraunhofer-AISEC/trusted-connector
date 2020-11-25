@@ -4,6 +4,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import java.nio.file.Paths
@@ -32,17 +33,22 @@ object RunTLSClient {
                 .setDapsUrl("https://daps.aisec.fraunhofer.de")
                 .build())
 
+        // create idscp2 config
         val settings = Idscp2Configuration.Builder()
-                .setKeyStorePath(keyStorePath)
-                .setTrustStorePath(trustStorePath)
-                .setCertificateAlias("1.0.1")
                 .setAckTimeoutDelay(500) //  500 ms
                 .setHandshakeTimeoutDelay(5 * 1000) // 5 seconds
                 .setAttestationConfig(localAttestationConfig)
                 .setDapsDriver(dapsDriver)
                 .build()
 
+        // create secureChannel config
+        val nativeTlsConfiguration = NativeTlsConfiguration.Builder()
+                .setKeyStorePath(keyStorePath)
+                .setTrustStorePath(trustStorePath)
+                .setCertificateAlias("1.0.1")
+                .build()
+
         val initiator = Idscp2ClientInitiator()
-        initiator.init(settings)
+        initiator.init(settings, nativeTlsConfiguration)
     }
 }

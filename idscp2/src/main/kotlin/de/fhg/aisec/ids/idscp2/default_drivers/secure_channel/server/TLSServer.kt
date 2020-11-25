@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.server
 
 import de.fhg.aisec.ids.idscp2.default_drivers.keystores.PreConfiguration
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSConstants
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureServer
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
@@ -23,7 +24,7 @@ import javax.net.ssl.SSLSocket
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class TLSServer<CC: Idscp2Connection>(serverConfiguration: Idscp2Configuration,
+class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfiguration,
                                       private val secureChannelInitListener: SecureChannelInitListener<CC>,
                                       private val serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>):
         Runnable, SecureServer {
@@ -102,26 +103,26 @@ class TLSServer<CC: Idscp2Connection>(serverConfiguration: Idscp2Configuration,
         // which enables host verification and algorithm constraints
         LOG.debug("Creating trust manager for TLS server...")
         val myTrustManager = PreConfiguration.getX509ExtTrustManager(
-                serverConfiguration.trustStorePath,
-                serverConfiguration.trustStorePassword
+                nativeTlsConfiguration.trustStorePath,
+                nativeTlsConfiguration.trustStorePassword
         )
 
         // Get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager,
         // which enables connection specific key selection via key alias
         LOG.debug("Creating key manager for TLS server...")
         val myKeyManager = PreConfiguration.getX509ExtKeyManager(
-                serverConfiguration.keyPassword,
-                serverConfiguration.keyStorePath,
-                serverConfiguration.keyStorePassword,
-                serverConfiguration.certificateAlias,
-                serverConfiguration.keyStoreKeyType
+                nativeTlsConfiguration.keyPassword,
+                nativeTlsConfiguration.keyStorePath,
+                nativeTlsConfiguration.keyStorePassword,
+                nativeTlsConfiguration.certificateAlias,
+                nativeTlsConfiguration.keyStoreKeyType
         )
         LOG.debug("Setting TLS security attributes and creating TLS server socket...")
         // Create TLS context based on keyManager and trustManager
         val sslContext = SSLContext.getInstance(TLSConstants.TLS_INSTANCE)
         sslContext.init(myKeyManager, myTrustManager, null)
         val socketFactory = sslContext.serverSocketFactory
-        serverSocket = socketFactory.createServerSocket(serverConfiguration.serverPort)
+        serverSocket = socketFactory.createServerSocket(nativeTlsConfiguration.serverPort)
         // Set timeout for serverSocket.accept()
         serverSocket.soTimeout = 5000
         val sslServerSocket = serverSocket as SSLServerSocket
@@ -135,7 +136,7 @@ class TLSServer<CC: Idscp2Connection>(serverConfiguration: Idscp2Configuration,
         sslServerSocket.sslParameters = sslParameters
         LOG.debug("Starting TLS server...")
         serverThread = Thread(this, "TLS Server Thread "
-                + serverConfiguration.host + ":" + serverConfiguration.serverPort)
+                + nativeTlsConfiguration.host + ":" + nativeTlsConfiguration.serverPort)
         serverThread.start()
     }
 }

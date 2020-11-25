@@ -1,9 +1,9 @@
 package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.client
 
 import de.fhg.aisec.ids.idscp2.default_drivers.keystores.PreConfiguration
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSConstants
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSSessionVerificationHelper
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
@@ -28,6 +28,7 @@ import javax.net.ssl.*
 class TLSClient<CC: Idscp2Connection>(
         private val connectionFactory: (SecureChannel, Idscp2Configuration) -> CC,
         private val clientConfiguration: Idscp2Configuration,
+        nativeTlsConfiguration: NativeTlsConfiguration,
         private val connectionFuture: CompletableFuture<CC>
 ) : HandshakeCompletedListener, DataAvailableListener, SecureChannelEndpoint {
     private val clientSocket: Socket?
@@ -168,18 +169,18 @@ class TLSClient<CC: Idscp2Connection>(
         // get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
         // hostVerification and algorithm constraints
         val myTrustManager = PreConfiguration.getX509ExtTrustManager(
-                clientConfiguration.trustStorePath,
-                clientConfiguration.trustStorePassword
+                nativeTlsConfiguration.trustStorePath,
+                nativeTlsConfiguration.trustStorePassword
         )
 
         // get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager, which enables
         // connection specific key selection via key alias
         val myKeyManager = PreConfiguration.getX509ExtKeyManager(
-                clientConfiguration.keyPassword,
-                clientConfiguration.keyStorePath,
-                clientConfiguration.keyStorePassword,
-                clientConfiguration.certificateAlias,
-                clientConfiguration.keyStoreKeyType
+                nativeTlsConfiguration.keyPassword,
+                nativeTlsConfiguration.keyStorePath,
+                nativeTlsConfiguration.keyStorePassword,
+                nativeTlsConfiguration.certificateAlias,
+                nativeTlsConfiguration.keyStoreKeyType
         )
         val sslContext = SSLContext.getInstance(TLSConstants.TLS_INSTANCE)
         sslContext.init(myKeyManager, myTrustManager, null)

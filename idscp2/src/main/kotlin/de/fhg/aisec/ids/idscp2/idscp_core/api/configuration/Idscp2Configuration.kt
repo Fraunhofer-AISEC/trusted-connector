@@ -5,30 +5,11 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * IDSCP2 configuration class, contains information about keyStore and TrustStores,
- * Attestation Types, host, DAPS, ...
+ * IDSCP2 configuration class, contains information about Attestation Types, DAPS, Timeouts,
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class Idscp2Configuration {
-    var serverPort = DEFAULT_SERVER_PORT
-        private set
-    var host = "localhost"
-        private set
-    var trustStorePath: Path = Paths.get("DUMMY-FILENAME.p12")
-        private set
-    var trustStorePassword = "password".toCharArray()
-        private set
-    var keyPassword = "password".toCharArray()
-        private set
-    var keyStorePath: Path = Paths.get("DUMMY-FILENAME.p12")
-        private set
-    var keyStorePassword = "password".toCharArray()
-        private set
-    var certificateAlias = "1.0.1"
-        private set
-    var keyStoreKeyType = "RSA"
-        private set
     lateinit var attestationConfig: AttestationConfig
         private set
     lateinit var dapsDriver: DapsDriver
@@ -40,50 +21,6 @@ class Idscp2Configuration {
 
     class Builder {
         private val settings = Idscp2Configuration()
-        fun setHost(host: String): Builder {
-            settings.host = host
-            return this
-        }
-
-        fun setServerPort(serverPort: Int): Builder {
-            settings.serverPort = serverPort
-            return this
-        }
-
-        fun setKeyPassword(pwd: CharArray): Builder {
-            settings.keyPassword = pwd
-            return this
-        }
-
-        fun setTrustStorePath(path: Path): Builder {
-            settings.trustStorePath = path
-            return this
-        }
-
-        fun setKeyStorePath(path: Path): Builder {
-            settings.keyStorePath = path
-            return this
-        }
-
-        fun setTrustStorePassword(pwd: CharArray): Builder {
-            settings.trustStorePassword = pwd
-            return this
-        }
-
-        fun setKeyStorePassword(pwd: CharArray): Builder {
-            settings.keyStorePassword = pwd
-            return this
-        }
-
-        fun setCertificateAlias(alias: String): Builder {
-            settings.certificateAlias = alias
-            return this
-        }
-
-        fun setKeyStoreKeyType(keyType: String): Builder {
-            settings.keyStoreKeyType = keyType
-            return this
-        }
 
         fun setAttestationConfig(config: AttestationConfig): Builder {
             settings.attestationConfig = config
@@ -116,15 +53,6 @@ class Idscp2Configuration {
 
         other as Idscp2Configuration
 
-        if (serverPort != other.serverPort) return false
-        if (host != other.host) return false
-        if (trustStorePath != other.trustStorePath) return false
-        if (!trustStorePassword.contentEquals(other.trustStorePassword)) return false
-        if (!keyPassword.contentEquals(other.keyPassword)) return false
-        if (keyStorePath != other.keyStorePath) return false
-        if (!keyStorePassword.contentEquals(other.keyStorePassword)) return false
-        if (certificateAlias != other.certificateAlias) return false
-        if (keyStoreKeyType != other.keyStoreKeyType) return false
         if (attestationConfig != other.attestationConfig) return false
         if (dapsDriver != other.dapsDriver) return false
         if (handshakeTimeoutDelay != other.handshakeTimeoutDelay) return false
@@ -134,16 +62,7 @@ class Idscp2Configuration {
     }
 
     override fun hashCode(): Int {
-        var result = serverPort
-        result = 31 * result + host.hashCode()
-        result = 31 * result + trustStorePath.hashCode()
-        result = 31 * result + trustStorePassword.contentHashCode()
-        result = 31 * result + keyPassword.contentHashCode()
-        result = 31 * result + keyStorePath.hashCode()
-        result = 31 * result + keyStorePassword.contentHashCode()
-        result = 31 * result + certificateAlias.hashCode()
-        result = 31 * result + keyStoreKeyType.hashCode()
-        result = 31 * result + attestationConfig.hashCode()
+        var result = attestationConfig.hashCode()
         result = 31 *  result + dapsDriver.hashCode()
         result = 31 * result + handshakeTimeoutDelay.hashCode()
         result = 31 * result + ackTimeoutDelay.hashCode()
@@ -151,17 +70,12 @@ class Idscp2Configuration {
     }
 
     override fun toString(): String {
-        return "Idscp2Configuration(serverPort=$serverPort, host='$host', trustStorePath=$trustStorePath, " +
-                "trustStorePassword=${trustStorePassword.contentToString()}, " +
-                "keyStorePath=$keyStorePath, keyStorePassword=${keyStorePassword.contentToString()}, " +
-                "certificateAlias='$certificateAlias', " +
-                "keyStoreKeyType='$keyStoreKeyType', attestationConfig=$attestationConfig, " +
+        return "Idscp2Configuration(attestationConfig=$attestationConfig, " +
                 "dapsDriver=$dapsDriver, handshakeTimeoutDelay=$handshakeTimeoutDelay, " +
                 "ackTimeoutDelay=$ackTimeoutDelay)"
     }
 
     companion object {
-        const val DEFAULT_SERVER_PORT = 29292
         const val DEFAULT_ACK_TIMEOUT_DELAY = "200" // (in ms)
         const val DEFAULT_HANDSHAKE_TIMEOUT_DELAY = "5000" // (in ms)
     }

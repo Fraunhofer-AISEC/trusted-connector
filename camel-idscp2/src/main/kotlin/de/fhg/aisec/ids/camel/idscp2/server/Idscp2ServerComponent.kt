@@ -23,6 +23,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifierConfig
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
@@ -58,7 +59,8 @@ class Idscp2ServerComponent : DefaultComponent() {
     }
 
     @Synchronized
-    fun getServer(serverConfiguration: Idscp2Configuration) = servers.computeIfAbsent(serverConfiguration) { CamelIdscp2Server(it) }
+    fun getServer(serverConfiguration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) =
+            servers.computeIfAbsent(serverConfiguration) { CamelIdscp2Server(it, nativeTlsConfiguration) }
 
     @Synchronized
     fun freeServer(serverConfiguration: Idscp2Configuration) = servers.release(serverConfiguration)
