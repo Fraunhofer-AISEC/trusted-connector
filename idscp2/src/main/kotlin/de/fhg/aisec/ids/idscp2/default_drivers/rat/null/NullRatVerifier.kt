@@ -1,8 +1,8 @@
 package de.fhg.aisec.ids.idscp2.default_drivers.rat.`null`
 
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatVerifierDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.InternalControlMessage
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatVerifierFsmListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class NullRatVerifier(fsmListener: FsmListener) : RatVerifierDriver<Unit>(fsmListener) {
+class NullRatVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<Unit>(fsmListener) {
     private val queue: BlockingQueue<ByteArray> = LinkedBlockingQueue()
     override fun delegate(message: ByteArray) {
         queue.add(message)

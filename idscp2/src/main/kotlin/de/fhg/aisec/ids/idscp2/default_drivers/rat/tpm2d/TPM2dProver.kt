@@ -2,8 +2,8 @@ package de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d
 
 import com.google.protobuf.InvalidProtocolBufferException
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatProverDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.InternalControlMessage
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatProverFsmListener
 import de.fhg.aisec.ids.idscp2.messages.Tpm2dAttestation
 import de.fhg.aisec.ids.idscp2.messages.Tpm2dAttestation.Tpm2dMessageWrapper
 import org.slf4j.LoggerFactory
@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class TPM2dProver(fsmListener: FsmListener) : RatProverDriver<TPM2dProverConfig>(fsmListener) {
+class TPM2dProver(fsmListener: RatProverFsmListener) : RatProverDriver<TPM2dProverConfig>(fsmListener) {
     /*
      * ******************* Protocol *******************
      *

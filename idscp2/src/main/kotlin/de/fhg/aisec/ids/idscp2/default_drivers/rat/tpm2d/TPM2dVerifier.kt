@@ -2,8 +2,8 @@ package de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d
 
 import com.google.protobuf.InvalidProtocolBufferException
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatVerifierDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.InternalControlMessage
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatVerifierFsmListener
 import de.fhg.aisec.ids.idscp2.messages.Tpm2dAttestation.Tpm2dMessageWrapper
 import de.fhg.aisec.ids.idscp2.messages.Tpm2dAttestation.Tpm2dRatResponse
 import org.slf4j.LoggerFactory
@@ -22,7 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * A TPM2d RatVerifier driver that verifies the remote peer's identity using TPM2d
  */
-class TPM2dVerifier(fsmListener: FsmListener) : RatVerifierDriver<TPM2dVerifierConfig>(fsmListener) {
+class TPM2dVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<TPM2dVerifierConfig>(fsmListener) {
     /*
      * ******************* Protocol *******************
      *

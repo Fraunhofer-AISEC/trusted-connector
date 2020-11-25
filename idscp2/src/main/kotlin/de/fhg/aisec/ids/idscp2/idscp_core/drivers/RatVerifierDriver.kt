@@ -1,6 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.drivers
 
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatVerifierFsmListener
 import org.slf4j.LoggerFactory
 
 /**
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-abstract class RatVerifierDriver<in VC>(protected val fsmListener: FsmListener) : Thread() {
+abstract class RatVerifierDriver<in VC>(protected val fsmListener: RatVerifierFsmListener) : Thread() {
     protected var running = true
 
     /*
