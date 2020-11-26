@@ -1,7 +1,5 @@
 package de.fhg.aisec.ids.idscp2.example
 
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver

@@ -9,6 +9,10 @@ package de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection
 interface Idscp2Connection {
     val id: String
 
+    /**
+     * Unlock messaging when a message listener is registered, to avoid race conditions
+     * and messages loss
+     */
     fun unlockMessaging()
 
     /**

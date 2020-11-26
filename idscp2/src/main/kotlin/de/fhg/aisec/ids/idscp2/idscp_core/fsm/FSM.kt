@@ -54,7 +54,25 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         STATE_WAIT_FOR_ACK
     }
 
-    private var currentState: State?
+    /* FSM transition result */
+    enum class FsmResultCode {
+        UNKNOWN_TRANSITION,
+        FSM_LOCKED,
+        FSM_NOT_STARTED,
+        INVALID_DAT,
+        IO_ERROR,
+        RAT_ERROR,
+        RAT_NEGOTIATION_ERROR,
+        WOULD_BLOCK,
+        NOT_CONNECTED,
+        IDSCP_DATA_NOT_CACHED,
+        OK
+    }
+
+    // return type for function, hold the return code and the next state of the transition
+    data class FsmResult(val code: FsmResultCode, val nextState: State)
+
+    private var currentState: State
 
     /*  ----------------   end of states   --------------- */
     private val connection: Idscp2Connection
@@ -103,7 +121,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Check if FSM is closed forever
      */
-    private var fsmTerminated = false
+    private var isLocked = false
 
     /**
      * Check if AckFlag is set
@@ -175,10 +193,11 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         val event = Event(message)
         //must wait when fsm is in state STATE_CLOSED --> wait() will be notified when fsm is
         // leaving STATE_CLOSED
+        // ToDo is that sill correct implemented?
         fsmIsBusy.lock()
         try {
             while (currentState == states[FsmState.STATE_CLOSED]) {
-                if (fsmTerminated) {
+                if (isLocked) {
                     return
                 }
                 try {
@@ -279,13 +298,17 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
 
     /**
      * Feed the event to the current state and execute the runEntry method if the state has changed
+     *
+     * @return FsmResultCode, the result of the success of the triggered transition
      */
-    private fun feedEvent(event: Event) {
+    private fun feedEvent(event: Event) : FsmResultCode {
         val prevState = currentState
-        currentState = currentState!!.feedEvent(event)
+        val result = currentState.feedEvent(event)
+        currentState = result.nextState
         if (prevState != currentState) {
-            currentState!!.runEntryCode(this)
+            currentState.runEntryCode(this)
         }
+        return result.code
     }
 
     /**
@@ -309,12 +332,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     @Throws(Idscp2Exception::class)
     fun startIdscpHandshake() {
+        // toDo result
         //check for incorrect usage
         checkForFsmCycles()
         fsmIsBusy.lock()
         try {
             if (currentState == states[FsmState.STATE_CLOSED]) {
-                if (fsmTerminated) {
+                if (isLocked) {
                     throw Idscp2Exception("FSM is in a final closed state forever")
                 }
 
@@ -325,7 +349,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
                 while (!handshakeResultAvailable) {
                     idscpHandshakeLock.await()
                 }
-                if (!isConnected && !fsmTerminated) {
+                if (!isConnected && !isLocked) { //toDo is this correct?
                     //handshake failed, throw exception
                     throw Idscp2Exception("Handshake failed")
                 }
@@ -382,7 +406,8 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      * Send idscp message from the User via the secure channel
      */
     fun send(msg: ByteArray?) {
-        // Send messages from user only when idscp connection is established
+        //toDo result
+        //Send messages from user only when idscp connection is established
         idscpHandshakeCompletedLatch.await()
         checkForFsmCycles()
         val idscpMessage = Idscp2MessageHelper.createIdscpDataMessage(msg)
@@ -399,7 +424,8 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      * Repeat RAT Verification if remote peer, triggered by User
      */
     fun repeatRat() {
-        // repeat rat only when idscp connection is established
+        //toDo result
+        //repeat rat only when idscp connection is established
         idscpHandshakeCompletedLatch.await()
         checkForFsmCycles()
         onControlMessage(InternalControlMessage.REPEAT_RAT)
@@ -564,7 +590,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         if (LOG.isTraceEnabled) {
             LOG.trace("Mark FSM as terminated...")
         }
-        fsmTerminated = true
+        isLocked = true
 
         // Notify upper layer via handshake or closeListener
         if (!handshakeResultAvailable) {
@@ -588,6 +614,9 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
             }
         }
     }
+
+    val isFsmLocked: Boolean
+        get() = isLocked
 
     fun getState(state: FsmState?): State? {
         return states[state]
@@ -716,7 +745,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
                 this, dapsDriver, ratTimer, handshakeTimer, ackTimer)
 
         // Set initial state
-        currentState = states[FsmState.STATE_CLOSED]
+        currentState = states[FsmState.STATE_CLOSED]!!
         this.connection = connection
         this.secureChannel = secureChannel
     }

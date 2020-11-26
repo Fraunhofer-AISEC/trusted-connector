@@ -4,12 +4,12 @@ import java.util.function.Function
 
 /**
  * Transition class for State machine, provides a doTransition method
- * that returns the next state for a given event
+ * that returns the fsm result containing of the next state for a given event and the result code
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class Transition(private val eventHandler: Function<Event, State?>) {
-    fun doTransition(e: Event): State? {
+class Transition(private val eventHandler: Function<Event, FSM.FsmResult>) {
+    fun doTransition(e: Event): FSM.FsmResult {
         return eventHandler.apply(e)
     }
 }

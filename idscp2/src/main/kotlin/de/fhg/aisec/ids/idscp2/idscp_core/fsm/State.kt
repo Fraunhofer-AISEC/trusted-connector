@@ -12,26 +12,23 @@ import java.util.function.Function
  */
 open class State {
     private val transitions = ConcurrentHashMap<Any, Transition>()
-    private var noTransitionHandler: Function<Event, State>? = null
+    private lateinit var noTransitionHandler: Function<Event, FSM.FsmResult>
 
     /*
-     * A method for triggering aa transition of the current state by a given event
+     * A method for triggering a transition of the current state by a given event
      *
      * If no transition exists for the given event, the noTransitionHandler is triggered
      *
-     * Returns the target state of the triggered transition (new current state of the fsm)
+     * Returns a FSM result that contains the target state of the triggered transition (new current state of the fsm),
+     * as well as the resulting code of the transition
      */
-    fun feedEvent(e: Event): State? {
+    fun feedEvent(e: Event): FSM.FsmResult {
         val t = transitions[e.key]
-        return if (t != null) {
-            t.doTransition(e)
-        } else {
-            noTransitionHandler!!.apply(e)
-        }
+        return t?.doTransition(e) ?: noTransitionHandler.apply(e)
     }
 
     /*
-     * Add ann outgoing transition to the state
+     * Add an outgoing transition to the state
      */
     fun addTransition(k: Any, t: Transition) {
         transitions[k] = t
@@ -40,7 +37,7 @@ open class State {
     /*
      * Set the 'no transition available for this event' handler
      */
-    fun setNoTransitionHandler(noTransitionHandler: Function<Event, State>?) {
+    fun setNoTransitionHandler(noTransitionHandler: Function<Event, FSM.FsmResult>) {
         this.noTransitionHandler = noTransitionHandler
     }
 
