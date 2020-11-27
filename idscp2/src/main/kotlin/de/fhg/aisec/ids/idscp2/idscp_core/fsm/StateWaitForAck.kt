@@ -1,6 +1,5 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
@@ -15,7 +14,6 @@ import java.util.function.Function
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class StateWaitForAck(fsm: FSM,
-                      dapsDriver: DapsDriver,
                       ratTimer: StaticTimer,
                       handshakeTimer: StaticTimer,
                       ackTimer: StaticTimer) : State() {
@@ -135,7 +133,7 @@ class StateWaitForAck(fsm: FSM,
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition(
                 Function {
                     LOG.debug("DAT expired. Send new DAT and repeat RAT")
-                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.token))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(fsm.getDynamicAttributeToken))) {
                         LOG.error("Cannot send Dat message")
                         return@Function FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
                     }

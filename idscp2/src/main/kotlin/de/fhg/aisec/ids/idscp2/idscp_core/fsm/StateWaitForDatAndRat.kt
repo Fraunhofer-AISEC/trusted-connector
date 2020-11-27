@@ -1,7 +1,6 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
-import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
@@ -132,12 +131,19 @@ class StateWaitForDatAndRat(fsm: FSM,
                     LOG.debug("Verify received DAT")
 
                     //check if Dat is available and verify dat
-                    // toDo ensure no exception is thrown
                     // toDo security Requirements
                     val dat = event.idscpMessage.idscpDat.token.toByteArray()
                     var datValidityPeriod: Long
-                    if (0 > dapsDriver.verifyToken(dat, null).also { datValidityPeriod = it }) {
-                        LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
+
+                    try {
+                        if (0 > dapsDriver.verifyToken(dat, null).also { datValidityPeriod = it }) {
+                            LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
+                            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                    "No valid DAT", CloseCause.NO_VALID_DAT))
+                            return@Function FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
+                        }
+                    } catch (e: Exception) {
+                        LOG.debug("DapsDriver throws Exception while validating remote DAT. Send IDSCP_CLOSE: {}",e)
                         fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
                                 "No valid DAT", CloseCause.NO_VALID_DAT))
                         return@Function FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
@@ -159,7 +165,7 @@ class StateWaitForDatAndRat(fsm: FSM,
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition(
                 Function {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER")
-                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.token))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(fsm.getDynamicAttributeToken))) {
                         LOG.error("Cannot send Dat message")
                         return@Function FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
                     }
@@ -173,14 +179,22 @@ class StateWaitForDatAndRat(fsm: FSM,
 
         addTransition(IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, Transition (
                 Function { event: Event ->
-                    // toDo do not throw exception within FSM
                     LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER")
-                    assert(event.idscpMessage.hasIdscpRatVerifier())
+
+                    if(!event.idscpMessage.hasIdscpRatVerifier()) {
+                        // this should never happen
+                        LOG.error("IDSCP_RAT_VERIFIER Message not available")
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
+
+                    if (fsm.ratProverDriver == null) {
+                        LOG.error("RatProverDriver not available")
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
 
                     // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
                     GlobalScope.launch {
-                        fsm.ratProverDriver?.delegate(event.idscpMessage.idscpRatVerifier.data.toByteArray())
-                                ?: throw Idscp2Exception("RAT prover driver not available")
+                        fsm.ratProverDriver!!.delegate(event.idscpMessage.idscpRatVerifier.data.toByteArray())
                     }
 
                     FSM.FsmResult(FSM.FsmResultCode.OK, this)

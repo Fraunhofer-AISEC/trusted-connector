@@ -21,6 +21,7 @@ import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpData
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.jvm.Throws
@@ -59,6 +60,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         UNKNOWN_TRANSITION,
         FSM_LOCKED,
         FSM_NOT_STARTED,
+        MISSING_DAT,
         INVALID_DAT,
         IO_ERROR,
         RAT_ERROR,
@@ -92,6 +94,11 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
             : String? = null
     private var currentRatVerifierId //avoid messages from old verifier drivers
             : String? = null
+
+    /**
+     * Daps Driver instance
+     */
+    private val dapsDriver = dapsDriver
 
     /**
      * RAT Mechanisms, calculated during handshake in WAIT_FOR_HELLO_STATE
@@ -193,7 +200,6 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         val event = Event(message)
         //must wait when fsm is in state STATE_CLOSED --> wait() will be notified when fsm is
         // leaving STATE_CLOSED
-        // ToDo is that sill correct implemented?
         fsmIsBusy.lock()
         try {
             while (currentState == states[FsmState.STATE_CLOSED]) {
@@ -201,7 +207,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
                     return
                 }
                 try {
-                    onMessageBlock.await()
+                    onMessageBlock.await() // while waiting the fsmIsBusy lock is free for other threads
                 } catch (e: InterruptedException) {
                     Thread.currentThread().interrupt()
                 }
@@ -332,7 +338,6 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     @Throws(Idscp2Exception::class)
     fun startIdscpHandshake() {
-        // toDo result
         //check for incorrect usage
         checkForFsmCycles()
         fsmIsBusy.lock()
@@ -349,7 +354,9 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
                 while (!handshakeResultAvailable) {
                     idscpHandshakeLock.await()
                 }
-                if (!isConnected && !isLocked) { //toDo is this correct?
+
+                // check if not  connected and locked forever, then the handshake has failed
+                if (!isConnected && isLocked) {
                     //handshake failed, throw exception
                     throw Idscp2Exception("Handshake failed")
                 }
@@ -368,7 +375,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     fun sendFromFSM(msg: IdscpMessage?): Boolean {
         //send messages from fsm
-        return secureChannel.send(msg!!.toByteArray())
+        return try {
+            secureChannel.send(msg!!.toByteArray())
+        } catch (e: Exception) {
+            // catch secure channel exception within an FSM transition to avoid transition cancellation
+            LOG.error("Exception occurred during sending data via the secure channel: {}", e)
+            false
+        }
     }
 
     /**
@@ -430,6 +443,19 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         checkForFsmCycles()
         onControlMessage(InternalControlMessage.REPEAT_RAT)
     }
+
+    /**
+     * Get Dat
+     */
+    val getDynamicAttributeToken: ByteArray
+        get() {
+            return try {
+                dapsDriver.token
+            } catch (e: Exception) {
+                LOG.error("Exception occurred during requesting DAT from DAPS: {}", e)
+                "INVALID_DAT".toByteArray(StandardCharsets.UTF_8)
+            }
+        }
 
     /**
      * Check if FSM is in STATE ESTABLISHED
@@ -726,23 +752,23 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
 
         /* ------------- FSM STATE Initialization -------------*/
         states[FsmState.STATE_CLOSED] = StateClosed(
-                this, dapsDriver, onMessageBlock, attestationConfig)
+                this, onMessageBlock, attestationConfig)
         states[FsmState.STATE_WAIT_FOR_HELLO] = StateWaitForHello(
                 this, handshakeTimer, datTimer, dapsDriver, attestationConfig)
         states[FsmState.STATE_WAIT_FOR_RAT] = StateWaitForRat(
-                this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer, dapsDriver)
+                this, handshakeTimer, verifierHandshakeTimer, proverHandshakeTimer, ratTimer)
         states[FsmState.STATE_WAIT_FOR_RAT_PROVER] = StateWaitForRatProver(
-                this, ratTimer, handshakeTimer, proverHandshakeTimer, dapsDriver, ackTimer)
+                this, ratTimer, handshakeTimer, proverHandshakeTimer, ackTimer)
         states[FsmState.STATE_WAIT_FOR_RAT_VERIFIER] = StateWaitForRatVerifier(
-                this, dapsDriver, ratTimer, handshakeTimer, verifierHandshakeTimer, ackTimer)
+                this, ratTimer, handshakeTimer, verifierHandshakeTimer, ackTimer)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT] = StateWaitForDatAndRat(
                 this, handshakeTimer, proverHandshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER] = StateWaitForDatAndRatVerifier(
                 this, handshakeTimer, datTimer, dapsDriver)
         states[FsmState.STATE_ESTABLISHED] = StateEstablished(
-                this, dapsDriver, ratTimer, handshakeTimer, ackTimer, nextSendAlternatingBit)
+                this, ratTimer, handshakeTimer, ackTimer, nextSendAlternatingBit)
         states[FsmState.STATE_WAIT_FOR_ACK] = StateWaitForAck(
-                this, dapsDriver, ratTimer, handshakeTimer, ackTimer)
+                this, ratTimer, handshakeTimer, ackTimer)
 
         // Set initial state
         currentState = states[FsmState.STATE_CLOSED]!!

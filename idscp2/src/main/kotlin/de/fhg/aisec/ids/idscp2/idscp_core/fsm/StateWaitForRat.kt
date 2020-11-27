@@ -1,7 +1,5 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
-import de.fhg.aisec.ids.idscp2.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
 import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpClose.CloseCause
@@ -22,8 +20,7 @@ class StateWaitForRat(fsm: FSM,
                       handshakeTimer: StaticTimer,
                       verifierHandshakeTimer: StaticTimer,
                       proverHandshakeTimer: StaticTimer,
-                      ratTimer: StaticTimer,
-                      dapsDriver: DapsDriver) : State() {
+                      ratTimer: StaticTimer) : State() {
     override fun runEntryCode(fsm: FSM) {
         LOG.debug("Switch to state STATE_WAIT_FOR_RAT")
     }
@@ -175,14 +172,22 @@ class StateWaitForRat(fsm: FSM,
 
         addTransition(IdscpMessage.IDSCPRATVERIFIER_FIELD_NUMBER, Transition (
                 Function { event: Event ->
-                    //toDo must not throw exception in FSM
                     LOG.debug("Delegate received IDSCP_RAT_VERIFIER to RAT_PROVER")
-                    assert(event.idscpMessage.hasIdscpRatVerifier())
+
+                    if(!event.idscpMessage.hasIdscpRatVerifier()) {
+                        // this should never happen
+                        LOG.error("IDSCP_RAT_Verifier Message not available")
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
+
+                    if (fsm.ratProverDriver == null) {
+                        LOG.error("RatProverDriver not available")
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
 
                     // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
                     GlobalScope.launch {
-                        fsm.ratProverDriver?.delegate(event.idscpMessage.idscpRatVerifier.data.toByteArray())
-                                ?: throw Idscp2Exception("RAT prover driver not available")
+                        fsm.ratProverDriver!!.delegate(event.idscpMessage.idscpRatVerifier.data.toByteArray())
                     }
 
                     FSM.FsmResult(FSM.FsmResultCode.OK, this)
@@ -191,14 +196,22 @@ class StateWaitForRat(fsm: FSM,
 
         addTransition(IdscpMessage.IDSCPRATPROVER_FIELD_NUMBER, Transition (
                 Function { event: Event ->
-                    // toDo must not throw exception within FSM
                     LOG.debug("Delegate received IDSCP_RAT_PROVER to RAT_VERIFIER")
-                    assert(event.idscpMessage.hasIdscpRatProver())
+
+                    if(!event.idscpMessage.hasIdscpRatProver()) {
+                        // this should never happen
+                        LOG.error("IDSCP_RAT_PROVER Message not available")
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
+
+                    if (fsm.ratVerifierDriver == null) {
+                        LOG.error("RatVerifierDriver not available")
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
 
                     // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
                     GlobalScope.launch {
-                        fsm.ratVerifierDriver?.delegate(event.idscpMessage.idscpRatProver.data.toByteArray())
-                                ?: throw Idscp2Exception("RAT verifier driver not available")
+                        fsm.ratVerifierDriver!!.delegate(event.idscpMessage.idscpRatProver.data.toByteArray())
                     }
 
                     FSM.FsmResult(FSM.FsmResultCode.OK, this)
@@ -208,7 +221,7 @@ class StateWaitForRat(fsm: FSM,
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition(
                 Function {
                     LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, restart RAT_PROVER")
-                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.token))) {
+                    if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(fsm.getDynamicAttributeToken))) {
                         LOG.error("Cannot send DAT message")
                         return@Function FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
                     }

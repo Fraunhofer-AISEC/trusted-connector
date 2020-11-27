@@ -112,17 +112,30 @@ class StateWaitForHello(fsm: FSM,
                     val verifierMechanism = fsm.getRatVerifierMechanism(attestationConfig.expectedAttestationSuite,
                             idscpHello.supportedRatSuiteList.toTypedArray())
 
-                    // toDo catch exceptions from DatDriver, FSM must be exception free to not cancel transitions
                     // toDo securityRequirements
                     LOG.debug("Verify received DAT")
                     //check if Dat is available and verify dat
-                    var datValidityPeriod: Long = 0
-                    if (!idscpHello.hasDynamicAttributeToken() || 0 > dapsDriver
-                                    .verifyToken(idscpHello.dynamicAttributeToken.token.toByteArray(), null)
-                                    .also { datValidityPeriod = it }) {
-                        LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
-                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No valid DAT",
-                                CloseCause.NO_VALID_DAT))
+                    var datValidityPeriod: Long
+
+                    if (!idscpHello.hasDynamicAttributeToken()) {
+                        LOG.debug("No remote DAT is available. Send IDSCP_CLOSE")
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                "No valid DAT", CloseCause.NO_VALID_DAT))
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.MISSING_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
+
+                    try {
+                        println(idscpHello.dynamicAttributeToken)
+                        if (0 > dapsDriver.verifyToken(idscpHello.dynamicAttributeToken.token.toByteArray(), null).also { datValidityPeriod = it }) {
+                            LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
+                            fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                    "No valid DAT", CloseCause.NO_VALID_DAT))
+                            return@Function FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
+                        }
+                    } catch (e: Exception) {
+                        LOG.debug("DapsDriver throws Exception while validating remote DAT. Send IDSCP_CLOSE {}", e)
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                "No valid DAT", CloseCause.NO_VALID_DAT))
                         return@Function FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
                     }
 

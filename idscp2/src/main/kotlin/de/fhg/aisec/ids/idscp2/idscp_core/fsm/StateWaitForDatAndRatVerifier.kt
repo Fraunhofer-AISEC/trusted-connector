@@ -96,13 +96,21 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
                 LOG.debug("Verify received DAT")
 
                 //check if Dat is available and verify dat
-                //toDo ensure exception free
                 //toDo security requirements
                 val dat = event.idscpMessage.idscpDat.token.toByteArray()
                 var datValidityPeriod: Long
-                if (0 > dapsDriver.verifyToken(dat, null).also { datValidityPeriod = it }) {
-                    LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
-                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage("No valid DAT", CloseCause.NO_VALID_DAT))
+
+                try {
+                    if (0 > dapsDriver.verifyToken(dat, null).also { datValidityPeriod = it }) {
+                        LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
+                        fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                                "No valid DAT", CloseCause.NO_VALID_DAT))
+                        return@Function FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
+                    }
+                } catch (e: Exception) {
+                    LOG.debug("DapsDriver throws Exception while validating remote DAT. Send IDSCP_CLOSE: {}", e)
+                    fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(
+                            "No valid DAT", CloseCause.NO_VALID_DAT))
                     return@Function FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
                 }
 
@@ -122,7 +130,7 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition(
             Function {
                 LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, start RAT_PROVER")
-                if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(dapsDriver.token))) {
+                if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(fsm.getDynamicAttributeToken))) {
                     LOG.error("Cannot send DAT message")
                     return@Function FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
                 }
