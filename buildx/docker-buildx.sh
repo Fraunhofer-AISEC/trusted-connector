@@ -34,7 +34,7 @@ eval set -- "$PARSED"
 
 EXAMPLE_TAG_ARG="develop"
 DOCKER_BUILD_TAG_ARG="develop"
-BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot"
+BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot-focal"
 TARGETS="core tpmsim ttpsim example-idscp-consumer-app example-idscp-provider-app"
 FILES=""
 BUILD_CONTAINER=0

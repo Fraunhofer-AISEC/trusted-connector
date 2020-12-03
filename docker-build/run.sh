@@ -41,6 +41,9 @@ else
   addgroup --gid "$DOCKER_GID" --quiet docker
   # Create a build user with the UID of the /core-platfrom mount
   adduser --uid "$TARGET_UID" --disabled-password --ingroup docker --gecos 'Build User' --quiet build
+  # Fix ownerships for gradle and mvn
+  chown -R "$TARGET_UID:$TARGET_UID" "$GRADLE_DIR" "$M2_DIR"
+  # Create gradle/mvn symlinks in user directory
   ln -s "$GRADLE_DIR" /home/build/.gradle
   ln -s "$M2_DIR" /home/build/.m2
   echo "Build parameters passed: $*"
