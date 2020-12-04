@@ -60,7 +60,7 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
                         }
                         .build())
                 .build()
-        idscp2Connection.send(message.toByteArray())
+        idscp2Connection.nonBlockingSend(message.toByteArray())
     }
 
     fun addGenericMessageListener(listener: GenericMessageListener) {

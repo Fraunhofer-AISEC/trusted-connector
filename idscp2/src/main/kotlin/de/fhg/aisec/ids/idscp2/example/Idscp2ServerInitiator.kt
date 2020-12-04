@@ -55,7 +55,7 @@ class Idscp2ServerInitiator : Idscp2EndpointListener<Idscp2Connection> {
             LOG.info("Received ping message: ${String(data, StandardCharsets.UTF_8)}".trimIndent())
 
             LOG.info("Sending PONG...")
-            c.send("PONG".toByteArray(StandardCharsets.UTF_8))
+            c.nonBlockingSend("PONG".toByteArray(StandardCharsets.UTF_8))
         }
     }
 

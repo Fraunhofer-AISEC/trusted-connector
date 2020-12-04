@@ -2,7 +2,7 @@ package de.fhg.aisec.ids.idscp2.default_drivers.daps
 
 import de.fhg.aisec.ids.idscp2.default_drivers.keystores.PreConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
-import de.fhg.aisec.ids.idscp2.error.DatException
+import de.fhg.aisec.ids.idscp2.idscp_core.error.DatException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.FormBody

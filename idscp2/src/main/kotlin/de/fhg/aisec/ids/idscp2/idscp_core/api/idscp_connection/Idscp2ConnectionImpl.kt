@@ -1,7 +1,10 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection
 
+import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2TimeoutException
+import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2WouldBlockException
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import org.slf4j.LoggerFactory
@@ -40,27 +43,74 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         if (LOG.isDebugEnabled) {
             LOG.debug("Closing connection {}...", id)
         }
-        fsm.closeConnection()
-        if (LOG.isDebugEnabled) {
-            LOG.debug("IDSCP2 connection {} closed", id)
+
+        when (val res = fsm.closeConnection()) {
+            FSM.FsmResultCode.FSM_NOT_STARTED -> throw Idscp2Exception("Handshake not started: " + res.value)
+            else -> if (LOG.isDebugEnabled) {
+                LOG.debug("IDSCP2 connection {} closed", id)
+            }
         }
     }
 
     /**
      * Send data to the peer IDSCP2 connector
      */
-    override fun send(msg: ByteArray) {
+
+    override fun nonBlockingSend(msg: ByteArray) {
         if (LOG.isTraceEnabled) {
             LOG.trace("Sending data via connection {}...", id)
         }
-        fsm.send(msg)
+
+        when (val res = fsm.send(msg)) {
+            FSM.FsmResultCode.OK -> return
+            FSM.FsmResultCode.WOULD_BLOCK -> throw Idscp2WouldBlockException("Idscp2 connection still waiting for ack")
+            FSM.FsmResultCode.IO_ERROR, FSM.FsmResultCode.FSM_LOCKED -> throw Idscp2Exception("Connection aborted: " + res.value)
+            FSM.FsmResultCode.NOT_CONNECTED -> throw Idscp2Exception("Idscp2 connection temporarily not available")
+            else -> throw Idscp2Exception("Idscp2 error occurred while sending data: " + res.value)
+        }
+
+    }
+
+    override fun blockingSend(msg: ByteArray, timeout: Long, retryInterval: Long) {
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Sending data via connection {}...", id)
+        }
+
+        val start = System.currentTimeMillis()
+
+        while (true) {
+            val now = System.currentTimeMillis()
+            if (now >= start + timeout) {
+                throw Idscp2TimeoutException("Idscp2 connection temporarily not available")
+            }
+
+            when (val res = fsm.send(msg)) {
+                FSM.FsmResultCode.OK -> return
+                FSM.FsmResultCode.WOULD_BLOCK -> {
+                    // wait and repeat, fsm currently in wait_for_ack state
+                    if (retryInterval > 0)
+                        Thread.sleep(retryInterval)
+                    continue;
+                }
+                FSM.FsmResultCode.IO_ERROR, FSM.FsmResultCode.FSM_LOCKED -> throw Idscp2Exception("Connection aborted: " + res.value)
+                FSM.FsmResultCode.NOT_CONNECTED -> throw Idscp2Exception("Idscp2 connection temporarily not available")
+                else -> throw Idscp2Exception("Idscp2 error occurred while sending data: " + res.value)
+            }
+        }
     }
 
     override fun repeatRat() {
         if (LOG.isTraceEnabled) {
-            LOG.trace("Sending data via connection {}...", id)
+            LOG.trace("Repeat Rat for connection {}...", id)
         }
-        fsm.repeatRat()
+
+        // match result
+        when(val res = fsm.repeatRat()) {
+            FSM.FsmResultCode.OK -> return
+            FSM.FsmResultCode.FSM_LOCKED, FSM.FsmResultCode.IO_ERROR -> throw Idscp2Exception("Connection aborted: " + res.value)
+            FSM.FsmResultCode.RAT_ERROR -> throw Idscp2Exception("RAT action failed: " + res.value)
+            else -> throw Idscp2Exception("Error occurred: " + res.value)
+        }
     }
 
     override fun onMessage(msg: ByteArray) {

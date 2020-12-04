@@ -73,7 +73,7 @@ class CommandlineTunnelClient {
                         connection.close()
                     } else {
                         // send data to connection
-                        connection.send(data.toByteArray(StandardCharsets.UTF_8))
+                        connection.blockingSend(data.toByteArray(StandardCharsets.UTF_8), 1000 * 2, 100)
                     }
                 }
             }

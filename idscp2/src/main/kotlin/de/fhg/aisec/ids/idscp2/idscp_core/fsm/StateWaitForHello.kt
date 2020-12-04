@@ -125,7 +125,6 @@ class StateWaitForHello(fsm: FSM,
                     }
 
                     try {
-                        println(idscpHello.dynamicAttributeToken)
                         if (0 > dapsDriver.verifyToken(idscpHello.dynamicAttributeToken.token.toByteArray(), null).also { datValidityPeriod = it }) {
                             LOG.debug("No valid remote DAT is available. Send IDSCP_CLOSE")
                             fsm.sendFromFSM(Idscp2MessageHelper.createIdscpCloseMessage(

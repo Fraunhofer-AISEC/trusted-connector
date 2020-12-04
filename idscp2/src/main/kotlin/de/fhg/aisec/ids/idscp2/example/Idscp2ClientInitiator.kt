@@ -50,7 +50,7 @@ class Idscp2ClientInitiator {
             }
             connection.unlockMessaging()
             LOG.info("Send PING ...")
-            connection.send("PING".toByteArray(StandardCharsets.UTF_8))
+            connection.nonBlockingSend("PING".toByteArray(StandardCharsets.UTF_8))
         }.exceptionally { t: Throwable? ->
             LOG.error("Client endpoint error occurred", t)
             null

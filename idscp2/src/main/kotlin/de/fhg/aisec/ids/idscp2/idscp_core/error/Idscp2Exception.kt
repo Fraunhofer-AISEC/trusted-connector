@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.error
+package de.fhg.aisec.ids.idscp2.idscp_core.error
 
 /**
  * IDSCP2 Exception
