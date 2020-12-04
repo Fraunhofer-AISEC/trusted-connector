@@ -93,8 +93,7 @@ class TPM2dVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<TPM
         }
 
         // parse body to expected tpm2d message wrapper
-        val tpm2dMessageWrapper: Tpm2dMessageWrapper
-        tpm2dMessageWrapper = try {
+        val tpm2dMessageWrapper: Tpm2dMessageWrapper = try {
             Tpm2dMessageWrapper.parseFrom(msg)
         } catch (e: InvalidProtocolBufferException) {
             LOG.error("Cannot parse IdscpRatProver body", e)
@@ -185,8 +184,7 @@ class TPM2dVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<TPM
             }
 
             // Construct a new TPMT_SIGNATURE instance from byteSignature bytes
-            val tpmtSignature: TPMT_SIGNATURE
-            tpmtSignature = try {
+            val tpmtSignature: TPMT_SIGNATURE = try {
                 TPMT_SIGNATURE.fromTpm(byteSignature)
             } catch (ex: Exception) {
                 LOG.warn("""
@@ -198,8 +196,7 @@ class TPM2dVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<TPM
             }
 
             // Construct a new TPMS_ATTEST instance from byteQuoted bytes
-            val tpmsAttest: TPMS_ATTEST
-            tpmsAttest = try {
+            val tpmsAttest: TPMS_ATTEST = try {
                 TPMS_ATTEST.fromTpm(byteQuoted)
             } catch (ex: Exception) {
                 LOG.warn("""
@@ -257,7 +254,7 @@ class TPM2dVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<TPM
     }
 
     companion object {
-        val TPM_RAT_VERIFIER_ID = "TPM2d"
+        const val TPM_RAT_VERIFIER_ID = "TPM2d"
         private val LOG = LoggerFactory.getLogger(TPM2dVerifier::class.java)
     }
 }

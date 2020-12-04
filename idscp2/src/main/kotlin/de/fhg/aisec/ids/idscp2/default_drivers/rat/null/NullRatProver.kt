@@ -28,7 +28,7 @@ class NullRatProver(fsmListener: RatProverFsmListener) : RatProverDriver<Unit>(f
             queue.take()
         } catch (e: InterruptedException) {
             if (running) {
-                LOG.warn("NullRatProver failed");
+                LOG.warn("NullRatProver failed")
                 fsmListener.onRatProverMessage(InternalControlMessage.RAT_PROVER_FAILED)
             }
             return

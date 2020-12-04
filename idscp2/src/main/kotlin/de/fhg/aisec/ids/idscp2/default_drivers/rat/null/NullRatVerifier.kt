@@ -26,7 +26,7 @@ class NullRatVerifier(fsmListener: RatVerifierFsmListener) : RatVerifierDriver<U
             queue.take()
         } catch (e: InterruptedException) {
             if (running) {
-                LOG.warn("NullRatVerifier failed");
+                LOG.warn("NullRatVerifier failed")
                 fsmListener.onRatVerifierMessage(InternalControlMessage.RAT_VERIFIER_FAILED)
             }
             return

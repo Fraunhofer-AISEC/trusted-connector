@@ -1,7 +1,5 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection
 
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
-
 /**
  * An interface for an IDSCP message listener
  */

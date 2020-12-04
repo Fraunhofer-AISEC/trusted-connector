@@ -1,4 +1,8 @@
 Bundle-Name: IDS :: IDS Communication Protocol
 Bundle-Description: IDS Communication Protocol
-Export-Package: de.fhg.aisec.ids.idscp2*
-Import-Package: *
+Export-Package:\
+    kotlinx.coroutines*,\
+    de.fhg.aisec.ids.idscp2*
+Import-Package:\
+    !android.os*,\
+    *

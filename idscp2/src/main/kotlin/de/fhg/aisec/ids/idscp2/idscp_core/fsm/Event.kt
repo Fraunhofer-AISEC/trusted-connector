@@ -17,8 +17,7 @@ class Event {
     val type: EventType
     lateinit var idscpMessage: IdscpMessage
         private set
-    lateinit var controlMessage: InternalControlMessage
-        private set
+    private lateinit var controlMessage: InternalControlMessage
 
     /**
      * Create an event with an Internal Control Message

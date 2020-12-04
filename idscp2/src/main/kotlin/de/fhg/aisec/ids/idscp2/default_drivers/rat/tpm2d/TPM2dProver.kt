@@ -84,8 +84,7 @@ class TPM2dProver(fsmListener: RatProverFsmListener) : RatProverDriver<TPM2dProv
         }
 
         // parse body to expected tpm2d message wrapper
-        var tpm2dMessageWrapper: Tpm2dMessageWrapper
-        tpm2dMessageWrapper = try {
+        var tpm2dMessageWrapper: Tpm2dMessageWrapper = try {
             Tpm2dMessageWrapper.parseFrom(msg)
         } catch (e: InvalidProtocolBufferException) {
             LOG.error("Cannot parse IdscpRatVerifier body", e)
@@ -122,8 +121,7 @@ class TPM2dProver(fsmListener: RatProverFsmListener) : RatProverDriver<TPM2dProv
         )
 
         // get TPM response
-        val tpmResponse: Tpm2dAttestation.Tpm2dToRemote
-        tpmResponse = try {
+        val tpmResponse: Tpm2dAttestation.Tpm2dToRemote = try {
             val tpmSocket = TPM2dSocket(config.tpm2dHost)
             tpmSocket.requestAttestation(tpmRequest)
         } catch (e: IOException) {
@@ -191,7 +189,7 @@ class TPM2dProver(fsmListener: RatProverFsmListener) : RatProverDriver<TPM2dProv
     }
 
     companion object {
-        val TPM_RAT_PROVER_ID = "TPM2d"
+        const val TPM_RAT_PROVER_ID = "TPM2d"
         private val LOG = LoggerFactory.getLogger(TPM2dProver::class.java)
     }
 }

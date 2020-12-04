@@ -1,8 +1,8 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection
 
-import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
 import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2TimeoutException
 import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2WouldBlockException
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM
@@ -10,7 +10,6 @@ import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.function.Consumer
 
 /**
  * The IDSCP2 Connection class holds connections between connectors
@@ -64,7 +63,8 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         when (val res = fsm.send(msg)) {
             FSM.FsmResultCode.OK -> return
             FSM.FsmResultCode.WOULD_BLOCK -> throw Idscp2WouldBlockException("Idscp2 connection still waiting for ack")
-            FSM.FsmResultCode.IO_ERROR, FSM.FsmResultCode.FSM_LOCKED -> throw Idscp2Exception("Connection aborted: " + res.value)
+            FSM.FsmResultCode.IO_ERROR, FSM.FsmResultCode.FSM_LOCKED ->
+                throw Idscp2Exception("Connection aborted: " + res.value)
             FSM.FsmResultCode.NOT_CONNECTED -> throw Idscp2Exception("Idscp2 connection temporarily not available")
             else -> throw Idscp2Exception("Idscp2 error occurred while sending data: " + res.value)
         }
@@ -90,9 +90,10 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
                     // wait and repeat, fsm currently in wait_for_ack state
                     if (retryInterval > 0)
                         Thread.sleep(retryInterval)
-                    continue;
+                    continue
                 }
-                FSM.FsmResultCode.IO_ERROR, FSM.FsmResultCode.FSM_LOCKED -> throw Idscp2Exception("Connection aborted: " + res.value)
+                FSM.FsmResultCode.IO_ERROR, FSM.FsmResultCode.FSM_LOCKED ->
+                    throw Idscp2Exception("Connection aborted: " + res.value)
                 FSM.FsmResultCode.NOT_CONNECTED -> throw Idscp2Exception("Idscp2 connection temporarily not available")
                 else -> throw Idscp2Exception("Idscp2 error occurred while sending data: " + res.value)
             }
@@ -107,8 +108,10 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         // match result
         when(val res = fsm.repeatRat()) {
             FSM.FsmResultCode.OK -> return
-            FSM.FsmResultCode.FSM_LOCKED, FSM.FsmResultCode.IO_ERROR -> throw Idscp2Exception("Connection aborted: " + res.value)
-            FSM.FsmResultCode.RAT_ERROR -> throw Idscp2Exception("RAT action failed: " + res.value)
+            FSM.FsmResultCode.FSM_LOCKED, FSM.FsmResultCode.IO_ERROR ->
+                throw Idscp2Exception("Connection aborted: " + res.value)
+            FSM.FsmResultCode.RAT_ERROR ->
+                throw Idscp2Exception("RAT action failed: " + res.value)
             else -> throw Idscp2Exception("Error occurred: " + res.value)
         }
     }
@@ -119,16 +122,17 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         if (LOG.isTraceEnabled) {
             LOG.trace("Received new IDSCP Message")
         }
-        messageListeners.forEach(Consumer { l: Idscp2MessageListener -> l.onMessage(this, msg) })
+        messageListeners.forEach { l: Idscp2MessageListener -> l.onMessage(this, msg) }
     }
 
     override fun onError(t: Throwable) {
-        connectionListeners.forEach(Consumer { idscp2ConnectionListener: Idscp2ConnectionListener -> idscp2ConnectionListener.onError(t) })
+        connectionListeners.forEach { idscp2ConnectionListener: Idscp2ConnectionListener ->
+            idscp2ConnectionListener.onError(t) }
     }
 
     override fun onClose() {
         LOG.debug("Connection with id {} is closing, notify listeners...", id)
-        connectionListeners.forEach(Consumer { l: Idscp2ConnectionListener -> l.onClose() })
+        connectionListeners.forEach { l: Idscp2ConnectionListener -> l.onClose() }
     }
 
     /**
