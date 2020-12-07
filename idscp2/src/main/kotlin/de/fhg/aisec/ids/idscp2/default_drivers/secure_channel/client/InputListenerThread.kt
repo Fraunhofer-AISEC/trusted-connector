@@ -12,9 +12,8 @@ import java.net.SocketTimeoutException
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class InputListenerThread(`in`: InputStream) : Thread(), InputListener {
-    private val `in`: DataInputStream = DataInputStream(`in`)
-    private var listener: DataAvailableListener? = null //no race conditions, could be empty list
+class InputListenerThread(inputStream: InputStream, private var listener: DataAvailableListener) : Thread() {
+    private val dataInputStream: DataInputStream = DataInputStream(inputStream)
 
     @Volatile
     private var running = true
@@ -27,29 +26,25 @@ class InputListenerThread(`in`: InputStream) : Thread(), InputListener {
         while (running) {
             try {
                 //first read the length
-                val len = `in`.readInt()
+                val len = dataInputStream.readInt()
                 buf = ByteArray(len)
                 //then read the data
-                `in`.readFully(buf, 0, len)
+                dataInputStream.readFully(buf, 0, len)
                 //provide to listener
-                listener!!.onMessage(buf)
+                listener.onMessage(buf)
             } catch (ignore: SocketTimeoutException) {
                 //timeout to catch safeStop() call
             } catch (e: EOFException) {
-                listener!!.onClose()
+                listener.onClose()
                 running = false
             } catch (e: IOException) {
-                listener!!.onError(e)
+                listener.onError(e)
                 running = false
             }
         }
     }
 
-    override fun register(listener: DataAvailableListener) {
-        this.listener = listener
-    }
-
-    override fun safeStop() {
+    fun safeStop() {
         running = false
     }
 

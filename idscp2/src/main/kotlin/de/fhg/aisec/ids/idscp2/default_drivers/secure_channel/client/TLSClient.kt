@@ -4,11 +4,11 @@ import de.fhg.aisec.ids.idscp2.default_drivers.keystores.PreConfiguration
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSConstants
 import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSSessionVerificationHelper
-import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
-import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelEndpoint
+import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
+import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannelListener
 import org.slf4j.LoggerFactory
 import java.io.DataOutputStream
@@ -31,8 +31,8 @@ class TLSClient<CC: Idscp2Connection>(
         nativeTlsConfiguration: NativeTlsConfiguration,
         private val connectionFuture: CompletableFuture<CC>
 ) : HandshakeCompletedListener, DataAvailableListener, SecureChannelEndpoint {
-    private val clientSocket: Socket?
-    private var out: DataOutputStream? = null
+    private val clientSocket: Socket
+    private var dataOutputStream: DataOutputStream? = null
     private var inputListenerThread: InputListenerThread? = null
     private val listenerPromise = CompletableFuture<SecureChannelListener>()
 
@@ -49,12 +49,11 @@ class TLSClient<CC: Idscp2Connection>(
             LOG.debug("Client is connected to server {}:{}", hostname, port)
 
             //set clientSocket timeout to allow safeStop()
-            clientSocket!!.soTimeout = 5000
-            out = DataOutputStream(clientSocket.getOutputStream())
+            clientSocket.soTimeout = 5000
+            dataOutputStream = DataOutputStream(clientSocket.getOutputStream())
 
             // Add inputListener but start it not before handshake is complete
-            inputListenerThread = InputListenerThread(clientSocket.getInputStream())
-            inputListenerThread!!.register(this)
+            inputListenerThread = InputListenerThread(clientSocket.getInputStream(), this)
             sslSocket.addHandshakeCompletedListener(this)
             LOG.debug("Start TLS Handshake")
             sslSocket.startHandshake()
@@ -75,10 +74,8 @@ class TLSClient<CC: Idscp2Connection>(
     private fun disconnect() {
         LOG.debug("Disconnecting from TLS server...")
         //close listener
-        if (inputListenerThread != null && inputListenerThread!!.isAlive) {
-            inputListenerThread!!.safeStop()
-        }
-        if (clientSocket != null && !clientSocket.isClosed) {
+        inputListenerThread?.safeStop()
+        if (!clientSocket.isClosed) {
             try {
                 clientSocket.close()
             } catch (e: IOException) {
@@ -105,20 +102,22 @@ class TLSClient<CC: Idscp2Connection>(
             false
         } else {
             try {
-                out!!.writeInt(bytes.size)
-                out!!.write(bytes)
-                out!!.flush()
+                dataOutputStream?.let {
+                    it.writeInt(bytes.size)
+                    it.write(bytes)
+                    it.flush()
+                } ?: throw IOException("DataOutputStream not available")
                 LOG.debug("Send message")
                 true
             } catch (e: IOException) {
-                LOG.error("Client cannot send data")
+                LOG.error("Client cannot send data", e)
                 false
             }
         }
     }
 
     override val isConnected: Boolean
-        get() = clientSocket != null && clientSocket.isConnected
+        get() = clientSocket.isConnected
 
     override fun handshakeCompleted(handshakeCompletedEvent: HandshakeCompletedEvent) {
         //start receiving listener after TLS Handshake was successful
@@ -163,7 +162,6 @@ class TLSClient<CC: Idscp2Connection>(
     }
 
     init {
-
         // init TLS Client
 
         // get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager, which enables
@@ -188,10 +186,10 @@ class TLSClient<CC: Idscp2Connection>(
 
         // create server socket
         clientSocket = socketFactory.createSocket()
-        val sslSocket = clientSocket as SSLSocket?
+        val sslSocket = clientSocket as SSLSocket
 
         // set TLS constraints
-        val sslParameters = sslSocket!!.sslParameters
+        val sslParameters = sslSocket.sslParameters
         sslParameters.useCipherSuitesOrder = false // use server priority order
         sslParameters.needClientAuth = true
         sslParameters.protocols = TLSConstants.TLS_ENABLED_PROTOCOLS // only TLSv1.3
