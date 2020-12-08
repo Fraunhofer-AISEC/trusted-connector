@@ -2,13 +2,13 @@ version: '3'
 services:
 
   # TPM simulator
-  ids-tpmsim-consumer:
-    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
-    volumes:
-      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
-      - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
-    networks:
-      - consumer-internal
+#  ids-tpmsim-consumer:
+#    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
+#    volumes:
+#      # Always extract a "clean state" for our TPM simulator to prevent DA lockout issues
+#      - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
+#    networks:
+#      - consumer-internal
 
   # The core platform, mounts docker control socket and route definition into the image
   consumer-core:
