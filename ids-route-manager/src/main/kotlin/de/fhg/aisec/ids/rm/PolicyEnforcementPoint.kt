@@ -28,6 +28,7 @@ import de.fraunhofer.iais.eis.BinaryOperator
 import de.fraunhofer.iais.eis.Constraint
 import de.fraunhofer.iais.eis.LeftOperand
 import org.apache.camel.*
+import org.apache.camel.model.FromDefinition
 import org.apache.camel.model.RouteDefinition
 import org.apache.camel.model.ToDefinition
 import org.slf4j.LoggerFactory
@@ -37,8 +38,8 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 
 class PolicyEnforcementPoint internal constructor(
-        private val node: NamedNode,
-        private val target: Processor) : AsyncProcessor {
+    private val destinationNode: NamedNode,
+    private val target: Processor) : AsyncProcessor {
     /**
      * The method performs flow control and calls Exchange.setException() when necessary
      * It iterates through nodes in CamelRoute (<from>, <log>, <choice>, <process>, <to>, ...)
@@ -66,31 +67,33 @@ class PolicyEnforcementPoint internal constructor(
 
         // Save per exchange object the source node's content (<from: uri="idscp2server://0...>)
         // Same entry in Hashmap per CamelRoute, change of exchange properties do not create new entry
-        var source = lastDestinations[exchange]
-        val freshRoute = source == null
-        if (freshRoute) {
-            // If read CamelRoute's node is not <from> iterate to parent nodes
-            var routeNode = node.parent
+        val sourceNode = lastDestinations[exchange] ?: {
+            // If there is no previously saved node for this exchange, use the parent <route> to find the input
+            // (first <from> statement) of the processed route.
+            var routeNode = destinationNode.parent
             while (routeNode !is RouteDefinition) {
                 routeNode = routeNode.parent
             }
-            source = routeNode.input.toString()
+            routeNode.input
         }
 
         // Save current destination node of CamelRoute
-        val destination = node.toString()
-        lastDestinations[exchange] = destination
+        lastDestinations[exchange] = destinationNode
+        val source = sourceNode.toString()
+        val destination = destinationNode.toString()
         if (LOG.isTraceEnabled) {
             LOG.trace("{} -> {}", source, destination)
         }
 
-        // While iterating through CamelNodes only take action for nodes <from> (=freshRoute) and <to>
-        if (freshRoute || node is ToDefinition) {
+        // Only take action for nodes of type <from> (= input) and <to> (= output)
+        if (sourceNode is FromDefinition || destinationNode is ToDefinition) {
             val ucContract = try {
                 ucInterface.getExchangeContract(exchange)
             } catch (x: RuntimeException) {
+                // Thrown if data provider references an unknown ContractAgreement via transferContract
                 throw Exception("Required contract is not available!", x)
             }
+            // If there is no known ContractAgreement for this Exchange, nothing to do here.
             ucContract?.let { contract ->
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Applying Contract $contract")
@@ -118,15 +121,16 @@ class PolicyEnforcementPoint internal constructor(
                     } catch (ae: AssertionError) {
                         throw Exception("Invalid docker URI for UC, ${dockerUri.fragment} is not a valid port number!")
                     }
-                    // Check whether we deal with entry ("from:...") or output ("to:...") node in CamelRoute
-                    if (freshRoute) {
-                        // If we deal with entry, then protect exchange's body
+                    // Check whether we deal with an entry node ("from:...") as source...
+                    if (sourceNode is FromDefinition) {
+                        // If we found an entry node, then protect exchange's body
                         ucInterface.protectBody(exchange, ucContract.id)
-                    // Additionally check whether exchange's body was protected
-                    } else if (node is ToDefinition && ucInterface.isProtected(exchange)) {
+                    // ... or output ("to:...") node as destination of this transition.
+                    // Additionally check whether exchange's body was protected.
+                    } else if (destinationNode is ToDefinition && ucInterface.isProtected(exchange)) {
                         // Compare hash value and port of camelRoute's containerUri with local Docker containers
                         CamelInterceptor.containerManager?.let { cm ->
-                            val endpointUri = URI.create(node.endpointUri)
+                            val endpointUri = URI.create(destinationNode.endpointUri)
                             // Check is containerUri's port matched CamelRoute ToNode's port
                             if (port != endpointUri.port) {
                                 LOG.warn("UC: Exchange blocked by contract: " +
@@ -158,20 +162,20 @@ class PolicyEnforcementPoint internal constructor(
             }
         }
 
-        val sourceNode = ServiceNode(source, null, null)
-        val destNode = ServiceNode(destination, null, null)
+        val sourceServiceNode = ServiceNode(source, null, null)
+        val destinationServiceNode = ServiceNode(destination, null, null)
 
         // Call PDP to transform labels and decide whether to forward the Exchange
-        applyLabelTransformation(pdp.requestTranformations(sourceNode), exchange)
+        applyLabelTransformation(pdp.requestTranformations(sourceServiceNode), exchange)
         val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet<String>() }
         val decision = pdp.requestDecision(
-                DecisionRequest(sourceNode, destNode, labels, null))
+                DecisionRequest(sourceServiceNode, destinationServiceNode, labels, null))
         return when (decision.decision!!) {
             PolicyDecision.Decision.ALLOW -> true
             PolicyDecision.Decision.DENY -> {
                 if (LOG.isWarnEnabled) {
                     LOG.warn("Exchange explicitly blocked (DENY) by data flow policy. " +
-                            "Source: {}, Target: {}", sourceNode, destNode)
+                            "Source: {}, Target: {}", sourceServiceNode, destinationServiceNode)
                 }
                 exchange.setException(Exception("Exchange blocked by data flow policy"))
                 false
@@ -228,7 +232,7 @@ class PolicyEnforcementPoint internal constructor(
 
     companion object {
         private val LOG = LoggerFactory.getLogger(PolicyEnforcementPoint::class.java)
-        private val lastDestinations: MutableMap<Exchange, String> =
+        private val lastDestinations: MutableMap<Exchange, NamedNode> =
                 MapMaker().weakKeys().makeMap()
         private val exchangeLabels: MutableMap<Exchange, MutableSet<String>> =
                 MapMaker().weakKeys().makeMap()
