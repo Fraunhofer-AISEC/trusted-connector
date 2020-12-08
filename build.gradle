@@ -35,9 +35,6 @@ allprojects {
     version = "3.0.2"
 
     configurations {
-        // just to make bills of materials (bom) easier to see in the dependency tree
-        bom
-
         // Configuration for dependencies that will be provided through features in the OSGi environment
         providedByFeature
 
@@ -102,12 +99,6 @@ subprojects {
 
     // define some Bill of Materials (BOM) for all subprojects
     dependencies {
-        // BOM from Karaf, sets common version for OSGi libraries
-        bom group: "org.apache.karaf", name: "karaf", version: libraryVersions.karaf
-
-        // BOM for pax, for jetty, etc.
-        bom group: "org.ops4j.pax", name: "web", version: libraryVersions.pax
-
         // Logging API
         providedByBundle group: "org.slf4j", name: "slf4j-simple", version: libraryVersions.slf4j
 
@@ -176,7 +167,15 @@ configure(subprojects.findAll { it.name != "examples" }) {
     }
 }
 
-configure(subprojects.findAll { it.name == "ids-api" || it.name == "ids-comm" }) {
+final Map<String, String> descriptions = [
+        "idscp2": "IDSCP2 Protocol Implementation",
+        "idscp2-app-layer": "IDSCP2 Application Layer Implementation",
+        "camel-idscp2": "Camel IDSCP2 Component Implementation"
+]
+
+configure(subprojects.findAll {
+    /*it.name == "ids-api" || it.name == "ids-comm" ||*/ it.name.startsWith("idscp2") || it.name == "camel-idscp2"
+}) {
     apply plugin: "maven-publish"
     apply plugin: "signing"
 
@@ -205,8 +204,8 @@ configure(subprojects.findAll { it.name == "ids-api" || it.name == "ids-comm" })
                 artifact sourcesJar
                 artifact javadocJar
                 pom {
-                    name = "IDSCP Protocol Library"
-                    description = "Contains the WebSocket-based Industrial Data Space Communication Protocol (IDSCP)"
+                    name = project.name
+                    description = descriptions[project.name]
                     url = "https://github.com/industrial-data-space/trusted-connector"
                     licenses {
                         license {

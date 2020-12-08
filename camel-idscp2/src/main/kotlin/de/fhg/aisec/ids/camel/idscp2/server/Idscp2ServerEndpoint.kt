@@ -20,6 +20,7 @@ import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Processor
 import org.apache.camel.Producer
 import org.apache.camel.spi.UriEndpoint
@@ -60,22 +61,44 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
             defaultValue = "600"
     )
     var dapsRatTimeoutDelay: Long = Idscp2Settings.DEFAULT_RAT_TIMEOUT_DELAY.toLong()
+    @UriParam(
+            label = "common",
+            description = "Enable IdsMessage headers (Required for Usage Control)",
+            defaultValue = "false"
+    )
+    var useIdsMessages: Boolean = false
 
     @Synchronized
     fun addConsumer(consumer: Idscp2ServerConsumer) {
         consumers.add(consumer)
-        server?.let { server -> server.allConnections.forEach { it.addGenericMessageListener(consumer) } }
+        if (useIdsMessages) {
+            server?.allConnections?.forEach { it.addIdsMessageListener(consumer) }
+        } else {
+            server?.allConnections?.forEach { it.addGenericMessageListener(consumer) }
+        }
     }
 
     @Synchronized
     fun removeConsumer(consumer: Idscp2ServerConsumer) {
-        server?.let { server -> server.allConnections.forEach { it.removeGenericMessageListener(consumer) } }
+        if (useIdsMessages) {
+            server?.allConnections?.forEach { it.removeIdsMessageListener(consumer) }
+        } else {
+            server?.allConnections?.forEach { it.removeGenericMessageListener(consumer) }
+        }
         consumers.remove(consumer)
     }
 
     @Synchronized
-    fun sendMessage(type: String?, body: ByteArray?) {
-        server?.let { server -> server.allConnections.forEach { it.sendGenericMessage(type, body) } }
+    fun sendMessage(header: Any?, body: ByteArray?) {
+        server?.let { server ->
+            server.allConnections.forEach {
+                if (useIdsMessages) {
+                    it.sendIdsMessage(header?.let { header as Message }, body)
+                } else {
+                    it.sendGenericMessage(header?.toString(), body)
+                }
+            }
+        }
     }
 
     @Synchronized
@@ -90,15 +113,25 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
 
     @Synchronized
     override fun onConnection(connection: AppLayerConnection) {
-        LOG.debug("New IDSCP2 connection on $endpointUri, register consumer listeners")
-        consumers.forEach { connection.addGenericMessageListener(it) }
+        if (LOG.isDebugEnabled) {
+            LOG.debug("New IDSCP2 connection on $endpointUri, register consumer listeners")
+        }
+        if (useIdsMessages) {
+            consumers.forEach { connection.addIdsMessageListener(it) }
+        } else {
+            consumers.forEach { connection.addGenericMessageListener(it) }
+        }
         // Handle connection errors and closing
         connection.addConnectionListener(object : Idscp2ConnectionListener {
             override fun onError(t: Throwable) {
                 LOG.error("Error in Idscp2ServerEndpoint-managed connection", t)
             }
             override fun onClose() {
-                consumers.forEach { connection.removeGenericMessageListener(it) }
+                if (useIdsMessages) {
+                    consumers.forEach { connection.removeIdsMessageListener(it) }
+                } else {
+                    consumers.forEach { connection.removeGenericMessageListener(it) }
+                }
             }
         })
     }
@@ -109,7 +142,9 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
 
     @Synchronized
     public override fun doStart() {
-        LOG.debug("Starting IDSCP2 server endpoint $endpointUri")
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Starting IDSCP2 server endpoint $endpointUri")
+        }
         val remainingMatcher = URI_REGEX.matcher(remaining)
         require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
         val matchResult = remainingMatcher.toMatchResult()
@@ -143,10 +178,14 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
 
     @Synchronized
     public override fun doStop() {
-        LOG.debug("Stopping IDSCP2 server endpoint $endpointUri")
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Stopping IDSCP2 server endpoint $endpointUri")
+        }
         // Remove this endpoint from the server's Idscp2EndpointListener set
         server?.let { it.listeners -= this }
-        (component as Idscp2ServerComponent).freeServer(serverSettings)
+        if (this::serverSettings.isInitialized) {
+            (component as Idscp2ServerComponent).freeServer(serverSettings)
+        }
     }
 
     companion object {

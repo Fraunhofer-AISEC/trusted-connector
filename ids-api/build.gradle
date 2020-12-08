@@ -32,6 +32,8 @@ dependencies {
     // Actual implementation must be provided by ids-infomodel-manager
     publishCompile group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
 
+    publishCompile group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
+
     testImplementation group: 'junit', name: 'junit', version: libraryVersions.junit4
     testImplementation group: 'org.mockito', name: 'mockito-core', version: libraryVersions.mockito
 }

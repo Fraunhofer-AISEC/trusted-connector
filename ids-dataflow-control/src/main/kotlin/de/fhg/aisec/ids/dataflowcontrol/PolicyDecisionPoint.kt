@@ -68,17 +68,15 @@ class PolicyDecisionPoint : PDP, PAP {
      * Creates a query to retrieve policy decision from Prolog knowledge base.
      *
      * @param target The target node of the transformation
-     * @param properties The exchange properties
+     * @param labels The exchange properties
      */
     private fun createDecisionQuery(
-            target: ServiceNode, properties: MutableMap<String, Any>): String {
+            target: ServiceNode, labels: Set<String>): String {
         val sb = StringBuilder()
         sb.append("rule(X), has_target(X, T), ")
         sb.append("has_endpoint(T, EP), ")
         sb.append("regex_match(EP, ").append(escape(target.endpoint)).append("), ")
         // Assert labels for the duration of this query, must be done before receives_label(X)
-        @Suppress("UNCHECKED_CAST")
-        val labels = properties.computeIfAbsent(PDP.LABELS_KEY) { HashSet<String>() } as Set<String>
         labels.forEach { k -> sb.append("assert(label(").append(k).append(")), ") }
         sb.append("receives_label(X), ")
         sb.append("rule_priority(X, P), ")
@@ -228,7 +226,7 @@ class PolicyDecisionPoint : PDP, PAP {
         try {
             // Query Prolog engine for a policy decision
             val startTime = System.nanoTime()
-            val query = this.createDecisionQuery(req.to, req.properties)
+            val query = this.createDecisionQuery(req.to, req.labels)
             if (LOG.isTraceEnabled) {
                 LOG.trace("Decision query: {}", query)
             }

@@ -1,0 +1,1 @@
+The _camel-idscp2_ module adds IDSCP2 support to the integrated Camel deployment. It creates a Camel Component to make IDSCP2 available for building Camel routes. IDSCP2 itself is contained in module _idscp2_.

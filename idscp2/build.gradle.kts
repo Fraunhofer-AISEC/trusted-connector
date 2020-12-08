@@ -30,7 +30,7 @@ configure<IdeaModel> {
 
 dependencies {
     // For standalone running of examples
-    implementation("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
+    publishCompile("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
 
     providedByBundle("com.github.microsoft", "TSS.Java", libraryVersions["tssJava"])
 

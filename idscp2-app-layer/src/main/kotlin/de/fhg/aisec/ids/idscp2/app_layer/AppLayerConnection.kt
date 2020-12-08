@@ -2,6 +2,7 @@ package de.fhg.aisec.ids.idscp2.app_layer
 
 import com.google.protobuf.ByteString
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
+import de.fhg.aisec.ids.idscp2.app_layer.listeners.IdsMessageListener
 import de.fhg.aisec.ids.idscp2.app_layer.messages.AppLayer
 import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
@@ -9,43 +10,53 @@ import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
 import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
 import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
+import de.fraunhofer.iais.eis.Message
 import org.slf4j.LoggerFactory
 import java.util.*
 
 class AppLayerConnection private constructor(private val idscp2Connection: Idscp2Connection) :
         Idscp2Connection by idscp2Connection {
-    private var idscp2MessageListener: Idscp2MessageListener? = null
-    private val genericMessageListeners: MutableSet<GenericMessageListener> = Collections.synchronizedSet(HashSet())
+    private val idscp2MessageListener: Idscp2MessageListener = Idscp2MessageListener { _, data ->
+        try {
+            val appLayerMessage = AppLayer.AppLayerMessage.parseFrom(data)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Received AppLayerMessage ${appLayerMessage.messageCase}")
+            }
+            when (appLayerMessage.messageCase) {
+                AppLayer.AppLayerMessage.MessageCase.GENERICMESSAGE -> {
+                    genericMessageListeners.forEach { listener ->
+                        val genericMessage = appLayerMessage.genericMessage
+                        listener.onMessage(
+                                this,
+                                genericMessage.header,
+                                genericMessage.payload?.toByteArray())
+                    }
+                }
+                AppLayer.AppLayerMessage.MessageCase.IDSMESSAGE -> {
+                    idsMessageListeners.forEach { listener ->
+                        val idsMessage = appLayerMessage.idsMessage
+                        listener.onMessage(
+                                this,
+                                idsMessage.header?.let {
+                                    Utils.SERIALIZER.deserialize(it, Message::class.java)
+                                },
+                                idsMessage.payload?.toByteArray())
+                    }
+                }
+                else -> LOG.warn("Unknown IDSCP2 app layer message type encountered.")
+            }
+        } catch (e: Exception) {
+            LOG.error("Error processing AppLayerMessage", e)
+        }
+    }
+    private val genericMessageListeners: MutableSet<GenericMessageListener> =
+            Collections.synchronizedSet(LinkedHashSet())
+    private val idsMessageListeners: MutableSet<IdsMessageListener> =
+            Collections.synchronizedSet(LinkedHashSet())
 
     constructor(secureChannel: SecureChannel, settings: Idscp2Settings, dapsDriver: DapsDriver) :
-            this(Idscp2ConnectionImpl(secureChannel, settings, dapsDriver))
-
-    private fun assureMessageListener() {
-        if (idscp2MessageListener == null) {
-            val listener = Idscp2MessageListener { _, data ->
-                try {
-                    val appLayerMessage = AppLayer.AppLayerMessage.parseFrom(data)
-                    if (LOG.isTraceEnabled) {
-                        LOG.trace("Received AppLayerMessage ${appLayerMessage.messageCase}")
-                    }
-                    when (appLayerMessage.messageCase) {
-                        AppLayer.AppLayerMessage.MessageCase.GENERICMESSAGE -> {
-                            genericMessageListeners.forEach {
-                                val genericMessage = appLayerMessage.genericMessage
-                                it.onMessage(this,
-                                        genericMessage.header,
-                                        genericMessage.payload?.toByteArray())
-                            }
-                        }
-                        else -> LOG.warn("Unknown app layer message header encountered.")
-                    }
-                } catch (e: Exception) {
-                    LOG.error("Error processing AppLayerMessage", e)
-                }
-            }
-            idscp2Connection.addMessageListener(listener)
-            idscp2MessageListener = listener
-        }
+            this(Idscp2ConnectionImpl(secureChannel, settings, dapsDriver)) {
+        idscp2Connection.addMessageListener(idscp2MessageListener)
     }
 
     fun sendGenericMessage(header: String?, payload: ByteArray?) {
@@ -65,20 +76,41 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
     }
 
     fun addGenericMessageListener(listener: GenericMessageListener) {
-        assureMessageListener()
         genericMessageListeners += listener
         if (LOG.isTraceEnabled) {
             LOG.trace("Added GenericMessageListener $listener for connection {}", idscp2Connection.id)
         }
     }
 
-    fun removeGenericMessageListener(listener: GenericMessageListener): Boolean {
-        val ret = genericMessageListeners.remove(listener)
-        if (genericMessageListeners.isEmpty()) {
-            idscp2MessageListener?.let { idscp2Connection.removeMessageListener(it) }
-            idscp2MessageListener = null
+    fun removeGenericMessageListener(listener: GenericMessageListener) = genericMessageListeners.remove(listener)
+
+    fun sendIdsMessage(header: Message?, payload: ByteArray?) {
+        val message = AppLayer.AppLayerMessage.newBuilder()
+                .setIdsMessage(AppLayer.IdsMessage.newBuilder()
+                        .also {
+                            if (header != null) {
+                                it.header = Utils.SERIALIZER.serialize(header)
+                            }
+                            if (payload != null) {
+                                it.payload = ByteString.copyFrom(payload)
+                            }
+                        }
+                        .build())
+                .build()
+        idscp2Connection.send(message.toByteArray())
+    }
+
+    fun addIdsMessageListener(listener: IdsMessageListener) {
+        idsMessageListeners += listener
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Added IdsMessageListener $listener for connection {}", idscp2Connection.id)
         }
-        return ret
+    }
+
+    fun removeIdsMessageListener(listener: IdsMessageListener) = idsMessageListeners.remove(listener)
+
+    override fun toString(): String {
+        return "AppLayerConnection($id)"
     }
 
     companion object {

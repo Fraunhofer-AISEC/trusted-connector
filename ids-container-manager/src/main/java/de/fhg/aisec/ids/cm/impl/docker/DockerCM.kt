@@ -21,23 +21,19 @@ package de.fhg.aisec.ids.cm.impl.docker
 
 import com.amihaiemil.docker.Container
 import com.amihaiemil.docker.Docker
-import com.amihaiemil.docker.Image
+import com.amihaiemil.docker.Images
 import com.amihaiemil.docker.LocalDocker
 import de.fhg.aisec.ids.api.cm.*
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
+import java.net.InetAddress
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalUnit
 import java.util.*
 import java.util.stream.Collectors
-import java.util.stream.Stream
-import java.util.stream.StreamSupport
-import javax.json.Json
-import javax.json.JsonArray
-import javax.json.JsonString
-import javax.json.JsonValue
+import javax.json.*
 import kotlin.math.abs
 
 
@@ -136,33 +132,29 @@ class DockerCM : ContainerManager {
         }
     }
 
-    private fun getContainerStream(
+    private fun getContainerSequence(
             all: Boolean = false,
             filters: Map<String, Iterable<String>>? = null,
-            withSize: Boolean = false): Stream<Container> {
+            withSize: Boolean = false): Sequence<Container> {
         val filteredContainers = DOCKER_CLIENT
                 .containers()
                 .filter(filters ?: emptyMap())
                 .withSize(withSize)
-        return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(
-                        if (all) filteredContainers.all() else filteredContainers.iterator(),
-                        Spliterator.ORDERED
-                ), false)
+        return if (all) {
+            filteredContainers.all().asSequence()
+        } else {
+            filteredContainers.iterator().asSequence()
+        }
     }
 
-    private fun getImageStream(filters: Map<String, Iterable<String>>?): Stream<Image> {
-        return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(
-                        DOCKER_CLIENT
-                                .images()
-                                .filter(filters ?: emptyMap()).iterator(),
-                        Spliterator.ORDERED
-                ), false)
+    private fun getImages(filters: Map<String, Iterable<String>>?): Images {
+        return DOCKER_CLIENT
+                .images()
+                .filter(filters ?: emptyMap())
     }
 
     override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
-        return getContainerStream(true, withSize = true).map { c: Container ->
+        return getContainerSequence(!onlyRunning, withSize = true).map { c: Container ->
             try {
                 val info = c.inspect()
                 val state = info.getJsonObject("State")
@@ -170,11 +162,28 @@ class DockerCM : ContainerManager {
                 val running = state.getBoolean("Running")
                 val startedAt = state.getString("StartedAt")
                 val name = info.getString("Name").substring(1)
-                val ports = info.getJsonObject("NetworkSettings").getJsonObject("Ports")
+                val networkSettings = info.getJsonObject("NetworkSettings")
+                val networks = networkSettings.getJsonObject("Networks")
+                val ports = networkSettings.getJsonObject("Ports")
                 val labels = config.getJsonObject("Labels")
                 val app = ApplicationContainer()
                 app.id = c.containerId()
                 app.image = config.getString("Image")
+                app.imageDigests = getImage(c)?.inspect()?.getJsonArray("RepoDigests")
+                        ?.map { (it as JsonString).string } ?: emptyList()
+                app.ipAddresses = networks.values.mapNotNull {
+                    val ip = (it as JsonObject).getString("IPAddress")
+                    try {
+                        if (ip != null && ip.isNotEmpty()) {
+                            InetAddress.getByName(ip)
+                        } else {
+                            null
+                        }
+                    } catch (x: Exception) {
+                        LOG.warn("Error while resolving ip address \"$ip\"", x)
+                        null
+                    }
+                }.toList()
                 app.size = "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
                         "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
                 app.created = info.getString("Created")
@@ -207,34 +216,29 @@ class DockerCM : ContainerManager {
                 LOG.error("Container iteration error occurred, skipping container with id " + c.containerId(), e)
                 return@map null
             }
-        }.filter { it != null }.map { it as ApplicationContainer }.collect(Collectors.toList())
+        }.filterNotNull().toList()
     }
 
     private fun getContainer(containerID: String): Container {
-        val filters = HashMap<String, Iterable<String>>()
-        filters["id"] = listOf(containerID)
-        val optionalContainer = getContainerStream(true, filters).findFirst()
-        if (optionalContainer.isEmpty) {
-            throw NoContainerExistsException("The container with ID $containerID has not been found!")
-        } else {
-            return optionalContainer.get()
-        }
+        return getContainerSequence(true, mapOf("id" to listOf(containerID))).firstOrNull()
+                ?: throw NoContainerExistsException("The container with ID $containerID has not been found!")
     }
+
+    private fun getImage(container: Container) =
+            getImages(mapOf("reference" to listOf(container.getString("Image")))).firstOrNull()
 
     override fun wipe(containerID: String) {
         val container = getContainer(containerID)
         try {
             LOG.info("Wiping containerID $containerID")
             container.remove(false, true, false)
-            val filters: MutableMap<String, Iterable<String>> = HashMap()
-            filters["reference"] = listOf(container.getString("Image"))
-            val optionalImage = getImageStream(filters).findFirst()
-            if (optionalImage.isEmpty) {
-                LOG.warn("The image to be deleted (filters: {}) was not found!", filters)
-                return
+            getImage(container)?.let {
+                LOG.info("Wiping image related to containerID $containerID")
+                it.delete()
+            } ?: run {
+                LOG.warn("The image to be deleted (filters: {}) was not found!",
+                        mapOf("reference" to listOf(container.getString("Image"))))
             }
-            LOG.info("Wiping image related to containerID $containerID")
-            optionalImage.get().delete()
         } catch (e: Exception) {
             LOG.error(e.message, e)
         }
@@ -376,9 +380,7 @@ class DockerCM : ContainerManager {
      * @param containerID The ID of the container to query labels from
      */
     override fun getMetadata(containerID: String): Map<String, Any> {
-        val labels = HashMap<String, Any>()
-        getContainer(containerID).inspect().getJsonObject("Config").getJsonObject("Labels")
-        return labels
+        return getContainer(containerID).inspect().getJsonObject("Config").getJsonObject("Labels")
     }
 
     override fun setIpRule(

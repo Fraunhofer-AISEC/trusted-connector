@@ -16,7 +16,7 @@
 
     <camelContext xmlns="http://camel.apache.org/schema/blueprint">
 
-        <route id="idscp2SenderClient">
+        <route id="idscp2Client">
             <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
             <setBody>
                 <simple>PING</simple>
@@ -25,11 +25,7 @@
                 <simple>ping</simple>
             </setHeader>
             <log message="Client sends: ${body} (Header: ${headers[idscp2-header]})"/>
-            <to uri="idscp2client://consumer-core:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#clientSslContext"/>
-        </route>
-
-        <route id="idscp2ReceiverClient">
-            <from uri="idscp2client://consumer-core:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#clientSslContext"/>
+            <to uri="idscp2client://consumer-core:29292?awaitResponse=true&amp;sslContextParameters=#clientSslContext"/>
             <log message="Client received: ${body} (Header: ${headers[idscp2-header]})"/>
             <!-- Prevents the client consumer from sending the message back to the server -->
             <removeHeader headerName="idscp2-header"/>

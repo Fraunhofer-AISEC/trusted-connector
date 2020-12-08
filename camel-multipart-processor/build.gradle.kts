@@ -3,9 +3,6 @@ dependencies {
             rootProject.ext.get("libraryVersions") as Map<String, String>
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
-    
-    // Bill of Materials (BOM) for Camel
-    bom("org.apache.camel", "camel-parent", libraryVersions["camel"])
 
     providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
 	providedByFeature("org.apache.camel", "camel-http4", libraryVersions["camelHttp4"])

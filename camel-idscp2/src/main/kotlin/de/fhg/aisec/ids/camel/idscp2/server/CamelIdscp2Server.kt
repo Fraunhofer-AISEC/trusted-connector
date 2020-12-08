@@ -16,7 +16,8 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
-import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
+import de.fhg.aisec.ids.camel.idscp2.UsageControlMaps
+import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
@@ -33,7 +34,7 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
 
     init {
         val dapsDriverConfig = DefaultDapsDriverConfig.Builder()
-                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
+                .setDapsUrl(Utils.dapsUrlProducer())
                 .setKeyAlias(serverSettings.dapsKeyAlias)
                 .setKeyPassword(serverSettings.keyPassword)
                 .setKeyStorePath(serverSettings.keyStorePath)
@@ -52,6 +53,11 @@ class CamelIdscp2Server(serverSettings: Idscp2Settings) : Idscp2EndpointListener
     }
 
     override fun onConnection(connection: AppLayerConnection) {
+        connection.addIdsMessageListener { c, header, _ ->
+            header?.let {
+                UsageControlMaps.setConnectionContract(c, it.transferContract)
+            }
+        }
         listeners.forEach { it.onConnection(connection) }
     }
 

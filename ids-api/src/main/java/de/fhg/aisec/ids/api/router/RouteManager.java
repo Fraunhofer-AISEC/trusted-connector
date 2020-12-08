@@ -19,7 +19,6 @@
  */
 package de.fhg.aisec.ids.api.router;
 
-import de.fhg.aisec.ids.api.policy.PDP;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -167,7 +166,4 @@ public interface RouteManager {
    */
   @NonNull
   String getRouteAsProlog(@NonNull String routeId);
-
-  @Nullable
-  PDP getPdp();
 }

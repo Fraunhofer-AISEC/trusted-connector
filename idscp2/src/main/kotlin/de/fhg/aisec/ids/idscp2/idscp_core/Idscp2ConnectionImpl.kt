@@ -98,6 +98,10 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
         return messageListeners.remove(listener)
     }
 
+    override fun toString(): String {
+        return "Idscp2ConnectionImpl($id)"
+    }
+
     companion object {
         private val LOG = LoggerFactory.getLogger(Idscp2ConnectionImpl::class.java)
     }

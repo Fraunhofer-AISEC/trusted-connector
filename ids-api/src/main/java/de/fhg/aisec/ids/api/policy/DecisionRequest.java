@@ -19,10 +19,12 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
-import java.util.Map;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Data structure holding a decision request which is sent to the PDP. The PDP is expected to answer
@@ -38,7 +40,7 @@ public class DecisionRequest {
   @NonNull private ServiceNode to;
 
   /** Properties of the message (e.g., labels) */
-  @NonNull private Map<String, Object> msgCtx;
+  @NonNull private Set<String> labels;
 
   /** Properties of the environment */
   @Nullable private Map<String, Object> envCtx;
@@ -46,12 +48,12 @@ public class DecisionRequest {
   public DecisionRequest(
       @NonNull ServiceNode from,
       @NonNull ServiceNode to,
-      @NonNull Map<String, Object> msgCtx,
+      @NonNull Set<String> labels,
       @Nullable Map<String, Object> envCtx) {
     super();
     this.from = from;
     this.to = to;
-    this.msgCtx = msgCtx;
+    this.labels = labels;
     this.envCtx = envCtx;
   }
 
@@ -84,8 +86,8 @@ public class DecisionRequest {
    * @return Properties of the Exchange
    */
   @NonNull
-  public Map<String, Object> getProperties() {
-    return msgCtx;
+  public Set<String> getLabels() {
+    return labels;
   }
 
   /**
@@ -109,12 +111,12 @@ public class DecisionRequest {
     DecisionRequest that = (DecisionRequest) o;
     return Objects.equals(from, that.from)
         && Objects.equals(to, that.to)
-        && Objects.equals(msgCtx, that.msgCtx)
+        && Objects.equals(labels, that.labels)
         && Objects.equals(envCtx, that.envCtx);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(from, to, msgCtx, envCtx);
+    return Objects.hash(from, to, labels, envCtx);
   }
 }

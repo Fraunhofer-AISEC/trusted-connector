@@ -29,11 +29,11 @@ configure<IdeaModel> {
 }
 
 dependencies {
-    providedByBundle(project(":idscp2")) { isTransitive = false }
+    providedByBundle(project(":idscp2"))
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 
     // Supplied by ids-infomodel-manager
-    compileOnly("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-    compileOnly("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodelSerializer"])
+    publishCompile("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
+    publishCompile("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodel"])
 }

@@ -28,7 +28,7 @@ dependencies {
     infomodelBundle(project(":ids-api")) { isTransitive = false }
 
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-    implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodelSerializer"])
+    implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodel"])
 
     infomodelBundle("commons-cli", "commons-cli", libraryVersions["commonsCli"])
 

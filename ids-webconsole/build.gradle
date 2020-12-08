@@ -59,9 +59,6 @@ dependencies {
     // Actual implementation must be provided by ids-infomodel-manager
     compileOnly group: 'de.fraunhofer.iais.eis.ids.infomodel', name: 'java', version: libraryVersions.infomodel
 
-    // Bill of Materials (BOM) for Camel
-    bom group: 'org.apache.camel', name: 'camel-parent', version: libraryVersions.camel
-
     providedByFeature group: 'javax.servlet', name: 'javax.servlet-api', version: libraryVersions.javaxServlet
 
     providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel

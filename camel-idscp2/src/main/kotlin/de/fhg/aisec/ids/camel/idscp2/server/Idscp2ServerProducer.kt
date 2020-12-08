@@ -28,12 +28,11 @@ class Idscp2ServerProducer(private val endpoint: Idscp2ServerEndpoint) : Default
 
     override fun process(exchange: Exchange) {
         exchange.message.let {
-            val type = it.getHeader(IDSCP2_HEADER, String::class.java)
+            val type = it.getHeader(IDSCP2_HEADER)
             val body = it.getBody(ByteArray::class.java)
             if (type != null || body != null) {
                 endpoint.sendMessage(type, body)
             }
         }
     }
-
 }

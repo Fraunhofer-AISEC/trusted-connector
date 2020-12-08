@@ -16,8 +16,9 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.client
 
-import de.fhg.aisec.ids.camel.idscp2.Idscp2OsgiComponent
 import de.fhg.aisec.ids.camel.idscp2.RefCountingHashMap
+import de.fhg.aisec.ids.camel.idscp2.UsageControlMaps
+import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
@@ -70,9 +71,25 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
                     "e.g. for using a consumer to receive responses to the requests of another producer"
     )
     var connectionShareId: String? = null
+    @UriParam(
+            label = "client,producer",
+            description = "Makes the client producer block and wait for a reply message from the server"
+    )
+    var awaitResponse: Boolean = false
+    @UriParam(
+            label = "common",
+            description = "Enable IdsMessage headers (Required for Usage Control)",
+            defaultValue = "false"
+    )
+    var useIdsMessages: Boolean = false
 
     private fun makeConnectionInternal(): CompletableFuture<AppLayerConnection> {
-        return secureChannelDriver.connect(::AppLayerConnection, clientSettings, dapsDriver)
+        return secureChannelDriver.connect(::AppLayerConnection, clientSettings, dapsDriver).thenApply { c ->
+            c.addIdsMessageListener { connection, header, _ ->
+                header?.let { UsageControlMaps.setConnectionContract(connection, it.transferContract) }
+            }
+            c
+        }
     }
 
     fun makeConnection(): CompletableFuture<AppLayerConnection> {
@@ -123,7 +140,7 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         secureChannelDriver = NativeTLSDriver()
         clientSettings = clientSettingsBuilder.build()
         dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
-                .setDapsUrl(Idscp2OsgiComponent.settings.connectorConfig.dapsUrl)
+                .setDapsUrl(Utils.dapsUrlProducer())
                 .setKeyAlias(clientSettings.dapsKeyAlias)
                 .setKeyPassword(clientSettings.keyPassword)
                 .setKeyStorePath(clientSettings.keyStorePath)

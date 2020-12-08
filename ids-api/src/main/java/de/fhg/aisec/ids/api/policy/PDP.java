@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.api.policy;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 /**
  * Policy Decision Point (PDP) Interface.
  *
@@ -28,8 +30,6 @@ package de.fhg.aisec.ids.api.policy;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 public interface PDP {
-  String LABELS_KEY = "luconLabels";
-
   /**
    * Main method for requesting a policy decision.
    *
@@ -39,6 +39,7 @@ public interface PDP {
    * @param req The decision request, wrapping relevant data for policy decision
    * @return The policy decision
    */
+  @NonNull
   PolicyDecision requestDecision(DecisionRequest req);
 
   /** Removes all data from PDP-internal caches. Future decisions will possibly take more time. */
