@@ -72,6 +72,9 @@ while true; do
   esac
 done
 
+# Enable experimental Docker features (buildx)
+export DOCKER_CLI_EXPERIMENTAL="enabled"
+
 # Export vars for buildx bake yaml resolution
 export EXAMPLE_TAG="$EXAMPLE_TAG_ARG"
 export DOCKER_BUILD_TAG="$DOCKER_BUILD_TAG_ARG"
