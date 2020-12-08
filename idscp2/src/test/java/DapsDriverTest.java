@@ -1,7 +1,7 @@
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig;
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.SecurityRequirements;
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver;
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver;
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig;
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.SecurityRequirements;
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver;
 import org.junit.Ignore;
 import org.junit.Test;
 

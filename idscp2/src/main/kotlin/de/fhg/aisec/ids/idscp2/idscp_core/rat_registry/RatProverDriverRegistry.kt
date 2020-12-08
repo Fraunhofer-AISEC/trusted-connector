@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.rat_registry
 
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatProverDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatProverDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatProverFsmListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,10 +22,10 @@ object RatProverDriverRegistry {
      * An inner static wrapper class, that wraps driver config and driver class
      */
     private class DriverWrapper<PC>(
-            val driverFactory: (FsmListener) -> RatProverDriver<PC>,
+            val driverFactory: (RatProverFsmListener) -> RatProverDriver<PC>,
             val driverConfig: PC?
     ) {
-        fun getInstance(listener: FsmListener) = driverFactory.invoke(listener).also {d ->
+        fun getInstance(listener: RatProverFsmListener) = driverFactory.invoke(listener).also {d ->
             driverConfig?.let { d.setConfig(it) }
         }
     }
@@ -37,7 +37,7 @@ object RatProverDriverRegistry {
      */
     fun <PC> registerDriver(
             instance: String,
-            driverFactory: (FsmListener) -> RatProverDriver<PC>,
+            driverFactory: (RatProverFsmListener) -> RatProverDriver<PC>,
             driverConfig: PC?
     ) {
         drivers[instance] = DriverWrapper(driverFactory, driverConfig)
@@ -59,7 +59,7 @@ object RatProverDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatProver.
      * The RatProver will be initialized with a configuration, if present. Then it is started.
      */
-    fun startRatProverDriver(instance: String?, listener: FsmListener): RatProverDriver<*>? {
+    fun startRatProverDriver(instance: String?, listener: RatProverFsmListener): RatProverDriver<*>? {
         val driverWrapper = drivers[instance]
         return try {
             driverWrapper!!.getInstance(listener).also { it.start() }

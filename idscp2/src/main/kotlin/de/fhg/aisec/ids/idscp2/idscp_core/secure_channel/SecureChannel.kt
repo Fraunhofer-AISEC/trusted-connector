@@ -1,6 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.secure_channel
 
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelEndpoint
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.ScFsmListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 
@@ -11,7 +12,7 @@ import java.util.concurrent.CompletableFuture
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 class SecureChannel(private val endpoint: SecureChannelEndpoint) : SecureChannelListener {
-    private val fsmPromise = CompletableFuture<FsmListener>()
+    private val fsmPromise = CompletableFuture<ScFsmListener>()
 
     /*
      * close the secure channel forever
@@ -36,17 +37,17 @@ class SecureChannel(private val endpoint: SecureChannelEndpoint) : SecureChannel
         if (LOG.isTraceEnabled) {
             LOG.trace("New raw data has been received via the secure channel")
         }
-        fsmPromise.thenAccept { fsmListener: FsmListener -> fsmListener.onMessage(data) }
+        fsmPromise.thenAccept { fsmListener: ScFsmListener -> fsmListener.onMessage(data) }
     }
 
     override fun onError(t: Throwable) {
         // Tell fsm an error occurred in secure channel
-        fsmPromise.thenAccept { fsmListener: FsmListener -> fsmListener.onError(t) }
+        fsmPromise.thenAccept { fsmListener: ScFsmListener -> fsmListener.onError(t) }
     }
 
     override fun onClose() {
         // Tell fsm secure channel received EOF
-        fsmPromise.thenAccept { obj: FsmListener -> obj.onClose() }
+        fsmPromise.thenAccept { obj: ScFsmListener -> obj.onClose() }
     }
 
     val isConnected: Boolean
@@ -55,7 +56,7 @@ class SecureChannel(private val endpoint: SecureChannelEndpoint) : SecureChannel
     /*
      * set the corresponding finite state machine
      */
-    fun setFsm(fsm: FsmListener) {
+    fun setFsm(fsm: ScFsmListener) {
         fsmPromise.complete(fsm)
     }
 

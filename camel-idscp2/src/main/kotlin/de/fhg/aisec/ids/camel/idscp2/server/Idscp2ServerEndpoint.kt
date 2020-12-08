@@ -16,11 +16,20 @@
  */
 package de.fhg.aisec.ids.camel.idscp2.server
 
-import de.fhg.aisec.ids.idscp2.Idscp2EndpointListener
+import de.fhg.aisec.ids.camel.idscp2.Utils
+import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionListener
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
 import de.fraunhofer.iais.eis.Message
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import org.apache.camel.Processor
 import org.apache.camel.Producer
 import org.apache.camel.spi.UriEndpoint
@@ -40,7 +49,8 @@ import java.util.regex.Pattern
 )
 class Idscp2ServerEndpoint(uri: String?, private val remaining: String, component: Idscp2ServerComponent?) :
         DefaultEndpoint(uri, component), Idscp2EndpointListener<AppLayerConnection> {
-    private lateinit var serverSettings: Idscp2Settings
+    private lateinit var serverConfiguration: Idscp2Configuration
+    private lateinit var secureChannelConfig: NativeTlsConfiguration
     private var server: CamelIdscp2Server? = null
     private val consumers: MutableSet<Idscp2ServerConsumer> = HashSet()
 
@@ -57,10 +67,10 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
     var dapsKeyAlias: String = "1"
     @UriParam(
             label = "security",
-            description = "The validity time of remote attestation and DAT in seconds",
-            defaultValue = "600"
+            description = "The validity time of remote attestation and DAT in milliseconds",
+            defaultValue = "600000"
     )
-    var dapsRatTimeoutDelay: Long = Idscp2Settings.DEFAULT_RAT_TIMEOUT_DELAY.toLong()
+    var dapsRatTimeoutDelay: Long = AttestationConfig.DEFAULT_RAT_TIMEOUT_DELAY.toLong()
     @UriParam(
             label = "common",
             description = "Enable IdsMessage headers (Required for Usage Control)",
@@ -149,14 +159,26 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
         require(remainingMatcher.matches()) { "$remaining is not a valid URI remainder, must be \"host:port\"." }
         val matchResult = remainingMatcher.toMatchResult()
         val host = matchResult.group(1)
-        val port = matchResult.group(2)?.toInt() ?: Idscp2Settings.DEFAULT_SERVER_PORT
-        val clientSettingsBuilder = Idscp2Settings.Builder()
+        val port = matchResult.group(2)?.toInt() ?: NativeTlsConfiguration.DEFAULT_SERVER_PORT
+
+        // create attestation config
+        val localAttestationConfig = AttestationConfig.Builder()
+                .setSupportedRatSuite(arrayOf(RatProverDummy.RAT_PROVER_DUMMY_ID, TPM2dProver.TPM_RAT_PROVER_ID))
+                .setExpectedRatSuite(arrayOf(RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, TPM2dVerifier.TPM_RAT_VERIFIER_ID))
+                .setRatTimeoutDelay(dapsRatTimeoutDelay)
+                .build()
+
+        // create daps config
+        val dapsDriverConfigBuilder = DefaultDapsDriverConfig.Builder()
+                .setDapsUrl(Utils.dapsUrlProducer())
+                .setKeyAlias(dapsKeyAlias)
+
+        val secureChannelConfigBuilder = NativeTlsConfiguration.Builder()
                 .setHost(host)
                 .setServerPort(port)
-                .setRatTimeoutDelay(dapsRatTimeoutDelay)
-                .setDapsKeyAlias(dapsKeyAlias)
+
         sslContextParameters?.let {
-            clientSettingsBuilder
+            secureChannelConfigBuilder
                     .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
                             ?: "password".toCharArray())
                     .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
@@ -167,9 +189,27 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
                     .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
                             ?: "password".toCharArray())
                     .setCertificateAlias(it.certAlias ?: "1.0.1")
+
+            dapsDriverConfigBuilder
+                    .setKeyPassword(it.keyManagers?.keyPassword?.toCharArray()
+                        ?: "password".toCharArray())
+                    .setKeyStorePath(Paths.get(it.keyManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setKeyStorePassword(it.keyManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
+                    .setTrustStorePath(Paths.get(it.trustManagers?.keyStore?.resource ?: "DUMMY-FILENAME.p12"))
+                    .setTrustStorePassword(it.trustManagers?.keyStore?.password?.toCharArray()
+                            ?: "password".toCharArray())
         }
-        serverSettings = clientSettingsBuilder.build()
-        (component as Idscp2ServerComponent).getServer(serverSettings).let {
+
+        // create idscp config
+        serverConfiguration = Idscp2Configuration.Builder()
+                .setAttestationConfig(localAttestationConfig)
+                .setDapsDriver(DefaultDapsDriver(dapsDriverConfigBuilder.build()))
+                .build()
+
+        secureChannelConfig = secureChannelConfigBuilder.build()
+
+        (component as Idscp2ServerComponent).getServer(serverConfiguration, secureChannelConfig).let {
             server = it
             // Add this endpoint to this server's Idscp2EndpointListener set
             it.listeners += this
@@ -183,8 +223,8 @@ class Idscp2ServerEndpoint(uri: String?, private val remaining: String, componen
         }
         // Remove this endpoint from the server's Idscp2EndpointListener set
         server?.let { it.listeners -= this }
-        if (this::serverSettings.isInitialized) {
-            (component as Idscp2ServerComponent).freeServer(serverSettings)
+        if (this::serverConfiguration.isInitialized) {
+            (component as Idscp2ServerComponent).freeServer(serverConfiguration)
         }
     }
 

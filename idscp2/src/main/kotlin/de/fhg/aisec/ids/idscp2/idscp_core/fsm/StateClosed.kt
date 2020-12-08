@@ -1,12 +1,11 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageHelper
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FSM.FsmState
+import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.Condition
-import java.util.function.Function
 import java.util.stream.Collectors
 
 /**
@@ -22,10 +21,9 @@ import java.util.stream.Collectors
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 internal class StateClosed(fsm: FSM,
-                           dapsDriver: DapsDriver,
                            onMessageLock: Condition,
-                           localSupportedRatSuite: Array<String>,
-                           localExpectedRatSuite: Array<String>) : State() {
+                           attestationConfig: AttestationConfig) : State() {
+
     private fun runExitCode(onMessageLock: Condition) {
         //State Closed exit code
         onMessageLock.signalAll() //enables fsm.onMessage()
@@ -50,39 +48,84 @@ internal class StateClosed(fsm: FSM,
          * onICM: start_handshake --> {send IDSCP_HELLO, set handshake_timeout} --> STATE_WAIT_FOR_HELLO
          * ALL_OTHER_MESSAGES ---> STATE_CLOSED
          * --------------------------------------------------- */
-        addTransition(InternalControlMessage.START_IDSCP_HANDSHAKE.value, Transition(Function {
+        addTransition(InternalControlMessage.START_IDSCP_HANDSHAKE.value, Transition {
+            if (fsm.isFsmLocked) {
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("Cannot start handshake, because FSM is locked forever. Ignored.")
+                }
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.FSM_LOCKED, this)
+            }
+
+            // FSM not locked, start handshake
             LOG.debug("Get DAT Token vom DAT_DRIVER")
-            val dat = dapsDriver.token
+            val dat = fsm.getDynamicAttributeToken
             LOG.debug("Send IDSCP_HELLO")
-            val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(dat, localSupportedRatSuite, localExpectedRatSuite)
+            val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(
+                dat,
+                attestationConfig.supportedAttestationSuite,
+                attestationConfig.expectedAttestationSuite
+            )
             if (!fsm.sendFromFSM(idscpHello)) {
                 LOG.error("Cannot send IdscpHello. Close connection")
                 runEntryCode(fsm)
                 onMessageLock.signalAll()
-                return@Function fsm.getState(FsmState.STATE_CLOSED)
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, this)
             }
             runExitCode(onMessageLock)
-            fsm.getState(FsmState.STATE_WAIT_FOR_HELLO)
-        }))
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_HELLO)!!)
+        })
 
-        // This origins from onClose(), so just ignore it
+
+        addTransition(InternalControlMessage.REPEAT_RAT.value, Transition {
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Received RepeatRat in STATE_CLOSED, ignored.")
+            }
+
+            // return either FSM_LOCKED or FSM_NOT_STARTED
+            if (fsm.isFsmLocked) {
+                FSM.FsmResult(FSM.FsmResultCode.FSM_LOCKED, this)
+            } else {
+                FSM.FsmResult(FSM.FsmResultCode.FSM_NOT_STARTED, this)
+            }
+        })
+
+        addTransition(InternalControlMessage.SEND_DATA.value, Transition {
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Received SEND in STATE_CLOSED, ignored.")
+            }
+
+            // return either FSM_LOCKED or FSM_NOT_STARTED
+            if (fsm.isFsmLocked) {
+                FSM.FsmResult(FSM.FsmResultCode.FSM_LOCKED, this)
+            } else {
+                FSM.FsmResult(FSM.FsmResultCode.FSM_NOT_STARTED, this)
+            }
+        })
+
         addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
             if (LOG.isTraceEnabled) {
                 LOG.trace("Received STOP in STATE_CLOSED, ignored.")
             }
-            this
+
+            // return either FSM_LOCKED or FSM_NOT_STARTED
+            if (fsm.isFsmLocked) {
+                FSM.FsmResult(FSM.FsmResultCode.FSM_LOCKED, this)
+            } else {
+                FSM.FsmResult(FSM.FsmResultCode.FSM_NOT_STARTED, this)
+            }
         })
-        setNoTransitionHandler { event: Event? ->
+
+        setNoTransitionHandler {
             if (LOG.isDebugEnabled) {
                 LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
-                        event,
-                        Arrays.stream(Thread.currentThread().stackTrace)
-                                .skip(1)
-                                .map { obj: StackTraceElement -> obj.toString() }
-                                .collect(Collectors.joining("\n")))
+                    it,
+                    Arrays.stream(Thread.currentThread().stackTrace)
+                        .skip(1)
+                        .map { obj: StackTraceElement -> obj.toString() }
+                        .collect(Collectors.joining("\n")))
                 LOG.debug("Stay in state STATE_CLOSED")
             }
-            this
+            FSM.FsmResult(FSM.FsmResultCode.UNKNOWN_TRANSITION, this)
         }
     }
 }

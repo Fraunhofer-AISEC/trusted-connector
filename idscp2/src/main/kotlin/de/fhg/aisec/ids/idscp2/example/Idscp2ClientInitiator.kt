@@ -1,18 +1,13 @@
 package de.fhg.aisec.ids.idscp2.example
 
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.daps.DefaultDapsDriverConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatProverDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProver
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dProverConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifier
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.rat.tpm2d.TPM2dVerifierConfig
-import de.fhg.aisec.ids.idscp2.drivers.default_driver_impl.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionAdapter
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
@@ -22,32 +17,22 @@ import java.util.concurrent.CompletableFuture
 class Idscp2ClientInitiator {
     private lateinit var connectionFuture: CompletableFuture<Idscp2Connection>
 
-    fun init(settings: Idscp2Settings) {
+    fun init(configuration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) {
+
+        // create secure channel driver
         val secureChannelDriver = NativeTLSDriver<Idscp2Connection>()
-        val dapsDriver = DefaultDapsDriver(DefaultDapsDriverConfig.Builder()
-                .setKeyStorePath(settings.keyStorePath)
-                .setTrustStorePath(settings.trustStorePath)
-                .setKeyStorePassword(settings.keyStorePassword)
-                .setTrustStorePassword(settings.trustStorePassword)
-                .setKeyAlias(settings.dapsKeyAlias)
-                .setKeyPassword(settings.keyPassword)
-                .setDapsUrl("https://daps.aisec.fraunhofer.de")
-                .build())
+
+        // register rat drivers
         RatProverDriverRegistry.registerDriver(
-                "Dummy", ::RatProverDummy, null)
+                RatProverDummy.RAT_PROVER_DUMMY_ID, ::RatProverDummy, null)
+
         RatVerifierDriverRegistry.registerDriver(
-                "Dummy", ::RatVerifierDummy, null)
-        RatProverDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dProver,
-                TPM2dProverConfig.Builder().build()
-        )
-        RatVerifierDriverRegistry.registerDriver(
-                "TPM2d", ::TPM2dVerifier,
-                TPM2dVerifierConfig.Builder().build()
-        )
-        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, settings, dapsDriver)
+                RatVerifierDummy.RAT_VERIFIER_DUMMY_ID, ::RatVerifierDummy, null)
+
+        // connect to idscp2 server
+        connectionFuture = secureChannelDriver.connect(::Idscp2ConnectionImpl, configuration, nativeTlsConfiguration)
         connectionFuture.thenAccept { connection: Idscp2Connection ->
-            println("Client: New connection with id " + connection.id)
+            LOG.info("Client: New connection with id " + connection.id)
             connection.addConnectionListener(object : Idscp2ConnectionAdapter() {
                 override fun onError(t: Throwable) {
                     LOG.error("Client connection error occurred", t)
@@ -58,12 +43,14 @@ class Idscp2ClientInitiator {
                 }
             })
             connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
-                println("Received ping message: " + String(data, StandardCharsets.UTF_8))
-                CompletableFuture.runAsync { c.close() } // FSM error if run from the same thread
+                LOG.info("Received ping message: " + String(data, StandardCharsets.UTF_8))
+
+                LOG.info("Close Connection")
+                c.close()
             }
             connection.unlockMessaging()
-            connection.send("PING".toByteArray(StandardCharsets.UTF_8))
-            println("Sent PING...")
+            LOG.info("Send PING ...")
+            connection.nonBlockingSend("PING".toByteArray(StandardCharsets.UTF_8))
         }.exceptionally { t: Throwable? ->
             LOG.error("Client endpoint error occurred", t)
             null

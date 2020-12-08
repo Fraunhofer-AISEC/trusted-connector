@@ -1,7 +1,7 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.rat_registry
 
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.RatVerifierDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.fsm.FsmListener
+import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatVerifierDriver
+import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatVerifierFsmListener
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,10 +22,10 @@ object RatVerifierDriverRegistry {
      * An inner static wrapper class, that wraps driver config and driver class
      */
     private class DriverWrapper<VC>(
-            val driverFactory: (FsmListener) -> RatVerifierDriver<VC>,
+            val driverFactory: (RatVerifierFsmListener) -> RatVerifierDriver<VC>,
             val driverConfig: VC?
     ) {
-        fun getInstance(listener: FsmListener) = driverFactory.invoke(listener).also {d ->
+        fun getInstance(listener: RatVerifierFsmListener) = driverFactory.invoke(listener).also {d ->
             driverConfig?.let { d.setConfig(it) }
         }
     }
@@ -36,7 +36,7 @@ object RatVerifierDriverRegistry {
      */
     fun <VC> registerDriver(
             mechanism: String,
-            driverFactory: (FsmListener) -> RatVerifierDriver<VC>,
+            driverFactory: (RatVerifierFsmListener) -> RatVerifierDriver<VC>,
             driverConfig: VC?
     ) {
         drivers[mechanism] = DriverWrapper(driverFactory, driverConfig)
@@ -59,7 +59,7 @@ object RatVerifierDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatVerifier.
      * The RatVerifier will be initialized with a configuration, if present. Then it is started.
      */
-    fun startRatVerifierDriver(mechanism: String?, listener: FsmListener): RatVerifierDriver<*>? {
+    fun startRatVerifierDriver(mechanism: String?, listener: RatVerifierFsmListener): RatVerifierDriver<*>? {
         val driverWrapper = drivers[mechanism]
         return try {
             driverWrapper!!.getInstance(listener).also { it.start() }

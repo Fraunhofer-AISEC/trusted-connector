@@ -4,11 +4,10 @@ import com.google.protobuf.ByteString
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.IdsMessageListener
 import de.fhg.aisec.ids.idscp2.app_layer.messages.AppLayer
-import de.fhg.aisec.ids.idscp2.drivers.interfaces.DapsDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2ConnectionImpl
-import de.fhg.aisec.ids.idscp2.idscp_core.Idscp2MessageListener
-import de.fhg.aisec.ids.idscp2.idscp_core.configuration.Idscp2Settings
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2MessageListener
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
 import de.fraunhofer.iais.eis.Message
 import org.slf4j.LoggerFactory
@@ -54,8 +53,8 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
     private val idsMessageListeners: MutableSet<IdsMessageListener> =
             Collections.synchronizedSet(LinkedHashSet())
 
-    constructor(secureChannel: SecureChannel, settings: Idscp2Settings, dapsDriver: DapsDriver) :
-            this(Idscp2ConnectionImpl(secureChannel, settings, dapsDriver)) {
+    constructor(secureChannel: SecureChannel, settings: Idscp2Configuration) :
+            this(Idscp2ConnectionImpl(secureChannel, settings)) {
         idscp2Connection.addMessageListener(idscp2MessageListener)
     }
 
@@ -72,7 +71,7 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
                         }
                         .build())
                 .build()
-        idscp2Connection.send(message.toByteArray())
+        idscp2Connection.nonBlockingSend(message.toByteArray())
     }
 
     fun addGenericMessageListener(listener: GenericMessageListener) {
@@ -84,7 +83,7 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
 
     fun removeGenericMessageListener(listener: GenericMessageListener) = genericMessageListeners.remove(listener)
 
-    fun sendIdsMessage(header: Message?, payload: ByteArray?) {
+    fun sendIdsMessage(header: Message?, payload: ByteArray?, sendTimeout: Long = DEFAULT_TIMEOUT) {
         val message = AppLayer.AppLayerMessage.newBuilder()
                 .setIdsMessage(AppLayer.IdsMessage.newBuilder()
                         .also {
@@ -97,7 +96,7 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
                         }
                         .build())
                 .build()
-        idscp2Connection.send(message.toByteArray())
+        idscp2Connection.blockingSend(message.toByteArray(), sendTimeout)
     }
 
     fun addIdsMessageListener(listener: IdsMessageListener) {
@@ -117,6 +116,7 @@ class AppLayerConnection private constructor(private val idscp2Connection: Idscp
         private val LOG = LoggerFactory.getLogger(AppLayerConnection::class.java)
         private val appLayerConnections = Collections.synchronizedMap(
                 WeakHashMap<Idscp2Connection, AppLayerConnection>())
+        private const val DEFAULT_TIMEOUT = 10000L
 
         fun from(idscp2Connection: Idscp2Connection): AppLayerConnection {
             return if (idscp2Connection is AppLayerConnection) {
