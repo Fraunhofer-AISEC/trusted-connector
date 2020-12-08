@@ -25,8 +25,7 @@ class StaticTimer internal constructor(private val fsmIsBusy: ReentrantLock,
      */
     fun start() {
         mutex.lock()
-        thread = TimerThread(delay, timeoutHandler, fsmIsBusy)
-        thread!!.start()
+        thread = TimerThread(delay, timeoutHandler, fsmIsBusy).also { it.start() }
         mutex.unlock()
     }
 
@@ -35,10 +34,8 @@ class StaticTimer internal constructor(private val fsmIsBusy: ReentrantLock,
      */
     fun cancelTimeout() {
         mutex.lock()
-        if (thread != null) {
-            thread!!.safeStop()
-            thread = null
-        }
+        thread?.safeStop()
+        thread = null
         mutex.unlock()
     }
 }

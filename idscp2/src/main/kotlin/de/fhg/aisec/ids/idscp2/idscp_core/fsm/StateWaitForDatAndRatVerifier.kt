@@ -20,8 +20,9 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
                                     datTimer: DynamicTimer,
                                     dapsDriver: DapsDriver) : State() {
     override fun runEntryCode(fsm: FSM) {
-        LOG.debug("Switched to state STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER")
-        LOG.debug("Set handshake timeout")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Set handshake timeout")
+        }
     }
 
     companion object {
@@ -52,12 +53,12 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
                     CloseCause.USER_SHUTDOWN
                 )
             )
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED))
         })
 
         addTransition(InternalControlMessage.ERROR.value, Transition {
             LOG.debug("An internal control error occurred")
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED))
         })
 
         addTransition(InternalControlMessage.REPEAT_RAT.value, Transition {
@@ -76,12 +77,12 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
                     CloseCause.TIMEOUT
                 )
             )
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED))
         })
 
         addTransition(IdscpMessage.IDSCPCLOSE_FIELD_NUMBER, Transition {
             LOG.debug("Received IDSCP_CLOSE")
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_CLOSED))
         })
 
         addTransition(IdscpMessage.IDSCPDAT_FIELD_NUMBER, Transition { event: Event ->
@@ -104,7 +105,7 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
                     )
                     return@Transition FSM.FsmResult(
                         FSM.FsmResultCode.INVALID_DAT,
-                        fsm.getState(FsmState.STATE_CLOSED)!!
+                        fsm.getState(FsmState.STATE_CLOSED)
                     )
                 }
             } catch (e: Exception) {
@@ -114,7 +115,7 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
                         "No valid DAT", CloseCause.NO_VALID_DAT
                     )
                 )
-                return@Transition FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED)!!)
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.INVALID_DAT, fsm.getState(FsmState.STATE_CLOSED))
             }
 
             LOG.debug("Remote DAT is valid. Set dat timeout")
@@ -123,32 +124,32 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
             //start RAT Verifier
             if (!fsm.restartRatVerifierDriver()) {
                 LOG.error("Cannot run Rat verifier, close idscp connection")
-                return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
 
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_RAT_VERIFIER)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_RAT_VERIFIER))
         })
 
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition {
             LOG.debug("Received IDSCP_DAT_EXPIRED. Send new DAT from DAT_DRIVER, start RAT_PROVER")
             if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(fsm.getDynamicAttributeToken))) {
                 LOG.error("Cannot send DAT message")
-                return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             if (!fsm.restartRatProverDriver()) {
                 LOG.error("Cannot run Rat prover, close idscp connection")
-                return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT))
         })
 
         addTransition(IdscpMessage.IDSCPRERAT_FIELD_NUMBER, Transition {
             LOG.debug("Received IDSCP_RE_RAT. Start RAT_PROVER")
             if (!fsm.restartRatProverDriver()) {
                 LOG.error("Cannot run Rat prover, close idscp connection")
-                return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED)!!)
+                return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT))
         })
 
         addTransition(IdscpMessage.IDSCPACK_FIELD_NUMBER, Transition {

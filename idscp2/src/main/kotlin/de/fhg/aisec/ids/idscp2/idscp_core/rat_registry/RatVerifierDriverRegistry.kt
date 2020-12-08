@@ -60,12 +60,13 @@ object RatVerifierDriverRegistry {
      * The RatVerifier will be initialized with a configuration, if present. Then it is started.
      */
     fun startRatVerifierDriver(mechanism: String?, listener: RatVerifierFsmListener): RatVerifierDriver<*>? {
-        val driverWrapper = drivers[mechanism]
-        return try {
-            driverWrapper!!.getInstance(listener).also { it.start() }
-        } catch (e: Exception) {
-            LOG.error("Error during RAT verifier start", e)
-            null
+        return drivers[mechanism]?.let { driverWrapper ->
+            return try {
+                driverWrapper.getInstance(listener).also { it.start() }
+            } catch (e: Exception) {
+                LOG.error("Error during RAT verifier start", e)
+                null
+            }
         }
     }
 }

@@ -22,8 +22,7 @@ class DynamicTimer internal constructor(private val fsmIsBusy: ReentrantLock, pr
      */
     fun start(delay: Long) {
         mutex.lock()
-        thread = TimerThread(delay, timeoutHandler, fsmIsBusy)
-        thread!!.start()
+        thread = TimerThread(delay, timeoutHandler, fsmIsBusy).also { it.start() }
         mutex.unlock()
     }
 
@@ -32,10 +31,8 @@ class DynamicTimer internal constructor(private val fsmIsBusy: ReentrantLock, pr
      */
     fun cancelTimeout() {
         mutex.lock()
-        if (thread != null) {
-            thread!!.safeStop()
-            thread = null
-        }
+        thread?.safeStop()
+        thread = null
         mutex.unlock()
     }
 }

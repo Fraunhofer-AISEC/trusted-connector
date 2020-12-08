@@ -1,30 +1,28 @@
 package de.fhg.aisec.ids.idscp2.idscp_core.fsm
 
 import com.google.protobuf.InvalidProtocolBufferException
+import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
+import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatProverDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.RatVerifierDriver
-import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
-import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
-import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2HandshakeException
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatProverFsmListener
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.RatVerifierFsmListener
 import de.fhg.aisec.ids.idscp2.idscp_core.fsm.fsmListeners.ScFsmListener
+import de.fhg.aisec.ids.idscp2.idscp_core.messages.Idscp2MessageHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.secure_channel.SecureChannel
-import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpMessage
-import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpAck
-import de.fhg.aisec.ids.idscp2.messages.IDSCP2.IdscpData
+import de.fhg.aisec.ids.idscp2.messages.IDSCP2.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.jvm.Throws
+import kotlin.NoSuchElementException
 
 /**
  * The finite state machine FSM of the IDSCP2 protocol
@@ -37,7 +35,11 @@ import kotlin.jvm.Throws
  *
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
-class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver: DapsDriver,
+class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
+    /**
+     * Daps Driver instance
+     */
+          private val dapsDriver: DapsDriver,
           attestationConfig: AttestationConfig, ackTimeoutDelay: Long, handshakeTimeoutDelay: Long)
     : RatProverFsmListener, RatVerifierFsmListener, ScFsmListener {
     /*  -----------   IDSCP2 Protocol States   ---------- */
@@ -96,15 +98,10 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
             : String? = null
 
     /**
-     * Daps Driver instance
-     */
-    private val dapsDriver = dapsDriver
-
-    /**
      * RAT Mechanisms, calculated during handshake in WAIT_FOR_HELLO_STATE
      */
-    private var proverMechanism: String? = null //RAT prover mechanism
-    private var verifierMechanism: String? = null //RAT Verifier mechanism
+    private lateinit var proverMechanism: String //RAT prover mechanism
+    private lateinit var verifierMechanism: String //RAT Verifier mechanism
 
     /**
      * A FIFO-fair synchronization lock for the finite state machine
@@ -133,7 +130,13 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Check if AckFlag is set
      */
-    private var ackFlag = false
+    var ackFlag = false
+        set(value) {
+            field = value
+            if (!value) {
+                this.bufferedIdscpData = null
+            }
+        }
     private var bufferedIdscpData: IdscpMessage? = null
 
     /**
@@ -385,10 +388,10 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     /**
      * Send idscp data from the fsm via the secure channel to the peer
      */
-    fun sendFromFSM(msg: IdscpMessage?): Boolean {
+    fun sendFromFSM(msg: IdscpMessage): Boolean {
         //send messages from fsm
         return try {
-            secureChannel.send(msg!!.toByteArray())
+            secureChannel.send(msg.toByteArray())
         } catch (e: Exception) {
             // catch secure channel exception within an FSM transition to avoid transition cancellation
             LOG.error("Exception occurred during sending data via the secure channel: {}", e)
@@ -508,16 +511,18 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         //assume verifier mechanism is set
         stopRatVerifierDriver()
         ratVerifierDriver = RatVerifierDriverRegistry.startRatVerifierDriver(verifierMechanism, this)
-        return if (ratVerifierDriver == null) {
+        return ratVerifierDriver?.let {
+            //safe the thread ID
+            currentRatVerifierId = it.id.toString()
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Start verifier_handshake timeout")
+            }
+            verifierHandshakeTimer.resetTimeout()
+            true
+        } ?: run {
             LOG.error("Cannot create instance of RAT_VERIFIER_DRIVER")
             currentRatVerifierId = ""
             false
-        } else {
-            //safe the thread ID
-            currentRatVerifierId = ratVerifierDriver!!.id.toString()
-            LOG.debug("Start verifier_handshake timeout")
-            verifierHandshakeTimer.resetTimeout()
-            true
         }
     }
 
@@ -548,16 +553,18 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         //assume prover mechanism is set
         stopRatProverDriver()
         ratProverDriver = RatProverDriverRegistry.startRatProverDriver(proverMechanism, this)
-        return if (ratProverDriver == null) {
+        return ratProverDriver?.let {
+            // Save the thread ID
+            currentRatProverId = it.id.toString()
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Start prover_handshake timeout")
+            }
+            proverHandshakeTimer.resetTimeout()
+            true
+        } ?: run {
             LOG.error("Cannot create instance of RAT_PROVER_DRIVER")
             currentRatProverId = ""
             false
-        } else {
-            //safe the thread ID
-            currentRatProverId = ratProverDriver!!.id.toString()
-            LOG.debug("Start prover_handshake timeout")
-            proverHandshakeTimer.resetTimeout()
-            true
         }
     }
 
@@ -566,12 +573,14 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     private fun stopRatProverDriver() {
         proverHandshakeTimer.cancelTimeout()
-        if (ratProverDriver != null && ratProverDriver!!.isAlive) {
-            ratProverDriver!!.interrupt()
+        ratProverDriver?.let {
+            if (it.isAlive) {
+                it.interrupt()
 
-            // run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
-            GlobalScope.launch {
-                ratProverDriver!!.terminate()
+                // Run in async fire-and-forget coroutine to avoid cycles caused by protocol misuse
+                GlobalScope.launch {
+                    it.terminate()
+                }
             }
         }
     }
@@ -644,30 +653,20 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
     val isFsmLocked: Boolean
         get() = isLocked
 
-    fun getState(state: FsmState?): State? {
-        return states[state]
+    fun getState(state: FsmState): State {
+        return states[state] ?: throw NoSuchElementException("State unknown")
     }
 
     val isNotClosed: Boolean
         get() = currentState == getState(FsmState.STATE_CLOSED)
 
-    fun setRatMechanisms(proverMechanism: String?, verifierMechanism: String?) {
+    fun setRatMechanisms(proverMechanism: String, verifierMechanism: String) {
         this.proverMechanism = proverMechanism
         this.verifierMechanism = verifierMechanism
     }
 
-    val getAckFlag: Boolean
-        get() = ackFlag
-
     val getBufferedIdscpMessage: IdscpMessage?
         get() = bufferedIdscpData
-
-    fun setAckFlag(value: Boolean) {
-        this.ackFlag = value
-        if (!value) {
-            this.bufferedIdscpData = null
-        }
-    }
 
     /**
      * Handle IdscpAck
@@ -675,13 +674,19 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
      */
     fun recvAck(ack: IdscpAck): Boolean {
         if (ackFlag) {
-            LOG.debug("Received IdscpAck with alternating bit {}, cancel flag in fsm", ack.alternatingBit)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Received IdscpAck with alternating bit {}, cancel flag in fsm", ack.alternatingBit)
+            }
             if (nextSendAlternatingBit.asBoolean() != ack.alternatingBit) {
-                LOG.debug("Received IdscpAck with wrong alternating bit. Ignoring")
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("Received IdscpAck with wrong alternating bit. Ignoring")
+                }
             } else {
-                setAckFlag(false)
+                ackFlag = false
                 ackTimer.cancelTimeout()
-                LOG.debug("Alternate nextSend bit from {}", nextSendAlternatingBit.asBoolean())
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("Alternate nextSend bit from {}", nextSendAlternatingBit.asBoolean())
+                }
                 nextSendAlternatingBit.alternate()
                 return true
             }
@@ -695,13 +700,19 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
         LOG.debug("Received IdscpData with alternating bit {}", data.alternatingBit)
 
         if (data.alternatingBit != expectedAlternatingBit.asBoolean()) {
-            LOG.debug("Received IdscpData with unexpected alternating bit. Could be an old packet replayed. Ignore it.")
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Received IdscpData with unexpected alternating bit. Could be an old packet replayed. Ignore it.")
+            }
         } else {
-            LOG.debug("Send IdscpAck with received alternating bit {}", data.alternatingBit)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Send IdscpAck with received alternating bit {}", data.alternatingBit)
+            }
             if (!sendFromFSM(Idscp2MessageHelper.createIdscpAckMessage(data.alternatingBit))) {
                 LOG.error("Cannot send ACK")
             }
-            LOG.debug("Alternate expected bit from {}", expectedAlternatingBit.asBoolean())
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Alternate expected bit from {}", expectedAlternatingBit.asBoolean())
+            }
             expectedAlternatingBit.alternate()
 
             // forward payload data to upper layer
@@ -719,27 +730,39 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
 
     init {
         val handshakeTimeoutHandler = Runnable {
-            LOG.debug("HANDSHAKE_TIMER_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("HANDSHAKE_TIMER_EXPIRED")
+            }
             onControlMessage(InternalControlMessage.TIMEOUT)
         }
         val datTimeoutHandler = Runnable {
-            LOG.debug("DAT_TIMER_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("DAT_TIMER_EXPIRED")
+            }
             onControlMessage(InternalControlMessage.DAT_TIMER_EXPIRED)
         }
         val ratTimeoutHandler = Runnable {
-            LOG.debug("RAT_TIMER_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("RAT_TIMER_EXPIRED")
+            }
             onControlMessage(InternalControlMessage.REPEAT_RAT)
         }
         val proverTimeoutHandler = Runnable {
-            LOG.debug("RAT_PROVER_HANDSHAKE_TIMER_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("RAT_PROVER_HANDSHAKE_TIMER_EXPIRED")
+            }
             onControlMessage(InternalControlMessage.TIMEOUT)
         }
         val verifierTimeoutHandler = Runnable {
-            LOG.debug("RAT_VERIFIER_HANDSHAKE_TIMER_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("RAT_VERIFIER_HANDSHAKE_TIMER_EXPIRED")
+            }
             onControlMessage(InternalControlMessage.TIMEOUT)
         }
         val ackTimeoutHandler = Runnable {
-            LOG.debug("ACK_TIMER_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("ACK_TIMER_EXPIRED")
+            }
             onControlMessage(InternalControlMessage.ACK_TIMER_EXPIRED)
         }
 
@@ -771,7 +794,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel, dapsDriver
                 this, ratTimer, handshakeTimer, ackTimer)
 
         // Set initial state
-        currentState = states[FsmState.STATE_CLOSED]!!
+        currentState = states[FsmState.STATE_CLOSED] ?: throw NoSuchElementException("State unknown")
         this.connection = connection
         this.secureChannel = secureChannel
     }

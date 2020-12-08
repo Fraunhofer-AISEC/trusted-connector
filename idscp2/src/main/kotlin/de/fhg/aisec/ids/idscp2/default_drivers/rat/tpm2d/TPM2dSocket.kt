@@ -14,9 +14,9 @@ class TPM2dSocket(host: String?) : Socket(host, 9505) {
     private val os: DataOutputStream = DataOutputStream(this.outputStream)
 
     @Throws(IOException::class)
-    fun requestAttestation(request: Tpm2dAttestation.RemoteToTpm2d?): Tpm2dAttestation.Tpm2dToRemote {
+    fun requestAttestation(request: Tpm2dAttestation.RemoteToTpm2d): Tpm2dAttestation.Tpm2dToRemote {
         // Write attestation request message
-        val requestBytes = request!!.toByteArray()
+        val requestBytes = request.toByteArray()
         os.writeInt(requestBytes.size)
         os.write(requestBytes)
         // Read attestation result message

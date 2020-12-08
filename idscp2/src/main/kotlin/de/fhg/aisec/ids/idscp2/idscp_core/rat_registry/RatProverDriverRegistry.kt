@@ -25,7 +25,7 @@ object RatProverDriverRegistry {
             val driverFactory: (RatProverFsmListener) -> RatProverDriver<PC>,
             val driverConfig: PC?
     ) {
-        fun getInstance(listener: RatProverFsmListener) = driverFactory.invoke(listener).also {d ->
+        fun getInstance(listener: RatProverFsmListener) = driverFactory.invoke(listener).also { d ->
             driverConfig?.let { d.setConfig(it) }
         }
     }
@@ -59,13 +59,14 @@ object RatProverDriverRegistry {
      * The finite state machine is registered as the communication partner for the RatProver.
      * The RatProver will be initialized with a configuration, if present. Then it is started.
      */
-    fun startRatProverDriver(instance: String?, listener: RatProverFsmListener): RatProverDriver<*>? {
-        val driverWrapper = drivers[instance]
-        return try {
-            driverWrapper!!.getInstance(listener).also { it.start() }
-        } catch (e: Exception) {
-            LOG.error("Error during RAT prover start", e)
-            null
+    fun startRatProverDriver(instance: String, listener: RatProverFsmListener): RatProverDriver<*>? {
+        return drivers[instance]?.let { driverWrapper ->
+            return try {
+                driverWrapper.getInstance(listener).also { it.start() }
+            } catch (e: Exception) {
+                LOG.error("Error during RAT prover start", e)
+                null
+            }
         }
     }
 }

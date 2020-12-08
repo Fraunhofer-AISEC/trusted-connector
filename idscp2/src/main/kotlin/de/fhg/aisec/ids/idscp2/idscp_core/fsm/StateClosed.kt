@@ -31,7 +31,9 @@ internal class StateClosed(fsm: FSM,
 
     override fun runEntryCode(fsm: FSM) {
         //State Closed entry code
-        LOG.debug("Switched to state STATE_CLOSED")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Switched to state STATE_CLOSED")
+        }
         fsm.shutdownFsm()
     }
 
@@ -72,7 +74,7 @@ internal class StateClosed(fsm: FSM,
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, this)
             }
             runExitCode(onMessageLock)
-            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_HELLO)!!)
+            FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_HELLO))
         })
 
 

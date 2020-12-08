@@ -52,14 +52,13 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
                     config.keyPassword
             )
     private val dapsUrl: String = config.dapsUrl
-    private val cert: X509Certificate?//get http response from DAPS
+    private val cert: X509Certificate = PreConfiguration.getCertificate(
+            config.keyStorePath,
+            config.keyStorePassword,
+            config.keyAlias)  //get http response from DAPS
 
     init {
         //create ssl socket factory for secure
-        cert = PreConfiguration.getCertificate(
-                config.keyStorePath,
-                config.keyStorePassword,
-                config.keyAlias)
         val trustManagers = PreConfiguration.getX509ExtTrustManager(
                 config.trustStorePath,
                 config.trustStorePassword
@@ -90,7 +89,7 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
             // Get AKI
             //GET 2.5.29.14	SubjectKeyIdentifier / 2.5.29.35	AuthorityKeyIdentifier
             val akiOid = Extension.authorityKeyIdentifier.id
-            val rawAuthorityKeyIdentifier = cert!!.getExtensionValue(akiOid)
+            val rawAuthorityKeyIdentifier = cert.getExtensionValue(akiOid)
             val akiOc = ASN1OctetString.getInstance(rawAuthorityKeyIdentifier)
             val aki = AuthorityKeyIdentifier.getInstance(akiOc.octets)
             val authorityKeyIdentifier = aki.keyIdentifier
@@ -155,10 +154,8 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
                 if (!response.isSuccessful) {
                     throw DatException("Received non-200 http response: " + response.code())
                 }
-                if (response.body() == null) {
-                    throw DatException("Received empty DAPS response")
-                }
-                val json = JSONObject(response.body()!!.string())
+                val json = JSONObject(response.body()?.string()
+                    ?: throw DatException("Received empty DAPS response"))
                 if (json.has("access_token")) {
                     token = json.getString("access_token")
                     if (LOG.isDebugEnabled) {

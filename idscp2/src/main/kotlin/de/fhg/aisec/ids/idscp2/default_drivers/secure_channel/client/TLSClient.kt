@@ -33,7 +33,7 @@ class TLSClient<CC: Idscp2Connection>(
 ) : HandshakeCompletedListener, DataAvailableListener, SecureChannelEndpoint {
     private val clientSocket: Socket
     private var dataOutputStream: DataOutputStream? = null
-    private var inputListenerThread: InputListenerThread? = null
+    private lateinit var inputListenerThread: InputListenerThread
     private val listenerPromise = CompletableFuture<SecureChannelListener>()
 
     /**
@@ -73,8 +73,9 @@ class TLSClient<CC: Idscp2Connection>(
 
     private fun disconnect() {
         LOG.debug("Disconnecting from TLS server...")
-        //close listener
-        inputListenerThread?.safeStop()
+        if (::inputListenerThread.isInitialized) {
+            inputListenerThread.safeStop()
+        }
         if (!clientSocket.isClosed) {
             try {
                 clientSocket.close()
@@ -139,7 +140,7 @@ class TLSClient<CC: Idscp2Connection>(
             // Try to complete, won't do anything if promise has been cancelled
             listenerPromise.complete(secureChannel)
             val connection = connectionFactory(secureChannel, clientConfiguration)
-            inputListenerThread!!.start()
+            inputListenerThread.start()
             // Try to complete, won't do anything if promise has been cancelled
             connectionFuture.complete(connection)
             if (connectionFuture.isCancelled) {
