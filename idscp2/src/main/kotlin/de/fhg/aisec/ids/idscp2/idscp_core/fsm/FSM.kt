@@ -697,7 +697,9 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
     }
 
     fun recvData(data: IdscpData) {
-        LOG.debug("Received IdscpData with alternating bit {}", data.alternatingBit)
+        if (LOG.isTraceEnabled) {
+            LOG.debug("Received IdscpData with alternating bit {}", data.alternatingBit)
+        }
 
         if (data.alternatingBit != expectedAlternatingBit.asBoolean()) {
             if (LOG.isDebugEnabled) {

@@ -108,7 +108,9 @@ class TLSClient<CC: Idscp2Connection>(
                     it.write(bytes)
                     it.flush()
                 } ?: throw IOException("DataOutputStream not available")
-                LOG.debug("Send message")
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("Sending message...")
+                }
                 true
             } catch (e: IOException) {
                 LOG.error("Client cannot send data", e)
