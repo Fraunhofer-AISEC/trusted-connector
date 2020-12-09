@@ -19,22 +19,15 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import de.fhg.aisec.ids.webconsole.api.data.User;
 import io.swagger.annotations.Api;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.KeyGenerator;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.Configuration;
@@ -46,8 +39,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 @Path("/user")
 @Api(value = "User Authentication")
@@ -98,7 +98,7 @@ public class UserApi {
 
   private String issueToken(String username) {
     Calendar cal = Calendar.getInstance();
-    cal.add(Calendar.DAY_OF_MONTH, 1);
+    cal.setTimeInMillis(cal.getTimeInMillis() + 86_400_000);
     Date tomorrow = cal.getTime();
 
     return JWT.create()
@@ -114,26 +114,23 @@ public class UserApi {
     can be configured as needed without changing this code here.
     */
     if (Configuration.getConfiguration().getAppConfigurationEntry("karaf") == null) {
-      LOG.warn(
-          "No LoginModules configured for karaf. This is okay if running as unit test. If this message appears in Karaf container, make sure that JAAS is available.");
+      LOG.warn("No LoginModules configured for karaf. This is okay if running as unit test. " +
+              "If this message appears in Karaf container, make sure that JAAS is available.");
       return "ids".equals(user) && "ids".equals(password);
     }
     LoginContext ctx =
         new LoginContext(
             "karaf",
-            new CallbackHandler() {
-              @Override
-              public void handle(Callback[] callbacks) {
-                for (Callback cb : callbacks) {
-                  if (cb instanceof PasswordCallback) {
-                    ((PasswordCallback) cb).setPassword(password.toCharArray());
+                callbacks -> {
+                  for (Callback cb : callbacks) {
+                    if (cb instanceof PasswordCallback) {
+                      ((PasswordCallback) cb).setPassword(password.toCharArray());
+                    }
+                    if (cb instanceof NameCallback) {
+                      ((NameCallback) cb).setName(user);
+                    }
                   }
-                  if (cb instanceof NameCallback) {
-                    ((NameCallback) cb).setName(user);
-                  }
-                }
-              }
-            });
+                });
     ctx.login();
     return true;
   }
