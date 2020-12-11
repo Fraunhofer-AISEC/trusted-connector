@@ -127,11 +127,11 @@ class TLSClient<CC: Idscp2Connection>(
         if (LOG.isDebugEnabled) {
             LOG.debug("TLS Handshake was successful")
         }
-        if (!connectionFuture.isCancelled) {
-            // TODO: When server behavior fixed, disconnect and return here instantly
-//            disconnect();
-//            return;
-        }
+        // TODO: When server behavior fixed, disconnect and return here instantly
+//        if (!connectionFuture.isCancelled) {
+//            disconnect()
+//            return
+//        }
 
         // verify tls session on application layer: hostname verification, certificate validity
         try {
@@ -197,7 +197,7 @@ class TLSClient<CC: Idscp2Connection>(
         sslParameters.needClientAuth = true
         sslParameters.protocols = TLSConstants.TLS_ENABLED_PROTOCOLS // only TLSv1.3
         sslParameters.cipherSuites = TLSConstants.TLS_ENABLED_CIPHERS // only allow strong cipher
-        //        sslParameters.setEndpointIdentificationAlgorithm("HTTPS");  // is done in application layer
+//        sslParameters.endpointIdentificationAlgorithm = "HTTPS";  // is done in application layer
         sslSocket.sslParameters = sslParameters
         LOG.debug("TLS Client was initialized successfully")
     }
