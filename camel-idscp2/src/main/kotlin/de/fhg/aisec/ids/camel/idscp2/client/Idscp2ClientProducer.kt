@@ -18,6 +18,7 @@ package de.fhg.aisec.ids.camel.idscp2.client
 
 import de.fhg.aisec.ids.camel.idscp2.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
 import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Exchange
 import org.apache.camel.support.DefaultProducer
@@ -39,35 +40,57 @@ class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : Default
             val header = message.getHeader(IDSCP2_HEADER)
             val body = message.getBody(ByteArray::class.java)
             if (header != null || body != null) {
-                val connection = connectionFuture.get()
-                if (endpoint.awaitResponse) {
-                    val condition = reentrantLock.newCondition()
-                    val responseHandler = { responseHeader: Any?, responsePayload: ByteArray? ->
-                        message.setHeader(IDSCP2_HEADER, responseHeader)
-                        message.body = responsePayload
-                        reentrantLock.withLock {
-                            condition.signal()
+                for (t in 1..endpoint.maxRetries) {
+                    try {
+                        // If connectionFuture completed exceptionally, recreate Connection
+                        if (connectionFuture.isCompletedExceptionally) {
+                            connectionFuture = endpoint.makeConnection()
+                                .also { c -> c.thenAccept { it.unlockMessaging() } }
                         }
-                    }
-                    reentrantLock.withLock {
-                        if (endpoint.useIdsMessages) {
-                            connection.addIdsMessageListener { _, responseHeader, responsePayload ->
-                                responseHandler(responseHeader, responsePayload)
+                        val connection = connectionFuture.get()
+                        if (endpoint.awaitResponse) {
+                            val condition = reentrantLock.newCondition()
+                            val responseHandler = { responseHeader: Any?, responsePayload: ByteArray? ->
+                                message.setHeader(IDSCP2_HEADER, responseHeader)
+                                message.body = responsePayload
+                                reentrantLock.withLock {
+                                    condition.signal()
+                                }
                             }
-                            connection.sendIdsMessage(header?.let { header as Message }, body)
+                            reentrantLock.withLock {
+                                if (endpoint.useIdsMessages) {
+                                    connection.addIdsMessageListener { _, responseHeader, responsePayload ->
+                                        responseHandler(responseHeader, responsePayload)
+                                    }
+                                    connection.sendIdsMessage(header?.let { header as Message }, body)
+                                } else {
+                                    connection.addGenericMessageListener { _, responseHeader, responsePayload ->
+                                        responseHandler(responseHeader, responsePayload)
+                                    }
+                                    connection.sendGenericMessage(header?.toString(), body)
+                                }
+                                condition.await()
+                            }
                         } else {
-                            connection.addGenericMessageListener { _, responseHeader, responsePayload ->
-                                responseHandler(responseHeader, responsePayload)
+                            if (endpoint.useIdsMessages) {
+                                connection.sendIdsMessage(header?.let { header as Message }, body)
+                            } else {
+                                connection.sendGenericMessage(header?.toString(), body)
                             }
-                            connection.sendGenericMessage(header?.toString(), body)
                         }
-                        condition.await()
-                    }
-                } else {
-                    if (endpoint.useIdsMessages) {
-                        connection.sendIdsMessage(header?.let { header as Message }, body)
-                    } else {
-                        connection.sendGenericMessage(header?.toString(), body)
+                        return
+                    } catch (x: Exception) {
+                        if (endpoint.maxRetries == t) {
+                            LOG.error("Massage delivery failed finally, aborting exchange...")
+                            exchange.setException(x)
+                        } else {
+                            LOG.warn("Message delivery failed in attempt $t, " +
+                                    "reset connection and retry after ${endpoint.retryDelayMs} ms...", x)
+                            endpoint.releaseConnection(connectionFuture)
+                            connectionFuture = endpoint.makeConnection()
+                                .also { c -> c.thenAccept { it.unlockMessaging() } }
+                            Thread.sleep(endpoint.retryDelayMs)
+                        }
                     }
                 }
             }
@@ -79,9 +102,13 @@ class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : Default
         if (endpoint.awaitResponse) {
             reentrantLock = ReentrantLock()
         }
-        connectionFuture = endpoint.makeConnection()
-        // Unlock messaging immediately after obtaining connection
-        connectionFuture.thenAccept { it.unlockMessaging() }
+        connectionFuture = endpoint.makeConnection().also { c ->
+            // Unlock messaging immediately after obtaining connection
+            c.thenAccept { it.unlockMessaging() }.exceptionally {
+                LOG.warn("Could not connect to Server ${endpoint.endpointUri}, delaying connect until first message...")
+                null
+            }
+        }
     }
 
     public override fun doStop() {

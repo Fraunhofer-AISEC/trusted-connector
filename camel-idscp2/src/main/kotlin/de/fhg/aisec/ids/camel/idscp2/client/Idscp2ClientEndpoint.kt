@@ -87,6 +87,18 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
             defaultValue = "false"
     )
     var useIdsMessages: Boolean = false
+    @UriParam(
+        label = "client",
+        description = "Max attempts to connect to the IDSCP2 server",
+        defaultValue = "3"
+    )
+    var maxRetries: Int = 3
+    @UriParam(
+        label = "client",
+        description = "Delay after an failed connection attempt to the server",
+        defaultValue = "5000"
+    )
+    var retryDelayMs: Long = 5000
 
     private fun makeConnectionInternal(): CompletableFuture<AppLayerConnection> {
         return secureChannelDriver.connect(::AppLayerConnection, clientConfiguration, secureChannelConfig).thenApply { c ->
@@ -188,8 +200,11 @@ class Idscp2ClientEndpoint(uri: String?, private val remaining: String, componen
         }
         private fun releaseConnectionInternal(connectionFuture: CompletableFuture<AppLayerConnection>) {
             if (connectionFuture.isDone) {
-                connectionFuture.get().close()
-            } else if (!connectionFuture.isCompletedExceptionally) {
+                // Exceptional completion includes cancellation
+                if (!connectionFuture.isCompletedExceptionally) {
+                    connectionFuture.get().close()
+                }
+            } else {
                 connectionFuture.cancel(true)
             }
         }
