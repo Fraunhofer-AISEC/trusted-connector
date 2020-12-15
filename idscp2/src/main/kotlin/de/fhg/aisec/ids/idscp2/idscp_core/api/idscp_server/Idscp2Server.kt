@@ -18,10 +18,15 @@ class Idscp2Server<CC: Idscp2Connection>(private val secureServer: SecureServer)
      * Terminate the IDSCP2 server, the secure server and close all connections
      */
     fun terminate() {
-        LOG.info("Terminating IDSCP2 server {}", this.toString())
+        if (LOG.isInfoEnabled) {
+            LOG.info("Terminating IDSCP2 server {}", this.toString())
+        }
+
         for (connection in connections) {
             connection.close()
-            LOG.debug("Idscp connection with id {} has been closed", connection.id)
+            if (LOG.isDebugEnabled) {
+                LOG.debug("Idscp connection with id {} has been closed", connection.id)
+            }
             connections.remove(connection)
         }
         secureServer.safeStop()

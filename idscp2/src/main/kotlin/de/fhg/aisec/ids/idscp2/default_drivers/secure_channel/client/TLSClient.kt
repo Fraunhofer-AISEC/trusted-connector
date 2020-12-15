@@ -46,7 +46,9 @@ class TLSClient<CC: Idscp2Connection>(
         }
         try {
             sslSocket.connect(InetSocketAddress(hostname, port))
-            LOG.debug("Client is connected to server {}:{}", hostname, port)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Client is connected to server {}:{}", hostname, port)
+            }
 
             //set clientSocket timeout to allow safeStop()
             clientSocket.soTimeout = 5000
@@ -55,7 +57,9 @@ class TLSClient<CC: Idscp2Connection>(
             // Add inputListener but start it not before handshake is complete
             inputListenerThread = InputListenerThread(clientSocket.getInputStream(), this)
             sslSocket.addHandshakeCompletedListener(this)
-            LOG.debug("Start TLS Handshake")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Start TLS Handshake")
+            }
             sslSocket.startHandshake()
         } catch (e: SSLHandshakeException) {
             // FIXME: Any such disconnect makes the server maintain a broken connection
@@ -72,7 +76,9 @@ class TLSClient<CC: Idscp2Connection>(
     }
 
     private fun disconnect() {
-        LOG.debug("Disconnecting from TLS server...")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Disconnecting from TLS server...")
+        }
         if (::inputListenerThread.isInitialized) {
             inputListenerThread.safeStop()
         }
@@ -99,7 +105,7 @@ class TLSClient<CC: Idscp2Connection>(
 
     override fun send(bytes: ByteArray): Boolean {
         return if (!isConnected) {
-            LOG.error("Client cannot send data because socket is not connected")
+            LOG.warn("Client cannot send data because socket is not connected")
             false
         } else {
             try {
@@ -113,7 +119,7 @@ class TLSClient<CC: Idscp2Connection>(
                 }
                 true
             } catch (e: IOException) {
-                LOG.error("Client cannot send data", e)
+                LOG.warn("Client cannot send data", e)
                 false
             }
         }
@@ -124,8 +130,8 @@ class TLSClient<CC: Idscp2Connection>(
 
     override fun handshakeCompleted(handshakeCompletedEvent: HandshakeCompletedEvent) {
         //start receiving listener after TLS Handshake was successful
-        if (LOG.isDebugEnabled) {
-            LOG.debug("TLS Handshake was successful")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("TLS Handshake was successful")
         }
         // TODO: When server behavior fixed, disconnect and return here instantly
 //        if (!connectionFuture.isCancelled) {
@@ -136,7 +142,9 @@ class TLSClient<CC: Idscp2Connection>(
         // verify tls session on application layer: hostname verification, certificate validity
         try {
             TLSSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.session)
-            LOG.debug("TLS session is valid")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("TLS session is valid")
+            }
             // Create secure channel, register secure channel as message listener and notify IDSCP2 Configuration.
             val secureChannel = SecureChannel(this)
             // Try to complete, won't do anything if promise has been cancelled
@@ -199,6 +207,8 @@ class TLSClient<CC: Idscp2Connection>(
         sslParameters.cipherSuites = TLSConstants.TLS_ENABLED_CIPHERS // only allow strong cipher
 //        sslParameters.endpointIdentificationAlgorithm = "HTTPS";  // is done in application layer
         sslSocket.sslParameters = sslParameters
-        LOG.debug("TLS Client was initialized successfully")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("TLS Client was initialized successfully")
+        }
     }
 }

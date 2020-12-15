@@ -41,14 +41,20 @@ class CustomX509ExtendedKeyManager internal constructor(
         if (listOf(*keyTypes).contains(keyType)) {
             if (cachedAliases[certAlias]?.match(keyType, issuers) == true
                     || listOf(*getClientAliases(keyType, issuers)).contains(certAlias)) {
-                LOG.debug("CertificateAlias is {}", certAlias)
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("CertificateAlias is {}", certAlias)
+                }
                 return certAlias
             } else {
-                LOG.warn("certAlias '{}' was not found in keystore", certAlias)
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("certAlias '{}' was not found in keystore", certAlias)
+                }
             }
         } else if (LOG.isTraceEnabled) {
-            LOG.trace("Different keyType '{}' in chooseClientAlias() in CustomX509ExtendedKeyManager, expected '{}'",
-                    keyType, this.keyType)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Different keyType '{}' in chooseClientAlias() in CustomX509ExtendedKeyManager, expected '{}'",
+                        keyType, this.keyType)
+            }
         }
         return null
     }
@@ -70,14 +76,20 @@ class CustomX509ExtendedKeyManager internal constructor(
         if (keyType == this.keyType) {
             if (cachedAliases[certAlias]?.match(keyType, issuers) == true
                     || listOf(*getServerAliases(keyType, issuers)).contains(certAlias)) {
-                LOG.debug("CertificateAlias is {}", certAlias)
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("CertificateAlias is {}", certAlias)
+                }
                 return certAlias
             } else {
-                LOG.warn("certAlias '{}' was not found in keystore", certAlias)
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("certAlias '{}' was not found in keystore", certAlias)
+                }
             }
         } else if (LOG.isTraceEnabled) {
-            LOG.trace("Different keyType '{}' in chooseServerAlias() in CustomX509ExtendedKeyManager, expected '{}'",
-                    keyType, this.keyType)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Different keyType '{}' in chooseServerAlias() in CustomX509ExtendedKeyManager, expected '{}'",
+                        keyType, this.keyType)
+            }
         }
         return null
     }
@@ -89,8 +101,8 @@ class CustomX509ExtendedKeyManager internal constructor(
         return if (certAlias == this.certAlias) {
             delegate.getCertificateChain(certAlias)
         } else {
-            LOG.warn("Different certAlias '{}' in getCertificateChain() in class X509ExtendedKeyManager, " +
-                    "expected: '{}'", certAlias, this.certAlias)
+                LOG.warn("Different certAlias '{}' in getCertificateChain() in class X509ExtendedKeyManager, " +
+                        "expected: '{}'", certAlias, this.certAlias)
             null
         }
     }
@@ -101,8 +113,9 @@ class CustomX509ExtendedKeyManager internal constructor(
         return if (certAlias == this.certAlias) {
             delegate.getPrivateKey(certAlias)
         } else {
-            LOG.warn("Different certAlias '{}' in getPrivateKey() in class X509ExtendedKeyManager, expected '{}'",
-                    certAlias, this.certAlias)
+                LOG.warn("Different certAlias '{}' in getPrivateKey() in class X509ExtendedKeyManager, expected '{}'",
+                        certAlias, this.certAlias)
+
             null
         }
     }
@@ -125,7 +138,7 @@ class CustomX509ExtendedKeyManager internal constructor(
         /**
          * This method is called for a given certificate alias and checks if the corresponding
          * cached alias entry (contains keytype for certAlias and issuer of thee certificate)
-         * matches the requested conditions in thee TLS handshake.
+         * matches the requested conditions in the TLS handshake.
          *
          * It must enforce checking if the certAlias belongs to a valid key algorithm type name,
          * e.g. 'RSA' or 'EC' and it must check if the certificate issuer is one of the accepted
@@ -133,6 +146,7 @@ class CustomX509ExtendedKeyManager internal constructor(
          *
          * returns true, if the keyAlias fulfills the requirements
          */
+        // FIXME currently all issuers are allowed
         fun match(keyType: String, issuers: Array<Principal>?) =
                 this.keyType == keyType && (issuers == null || listOf(*issuers).contains(issuer))
     }
@@ -140,5 +154,4 @@ class CustomX509ExtendedKeyManager internal constructor(
     companion object {
         private val LOG = LoggerFactory.getLogger(CustomX509ExtendedKeyManager::class.java)
     }
-
 }

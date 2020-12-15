@@ -29,7 +29,9 @@ class Idscp2ServerFactory<CC: Idscp2Connection, SecureChannelConfiguration>(
      */
     @Throws(Idscp2Exception::class)
     fun listen(): Idscp2Server<CC> {
-        LOG.info("Starting new IDSCP2 server")
+        if (LOG.isInfoEnabled) {
+            LOG.info("Starting new IDSCP2 server")
+        }
         val serverListenerPromise = CompletableFuture<ServerConnectionListener<CC>>()
         val secureServer = secureChannelDriver.listen(this, serverListenerPromise, secureChannelConfig)
         val server = Idscp2Server<CC>(secureServer)
@@ -50,7 +52,9 @@ class Idscp2ServerFactory<CC: Idscp2Connection, SecureChannelConfiguration>(
     @Synchronized
     override fun onSecureChannel(secureChannel: SecureChannel,
                                  serverListenerPromise: CompletableFuture<ServerConnectionListener<CC>>) {
-        LOG.trace("A new secure channel for an IDSCP2 connection was established")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("A new secure channel for an IDSCP2 connection was established")
+        }
         // Threads calling onMessage() will be blocked until all listeners have been registered, see below
         val newConnection = connectionFactory(secureChannel, configuration)
         // Complete the connection promise for the IDSCP server

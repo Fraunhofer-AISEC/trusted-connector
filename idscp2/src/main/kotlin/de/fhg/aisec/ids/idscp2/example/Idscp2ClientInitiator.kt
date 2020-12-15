@@ -45,7 +45,6 @@ class Idscp2ClientInitiator {
             connection.addMessageListener { c: Idscp2Connection, data: ByteArray ->
                 LOG.info("Received ping message: " + String(data, StandardCharsets.UTF_8))
 
-                LOG.info("Close Connection")
                 c.close()
             }
             connection.unlockMessaging()

@@ -38,7 +38,9 @@ object TLSSessionVerificationHelper {
     @Throws(SSLPeerUnverifiedException::class)
     fun verifyTlsSession(sslSession: SSLSession) {
         val host = sslSession.peerHost
-        LOG.debug("Connected to {}:{}", host, sslSession.peerPort)
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Connected to {}:{}", host, sslSession.peerPort)
+        }
         try {
 
             //get certificate
@@ -76,8 +78,8 @@ object TLSSessionVerificationHelper {
                         acceptedIpAddresses.add(String(value))
                     }
                     else -> {
-                        if (LOG.isDebugEnabled) {
-                            LOG.debug("Unhandled SAN type \"{}\" with value \"{}\"", subjectAltName[0], value)
+                        if (LOG.isTraceEnabled) {
+                            LOG.trace("Unhandled SAN type \"{}\" with value \"{}\"", subjectAltName[0], value)
                         }
                     }
                 }
@@ -95,8 +97,8 @@ object TLSSessionVerificationHelper {
                             emptyList()
                         }
                     }.map { it.hostAddress }
-                    if (LOG.isDebugEnabled) {
-                        LOG.debug("Resolved IPs: {}", resolvedIps.toSet().joinToString())
+                    if (LOG.isTraceEnabled) {
+                        LOG.trace("Resolved IPs: {}", resolvedIps.toSet().joinToString())
                     }
                     if (!resolvedIps.contains(host)) {
                         throw SSLPeerUnverifiedException("Hostname verification failed. Peer certificate does "

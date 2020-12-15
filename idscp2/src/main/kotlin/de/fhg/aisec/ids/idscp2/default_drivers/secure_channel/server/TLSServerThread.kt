@@ -47,7 +47,7 @@ class TLSServerThread<CC : Idscp2Connection> internal constructor(
             // Wait for TLS session verification
             tlsVerificationLatch.await()
         } catch (e: Exception) {
-            LOG.error("Exception occurred during SSL handshake. Quiting server thread...", e)
+            LOG.warn("Exception occurred during SSL handshake. Quiting server thread...", e)
             onError(e)
             running = false
         }
@@ -84,7 +84,7 @@ class TLSServerThread<CC : Idscp2Connection> internal constructor(
 
     override fun send(bytes: ByteArray): Boolean {
         return if (!isConnected) {
-            LOG.error("Server cannot send data because socket is not connected")
+            LOG.warn("Server cannot send data because socket is not connected")
             closeSockets()
             false
         } else {
@@ -94,7 +94,7 @@ class TLSServerThread<CC : Idscp2Connection> internal constructor(
                 out.flush()
                 true
             } catch (e: IOException) {
-                LOG.error("Server could not send data", e)
+                LOG.warn("Server could not send data", e)
                 closeSockets()
                 false
             }
@@ -125,18 +125,18 @@ class TLSServerThread<CC : Idscp2Connection> internal constructor(
         get() = sslSocket.isConnected
 
     override fun handshakeCompleted(handshakeCompletedEvent: HandshakeCompletedEvent) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("TLS Handshake was successful")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("TLS Handshake was successful")
         }
 
         // verify tls session on application layer: hostname verification, certificate validity
         try {
             TLSSessionVerificationHelper.verifyTlsSession(handshakeCompletedEvent.session)
-            LOG.debug("TLS session is valid")
-        } catch (e: SSLPeerUnverifiedException) {
-            if (LOG.isWarnEnabled) {
-                LOG.warn("TLS session is not valid. Close TLS connection", e)
+            if (LOG.isTraceEnabled) {
+                LOG.trace("TLS session is valid")
             }
+        } catch (e: SSLPeerUnverifiedException) {
+            LOG.warn("TLS session is not valid. Close TLS connection", e)
             running = false // set running false before tlsVerificationLatch is decremented
             return
         } finally {

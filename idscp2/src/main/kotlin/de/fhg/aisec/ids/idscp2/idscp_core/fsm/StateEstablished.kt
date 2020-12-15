@@ -54,8 +54,8 @@ class StateEstablished(
         })
 
         addTransition(InternalControlMessage.IDSCP_STOP.value, Transition {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Send IDSCP_CLOSE")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Send IDSCP_CLOSE")
             }
             fsm.sendFromFSM(
                 Idscp2MessageHelper.createIdscpCloseMessage(
@@ -88,27 +88,27 @@ class StateEstablished(
             }
         })
         addTransition(InternalControlMessage.REPEAT_RAT.value, Transition {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Request RAT repeat. Send IDSCP_RERAT, start RAT_VERIFIER")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Request RAT repeat. Send IDSCP_RERAT, start RAT_VERIFIER")
             }
             ratTimer.cancelTimeout()
             if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpReRatMessage(""))) {
-                LOG.error("Cannot send ReRat message")
+                LOG.warn("Cannot send ReRat message")
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             if (!fsm.restartRatVerifierDriver()) {
-                LOG.error("Cannot run Rat verifier, close idscp connection")
+                LOG.warn("Cannot run Rat verifier, close idscp connection")
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_RAT_VERIFIER))
         })
         addTransition(InternalControlMessage.DAT_TIMER_EXPIRED.value, Transition {
             ratTimer.cancelTimeout()
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Remote DAT expired. Send IDSCP_DAT_EXPIRED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Remote DAT expired. Send IDSCP_DAT_EXPIRED")
             }
             if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatExpiredMessage())) {
-                LOG.error("Cannot send DatExpired message")
+                LOG.warn("Cannot send DatExpired message")
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             if (LOG.isTraceEnabled) {
@@ -118,25 +118,25 @@ class StateEstablished(
             FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_DAT_AND_RAT_VERIFIER))
         })
         addTransition(IdscpMessage.IDSCPRERAT_FIELD_NUMBER, Transition {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Received IDSCP_RERAT. Start RAT_PROVER")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Received IDSCP_RERAT. Start RAT_PROVER")
             }
             if (!fsm.restartRatProverDriver()) {
-                LOG.error("Cannot run Rat prover, close idscp connection")
+                LOG.warn("Cannot run Rat prover, close idscp connection")
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_RAT_PROVER))
         })
         addTransition(IdscpMessage.IDSCPDATEXPIRED_FIELD_NUMBER, Transition {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("DAT expired. Send new DAT and repeat RAT")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("DAT expired. Send new DAT and repeat RAT")
             }
             if (!fsm.sendFromFSM(Idscp2MessageHelper.createIdscpDatMessage(fsm.getDynamicAttributeToken))) {
-                LOG.error("Cannot send Dat message")
+                LOG.warn("Cannot send Dat message")
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             if (!fsm.restartRatProverDriver()) {
-                LOG.error("Cannot run Rat prover, close idscp connection")
+                LOG.warn("Cannot run Rat prover, close idscp connection")
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.RAT_ERROR, fsm.getState(FsmState.STATE_CLOSED))
             }
             FSM.FsmResult(FSM.FsmResultCode.OK, fsm.getState(FsmState.STATE_WAIT_FOR_RAT_PROVER))
@@ -155,8 +155,8 @@ class StateEstablished(
         })
 
         setNoTransitionHandler {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("No transition available for given event $it, stay in state STATE_ESTABLISHED")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("No transition available for given event $it, stay in state STATE_ESTABLISHED")
             }
             FSM.FsmResult(FSM.FsmResultCode.UNKNOWN_TRANSITION, this)
         }

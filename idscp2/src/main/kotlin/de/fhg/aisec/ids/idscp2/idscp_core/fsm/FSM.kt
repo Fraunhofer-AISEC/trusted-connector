@@ -265,7 +265,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
             if (Thread.currentThread().id.toString() == currentRatProverId) {
                 feedEvent(e)
             } else {
-                LOG.error("An old or unknown Thread (${Thread.currentThread().id}) calls onRatProverMessage()")
+                LOG.warn("An old or unknown Thread (${Thread.currentThread().id}) calls onRatProverMessage()")
             }
         } finally {
             fsmIsBusy.unlock()
@@ -300,7 +300,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
             if (Thread.currentThread().id.toString() == currentRatVerifierId) {
                 feedEvent(e)
             } else {
-                LOG.error("An old or unknown Thread (${Thread.currentThread().id}) calls onRatVerifierMessage()")
+                LOG.warn("An old or unknown Thread (${Thread.currentThread().id}) calls onRatVerifierMessage()")
             }
         } finally {
             fsmIsBusy.unlock()
@@ -341,7 +341,9 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
      */
     fun closeConnection() : FsmResultCode {
         //check for incorrect usage
-        LOG.debug("Sending stop message to connection peer...")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Sending stop message to connection peer...")
+        }
         return onUpperEvent(Event(InternalControlMessage.IDSCP_STOP))
     }
 
@@ -514,8 +516,8 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
         return ratVerifierDriver?.let {
             //safe the thread ID
             currentRatVerifierId = it.id.toString()
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Start verifier_handshake timeout")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Start verifier_handshake timeout")
             }
             verifierHandshakeTimer.resetTimeout()
             true
@@ -556,8 +558,8 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
         return ratProverDriver?.let {
             // Save the thread ID
             currentRatProverId = it.id.toString()
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Start prover_handshake timeout")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Start prover_handshake timeout")
             }
             proverHandshakeTimer.resetTimeout()
             true
@@ -590,8 +592,9 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
      * and notify handshake lock if necessary
      */
     fun shutdownFsm() {
-        LOG.debug("Shutting down FSM of connection {}...", connection.id)
+
         if (LOG.isTraceEnabled) {
+            LOG.trace("Shutting down FSM of connection {}...", connection.id)
             LOG.trace("Running close handlers of connection {}...", connection.id)
         }
 
@@ -622,6 +625,7 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
         stopRatProverDriver()
         // Cancels verifierHandshakeTimer
         stopRatVerifierDriver()
+
         if (LOG.isTraceEnabled) {
             LOG.trace("Mark FSM as terminated...")
         }
@@ -678,8 +682,8 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
                 LOG.trace("Received IdscpAck with alternating bit {}, cancel flag in fsm", ack.alternatingBit)
             }
             if (nextSendAlternatingBit.asBoolean() != ack.alternatingBit) {
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("Received IdscpAck with wrong alternating bit. Ignoring")
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("Received IdscpAck with wrong alternating bit. Ignoring")
                 }
             } else {
                 ackFlag = false
@@ -698,12 +702,12 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
 
     fun recvData(data: IdscpData) {
         if (LOG.isTraceEnabled) {
-            LOG.debug("Received IdscpData with alternating bit {}", data.alternatingBit)
+            LOG.trace("Received IdscpData with alternating bit {}", data.alternatingBit)
         }
 
         if (data.alternatingBit != expectedAlternatingBit.asBoolean()) {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Received IdscpData with unexpected alternating bit. Could be an old packet replayed. Ignore it.")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Received IdscpData with unexpected alternating bit. Could be an old packet replayed. Ignore it.")
             }
         } else {
             if (LOG.isTraceEnabled) {

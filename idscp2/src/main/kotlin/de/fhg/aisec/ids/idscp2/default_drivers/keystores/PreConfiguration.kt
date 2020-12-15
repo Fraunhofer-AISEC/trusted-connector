@@ -34,8 +34,8 @@ object PreConfiguration {
             }
         }
         Files.newInputStream(keyStorePath).use { keyStoreInputStream ->
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Loading key store: $pathString")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Loading key store: $pathString")
             }
             ks.load(keyStoreInputStream, keyStorePassword)
         }

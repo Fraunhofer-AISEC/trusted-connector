@@ -18,6 +18,9 @@ class SecureChannel(private val endpoint: SecureChannelEndpoint) : SecureChannel
      * close the secure channel forever
      */
     fun close() {
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Close secure channel")
+        }
         endpoint.close()
     }
 

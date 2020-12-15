@@ -34,22 +34,30 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
     private val serverThread: Thread
     override fun run() {
         if (serverSocket.isClosed) {
-            LOG.error("ServerSocket has been closed, server thread is stopping now.")
+            LOG.warn("ServerSocket has been closed, server thread is stopping now.")
             return
         }
         isRunning = true
-        LOG.debug("TLS server started, entering accept() loop...")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("TLS server started, entering accept() loop...")
+        }
         while (isRunning) {
             try {
+                /*
+                 * accept for new (incoming) ssl sockets. A timeout exception is thrown
+                 * after 5 seconds of inactivity to allow a clean stop via the safeStop() method
+                 */
                 val sslSocket = serverSocket.accept() as SSLSocket
                 try {
                     // Start new server thread
-                    LOG.debug("New TLS client has connected. Creating new server thread...")
+                    if (LOG.isTraceEnabled) {
+                        LOG.trace("New TLS client has connected. Creating new server thread...")
+                    }
                     val serverThread = TLSServerThread(sslSocket, secureChannelInitListener, serverListenerPromise)
                     sslSocket.addHandshakeCompletedListener(serverThread)
                     serverThread.start()
                 } catch (serverThreadException: Exception) {
-                    LOG.error("Error whilst creating/starting TLSServerThread", serverThreadException)
+                    LOG.warn("Error whilst creating/starting TLSServerThread", serverThreadException)
                 }
             } catch (e: SocketTimeoutException) {
                 //timeout on serverSocket blocking functions was reached
@@ -57,10 +65,12 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
                 //without closing the serverSocket, so we can stop and restart the server
                 //alternative: close serverSocket. But then we cannot reuse it
             } catch (e: SocketException) {
-                LOG.debug("Server socket has been closed.")
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("Server socket has been closed.")
+                }
                 isRunning = false
             } catch (e: IOException) {
-                LOG.error("Error during TLS server socket accept, notifying error handlers...")
+                LOG.warn("Error during TLS server socket accept, notifying error handlers...")
                 secureChannelInitListener.onError(e)
                 isRunning = false
             }
@@ -75,13 +85,22 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
     }
 
     override fun safeStop() {
-        LOG.debug("Stopping tls server")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Stopping tls server")
+        }
+        /*
+         * Set the volatile running variable to false. The serverSocket will receive
+         * a socket timeout after at least 5 seconds while it is blocked in accept()
+         * and will then check again if isRunning is still true
+         */
         isRunning = false
-        //        try {
+
+//        try {
 //            serverSocket.close();
 //        } catch (IOException e) {
 //            LOG.warn("Trying to close server socket failed!", e);
 //        }
+
         try {
             serverThread.join()
         } catch (e: InterruptedException) {
@@ -100,7 +119,9 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
 
         // Get array of TrustManagers, that contains only one instance of X509ExtendedTrustManager,
         // which enables host verification and algorithm constraints
-        LOG.debug("Creating trust manager for TLS server...")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Creating trust manager for TLS server...")
+        }
         val myTrustManager = PreConfiguration.getX509ExtTrustManager(
                 nativeTlsConfiguration.trustStorePath,
                 nativeTlsConfiguration.trustStorePassword
@@ -108,7 +129,9 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
 
         // Get array of KeyManagers, that contains only one instance of X509ExtendedKeyManager,
         // which enables connection specific key selection via key alias
-        LOG.debug("Creating key manager for TLS server...")
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Creating key manager for TLS server...")
+        }
         val myKeyManager = PreConfiguration.getX509ExtKeyManager(
                 nativeTlsConfiguration.keyPassword,
                 nativeTlsConfiguration.keyStorePath,
@@ -116,7 +139,10 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
                 nativeTlsConfiguration.certificateAlias,
                 nativeTlsConfiguration.keyStoreKeyType
         )
-        LOG.debug("Setting TLS security attributes and creating TLS server socket...")
+
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Setting TLS security attributes and creating TLS server socket...")
+        }
         // Create TLS context based on keyManager and trustManager
         val sslContext = SSLContext.getInstance(TLSConstants.TLS_INSTANCE)
         sslContext.init(myKeyManager, myTrustManager, null)
@@ -133,7 +159,10 @@ class TLSServer<CC: Idscp2Connection>(nativeTlsConfiguration: NativeTlsConfigura
         sslParameters.protocols = TLSConstants.TLS_ENABLED_PROTOCOLS //only TLSv1.3
         sslParameters.cipherSuites = TLSConstants.TLS_ENABLED_CIPHERS //only allow strong cipher suite
         sslServerSocket.sslParameters = sslParameters
-        LOG.debug("Starting TLS server...")
+
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Starting TLS server...")
+        }
         serverThread = Thread(this, "TLS Server Thread "
                 + nativeTlsConfiguration.host + ":" + nativeTlsConfiguration.serverPort)
         serverThread.start()

@@ -39,8 +39,8 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
      * Close the idscp connection
      */
     override fun close() {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("Closing connection {}...", id)
+        if (LOG.isInfoEnabled) {
+            LOG.info("Closing connection {}...", id)
         }
 
         when (val res = fsm.closeConnection()) {
@@ -56,8 +56,8 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
      */
 
     override fun nonBlockingSend(msg: ByteArray) {
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Sending data via connection {}...", id)
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Sending data via connection {}...", id)
         }
 
         when (val res = fsm.send(msg)) {
@@ -72,8 +72,8 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
     }
 
     override fun blockingSend(msg: ByteArray, timeout: Long, retryInterval: Long) {
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Sending data via connection {}...", id)
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Sending data via connection {}...", id)
         }
 
         val start = System.currentTimeMillis()
@@ -101,8 +101,8 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
     }
 
     override fun repeatRat() {
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Repeat Rat for connection {}...", id)
+        if (LOG.isInfoEnabled) {
+            LOG.info("Repeat Rat for connection {}...", id)
         }
 
         // match result
@@ -119,8 +119,8 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
     override fun onMessage(msg: ByteArray) {
         // When unlock is called, although not synchronized, this will eventually stop blocking.
         messageLatch.await()
-        if (LOG.isTraceEnabled) {
-            LOG.trace("Received new IDSCP Message")
+        if (LOG.isDebugEnabled) {
+            LOG.debug("Received new IDSCP Message")
         }
         messageListeners.forEach { l: Idscp2MessageListener -> l.onMessage(this, msg) }
     }
@@ -131,7 +131,9 @@ class Idscp2ConnectionImpl(secureChannel: SecureChannel,
     }
 
     override fun onClose() {
-        LOG.debug("Connection with id {} is closing, notify listeners...", id)
+        if (LOG.isInfoEnabled) {
+            LOG.info("Connection with id {} is closing, notify listeners...", id)
+        }
         connectionListeners.forEach { l: Idscp2ConnectionListener -> l.onClose() }
     }
 

@@ -59,16 +59,21 @@ internal class StateClosed(fsm: FSM,
             }
 
             // FSM not locked, start handshake
-            LOG.debug("Get DAT Token vom DAT_DRIVER")
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Get DAT Token vom DAT_DRIVER")
+            }
             val dat = fsm.getDynamicAttributeToken
-            LOG.debug("Send IDSCP_HELLO")
+
+            if (LOG.isTraceEnabled) {
+                LOG.trace("Send IDSCP_HELLO")
+            }
             val idscpHello = Idscp2MessageHelper.createIdscpHelloMessage(
                 dat,
                 attestationConfig.supportedAttestationSuite,
                 attestationConfig.expectedAttestationSuite
             )
             if (!fsm.sendFromFSM(idscpHello)) {
-                LOG.error("Cannot send IdscpHello. Close connection")
+                LOG.warn("Cannot send IdscpHello. Close connection")
                 runEntryCode(fsm)
                 onMessageLock.signalAll()
                 return@Transition FSM.FsmResult(FSM.FsmResultCode.IO_ERROR, this)
@@ -118,14 +123,14 @@ internal class StateClosed(fsm: FSM,
         })
 
         setNoTransitionHandler {
-            if (LOG.isDebugEnabled) {
-                LOG.debug("No transition available for given event {}, stack trace for analysis:\n{}",
+            if (LOG.isTraceEnabled) {
+                LOG.trace("No transition available for given event {}, stack trace for analysis:\n{}",
                     it,
                     Arrays.stream(Thread.currentThread().stackTrace)
                         .skip(1)
                         .map { obj: StackTraceElement -> obj.toString() }
                         .collect(Collectors.joining("\n")))
-                LOG.debug("Stay in state STATE_CLOSED")
+                LOG.trace("Stay in state STATE_CLOSED")
             }
             FSM.FsmResult(FSM.FsmResultCode.UNKNOWN_TRANSITION, this)
         }
