@@ -1,9 +1,9 @@
-package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.client
+package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.client
 
 import de.fhg.aisec.ids.idscp2.default_drivers.keystores.PreConfiguration
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSConstants
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSSessionVerificationHelper
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.NativeTlsConfiguration
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.TLSConstants
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.TLSSessionVerificationHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelEndpoint

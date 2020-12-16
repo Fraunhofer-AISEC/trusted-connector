@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.client
+package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.client
 
 /**
  * An interface for DataAvailableListeners, that will be notified when new data has been received

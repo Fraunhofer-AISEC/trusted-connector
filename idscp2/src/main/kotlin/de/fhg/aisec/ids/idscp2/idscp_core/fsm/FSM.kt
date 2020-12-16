@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.NoSuchElementException
+import kotlin.collections.ArrayList
 
 /**
  * The finite state machine FSM of the IDSCP2 protocol
@@ -486,21 +487,70 @@ class FSM(connection: Idscp2Connection, secureChannel: SecureChannel,
     /**
      * Calculate the RatProver mechanism
      *
+     * The remote peer decides about its verifier mechanism, so we have to prefer remoteExpected list
+     *
      * @return The String of the cipher or null if no match was found
      */
-    fun getRatProverMechanism(localSupportedProver: Array<String>, remoteExpectedVerifier: Array<String>): String {
-        //toDo implement logic
-        return localSupportedProver[0]
+    fun getRatProverMechanism(localSupportedProver: Array<String>, remoteExpectedVerifier: Array<String>): String? {
+        if (localSupportedProver.isEmpty()) {
+            LOG.warn("Got empty RAT localSupportedProver suite")
+            return null
+        }
+
+        if (remoteExpectedVerifier.isEmpty()) {
+            LOG.warn("Got empty RAT remoteExpectedVerifier suite")
+            return null
+        }
+
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Calculate RAT prover mechanism for given local provers: {} " +
+                    "and remote verifiers: {}", localSupportedProver.contentToString(),
+                    remoteExpectedVerifier.contentToString())
+        }
+
+        return matchRatMechanisms(remoteExpectedVerifier, localSupportedProver)
     }
 
     /**
      * Calculate the RatVerifier mechanism
      *
+     * We have to decide our verifier mechanism, so we have to prefer localExpected list
+     *
      * @return The String of the cipher or null if no match was found
      */
-    fun getRatVerifierMechanism(localExpectedVerifier: Array<String>, remoteSupportedProver: Array<String>): String {
-        //toDo implement logic
-        return localExpectedVerifier[0]
+    fun getRatVerifierMechanism(localExpectedVerifier: Array<String>, remoteSupportedProver: Array<String>): String? {
+        if (localExpectedVerifier.isEmpty()) {
+            LOG.warn("Got empty RAT localExpectedVerifier suite")
+            return null
+        }
+
+        if (remoteSupportedProver.isEmpty()) {
+            LOG.warn("Got empty RAT remoteSupportedProver suite")
+            return null
+        }
+
+        if (LOG.isTraceEnabled) {
+            LOG.trace("Calculate RAT verifier mechanism for given local verifiers: {} " +
+                    "and remote provers: {}", localExpectedVerifier.contentToString(),
+                    remoteSupportedProver.contentToString())
+        }
+
+        return matchRatMechanisms(localExpectedVerifier, remoteSupportedProver)
+    }
+
+    fun matchRatMechanisms(primary: Array<String>, secondary: Array<String>): String? {
+        for (p in primary) {
+            for (s in secondary) {
+                if (p == s) {
+                    if (LOG.isDebugEnabled) {
+                        LOG.debug("RAT mechanism is {}", p)
+                    }
+                    return p
+                }
+            }
+        }
+        // no match
+        return null
     }
 
     /**

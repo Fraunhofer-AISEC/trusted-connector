@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.client
+package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.client
 
 import java.io.DataInputStream
 import java.io.EOFException

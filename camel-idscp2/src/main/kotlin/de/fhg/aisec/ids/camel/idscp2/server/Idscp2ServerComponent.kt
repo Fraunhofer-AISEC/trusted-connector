@@ -23,7 +23,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProver
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dProverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifier
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.tpm2d.TPM2dVerifierConfig
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry

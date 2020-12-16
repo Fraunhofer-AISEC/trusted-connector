@@ -4,7 +4,7 @@ import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver
 import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.AttestationConfig
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver

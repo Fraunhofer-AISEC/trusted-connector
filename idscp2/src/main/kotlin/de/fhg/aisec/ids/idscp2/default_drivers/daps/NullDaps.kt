@@ -13,6 +13,4 @@ class NullDaps : DapsDriver {
     override fun verifyToken(dat: ByteArray, securityRequirements: Any?): Long {
         return 100 // DA is always valid for 100 seconds
     }
-
-
 }

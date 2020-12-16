@@ -100,6 +100,7 @@ object PreConfiguration {
             keyManagerFactory.init(keystore, keyPassword)
             myKeyManager = keyManagerFactory.keyManagers
 
+
             /* set up keyManager config */
             //allow only X509 Authentication
             if (myKeyManager.size == 1 && myKeyManager[0] is X509ExtendedKeyManager) {

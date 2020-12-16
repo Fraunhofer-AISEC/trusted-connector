@@ -1,4 +1,4 @@
-package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel
+package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3
 
 import java.nio.file.Path
 import java.nio.file.Paths

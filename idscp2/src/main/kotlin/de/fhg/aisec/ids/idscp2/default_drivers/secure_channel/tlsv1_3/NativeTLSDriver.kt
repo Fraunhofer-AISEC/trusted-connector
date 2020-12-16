@@ -1,11 +1,11 @@
-package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel
+package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3
 
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.client.TLSClient
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.server.TLSServer
 import de.fhg.aisec.ids.idscp2.idscp_core.api.configuration.Idscp2Configuration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.SecureChannelInitListener
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.ServerConnectionListener
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.client.TLSClient
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.server.TLSServer
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureChannelDriver
 import de.fhg.aisec.ids.idscp2.idscp_core.drivers.SecureServer
 import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception

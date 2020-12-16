@@ -1,12 +1,10 @@
 package de.fhg.aisec.ids.idscp2.example
 
 import de.fhg.aisec.ids.idscp2.idscp_core.api.Idscp2EndpointListener
-import de.fhg.aisec.ids.idscp2.default_drivers.daps.NullDaps
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatProverDummy
 import de.fhg.aisec.ids.idscp2.default_drivers.rat.dummy.RatVerifierDummy
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTLSDriver
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.NativeTlsConfiguration
-import de.fhg.aisec.ids.idscp2.idscp_core.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.NativeTLSDriver
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.NativeTlsConfiguration
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionAdapter
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionImpl
@@ -16,7 +14,6 @@ import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.idscp_core.rat_registry.RatVerifierDriverRegistry
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.CompletableFuture
 
 class CommandlineTunnelServer : Idscp2EndpointListener<Idscp2Connection> {
     fun init(configuration: Idscp2Configuration, nativeTlsConfiguration: NativeTlsConfiguration) {

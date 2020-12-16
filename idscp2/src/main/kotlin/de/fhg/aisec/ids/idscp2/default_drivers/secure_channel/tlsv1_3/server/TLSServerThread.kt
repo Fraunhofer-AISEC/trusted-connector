@@ -1,6 +1,6 @@
-package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.server
+package de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.server
 
-import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.TLSSessionVerificationHelper
+import de.fhg.aisec.ids.idscp2.default_drivers.secure_channel.tlsv1_3.TLSSessionVerificationHelper
 import de.fhg.aisec.ids.idscp2.idscp_core.FastLatch
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2Connection
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_server.SecureChannelInitListener
@@ -113,7 +113,7 @@ class TLSServerThread<CC : Idscp2Connection> internal constructor(
         safeStop()
     }
 
-    override fun onMessage(bytes: ByteArray) {
+    fun onMessage(bytes: ByteArray) {
         channelListenerPromise.thenAccept { listener: SecureChannelListener -> listener.onMessage(bytes) }
     }
 

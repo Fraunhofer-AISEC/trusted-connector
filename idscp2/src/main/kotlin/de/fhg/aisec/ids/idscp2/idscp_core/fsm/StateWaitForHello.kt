@@ -110,8 +110,6 @@ class StateWaitForHello(fsm: FSM,
                 LOG.trace("Received IDSCP_HELLO")
             }
 
-            // toDo compare certificate fingerprints
-            // toDo check for valid calculation of rat mechanisms, return NegotiationError
             if (LOG.isTraceEnabled) {
                 LOG.trace("Calculate Rat mechanisms")
             }
@@ -119,10 +117,27 @@ class StateWaitForHello(fsm: FSM,
                 attestationConfig.supportedAttestationSuite,
                 idscpHello.expectedRatSuiteList.toTypedArray()
             )
+
+            if (proverMechanism == null) {
+                LOG.warn("No match for RAT prover mechanism")
+                return@Transition FSM.FsmResult(
+                        FSM.FsmResultCode.RAT_NEGOTIATION_ERROR,
+                        fsm.getState(FsmState.STATE_CLOSED)
+                )
+            }
+
             val verifierMechanism = fsm.getRatVerifierMechanism(
                 attestationConfig.expectedAttestationSuite,
                 idscpHello.supportedRatSuiteList.toTypedArray()
             )
+
+            if (verifierMechanism == null) {
+                LOG.warn("No match for RAT verifier mechanism")
+                return@Transition FSM.FsmResult(
+                        FSM.FsmResultCode.RAT_NEGOTIATION_ERROR,
+                        fsm.getState(FsmState.STATE_CLOSED)
+                )
+            }
 
             // toDo securityRequirements
             if (LOG.isTraceEnabled) {

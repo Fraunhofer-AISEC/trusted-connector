@@ -14,11 +14,6 @@ interface SecureChannelEndpoint {
     fun close()
 
     /**
-     * API to delegate messages from an input listener to the secure channel endpoint
-     */
-    fun onMessage(bytes: ByteArray)
-
-    /**
      * Send data from the secure channel endpoint to the peer connector
      *
      * ATTENTION: The developer must ensure not to trigger the FSM by another event from the thread
