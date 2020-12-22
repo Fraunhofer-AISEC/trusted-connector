@@ -17,7 +17,6 @@
 	<!-- Processors for ArtifactMessages -->
 	<bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestCreationProcessor" />
 	<bean id="ArtifactRequestProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestProcessor" />
-	<bean id="ArtifactResponseProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactResponseProcessor"/>
 	<!-- Processors for ContractMessages -->
 	<bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestCreationProcessor"/>
 	<bean id="ContractRequestProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestProcessor"/>
@@ -155,7 +154,6 @@
 				<when>
 					<simple>${exchangeProperty.ids-type} == 'ArtifactResponseMessage'</simple>
 					<log message="### Handle ArtifactResponseMessage ###"/>
-					<process ref="ArtifactResponseProcessor"/>
 					<to uri="http://172.17.0.2:8080"/>
 					<log message="Response body\n\n${body}"/>
 					<!-- End of message exchange reached -->

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:camel="http://camel.apache.org/schema/blueprint" xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint https://camel.apache.org/schema/blueprint/camel-blueprint-3.3.0.xsd">
+
+    <camel:sslContextParameters id="serverSslContext" certAlias="1.0.1">
+        <camel:keyManagers keyPassword="password">
+            <camel:keyStore resource="etc/provider-keystore.p12" password="password"/>
+        </camel:keyManagers>
+        <camel:trustManagers>
+            <camel:keyStore resource="etc/truststore.p12" password="password"/>
+        </camel:trustManagers>
+    </camel:sslContextParameters>
+
+    <bean id="ArtifactRequestProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestProcessor" />
+    <bean id="ContractRequestProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestProcessor"/>
+    <bean id="ContractAgreementReceiverProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractAgreementReceiverProcessor"/>
+    <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.IdsMessageTypeExtractionProcessor" />
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+        <route id="server">
+            <from uri="idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext&amp;useIdsMessages=true"/>
+            <process ref="TypeExtractionProcessor"/>
+            <choice>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ContractRequestMessage'</simple>
+                    <log message="### Handle ContractRequestMessage ###"/>
+                    <setProperty name="containerUri">
+                        <constant>https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080</constant>
+                    </setProperty>
+                    <process ref="ContractRequestProcessor"/>
+                </when>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ContractAgreementMessage'</simple>
+                    <log message="### Handle ContractAgreementMessage ###"/>
+                    <!-- Only processing of incoming request must be performed, no reply -->
+                    <process ref="ContractAgreementReceiverProcessor"/>
+                    <removeHeader headerName="idscp2-header" />
+                    <setBody><simple>${null}</simple></setBody>
+                </when>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>
+                    <log message="### Handle ArtifactRequestMessage ###"/>
+                    <process ref="ArtifactRequestProcessor" />
+                </when>
+                <otherwise>
+                    <log message="### Server received (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
+                    <removeHeader headerName="idscp2-header" />
+                    <setBody><simple>${null}</simple></setBody>
+                </otherwise>
+            </choice>
+        </route>
+
+    </camelContext>
+
+</blueprint>

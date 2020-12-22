@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:camel="http://camel.apache.org/schema/blueprint" xsi:schemaLocation="
+ http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+ http://camel.apache.org/schema/blueprint https://camel.apache.org/schema/blueprint/camel-blueprint-3.3.0.xsd">
+
+    <camel:sslContextParameters id="clientSslContext" certAlias="1.0.1">
+        <camel:keyManagers keyPassword="password">
+            <camel:keyStore resource="etc/consumer-keystore.p12" password="password"/>
+        </camel:keyManagers>
+        <camel:trustManagers>
+            <camel:keyStore resource="etc/truststore.p12" password="password"/>
+        </camel:trustManagers>
+    </camel:sslContextParameters>
+
+    <bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestCreationProcessor" />
+    <bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestCreationProcessor"/>
+    <bean id="ContractResponseProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractResponseProcessor"/>
+    <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.IdsMessageTypeExtractionProcessor" />
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+        <route>
+            <from uri="timer://contractRequest?repeatCount=1" />
+            <setProperty name="artifactUri">
+                <constant>https://example.com/some_artifact</constant>
+            </setProperty>
+            <process ref="ContractRequestCreationProcessor" />
+            <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+            <process ref="TypeExtractionProcessor"/>
+            <choice>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ContractResponseMessage'</simple>
+                    <log message="### Handle ContractResponseMessage ###"/>
+                    <process ref="ContractResponseProcessor"/>
+                    <to uri="idscp2client://provider-core:29292?connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+                </when>
+                <otherwise>
+                    <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
+                    <removeHeader headerName="idscp2-header" />
+                    <setBody><simple>${null}</simple></setBody>
+                </otherwise>
+            </choice>
+        </route>
+
+        <route>
+            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000&amp;delay=10000"/>
+            <setProperty name="artifactUri">
+                <constant>https://example.com/some_artifact</constant>
+            </setProperty>
+            <process ref="ArtifactRequestCreationProcessor" />
+            <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+            <process ref="TypeExtractionProcessor"/>
+            <choice>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ArtifactResponseMessage'</simple>
+                    <log message="### Handle ArtifactResponseMessage ###"/>
+                    <to uri="http://echo-server:8080"/>
+                    <log message="Response body\n\n${body}"/>
+                </when>
+                <otherwise>
+                    <log loggingLevel="ERROR" message="Expected ArtifactResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
+                </otherwise>
+            </choice>
+        </route>
+
+    </camelContext>
+
+</blueprint>
