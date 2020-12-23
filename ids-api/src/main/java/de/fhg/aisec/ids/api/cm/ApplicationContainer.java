@@ -47,6 +47,7 @@ public class ApplicationContainer {
   private String signature;
   private String owner;
   private String image;
+  private String imageId;
   private List<String> imageDigests;
   private List<InetAddress> ipAddresses;
 
@@ -221,6 +222,14 @@ public class ApplicationContainer {
 
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public String getImageId() {
+    return imageId;
+  }
+
+  public void setImageId(String imageId) {
+    this.imageId = imageId;
   }
 
   public List<String> getImageDigests() {

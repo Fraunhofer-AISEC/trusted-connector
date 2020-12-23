@@ -25,8 +25,10 @@ class IdsMessageTypeExtractionProcessor : Processor {
                     is ArtifactResponseMessage -> ArtifactResponseMessage::class.simpleName
                     is ContractRequestMessage -> ContractRequestMessage::class.simpleName
                     is ContractResponseMessage -> ContractResponseMessage::class.simpleName
+                    is ContractOfferMessage -> ContractOfferMessage::class.simpleName
                     is ContractAgreementMessage -> ContractAgreementMessage::class.simpleName
                     is ContractRejectionMessage -> ContractRejectionMessage::class.simpleName
+                    is ResourceUpdateMessage -> ResourceUpdateMessage::class.simpleName
                     is RejectionMessage -> RejectionMessage::class.simpleName
                     else -> header::class.simpleName
                 }

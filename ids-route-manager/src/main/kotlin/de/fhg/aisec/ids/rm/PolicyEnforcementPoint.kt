@@ -144,6 +144,7 @@ class PolicyEnforcementPoint internal constructor(
                                     // Normally there is only one hash type, but there can be more
                                     // Currently requested type is only sha256 (e.g. sha3 or else may be added later)
                                     container.imageDigests.any { it.split(":").last() == hash }
+                                            || container.imageId.split(":").last() == hash
                                 }
                                 // Save all ip addresses of allowed containers in one list
                                 val allowedIPs = allowedContainers.flatMap { it.ipAddresses }.toSet()

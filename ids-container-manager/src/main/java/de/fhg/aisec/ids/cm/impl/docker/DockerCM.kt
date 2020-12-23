@@ -157,6 +157,7 @@ class DockerCM : ContainerManager {
         return getContainerSequence(!onlyRunning, withSize = true).map { c: Container ->
             try {
                 val info = c.inspect()
+                val imageInfo = getImage(c)?.inspect()
                 val state = info.getJsonObject("State")
                 val config = info.getJsonObject("Config")
                 val running = state.getBoolean("Running")
@@ -169,7 +170,8 @@ class DockerCM : ContainerManager {
                 val app = ApplicationContainer()
                 app.id = c.containerId()
                 app.image = config.getString("Image")
-                app.imageDigests = getImage(c)?.inspect()?.getJsonArray("RepoDigests")
+                app.imageId = imageInfo?.getString("Id")
+                app.imageDigests = imageInfo?.getJsonArray("RepoDigests")
                         ?.map { (it as JsonString).string } ?: emptyList()
                 app.ipAddresses = networks.values.mapNotNull {
                     val ip = (it as JsonObject).getString("IPAddress")

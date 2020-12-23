@@ -13,15 +13,15 @@ import java.net.URI
 /**
  * This Processor handles a ContractResponseMessage and creates a ContractAgreementMessage.
  */
-class ContractResponseProcessor : Processor {
+class ContractOfferProcessor : Processor {
 
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val contractResponseMessage = exchange.message.getHeader(
-                IDSCP2_HEADER, ContractResponseMessage::class.java)
+        val contractOfferMessage = exchange.message.getHeader(
+                IDSCP2_HEADER, ContractOfferMessage::class.java)
 
         val contractOfferReceived = SERIALIZER.deserialize(
                 exchange.message.getBody(String::class.java),
@@ -30,11 +30,11 @@ class ContractResponseProcessor : Processor {
         // if contract is denied send ContractRejectionMsg else send ContractAgreementMsg
         val contractOfferIsAccepted = true
         if(!contractOfferIsAccepted){
-            createContractRejectionMessage(exchange, contractResponseMessage.id)
+            createContractRejectionMessage(exchange, contractOfferMessage.id)
         } else {
             ContractAgreementMessageBuilder().run {
                 Utils.initMessageBuilder(this)
-                _correlationMessage_(contractResponseMessage.id)
+                _correlationMessage_(contractOfferMessage.id)
                 build().let {
                     if (LOG.isDebugEnabled) {
                         LOG.debug("Serialization Header: {}", SERIALIZER.serialize(it))
@@ -88,7 +88,7 @@ class ContractResponseProcessor : Processor {
     }
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(ContractResponseProcessor::class.java)
+        private val LOG = LoggerFactory.getLogger(ContractOfferProcessor::class.java)
     }
 
 }
