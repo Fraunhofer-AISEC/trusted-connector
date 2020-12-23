@@ -67,7 +67,7 @@ class PolicyEnforcementPoint internal constructor(
 
         // Save per exchange object the source node's content (<from: uri="idscp2server://0...>)
         // Same entry in Hashmap per CamelRoute, change of exchange properties do not create new entry
-        val sourceNode = lastDestinations[exchange] ?: {
+        val sourceNode: NamedNode = lastDestinations[exchange] ?: run {
             // If there is no previously saved node for this exchange, use the parent <route> to find the input
             // (first <from> statement) of the processed route.
             var routeNode = destinationNode.parent
@@ -125,6 +125,9 @@ class PolicyEnforcementPoint internal constructor(
                     if (sourceNode is FromDefinition) {
                         // If we found an entry node, then protect exchange's body
                         ucInterface.protectBody(exchange, ucContract.id)
+                        if (LOG.isDebugEnabled) {
+                            LOG.debug("UC: Protect Exchange body with UC contract ${ucContract.id}")
+                        }
                     // ... or output ("to:...") node as destination of this transition.
                     // Additionally check whether exchange's body was protected.
                     } else if (destinationNode is ToDefinition && ucInterface.isProtected(exchange)) {
