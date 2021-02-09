@@ -55,6 +55,7 @@ object UsageControlMaps {
 
     fun unprotectBody(exchange: Exchange) {
         exchange.message.body = protectedBodies[exchange]
+        protectedBodies -= exchange
     }
 
     fun addContractAgreement(contractAgreement: ContractAgreement) {
@@ -77,5 +78,8 @@ object UsageControlMaps {
 
     fun setExchangeConnection(exchange: Exchange, connection: AppLayerConnection) {
         exchangeConnectionMap[exchange] = connection
+        if (LOG.isDebugEnabled) {
+            LOG.debug("UC: Assigned exchange $exchange to connection $connection")
+        }
     }
 }

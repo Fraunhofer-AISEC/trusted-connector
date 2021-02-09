@@ -28,6 +28,7 @@ import de.fraunhofer.iais.eis.BinaryOperator
 import de.fraunhofer.iais.eis.Constraint
 import de.fraunhofer.iais.eis.LeftOperand
 import org.apache.camel.*
+import org.apache.camel.model.EndpointRequiredDefinition
 import org.apache.camel.model.FromDefinition
 import org.apache.camel.model.RouteDefinition
 import org.apache.camel.model.ToDefinition
@@ -85,8 +86,10 @@ class PolicyEnforcementPoint internal constructor(
             LOG.trace("{} -> {}", source, destination)
         }
 
+        val isIdscp2Endpoint = { ep: EndpointRequiredDefinition -> ep.endpointUri.startsWith("idscp2") }
         // Only take action for nodes of type <from> (= input) and <to> (= output)
-        if (sourceNode is FromDefinition || destinationNode is ToDefinition) {
+        if ((sourceNode is EndpointRequiredDefinition && isIdscp2Endpoint(sourceNode))
+            || destinationNode is ToDefinition) {
             val ucContract = try {
                 ucInterface.getExchangeContract(exchange)
             } catch (x: RuntimeException) {
@@ -121,8 +124,10 @@ class PolicyEnforcementPoint internal constructor(
                     } catch (ae: AssertionError) {
                         throw Exception("Invalid docker URI for UC, ${dockerUri.fragment} is not a valid port number!")
                     }
-                    // Check whether we deal with an entry node ("from:...") as source...
-                    if (sourceNode is FromDefinition) {
+                    // Check whether we deal with an entry node ("from:...") or a response of a To node ("to...")...
+                    if (sourceNode is FromDefinition
+                        || (sourceNode is ToDefinition && !ucInterface.isProtected(exchange)
+                                && isIdscp2Endpoint(sourceNode))) {
                         // If we found an entry node, then protect exchange's body
                         ucInterface.protectBody(exchange, ucContract.id)
                         if (LOG.isDebugEnabled) {

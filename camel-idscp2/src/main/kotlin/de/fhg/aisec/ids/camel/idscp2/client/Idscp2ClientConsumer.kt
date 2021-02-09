@@ -21,8 +21,8 @@ import de.fhg.aisec.ids.camel.idscp2.UsageControlMaps
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.GenericMessageListener
 import de.fhg.aisec.ids.idscp2.app_layer.listeners.IdsMessageListener
-import de.fraunhofer.iais.eis.Message
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
+import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Processor
 import org.apache.camel.support.DefaultConsumer
 import org.slf4j.LoggerFactory
@@ -79,7 +79,9 @@ class Idscp2ClientConsumer(private val endpoint: Idscp2ClientEndpoint, processor
 
     private fun onMessage(connection: AppLayerConnection, header: Any?, payload: ByteArray?) {
         val exchange = endpoint.createExchange()
-        UsageControlMaps.setExchangeConnection(exchange, connection)
+        if (endpoint.useIdsMessages) {
+            UsageControlMaps.setExchangeConnection(exchange, connection)
+        }
         try {
             createUoW(exchange)
             // Set relevant information

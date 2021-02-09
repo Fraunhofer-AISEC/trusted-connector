@@ -17,8 +17,8 @@
 package de.fhg.aisec.ids.camel.idscp2.client
 
 import de.fhg.aisec.ids.camel.idscp2.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.idscp2.UsageControlMaps
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
-import de.fhg.aisec.ids.idscp2.idscp_core.error.Idscp2Exception
 import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Exchange
 import org.apache.camel.support.DefaultProducer
@@ -59,6 +59,8 @@ class Idscp2ClientProducer(private val endpoint: Idscp2ClientEndpoint) : Default
                             }
                             reentrantLock.withLock {
                                 if (endpoint.useIdsMessages) {
+                                    // Response might require UC protection, so register exchange if not yet registered
+                                    UsageControlMaps.setExchangeConnection(exchange, connection)
                                     connection.addIdsMessageListener { _, responseHeader, responsePayload ->
                                         responseHandler(responseHeader, responsePayload)
                                     }
