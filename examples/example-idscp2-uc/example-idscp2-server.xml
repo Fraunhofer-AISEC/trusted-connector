@@ -47,7 +47,7 @@
                     <process ref="ArtifactRequestProcessor" />
                 </when>
                 <otherwise>
-                    <log message="### Server received (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
+                    <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
                     <removeHeader headerName="idscp2-header" />
                     <setBody><simple>${null}</simple></setBody>
                 </otherwise>
