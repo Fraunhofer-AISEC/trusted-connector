@@ -7,9 +7,9 @@ idscp2: "0.2.0"
 kotlin: "1.4.20"
 kotlinxCoroutines: "1.4.1"
 # basically, the first requirement, all other libraries depend on this version
-karaf: "4.2.9"
+karaf: "4.2.10"
 # Jetty version should fit bundled version in karaf
-jetty: "9.4.22.v20191022"
+jetty: "9.4.30.v20200611"
 
 # The used version of the infomodel from IESE
 infomodel: "4.0.0"
