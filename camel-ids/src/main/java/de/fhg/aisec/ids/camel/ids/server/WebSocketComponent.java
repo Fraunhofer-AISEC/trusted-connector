@@ -48,6 +48,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -478,7 +480,25 @@ public class WebSocketComponent extends DefaultComponent implements SSLContextPa
   }
 
   private static String getConnectorKey(WebSocketEndpoint endpoint) {
-    return endpoint.getProtocol() + ":" + endpoint.getHost() + ":" + endpoint.getPort();
+    String host = endpoint.getHost();
+    if (isLocalAddress(endpoint.getHost())) {
+      // replace host name with `local` to be sure, that we will have one ConnectorRef for hosts like localhost or
+      // 127.0.0.1 or 0.0.0.0
+      host = "local";
+    }
+    return endpoint.getProtocol() + ":" + host + ":" + endpoint.getPort();
+  }
+
+  private static boolean isLocalAddress(String host) {
+    InetAddress address;
+    InetAddress localHost;
+    try {
+      address = InetAddress.getByName(host);
+      localHost = InetAddress.getLocalHost();
+    } catch (UnknownHostException e) {
+      return false;
+    }
+    return address.isAnyLocalAddress() || address.isLoopbackAddress() || localHost.equals(address);
   }
 
   private void applyCrossOriginFiltering(
@@ -542,18 +562,20 @@ public class WebSocketComponent extends DefaultComponent implements SSLContextPa
   @Override
   public void doStop() throws Exception {
     super.doStop();
-    if (CONNECTORS.size() > 0) {
-      for (ConnectorRef connectorRef : CONNECTORS.values()) {
+    synchronized (CONNECTORS) {
+      var iterator = CONNECTORS.entrySet().iterator();
+      while (iterator.hasNext()) {
+        var connectorRef = iterator.next().getValue();
         if (connectorRef != null && connectorRef.getRefCount() == 0) {
           connectorRef.server.removeConnector(connectorRef.connector);
           connectorRef.connector.stop();
           connectorRef.server.stop();
           connectorRef.memoryStore.stop();
           connectorRef.servlet = null;
+          iterator.remove();
         }
       }
     }
-    CONNECTORS.clear();
 
     servlets.clear();
   }
