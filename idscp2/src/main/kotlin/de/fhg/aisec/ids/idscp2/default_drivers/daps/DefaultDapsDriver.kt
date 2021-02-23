@@ -146,7 +146,8 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
             return try {
                 //get http response from DAPS
                 if (LOG.isDebugEnabled) {
-                    LOG.debug("Acquire DAT from {}", dapsUrl)
+                    LOG.debug("Acquire DAT from {}/v2/token", dapsUrl)
+                    LOG.debug("JWT that serves as request token: {}", jwt.toString())
                 }
                 val response = client.newCall(request).execute()
 
