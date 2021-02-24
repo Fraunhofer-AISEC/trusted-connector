@@ -113,14 +113,18 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
             }
 
             //create signed JWT
+            val expiration = Date.from(Instant.now().plusSeconds(86400))
+            val issuedAt = Date.from(Instant.now())
+            val notBefore = Date.from(Instant.now())
+
             val jwt = Jwts.builder()
                     .setIssuer(connectorUUID)
                     .setSubject(connectorUUID)
                     .claim("@context", "https://w3id.org/idsa/contexts/context.jsonld")
                     .claim("@type", "ids:DatRequestToken")
-                    .setExpiration(Date.from(Instant.now().plusSeconds(86400)))
-                    .setIssuedAt(Date.from(Instant.now()))
-                    .setNotBefore(Date.from(Instant.now()))
+                    .setExpiration(expiration)
+                    .setIssuedAt(issuedAt)
+                    .setNotBefore(notBefore)
                     .setAudience(TARGET_AUDIENCE)
                     .signWith(privateKey, SignatureAlgorithm.RS256)
                     .compact()
@@ -146,13 +150,19 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
             return try {
                 //get http response from DAPS
                 if (LOG.isDebugEnabled) {
-                    LOG.debug("Acquire DAT from {}/v2/token", dapsUrl)
-                    LOG.debug("JWT that serves as request token: {}", jwt.toString())
+                    LOG.debug("Acquired DAT from {}/v2/token", dapsUrl)
                 }
                 val response = client.newCall(request).execute()
 
                 //check for valid response
                 if (!response.isSuccessful) {
+                    LOG.debug("Request token issued with parameters: Issuer: {}, Subject: {}, Expiration: {}, IssuedAt: {}, NotBefore: {}, Audience: {}",
+                            connectorUUID,
+                            connectorUUID,
+                            expiration,
+                            issuedAt,
+                            notBefore,
+                            TARGET_AUDIENCE)
                     throw DatException("Received non-200 http response: " + response.code())
                 }
                 val json = JSONObject(response.body()?.string()
