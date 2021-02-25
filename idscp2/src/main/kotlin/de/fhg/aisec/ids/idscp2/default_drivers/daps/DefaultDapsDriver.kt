@@ -149,14 +149,12 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
                     .build()
             return try {
                 //get http response from DAPS
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("Acquired DAT from {}/v2/token", dapsUrl)
-                }
                 val response = client.newCall(request).execute()
 
                 //check for valid response
                 if (!response.isSuccessful) {
-                    LOG.debug("Request token issued with parameters: Issuer: {}, Subject: {}, Expiration: {}, IssuedAt: {}, NotBefore: {}, Audience: {}",
+                    LOG.error("Failed to request token issued with parameters: Issuer: {}, Subject: {}, " +
+                            "Expiration: {}, IssuedAt: {}, NotBefore: {}, Audience: {}",
                             connectorUUID,
                             connectorUUID,
                             expiration,
@@ -164,6 +162,9 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
                             notBefore,
                             TARGET_AUDIENCE)
                     throw DatException("Received non-200 http response: " + response.code())
+                }
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("Acquired DAT from {}/v2/token", dapsUrl)
                 }
                 val json = JSONObject(response.body()?.string()
                     ?: throw DatException("Received empty DAPS response"))
