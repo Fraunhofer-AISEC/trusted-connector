@@ -129,7 +129,7 @@ class MultiPartOutputProcessor : Processor {
                             InputStreamBody(
                                     payload,
                                     ContentType.create(contentTypeString.toString()
-                                            .split(";").toTypedArray()[0])))
+                                            .split(";").first())))
                 }
             } else {
                 val payload = it.getBody(String::class.java)
