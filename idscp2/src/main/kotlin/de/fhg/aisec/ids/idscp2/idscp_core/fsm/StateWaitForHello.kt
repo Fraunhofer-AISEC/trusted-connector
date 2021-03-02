@@ -139,7 +139,6 @@ class StateWaitForHello(fsm: FSM,
                 )
             }
 
-            // toDo securityRequirements
             if (LOG.isTraceEnabled) {
                 LOG.trace("Verify received DAT")
             }
@@ -157,7 +156,7 @@ class StateWaitForHello(fsm: FSM,
             }
 
             try {
-                if (0 > dapsDriver.verifyToken(idscpHello.dynamicAttributeToken.token.toByteArray(), null)
+                if (0 > dapsDriver.verifyToken(idscpHello.dynamicAttributeToken.token.toByteArray())
                         .also { datValidityPeriod = it }
                 ) {
                     LOG.warn("No valid remote DAT is available. Send IDSCP_CLOSE")

@@ -23,6 +23,7 @@ class DefaultDapsDriverConfig {
         private set
     var trustStorePassword: CharArray = "password".toCharArray()
         private set
+    var securityRequirements: SecurityRequirements? = null
 
     class Builder {
         private val config = DefaultDapsDriverConfig()
@@ -58,6 +59,11 @@ class DefaultDapsDriverConfig {
 
         fun setTrustStorePassword(password: CharArray): Builder {
             config.trustStorePassword = password
+            return this
+        }
+
+        fun setSecurityRequirements(securityRequirements: SecurityRequirements): Builder {
+            config.securityRequirements = securityRequirements
             return this
         }
 

@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.tokenmanager;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
+import de.fhg.aisec.ids.api.tokenm.DatException;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver;
 import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig;
@@ -91,12 +92,12 @@ public class TokenManagerService implements TokenManager {
       String dynamicAttributeToken,
       ConnectionSettings connectionSettings) {
     if (connectionSettings == null) {
-      this.driver.verifyToken(dynamicAttributeToken.getBytes(StandardCharsets.UTF_8), null);
+      this.driver.verifyTokenSecurityAttributes(dynamicAttributeToken.getBytes(StandardCharsets.UTF_8), null);
     } else {
       SecurityRequirements securityRequirements = new SecurityRequirements.Builder()
               .setRequiredSecurityLevel(connectionSettings.getRequiredSecurityProfile())
               .build();
-      this.driver.verifyToken(dynamicAttributeToken.getBytes(StandardCharsets.UTF_8), securityRequirements);
+      this.driver.verifyTokenSecurityAttributes(dynamicAttributeToken.getBytes(StandardCharsets.UTF_8), securityRequirements);
     }
   }
 

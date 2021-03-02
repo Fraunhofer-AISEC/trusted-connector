@@ -97,12 +97,11 @@ class StateWaitForDatAndRatVerifier(fsm: FSM,
             }
 
             //check if Dat is available and verify dat
-            //toDo security requirements
             val dat = event.idscpMessage.idscpDat.token.toByteArray()
             var datValidityPeriod: Long
 
             try {
-                if (0 > dapsDriver.verifyToken(dat, null).also { datValidityPeriod = it }) {
+                if (0 > dapsDriver.verifyToken(dat).also { datValidityPeriod = it }) {
                     LOG.warn("No valid remote DAT is available. Send IDSCP_CLOSE")
                     fsm.sendFromFSM(
                         Idscp2MessageHelper.createIdscpCloseMessage(

@@ -44,6 +44,7 @@ import javax.net.ssl.X509ExtendedTrustManager
  */
 class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
     private var sslSocketFactory: SSLSocketFactory
+    private var securityRequirements: SecurityRequirements? = config.securityRequirements
     private val trustManager: X509ExtendedTrustManager
     private val privateKey: Key = PreConfiguration.getKey(
                     config.keyStorePath,
@@ -79,6 +80,8 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
 
     /**
      * Receive the signed and valid dynamic attribute token from the DAPS
+     *
+     * @throws DatException
      */
     override val token: ByteArray
         get() {
@@ -178,7 +181,7 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
                 } else {
                     throw DatException("DAPS response does not contain \"access_token\" or \"error\" field.")
                 }
-                verifyToken(token.toByteArray(StandardCharsets.UTF_8), null)
+                verifyTokenSecurityAttributes(token.toByteArray(StandardCharsets.UTF_8), null)
                 token.toByteArray(StandardCharsets.UTF_8)
             } catch (e: IOException) {
                 throw DatException("Error whilst retrieving DAT", e)
@@ -186,15 +189,34 @@ class DefaultDapsDriver(config: DefaultDapsDriverConfig) : DapsDriver {
         }
 
     /**
-     * Verify a given dynamic attribute token
+     * Update the security requirements of the DAPS (This might be caused by changes in the connector configuration)
+     */
+    fun updateSecurityRequirements(securityRequirements: SecurityRequirements?) {
+        this.securityRequirements = securityRequirements
+    }
+
+    /**
+     * Public verifyToken API, used from the IDSCPv2 protocol. Security requirements are used from the DAPS config
+     *
+     * @return The number of seconds this DAT is valid
+     * @throws DatException
+     */
+    override fun verifyToken(dat: ByteArray): Long {
+        return verifyTokenSecurityAttributes(dat, securityRequirements)
+    }
+
+    /**
+     * Verify a given dynamic attribute token, given the security attributes as parameter. This is used for IDSCPv1
+     * legacy implementation and for internal purpose
      *
      * If the security requirements is not null and an instance of the SecurityRequirements class
      * the method will also check the provided security attributes of the connector that belongs
      * to the provided DAT
      *
      * @return The number of seconds this DAT is valid
+     * @throws DatException
      */
-    override fun verifyToken(dat: ByteArray, securityRequirements: Any?): Long {
+    fun verifyTokenSecurityAttributes(dat: ByteArray, securityRequirements: Any?): Long {
         if (LOG.isDebugEnabled) {
             LOG.debug("Verifying dynamic attribute token...")
         }

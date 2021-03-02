@@ -14,6 +14,15 @@ public class DapsDriverTest {
 
     @Test
     public void testValidToken() {
+
+        SecurityRequirements requirements = new SecurityRequirements.Builder()
+                .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
+                .build();
+
+        SecurityRequirements requirements2 = new SecurityRequirements.Builder()
+                .setRequiredSecurityLevel("idsc:BASE_CONNECTOR_SECURITY_PROFILE")
+                .build();
+
         DefaultDapsDriverConfig config =
                 new DefaultDapsDriverConfig.Builder()
                         .setKeyStorePath(Paths.get(DapsDriverTest.class.getClassLoader().
@@ -27,20 +36,15 @@ public class DapsDriverTest {
                         .setDapsUrl("https://daps.aisec.fraunhofer.de")
                         .build();
 
-        DapsDriver dapsDriver = new DefaultDapsDriver(config);
+        DefaultDapsDriver dapsDriver = new DefaultDapsDriver(config);
         String token = new String(dapsDriver.getToken());
         assertNotEquals(token, "INVALID_TOKEN");
 
-        SecurityRequirements requirements = new SecurityRequirements.Builder()
-                .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
-                .build();
 
-        SecurityRequirements requirements2 = new SecurityRequirements.Builder()
-                .setRequiredSecurityLevel("idsc:BASE_CONNECTOR_SECURITY_PROFILE")
-                .build();
+        assertTrue(dapsDriver.verifyTokenSecurityAttributes(token.getBytes(), requirements) >= 0);
 
-        assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) >= 0);
-        assertFalse(dapsDriver.verifyToken(token.getBytes(), requirements2) >= 0);
+
+        assertFalse(dapsDriver.verifyTokenSecurityAttributes(token.getBytes(), requirements2) >= 0);
     }
 
     /****
@@ -159,6 +163,11 @@ public class DapsDriverTest {
 
     @Test
     public void testInvalidAuditLogging() {
+
+        SecurityRequirements requirements = new SecurityRequirements.Builder()
+                .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")
+                .build();
+
         DefaultDapsDriverConfig config =
                 new DefaultDapsDriverConfig.Builder()
                         .setKeyStorePath(Paths.get(DapsDriverTest.class.getClassLoader().
@@ -170,20 +179,22 @@ public class DapsDriverTest {
                         .setKeyAlias("1")
                         .setKeyPassword("password".toCharArray())
                         .setDapsUrl("https://daps.aisec.fraunhofer.de")
+                        .setSecurityRequirements(requirements)
                         .build();
 
         DapsDriver dapsDriver = new DefaultDapsDriver(config);
         String token = new String(dapsDriver.getToken());
         assertNotEquals(token, "INVALID_TOKEN");
 
-        SecurityRequirements requirements = new SecurityRequirements.Builder()
-                .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE")
-                .build();
-
-        assertTrue(dapsDriver.verifyToken(token.getBytes(), requirements) < 0);
+        assertTrue(dapsDriver.verifyToken(token.getBytes()) < 0);
     }
 
     public static void main(String[] args) {
+
+        SecurityRequirements requirements = new SecurityRequirements.Builder()
+                .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
+                .build();
+
         //get token
         DefaultDapsDriverConfig config =
                 new DefaultDapsDriverConfig.Builder()
@@ -196,18 +207,15 @@ public class DapsDriverTest {
                         .setKeyAlias("1")
                         .setKeyPassword("password".toCharArray())
                         .setDapsUrl("https://daps.aisec.fraunhofer.de")
+                        .setSecurityRequirements(requirements)
                         .build();
 
         DapsDriver dapsDriver = new DefaultDapsDriver(config);
         String token = new String(dapsDriver.getToken());
         System.out.println(token);
 
-        SecurityRequirements requirements = new SecurityRequirements.Builder()
-                .setRequiredSecurityLevel("idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE")
-                .build();
-
         long ret;
-        if (0 > (ret = dapsDriver.verifyToken(token.getBytes(), requirements))) {
+        if (0 > (ret = dapsDriver.verifyToken(token.getBytes()))) {
             System.out.println("failed");
         } else {
             System.out.println("success: " + ret);

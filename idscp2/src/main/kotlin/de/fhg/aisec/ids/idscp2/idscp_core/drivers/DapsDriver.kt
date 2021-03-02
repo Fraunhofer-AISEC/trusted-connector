@@ -14,9 +14,7 @@ interface DapsDriver {
     /*
      * Verify a Daps token
      *
-     * An optional security requirements object can be provided to validate the DAT body
-     *
      * Return the number of seconds, the DAT is valid
      */
-    fun verifyToken(dat: ByteArray, securityRequirements: Any?): Long
+    fun verifyToken(dat: ByteArray): Long
 }
