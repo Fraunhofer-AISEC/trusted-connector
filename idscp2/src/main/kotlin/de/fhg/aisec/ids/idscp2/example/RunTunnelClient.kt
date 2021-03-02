@@ -30,10 +30,11 @@ object RunTunnelClient {
                 .build()
 
         val nativeTlsConfiguration = NativeTlsConfiguration.Builder()
-                .setKeyStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/aisecconnector2-keystore.p12")).path))
-                .setTrustStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/client-truststore_new.p12")).path))
+                .setKeyStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/consumer-keystore.p12")).path))
+                .setTrustStorePath(Paths.get(Objects.requireNonNull(RunTLSClient::class.java.classLoader.getResource("ssl/truststore.p12")).path))
                 .setCertificateAlias("1.0.1")
                 .setServerPort(12345)
+                .setHost("provider-core")
                 .build()
 
         val initiator = CommandlineTunnelClient()
