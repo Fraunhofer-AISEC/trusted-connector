@@ -22,7 +22,6 @@ package de.fhg.aisec.ids.tokenmanager;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
-import de.fhg.aisec.ids.api.tokenm.DatException;
 import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriver;
 import de.fhg.aisec.ids.idscp2.default_drivers.daps.DefaultDapsDriverConfig;
@@ -100,38 +99,6 @@ public class TokenManagerService implements TokenManager {
       this.driver.verifyTokenSecurityAttributes(dynamicAttributeToken.getBytes(StandardCharsets.UTF_8), securityRequirements);
     }
   }
-
-//  /**
-//   * Convert byte to hexadecimal chars without any dependencies to libraries.
-//   * @param num Byte to get hexadecimal representation for
-//   * @return The hexadecimal representation of the given byte value
-//   */
-//  private char[] byteToHex(byte num) {
-//    char[] hexDigits = new char[2];
-//    hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
-//    hexDigits[1] = Character.forDigit((num & 0xF), 16);
-//    return hexDigits;
-//  }
-//
-//  /**
-//   * Lookup table for encodeHexString()
-//   */
-//  private final HashMap<Byte, char[]> hexLookup = new HashMap<>();
-//  /**
-//   * Encode a byte array to a hex string
-//   * @param byteArray Byte array to get hexadecimal representation for
-//   * @return Hexadecimal representation of the given bytes
-//   */
-//  private String encodeHexString(byte[] byteArray, @SuppressWarnings("SameParameterValue") boolean beautify) {
-//    StringBuilder sb = new StringBuilder();
-//    for (byte b : byteArray) {
-//      sb.append(hexLookup.computeIfAbsent(b, this::byteToHex));
-//      if (beautify) {
-//        sb.append(':');
-//      }
-//    }
-//    return sb.toString();
-//  }
 
   @Activate
   public void run() {

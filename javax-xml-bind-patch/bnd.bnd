@@ -1,3 +1,0 @@
-Bundle-Name: IDS :: javax.xml.bind patch for Bundles on JDK 11
-Import-Package: *
-Export-Package: javax.xml.bind*

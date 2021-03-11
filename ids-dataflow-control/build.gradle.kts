@@ -6,9 +6,7 @@ dependencies {
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
-    providedByBundle("com.google.guava", "guava", libraryVersions["guava"]) {
-        isTransitive = false  // Avoid pulling in of checker framework and other annotation stuff
-    }
+    providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
 
 //    providedByBundle("it.unibo.alice.tuprolog", "tuprolog", libraryVersions["tuprolog"])
     implementation("it.unibo.alice.tuprolog", "2p-core", libraryVersions["2p"])

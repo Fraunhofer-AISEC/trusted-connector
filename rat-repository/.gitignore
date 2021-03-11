@@ -1,5 +1,0 @@
-target/
-/bin/
-*.jar
-configuration.db
-/generated/

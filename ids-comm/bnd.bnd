@@ -1,7 +1,0 @@
-Bundle-Name: IDS :: IDS Communication Protocol
-Bundle-Description: IDS Communication Protocol
-Export-Package: \
-	de.fhg.aisec.ids.comm*
-Import-Package: \
-  !org.checkerframework.checker*,\
-	*

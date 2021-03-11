@@ -442,8 +442,6 @@ class RouteManagerService : RouteManager {
     override fun addRoute(routeRepresentation: String) {
         LOG.debug("Adding new route: $routeRepresentation")
         val existingRoutes = this.routes
-        // @todo: Need to verify that this or the call to CamelContext.start() below actually registers
-        // the route properly
         val cCtx: CamelContext = DefaultCamelContext()
         try {
             ByteArrayInputStream(routeRepresentation.toByteArray(StandardCharsets.UTF_8)).use { bis ->

@@ -1,4 +1,0 @@
-dependencies {
-    influxFeature group: 'org.influxdb', name: 'influxdb-java', version: libraryVersions.influxDB
-    influxFeature group: 'org.apache.camel', name: 'camel-influxdb', version: libraryVersions.camel
-}

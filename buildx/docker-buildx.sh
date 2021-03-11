@@ -35,7 +35,7 @@ eval set -- "$PARSED"
 EXAMPLE_TAG_ARG="develop"
 DOCKER_BUILD_TAG_ARG="develop"
 BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot-focal"
-TARGETS="core tpmsim ttpsim example-idscp-consumer-app example-idscp-provider-app"
+TARGETS="core"
 FILES=""
 BUILD_CONTAINER=0
 
@@ -47,6 +47,10 @@ while true; do
     ;;
   -t | --example-tag)
     EXAMPLE_TAG_ARG="$2"
+    shift 2
+    ;;
+  --targets)
+    TARGETS="$2"
     shift 2
     ;;
   -b | --base-image)

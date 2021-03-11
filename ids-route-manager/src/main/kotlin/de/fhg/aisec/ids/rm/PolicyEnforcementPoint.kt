@@ -32,15 +32,15 @@ import org.apache.camel.model.EndpointRequiredDefinition
 import org.apache.camel.model.FromDefinition
 import org.apache.camel.model.RouteDefinition
 import org.apache.camel.model.ToDefinition
+import org.apache.camel.support.processor.DelegateAsyncProcessor
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.URI
 import java.util.*
-import java.util.concurrent.CompletableFuture
 
 class PolicyEnforcementPoint internal constructor(
     private val destinationNode: NamedNode,
-    private val target: Processor) : AsyncProcessor {
+    target: Processor) : DelegateAsyncProcessor(target) {
     /**
      * The method performs flow control and calls Exchange.setException() when necessary
      * It iterates through nodes in CamelRoute (<from>, <log>, <choice>, <process>, <to>, ...)
@@ -210,32 +210,11 @@ class PolicyEnforcementPoint internal constructor(
     }
 
     @Throws(Exception::class)
-    override fun process(exchange: Exchange) {
+    override fun process(exchange: Exchange, asyncCallback: AsyncCallback): Boolean {
         if (processFlowControl(exchange)) {
-            target.process(exchange)
-        }
-    }
-
-    override fun process(exchange: Exchange, callback: AsyncCallback): Boolean {
-        if (processFlowControl(exchange)) {
-            try {
-                target.process(exchange)
-                callback.done(true)
-                return true
-            } catch (e: Exception) {
-                LOG.error(e.message, e)
-            }
-        }
-        callback.done(false)
-        return false
-    }
-
-    override fun processAsync(exchange: Exchange): CompletableFuture<Exchange> {
-        return try {
-            target.process(exchange)
-            CompletableFuture.completedFuture(exchange)
-        } catch (x: Exception) {
-            CompletableFuture.failedFuture(x)
+            return super.process(exchange, asyncCallback)
+        } else {
+            throw Exception("Exchange blocked by data flow policy")
         }
     }
 

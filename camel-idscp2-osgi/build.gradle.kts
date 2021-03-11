@@ -29,9 +29,13 @@ configure<IdeaModel> {
 
 dependencies {
     providedByBundle(project(":ids-api")) { isTransitive = false }
-    providedByBundle(project(":idscp2-app-layer")) { isTransitive = false }
 
-    implementation(project(":camel-idscp2")) { isTransitive = false }
+    providedByBundle("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"]) {
+        exclude("de.fraunhofer.iais.eis.ids.infomodel", "java")
+        exclude("de.fraunhofer.iais.eis.ids", "infomodel-serializer")
+        exclude("org.jetbrains.kotlin", "*")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+    }
 
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodel"])
@@ -42,9 +46,7 @@ dependencies {
 
     providedByFeature("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 
-    providedByBundle("com.google.guava", "guava", libraryVersions["guava"]) {
-        isTransitive = false  // Avoid pulling in of checker framework and other annotation stuff
-    }
+    providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.apache.camel", "camel-test", libraryVersions["camel"])

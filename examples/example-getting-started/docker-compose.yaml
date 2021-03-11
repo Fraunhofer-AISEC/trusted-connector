@@ -1,22 +1,6 @@
 version: '3'
 services:
 
-  # TPM simulator
-  ids-tpmsim:
-    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
-    volumes:
-      - ../tpmsim/tpmsim_data.tar:/tpmsim_data.tar
-    networks:
-      - example-internal
-
-  # Trusted third party (RAT repository) simulator
-  ids-ttpsim:
-    image: fraunhoferaisec/ttpsim:${EXAMPLE_TAG:-develop}
-    networks:
-      example-internal:
-        aliases:
-          - repository.aisec.fraunhofer.de
-
   # The core platform, mounts docker control socket into the image
   ids-core:
     image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}

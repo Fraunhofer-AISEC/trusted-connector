@@ -62,7 +62,6 @@ dependencies {
     providedByFeature group: 'javax.servlet', name: 'javax.servlet-api', version: libraryVersions.javaxServlet
 
     providedByFeature group: 'org.apache.camel', name: 'camel-core', version: libraryVersions.camel
-    providedByFeature group: 'org.apache.camel', name: 'camel-core-osgi', version: libraryVersions.camel
 
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs', version: libraryVersions.cxf
     providedByFeature group: 'org.apache.cxf', name: 'cxf-rt-rs-extension-providers', version: libraryVersions.cxf

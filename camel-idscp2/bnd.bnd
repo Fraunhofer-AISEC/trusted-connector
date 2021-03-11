@@ -1,4 +1,0 @@
-Bundle-Name: IDS :: Camel IDSCP2 Support
-Bundle-Description: Camel IDSCP2 protocol support
-Export-Package: de.fhg.aisec.ids.camel.idscp2*
-Import-Package: *

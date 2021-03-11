@@ -7,9 +7,9 @@ ext {
     bundleConfigurations = []
 }
 
-rootProject.configurations.findAll { it.name.endsWith('Bundle') }.each { project.ext.bundleConfigurations.add(it.name) }
+configurations.findAll { it.name.endsWith('Bundle') }.each { project.ext.bundleConfigurations.add(it.name) }
 
-rootProject.subprojects.findAll { it.name.matches("(^camel-(?!idscp2\$).*|ids-.*|.*-(patch|wrapper)\$)") }.each { p ->
+rootProject.subprojects.findAll { it.name.matches("(^camel-.*|ids-.*|.*-(patch|wrapper)\$)") }.each { p ->
     Boolean included = false
     // Include each sub-project declaring dependencies with a configuration ending on "Bundle",
     // using exactly that configuration for the dependency itself and selection of additional recursive dependencies.
@@ -34,6 +34,7 @@ dependencies {
     }
     zmqFeature group: 'org.apache-extras.camel-extra', name: 'camel-zeromq', version: libraryVersions.camelZeroMQ
     providedByBundle group: 'org.jetbrains.kotlin', name: 'kotlin-osgi-bundle', version: libraryVersions.kotlin
+    providedByBundle("jakarta.activation:jakarta.activation-api:1.2.2")
 }
 
 karaf {

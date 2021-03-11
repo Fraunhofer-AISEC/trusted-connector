@@ -20,7 +20,6 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import de.fhg.aisec.ids.api.Result;
-import de.fhg.aisec.ids.api.internal.ComponentNotAvailableException;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.*;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
@@ -29,15 +28,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Authorization;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * REST API interface for "data pipes" in the connector.
@@ -92,7 +92,7 @@ public class RouteApi {
   public RouteObject get(@ApiParam(value = "Route ID") @PathParam("id") @NonNull String id) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     RouteObject oRoute = rm.getRoute(id);
     if (oRoute == null) {
@@ -109,7 +109,7 @@ public class RouteApi {
   public String getAsString(@ApiParam(value = "Route ID") @PathParam("id") String id) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     String routeAsString = rm.getRouteAsString(id);
     if (routeAsString == null) {
@@ -128,7 +128,7 @@ public class RouteApi {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
       if (rm == null) {
-        throw new ComponentNotAvailableException();
+        throw new InternalServerErrorException();
       }
       rm.startRoute(id);
       return new Result();
@@ -148,7 +148,7 @@ public class RouteApi {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
       if (rm == null) {
-        throw new ComponentNotAvailableException();
+        throw new InternalServerErrorException();
       }
       rm.saveRoute(id, routeDefinition);
       return new Result();
@@ -168,7 +168,7 @@ public class RouteApi {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
       if (rm == null) {
-        throw new ComponentNotAvailableException();
+        throw new InternalServerErrorException();
       }
       rm.addRoute(routeDefinition);
       return new Result();
@@ -191,7 +191,7 @@ public class RouteApi {
     try {
       RouteManager rm = WebConsoleComponent.getRouteManager();
       if (rm == null) {
-        throw new ComponentNotAvailableException();
+        throw new InternalServerErrorException();
       }
       rm.stopRoute(id);
       return new Result();
@@ -209,7 +209,7 @@ public class RouteApi {
   public RouteMetrics getMetrics(@PathParam("id") String routeId) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     return rm.getRouteMetrics().get(routeId);
   }
@@ -225,7 +225,7 @@ public class RouteApi {
   public RouteMetrics getMetrics() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     return aggregateMetrics(rm.getRouteMetrics().values());
   }
@@ -273,7 +273,7 @@ public class RouteApi {
   public List<RouteComponent> getComponents() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     return rm.listComponents();
   }
@@ -285,7 +285,7 @@ public class RouteApi {
   public Map<String, String> listEndpoints() {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     return rm.listEndpoints();
   }
@@ -297,9 +297,12 @@ public class RouteApi {
   public ValidationInfo validate(@PathParam("routeId") String routeId) {
     PAP pap = WebConsoleComponent.getPolicyAdministrationPoint();
     if (pap == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     RouteVerificationProof rvp = pap.verifyRoute(routeId);
+    if (rvp == null) {
+      throw new InternalServerErrorException();
+    }
     ValidationInfo vi = new ValidationInfo();
     vi.valid = rvp.isValid();
     if (!rvp.isValid()) {
@@ -315,7 +318,7 @@ public class RouteApi {
   public String getRouteProlog(@PathParam("routeId") @NonNull String routeId) {
     RouteManager rm = WebConsoleComponent.getRouteManager();
     if (rm == null) {
-      throw new ComponentNotAvailableException();
+      throw new InternalServerErrorException();
     }
     return rm.getRouteAsProlog(routeId);
   }

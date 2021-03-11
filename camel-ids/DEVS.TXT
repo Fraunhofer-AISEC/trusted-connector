@@ -1,1 +1,0 @@
-Based on (forked from) camel-ahc-ws/camel-websocket 6cfdf4214288854d2f91a0fbf407ee1df99a8a01 https://github.com/apache/camel/commit/6cfdf4214288854d2f91a0fbf407ee1df99a8a01

@@ -5,7 +5,6 @@ dependencies {
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-    implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodel"])
 
     providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
     providedByFeature("org.apache.camel", "camel-management", libraryVersions["camel"])
@@ -13,9 +12,7 @@ dependencies {
     osgiCore("org.apache.felix", "org.apache.felix.framework", libraryVersions["felixFramework"])
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
 
-    providedByBundle("com.google.guava", "guava", libraryVersions["guava"]) {
-        isTransitive = false  // Avoid pulling in of checker framework and other annotation stuff
-    }
+    providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])

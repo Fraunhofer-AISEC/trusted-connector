@@ -1,1 +1,0 @@
-Default SecureChannel Driver Implementations for the IDSCPv2

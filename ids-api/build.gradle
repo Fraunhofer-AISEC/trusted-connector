@@ -1,5 +1,3 @@
-version = libraryVersions.api
-
 apply plugin: 'com.google.protobuf'
 apply plugin: 'idea'
 

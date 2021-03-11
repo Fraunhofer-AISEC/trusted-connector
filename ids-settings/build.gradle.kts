@@ -1,13 +1,11 @@
-dependencies {
-    @Suppress("UNCHECKED_CAST") val libraryVersions =
-            rootProject.ext.get("libraryVersions") as Map<String, String>
+@Suppress("UNCHECKED_CAST")
+val libraryVersions = rootProject.ext.get("libraryVersions") as Map<String, String>
 
+dependencies {
     infomodelBundle(project(":ids-api")) { isTransitive = false }
 
     // Required by MapDB below
-    providedByBundle("com.google.guava", "guava", libraryVersions["guava"]) {
-        isTransitive = false  // Avoid pulling in of checker framework and other annotation stuff
-    }
+    providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
     implementation ("org.mapdb", "mapdb", libraryVersions["mapdb"]) {
         // Exclude guava dependency, which is provided by bundle
         exclude("com.google.guava", "guava")

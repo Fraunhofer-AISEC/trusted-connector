@@ -25,29 +25,8 @@ services:
       args:
         JDK_BASE_IMAGE: fraunhoferaisec/jdk-base:${DOCKER_BUILD_TAG:-develop}
 
-  # TPM simulator
-  tpmsim:
-    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../examples/tpmsim'
-
-  # Trusted third party (RAT repository) simulator
-  ttpsim:
-    image: fraunhoferaisec/ttpsim:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../rat-repository'
-      args:
-        JDK_BASE_IMAGE: fraunhoferaisec/jdk-base:${DOCKER_BUILD_TAG:-develop}
-        VERSION: ${PROJECT_VERSION}
-
-  # IDSCP example data app (REST consumer, displays web page)
-  example-idscp-consumer-app:
-    image: fraunhoferaisec/example-server:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../examples/example-idscp/example-server'
-
-  # IDSCP example data provider
-  example-idscp-provider-app:
-    image: fraunhoferaisec/example-client:${EXAMPLE_TAG:-develop}
-    build:
-      context: '../examples/example-idscp/example-client'
+#  # TPM simulator
+#  tpmsim:
+#    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
+#    build:
+#      context: '../examples/tpmsim'
