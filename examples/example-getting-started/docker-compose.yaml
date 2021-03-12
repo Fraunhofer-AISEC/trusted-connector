@@ -13,7 +13,7 @@ services:
       - ../cert-stores/consumer-keystore.p12:/root/etc/consumer-keystore.p12
       - ../cert-stores/provider-keystore.p12:/root/etc/provider-keystore.p12
       - ../cert-stores/truststore.p12:/root/etc/truststore.p12
-      - ./example-idscp-localloop.xml:/root/deploy/example-idscp-localloop.xml
+      - ./example-idscp2-localloop.xml:/root/deploy/example-idscp2-localloop.xml
     environment:
       - TPM_HOST=ids-tpmsim
     ports:

@@ -4,8 +4,6 @@ val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, St
 dependencies {
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
-    implementation("de.fhg.aisec.ids", "idscp2", libraryVersions["idscp2"])
-
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])

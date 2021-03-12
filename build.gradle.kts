@@ -16,14 +16,11 @@ plugins {
     java
     maven
     id("com.google.protobuf") version "0.8.15"
-    id("com.moowork.node") version "1.3.1"
     // WARNING: Versions 5.2.x onwards export java.* packages, which is not allowed in Felix OSGi Resolver!
     // See http://karaf.922171.n3.nabble.com/Manifest-import-problems-td4059042.html
     id("biz.aQute.bnd") version "5.1.2" apply false
-    id("com.github.lburgazzoli.karaf") version "0.5.1"
     id("org.jetbrains.kotlin.jvm") version "1.4.31"
     id("com.github.jlouns.cpe") version "0.5.0"
-    id("com.benjaminsproule.swagger") version "1.0.14"
     id("com.diffplug.spotless") version "5.11.0"
     id("com.github.jk1.dependency-license-report") version "1.16"
 }
@@ -40,6 +37,18 @@ licenseReport {
 allprojects {
     group = "de.fhg.aisec.ids"
     version = "4.0.0"
+}
+
+tasks.clean {
+    subprojects.forEach {
+        dependsOn(it.tasks.clean)
+    }
+}
+
+tasks.build {
+    subprojects.filter { it.name == "karaf-assembly" }.forEach {
+        dependsOn(it.tasks.build)
+    }
 }
 
 subprojects {

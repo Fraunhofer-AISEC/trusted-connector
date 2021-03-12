@@ -2,13 +2,12 @@ description = "Camel IDS Component"
 
 dependencies {
     @Suppress("UNCHECKED_CAST") val libraryVersions =
-            rootProject.ext.get("libraryVersions") as Map<String, String>
+            rootProject.extra.get("libraryVersions") as Map<String, String>
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
     providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
 
-//    providedByBundle("it.unibo.alice.tuprolog", "tuprolog", libraryVersions["tuprolog"])
     implementation("it.unibo.alice.tuprolog", "2p-core", libraryVersions["2p"])
     implementation("it.unibo.alice.tuprolog", "2p-parser", libraryVersions["2p"])
 //    implementation("it.unibo.alice.tuprolog", "2p-presentation", libraryVersions["2p"])

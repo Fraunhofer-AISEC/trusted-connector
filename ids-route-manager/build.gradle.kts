@@ -1,11 +1,12 @@
 dependencies {
     @Suppress("UNCHECKED_CAST") val libraryVersions =
-            rootProject.ext.get("libraryVersions") as Map<String, String>
+            rootProject.extra.get("libraryVersions") as Map<String, String>
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
 
+    providedByFeature("javax.xml.bind", "jaxb-api", libraryVersions["jaxb"])
     providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
     providedByFeature("org.apache.camel", "camel-management", libraryVersions["camel"])
 

@@ -1,7 +1,7 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 @Suppress("UNCHECKED_CAST")
-val libraryVersions = rootProject.ext.get("libraryVersions") as Map<String, String>
+val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 description = "Camel IDSCP2 Component"
 version = libraryVersions["idscp2"] ?: error("IDSCP2 version not specified")

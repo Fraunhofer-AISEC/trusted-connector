@@ -1,7 +1,0 @@
-dependencies {
-    providedByBundle(project(':ids-api')) { transitive = false }
-
-    osgiCore group: 'org.osgi', name: 'org.osgi.core', version: libraryVersions.osgi
-
-    providedByFeature group: 'org.eclipse.jetty', name: 'jetty-util', version: libraryVersions.jetty
-}

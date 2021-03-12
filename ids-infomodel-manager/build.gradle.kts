@@ -4,8 +4,8 @@ plugins {
     id("com.github.gmazzo.buildconfig") version "2.0.2"
 }
 
-@Suppress("UNCHECKED_CAST") val libraryVersions =
-        rootProject.ext.get("libraryVersions") as Map<String, String>
+@Suppress("UNCHECKED_CAST")
+val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 apply(plugin = "idea")
 

@@ -12,6 +12,8 @@ jetty: "9.4.30.v20200611"
 infomodel: "4.0.0"
 
 pax: "7.2.14"
+# Provided by feature, but required for compilation
+jaxb: "2.3.1"
 
 # Starting with camel 3.1.0, XML dump features and metrics have been removed!
 camel: "3.0.1"
