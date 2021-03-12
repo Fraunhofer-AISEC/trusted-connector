@@ -79,14 +79,14 @@ val assembleKaraf by tasks.registering(CrossPlatformExec::class) {
             || it.name.endsWith("-patch") || it.name.endsWith("-wrapper")
             || it.name == "karaf-features-ids"
         ) {
-            dependsOn(it.tasks.named("install"))
+            dependsOn(it.tasks.install)
         }
     }
 }
 // Sometimes required to fix an error caused by a non-existing folder (maybe caused by mvn clean)
 mkdir("${project.buildDir}/classes/kotlin/test")
 
-tasks.named("jar") {
+tasks.jar {
     dependsOn(assembleKaraf)
 }
 
@@ -120,7 +120,7 @@ val makeMavenDependencies by tasks.registering {
     }
 }
 
-tasks.named("integrationTest") {
+tasks.integrationTest {
     dependsOn(makeMavenDependencies)
     dependsOn(assembleKaraf)
     outputs.upToDateWhen { false }

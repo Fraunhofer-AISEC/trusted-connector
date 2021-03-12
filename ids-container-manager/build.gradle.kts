@@ -13,7 +13,7 @@ protobuf {
     generatedFilesBaseDir = protobufGeneratedDir
 }
 
-tasks.named("clean") {
+tasks.clean {
     doFirst {
         delete(protobufGeneratedDir)
     }
@@ -40,7 +40,7 @@ dependencies {
         exclude("com.github.jnr", "jnr-unixsocket")
     }
 
-    compileOnly(project(":jnr-unixsocket-wrapper"))
+    implementation(project(":jnr-unixsocket-wrapper"))
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 

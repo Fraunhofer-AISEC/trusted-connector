@@ -39,12 +39,6 @@ allprojects {
     version = "4.0.0"
 }
 
-tasks.clean {
-    subprojects.forEach {
-        dependsOn(it.tasks.clean)
-    }
-}
-
 tasks.build {
     subprojects.filter { it.name == "karaf-assembly" }.forEach {
         dependsOn(it.tasks.build)
@@ -79,15 +73,15 @@ subprojects {
         systemProperty("project.version", "$project.version")
     }
 
+    tasks.check {
+        dependsOn(integrationTest)
+    }
+
     tasks.withType<Test> {
         testLogging {
             events("failed")
             exceptionFormat = TestExceptionFormat.FULL
         }
-    }
-
-    tasks.check {
-        dependsOn(integrationTest)
     }
 
     // Configuration for dependencies that will be provided through features in the OSGi environment
@@ -175,8 +169,10 @@ configure(subprojects.filter { it.name != "examples" }) {
 }
 
 // Always write project version to version.txt after build/install
-tasks.register<Task>("dumpVersion") {
-    file(project.projectDir).resolve("version.txt").bufferedWriter().use {
-        it.write(project.version.toString())
+tasks.build {
+    doLast {
+        file(project.projectDir).resolve("version.txt").bufferedWriter().use {
+            it.write(project.version.toString())
+        }
     }
 }

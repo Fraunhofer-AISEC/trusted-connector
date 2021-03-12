@@ -25,6 +25,7 @@ services:
       example-internal:
         aliases:
           - consumer-core
+          - provider-core
 
 networks:
   example-internal:

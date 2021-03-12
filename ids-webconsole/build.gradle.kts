@@ -145,6 +145,6 @@ val yarnBuild by tasks.registering(YarnTask::class) {
     dependsOn(yarnInstall)
 }
 
-tasks.named("processResources")<Task> {
+tasks.processResources {
     dependsOn(yarnBuild)
 }

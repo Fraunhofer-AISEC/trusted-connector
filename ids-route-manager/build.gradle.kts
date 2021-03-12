@@ -6,7 +6,7 @@ dependencies {
 
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
 
-    providedByFeature("javax.xml.bind", "jaxb-api", libraryVersions["jaxb"])
+    providedByFeature("javax.xml.bind", "jaxb-api", libraryVersions["jaxbApi"])
     providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
     providedByFeature("org.apache.camel", "camel-management", libraryVersions["camel"])
 
@@ -14,6 +14,10 @@ dependencies {
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
 
     providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
+
+    testImplementation("com.sun.xml.bind", "jaxb-core", libraryVersions["jaxbCore"])
+    testImplementation("com.sun.xml.bind", "jaxb-impl", libraryVersions["jaxbImpl"])
+    testImplementation("com.sun.activation", "javax.activation", libraryVersions["jaxActivation"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])

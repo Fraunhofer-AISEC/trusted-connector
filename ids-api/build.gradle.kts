@@ -13,7 +13,7 @@ protobuf {
     generatedFilesBaseDir = protobufGeneratedDir
 }
 
-tasks.named("clean") {
+tasks.clean {
     doFirst {
         delete(protobufGeneratedDir)
     }

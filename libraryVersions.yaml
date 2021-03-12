@@ -13,7 +13,11 @@ infomodel: "4.0.0"
 
 pax: "7.2.14"
 # Provided by feature, but required for compilation
-jaxb: "2.3.1"
+jaxbApi: "2.3.1"
+# Required for RouteManager metrics tests
+jaxbCore: "2.3.0.1"
+jaxbImpl: "2.3.3"
+jaxActivation: "1.2.0"
 
 # Starting with camel 3.1.0, XML dump features and metrics have been removed!
 camel: "3.0.1"
