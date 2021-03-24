@@ -1,9 +1,3 @@
-# Caching not practical here, since build from base image is trivial
-target "jdk-base" {
-  output = ["type=registry"]
-  platforms = ["linux/amd64", "linux/arm64/v8", "linux/arm/v7"]
-}
-
 target "build-container" {
   output = ["type=registry"]
 //  cache-to = ["registry.netsec.aisec.fraunhofer.de/tc-build-container:cache"]

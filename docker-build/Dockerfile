@@ -1,5 +1,5 @@
-ARG JDK_BASE_IMAGE=fraunhoferaisec/jdk-base:develop
-FROM $JDK_BASE_IMAGE
+ARG BASE_IMAGE=adoptopenjdk:11-jdk-hotspot-focal
+FROM $BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 

@@ -86,8 +86,6 @@ export BASE_IMAGE="$BASE_IMAGE_ARG"
 printf "######################################################################\n"
 printf "Using build tag \"%s\" and base image \"%s\"\n" "$EXAMPLE_TAG" "$BASE_IMAGE"
 printf "######################################################################\n\n"
-echo "Building jdk-base via \"docker buildx bake jdk-base ${FILES}$*\"..."
-eval "docker buildx bake jdk-base ${FILES}$*"
 
 if [ $BUILD_CONTAINER = 1 ]; then
   echo "Building build-container via \"docker buildx bake build-container $*\"..."

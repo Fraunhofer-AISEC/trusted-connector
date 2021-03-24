@@ -1,14 +1,6 @@
 version: '3'
 services:
 
-  # Base image for other JDK-based images
-  jdk-base:
-    image: fraunhoferaisec/jdk-base:${DOCKER_BUILD_TAG:-develop}
-    build:
-      context: '../docker-jdk-base'
-      args:
-        BASE_IMAGE: ${BASE_IMAGE:-adoptopenjdk:11-jdk-hotspot}
-
   # Trusted Connector build container
   build-container:
     image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-develop}
