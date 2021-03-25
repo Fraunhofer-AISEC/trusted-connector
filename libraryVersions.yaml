@@ -1,4 +1,4 @@
-idscp2: "0.3.2"
+idscp2: "0.4.0"
 
 # Kotlin library/compiler version
 kotlin: "1.4.31"

@@ -1,4 +1,0 @@
-Bundle-Name: IDS :: Token Manager
-Import-Package: \
-    !com.android.org.conscrypt,\
-    *

@@ -28,14 +28,12 @@ import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
-import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.nio.file.FileSystems;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -94,25 +92,6 @@ public class ConfigApi {
       return "No settings available";
     }
     settings.setConnectorConfig(config);
-    TokenManager tokenManager = WebConsoleComponent.getTokenManager();
-    if (tokenManager == null) {
-      return "No TokenManager available";
-    }
-
-    try {
-      var ksPath = FileSystems.getDefault().getPath("etc");
-      var password = config.getKeystorePassword().toCharArray();
-      tokenManager.acquireToken(
-              config.getDapsUrl(),
-              ksPath.resolve(config.getKeystoreName()),
-              password,
-              config.getKeystoreAliasName(),
-              password,
-              ksPath.resolve(config.getTruststoreName()),
-              password);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
 
     return "OK";
   }

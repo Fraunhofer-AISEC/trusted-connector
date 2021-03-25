@@ -40,7 +40,6 @@ class Idscp2OsgiComponent : Idscp2UsageControlInterface {
     init {
         Utils.connectorUrlProducer = { settings.connectorProfile.connectorUrl }
         Utils.maintainerUrlProducer = { settings.connectorProfile.maintainerUrl }
-        Utils.dynamicAttributeTokenProducer = { settings.dynamicAttributeToken }
         Utils.dapsUrlProducer = { settings.connectorConfig.dapsUrl }
         Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
     }
