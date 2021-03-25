@@ -50,6 +50,10 @@ class SettingsComponent : Settings {
                     }
                     dbVersion = 2
                 }
+                2 -> {
+                    settingsStore -= DAT_KEY
+                    dbVersion = 3
+                }
             }
             settingsStore[DB_VERSION_KEY] = dbVersion
             mapDB.commit()
@@ -81,17 +85,6 @@ class SettingsComponent : Settings {
 
     override fun getConnectorJsonLd() = settingsStore[CONNECTOR_JSON_LD_KEY] as String?
 
-    override fun getDynamicAttributeToken() = settingsStore[DAT_KEY] as String?
-
-    override fun setDynamicAttributeToken(dynamicAttributeToken: String?) {
-        if (dynamicAttributeToken == null) {
-            settingsStore -= DAT_KEY
-        } else {
-            settingsStore[DAT_KEY] = dynamicAttributeToken
-        }
-        mapDB.commit()
-    }
-
     override fun setConnectorJsonLd(jsonLd: String?) {
         if (jsonLd == null) {
             settingsStore -= CONNECTOR_JSON_LD_KEY
@@ -105,7 +98,7 @@ class SettingsComponent : Settings {
         if (connection == Constants.GENERAL_CONFIG) {
             connectionSettings.getOrElse(connection) { ConnectionSettings() }
         } else {
-            connectionSettings.getOrPut(connection) {getConnectionSettings(Constants.GENERAL_CONFIG)}
+            connectionSettings.getOrPut(connection) { getConnectionSettings(Constants.GENERAL_CONFIG) }
         }
 
     override fun setConnectionSettings(connection: String, conSettings: ConnectionSettings) {
@@ -118,7 +111,7 @@ class SettingsComponent : Settings {
 
     companion object {
         internal const val DB_VERSION_KEY = "db_version"
-        internal const val CURRENT_DB_VERSION = 2
+        internal const val CURRENT_DB_VERSION = 3
         internal const val CONNECTOR_SETTINGS_KEY = "main_config"
         internal const val CONNECTOR_PROFILE_KEY = "connector_profile"
         internal const val CONNECTOR_JSON_LD_KEY = "connector_json_ld"

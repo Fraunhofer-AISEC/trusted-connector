@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.*
-import javax.xml.datatype.DatatypeFactory
-import javax.xml.datatype.XMLGregorianCalendar
 
 
 /**
@@ -34,34 +32,6 @@ class InfoModelService : InfoModel {
         get() = settings.connectorProfile
 
     override val modelVersion = BuildConfig.INFOMODEL_VERSION
-
-    override fun <T: Any> initMessageBuilder(builder: T): T {
-        val builderClass = builder::class.java
-        builderClass.getMethod("_securityToken_", DynamicAttributeToken::class.java)
-                .invoke(builder, DynamicAttributeTokenBuilder()
-                        ._tokenFormat_(TokenFormat.JWT)
-                        ._tokenValue_(settings.dynamicAttributeToken)
-                        .build())
-        builderClass.getMethod("_senderAgent_", URI::class.java)
-                .invoke(builder, settings.connectorProfile.maintainerUrl)
-        builderClass.getMethod("_issuerConnector_", URI::class.java)
-                .invoke(builder, settings.connectorProfile.connectorUrl)
-        builderClass.getMethod("_issued_", XMLGregorianCalendar::class.java)
-                .invoke(builder, DatatypeFactory.newInstance().newXMLGregorianCalendar(
-                        GregorianCalendar().apply { timeInMillis = System.currentTimeMillis() }))
-        builderClass.getMethod("_modelVersion_", String::class.java)
-                .invoke(builder, modelVersion)
-        return builder
-    }
-
-    /**
-     * Build ConnectorAvailableMessage for IDS message headers
-     */
-    fun getConnectorAvailableMessage(): ConnectorUpdateMessage {
-        val builder = ConnectorUpdateMessageBuilder()
-        initMessageBuilder(builder)
-        return builder.build()
-    }
 
     /**
      * Build Connector Entity Names from preferences
@@ -181,14 +151,6 @@ class InfoModelService : InfoModel {
             }
             settings.connectorJsonLd = jsonLd
         }
-    }
-
-    override val dynamicAttributeToken: String
-        get() = settings.dynamicAttributeToken
-                ?: throw NullPointerException("DAPS token is not available")
-
-    override fun setDynamicAttributeToken(dynamicAttributeToken: String?) {
-        settings.dynamicAttributeToken = dynamicAttributeToken
     }
 
     companion object {

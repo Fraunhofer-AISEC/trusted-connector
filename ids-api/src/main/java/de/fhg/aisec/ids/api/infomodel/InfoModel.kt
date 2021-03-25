@@ -52,32 +52,10 @@ interface InfoModel {
     fun setConnectorByJsonLd(jsonLd: String?)
 
     /**
-     * Get connector Dynamic Attribute Token
-     *
-     * @return DAT
-     */
-    val dynamicAttributeToken: String
-
-    /**
-     * Set Dynamic Attribute Token or remove if "null" is passed
-     *
-     * @param dynamicAttributeToken The DAT to use for this connector
-     * @return Whether storing the DAT has been successful
-     */
-    fun setDynamicAttributeToken(dynamicAttributeToken: String?)
-
-    /**
      * Get version of implemented infomodel
      *
      * @return Version of infomodel
      */
     val modelVersion: String
 
-    /**
-     * Initializes an infomodel *MessageBuilder with required fields,
-     * using reflection
-     *
-     * @return Populated *MessageBuilder
-     */
-    fun <T: Any> initMessageBuilder(builder: T): T
 }
