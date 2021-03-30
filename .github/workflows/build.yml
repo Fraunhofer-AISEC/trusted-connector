@@ -13,6 +13,10 @@ jobs:
         uses: arduino/setup-protoc@v1.1.2
         with:
           version: 3.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Build
         run: |
-          ./gradlew --parallel yarnBuild check build
+          ./gradlew --parallel build
