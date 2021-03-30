@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * IDS Core Platform Webconsole
+ * ids-infomodel-manager
  * %%
  * Copyright (C) 2017 - 2018 Fraunhofer AISEC
  * %%

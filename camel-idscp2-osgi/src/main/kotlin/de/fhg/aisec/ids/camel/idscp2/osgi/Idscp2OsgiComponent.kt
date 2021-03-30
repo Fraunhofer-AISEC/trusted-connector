@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-ids
+ * camel-idscp2-osgi
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
