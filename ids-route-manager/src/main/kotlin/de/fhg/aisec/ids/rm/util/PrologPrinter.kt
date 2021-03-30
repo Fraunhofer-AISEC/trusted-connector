@@ -19,14 +19,14 @@
  */
 package de.fhg.aisec.ids.rm.util
 
-import org.apache.camel.model.ChoiceDefinition
-import org.apache.camel.model.OptionalIdentifiedDefinition
-import org.apache.camel.model.ProcessorDefinition
-import org.apache.camel.model.RouteDefinition
 import java.io.IOException
 import java.io.Writer
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
+import org.apache.camel.model.ChoiceDefinition
+import org.apache.camel.model.OptionalIdentifiedDefinition
+import org.apache.camel.model.ProcessorDefinition
+import org.apache.camel.model.RouteDefinition
 
 class PrologPrinter {
     /**
@@ -57,7 +57,10 @@ class PrologPrinter {
      */
     @Throws(IOException::class)
     private fun printNode(
-            writer: Writer, current: ProcessorDefinition<*>, preds: List<OptionalIdentifiedDefinition<*>>): List<ProcessorDefinition<*>> {
+        writer: Writer,
+        current: ProcessorDefinition<*>,
+        preds: List<OptionalIdentifiedDefinition<*>>
+    ): List<ProcessorDefinition<*>> {
         for (p in preds) {
             writer.write("""
     succ(${p.id}, ${current.id}).
@@ -68,10 +71,12 @@ class PrologPrinter {
     stmt(${current.id}).
     
     """.trimIndent())
-        writer.write("""
+        writer.write(
+            """
     has_action(${current.id}, "${current.label}").
     
-    """.trimIndent())
+    """.trimIndent()
+        )
 
         // predecessor of next recursion is the current node
         val newPreds: MutableList<ProcessorDefinition<*>> = ArrayList()

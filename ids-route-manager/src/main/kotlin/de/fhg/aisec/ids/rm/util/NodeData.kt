@@ -19,11 +19,11 @@
  */
 package de.fhg.aisec.ids.rm.util
 
+import java.util.*
 import org.apache.camel.model.*
 import org.apache.camel.util.ObjectHelper
-import java.util.*
 
-/** Represents a node in Graphviz representation of a route.  */
+/** Represents a node in Graphviz representation of a route. */
 class NodeData(var id: String, node: Any?, imagePrefix: String) {
     var image: String? = null
     var label: String? = null
@@ -45,7 +45,7 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
     }
 
     companion object {
-        /** Inserts a space before each upper case letter after a lowercase  */
+        /** Inserts a space before each upper case letter after a lowercase */
         fun insertSpacesBetweenCamelCase(name: String): String {
             var lastCharacterLowerCase = false
             val buffer = StringBuilder()
@@ -53,14 +53,15 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
             val size = name.length
             while (i < size) {
                 val ch = name[i]
-                lastCharacterLowerCase = if (Character.isUpperCase(ch)) {
-                    if (lastCharacterLowerCase) {
-                        buffer.append(' ')
+                lastCharacterLowerCase =
+                    if (Character.isUpperCase(ch)) {
+                        if (lastCharacterLowerCase) {
+                            buffer.append(' ')
+                        }
+                        false
+                    } else {
+                        true
                     }
-                    false
-                } else {
-                    true
-                }
                 buffer.append(ch)
                 i++
             }
@@ -176,9 +177,10 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
             }
         }
         if (ObjectHelper.isEmpty(url) && ObjectHelper.isNotEmpty(nodeType)) {
-            url = ("http://camel.apache.org/"
-                    + nodeType!!.toLowerCase(Locale.ENGLISH).replace(' ', '-')
-                    + ".html")
+            url =
+                ("http://camel.apache.org/" +
+                    nodeType!!.toLowerCase(Locale.ENGLISH).replace(' ', '-') +
+                    ".html")
         }
         if (node is ProcessorDefinition<*> && outputs == null) {
             outputs = node.outputs

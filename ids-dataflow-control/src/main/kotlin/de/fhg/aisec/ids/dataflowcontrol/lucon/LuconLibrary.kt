@@ -25,9 +25,9 @@ import alice.tuprolog.Term
 import alice.tuprolog.Var
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import org.slf4j.LoggerFactory
 
 /**
  * Plugins and default theories for tuProlog engine.
@@ -37,15 +37,19 @@ import java.util.concurrent.TimeUnit
 @Suppress("FunctionName", "unused")
 class LuconLibrary : Library() {
     @Transient
-    private val regexCache = CacheBuilder.newBuilder()
+    private val regexCache =
+        CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.DAYS)
             .maximumWeight(1e6.toLong())
             .weigher<String, Regex> { k, _ -> k.length }
-            .build(object : CacheLoader<String, Regex>() {
-                override fun load(key: String) = Regex(key, RegexOption.DOT_MATCHES_ALL)
-            })
+            .build(
+                object : CacheLoader<String, Regex>() {
+                    override fun load(key: String) = Regex(key, RegexOption.DOT_MATCHES_ALL)
+                }
+            )
 
-    override fun getTheory(): String = """
+    override fun getTheory(): String =
+        """
 set_of(In, Out) :-  % get a pairwise different, sorted set from a list
   quicksort(In, '@<', Sorted),
   no_duplicates(Sorted, Out).
@@ -181,20 +185,21 @@ trace_walk(A, B, Log, T) :-              % We can walk from A to B if  [ O(|Ep_S
         // Both regex and input string must be ground
         return if (isComplex(regex) || isComplex(input)) {
             false
-        } else try {
-            val regexString = TuPrologHelper.unquote(regex.term.toString())
-            val inputString = TuPrologHelper.unquote(input.term.toString())
-            val match = regexCache[regexString].matches(inputString)
-            if (LOG.isTraceEnabled) {
-                LOG.trace("regex_match: $regexString , $inputString: $match")
+        } else
+            try {
+                val regexString = TuPrologHelper.unquote(regex.term.toString())
+                val inputString = TuPrologHelper.unquote(input.term.toString())
+                val match = regexCache[regexString].matches(inputString)
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("regex_match: $regexString , $inputString: $match")
+                }
+                match
+            } catch (e: ExecutionException) {
+                if (LOG.isWarnEnabled) {
+                    LOG.warn(e.message, e)
+                }
+                false
             }
-            match
-        } catch (e: ExecutionException) {
-            if (LOG.isWarnEnabled) {
-                LOG.warn(e.message, e)
-            }
-            false
-        }
     }
 
     companion object {

@@ -19,9 +19,9 @@
  */
 package de.fhg.aisec.ids.camel.multipart
 
+import java.io.InputStream
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
-import java.io.InputStream
 
 class MultiPartInputProcessor : Processor {
     @Throws(Exception::class)

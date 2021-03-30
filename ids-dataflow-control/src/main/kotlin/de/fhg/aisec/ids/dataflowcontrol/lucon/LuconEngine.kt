@@ -30,18 +30,16 @@ import alice.tuprolog.exceptions.NoSolutionException
 import alice.tuprolog.interfaces.event.LibraryListener
 import de.fhg.aisec.ids.api.router.CounterExample
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
-import org.slf4j.LoggerFactory
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.regex.Pattern
+import org.slf4j.LoggerFactory
 
 /**
  * LUCON (Logic based Usage Control) policy decision engine.
  *
- *
- * This engine uses tuProlog as a logic language implementation to answer policy decision
- * requests.
+ * This engine uses tuProlog as a logic language implementation to answer policy decision requests.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
@@ -49,8 +47,7 @@ class LuconEngine
 /**
  * Create a new LuconEngine which writes to a given output stream.
  *
- * @param out OutputStream to write Prolog engine outputs to, or null if output should not
- * printed.
+ * @param out OutputStream to write Prolog engine outputs to, or null if output should not printed.
  */
 (out: OutputStream?) {
     private val p: Prolog = Prolog()
@@ -75,15 +72,16 @@ class LuconEngine
         }
         if (LOG.isDebugEnabled) {
             p.addLibraryListener(
-                    object : LibraryListener {
-                        override fun libraryLoaded(e: LibraryEvent) {
-                            LOG.debug("Prolog library loaded " + e.libraryName)
-                        }
+                object : LibraryListener {
+                    override fun libraryLoaded(e: LibraryEvent) {
+                        LOG.debug("Prolog library loaded " + e.libraryName)
+                    }
 
-                        override fun libraryUnloaded(e: LibraryEvent) {
-                            LOG.debug("Prolog library unloaded " + e.libraryName)
-                        }
-                    })
+                    override fun libraryUnloaded(e: LibraryEvent) {
+                        LOG.debug("Prolog library unloaded " + e.libraryName)
+                    }
+                }
+            )
         }
         if (LOG.isTraceEnabled) {
             p.addSpyListener { l -> LOG.trace(l.msg + " " + l.source) }
@@ -107,7 +105,6 @@ class LuconEngine
                 } catch (e: Exception) {
                     LOG.error(e.message, e)
                 }
-
             }
         }
 
@@ -117,7 +114,6 @@ class LuconEngine
             // should never happen
             throw RuntimeException("Error loading " + LuconLibrary::class.java.name, e)
         }
-
     }
 
     fun setSpy(spy: Boolean) {
@@ -126,7 +122,6 @@ class LuconEngine
 
     /**
      * Loads a policy in form of a prolog theory.
-     *
      *
      * Existing policies will be overwritten.
      *
@@ -153,7 +148,6 @@ class LuconEngine
             } catch (e: NoSolutionException) {
                 e.printStackTrace()
             }
-
         }
         return result
     }
@@ -203,7 +197,8 @@ class LuconEngine
             // Generate the proof (=run query)
             val result = query(newP, QUERY_ROUTE_VERIFICATION, true)
 
-            // If a result has been found, this means there is at least one counterexample of a path in a
+            // If a result has been found, this means there is at least one counterexample of a path
+            // in a
             // route that violates a policy
             if (result.isNotEmpty()) {
                 val ces = ArrayList<CounterExample>(result.size)
@@ -237,6 +232,4 @@ class LuconEngine
             defaultPolicy = theory
         }
     }
-
-
 }

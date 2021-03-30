@@ -31,20 +31,21 @@ class CounterExampleImpl(term: Term) : CounterExample() {
         val steps = LinkedList<String?>()
         // process explanation
         val reasonIterator = (traceIterator.next() as Struct).listIterator()
-        val sb = StringBuilder()
+        val sb =
+            StringBuilder()
                 .append("Service ")
                 .append(reasonIterator.next().toString())
                 .append(" may receive messages")
         reasonIterator.next()
-//        val explanation = reasonIterator.next()
-//        if (explanation.isList) {
-//            sb.append(" labeled [")
-//            appendCSList(sb, explanation)
-//            sb.append("]")
-//        }
+        //        val explanation = reasonIterator.next()
+        //        if (explanation.isList) {
+        //            sb.append(" labeled [")
+        //            appendCSList(sb, explanation)
+        //            sb.append("]")
+        //        }
         sb.append(", which is forbidden by rule \"")
-                .append(reasonIterator.next().toString())
-                .append("\".")
+            .append(reasonIterator.next().toString())
+            .append("\".")
         this.explanation = sb.toString()
         // process steps and prepend them to list (inverse trace to get the right order)
         traceIterator.forEachRemaining { t: Term? -> steps.addFirst(termToStep(t)) }

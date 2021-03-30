@@ -21,12 +21,10 @@ package de.fhg.aisec.ids.informationmodelmanager.deserializer
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 
-import de.fraunhofer.iais.eis.SecurityProfile
-
 // allows Jackson to deserialize custom object types
 class CustomModule : SimpleModule("CustomModule") {
     init {
-//        this.addDeserializer(SecurityProfile::class.java, SecurityProfileDeserializer())
+        //        this.addDeserializer(SecurityProfile::class.java, SecurityProfileDeserializer())
     }
 
     companion object {

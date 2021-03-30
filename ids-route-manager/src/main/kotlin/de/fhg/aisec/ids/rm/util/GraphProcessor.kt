@@ -22,12 +22,12 @@ package de.fhg.aisec.ids.rm.util
 import de.fhg.aisec.ids.api.router.graph.Edge
 import de.fhg.aisec.ids.api.router.graph.GraphData
 import de.fhg.aisec.ids.api.router.graph.Node
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import org.apache.camel.model.ChoiceDefinition
 import org.apache.camel.model.OptionalIdentifiedDefinition
 import org.apache.camel.model.ProcessorDefinition
 import org.apache.camel.model.RouteDefinition
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 
 object GraphProcessor {
     /**
@@ -51,17 +51,20 @@ object GraphProcessor {
      * @return
      */
     private fun processNode(
-            graphData: GraphData,
-            current: ProcessorDefinition<*>,
-            preds: List<OptionalIdentifiedDefinition<*>>): List<ProcessorDefinition<*>> {
+        graphData: GraphData,
+        current: ProcessorDefinition<*>,
+        preds: List<OptionalIdentifiedDefinition<*>>
+    ): List<ProcessorDefinition<*>> {
         for (p in preds) {
             graphData.addEdge(Edge(p.id, current.id))
         }
         graphData.addNode(
-                Node(
-                        current.id,
-                        current.label,
-                        if (current is ChoiceDefinition) Node.NodeType.ChoiceNode else Node.NodeType.Node))
+            Node(
+                current.id,
+                current.label,
+                if (current is ChoiceDefinition) Node.NodeType.ChoiceNode else Node.NodeType.Node
+            )
+        )
 
         // predecessor of next recursion is the current node
         val newPreds: MutableList<ProcessorDefinition<*>> = ArrayList()
@@ -91,11 +94,8 @@ object GraphProcessor {
         return newPreds
     }
 
-    /**
-     * Prints a single FromDefinition (= a route entry point) in Prolog representation.
-     */
-    private fun processInput(
-            graphData: GraphData, route: RouteDefinition) {
+    /** Prints a single FromDefinition (= a route entry point) in Prolog representation. */
+    private fun processInput(graphData: GraphData, route: RouteDefinition) {
         val counter = AtomicInteger(0)
         val i = route.input
         // Make sure every input node has a unique id

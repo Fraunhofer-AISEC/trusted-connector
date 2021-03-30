@@ -19,11 +19,11 @@
  */
 package de.fhg.aisec.ids.rm
 
+import java.util.*
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.model.ModelCamelContext
 import org.apache.camel.test.junit4.CamelTestSupport
 import org.junit.Test
-import java.util.*
 
 class RouteMetricsTest : CamelTestSupport() {
     @Test
@@ -45,9 +45,11 @@ class RouteMetricsTest : CamelTestSupport() {
         mock.assertIsSatisfied()
 
         // Retrieve route statistics from RouteManager and make sure they match expectations
-        val after = rm.getRouteStats(
+        val after =
+            rm.getRouteStats(
                 template.camelContext,
-                template.camelContext.adapt(ModelCamelContext::class.java).getRouteDefinition("foo"))
+                template.camelContext.adapt(ModelCamelContext::class.java).getRouteDefinition("foo")
+            )
         assertEquals(MSG_COUNT.toLong(), after!!.exchangesCompleted as Long)
         assertEquals(0L, after.exchangesFailed as Long)
         assertEquals(0L, after.redeliveries as Long)
@@ -55,14 +57,15 @@ class RouteMetricsTest : CamelTestSupport() {
 
     override fun createRouteBuilders(): Array<RouteBuilder> {
         // Define the most simple route for testing
-        val rb: RouteBuilder = object : RouteBuilder() {
-            override fun configure() {
-                from("direct:input")
+        val rb: RouteBuilder =
+            object : RouteBuilder() {
+                override fun configure() {
+                    from("direct:input")
                         .routeId("foo")
                         .log(">>> Message from direct to mock: \${body}")
                         .to("mock:result")
+                }
             }
-        }
         return arrayOf(rb)
     }
 

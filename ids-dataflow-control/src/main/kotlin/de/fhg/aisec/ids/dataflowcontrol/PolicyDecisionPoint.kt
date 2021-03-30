@@ -33,13 +33,13 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.escape
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
-import org.osgi.service.component.ComponentContext
-import org.osgi.service.component.annotations.*
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import org.osgi.service.component.ComponentContext
+import org.osgi.service.component.annotations.*
+import org.slf4j.LoggerFactory
 
 /**
  * servicefactory=false is the default and actually not required. But we want to make clear that
@@ -59,7 +59,8 @@ class PolicyDecisionPoint : PDP, PAP {
     @Volatile
     private var routeManager: RouteManager? = null
 
-    private val transformationCache = CacheBuilder.newBuilder()
+    private val transformationCache =
+        CacheBuilder.newBuilder()
             .maximumSize(10000)
             .expireAfterAccess(1, TimeUnit.DAYS)
             .build<ServiceNode, TransformationDecision>()
@@ -70,8 +71,7 @@ class PolicyDecisionPoint : PDP, PAP {
      * @param target The target node of the transformation
      * @param labels The exchange properties
      */
-    private fun createDecisionQuery(
-            target: ServiceNode, labels: Set<String>): String {
+    private fun createDecisionQuery(target: ServiceNode, labels: Set<String>): String {
         val sb = StringBuilder()
         sb.append("rule(X), has_target(X, T), ")
         sb.append("has_endpoint(T, EP), ")
@@ -81,17 +81,19 @@ class PolicyDecisionPoint : PDP, PAP {
         sb.append("receives_label(X), ")
         sb.append("rule_priority(X, P), ")
         // Removed due to unclear relevance
-//        if (target.capabilties.size + target.properties.size > 0) {
-//            val capProp = LinkedList<String>()
-//            for (cap in target.capabilties) {
-//                capProp.add("has_capability(T, " + escape(cap) + ")")
-//            }
-//            for (prop in target.properties) {
-//                capProp.add("has_property(T, " + escape(prop) + ")")
-//            }
-//            sb.append("(").append(capProp.joinToString(", ")).append("), ")
-//        }
-        sb.append("(has_decision(X, D) ; (has_obligation(X, _O), has_alternativedecision(_O, Alt), ")
+        //        if (target.capabilties.size + target.properties.size > 0) {
+        //            val capProp = LinkedList<String>()
+        //            for (cap in target.capabilties) {
+        //                capProp.add("has_capability(T, " + escape(cap) + ")")
+        //            }
+        //            for (prop in target.properties) {
+        //                capProp.add("has_property(T, " + escape(prop) + ")")
+        //            }
+        //            sb.append("(").append(capProp.joinToString(", ")).append("), ")
+        //        }
+        sb.append(
+            "(has_decision(X, D) ; (has_obligation(X, _O), has_alternativedecision(_O, Alt), "
+        )
         sb.append("requires_prerequisite(_O, A)))")
         if (labels.isNotEmpty()) {
             // Cleanup prolog VM for next run
@@ -105,7 +107,6 @@ class PolicyDecisionPoint : PDP, PAP {
      * A transformation query retrieves the set of labels to add and to remove from the Prolog
      * knowledge base.
      *
-     *
      * This method returns the respective query for a specific target.
      *
      * @param target The ServiceNode to be processed
@@ -116,26 +117,26 @@ class PolicyDecisionPoint : PDP, PAP {
         val plEndpoint: String
         if (target.endpoint != null) {
             plEndpoint = escape(target.endpoint)
-//            sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ")
+            //            sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ")
         } else {
             throw RuntimeException("No endpoint specified!")
         }
         // Removed due to unclear relevance
-//        if (target.capabilties.size + target.properties.size > 0) {
-//            val capProp = LinkedList<String>()
-//            for (cap in target.capabilties) {
-//                capProp.add("has_capability(_T, " + escape(cap) + ")")
-//            }
-//            for (prop in target.properties) {
-//                capProp.add("has_property(_T, " + escape(prop) + ")")
-//            }
-//            sb.append('(').append(capProp.joinToString(", ")).append("),\n")
-//        }
+        //        if (target.capabilties.size + target.properties.size > 0) {
+        //            val capProp = LinkedList<String>()
+        //            for (cap in target.capabilties) {
+        //                capProp.add("has_capability(_T, " + escape(cap) + ")")
+        //            }
+        //            for (prop in target.properties) {
+        //                capProp.add("has_property(_T, " + escape(prop) + ")")
+        //            }
+        //            sb.append('(').append(capProp.joinToString(", ")).append("),\n")
+        //        }
         sb.append("once(setof(S, action_service(")
-                .append(plEndpoint)
-                .append(", S), SC); SC = []),\n")
-                .append("collect_creates_labels(SC, ACraw), set_of(ACraw, Adds),\n")
-                .append("collect_removes_labels(SC, RCraw), set_of(RCraw, Removes).")
+            .append(plEndpoint)
+            .append(", S), SC); SC = []),\n")
+            .append("collect_creates_labels(SC, ACraw), set_of(ACraw, Adds),\n")
+            .append("collect_removes_labels(SC, RCraw), set_of(RCraw, Removes).")
         return sb.toString()
     }
 
@@ -170,9 +171,7 @@ class PolicyDecisionPoint : PDP, PAP {
 
     override fun requestTranformations(lastServiceNode: ServiceNode): TransformationDecision {
         try {
-            return transformationCache.get(
-                    lastServiceNode
-            ) {
+            return transformationCache.get(lastServiceNode) {
                 // Query prolog for labels to remove or add from message
                 val query = this.createTransformationQuery(lastServiceNode)
                 if (LOG.isDebugEnabled) {
@@ -196,7 +195,9 @@ class PolicyDecisionPoint : PDP, PAP {
                                 }
                                 val removes = s.getVarValue("Removes").term
                                 if (removes.isList) {
-                                    listStream(removes).forEach { labelsToRemove.add(it.toString()) }
+                                    listStream(removes).forEach {
+                                        labelsToRemove.add(it.toString())
+                                    }
                                 } else {
                                     throw RuntimeException("\"Removes\" is not a prolog list!")
                                 }
@@ -214,7 +215,6 @@ class PolicyDecisionPoint : PDP, PAP {
             LOG.error(ee.message, ee)
             return TransformationDecision()
         }
-
     }
 
     override fun requestDecision(req: DecisionRequest): PolicyDecision {
@@ -263,7 +263,6 @@ class PolicyDecisionPoint : PDP, PAP {
                 } catch (e: NullPointerException) {
                     LOG.warn("Invalid rule priority: " + si.getVarValue("P"), e)
                 }
-
             }
 
             // Just for debugging
@@ -334,16 +333,21 @@ class PolicyDecisionPoint : PDP, PAP {
             for (i in solveInfo) {
                 if (i.isSuccess) {
                     val vars = i.bindingVars
-                    LOG.trace(vars.joinToString(", ") { v ->
-                        String.format("%s: %s (%s)", v.name, v.term,
-                                if (v.isBound) "bound" else "unbound")
-                    })
+                    LOG.trace(
+                        vars.joinToString(", ") { v ->
+                            String.format(
+                                "%s: %s (%s)",
+                                v.name,
+                                v.term,
+                                if (v.isBound) "bound" else "unbound"
+                            )
+                        }
+                    )
                 }
             }
         } catch (nse: NoSolutionException) {
             LOG.trace("No solution found", nse)
         }
-
     }
 
     override fun clearAllCaches() {
@@ -396,6 +400,7 @@ class PolicyDecisionPoint : PDP, PAP {
         private const val LUCON_FILE_EXTENSION = ".pl"
 
         // Each thread creates a LuconEngine instance to prevent concurrency issues
-        val threadEngine: ThreadLocal<LuconEngine> = ThreadLocal.withInitial { LuconEngine(System.out) }
+        val threadEngine: ThreadLocal<LuconEngine> =
+            ThreadLocal.withInitial { LuconEngine(System.out) }
     }
 }

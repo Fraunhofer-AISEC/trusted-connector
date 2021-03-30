@@ -24,7 +24,6 @@ import com.amihaiemil.docker.Docker
 import com.amihaiemil.docker.Images
 import com.amihaiemil.docker.LocalDocker
 import de.fhg.aisec.ids.api.cm.*
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.net.InetAddress
@@ -35,7 +34,7 @@ import java.util.*
 import java.util.stream.Collectors
 import javax.json.*
 import kotlin.math.abs
-
+import org.slf4j.LoggerFactory
 
 /**
  * ContainerManager implementation for Docker containers.
@@ -47,8 +46,10 @@ class DockerCM : ContainerManager {
     companion object {
         private val LOG = LoggerFactory.getLogger(DockerCM::class.java)
         private lateinit var DOCKER_CLIENT: Docker
-        private val PERIOD_UNITS = listOf<TemporalUnit>(ChronoUnit.YEARS, ChronoUnit.MONTHS, ChronoUnit.DAYS)
-        private val DURATION_UNITS = listOf<TemporalUnit>(ChronoUnit.HOURS, ChronoUnit.MINUTES, ChronoUnit.SECONDS)
+        private val PERIOD_UNITS =
+            listOf<TemporalUnit>(ChronoUnit.YEARS, ChronoUnit.MONTHS, ChronoUnit.DAYS)
+        private val DURATION_UNITS =
+            listOf<TemporalUnit>(ChronoUnit.HOURS, ChronoUnit.MINUTES, ChronoUnit.SECONDS)
         /**
          * Returns true if Docker is supported.
          *
@@ -59,8 +60,9 @@ class DockerCM : ContainerManager {
                 return try {
                     DOCKER_CLIENT.ping()
                 } catch (e: Exception) {
-                    when(e) {
-                        is UninitializedPropertyAccessException -> LOG.warn("Docker client is not available")
+                    when (e) {
+                        is UninitializedPropertyAccessException ->
+                            LOG.warn("Docker client is not available")
                         else -> LOG.error(e.message, e)
                     }
                     false
@@ -68,7 +70,8 @@ class DockerCM : ContainerManager {
             }
 
         init {
-            try { // We have to modify the thread class loader for docker-java-api to find its config
+            try { // We have to modify the thread class loader for docker-java-api to find its
+                // config
                 val threadContextClassLoader = Thread.currentThread().contextClassLoader
                 Thread.currentThread().contextClassLoader = LocalDocker::class.java.classLoader
                 DOCKER_CLIENT = LocalDocker(File("/var/run/docker.sock"))
@@ -79,8 +82,7 @@ class DockerCM : ContainerManager {
         }
 
         /**
-         * Human readable memory sizes
-         * Credits: aioobe, https://stackoverflow.com/questions
+         * Human readable memory sizes Credits: aioobe, https://stackoverflow.com/questions
          * /3758606/how-to-convert-byte-size-into-human-readable-format-in-java
          */
         private fun humanReadableByteCount(bytes: Long): String? {
@@ -133,13 +135,12 @@ class DockerCM : ContainerManager {
     }
 
     private fun getContainerSequence(
-            all: Boolean = false,
-            filters: Map<String, Iterable<String>>? = null,
-            withSize: Boolean = false): Sequence<Container> {
-        val filteredContainers = DOCKER_CLIENT
-                .containers()
-                .filter(filters ?: emptyMap())
-                .withSize(withSize)
+        all: Boolean = false,
+        filters: Map<String, Iterable<String>>? = null,
+        withSize: Boolean = false
+    ): Sequence<Container> {
+        val filteredContainers =
+            DOCKER_CLIENT.containers().filter(filters ?: emptyMap()).withSize(withSize)
         return if (all) {
             filteredContainers.all().asSequence()
         } else {
@@ -148,86 +149,112 @@ class DockerCM : ContainerManager {
     }
 
     private fun getImages(filters: Map<String, Iterable<String>>?): Images {
-        return DOCKER_CLIENT
-                .images()
-                .filter(filters ?: emptyMap())
+        return DOCKER_CLIENT.images().filter(filters ?: emptyMap())
     }
 
     override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
-        return getContainerSequence(!onlyRunning, withSize = true).map { c: Container ->
-            try {
-                val info = c.inspect()
-                val imageInfo = getImage(c)?.inspect()
-                val state = info.getJsonObject("State")
-                val config = info.getJsonObject("Config")
-                val running = state.getBoolean("Running")
-                val startedAt = state.getString("StartedAt")
-                val name = info.getString("Name").substring(1)
-                val networkSettings = info.getJsonObject("NetworkSettings")
-                val networks = networkSettings.getJsonObject("Networks")
-                val ports = networkSettings.getJsonObject("Ports")
-                val labels = config.getJsonObject("Labels")
-                val app = ApplicationContainer()
-                app.id = c.containerId()
-                app.image = config.getString("Image")
-                app.imageId = imageInfo?.getString("Id")
-                app.imageDigests = imageInfo?.getJsonArray("RepoDigests")
-                        ?.map { (it as JsonString).string } ?: emptyList()
-                app.ipAddresses = networks.values.mapNotNull {
-                    val ip = (it as JsonObject).getString("IPAddress")
-                    try {
-                        if (ip != null && ip.isNotEmpty()) {
-                            InetAddress.getByName(ip)
-                        } else {
-                            null
-                        }
-                    } catch (x: Exception) {
-                        LOG.warn("Error while resolving ip address \"$ip\"", x)
-                        null
-                    }
-                }.toList()
-                app.size = "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
-                        "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
-                app.created = info.getString("Created")
-                app.status = ContainerStatus.valueOf(state.getString("Status").toUpperCase())
-                app.ports = ports.entries
-                        .map { e: Map.Entry<String, JsonValue> ->
-                            if (e.value is JsonArray) {
-                                e.key + " -> " + e.value.asJsonArray()[0].asJsonObject().let {
-                                    (it["HostIp"] as JsonString).string + ":" + (it["HostPort"] as JsonString).string
+        return getContainerSequence(!onlyRunning, withSize = true)
+            .map { c: Container ->
+                try {
+                    val info = c.inspect()
+                    val imageInfo = getImage(c)?.inspect()
+                    val state = info.getJsonObject("State")
+                    val config = info.getJsonObject("Config")
+                    val running = state.getBoolean("Running")
+                    val startedAt = state.getString("StartedAt")
+                    val name = info.getString("Name").substring(1)
+                    val networkSettings = info.getJsonObject("NetworkSettings")
+                    val networks = networkSettings.getJsonObject("Networks")
+                    val ports = networkSettings.getJsonObject("Ports")
+                    val labels = config.getJsonObject("Labels")
+                    val app = ApplicationContainer()
+                    app.id = c.containerId()
+                    app.image = config.getString("Image")
+                    app.imageId = imageInfo?.getString("Id")
+                    app.imageDigests =
+                        imageInfo?.getJsonArray("RepoDigests")?.map { (it as JsonString).string }
+                            ?: emptyList()
+                    app.ipAddresses =
+                        networks
+                            .values
+                            .mapNotNull {
+                                val ip = (it as JsonObject).getString("IPAddress")
+                                try {
+                                    if (ip != null && ip.isNotEmpty()) {
+                                        InetAddress.getByName(ip)
+                                    } else {
+                                        null
+                                    }
+                                } catch (x: Exception) {
+                                    LOG.warn("Error while resolving ip address \"$ip\"", x)
+                                    null
                                 }
-                            } else {
-                                e.key
                             }
-                        }
-                        .toList()
-                app.names = name
-                if (running) {
-                    app.uptime = formatDuration(
-                            ZonedDateTime.parse(startedAt), OffsetDateTime.now(ZoneId.of("Z")).toZonedDateTime())
-                } else {
-                    app.uptime = "-"
+                            .toList()
+                    app.size =
+                        "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
+                            "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
+                    app.created = info.getString("Created")
+                    app.status = ContainerStatus.valueOf(state.getString("Status").toUpperCase())
+                    app.ports =
+                        ports
+                            .entries
+                            .map { e: Map.Entry<String, JsonValue> ->
+                                if (e.value is JsonArray) {
+                                    e.key +
+                                        " -> " +
+                                        e.value.asJsonArray()[0].asJsonObject().let {
+                                            (it["HostIp"] as JsonString).string +
+                                                ":" +
+                                                (it["HostPort"] as JsonString).string
+                                        }
+                                } else {
+                                    e.key
+                                }
+                            }
+                            .toList()
+                    app.names = name
+                    if (running) {
+                        app.uptime =
+                            formatDuration(
+                                ZonedDateTime.parse(startedAt),
+                                OffsetDateTime.now(ZoneId.of("Z")).toZonedDateTime()
+                            )
+                    } else {
+                        app.uptime = "-"
+                    }
+                    app.signature = labels.getOrDefault("ids.signature", JsonValue.NULL).toString()
+                    app.owner = labels.getOrDefault("ids.owner", JsonValue.NULL).toString()
+                    app.description =
+                        labels.getOrDefault("ids.description", JsonValue.NULL).toString()
+                    app.labels =
+                        labels
+                            .entries
+                            .stream()
+                            .collect(Collectors.toMap({ it.key }, { it.value as Any }))
+                    return@map app
+                } catch (e: IOException) {
+                    LOG.error(
+                        "Container iteration error occurred, skipping container with id " +
+                            c.containerId(),
+                        e
+                    )
+                    return@map null
                 }
-                app.signature = labels.getOrDefault("ids.signature", JsonValue.NULL).toString()
-                app.owner = labels.getOrDefault("ids.owner", JsonValue.NULL).toString()
-                app.description = labels.getOrDefault("ids.description", JsonValue.NULL).toString()
-                app.labels = labels.entries.stream()
-                        .collect(Collectors.toMap({ it.key }, { it.value as Any }))
-                return@map app
-            } catch (e: IOException) {
-                LOG.error("Container iteration error occurred, skipping container with id " + c.containerId(), e)
-                return@map null
             }
-        }.filterNotNull().toList()
+            .filterNotNull()
+            .toList()
     }
 
     private fun getContainer(containerID: String): Container {
         return getContainerSequence(true, mapOf("id" to listOf(containerID))).firstOrNull()
-                ?: throw NoContainerExistsException("The container with ID $containerID has not been found!")
+            ?: throw NoContainerExistsException(
+                "The container with ID $containerID has not been found!"
+            )
     }
 
     private fun getImage(container: Container) =
-            getImages(mapOf("reference" to listOf(container.getString("Image")))).firstOrNull()
+        getImages(mapOf("reference" to listOf(container.getString("Image")))).firstOrNull()
 
     override fun wipe(containerID: String) {
         val container = getContainer(containerID)
@@ -237,10 +264,13 @@ class DockerCM : ContainerManager {
             getImage(container)?.let {
                 LOG.info("Wiping image related to containerID $containerID")
                 it.delete()
-            } ?: run {
-                LOG.warn("The image to be deleted (filters: {}) was not found!",
-                        mapOf("reference" to listOf(container.getString("Image"))))
             }
+                ?: run {
+                    LOG.warn(
+                        "The image to be deleted (filters: {}) was not found!",
+                        mapOf("reference" to listOf(container.getString("Image")))
+                    )
+                }
         } catch (e: Exception) {
             LOG.error(e.message, e)
         }
@@ -284,11 +314,12 @@ class DockerCM : ContainerManager {
             // Instantly create a container from that image, but do not start it yet.
             LOG.info("Creating container instance from image {}", app.image)
             // Create the name
-            val containerName: String = if (app.name != null) {
-                app.name
-            } else {
-                defaultContainerName(app.image)
-            }
+            val containerName: String =
+                if (app.name != null) {
+                    app.name
+                } else {
+                    defaultContainerName(app.image)
+                }
             val container = Json.createObjectBuilder()
             val hostConfig = Json.createObjectBuilder()
             // Set image
@@ -297,14 +328,19 @@ class DockerCM : ContainerManager {
             if (app.ports != null) {
                 val exposedPorts = Json.createObjectBuilder()
                 val portBindings = Json.createObjectBuilder()
-                val portRegex = ("(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
-                        "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])):)?" +
-                        "([0-9]+):([0-9]+)(?:/(tcp|udp))?").toRegex()
+                val portRegex =
+                    ("(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
+                            "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])):)?" +
+                            "([0-9]+):([0-9]+)(?:/(tcp|udp))?")
+                        .toRegex()
                 for (port in app.ports) {
                     val match = portRegex.matchEntire(port)
                     if (match == null) {
-                        LOG.warn("Port definition {} does not match the pattern " +
-                                "[IPv4:]HostPort:ContainerPort[/tcp|udp], ignoring it", port)
+                        LOG.warn(
+                            "Port definition {} does not match the pattern " +
+                                "[IPv4:]HostPort:ContainerPort[/tcp|udp], ignoring it",
+                            port
+                        )
                     } else {
                         val groups = match.groupValues
                         val protocol = (if (groups[4].isEmpty()) "tcp" else groups[4])
@@ -339,7 +375,9 @@ class DockerCM : ContainerManager {
             // Set restart policy
             if (app.restartPolicy != null) {
                 hostConfig.add(
-                        "RestartPolicy", Json.createObjectBuilder().add("Name", app.restartPolicy))
+                    "RestartPolicy",
+                    Json.createObjectBuilder().add("Name", app.restartPolicy)
+                )
             }
             // Set privileged state
             if (app.isPrivileged) {
@@ -359,7 +397,6 @@ class DockerCM : ContainerManager {
 
     /**
      * Returns the default containerName that will be given to a container of image "imageID".
-     *
      *
      * For example, an imageID "shiva1029/weather" will be turned into "weather-shiva1029".
      *
@@ -386,13 +423,14 @@ class DockerCM : ContainerManager {
     }
 
     override fun setIpRule(
-            containerID: String,
-            direction: Direction,
-            srcPort: Int,
-            dstPort: Int,
-            srcDstRange: String,
-            protocol: Protocol,
-            decision: Decision) { // TODO Not implemented yet
+        containerID: String,
+        direction: Direction,
+        srcPort: Int,
+        dstPort: Int,
+        srcDstRange: String,
+        protocol: Protocol,
+        decision: Decision
+    ) { // TODO Not implemented yet
     }
 
     /**
@@ -405,9 +443,7 @@ class DockerCM : ContainerManager {
         return getContainer(containerID).inspect().toString()
     }
 
-    /**
-     * Returns the version of docker on the system
-     */
+    /** Returns the version of docker on the system */
     override fun getVersion(): String {
         val version = DOCKER_CLIENT.version()
         return "${version.platformName()} (${version.version()})"

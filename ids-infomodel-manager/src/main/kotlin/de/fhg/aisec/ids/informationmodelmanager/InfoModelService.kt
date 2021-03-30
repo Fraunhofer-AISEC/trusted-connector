@@ -27,23 +27,19 @@ import de.fraunhofer.iais.eis.*
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
 import de.fraunhofer.iais.eis.util.TypedLiteral
+import java.net.URI
+import java.net.URISyntaxException
+import java.util.*
 import org.osgi.service.component.annotations.Component
 import org.osgi.service.component.annotations.Reference
 import org.osgi.service.component.annotations.ReferenceCardinality
 import org.slf4j.LoggerFactory
-import java.net.URI
-import java.net.URISyntaxException
-import java.util.*
 
-
-/**
- * IDS Info Model Manager.
- */
+/** IDS Info Model Manager. */
 @Component(name = "ids-infomodel-manager", immediate = true)
 class InfoModelService : InfoModel {
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY)
-    private lateinit var settings: Settings
+    @Reference(cardinality = ReferenceCardinality.MANDATORY) private lateinit var settings: Settings
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     private var connectionManager: ConnectionManager? = null
 
@@ -52,49 +48,56 @@ class InfoModelService : InfoModel {
 
     override val modelVersion = BuildConfig.INFOMODEL_VERSION
 
-    /**
-     * Build Connector Entity Names from preferences
-     */
+    /** Build Connector Entity Names from preferences */
     private val connectorEntityNames: List<TypedLiteral>
-        get() = connectorProfile.connectorEntityNames.also {
-            if (it == null) {
-                LOG.warn("Settings or ConnectorProfile not available, or no connector entity names provided")
+        get() =
+            connectorProfile.connectorEntityNames.also {
+                if (it == null) {
+                    LOG.warn(
+                        "Settings or ConnectorProfile not available, or no connector entity names provided"
+                    )
+                }
             }
-        } ?: emptyList()
+                ?: emptyList()
 
     private val catalog: ArrayList<ResourceCatalog>
-        get() = arrayListOf(ResourceCatalogBuilder()._offeredResource_(ArrayList(resources)).build())
+        get() =
+            arrayListOf(ResourceCatalogBuilder()._offeredResource_(ArrayList(resources)).build())
 
     /**
-     * Build current endpoints as given by connectionManager
-     * will not be stored in preferences, but freshly loaded each time.
-     * Multiple names for one connector allowed
+     * Build current endpoints as given by connectionManager will not be stored in preferences, but
+     * freshly loaded each time. Multiple names for one connector allowed
      */
     private val resources: List<Resource>
-        get() = connectionManager?.let { cm ->
-            cm.listAvailableEndpoints().map {
-                val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
-                val endpoint = ConnectorEndpointBuilder()._accessURL_(url).build()
-                ResourceBuilder()._resourceEndpoint_(arrayListOf(endpoint)).build()
+        get() =
+            connectionManager?.let { cm ->
+                cm.listAvailableEndpoints().map {
+                    val url = URI.create("${it.defaultProtocol}://${it.host}:${it.port}")
+                    val endpoint = ConnectorEndpointBuilder()._accessURL_(url).build()
+                    ResourceBuilder()._resourceEndpoint_(arrayListOf(endpoint)).build()
+                }
             }
-        } ?: emptyList()
+                ?: emptyList()
 
     /**
-     * Build Security Profile from preferences
-     * defaults to "NONE" for all attributes in case nothing has been stored
+     * Build Security Profile from preferences defaults to "NONE" for all attributes in case nothing
+     * has been stored
      * @return
      */
     private val securityProfile: SecurityProfile?
-        get() = connectorProfile.securityProfile.also {
-            if (it == null) {
-                LOG.warn("Settings, ConnectorProfile not available, or no SecurityProfile provided")
+        get() =
+            connectorProfile.securityProfile.also {
+                if (it == null) {
+                    LOG.warn(
+                        "Settings, ConnectorProfile not available, or no SecurityProfile provided"
+                    )
+                }
             }
-        }
 
     /**
-     * Creates and returns Connector object based on stored preferences.
-     * Returns random connector_url if none is stored in preferences.
-     * The fields op_url and entityNames cannot be null.
+     * Creates and returns Connector object based on stored preferences. Returns random
+     * connector_url if none is stored in preferences. The fields op_url and entityNames cannot be
+     * null.
      */
     override val connector: Connector?
         get() {
@@ -103,22 +106,29 @@ class InfoModelService : InfoModel {
             val entityNames = connectorEntityNames
 
             if (LOG.isTraceEnabled) {
-                LOG.trace("Maintainer URL: {}, Connector URL: {}, Entity Names: {}",
-                        maintainerUrl, connectorUrl, entityNames)
+                LOG.trace(
+                    "Maintainer URL: {}, Connector URL: {}, Entity Names: {}",
+                    maintainerUrl,
+                    connectorUrl,
+                    entityNames
+                )
             }
 
             return if (maintainerUrl != null) {
                 try {
-                    val trustedConnectorBuilder = if (connectorUrl == null) {
-                        TrustedConnectorBuilder()
-                    } else {
-                        TrustedConnectorBuilder(connectorUrl)
-                    }
-                    trustedConnectorBuilder._maintainer_(maintainerUrl)
-                            ._title_(ArrayList(entityNames))
-                            ._securityProfile_(securityProfile)
-                            ._resourceCatalog_(catalog)
-                            ._description_(ArrayList(entityNames)).build()
+                    val trustedConnectorBuilder =
+                        if (connectorUrl == null) {
+                            TrustedConnectorBuilder()
+                        } else {
+                            TrustedConnectorBuilder(connectorUrl)
+                        }
+                    trustedConnectorBuilder
+                        ._maintainer_(maintainerUrl)
+                        ._title_(ArrayList(entityNames))
+                        ._securityProfile_(securityProfile)
+                        ._resourceCatalog_(catalog)
+                        ._description_(ArrayList(entityNames))
+                        .build()
                 } catch (ex: ConstraintViolationException) {
                     LOG.error("Caught ConstraintViolationException while building Connector", ex)
                     null
@@ -133,9 +143,9 @@ class InfoModelService : InfoModel {
         }
 
     /**
-     * Store or update new Connector description to preferences.
-     * Creates random connector_url if null and succeeds only if maintainerUrl and entityNames != null
-     * Generates RDF description from Connector object and returns building success
+     * Store or update new Connector description to preferences. Creates random connector_url if
+     * null and succeeds only if maintainerUrl and entityNames != null Generates RDF description
+     * from Connector object and returns building success
      */
     override fun setConnector(profile: ConnectorProfile): Boolean {
         if (profile.securityProfile == null) {
@@ -154,9 +164,10 @@ class InfoModelService : InfoModel {
     }
 
     override val connectorAsJsonLd: String
-        get() = settings.connectorJsonLd
+        get() =
+            settings.connectorJsonLd
                 ?: connector?.let { serializer.serialize(it) }
-                ?: throw NullPointerException("Connector is not available")
+                    ?: throw NullPointerException("Connector is not available")
 
     override fun setConnectorByJsonLd(jsonLd: String?) {
         settings.let { settings ->
@@ -176,5 +187,4 @@ class InfoModelService : InfoModel {
         private val LOG = LoggerFactory.getLogger(InfoModelService::class.java)
         private val serializer: Serializer by lazy { Serializer() }
     }
-
 }

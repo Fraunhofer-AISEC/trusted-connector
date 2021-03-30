@@ -19,11 +19,11 @@
  */
 package de.fhg.aisec.ids.rm.util
 
+import java.util.*
 import org.apache.camel.model.*
 import org.apache.camel.util.ObjectHelper
-import java.util.*
 
-/** Represents a node in the EIP diagram tree  */
+/** Represents a node in the EIP diagram tree */
 class PrologNode(node: Any) {
     //	public String id;
     private var nodeType: String? = null

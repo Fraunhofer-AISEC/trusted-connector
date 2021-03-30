@@ -24,18 +24,17 @@ import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.UsageControlMaps
 import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.informationmodelmanager.BuildConfig
+import java.net.URI
 import org.apache.camel.Exchange
 import org.osgi.service.component.annotations.Activate
 import org.osgi.service.component.annotations.Component
 import org.osgi.service.component.annotations.Reference
 import org.osgi.service.component.annotations.ReferenceCardinality
-import java.net.URI
 
 @Suppress("unused")
 @Component
 class Idscp2OsgiComponent : Idscp2UsageControlInterface {
-    @Reference(cardinality = ReferenceCardinality.MANDATORY)
-    private lateinit var settings: Settings
+    @Reference(cardinality = ReferenceCardinality.MANDATORY) private lateinit var settings: Settings
 
     init {
         Utils.connectorUrlProducer = { settings.connectorProfile.connectorUrl }
@@ -54,12 +53,12 @@ class Idscp2OsgiComponent : Idscp2UsageControlInterface {
     }
 
     override fun getExchangeContract(exchange: Exchange) =
-            UsageControlMaps.getExchangeContract(exchange)
+        UsageControlMaps.getExchangeContract(exchange)
 
     override fun isProtected(exchange: Exchange) = UsageControlMaps.isProtected(exchange)
 
     override fun protectBody(exchange: Exchange, contractUri: URI) =
-            UsageControlMaps.protectBody(exchange, contractUri)
+        UsageControlMaps.protectBody(exchange, contractUri)
 
     override fun unprotectBody(exchange: Exchange) = UsageControlMaps.unprotectBody(exchange)
 

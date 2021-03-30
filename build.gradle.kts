@@ -145,6 +145,7 @@ configure(subprojects.filter { it.name != "examples" }) {
         isEnforceCheck = false
 
         kotlin {
+            ktfmt().kotlinlangStyle()
             licenseHeader("""/*-
  * ========================LICENSE_START=================================
  * ${project.name}

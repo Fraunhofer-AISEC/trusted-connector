@@ -27,13 +27,13 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision
 import de.fhg.aisec.ids.api.policy.ServiceNode
 import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
+import java.nio.charset.StandardCharsets
+import java.util.*
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -55,14 +55,14 @@ class LuconEngineTest {
         Assert.assertTrue(prolog.trim { it <= ' ' }.startsWith("move(1,X,Y"))
     }
 
-    /** Loading an invalid Prolog theory is expected to throw an exception.  */
+    /** Loading an invalid Prolog theory is expected to throw an exception. */
     @Test
     fun testLoadingTheoryNotGood() {
         val e = LuconEngine(System.out)
         try {
             e.loadPolicy("This is invalid")
         } catch (ex: InvalidTheoryException) {
-            return  // Expected
+            return // Expected
         }
         Assert.fail("Could load invalid theory without exception")
     }
@@ -105,7 +105,8 @@ class LuconEngineTest {
         val e = LuconEngine(System.out)
         e.loadPolicy(EXAMPLE_POLICY)
         try {
-            val solutions = e.query("has_endpoint(X,Y),regex_match(Y, \"hdfs://myendpoint\").", true)
+            val solutions =
+                e.query("has_endpoint(X,Y),regex_match(Y, \"hdfs://myendpoint\").", true)
             Assert.assertNotNull(solutions)
             Assert.assertEquals(3, solutions.size.toLong())
             for (solution in solutions) {
@@ -123,7 +124,8 @@ class LuconEngineTest {
     }
 
     /**
-     * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
+     * Test if the correct policy decisions are taken for a (very) simple route and an example
+     * policy.
      */
     @Test
     fun testPolicyDecision() {
@@ -144,7 +146,8 @@ class LuconEngineTest {
     }
 
     /**
-     * Test if the correct policy decisions are taken for a (very) simple route and an example policy.
+     * Test if the correct policy decisions are taken for a (very) simple route and an example
+     * policy.
      */
     @Test
     fun testPolicyDecisionWithExtendedLabels() {
@@ -162,7 +165,7 @@ class LuconEngineTest {
         Assert.assertEquals(0, dec.obligations.size.toLong())
     }
 
-    /** List all rules of the currently loaded policy.  */
+    /** List all rules of the currently loaded policy. */
     @Test
     fun testListRules() {
         val pdp = PolicyDecisionPoint()
@@ -226,7 +229,8 @@ class LuconEngineTest {
         val rm = Mockito.mock(RouteManager::class.java)
         println("------ ROUTE ----------")
         println(VERIFIABLE_ROUTE)
-        Mockito.`when`(rm.getRouteAsProlog(ArgumentMatchers.anyString())).thenReturn(VERIFIABLE_ROUTE)
+        Mockito.`when`(rm.getRouteAsProlog(ArgumentMatchers.anyString()))
+            .thenReturn(VERIFIABLE_ROUTE)
 
         // Create policy decision point and attach to route manager
         val pdp = PolicyDecisionPoint()
@@ -246,15 +250,18 @@ class LuconEngineTest {
         println(proof?.toString())
         Assert.assertNotNull(proof)
         Assert.assertFalse(proof!!.isValid)
-        //		assertTrue(proof.toString().contains("Service testQueueService may receive messages labeled
+        //		assertTrue(proof.toString().contains("Service testQueueService may receive messages
+        // labeled
         // [private], " + "which is forbidden by rule \"anotherRule\"."));
         println("##### PROBLEM #####")
         println(proof.toString())
         Assert.assertTrue(
-                proof
-                        .toString()
-                        .contains(
-                                "Service testQueueService may receive messages, which is forbidden by rule \"anotherRule\"."))
+            proof
+                .toString()
+                .contains(
+                    "Service testQueueService may receive messages, which is forbidden by rule \"anotherRule\"."
+                )
+        )
         Assert.assertNotNull(proof.counterExamples)
     }
 
@@ -332,15 +339,22 @@ class LuconEngineTest {
             System.gc()
             System.gc()
             System.gc() // Empty level 1- & 2-LRUs.
-            val memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+            val memoryBefore =
+                Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
             val dec = pdp.requestDecision(DecisionRequest(source, dest, emptySet(), null))
             val memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
             System.gc()
             System.gc()
             System.gc() // Empty level 1- & 2-LRUs.
-            val memoryAfterGC = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+            val memoryAfterGC =
+                Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
             println(
-                    i.toString() + "\t\t" + (memoryAfter - memoryBefore) + "\t\t" + (memoryAfterGC - memoryBefore))
+                i.toString() +
+                    "\t\t" +
+                    (memoryAfter - memoryBefore) +
+                    "\t\t" +
+                    (memoryAfterGC - memoryBefore)
+            )
             Assert.assertEquals(PolicyDecision.Decision.ALLOW, dec.decision)
             i += 10
         }
@@ -364,15 +378,22 @@ class LuconEngineTest {
             System.gc()
             System.gc()
             System.gc() // Empty level 1- & 2-LRUs.
-            val memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+            val memoryBefore =
+                Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
             val dec = pdp.requestDecision(DecisionRequest(source, dest, emptySet(), null))
             val memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
             System.gc()
             System.gc()
             System.gc() // Empty level 1- & 2-LRUs.
-            val memoryAfterGC = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+            val memoryAfterGC =
+                Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
             println(
-                    i.toString() + "\t\t" + (memoryAfter - memoryBefore) + "\t\t" + (memoryAfterGC - memoryBefore))
+                i.toString() +
+                    "\t\t" +
+                    (memoryAfter - memoryBefore) +
+                    "\t\t" +
+                    (memoryAfterGC - memoryBefore)
+            )
             Assert.assertEquals(PolicyDecision.Decision.ALLOW, dec.decision)
             i += 10
         }
@@ -416,7 +437,8 @@ class LuconEngineTest {
         Assert.assertEquals(PolicyDecision.Decision.DENY, d)
         Assert.assertEquals("No matching rule", dec.reason)
 
-        // testRulePrioTwo: now we have labels "public" AND "filtered" set, which makes testRulePrioTwo
+        // testRulePrioTwo: now we have labels "public" AND "filtered" set, which makes
+        // testRulePrioTwo
         // match
         from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
         to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
@@ -428,7 +450,8 @@ class LuconEngineTest {
         Assert.assertEquals(PolicyDecision.Decision.ALLOW, d)
         Assert.assertEquals("testRulePrioTwo", dec.reason)
 
-        // testRulePrioTwo: "public" AND "filtered" makes testRulePrioTwo match. Additional labels do
+        // testRulePrioTwo: "public" AND "filtered" makes testRulePrioTwo match. Additional labels
+        // do
         // not harm
         from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
         to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
@@ -456,7 +479,6 @@ class LuconEngineTest {
     /**
      * Generates n random rules matching a target endpoint (given as regex).
      *
-     *
      * All rules will take an "allow" decision.
      *
      * @param n The number of rules to generate
@@ -474,14 +496,22 @@ class LuconEngineTest {
             sb.append("receives_label(").append(ruleName).append(").\n")
             sb.append("has_target(").append(ruleName).append(", ").append(targetName).append(").\n")
             sb.append("has_obligation(")
-                    .append(ruleName)
-                    .append(", testObligation")
-                    .append(i)
-                    .append(").\n")
+                .append(ruleName)
+                .append(", testObligation")
+                .append(i)
+                .append(").\n")
             sb.append("service(").append(targetName).append(").\n")
             sb.append("has_endpoint(").append(targetName).append(", \".*\").\n")
-            sb.append("creates_label(").append(targetName).append(", ").append(labelName).append(").\n")
-            sb.append("removes_label(").append(targetName).append(", ").append(labelName).append(").\n")
+            sb.append("creates_label(")
+                .append(targetName)
+                .append(", ")
+                .append(labelName)
+                .append(").\n")
+            sb.append("removes_label(")
+                .append(targetName)
+                .append(", ")
+                .append(labelName)
+                .append(").\n")
         }
         return sb.toString()
     }
@@ -498,134 +528,140 @@ class LuconEngineTest {
 
     companion object {
         // Solving Towers of Hanoi in only two lines. Prolog FTW!
-        private const val HANOI_THEORY = ("move(1,X,Y,_) :- "
-                + "write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n"
-                + "move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). ")
+        private const val HANOI_THEORY =
+            ("move(1,X,Y,_) :- " +
+                "write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n" +
+                "move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). ")
 
         // A random but syntactically correct policy.
-        private const val EXAMPLE_POLICY = ("\n"
-                + "%%%%%%%% Rules %%%%%%%%%%%%\n"
-                + "rule(denyAll).\n"
-                + "rule_priority(denyAll, 0).\n"
-                + "has_decision(denyAll, drop).\n"
-                + "receives_label(denyAll).\n"
-                + "has_target(denyAll, serviceAll).\n"
-                + "\n"
-                + "rule(allowRule).\n"
-                + "rule_priority(allowRule, 1).\n"
-                + "has_decision(allowRule, allow).\n"
-                + "receives_label(allowRule).\n"
-                + "has_target(allowRule, hiveMqttBrokerService).\n"
-                + "has_target(allowRule, anonymizerService).\n"
-                + "has_target(allowRule, loggerService).\n"
-                + "has_target(allowRule, hadoopClustersService).\n"
-                + "has_target(allowRule, testQueueService).\n"
-                + "\n"
-                + "rule(deleteAfterOneMonth).\n"
-                + "rule_priority(deleteAfterOneMonth, 1).\n"
-                + "has_decision(deleteAfterOneMonth, allow).\n"
-                + "receives_label(deleteAfterOneMonth) :- label(private).\n"
-                + "has_target(deleteAfterOneMonth, service78096644).\n"
-                + "has_obligation(deleteAfterOneMonth, obl1709554620).\n"
-                + "% generated service\n"
-                + "service(service78096644).\n"
-                + "has_endpoint(service78096644, \"hdfs.*\").\n"
-                + "% generated obligation\n"
-                + "requires_prerequisite(obl1709554620, delete_after_days(30)).\n"
-                + "has_alternativedecision(obl1709554620, drop).\n"
-                + "\n"
-                + "rule(anotherRule).\n"
-                + "rule_priority(anotherRule, 1).\n"
-                + "has_target(anotherRule, testQueueService).\n"
-                + "receives_label(anotherRule) :- label(private).\n"
-                + "has_decision(anotherRule, drop).\n"
-                + "\n"
-                + "%%%%%%%%%%%% Services %%%%%%%%%%%%\n"
-                + "service(serviceAll).\n"
-                + "has_endpoint(serviceAll,'.*').\n"
-                + "\n"
-                + "service(hiveMqttBrokerService).\n"
-                + "creates_label(hiveMqttBrokerService, labelone).\n"
-                + "creates_label(hiveMqttBrokerService, private).\n"
-                + "removes_label(hiveMqttBrokerService, labeltwo).\n"
-                + "has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n"
-                + "has_property(hiveMqttBrokerService, type, public).\n"
-                + "\n"
-                + "service(anonymizerService).\n"
-                + "has_endpoint(anonymizerService, \".*anonymizer.*\").\n"
-                + "has_property(anonymizerService, myProp, anonymize('surname', 'name')).\n"
-                + "\n"
-                + "service(loggerService).\n"
-                + "has_endpoint(loggerService, \"^log.*\").\n"
-                + "\n"
-                + "service(hadoopClustersService).\n"
-                + "has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n"
-                + "has_capability(hadoopClustersService, deletion).\n"
-                + "has_property(hadoopClustersService, anonymizes, anonymize('surname', 'name')).\n"
-                + "\n"
-                + "service(testQueueService).\n"
-                + "has_endpoint(testQueueService, \"^amqp:.*?:test\").")
+        private const val EXAMPLE_POLICY =
+            ("\n" +
+                "%%%%%%%% Rules %%%%%%%%%%%%\n" +
+                "rule(denyAll).\n" +
+                "rule_priority(denyAll, 0).\n" +
+                "has_decision(denyAll, drop).\n" +
+                "receives_label(denyAll).\n" +
+                "has_target(denyAll, serviceAll).\n" +
+                "\n" +
+                "rule(allowRule).\n" +
+                "rule_priority(allowRule, 1).\n" +
+                "has_decision(allowRule, allow).\n" +
+                "receives_label(allowRule).\n" +
+                "has_target(allowRule, hiveMqttBrokerService).\n" +
+                "has_target(allowRule, anonymizerService).\n" +
+                "has_target(allowRule, loggerService).\n" +
+                "has_target(allowRule, hadoopClustersService).\n" +
+                "has_target(allowRule, testQueueService).\n" +
+                "\n" +
+                "rule(deleteAfterOneMonth).\n" +
+                "rule_priority(deleteAfterOneMonth, 1).\n" +
+                "has_decision(deleteAfterOneMonth, allow).\n" +
+                "receives_label(deleteAfterOneMonth) :- label(private).\n" +
+                "has_target(deleteAfterOneMonth, service78096644).\n" +
+                "has_obligation(deleteAfterOneMonth, obl1709554620).\n" +
+                "% generated service\n" +
+                "service(service78096644).\n" +
+                "has_endpoint(service78096644, \"hdfs.*\").\n" +
+                "% generated obligation\n" +
+                "requires_prerequisite(obl1709554620, delete_after_days(30)).\n" +
+                "has_alternativedecision(obl1709554620, drop).\n" +
+                "\n" +
+                "rule(anotherRule).\n" +
+                "rule_priority(anotherRule, 1).\n" +
+                "has_target(anotherRule, testQueueService).\n" +
+                "receives_label(anotherRule) :- label(private).\n" +
+                "has_decision(anotherRule, drop).\n" +
+                "\n" +
+                "%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
+                "service(serviceAll).\n" +
+                "has_endpoint(serviceAll,'.*').\n" +
+                "\n" +
+                "service(hiveMqttBrokerService).\n" +
+                "creates_label(hiveMqttBrokerService, labelone).\n" +
+                "creates_label(hiveMqttBrokerService, private).\n" +
+                "removes_label(hiveMqttBrokerService, labeltwo).\n" +
+                "has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" +
+                "has_property(hiveMqttBrokerService, type, public).\n" +
+                "\n" +
+                "service(anonymizerService).\n" +
+                "has_endpoint(anonymizerService, \".*anonymizer.*\").\n" +
+                "has_property(anonymizerService, myProp, anonymize('surname', 'name')).\n" +
+                "\n" +
+                "service(loggerService).\n" +
+                "has_endpoint(loggerService, \"^log.*\").\n" +
+                "\n" +
+                "service(hadoopClustersService).\n" +
+                "has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n" +
+                "has_capability(hadoopClustersService, deletion).\n" +
+                "has_property(hadoopClustersService, anonymizes, anonymize('surname', 'name')).\n" +
+                "\n" +
+                "service(testQueueService).\n" +
+                "has_endpoint(testQueueService, \"^amqp:.*?:test\").")
 
         // Policy with extended labels, i.e. "purpose(green)"
-        private const val EXTENDED_LABELS_POLICY = (""
-                + "%%%%%%%% Rules %%%%%%%%%%%%\n"
-                + "rule(denyAll).\n"
-                + "rule_priority(denyAll, 0).\n"
-                + "has_decision(denyAll, drop).\n"
-                + "receives_label(denyAll).\n"
-                + "has_target(denyAll, serviceAll).\n"
-                + "\n"
-                + "rule(demo).\n"
-                + "rule_priority(demo, 1).\n"
-                + "has_target(demo, service473016340).\n"
-                + "service(service473016340).\n"
-                + "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n"
-                + "receives_label(demo) :- label(purpose(green)).\n" // Note that Prolog does not support
+        private const val EXTENDED_LABELS_POLICY =
+            ("" +
+                "%%%%%%%% Rules %%%%%%%%%%%%\n" +
+                "rule(denyAll).\n" +
+                "rule_priority(denyAll, 0).\n" +
+                "has_decision(denyAll, drop).\n" +
+                "receives_label(denyAll).\n" +
+                "has_target(denyAll, serviceAll).\n" +
+                "\n" +
+                "rule(demo).\n" +
+                "rule_priority(demo, 1).\n" +
+                "has_target(demo, service473016340).\n" +
+                "service(service473016340).\n" +
+                "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n" +
+                "receives_label(demo) :- label(purpose(green)).\n" // Note that Prolog does not
+                // support
                 // nested predicates.
-                + "has_decision(demo, allow).\n"
-                + "\n"
-                + "%%%%% Services %%%%%%%%%%%%\n"
-                + "service(serviceAll).\n"
-                + "has_endpoint(serviceAll,'.*').\n"
-                + "creates_label(serviceAll, purpose(green)).\n"
-                + "\n"
-                + "service(sanitizedata).\n"
-                + "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n"
-                + "creates_label(sanitizedata, public).\n"
-                + "removes_label(sanitizedata, private).\n")
+                +
+                "has_decision(demo, allow).\n" +
+                "\n" +
+                "%%%%% Services %%%%%%%%%%%%\n" +
+                "service(serviceAll).\n" +
+                "has_endpoint(serviceAll,'.*').\n" +
+                "creates_label(serviceAll, purpose(green)).\n" +
+                "\n" +
+                "service(sanitizedata).\n" +
+                "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" +
+                "creates_label(sanitizedata, public).\n" +
+                "removes_label(sanitizedata, private).\n")
 
         // Route from LUCON paper with path searching logic
-        private const val VERIFIABLE_ROUTE = ("%\n"
-                + "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n"
-                + "%\n"
-                + "% Demonstration of model checking a message route against a usage control policy\n"
-                + "%\n"
-                + "% Message Route definition\n"
-                + "%\n"
-                + "%       hiveMqttBroker       \n"
-                + "%       /     \\     \n"
-                + "%  logger    anonymizer  \n"
-                + "%       \\     /     \n"
-                + "%       hadoopClusters       \n"
-                + "%         |          \n"
-                + "%       testQueue       \n"
-                + "entrynode(hiveMqttBroker).\n"
-                + "stmt(hiveMqttBroker).\n"
-                + "has_action(hiveMqttBroker, \"paho:something:tcp://broker.hivemq.com:1883/anywhere\").\n"
-                + "stmt(logger).\n"
-                + "has_action(logger, \"log\").\n"
-                + "stmt(anonymizer).\n"
-                + "has_action(anonymizer, \"hello_anonymizer_world\").\n"
-                + "stmt(hadoopClusters).\n"
-                + "has_action(hadoopClusters, \"hdfs://myCluser\").\n"
-                + "stmt(testQueue).\n"
-                + "has_action(testQueue, \"amqp:testQueue:test\").\n"
-                + "\n"
-                + "succ(hiveMqttBroker, logger).\n"
-                + "succ(hiveMqttBroker, anonymizer).\n"
-                + "succ(logger, hadoopClusters).\n"
-                + "succ(anonymizer, hadoopClusters).\n"
-                + "succ(hadoopClusters, testQueue).\n"
-                + "\n")
+        private const val VERIFIABLE_ROUTE =
+            ("%\n" +
+                "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n" +
+                "%\n" +
+                "% Demonstration of model checking a message route against a usage control policy\n" +
+                "%\n" +
+                "% Message Route definition\n" +
+                "%\n" +
+                "%       hiveMqttBroker       \n" +
+                "%       /     \\     \n" +
+                "%  logger    anonymizer  \n" +
+                "%       \\     /     \n" +
+                "%       hadoopClusters       \n" +
+                "%         |          \n" +
+                "%       testQueue       \n" +
+                "entrynode(hiveMqttBroker).\n" +
+                "stmt(hiveMqttBroker).\n" +
+                "has_action(hiveMqttBroker, \"paho:something:tcp://broker.hivemq.com:1883/anywhere\").\n" +
+                "stmt(logger).\n" +
+                "has_action(logger, \"log\").\n" +
+                "stmt(anonymizer).\n" +
+                "has_action(anonymizer, \"hello_anonymizer_world\").\n" +
+                "stmt(hadoopClusters).\n" +
+                "has_action(hadoopClusters, \"hdfs://myCluser\").\n" +
+                "stmt(testQueue).\n" +
+                "has_action(testQueue, \"amqp:testQueue:test\").\n" +
+                "\n" +
+                "succ(hiveMqttBroker, logger).\n" +
+                "succ(hiveMqttBroker, anonymizer).\n" +
+                "succ(logger, hadoopClusters).\n" +
+                "succ(anonymizer, hadoopClusters).\n" +
+                "succ(hadoopClusters, testQueue).\n" +
+                "\n")
     }
 }

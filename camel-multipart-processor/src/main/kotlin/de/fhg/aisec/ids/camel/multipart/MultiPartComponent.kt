@@ -28,9 +28,8 @@ import org.osgi.service.component.annotations.ReferenceCardinality
 /**
  * The only purpose of this OSGi component is to connect to the InfoModelManager.
  *
- *
- * This is required for the MultiPartComponent to use a proper IDS self description in the
- * multipart messages.
+ * This is required for the MultiPartComponent to use a proper IDS self description in the multipart
+ * messages.
  *
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
@@ -47,6 +46,7 @@ class MultiPartComponent {
     companion object {
         private lateinit var instance: MultiPartComponent
 
-        val infoModelManager get() = instance.infoModelManager
+        val infoModelManager
+            get() = instance.infoModelManager
     }
 }

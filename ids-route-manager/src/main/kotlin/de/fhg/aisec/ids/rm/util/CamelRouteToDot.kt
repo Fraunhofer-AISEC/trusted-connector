@@ -19,16 +19,15 @@
  */
 package de.fhg.aisec.ids.rm.util
 
-import org.apache.camel.model.*
-import org.apache.camel.util.ObjectHelper
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.Writer
 import java.util.*
+import org.apache.camel.model.*
+import org.apache.camel.util.ObjectHelper
 
 /**
  * Camel route definition to GraphViz converter.
- *
  *
  * The output can be turned into pictures using dot, neato, and others.
  */
@@ -75,8 +74,10 @@ class CamelRouteToDot {
             return
         }
         writer.write("digraph { rankdir=LR; size=\"4.5,5.5\" \n\n")
-        writer.write("node [shape=\"box\", style = \"filled\", fillcolor = white, "
-                + "fontname=\"Helvetica-Oblique\"];")
+        writer.write(
+            "node [shape=\"box\", style = \"filled\", fillcolor = white, " +
+                "fontname=\"Helvetica-Oblique\"];"
+        )
         printRoute(writer, route, route.input)
         writer.write("\n}")
     }
@@ -92,7 +93,11 @@ class CamelRouteToDot {
     }
 
     @Throws(IOException::class)
-    private fun printNode(writer: Writer, fromData: NodeData?, node: ProcessorDefinition<*>?): NodeData? {
+    private fun printNode(
+        writer: Writer,
+        fromData: NodeData?,
+        node: ProcessorDefinition<*>?
+    ): NodeData? {
         var fromDataVar = fromData
         if (node is MulticastDefinition) {
             // no need for a multicast or interceptor node
@@ -170,15 +175,16 @@ class CamelRouteToDot {
     }
 
     @Throws(IOException::class)
-    fun generateFile(
-            writer: PrintWriter?, map: Map<String, List<RouteDefinition>>?) {
+    fun generateFile(writer: PrintWriter?, map: Map<String, List<RouteDefinition>>?) {
         if (writer == null || map == null) {
             return
         }
         writer.println("digraph CamelRoutes {")
         writer.println()
-        writer.println("node [style = \"rounded,filled\", fillcolor = white, color = \"#898989\", "
-                + "fontname=\"Helvetica-Oblique\"];")
+        writer.println(
+            "node [style = \"rounded,filled\", fillcolor = white, color = \"#898989\", " +
+                "fontname=\"Helvetica-Oblique\"];"
+        )
         writer.println()
         printRoutes(writer, map)
         writer.println("}")
@@ -204,7 +210,7 @@ class CamelRouteToDot {
         return node is MulticastDefinition || node is ChoiceDefinition
     }
 
-    /** Is the given node a pipeline  */
+    /** Is the given node a pipeline */
     private fun isPipeline(node: ProcessorDefinition<*>): Boolean {
         if (node is MulticastDefinition) {
             return false

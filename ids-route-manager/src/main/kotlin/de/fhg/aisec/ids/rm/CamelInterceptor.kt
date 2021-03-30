@@ -46,18 +46,22 @@ class CamelInterceptor : InterceptStrategy {
     }
 
     override fun wrapProcessorInInterceptors(
-            context: CamelContext,
-            node: NamedNode,
-            target: Processor,
-            nextTarget: Processor?): Processor {
+        context: CamelContext,
+        node: NamedNode,
+        target: Processor,
+        nextTarget: Processor?
+    ): Processor {
         return PolicyEnforcementPoint(node, target)
     }
 
     companion object {
         private lateinit var instance: CamelInterceptor
 
-        val pdp get() = instance.pdp
-        val usageControlInterface get() = instance.usageControlInterface
-        val containerManager get() = instance.containerManager
+        val pdp
+            get() = instance.pdp
+        val usageControlInterface
+            get() = instance.usageControlInterface
+        val containerManager
+            get() = instance.containerManager
     }
 }

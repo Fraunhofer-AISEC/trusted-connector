@@ -22,6 +22,13 @@ package de.fhg.aisec.ids.rm
 import de.fhg.aisec.ids.api.router.*
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot
 import de.fhg.aisec.ids.rm.util.PrologPrinter
+import java.io.*
+import java.nio.charset.StandardCharsets
+import java.util.*
+import java.util.stream.Collectors
+import javax.management.*
+import javax.xml.bind.JAXBContext
+import javax.xml.bind.JAXBException
 import org.apache.camel.CamelContext
 import org.apache.camel.Endpoint
 import org.apache.camel.ServiceStatus
@@ -37,13 +44,6 @@ import org.osgi.service.component.ComponentContext
 import org.osgi.service.component.annotations.Activate
 import org.osgi.service.component.annotations.Component
 import org.slf4j.LoggerFactory
-import java.io.*
-import java.nio.charset.StandardCharsets
-import java.util.*
-import java.util.stream.Collectors
-import javax.management.*
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.JAXBException
 
 /**
  * Manages Camel routes.
@@ -119,7 +119,8 @@ class RouteManagerService : RouteManager {
 
     override fun listComponents(): List<RouteComponent> {
         val componentNames: MutableList<RouteComponent> = ArrayList()
-        val bCtx = FrameworkUtil.getBundle(RouteManagerService::class.java).bundleContext
+        val bCtx =
+            FrameworkUtil.getBundle(RouteManagerService::class.java).bundleContext
                 ?: return componentNames
         try {
             val services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null)
@@ -142,15 +143,18 @@ class RouteManagerService : RouteManager {
 
     override fun getEndpoints(): Map<String, Collection<String>> {
         return camelContexts
-                .stream()
-                .collect(
-                        Collectors.toMap({ obj: CamelContext -> obj.name },
-                                { c: CamelContext ->
-                                    c.endpoints
-                                            .stream()
-                                            .map { obj: Endpoint -> obj.endpointUri }
-                                            .collect(Collectors.toList())
-                                }))
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    { obj: CamelContext -> obj.name },
+                    { c: CamelContext ->
+                        c.endpoints
+                            .stream()
+                            .map { obj: Endpoint -> obj.endpointUri }
+                            .collect(Collectors.toList())
+                    }
+                )
+            )
     }
 
     override fun listEndpoints(): Map<String, String> {
@@ -224,13 +228,12 @@ class RouteManagerService : RouteManager {
     private val camelContexts: List<CamelContext>
         get() {
             return try {
-                ctx.bundleContext.getServiceReferences(CamelContext::class.java.name, null)
-                        ?.run {
-                            mapNotNull { reference -> ctx.bundleContext.getService(reference) }
-                                    .map { CamelContext::class.java.cast(it) }
-                                    .sortedWith(Comparator.comparing { it.name })
-                        } ?: emptyList()
-
+                ctx.bundleContext.getServiceReferences(CamelContext::class.java.name, null)?.run {
+                    mapNotNull { reference -> ctx.bundleContext.getService(reference) }
+                        .map { CamelContext::class.java.cast(it) }
+                        .sortedWith(Comparator.comparing { it.name })
+                }
+                    ?: emptyList()
             } catch (e: Exception) {
                 LOG.warn("Cannot retrieve the list of Camel contexts.", e)
                 emptyList()
@@ -244,16 +247,16 @@ class RouteManagerService : RouteManager {
      * @param rd The RouteDefinition to be transformed
      * @return The resulting RouteObject
      */
-    private fun routeDefinitionToObject(
-            cCtx: CamelContext, rd: RouteDefinition): RouteObject {
+    private fun routeDefinitionToObject(cCtx: CamelContext, rd: RouteDefinition): RouteObject {
         return RouteObject(
-                rd.id,
-                rd.descriptionText,
-                routeToDot(rd),
-                rd.shortName,
-                cCtx.name,
-                cCtx.uptimeMillis,
-                cCtx.routeController.getRouteStatus(rd.id).toString())
+            rd.id,
+            rd.descriptionText,
+            routeToDot(rd),
+            rd.shortName,
+            cCtx.name,
+            cCtx.uptimeMillis,
+            cCtx.routeController.getRouteStatus(rd.id).toString()
+        )
     }
 
     /**
@@ -289,27 +292,42 @@ class RouteManagerService : RouteManager {
         return emptyList()
     }
 
-    @Throws(MalformedObjectNameException::class, JAXBException::class, AttributeNotFoundException::class, InstanceNotFoundException::class, MBeanException::class, ReflectionException::class)
+    @Throws(
+        MalformedObjectNameException::class,
+        JAXBException::class,
+        AttributeNotFoundException::class,
+        InstanceNotFoundException::class,
+        MBeanException::class,
+        ReflectionException::class
+    )
     fun getRouteStats(cCtx: CamelContext, rd: RouteDefinition): RouteStatDump? {
         val context = JAXBContext.newInstance(RouteStatDump::class.java)
         val unmarshaller = context.createUnmarshaller()
         val agent = cCtx.managementStrategy.managementAgent
         if (agent != null) {
             val mBeanServer = agent.mBeanServer
-            val set = mBeanServer.queryNames(
+            val set =
+                mBeanServer.queryNames(
                     ObjectName(
-                            DefaultManagementAgent.DEFAULT_DOMAIN
-                                    + ":type=routes,name=\""
-                                    + rd.id
-                                    + "\",*"),
-                    null)
+                        DefaultManagementAgent.DEFAULT_DOMAIN +
+                            ":type=routes,name=\"" +
+                            rd.id +
+                            "\",*"
+                    ),
+                    null
+                )
             for (routeMBean in set) {
                 // the route must be part of the camel context
                 val camelId = mBeanServer.getAttribute(routeMBean, "CamelId") as String?
                 if (camelId != null && camelId == cCtx.name) {
-                    val xml = mBeanServer.invoke(
+                    val xml =
+                        mBeanServer.invoke(
                             routeMBean,
-                            "dumpRouteStatsAsXml", arrayOf<Any>(false, true), arrayOf("boolean", "boolean")) as String
+                            "dumpRouteStatsAsXml",
+                            arrayOf<Any>(false, true),
+                            arrayOf("boolean", "boolean")
+                        ) as
+                            String
                     return unmarshaller.unmarshal(StringReader(xml)) as RouteStatDump
                 }
             }
@@ -323,9 +341,12 @@ class RouteManagerService : RouteManager {
      * @param routeId The id of the route that is to be exported
      */
     override fun getRouteAsProlog(routeId: String): String {
-        val c = camelContexts
+        val c =
+            camelContexts
                 .parallelStream()
-                .filter { cCtx: CamelContext -> cCtx.adapt(ModelCamelContext::class.java).getRouteDefinition(routeId) != null }
+                .filter { cCtx: CamelContext ->
+                    cCtx.adapt(ModelCamelContext::class.java).getRouteDefinition(routeId) != null
+                }
                 .findAny()
         if (c.isPresent) {
             try {
@@ -378,7 +399,9 @@ class RouteManagerService : RouteManager {
             if (targetRoute != null) {
                 cCtx = c
                 val serviceStatus = cCtx.routeController.getRouteStatus(routeId)
-                routeStarted = serviceStatus == ServiceStatus.Started || serviceStatus == ServiceStatus.Starting
+                routeStarted =
+                    serviceStatus == ServiceStatus.Started ||
+                        serviceStatus == ServiceStatus.Starting
                 break
             }
         }
@@ -390,19 +413,26 @@ class RouteManagerService : RouteManager {
         // Check for validity of route representation
         var routes: List<RouteDefinition>
         try {
-            ByteArrayInputStream(routeRepresentation.toByteArray(StandardCharsets.UTF_8)).use { bis ->
+            ByteArrayInputStream(routeRepresentation.toByteArray(StandardCharsets.UTF_8)).use { bis
+                ->
                 // Load route(s) from XML
                 val rd = ModelHelper.loadRoutesDefinition(cCtx, bis)
                 routes = rd.routes
-                val id = routes.stream().map { obj: RouteDefinition -> obj.id }.filter { rid: String -> routeId != rid }.findAny()
+                val id =
+                    routes
+                        .stream()
+                        .map { obj: RouteDefinition -> obj.id }
+                        .filter { rid: String -> routeId != rid }
+                        .findAny()
                 if (id.isPresent) {
                     throw Exception(
-                            "The new route representation has a different ID: "
-                                    + "Expected \""
-                                    + routeId
-                                    + "\" but got \""
-                                    + id.get()
-                                    + "\"")
+                        "The new route representation has a different ID: " +
+                            "Expected \"" +
+                            routeId +
+                            "\" but got \"" +
+                            id.get() +
+                            "\""
+                    )
                 }
             }
         } catch (e: Exception) {
@@ -444,20 +474,24 @@ class RouteManagerService : RouteManager {
         val existingRoutes = this.routes
         val cCtx: CamelContext = DefaultCamelContext()
         try {
-            ByteArrayInputStream(routeRepresentation.toByteArray(StandardCharsets.UTF_8)).use { bis ->
+            ByteArrayInputStream(routeRepresentation.toByteArray(StandardCharsets.UTF_8)).use { bis
+                ->
                 // Load route(s) from XML
                 val rd = ModelHelper.loadRoutesDefinition(cCtx, bis)
                 val routes = rd.routes
-                // Check that intersection of existing and new routes is empty (=we do not allow overwriting
+                // Check that intersection of existing and new routes is empty (=we do not allow
+                // overwriting
                 // existing route ids)
-                val intersect = routes
+                val intersect =
+                    routes
                         .stream()
                         .filter { r -> existingRoutes.stream().anyMatch { it.id == r.id } }
                         .map { it.id }
                         .collect(Collectors.toList())
                 if (intersect.isNotEmpty()) {
                     throw RouteException(
-                            "Route id already exists. Will not overwrite it. ${intersect.joinToString(", ")}")
+                        "Route id already exists. Will not overwrite it. ${intersect.joinToString(", ")}"
+                    )
                 }
                 cCtx.adapt(ModelCamelContext::class.java).addRouteDefinitions(routes)
                 cCtx.start()

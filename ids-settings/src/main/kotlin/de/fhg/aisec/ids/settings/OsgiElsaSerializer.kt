@@ -23,8 +23,6 @@ import org.mapdb.DataInput2
 import org.mapdb.DataOutput2
 import org.mapdb.Serializer
 import org.mapdb.elsa.ElsaMaker
-import org.mapdb.elsa.ElsaSerializer
-import org.mapdb.elsa.ElsaSerializerBase
 import org.mapdb.elsa.ElsaSerializerPojo
 
 class OsgiElsaSerializer<T> : Serializer<T> {

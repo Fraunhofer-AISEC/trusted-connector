@@ -57,5 +57,4 @@ interface InfoModel {
      * @return Version of infomodel
      */
     val modelVersion: String
-
 }

@@ -49,7 +49,9 @@ object TuPrologHelper {
         require(list.isList) { "Not a tuProlog list" }
         val listIterator = (list as Struct).listIterator()
         return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(listIterator, Spliterator.ORDERED), false)
+            Spliterators.spliteratorUnknownSize(listIterator, Spliterator.ORDERED),
+            false
+        )
     }
 
     fun unquote(s: String): String {

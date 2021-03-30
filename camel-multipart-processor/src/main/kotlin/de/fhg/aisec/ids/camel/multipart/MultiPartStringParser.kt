@@ -19,17 +19,18 @@
  */
 package de.fhg.aisec.ids.camel.multipart
 
-import org.apache.commons.fileupload.FileUpload
-import org.apache.commons.fileupload.UploadContext
-import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
+import org.apache.commons.fileupload.FileUpload
+import org.apache.commons.fileupload.UploadContext
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.slf4j.LoggerFactory
 
-class MultiPartStringParser internal constructor(private val multipartInput: InputStream) : UploadContext {
+class MultiPartStringParser internal constructor(private val multipartInput: InputStream) :
+    UploadContext {
     private var boundary: String? = null
     var header: String? = null
     var payload: InputStream? = null
@@ -52,8 +53,11 @@ class MultiPartStringParser internal constructor(private val multipartInput: Inp
     init {
         multipartInput.mark(10240)
         BufferedReader(InputStreamReader(multipartInput, StandardCharsets.UTF_8)).use { reader ->
-            val boundaryLine = reader.readLine()
-                    ?: throw IOException("Message body appears to be empty, expected multipart boundary.")
+            val boundaryLine =
+                reader.readLine()
+                    ?: throw IOException(
+                        "Message body appears to be empty, expected multipart boundary."
+                    )
             boundary = boundaryLine.substring(2).trim { it <= ' ' }
             multipartInput.reset()
             for (i in FileUpload(DiskFileItemFactory()).parseRequest(this)) {
