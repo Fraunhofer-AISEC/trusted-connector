@@ -1,3 +1,0 @@
-dependencies {
-    implementation group: 'javax.xml.ws', name: 'jaxws-api', version: libraryVersions.jaxwsApi
-}

@@ -1,0 +1,6 @@
+Bundle-Name: IDS :: Camel IDSCP2 Support for OSGi
+Bundle-SymbolicName: de.fhg.aisec.ids.camel.idscp2.osgi
+Bundle-Description: Camel IDSCP2 protocol support for OSGi
+Export-Package: \
+    de.fhg.aisec.ids.camel.idscp2.osgi
+Import-Package: *

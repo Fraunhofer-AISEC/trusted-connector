@@ -28,19 +28,17 @@ import de.fhg.aisec.ids.api.router.RouteObject;
 import de.fhg.aisec.ids.api.settings.ConnectionSettings;
 import de.fhg.aisec.ids.api.settings.ConnectorConfig;
 import de.fhg.aisec.ids.api.settings.Settings;
-import de.fhg.aisec.ids.api.tokenm.TokenManager;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.*;
 
-import java.nio.file.FileSystems;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * REST API interface for configurations in the connector.
@@ -94,23 +92,6 @@ public class ConfigApi {
       return "No settings available";
     }
     settings.setConnectorConfig(config);
-    TokenManager tokenManager = WebConsoleComponent.getTokenManager();
-    if (tokenManager == null) {
-      return "No TokenManager available";
-    }
-
-    try {
-      tokenManager.acquireToken(
-          FileSystems.getDefault().getPath("etc"),
-          config.getDapsUrl(),
-          config.getKeystoreName(),
-          config.getKeystorePassword(),
-          config.getKeystoreAliasName(),
-          config.getTruststoreName(),
-          config.getConnectorUUID());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
 
     return "OK";
   }

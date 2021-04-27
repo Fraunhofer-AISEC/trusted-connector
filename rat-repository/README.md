@@ -1,1 +1,0 @@
-The _rat-repository_ module contains the a service that serves as a Remote Attestation (RAT) repository. This is an exemplary infrastructural service that serves valid TPM signatures to Connector instances.

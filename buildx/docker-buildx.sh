@@ -34,8 +34,8 @@ eval set -- "$PARSED"
 
 EXAMPLE_TAG_ARG="develop"
 DOCKER_BUILD_TAG_ARG="develop"
-BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot"
-TARGETS="core tpmsim ttpsim example-idscp-consumer-app example-idscp-provider-app"
+BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot-focal"
+TARGETS="core"
 FILES=""
 BUILD_CONTAINER=0
 
@@ -47,6 +47,10 @@ while true; do
     ;;
   -t | --example-tag)
     EXAMPLE_TAG_ARG="$2"
+    shift 2
+    ;;
+  --targets)
+    TARGETS="$2"
     shift 2
     ;;
   -b | --base-image)
@@ -72,6 +76,9 @@ while true; do
   esac
 done
 
+# Enable experimental Docker features (buildx)
+export DOCKER_CLI_EXPERIMENTAL="enabled"
+
 # Export vars for buildx bake yaml resolution
 export EXAMPLE_TAG="$EXAMPLE_TAG_ARG"
 export DOCKER_BUILD_TAG="$DOCKER_BUILD_TAG_ARG"
@@ -79,8 +86,6 @@ export BASE_IMAGE="$BASE_IMAGE_ARG"
 printf "######################################################################\n"
 printf "Using build tag \"%s\" and base image \"%s\"\n" "$EXAMPLE_TAG" "$BASE_IMAGE"
 printf "######################################################################\n\n"
-echo "Building jdk-base via \"docker buildx bake jdk-base ${FILES}$*\"..."
-eval "docker buildx bake jdk-base ${FILES}$*"
 
 if [ $BUILD_CONTAINER = 1 ]; then
   echo "Building build-container via \"docker buildx bake build-container $*\"..."

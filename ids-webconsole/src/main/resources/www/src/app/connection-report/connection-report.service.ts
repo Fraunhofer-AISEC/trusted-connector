@@ -4,23 +4,25 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 
-import { Endpoint, IncomingConnection, OutgoingConnection } from './connections';
+import { Endpoint } from './endpoint';
+import { IncomingConnection } from './incoming-connection';
+import { OutgoingConnection } from './outgoing-connection';
 
 @Injectable()
 export class ConnectionReportService {
 
   constructor(private readonly http: HttpClient) { }
 
-  public getEndpoints(): Observable<Array<Endpoint>> {
-    return this.http.get<Array<Endpoint>>(environment.apiURL + '/connections/endpoints');
+  public getEndpoints(): Observable<Endpoint[]> {
+    return this.http.get<Endpoint[]>(environment.apiURL + '/connections/endpoints');
   }
 
-  public getIncomingConnections(): Observable<Array<IncomingConnection>> {
-    return this.http.get<Array<IncomingConnection>>(environment.apiURL + '/connections/incoming');
+  public getIncomingConnections(): Observable<IncomingConnection[]> {
+    return this.http.get<IncomingConnection[]>(environment.apiURL + '/connections/incoming');
   }
 
-  public getOutgoingConnections(): Observable<Array<OutgoingConnection>> {
-    return this.http.get<Array<OutgoingConnection>>(environment.apiURL + '/connections/outgoing');
+  public getOutgoingConnections(): Observable<OutgoingConnection[]> {
+    return this.http.get<OutgoingConnection[]>(environment.apiURL + '/connections/outgoing');
   }
 
 }

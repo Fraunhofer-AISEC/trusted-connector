@@ -16,7 +16,7 @@ import { RouteService } from './route.service';
 export class RoutesComponent implements OnInit, OnDestroy {
     public title = 'Current Routes';
     @Output() public readonly changeTitle = new EventEmitter();
-    public routes: Array<Route>;
+    public routes: Route[];
     public selectedRoute: Route;
     public routemetrics: RouteMetrics = new RouteMetrics();
 

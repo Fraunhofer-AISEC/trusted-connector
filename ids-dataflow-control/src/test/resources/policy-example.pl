@@ -19,7 +19,7 @@
 %:- discontiguous has_alternativedecision/2.
 %:- discontiguous has_obligation/2.
 %:- discontiguous receives_label/1.
-regex(A,B,C) :- class("java.util.regex.Pattern") <- matches(A,B) returns C.		
+
 %%%%%%%% Rules %%%%%%%%%%%%
 % I am a test rule of prio 3
 rule(testRulePrioThree).

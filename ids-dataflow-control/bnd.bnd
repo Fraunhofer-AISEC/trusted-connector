@@ -1,6 +1,7 @@
 Bundle-Name: IDS :: Dataflow Control Engine
 Export-Package: \
+    alice*;-split-package:=merge-last,\
     de.fhg.aisec.ids.dataflowcontrol*
 Import-Package: \
-    !org.checkerframework.checker*,\
-	*
+    !dalvik*,\
+    *

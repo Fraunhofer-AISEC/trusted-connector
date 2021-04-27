@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.api.cm;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,9 @@ public class ApplicationContainer {
   private String signature;
   private String owner;
   private String image;
+  private String imageId;
+  private List<String> imageDigests;
+  private List<InetAddress> ipAddresses;
 
   // Portainer attributes:
   private Object repository;
@@ -218,6 +222,30 @@ public class ApplicationContainer {
 
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public String getImageId() {
+    return imageId;
+  }
+
+  public void setImageId(String imageId) {
+    this.imageId = imageId;
+  }
+
+  public List<String> getImageDigests() {
+    return imageDigests;
+  }
+
+  public void setImageDigests(List<String> digests) {
+    this.imageDigests = digests;
+  }
+
+  public List<InetAddress> getIpAddresses() {
+    return ipAddresses;
+  }
+
+  public void setIpAddresses(List<InetAddress> ipAddresses) {
+    this.ipAddresses = ipAddresses;
   }
 
   public String getRegistry() {

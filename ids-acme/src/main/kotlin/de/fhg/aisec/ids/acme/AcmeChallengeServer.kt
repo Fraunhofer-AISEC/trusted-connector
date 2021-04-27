@@ -21,11 +21,11 @@ package de.fhg.aisec.ids.acme
 
 import de.fhg.aisec.ids.api.acme.AcmeClient
 import fi.iki.elonen.NanoHTTPD
-import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
+import org.slf4j.LoggerFactory
 
 object AcmeChallengeServer {
     const val TEXT_PLAIN = "text/plain"
@@ -35,32 +35,40 @@ object AcmeChallengeServer {
 
     @Throws(IOException::class)
     fun startServer(acmeClient: AcmeClient, challengePort: Int) {
-        server = object : NanoHTTPD(challengePort) {
-            override fun serve(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
-                val tokenMatcher = ACME_REGEX.matcher(session.uri)
-                if (!tokenMatcher.matches()) {
-                    LOG.error("Received invalid ACME challenge {} ", session.uri)
-                    return NanoHTTPD.newFixedLengthResponse(
-                            NanoHTTPD.Response.Status.BAD_REQUEST, TEXT_PLAIN, null)
-                }
-                val token = tokenMatcher.group(1)
-                LOG.info("Received ACME challenge: {}", token)
-                val response = acmeClient.getChallengeAuthorization(token)
-                return if (response == null) {
-                    LOG.warn("ACME challenge is unknown")
-                    NanoHTTPD.newFixedLengthResponse(
-                            NanoHTTPD.Response.Status.NOT_FOUND, TEXT_PLAIN, null)
-                } else {
-                    LOG.info("ACME challenge response: {}", response)
-                    val responseBytes = response.toByteArray(StandardCharsets.UTF_8)
-                    NanoHTTPD.newFixedLengthResponse(
+        server =
+            object : NanoHTTPD(challengePort) {
+                override fun serve(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+                    val tokenMatcher = ACME_REGEX.matcher(session.uri)
+                    if (!tokenMatcher.matches()) {
+                        LOG.error("Received invalid ACME challenge {} ", session.uri)
+                        return NanoHTTPD.newFixedLengthResponse(
+                            NanoHTTPD.Response.Status.BAD_REQUEST,
+                            TEXT_PLAIN,
+                            null
+                        )
+                    }
+                    val token = tokenMatcher.group(1)
+                    LOG.info("Received ACME challenge: {}", token)
+                    val response = acmeClient.getChallengeAuthorization(token)
+                    return if (response == null) {
+                        LOG.warn("ACME challenge is unknown")
+                        NanoHTTPD.newFixedLengthResponse(
+                            NanoHTTPD.Response.Status.NOT_FOUND,
+                            TEXT_PLAIN,
+                            null
+                        )
+                    } else {
+                        LOG.info("ACME challenge response: {}", response)
+                        val responseBytes = response.toByteArray(StandardCharsets.UTF_8)
+                        NanoHTTPD.newFixedLengthResponse(
                             NanoHTTPD.Response.Status.OK,
                             TEXT_PLAIN,
                             ByteArrayInputStream(responseBytes),
-                            responseBytes.size.toLong())
+                            responseBytes.size.toLong()
+                        )
+                    }
                 }
             }
-        }
         server?.let {
             it.start(NanoHTTPD.SOCKET_READ_TIMEOUT, true)
             LOG.debug("NanoHTTPD started")

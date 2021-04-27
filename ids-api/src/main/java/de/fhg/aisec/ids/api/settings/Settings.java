@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.api.settings;
 
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
+
 import java.util.Map;
 
 public interface Settings {
@@ -35,10 +36,6 @@ public interface Settings {
   String getConnectorJsonLd();
 
   void setConnectorJsonLd(String jsonLd);
-
-  String getDynamicAttributeToken();
-
-  void setDynamicAttributeToken(String dynamicAttributeToken);
 
   ConnectionSettings getConnectionSettings(String connection);
 

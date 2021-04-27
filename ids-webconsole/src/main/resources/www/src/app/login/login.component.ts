@@ -32,7 +32,7 @@ export class LoginComponent {
         if (val.username && val.password) {
             this.authService.login(val.username, val.password)
                 .subscribe(() => {
-                    console.log('User is logged in');
+                    // console.log('User is logged in');
                     this.router.navigateByUrl('/');
                 }, () => {
                     this.errorText = 'Login rejected, wrong username or password?';

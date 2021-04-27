@@ -13,10 +13,10 @@ declare var componentHandler: any;
 })
 
 export class CertificateCardComponent implements OnInit {
-  @Input() public certificates: Array<Certificate>;
-  @Input() public trusts: Array<Certificate>;
+  @Input() public certificates: Certificate[];
+  @Input() public trusts: Certificate[];
   public result: string;
-  @Input() private readonly onDeleteCallback: Function;
+  @Input() private readonly onDeleteCallback: (alias: string) => void;
 
   constructor(private readonly confirmService: ConfirmService) { }
 

@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids.webconsole.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fhg.aisec.ids.api.cm.ApplicationContainer;
 import de.fhg.aisec.ids.api.cm.ContainerManager;
@@ -307,12 +308,12 @@ public class AppApi {
       }
       String url = settings.getConnectorConfig().getAppstoreUrl();
 
-      String r = client.target(url).request(MediaType.TEXT_PLAIN).get(String.class);
+      String r = client.target(url).request(MediaType.APPLICATION_JSON).get(String.class);
 
       ObjectMapper mapper = new ObjectMapper();
-      ApplicationContainer[] result = mapper.readValue(r, ApplicationContainer[].class);
+      List<ApplicationContainer> result = mapper.readValue(r, new TypeReference<>() {});
       if (term != null && !term.equals("")) {
-        return Arrays.asList(result)
+        return result
             .parallelStream()
             .filter(
                 app ->
@@ -323,7 +324,7 @@ public class AppApi {
                         || (app.getCategories() != null && app.getCategories().contains(term)))
             .collect(Collectors.toList());
       } else {
-        return Arrays.asList(result);
+        return result;
       }
     } catch (IOException e) {
       throw new InternalServerErrorException(e);

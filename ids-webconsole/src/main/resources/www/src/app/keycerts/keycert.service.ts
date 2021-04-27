@@ -12,12 +12,12 @@ export class CertificateService {
 
   constructor(private readonly http: HttpClient) { }
 
-  public getIdentities(): Observable<Array<Certificate>> {
-    return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_identities');
+  public getIdentities(): Observable<Certificate[]> {
+    return this.http.get<Certificate[]>(environment.apiURL + '/certs/list_identities');
   }
 
-  public getCertificates(): Observable<Array<Certificate>> {
-    return this.http.get<Array<Certificate>>(environment.apiURL + '/certs/list_certs');
+  public getCertificates(): Observable<Certificate[]> {
+    return this.http.get<Certificate[]>(environment.apiURL + '/certs/list_certs');
   }
 
   public createIdentity(identity: Identity): Observable<string> {

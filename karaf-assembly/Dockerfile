@@ -1,5 +1,5 @@
-ARG JDK_BASE_IMAGE=fraunhoferaisec/jdk-base:develop
-FROM $JDK_BASE_IMAGE
+ARG BASE_IMAGE=adoptopenjdk:11-jdk-hotspot-focal
+FROM $BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"
 
@@ -27,6 +27,6 @@ RUN chmod 0755 /root/bin/karaf
 WORKDIR "/root"
 
 # Ports to expose
-EXPOSE 8181 8443 29998 5005 1099 1098 9292
+EXPOSE 8181 8443 29998 5005 1099 1098 9292 29292
 
 ENTRYPOINT ["/root/bin/karaf"]

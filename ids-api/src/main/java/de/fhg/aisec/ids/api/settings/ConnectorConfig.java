@@ -37,7 +37,6 @@ public final class ConnectorConfig implements Serializable {
   private final String keystorePassword;
   private final String keystoreAliasName;
   private final String truststoreName;
-  private final String connectorUUID;
 
   public ConnectorConfig() {
     appstoreUrl =
@@ -49,12 +48,11 @@ public final class ConnectorConfig implements Serializable {
     acmeDnsWebcon = "";
     acmePortWebcon = 80;
     tosAcceptWebcon = false;
-    dapsUrl = "http://daps.aisec.fraunhofer.de/token";
-    keystoreName = "client-keystore.jks";
+    dapsUrl = "https://daps.aisec.fraunhofer.de";
+    keystoreName = "provider-keystore.p12";
     keystorePassword = "password";
     keystoreAliasName = "1";
-    truststoreName = "client-truststore.jks";
-    connectorUUID = "00c6155a-966d-4d2c-af6e-60f997e24da2";
+    truststoreName = "truststore.p12";
   }
 
   public String getAppstoreUrl() {
@@ -109,7 +107,4 @@ public final class ConnectorConfig implements Serializable {
     return truststoreName;
   }
 
-  public String getConnectorUUID() {
-    return connectorUUID;
-  }
 }

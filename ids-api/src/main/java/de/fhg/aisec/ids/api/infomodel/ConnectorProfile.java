@@ -19,8 +19,9 @@
  */
 package de.fhg.aisec.ids.api.infomodel;
 
-import de.fraunhofer.iais.eis.*;
-import de.fraunhofer.iais.eis.util.PlainLiteral;
+import de.fraunhofer.iais.eis.SecurityProfile;
+import de.fraunhofer.iais.eis.util.TypedLiteral;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
@@ -32,10 +33,10 @@ public final class ConnectorProfile implements Serializable {
   private SecurityProfile securityProfile;
   private URI connectorUrl;
   private URI maintainerUrl;
-  private List<PlainLiteral> connectorEntityNames;
+  private List<TypedLiteral> connectorEntityNames;
 
   public ConnectorProfile() {
-    this.securityProfile = SecurityProfile.BASE_CONNECTOR_SECURITY_PROFILE;
+    this.securityProfile = SecurityProfile.TRUST_SECURITY_PROFILE;
     this.connectorUrl = null;
     this.maintainerUrl = null;
     this.connectorEntityNames = null;
@@ -45,7 +46,7 @@ public final class ConnectorProfile implements Serializable {
       SecurityProfile profile,
       URI connectorUrl,
       URI maintainerUrl,
-      List<PlainLiteral> connectorEntityNames) {
+      List<TypedLiteral> connectorEntityNames) {
     super();
     this.securityProfile = profile;
     this.connectorUrl = connectorUrl;
@@ -65,7 +66,7 @@ public final class ConnectorProfile implements Serializable {
     return maintainerUrl;
   }
 
-  public List<PlainLiteral> getConnectorEntityNames() {
+  public List<TypedLiteral> getConnectorEntityNames() {
     return connectorEntityNames;
   }
 
@@ -81,7 +82,7 @@ public final class ConnectorProfile implements Serializable {
     this.maintainerUrl = maintainerUrl;
   }
 
-  public void setConnectorEntityNames(List<PlainLiteral> connectorEntityNames) {
+  public void setConnectorEntityNames(List<TypedLiteral> connectorEntityNames) {
     this.connectorEntityNames = connectorEntityNames;
   }
 }
