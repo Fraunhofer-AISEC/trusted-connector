@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 @Suppress("UNCHECKED_CAST")
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
@@ -9,7 +11,7 @@ plugins {
     kotlin("plugin.spring")
 }
 
-tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+tasks.getByName<BootJar>("bootJar") {
     launchScript()
     layered()
 }

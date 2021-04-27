@@ -1,4 +1,4 @@
 logging:
   level:
     ROOT: INFO
-    de.fhg.aisec: DEBUG
+    de.fhg.aisec: TRACE

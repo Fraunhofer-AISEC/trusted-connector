@@ -116,19 +116,16 @@ class RouteManagerService : RouteManager {
             ctx.getBeanNamesForType(ComponentConfigurationPropertiesCommon::class.java)
 
         // yes, this is a bit hacky but will do fow now
-        return Arrays.stream(beanNamesForType)
-            .map { name ->
+        return beanNamesForType
+            .mapNotNull { name ->
                 val first = name.split("-org")[0]
 
-                if (first.equals("camel.component")) {
-                    return@map null
+                if (first == "camel.component") {
+                    null
+                } else {
+                    RouteComponent("camel-" + first.split("camel.component.")[1], "")
                 }
-
-                return@map RouteComponent("camel-" + first.split("camel.component.")[1], "")
             }
-            .filter { Objects.nonNull(it) }
-            .collect(Collectors.toList()) as
-            List<RouteComponent>
     }
 
     override fun getEndpoints(): Map<String, Collection<String>> {
@@ -137,12 +134,7 @@ class RouteManagerService : RouteManager {
             .collect(
                 Collectors.toMap(
                     { obj: CamelContext -> obj.name },
-                    { c: CamelContext ->
-                        c.endpoints
-                            .stream()
-                            .map { obj: Endpoint -> obj.endpointUri }
-                            .collect(Collectors.toList())
-                    }
+                    { c: CamelContext -> c.endpoints.map { obj: Endpoint -> obj.endpointUri } }
                 )
             )
     }
