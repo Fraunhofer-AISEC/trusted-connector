@@ -15,12 +15,23 @@ repositories {
 plugins {
     java
     maven
-    id("com.google.protobuf") version "0.8.15"
-    // WARNING: Versions 5.2.x onwards export java.* packages, which is not allowed in Felix OSGi Resolver!
-    // See http://karaf.922171.n3.nabble.com/Manifest-import-problems-td4059042.html
-    id("biz.aQute.bnd") version "5.1.2" apply false
-    id("org.jetbrains.kotlin.jvm") version "1.4.31"
-    id("com.github.jlouns.cpe") version "0.5.0"
+    
+    // Spring Boot
+    id("org.springframework.boot") version "2.3.4.RELEASE" apply false
+    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+
+    // Other needed plugins
+    id("com.moowork.node") version "1.3.1" apply false
+    // Latest version compiled with Java 11
+    id("com.benjaminsproule.swagger") version "1.0.8" apply false
+
+    // Protobuf
+    id("com.google.protobuf") version "0.8.12" apply false
+
+    // Kotlin specific
+    kotlin("jvm") version "1.4.31" apply false
+    kotlin("plugin.spring") version "1.4.31" apply false
+
     id("com.diffplug.spotless") version "5.11.0"
     id("com.github.jk1.dependency-license-report") version "1.16"
 }
@@ -39,12 +50,6 @@ allprojects {
     version = "4.0.0"
 }
 
-tasks.build {
-    subprojects.filter { it.name == "karaf-assembly" }.forEach {
-        dependsOn(it.tasks.build)
-    }
-}
-
 subprojects {
     repositories {
         mavenCentral()
@@ -54,35 +59,24 @@ subprojects {
         maven("https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/")
     }
 
-    apply(plugin = "biz.aQute.bnd.builder")
     apply(plugin = "java")
-    apply(plugin = "maven")
-    apply(plugin = "kotlin")
+    apply(plugin = "java-library")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "io.spring.dependency-management")
+    
+    configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:${libraryVersions["springBoot"]}")
+        }
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    tasks.test {
-        exclude("**/*IT.*")
-    }
-
-    val integrationTest = tasks.register<Test>("integrationTest") {
-        include("**/*IT.*")
-        systemProperty("project.version", "$project.version")
-    }
-
-    tasks.check {
-        dependsOn(integrationTest)
-    }
-
-    tasks.withType<Test> {
-        testLogging {
-            events("failed")
-            exceptionFormat = TestExceptionFormat.FULL
+        imports {
+            // need to stick to 3.0 because of org.apache.camel.support.dump.RouteStatDump and ModelHelper
+            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:3.0.0")
         }
     }
+
+    // just to make bills of materials (bom) easier to see in the dependency tree
+    val bom by configurations.creating
 
     // Configuration for dependencies that will be provided through features in the OSGi environment
     val providedByFeature by configurations.creating
@@ -94,9 +88,8 @@ subprojects {
     val infomodelBundle by configurations.creating
 
     // Configurations for bundles grouped to dedicated features apart from the main ids feature
-    @Suppress("UNUSED_VARIABLE")
     val influxFeature by configurations.creating
-    @Suppress("UNUSED_VARIABLE")
+
     val zmqFeature by configurations.creating
 
     // OSGi core dependencies which will just be there during runtime
@@ -110,10 +103,25 @@ subprojects {
 
     dependencies {
         // Logging API
-        providedByBundle("org.slf4j", "slf4j-simple", libraryVersions["slf4j"])
+        providedByBundle("org.slf4j", "slf4j-api", libraryVersions["slf4j"])
+
+        val implementation by configurations
+        val compileOnly by configurations
+        val testImplementation by configurations
 
         // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
         compileOnly("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
+
+        // We need to explicitly specify the 1.4 version for all kotlin dependencies,
+        // because otherwise something (maybe a plugin) downgrades the kotlin version to 1.3,
+        // which produces errors in the kotlin compiler. This is really nasty.
+        configurations.all {
+            resolutionStrategy.eachDependency {
+                if (requested.group == "org.jetbrains.kotlin") {
+                    useVersion(libraryVersions["kotlin"] ?: throw RuntimeException("kotlin version not set"))
+                }
+            }
+        }
     }
 
     tasks.withType<KotlinCompile> {

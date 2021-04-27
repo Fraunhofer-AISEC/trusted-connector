@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,8 +30,11 @@ import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor;
 import io.swagger.annotations.*;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -60,32 +63,33 @@ import java.util.UUID;
  *
  * @author Hamed Rasifard (hamed.rasifard@aisec.fraunhofer.de)
  */
+@Component
 @Path("/certs")
 @Api(
-  value = "Identities and Certificates",
-  authorizations = {@Authorization(value = "oauth2")}
-)
+    value = "Identities and Certificates",
+    authorizations = {@Authorization(value = "oauth2")})
 public class CertApi {
   private static final Logger LOG = LoggerFactory.getLogger(CertApi.class);
   private static final String KEYSTORE_PWD = "password";
   private static final String TRUSTSTORE_FILE = "truststore.p12";
   private static final String KEYSTORE_FILE = "provider-keystore.p12";
 
+  private final Settings settings;
+
+  public CertApi(@Autowired @NonNull Settings settings) {
+    this.settings = settings;
+  }
+
   @GET
   @ApiOperation(value = "Starts ACME renewal over X509v3 certificates")
   @Path("acme_renew/{target}")
   @AuthorizationRequired
-  public void getAcmeCert(
+  public boolean getAcmeCert(
       @ApiParam(
-            value =
-                "Identifier of the component to renew. Currently, the only valid value is __webconsole__"
-          )
+              value =
+                  "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
           @PathParam("target")
           String target) {
-    Settings settings = WebConsoleComponent.getSettings();
-    if (settings == null) {
-      return;
-    }
     ConnectorConfig config = settings.getConnectorConfig();
     AcmeClient acmeClient = WebConsoleComponent.getAcmeClient();
     if ("webconsole".equals(target) && acmeClient != null) {
@@ -94,16 +98,19 @@ public class CertApi {
           URI.create(config.getAcmeServerWebcon()),
           config.getAcmeDnsWebcon().trim().split("\\s*,\\s*"),
           config.getAcmePortWebcon());
+
+      return true;
     } else {
       LOG.warn("ACME renewal for services other than WebConsole is not yet implemented!");
+
+      return false;
     }
   }
 
   @GET
   @ApiOperation(
-    value = "Retrieves the Terms of Service (tos) of the ACME endpoint",
-    response = AcmeTermsOfService.class
-  )
+      value = "Retrieves the Terms of Service (tos) of the ACME endpoint",
+      response = AcmeTermsOfService.class)
   @Path("acme_tos")
   @AuthorizationRequired
   public AcmeTermsOfService getAcmeTermsOfService(
@@ -118,9 +125,8 @@ public class CertApi {
   @GET
   @Path("list_certs")
   @ApiOperation(
-    value = "List installed certificates from trust store.",
-    notes = "Certificates in this list refer to public keys that are trusted by this connector."
-  )
+      value = "List installed certificates from trust store.",
+      notes = "Certificates in this list refer to public keys that are trusted by this connector.")
   @ApiResponses({
     @ApiResponse(code = 200, message = "List of certificates"),
     @ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available"),
@@ -135,10 +141,9 @@ public class CertApi {
   @GET
   @Path("list_identities")
   @ApiOperation(
-    value = "List installed certificates from the private key store.",
-    notes =
-        "Certificates in this list refer to private keys that can be used as identities by the connector."
-  )
+      value = "List installed certificates from the private key store.",
+      notes =
+          "Certificates in this list refer to private keys that can be used as identities by the connector.")
   @Produces(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public List<Cert> listIdentities() {
@@ -314,7 +319,8 @@ public class CertApi {
     }
 
     throw new NotFoundException(
-        "Keystore/truststore file could not be found. Cannot continue. Given filename: " + fileName);
+        "Keystore/truststore file could not be found. Cannot continue. Given filename: "
+            + fileName);
   }
 
   /** Returns all entries (private keys and certificates) from a Java keystore. */
@@ -396,29 +402,29 @@ public class CertApi {
      * as sun.security.* or oracle.*.
      */
     String[] keytoolCmd =
-            new String[] {
-                    "/bin/sh",
-                    "-c",
-                    "keytool",
-                    "-genkey",
-                    "-alias",
-                    alias,
-                    "-keyalg",
-                    keyAlgName,
-                    "-keysize",
-                    Integer.toString(keySize),
-                    "-sigalg",
-                    sigAlgName,
-                    "-keystore",
-                    keyStoreFile.getAbsolutePath(),
-                    "-dname",
-                    "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s
-                            + ", C=" + spec.c,
-                    "-storepass",
-                    KEYSTORE_PWD,
-                    "-keypass",
-                    KEYSTORE_PWD
-            };
+        new String[] {
+          "/bin/sh",
+          "-c",
+          "keytool",
+          "-genkey",
+          "-alias",
+          alias,
+          "-keyalg",
+          keyAlgName,
+          "-keysize",
+          Integer.toString(keySize),
+          "-sigalg",
+          sigAlgName,
+          "-keystore",
+          keyStoreFile.getAbsolutePath(),
+          "-dname",
+          "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s
+              + ", C=" + spec.c,
+          "-storepass",
+          KEYSTORE_PWD,
+          "-keypass",
+          KEYSTORE_PWD
+        };
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     new ProcessExecutor().execute(keytoolCmd, bos, bos);
     LOG.debug("Keytool: " + new String(bos.toByteArray(), StandardCharsets.UTF_8));

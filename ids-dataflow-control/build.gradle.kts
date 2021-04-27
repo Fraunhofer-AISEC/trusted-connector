@@ -6,6 +6,8 @@ dependencies {
 
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
+    implementation("org.springframework.boot:spring-boot-starter")
+
     providedByBundle("com.google.guava", "guava", libraryVersions["guava"])
 
     implementation("it.unibo.alice.tuprolog", "2p-core", libraryVersions["2p"])

@@ -33,6 +33,8 @@ configure<IdeaModel> {
 dependencies {
     providedByBundle(project(":ids-api")) { isTransitive = false }
 
+    implementation("org.springframework.boot:spring-boot-starter")
+
     // Provided dependency of docker-java-api
     providedByBundle("org.glassfish", "javax.json", libraryVersions["javaxJson"])
     // Required until our library PR has been accepted
@@ -40,7 +42,9 @@ dependencies {
         exclude("com.github.jnr", "jnr-unixsocket")
     }
 
-    implementation(project(":jnr-unixsocket-wrapper"))
+    //implementation(project(":jnr-unixsocket-wrapper"))
+    implementation("com.github.jnr", "jnr-unixsocket", libraryVersions["jnrunix"])
+    implementation("com.github.jnr", "jnr-ffi", libraryVersions["jnrffi"])
 
     providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 

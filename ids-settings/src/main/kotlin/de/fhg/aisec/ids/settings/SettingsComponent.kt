@@ -27,20 +27,25 @@ import de.fhg.aisec.ids.api.settings.Settings
 import java.nio.file.FileSystems
 import java.util.*
 import java.util.concurrent.ConcurrentMap
+import javax.annotation.PreDestroy
 import kotlin.collections.HashMap
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
-import org.osgi.service.component.annotations.Deactivate
 import org.slf4j.LoggerFactory
 
-@Component(immediate = true, name = "ids-settings")
+@org.springframework.stereotype.Component
 class SettingsComponent : Settings {
-    @Activate
+
+    constructor() {
+        activate()
+    }
+
     fun activate() {
         LOG.debug("Open Settings Database...")
+
+        DB_PATH.toFile().parentFile.mkdirs()
+
         // Use default reliable (non-mmap) mode and WAL for transaction safety
         mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().make()
         var dbVersion = settingsStore.getOrPut(DB_VERSION_KEY, { 1 }) as Int
@@ -85,7 +90,7 @@ class SettingsComponent : Settings {
         }
     }
 
-    @Deactivate
+    @PreDestroy
     fun deactivate() {
         LOG.debug("Close Settings Database...")
         mapDB.close()

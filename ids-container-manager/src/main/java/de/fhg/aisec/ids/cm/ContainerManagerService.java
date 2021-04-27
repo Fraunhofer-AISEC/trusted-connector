@@ -43,9 +43,14 @@ import java.util.Optional;
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 @Component(name = "ids-cml", immediate = true)
+@org.springframework.stereotype.Component
 public class ContainerManagerService implements ContainerManager {
   private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
   private ContainerManager containerManager = null;
+
+  public ContainerManagerService() {
+    activate();
+  }
 
   @Activate
   protected void activate() {

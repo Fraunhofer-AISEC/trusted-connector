@@ -6,7 +6,7 @@ val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, St
 
 plugins {
     id("com.github.node-gradle.node") version "3.0.1"
-    id("com.benjaminsproule.swagger") version "1.0.14"
+    id("com.benjaminsproule.swagger")
 }
 
 description = "IDS Core Platform Webconsole"
@@ -62,7 +62,8 @@ and is used by the default administration dashboard ("web console").
 }
 
 dependencies {
-    providedByBundle(project(":ids-api")) { isTransitive = false }
+    implementation(project(":ids-api"))
+    implementation("org.springframework.boot:spring-boot-starter-jersey")
 
     // Actual implementation must be provided by ids-infomodel-manager
     compileOnly("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
@@ -101,7 +102,8 @@ dependencies {
 }
 
 node {
-    download.set(true)
+    //download.set(true)
+    // currently broken on M1
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {

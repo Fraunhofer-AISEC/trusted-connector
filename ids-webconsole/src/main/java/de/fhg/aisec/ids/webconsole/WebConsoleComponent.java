@@ -51,6 +51,7 @@ public class WebConsoleComponent {
   private EndpointConfigManager dynEndConManager = null;
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+
   private Settings settings = null;
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
@@ -68,9 +69,6 @@ public class WebConsoleComponent {
   @Reference(cardinality = ReferenceCardinality.OPTIONAL)
   private PAP pap = null;
 
-  @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-  private InfoModel im = null;
-
   private static WebConsoleComponent instance;
 
   @Activate
@@ -83,15 +81,6 @@ public class WebConsoleComponent {
   @SuppressWarnings("squid:S2696")
   protected void deactivate() {
     instance = null;
-  }
-
-  @Nullable
-  public static ContainerManager getContainerManager() {
-    WebConsoleComponent in = instance;
-    if (in != null) {
-      return in.cml;
-    }
-    return null;
   }
 
   @Nullable
@@ -122,28 +111,10 @@ public class WebConsoleComponent {
   }
 
   @Nullable
-  public static RouteManager getRouteManager() {
-    WebConsoleComponent in = instance;
-    if (in != null) {
-      return in.rm;
-    }
-    return null;
-  }
-
-  @Nullable
   public static PAP getPolicyAdministrationPoint() {
     WebConsoleComponent in = instance;
     if (in != null) {
       return in.pap;
-    }
-    return null;
-  }
-
-  @Nullable
-  public static InfoModel getInfoModelManager() {
-    WebConsoleComponent in = instance;
-    if (in != null) {
-      return in.im;
     }
     return null;
   }

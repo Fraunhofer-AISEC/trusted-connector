@@ -13,4 +13,6 @@ dependencies {
     }
 
     osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
+
+    implementation("org.springframework.boot:spring-boot-starter")
 }

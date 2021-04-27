@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,14 +21,20 @@ package de.fhg.aisec.ids.webconsole.api;
 
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile;
 import de.fhg.aisec.ids.api.infomodel.InfoModel;
-import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.util.TypedLiteral;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -41,13 +47,19 @@ import java.util.stream.Collectors;
  */
 
 // ConnectorProfile will be processed by custom Jackson deserializer
+@Component
 @Path("/settings")
 @Api(
-  value = "Self-Description and Connector Profiles",
-  authorizations = {@Authorization(value = "oauth2")}
-)
+    value = "Self-Description and Connector Profiles",
+    authorizations = {@Authorization(value = "oauth2")})
 public class SettingsApi {
   private static final Logger LOG = LoggerFactory.getLogger(SettingsApi.class);
+
+  private @NonNull InfoModel im;
+
+  public SettingsApi(@Autowired @NonNull InfoModel im) {
+    this.im = im;
+  }
 
   @POST
   @Path("/connectorProfile")
@@ -55,10 +67,6 @@ public class SettingsApi {
   @Consumes(MediaType.APPLICATION_JSON)
   @AuthorizationRequired
   public String postConnectorProfile(ConnectorProfile profile) {
-    InfoModel im = WebConsoleComponent.getInfoModelManager();
-    if (im == null) {
-      throw new ServiceUnavailableException("InfoModel is not available");
-    }
     if (im.setConnector(profile)) {
       return "ConnectorProfile successfully stored.";
     } else {
@@ -71,15 +79,10 @@ public class SettingsApi {
   @Path("/connectorProfile")
   @Produces(MediaType.APPLICATION_JSON)
   @ApiOperation(
-    value = "Returns this connector's self-description (\"Connector Profile\")",
-    response = ConnectorProfile.class
-  )
+      value = "Returns this connector's self-description (\"Connector Profile\")",
+      response = ConnectorProfile.class)
   @AuthorizationRequired
   public ConnectorProfile getConnectorProfile() {
-    InfoModel im = WebConsoleComponent.getInfoModelManager();
-    if (im == null) {
-      throw new ServiceUnavailableException("InfoModel is not available");
-    }
     Connector c = im.getConnector();
     if (c == null) {
       return new ConnectorProfile();
@@ -101,10 +104,6 @@ public class SettingsApi {
   @Produces("application/ld+json")
   // TODO Document ApiOperation
   public String getSelfInformation() {
-    InfoModel im = WebConsoleComponent.getInfoModelManager();
-    if (im == null) {
-      throw new ServiceUnavailableException("InfoModel is not available");
-    }
     try {
       return im.getConnectorAsJsonLd();
     } catch (NullPointerException e) {
@@ -120,10 +119,6 @@ public class SettingsApi {
   @Consumes("application/ld+json")
   @AuthorizationRequired
   public void setSelfInformation(String selfInformation) {
-    InfoModel im = WebConsoleComponent.getInfoModelManager();
-    if (im == null) {
-      throw new ServiceUnavailableException("InfoModel is not available");
-    }
     try {
       im.setConnectorByJsonLd(selfInformation);
     } catch (NullPointerException e) {
@@ -138,10 +133,6 @@ public class SettingsApi {
   @Consumes("application/ld+json")
   @AuthorizationRequired
   public void removeSelfInformation() {
-    InfoModel im = WebConsoleComponent.getInfoModelManager();
-    if (im == null) {
-      throw new ServiceUnavailableException("InfoModel is not available");
-    }
     try {
       im.setConnectorByJsonLd(null);
     } catch (NullPointerException e) {

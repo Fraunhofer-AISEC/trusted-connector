@@ -27,6 +27,8 @@ import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.GET;
@@ -41,6 +43,7 @@ import javax.ws.rs.core.MediaType;
  *
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  */
+@Component
 @Path("/connections")
 @Api(
   value = "IDSCP Connections",

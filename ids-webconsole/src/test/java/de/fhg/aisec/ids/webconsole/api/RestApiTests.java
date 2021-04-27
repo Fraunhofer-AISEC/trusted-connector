@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.webconsole.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.api.data.Cert;
 import de.fhg.aisec.ids.webconsole.api.data.Identity;
 import de.fhg.aisec.ids.webconsole.api.data.User;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assume.assumeFalse;
+import static org.mockito.Mockito.mock;
 
 public class RestApiTests extends Assert {
   private static final String ENDPOINT_ADDRESS = "local://testserver";
@@ -66,7 +68,7 @@ public class RestApiTests extends Assert {
     // add custom providers if any
     sf.setProviders(providers);
 
-    sf.setResourceProvider(CertApi.class, new SingletonResourceProvider(new CertApi(), true));
+    sf.setResourceProvider(CertApi.class, new SingletonResourceProvider(new CertApi(mock(Settings.class)), true));
     sf.setResourceProvider(MetricAPI.class, new SingletonResourceProvider(new MetricAPI(), true));
     sf.setResourceProvider(UserApi.class, new SingletonResourceProvider(new UserApi(), true));
     sf.setAddress(ENDPOINT_ADDRESS);
@@ -94,7 +96,7 @@ public class RestApiTests extends Assert {
 
   @Before
   public void before() {
-    CertApi certApi = new CertApi();
+    CertApi certApi = new CertApi(mock(Settings.class));
 
     Identity idSpec = new Identity();
     idSpec.c = "c";

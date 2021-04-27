@@ -5,19 +5,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Cache gradle modules
-        uses: actions/cache@v1
-        env:
-          cache-name: cache-gradle-modules
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.4.3
         with:
-          path: ~/.gradle
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/gradle.build') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          java-version: 14
+      - name: Setup protoc
+        uses: arduino/setup-protoc@v1.1.2
+        with:
+          version: 3.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Build
         run: |
-          mkdir -p ~/.gradle
-          mkdir -p ~/.m2
-          ./build.sh
+          ./gradlew --parallel build
