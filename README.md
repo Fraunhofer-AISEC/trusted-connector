@@ -1,6 +1,6 @@
 ![build](https://github.com/industrial-data-space/trusted-connector/workflows/build/badge.svg)
 
-> :warning: Note: We are currently in the transition of OSGi to Spring Boot. You can track the current progress in [this](https://github.com/industrial-data-space/trusted-connector/issues/49) issue. If you are looking for a stable version, please use the latest OSGi-based release (4.0.0) or the [master](https://github.com/industrial-data-space/trusted-connector/tree/master) branch.
+> :warning: Note: We are currently in the transition of OSGi to Spring Boot. You can track the current progress in [this](https://github.com/industrial-data-space/trusted-connector/issues/49) issue. If you are looking for a stable version, please use the latest OSGi-based release ([4.0.0](https://github.com/industrial-data-space/trusted-connector/releases/tag/4.0.0)) or the [master](https://github.com/industrial-data-space/trusted-connector/tree/master) branch.
 
 The _Trusted Connector_ is an Apache Karaf-based platform for the Industrial Internet of Things (IIoT). It supports Docker and trust|me as containerization environments and provides the following features:
 
