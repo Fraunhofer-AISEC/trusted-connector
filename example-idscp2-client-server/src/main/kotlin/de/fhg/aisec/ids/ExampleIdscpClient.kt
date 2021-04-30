@@ -42,7 +42,8 @@ open class ExampleIdscpClient {
             File(
                 Thread.currentThread()
                     .contextClassLoader
-                    .getResource("etc/consumer-core-protocol-test.p12")
+                    //.getResource("etc/provider-core-protocol-test.p12")
+                    .getResource("etc/provider-keystore.p12")
                     .path
             )
                 .path
@@ -69,7 +70,7 @@ open class ExampleIdscpClient {
                     .setBody().simple("PING")
                     .setHeader("idscp2-header").simple("ping")
                     .log("Client sends: \${body} (Header: \${headers[idscp2-header]})")
-                    .to("idscp2client://127.0.0.1:29292?awaitResponse=true&sslContextParameters=#clientSslContext")
+                    .to("idscp2client://consumer-core:29292?awaitResponse=true&sslContextParameters=#clientSslContext")
                     .log("Client received: \${body} (Header: \${headers[idscp2-header]})")
                     .removeHeader("idscp2-header") // Prevents client consumer from sending the message back to the server
                     .setBody().simple("\${null}")
