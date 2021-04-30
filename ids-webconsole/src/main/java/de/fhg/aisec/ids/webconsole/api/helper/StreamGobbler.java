@@ -19,10 +19,11 @@
  */
 package de.fhg.aisec.ids.webconsole.api.helper;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 class StreamGobbler extends Thread {
   private static final Logger LOG = LoggerFactory.getLogger(StreamGobbler.class);

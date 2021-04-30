@@ -22,15 +22,14 @@ package de.fhg.aisec.ids.webconsole.api;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import io.swagger.annotations.*;
-import java.util.ArrayList;
-import java.util.List;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * REST API interface for managing usage control policies in the connector.

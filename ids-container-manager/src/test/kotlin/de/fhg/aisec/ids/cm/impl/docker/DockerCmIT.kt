@@ -22,7 +22,6 @@ package de.fhg.aisec.ids.cm.impl.docker
 import de.fhg.aisec.ids.api.cm.ApplicationContainer
 import de.fhg.aisec.ids.api.cm.ContainerStatus
 import de.fhg.aisec.ids.cm.impl.docker.DockerCM.Companion.isSupported
-import java.util.*
 import org.junit.After
 import org.junit.Assert
 import org.junit.Assume

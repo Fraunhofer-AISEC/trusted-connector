@@ -19,10 +19,11 @@
  */
 package de.fhg.aisec.ids.webconsole.api.helper;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class ProcessExecutor {
   private static final Logger LOG = LoggerFactory.getLogger(ProcessExecutor.class);

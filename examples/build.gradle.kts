@@ -6,7 +6,7 @@ val copyExample = tasks.create<Copy>("copyExample") {
     doFirst {
         delete(project.buildDir)
     }
-    from (project.projectDir) {
+    from(project.projectDir) {
         include("example-*/**", "tpmsim/tpmsim_data.tar", "tpmsim/rootCA.crt", "cert-stores/*")
         exclude("example-idscp/example-client", "example-idscp/example-server")
     }
@@ -29,8 +29,10 @@ processTemplates.onlyIf { findProperty("exampleTag") != null }
 // Create ZIP archive from examples, see task copyExample
 val zipExample = task("zipExample") {
     doLast {
-        zipTo(File("${projectDir}/trusted-connector-examples_${findProperty("exampleTag")}.zip"),
-                project.buildDir)
+        zipTo(
+            File("$projectDir/trusted-connector-examples_${findProperty("exampleTag")}.zip"),
+            project.buildDir
+        )
     }
 }
 zipExample.onlyIf { findProperty("exampleTag") != null }

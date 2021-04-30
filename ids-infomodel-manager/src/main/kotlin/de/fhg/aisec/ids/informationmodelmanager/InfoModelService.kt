@@ -23,17 +23,24 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
-import de.fraunhofer.iais.eis.*
+import de.fraunhofer.iais.eis.Connector
+import de.fraunhofer.iais.eis.ConnectorEndpointBuilder
+import de.fraunhofer.iais.eis.Resource
+import de.fraunhofer.iais.eis.ResourceBuilder
+import de.fraunhofer.iais.eis.ResourceCatalog
+import de.fraunhofer.iais.eis.ResourceCatalogBuilder
+import de.fraunhofer.iais.eis.SecurityProfile
+import de.fraunhofer.iais.eis.TrustedConnector
+import de.fraunhofer.iais.eis.TrustedConnectorBuilder
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
 import de.fraunhofer.iais.eis.util.TypedLiteral
-import java.net.URI
-import java.net.URISyntaxException
-import java.util.*
 import org.osgi.service.component.annotations.Reference
 import org.osgi.service.component.annotations.ReferenceCardinality
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import java.net.URI
+import java.net.URISyntaxException
 
 /** IDS Info Model Manager. */
 // @Component(name = "ids-infomodel-manager", immediate = true)
@@ -172,7 +179,7 @@ class InfoModelService : InfoModel {
         get() =
             settings.connectorJsonLd
                 ?: connector?.let { serializer.serialize(it) }
-                    ?: throw NullPointerException("Connector is not available")
+                ?: throw NullPointerException("Connector is not available")
 
     override fun setConnectorByJsonLd(jsonLd: String?) {
         settings.let { settings ->

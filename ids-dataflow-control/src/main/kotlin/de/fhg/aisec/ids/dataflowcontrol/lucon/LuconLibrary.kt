@@ -25,9 +25,9 @@ import alice.tuprolog.Term
 import alice.tuprolog.Var
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
-import org.slf4j.LoggerFactory
 
 /**
  * Plugins and default theories for tuProlog engine.

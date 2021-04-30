@@ -36,10 +36,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.stream.Collectors;
-
 /**
  * REST API interface for Connector settings in the connector.
  *

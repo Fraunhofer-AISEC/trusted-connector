@@ -22,14 +22,14 @@ package de.fhg.aisec.ids.webconsole.api;
 import io.swagger.annotations.*;
 import org.springframework.stereotype.Component;
 
-import java.lang.management.*;
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.lang.management.*;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * REST API interface for platform metrics.

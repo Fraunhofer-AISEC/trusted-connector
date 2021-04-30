@@ -6,9 +6,29 @@ val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, St
 plugins {
     application
     id("org.springframework.boot")
+    id("com.github.gmazzo.buildconfig") version "2.0.2"
 
     kotlin("jvm")
     kotlin("plugin.spring")
+}
+
+apply(plugin = "idea")
+
+buildConfig {
+    sourceSets.getByName("main") {
+        packageName("de.fhg.aisec.ids")
+        buildConfigField(
+            "String", "INFOMODEL_VERSION",
+            "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\""
+        )
+    }
+}
+
+configure<org.gradle.plugins.ide.idea.model.IdeaModel> {
+    module {
+        // mark as generated sources for IDEA
+        generatedSourceDirs.add(File("$buildDir/generated/source/buildConfig/main/main"))
+    }
 }
 
 tasks.getByName<BootJar>("bootJar") {

@@ -27,13 +27,13 @@ import de.fhg.aisec.ids.api.policy.PolicyDecision
 import de.fhg.aisec.ids.api.policy.ServiceNode
 import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
-import java.nio.charset.StandardCharsets
-import java.util.*
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import java.nio.charset.StandardCharsets
+import java.util.Scanner
 
 /**
  * Unit tests for the LUCON policy engine.
@@ -250,7 +250,7 @@ class LuconEngineTest {
         println(proof?.toString())
         Assert.assertNotNull(proof)
         Assert.assertFalse(proof!!.isValid)
-        //		assertTrue(proof.toString().contains("Service testQueueService may receive messages
+        // 		assertTrue(proof.toString().contains("Service testQueueService may receive messages
         // labeled
         // [private], " + "which is forbidden by rule \"anotherRule\"."));
         println("##### PROBLEM #####")
@@ -529,139 +529,146 @@ class LuconEngineTest {
     companion object {
         // Solving Towers of Hanoi in only two lines. Prolog FTW!
         private const val HANOI_THEORY =
-            ("move(1,X,Y,_) :- " +
-                "write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n" +
-                "move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). ")
+            (
+                "move(1,X,Y,_) :- " +
+                    "write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n" +
+                    "move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). "
+                )
 
         // A random but syntactically correct policy.
         private const val EXAMPLE_POLICY =
-            ("\n" +
-                "%%%%%%%% Rules %%%%%%%%%%%%\n" +
-                "rule(denyAll).\n" +
-                "rule_priority(denyAll, 0).\n" +
-                "has_decision(denyAll, drop).\n" +
-                "receives_label(denyAll).\n" +
-                "has_target(denyAll, serviceAll).\n" +
+            (
                 "\n" +
-                "rule(allowRule).\n" +
-                "rule_priority(allowRule, 1).\n" +
-                "has_decision(allowRule, allow).\n" +
-                "receives_label(allowRule).\n" +
-                "has_target(allowRule, hiveMqttBrokerService).\n" +
-                "has_target(allowRule, anonymizerService).\n" +
-                "has_target(allowRule, loggerService).\n" +
-                "has_target(allowRule, hadoopClustersService).\n" +
-                "has_target(allowRule, testQueueService).\n" +
-                "\n" +
-                "rule(deleteAfterOneMonth).\n" +
-                "rule_priority(deleteAfterOneMonth, 1).\n" +
-                "has_decision(deleteAfterOneMonth, allow).\n" +
-                "receives_label(deleteAfterOneMonth) :- label(private).\n" +
-                "has_target(deleteAfterOneMonth, service78096644).\n" +
-                "has_obligation(deleteAfterOneMonth, obl1709554620).\n" +
-                "% generated service\n" +
-                "service(service78096644).\n" +
-                "has_endpoint(service78096644, \"hdfs.*\").\n" +
-                "% generated obligation\n" +
-                "requires_prerequisite(obl1709554620, delete_after_days(30)).\n" +
-                "has_alternativedecision(obl1709554620, drop).\n" +
-                "\n" +
-                "rule(anotherRule).\n" +
-                "rule_priority(anotherRule, 1).\n" +
-                "has_target(anotherRule, testQueueService).\n" +
-                "receives_label(anotherRule) :- label(private).\n" +
-                "has_decision(anotherRule, drop).\n" +
-                "\n" +
-                "%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
-                "service(serviceAll).\n" +
-                "has_endpoint(serviceAll,'.*').\n" +
-                "\n" +
-                "service(hiveMqttBrokerService).\n" +
-                "creates_label(hiveMqttBrokerService, labelone).\n" +
-                "creates_label(hiveMqttBrokerService, private).\n" +
-                "removes_label(hiveMqttBrokerService, labeltwo).\n" +
-                "has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" +
-                "has_property(hiveMqttBrokerService, type, public).\n" +
-                "\n" +
-                "service(anonymizerService).\n" +
-                "has_endpoint(anonymizerService, \".*anonymizer.*\").\n" +
-                "has_property(anonymizerService, myProp, anonymize('surname', 'name')).\n" +
-                "\n" +
-                "service(loggerService).\n" +
-                "has_endpoint(loggerService, \"^log.*\").\n" +
-                "\n" +
-                "service(hadoopClustersService).\n" +
-                "has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n" +
-                "has_capability(hadoopClustersService, deletion).\n" +
-                "has_property(hadoopClustersService, anonymizes, anonymize('surname', 'name')).\n" +
-                "\n" +
-                "service(testQueueService).\n" +
-                "has_endpoint(testQueueService, \"^amqp:.*?:test\").")
+                    "%%%%%%%% Rules %%%%%%%%%%%%\n" +
+                    "rule(denyAll).\n" +
+                    "rule_priority(denyAll, 0).\n" +
+                    "has_decision(denyAll, drop).\n" +
+                    "receives_label(denyAll).\n" +
+                    "has_target(denyAll, serviceAll).\n" +
+                    "\n" +
+                    "rule(allowRule).\n" +
+                    "rule_priority(allowRule, 1).\n" +
+                    "has_decision(allowRule, allow).\n" +
+                    "receives_label(allowRule).\n" +
+                    "has_target(allowRule, hiveMqttBrokerService).\n" +
+                    "has_target(allowRule, anonymizerService).\n" +
+                    "has_target(allowRule, loggerService).\n" +
+                    "has_target(allowRule, hadoopClustersService).\n" +
+                    "has_target(allowRule, testQueueService).\n" +
+                    "\n" +
+                    "rule(deleteAfterOneMonth).\n" +
+                    "rule_priority(deleteAfterOneMonth, 1).\n" +
+                    "has_decision(deleteAfterOneMonth, allow).\n" +
+                    "receives_label(deleteAfterOneMonth) :- label(private).\n" +
+                    "has_target(deleteAfterOneMonth, service78096644).\n" +
+                    "has_obligation(deleteAfterOneMonth, obl1709554620).\n" +
+                    "% generated service\n" +
+                    "service(service78096644).\n" +
+                    "has_endpoint(service78096644, \"hdfs.*\").\n" +
+                    "% generated obligation\n" +
+                    "requires_prerequisite(obl1709554620, delete_after_days(30)).\n" +
+                    "has_alternativedecision(obl1709554620, drop).\n" +
+                    "\n" +
+                    "rule(anotherRule).\n" +
+                    "rule_priority(anotherRule, 1).\n" +
+                    "has_target(anotherRule, testQueueService).\n" +
+                    "receives_label(anotherRule) :- label(private).\n" +
+                    "has_decision(anotherRule, drop).\n" +
+                    "\n" +
+                    "%%%%%%%%%%%% Services %%%%%%%%%%%%\n" +
+                    "service(serviceAll).\n" +
+                    "has_endpoint(serviceAll,'.*').\n" +
+                    "\n" +
+                    "service(hiveMqttBrokerService).\n" +
+                    "creates_label(hiveMqttBrokerService, labelone).\n" +
+                    "creates_label(hiveMqttBrokerService, private).\n" +
+                    "removes_label(hiveMqttBrokerService, labeltwo).\n" +
+                    "has_endpoint(hiveMqttBrokerService, \"^paho:.*?tcp://broker.hivemq.com:1883.*\").\n" +
+                    "has_property(hiveMqttBrokerService, type, public).\n" +
+                    "\n" +
+                    "service(anonymizerService).\n" +
+                    "has_endpoint(anonymizerService, \".*anonymizer.*\").\n" +
+                    "has_property(anonymizerService, myProp, anonymize('surname', 'name')).\n" +
+                    "\n" +
+                    "service(loggerService).\n" +
+                    "has_endpoint(loggerService, \"^log.*\").\n" +
+                    "\n" +
+                    "service(hadoopClustersService).\n" +
+                    "has_endpoint(hadoopClustersService, \"^hdfs://.*\").\n" +
+                    "has_capability(hadoopClustersService, deletion).\n" +
+                    "has_property(hadoopClustersService, anonymizes, anonymize('surname', 'name')).\n" +
+                    "\n" +
+                    "service(testQueueService).\n" +
+                    "has_endpoint(testQueueService, \"^amqp:.*?:test\")."
+                )
 
         // Policy with extended labels, i.e. "purpose(green)"
         private const val EXTENDED_LABELS_POLICY =
-            ("" +
-                "%%%%%%%% Rules %%%%%%%%%%%%\n" +
-                "rule(denyAll).\n" +
-                "rule_priority(denyAll, 0).\n" +
-                "has_decision(denyAll, drop).\n" +
-                "receives_label(denyAll).\n" +
-                "has_target(denyAll, serviceAll).\n" +
-                "\n" +
-                "rule(demo).\n" +
-                "rule_priority(demo, 1).\n" +
-                "has_target(demo, service473016340).\n" +
-                "service(service473016340).\n" +
-                "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n" +
-                "receives_label(demo) :- label(purpose(green)).\n" // Note that Prolog does not
-                // support
-                // nested predicates.
-                +
-                "has_decision(demo, allow).\n" +
-                "\n" +
-                "%%%%% Services %%%%%%%%%%%%\n" +
-                "service(serviceAll).\n" +
-                "has_endpoint(serviceAll,'.*').\n" +
-                "creates_label(serviceAll, purpose(green)).\n" +
-                "\n" +
-                "service(sanitizedata).\n" +
-                "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" +
-                "creates_label(sanitizedata, public).\n" +
-                "removes_label(sanitizedata, private).\n")
+            (
+                "" +
+                    "%%%%%%%% Rules %%%%%%%%%%%%\n" +
+                    "rule(denyAll).\n" +
+                    "rule_priority(denyAll, 0).\n" +
+                    "has_decision(denyAll, drop).\n" +
+                    "receives_label(denyAll).\n" +
+                    "has_target(denyAll, serviceAll).\n" +
+                    "\n" +
+                    "rule(demo).\n" +
+                    "rule_priority(demo, 1).\n" +
+                    "has_target(demo, service473016340).\n" +
+                    "service(service473016340).\n" +
+                    "has_endpoint(service473016340,\"(ahc|ahc-ws|cxf|cxfbean|cxfrs)://.*\").\n" +
+                    "receives_label(demo) :- label(purpose(green)).\n" + // Note that Prolog does not
+                    // support
+                    // nested predicates.
+                    "has_decision(demo, allow).\n" +
+                    "\n" +
+                    "%%%%% Services %%%%%%%%%%%%\n" +
+                    "service(serviceAll).\n" +
+                    "has_endpoint(serviceAll,'.*').\n" +
+                    "creates_label(serviceAll, purpose(green)).\n" +
+                    "\n" +
+                    "service(sanitizedata).\n" +
+                    "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" +
+                    "creates_label(sanitizedata, public).\n" +
+                    "removes_label(sanitizedata, private).\n"
+                )
 
         // Route from LUCON paper with path searching logic
         private const val VERIFIABLE_ROUTE =
-            ("%\n" +
-                "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n" +
+            (
                 "%\n" +
-                "% Demonstration of model checking a message route against a usage control policy\n" +
-                "%\n" +
-                "% Message Route definition\n" +
-                "%\n" +
-                "%       hiveMqttBroker       \n" +
-                "%       /     \\     \n" +
-                "%  logger    anonymizer  \n" +
-                "%       \\     /     \n" +
-                "%       hadoopClusters       \n" +
-                "%         |          \n" +
-                "%       testQueue       \n" +
-                "entrynode(hiveMqttBroker).\n" +
-                "stmt(hiveMqttBroker).\n" +
-                "has_action(hiveMqttBroker, \"paho:something:tcp://broker.hivemq.com:1883/anywhere\").\n" +
-                "stmt(logger).\n" +
-                "has_action(logger, \"log\").\n" +
-                "stmt(anonymizer).\n" +
-                "has_action(anonymizer, \"hello_anonymizer_world\").\n" +
-                "stmt(hadoopClusters).\n" +
-                "has_action(hadoopClusters, \"hdfs://myCluser\").\n" +
-                "stmt(testQueue).\n" +
-                "has_action(testQueue, \"amqp:testQueue:test\").\n" +
-                "\n" +
-                "succ(hiveMqttBroker, logger).\n" +
-                "succ(hiveMqttBroker, anonymizer).\n" +
-                "succ(logger, hadoopClusters).\n" +
-                "succ(anonymizer, hadoopClusters).\n" +
-                "succ(hadoopClusters, testQueue).\n" +
-                "\n")
+                    "% (C) Julian Schütte, Fraunhofer AISEC, 2017\n" +
+                    "%\n" +
+                    "% Demonstration of model checking a message route against a usage control policy\n" +
+                    "%\n" +
+                    "% Message Route definition\n" +
+                    "%\n" +
+                    "%       hiveMqttBroker       \n" +
+                    "%       /     \\     \n" +
+                    "%  logger    anonymizer  \n" +
+                    "%       \\     /     \n" +
+                    "%       hadoopClusters       \n" +
+                    "%         |          \n" +
+                    "%       testQueue       \n" +
+                    "entrynode(hiveMqttBroker).\n" +
+                    "stmt(hiveMqttBroker).\n" +
+                    "has_action(hiveMqttBroker, \"paho:something:tcp://broker.hivemq.com:1883/anywhere\").\n" +
+                    "stmt(logger).\n" +
+                    "has_action(logger, \"log\").\n" +
+                    "stmt(anonymizer).\n" +
+                    "has_action(anonymizer, \"hello_anonymizer_world\").\n" +
+                    "stmt(hadoopClusters).\n" +
+                    "has_action(hadoopClusters, \"hdfs://myCluser\").\n" +
+                    "stmt(testQueue).\n" +
+                    "has_action(testQueue, \"amqp:testQueue:test\").\n" +
+                    "\n" +
+                    "succ(hiveMqttBroker, logger).\n" +
+                    "succ(hiveMqttBroker, anonymizer).\n" +
+                    "succ(logger, hadoopClusters).\n" +
+                    "succ(anonymizer, hadoopClusters).\n" +
+                    "succ(hadoopClusters, testQueue).\n" +
+                    "\n"
+                )
     }
 }

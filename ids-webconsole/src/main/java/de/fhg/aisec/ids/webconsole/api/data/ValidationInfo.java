@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.webconsole.api.data;
 
 import de.fhg.aisec.ids.api.router.CounterExample;
+
 import java.util.List;
 
 public class ValidationInfo {

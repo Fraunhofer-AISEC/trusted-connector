@@ -26,22 +26,32 @@ import alice.tuprolog.exceptions.NoMoreSolutionException
 import alice.tuprolog.exceptions.NoSolutionException
 import alice.tuprolog.exceptions.PrologException
 import com.google.common.cache.CacheBuilder
-import de.fhg.aisec.ids.api.policy.*
+import de.fhg.aisec.ids.api.policy.DecisionRequest
+import de.fhg.aisec.ids.api.policy.Obligation
+import de.fhg.aisec.ids.api.policy.PAP
+import de.fhg.aisec.ids.api.policy.PDP
+import de.fhg.aisec.ids.api.policy.PolicyDecision
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision
+import de.fhg.aisec.ids.api.policy.ServiceNode
+import de.fhg.aisec.ids.api.policy.TransformationDecision
 import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.escape
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
+import org.osgi.service.component.ComponentContext
+import org.osgi.service.component.annotations.Activate
+import org.osgi.service.component.annotations.Component
+import org.osgi.service.component.annotations.Reference
+import org.osgi.service.component.annotations.ReferenceCardinality
+import org.osgi.service.component.annotations.ReferencePolicy
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
-import java.util.*
+import java.util.LinkedList
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
-import org.osgi.service.component.ComponentContext
-import org.osgi.service.component.annotations.*
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * This is a singleton, i.e. there will only be one instance of PolicyDecisionPoint within the whole

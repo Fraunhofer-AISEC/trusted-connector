@@ -12,15 +12,17 @@ apply(plugin = "idea")
 buildConfig {
     sourceSets.getByName("main") {
         packageName("de.fhg.aisec.ids.informationmodelmanager")
-        buildConfigField("String", "INFOMODEL_VERSION",
-                "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\"")
+        buildConfigField(
+            "String", "INFOMODEL_VERSION",
+            "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\""
+        )
     }
 }
 
 configure<IdeaModel> {
     module {
         // mark as generated sources for IDEA
-        generatedSourceDirs.add(File("${buildDir}/generated/source/buildConfig/main/main"))
+        generatedSourceDirs.add(File("$buildDir/generated/source/buildConfig/main/main"))
     }
 }
 

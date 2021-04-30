@@ -19,16 +19,13 @@
  */
 package de.fhg.aisec.ids.rm
 
-import de.fhg.aisec.ids.api.router.*
+import de.fhg.aisec.ids.api.router.RouteComponent
+import de.fhg.aisec.ids.api.router.RouteException
+import de.fhg.aisec.ids.api.router.RouteManager
+import de.fhg.aisec.ids.api.router.RouteMetrics
+import de.fhg.aisec.ids.api.router.RouteObject
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot
 import de.fhg.aisec.ids.rm.util.PrologPrinter
-import java.io.*
-import java.nio.charset.StandardCharsets
-import java.util.*
-import java.util.stream.Collectors
-import javax.management.*
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.JAXBException
 import org.apache.camel.CamelContext
 import org.apache.camel.Endpoint
 import org.apache.camel.ServiceStatus
@@ -43,6 +40,23 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
+import java.io.BufferedWriter
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.OutputStreamWriter
+import java.io.StringReader
+import java.io.StringWriter
+import java.nio.charset.StandardCharsets
+import java.util.stream.Collectors
+import javax.management.AttributeNotFoundException
+import javax.management.InstanceNotFoundException
+import javax.management.MBeanException
+import javax.management.MalformedObjectNameException
+import javax.management.ObjectName
+import javax.management.ReflectionException
+import javax.xml.bind.JAXBContext
+import javax.xml.bind.JAXBException
 
 /**
  * Manages Camel routes.
@@ -382,7 +396,7 @@ class RouteManagerService : RouteManager {
                 val serviceStatus = cCtx.routeController.getRouteStatus(routeId)
                 routeStarted =
                     serviceStatus == ServiceStatus.Started ||
-                        serviceStatus == ServiceStatus.Starting
+                    serviceStatus == ServiceStatus.Starting
                 break
             }
         }

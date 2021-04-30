@@ -23,18 +23,33 @@ import com.amihaiemil.docker.Container
 import com.amihaiemil.docker.Docker
 import com.amihaiemil.docker.Images
 import com.amihaiemil.docker.LocalDocker
-import de.fhg.aisec.ids.api.cm.*
+import de.fhg.aisec.ids.api.cm.ApplicationContainer
+import de.fhg.aisec.ids.api.cm.ContainerManager
+import de.fhg.aisec.ids.api.cm.ContainerStatus
+import de.fhg.aisec.ids.api.cm.Decision
+import de.fhg.aisec.ids.api.cm.Direction
+import de.fhg.aisec.ids.api.cm.NoContainerExistsException
+import de.fhg.aisec.ids.api.cm.Protocol
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.net.InetAddress
-import java.time.*
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.Period
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalUnit
-import java.util.*
+import java.util.LinkedList
+import java.util.Optional
 import java.util.stream.Collectors
-import javax.json.*
+import javax.json.Json
+import javax.json.JsonArray
+import javax.json.JsonObject
+import javax.json.JsonString
+import javax.json.JsonValue
 import kotlin.math.abs
-import org.slf4j.LoggerFactory
 
 /**
  * ContainerManager implementation for Docker containers.
@@ -87,7 +102,7 @@ class DockerCM : ContainerManager {
          * Human readable memory sizes Credits: aioobe, https://stackoverflow.com/questions
          * /3758606/how-to-convert-byte-size-into-human-readable-format-in-java
          */
-        private fun humanReadableByteCount(bytes: Long): String? {
+        private fun humanReadableByteCount(bytes: Long): String {
             val b = if (bytes == Long.MIN_VALUE) Long.MAX_VALUE else abs(bytes)
             return when {
                 b < 1024L -> {
@@ -175,7 +190,7 @@ class DockerCM : ContainerManager {
                     app.imageId = imageInfo?.getString("Id")
                     app.imageDigests =
                         imageInfo?.getJsonArray("RepoDigests")?.map { (it as JsonString).string }
-                            ?: emptyList()
+                        ?: emptyList()
                     app.ipAddresses =
                         networks
                             .values
@@ -195,7 +210,7 @@ class DockerCM : ContainerManager {
                             .toList()
                     app.size =
                         "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
-                            "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
+                        "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
                     app.created = info.getString("Created")
                     app.status = ContainerStatus.valueOf(state.getString("Status").toUpperCase())
                     app.ports =
@@ -331,9 +346,11 @@ class DockerCM : ContainerManager {
                 val exposedPorts = Json.createObjectBuilder()
                 val portBindings = Json.createObjectBuilder()
                 val portRegex =
-                    ("(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
+                    (
+                        "(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
                             "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])):)?" +
-                            "([0-9]+):([0-9]+)(?:/(tcp|udp))?")
+                            "([0-9]+):([0-9]+)(?:/(tcp|udp))?"
+                        )
                         .toRegex()
                 for (port in app.ports) {
                     val match = portRegex.matchEntire(port)

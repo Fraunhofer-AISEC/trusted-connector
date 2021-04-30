@@ -14,7 +14,7 @@ repositories {
 plugins {
     java
     maven
-    
+
     // Spring Boot
     id("org.springframework.boot") version "2.3.4.RELEASE" apply false
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
@@ -37,7 +37,7 @@ plugins {
 
 @Suppress("UNCHECKED_CAST")
 val libraryVersions: Map<String, String> =
-    Yaml().loadAs(file("${rootDir}/libraryVersions.yaml").inputStream(), Map::class.java) as Map<String, String>
+    Yaml().loadAs(file("$rootDir/libraryVersions.yaml").inputStream(), Map::class.java) as Map<String, String>
 extra.set("libraryVersions", libraryVersions)
 
 licenseReport {
@@ -62,7 +62,7 @@ subprojects {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
-    
+
     configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
         imports {
             mavenBom("org.springframework.boot:spring-boot-dependencies:${libraryVersions["springBoot"]}")
@@ -89,8 +89,10 @@ subprojects {
     // For artifacts that should be included as "compile" dependencies into published maven artifacts
     val publishCompile by configurations.creating
 
-    configurations["compile"].extendsFrom(providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle,
-        osgiCore, publishCompile)
+    configurations["compile"].extendsFrom(
+        providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle,
+        osgiCore, publishCompile
+    )
 
     dependencies {
         // Logging API
@@ -152,8 +154,8 @@ subprojects {
     tasks.jar {
         manifest {
             attributes(
-                    "Bundle-Vendor" to "Fraunhofer AISEC",
-                    "-noee" to true
+                "Bundle-Vendor" to "Fraunhofer AISEC",
+                "-noee" to true
             )
         }
     }
@@ -163,11 +165,11 @@ configure(subprojects.filter { it.name != "examples" }) {
     apply(plugin = "com.diffplug.spotless")
 
     spotless {
-        isEnforceCheck = false
-
         kotlin {
-            ktfmt().kotlinlangStyle()
-            licenseHeader("""/*-
+            target("**/*.kt")
+            ktlint(libraryVersions["ktlint"])
+            licenseHeader(
+                """/*-
  * ========================LICENSE_START=================================
  * ${project.name}
  * %%
@@ -185,7 +187,8 @@ configure(subprojects.filter { it.name != "examples" }) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * =========================LICENSE_END==================================
- */""").yearSeparator(" - ")
+ */"""
+            ).yearSeparator(" - ")
         }
     }
 }

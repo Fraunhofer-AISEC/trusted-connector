@@ -20,8 +20,8 @@
 package de.fhg.aisec.ids.api.idscp2
 
 import de.fraunhofer.iais.eis.ContractAgreement
-import java.net.URI
 import org.apache.camel.Exchange
+import java.net.URI
 
 /**
  * This interface has to be parameterized with the type of the connection objects handled, e.g.

@@ -19,7 +19,6 @@
  */
 package de.fhg.aisec.ids
 
-import java.io.File
 import org.apache.camel.RoutesBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.support.jsse.KeyManagersParameters
@@ -28,6 +27,7 @@ import org.apache.camel.support.jsse.SSLContextParameters
 import org.apache.camel.support.jsse.TrustManagersParameters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.nio.file.FileSystems
 
 @Configuration
 open class ExampleIdscpClient {
@@ -39,24 +39,12 @@ open class ExampleIdscpClient {
         ctx.keyManagers = KeyManagersParameters()
         ctx.keyManagers.keyStore = KeyStoreParameters()
         ctx.keyManagers.keyStore.resource =
-            File(
-                    Thread.currentThread()
-                        .contextClassLoader
-                        .getResource("etc/provider-core-protocol-test.p12")
-                        .path
-                )
-                .path
+            FileSystems.getDefault().getPath("etc", "provider-keystore.p12").toFile().path
         ctx.keyManagers.keyStore.password = "password"
         ctx.trustManagers = TrustManagersParameters()
         ctx.trustManagers.keyStore = KeyStoreParameters()
         ctx.trustManagers.keyStore.resource =
-            File(
-                    Thread.currentThread()
-                        .contextClassLoader
-                        .getResource("etc/truststore.p12")
-                        .path
-                )
-                .path
+            FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
         ctx.trustManagers.keyStore.password = "password"
 
         return ctx
@@ -67,22 +55,14 @@ open class ExampleIdscpClient {
         return object : RouteBuilder() {
             override fun configure() {
                 from("timer://tenSecondsTimer?fixedRate=true&period=10000")
-                    .setBody()
-                        .simple("PING")
-                    .setHeader("idscp2-header")
-                        .simple("ping")
+                    .setBody().simple("PING")
+                    .setHeader("idscp2-header").simple("ping")
                     .log("Client sends: \${body} (Header: \${headers[idscp2-header]})")
-                    .to(
-                        "idscp2client://localhost:29292?awaitResponse=true&sslContextParameters=#clientSslContext"
-                    )
+                    .to("idscp2client://consumer-core:29292?awaitResponse=true&sslContextParameters=#clientSslContext")
                     .log("Client received: \${body} (Header: \${headers[idscp2-header]})")
-                    .removeHeader(
-                        "idscp2-header"
-                    ) // Prevents the client consumer from sending the message back to the server
-                    .setBody()
-                        .simple("\${null}")
+                    .removeHeader("idscp2-header") // Prevents client consumer from sending the message back to the server
+                    .setBody().simple("\${null}")
             }
         }
     }
-
 }

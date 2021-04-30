@@ -24,31 +24,30 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
-import java.nio.file.FileSystems
-import java.util.*
-import java.util.concurrent.ConcurrentMap
-import javax.annotation.PreDestroy
-import kotlin.collections.HashMap
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
 import org.slf4j.LoggerFactory
+import java.nio.file.FileSystems
+import java.util.Collections
+import java.util.concurrent.ConcurrentMap
+import javax.annotation.PreDestroy
 
 @org.springframework.stereotype.Component
 class SettingsComponent : Settings {
 
-    constructor() {
+    init {
         activate()
     }
 
-    fun activate() {
-        LOG.debug("Open Settings Database...")
+    private fun activate() {
+        LOG.debug("Open Settings Database {}...", DB_PATH.toFile().absolutePath)
 
         DB_PATH.toFile().parentFile.mkdirs()
 
         // Use default reliable (non-mmap) mode and WAL for transaction safety
         mapDB = DBMaker.fileDB(DB_PATH.toFile()).transactionEnable().make()
-        var dbVersion = settingsStore.getOrPut(DB_VERSION_KEY, { 1 }) as Int
+        var dbVersion = settingsStore.getOrPut(DB_VERSION_KEY) { 1 } as Int
         // Check for unknown DB version
         if (dbVersion > CURRENT_DB_VERSION) {
             LOG.error(

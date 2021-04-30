@@ -23,6 +23,22 @@ import de.fhg.aisec.ids.api.acme.AcmeClient
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable
 import de.fhg.aisec.ids.api.settings.Settings
+import org.apache.karaf.scheduler.Scheduler
+import org.osgi.service.component.annotations.Activate
+import org.osgi.service.component.annotations.Component
+import org.osgi.service.component.annotations.Reference
+import org.osgi.service.component.annotations.ReferenceCardinality
+import org.shredzone.acme4j.Account
+import org.shredzone.acme4j.AccountBuilder
+import org.shredzone.acme4j.Order
+import org.shredzone.acme4j.Session
+import org.shredzone.acme4j.Status
+import org.shredzone.acme4j.challenge.Http01Challenge
+import org.shredzone.acme4j.exception.AcmeException
+import org.shredzone.acme4j.exception.AcmeNetworkException
+import org.shredzone.acme4j.util.CSRBuilder
+import org.shredzone.acme4j.util.KeyPairUtils
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URI
@@ -36,19 +52,9 @@ import java.security.KeyStore
 import java.security.cert.X509Certificate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
-import org.apache.karaf.scheduler.Scheduler
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
-import org.osgi.service.component.annotations.Reference
-import org.osgi.service.component.annotations.ReferenceCardinality
-import org.shredzone.acme4j.*
-import org.shredzone.acme4j.challenge.Http01Challenge
-import org.shredzone.acme4j.exception.AcmeException
-import org.shredzone.acme4j.exception.AcmeNetworkException
-import org.shredzone.acme4j.util.CSRBuilder
-import org.shredzone.acme4j.util.KeyPairUtils
-import org.slf4j.LoggerFactory
+import java.util.Arrays
+import java.util.Collections
+import java.util.Date
 
 @Component(
     immediate = true,
@@ -245,19 +251,19 @@ class AcmeClientService : AcmeClient, Runnable {
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss.SSS"))
             try {
                 Files.newBufferedReader(
-                        targetDirectory.resolve("domain.key"),
-                        StandardCharsets.UTF_8
-                    )
+                    targetDirectory.resolve("domain.key"),
+                    StandardCharsets.UTF_8
+                )
                     .use { keyReader ->
                         Files.newBufferedWriter(
-                                targetDirectory.resolve("csr_ $timestamp.csr"),
-                                StandardCharsets.UTF_8
-                            )
+                            targetDirectory.resolve("csr_ $timestamp.csr"),
+                            StandardCharsets.UTF_8
+                        )
                             .use { csrWriter ->
                                 Files.newBufferedWriter(
-                                        targetDirectory.resolve("cert-chain_$timestamp.crt"),
-                                        StandardCharsets.UTF_8
-                                    )
+                                    targetDirectory.resolve("cert-chain_$timestamp.crt"),
+                                    StandardCharsets.UTF_8
+                                )
                                     .use { chainWriter ->
                                         val domainKeyPair = KeyPairUtils.readKeyPair(keyReader)
 

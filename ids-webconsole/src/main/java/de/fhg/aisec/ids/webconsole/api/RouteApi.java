@@ -20,10 +20,8 @@
 package de.fhg.aisec.ids.webconsole.api;
 
 import de.fhg.aisec.ids.api.Result;
-import de.fhg.aisec.ids.api.cm.ContainerManager;
 import de.fhg.aisec.ids.api.policy.PAP;
 import de.fhg.aisec.ids.api.router.*;
-import de.fhg.aisec.ids.api.settings.Settings;
 import de.fhg.aisec.ids.webconsole.WebConsoleComponent;
 import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo;
 import io.swagger.annotations.Api;
@@ -38,7 +36,6 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

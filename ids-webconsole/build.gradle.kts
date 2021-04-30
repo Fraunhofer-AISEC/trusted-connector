@@ -1,4 +1,8 @@
-import com.benjaminsproule.swagger.gradleplugin.model.*
+import com.benjaminsproule.swagger.gradleplugin.model.ApiSourceExtension
+import com.benjaminsproule.swagger.gradleplugin.model.InfoExtension
+import com.benjaminsproule.swagger.gradleplugin.model.LicenseExtension
+import com.benjaminsproule.swagger.gradleplugin.model.ScopeExtension
+import com.benjaminsproule.swagger.gradleplugin.model.SecurityDefinitionExtension
 import com.github.gradle.node.yarn.task.YarnTask
 
 @Suppress("UNCHECKED_CAST")
@@ -21,44 +25,54 @@ sourceSets {
 }
 
 swagger {
-    apiSource(closureOf<ApiSourceExtension> {
-        springmvc = false
-        locations = listOf("de.fhg.aisec.ids.webconsole.api")
-        schemes = listOf("http")
-        host = "localhost:8181"
-        basePath = "/"
-        info(closureOf<InfoExtension> {
-            title = "Trusted Connector API"
-            version = project.version as String
-            license(closureOf<LicenseExtension> {
-                url = "http://www.apache.org/licenses/LICENSE-2.0.html"
-                name = "Apache 2.0"
-            })
-            description ="""This is the administrative REST API of the Trusted Connector.
+    apiSource(
+        closureOf<ApiSourceExtension> {
+            springmvc = false
+            locations = listOf("de.fhg.aisec.ids.webconsole.api")
+            schemes = listOf("http")
+            host = "localhost:8181"
+            basePath = "/"
+            info(
+                closureOf<InfoExtension> {
+                    title = "Trusted Connector API"
+                    version = project.version as String
+                    license(
+                        closureOf<LicenseExtension> {
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.html"
+                            name = "Apache 2.0"
+                        }
+                    )
+                    description = """This is the administrative REST API of the Trusted Connector.
 
 The API provides an administrative interface to manage the Trusted Connector at runtime
 and is used by the default administration dashboard ("web console").
 """
-        })
-        swaggerDirectory = "${project.projectDir}/generated/swagger-ui"
-        outputFormats = listOf("json","yaml")
-        securityDefinition(closureOf<SecurityDefinitionExtension> {
-            // `name` can be used refer to this security schemes from elsewhere
-            name = "oauth2"
-            type = "oauth2"
-            // The flow used by the OAuth2 security scheme
-            flow = "password"
-            tokenUrl = "https://localhost:8181/user/login"
-            scope(closureOf<ScopeExtension> {
-                name = "write:api"
-                description = "Read and write access to the API"
-            })
-        })
+                }
+            )
+            swaggerDirectory = "${project.projectDir}/generated/swagger-ui"
+            outputFormats = listOf("json", "yaml")
+            securityDefinition(
+                closureOf<SecurityDefinitionExtension> {
+                    // `name` can be used refer to this security schemes from elsewhere
+                    name = "oauth2"
+                    type = "oauth2"
+                    // The flow used by the OAuth2 security scheme
+                    flow = "password"
+                    tokenUrl = "https://localhost:8181/user/login"
+                    scope(
+                        closureOf<ScopeExtension> {
+                            name = "write:api"
+                            description = "Read and write access to the API"
+                        }
+                    )
+                }
+            )
         /* the plugin could theoretically also generate the html files, however it currently only allows 
         for the generation of html OR swagger.json, not both. Therefore we still need to use spectacle using yarn */
-        // templatePath = "${project.projectDir}/src/test/resources/strapdown.html.hbs"
-        // outputPath = "${project.projectDir}/generated/document.html"   
-    })
+            // templatePath = "${project.projectDir}/src/test/resources/strapdown.html.hbs"
+            // outputPath = "${project.projectDir}/generated/document.html"   
+        }
+    )
 }
 
 dependencies {
@@ -102,7 +116,7 @@ dependencies {
 }
 
 node {
-    //download.set(true)
+    // download.set(true)
     // currently broken on M1
 }
 

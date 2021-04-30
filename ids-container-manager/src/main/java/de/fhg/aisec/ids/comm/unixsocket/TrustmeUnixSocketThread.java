@@ -19,6 +19,12 @@
  */
 package de.fhg.aisec.ids.comm.unixsocket;
 
+import jnr.enxio.channels.NativeSelectorProvider;
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -27,22 +33,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import jnr.enxio.channels.NativeSelectorProvider;
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TrustmeUnixSocketThread implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(TrustmeUnixSocketThread.class);
-  private UnixSocketAddress address;
-  private UnixSocketChannel channel;
   private String socket;
 
   // The selector we'll be monitoring
-  private Selector selector;
+  private final Selector selector;
 
-  private ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+  private final ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
 
   // A list of PendingChange instances
   private final List<ChangeRequest> pendingChanges = new LinkedList<>();
@@ -51,9 +50,8 @@ public class TrustmeUnixSocketThread implements Runnable {
   private final Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 
   // Maps a UnixSocketChannel to a UnixSocketResponseHandler
-  private Map<UnixSocketChannel, TrustmeUnixSocketResponseHandler> rspHandlers =
-      Collections.synchronizedMap(
-          new HashMap<UnixSocketChannel, TrustmeUnixSocketResponseHandler>());
+  private final Map<UnixSocketChannel, TrustmeUnixSocketResponseHandler> rspHandlers =
+      Collections.synchronizedMap(new HashMap<>());
 
   // constructor setting another socket address
   public TrustmeUnixSocketThread(String socket) throws IOException {
@@ -88,11 +86,7 @@ public class TrustmeUnixSocketThread implements Runnable {
     this.rspHandlers.put(socket, handler);
     // And queue the data we want written
     synchronized (this.pendingData) {
-      List<ByteBuffer> queue = (List<ByteBuffer>) this.pendingData.get(socket);
-      if (queue == null) {
-        queue = new ArrayList<ByteBuffer>();
-        this.pendingData.put(socket, queue);
-      }
+      List<ByteBuffer> queue = this.pendingData.computeIfAbsent(socket, k -> new ArrayList<>());
       queue.add(ByteBuffer.wrap(result));
     }
 
@@ -117,7 +111,7 @@ public class TrustmeUnixSocketThread implements Runnable {
                 change.channel.register(this.selector, change.ops);
                 break;
               default:
-                LOG.warn("Unknown ChangeRequest type", change.type);
+                LOG.warn("Unknown ChangeRequest type {}", change.type);
             }
           }
           this.pendingChanges.clear();
@@ -129,7 +123,7 @@ public class TrustmeUnixSocketThread implements Runnable {
         // Iterate over the set of keys for which events are available
         Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
         while (selectedKeys.hasNext()) {
-          SelectionKey key = (SelectionKey) selectedKeys.next();
+          SelectionKey key = selectedKeys.next();
           selectedKeys.remove();
           if (!key.isValid()) {
             continue;
@@ -231,8 +225,7 @@ public class TrustmeUnixSocketThread implements Runnable {
     System.arraycopy(data, 0, rspData, 0, data.length);
 
     // Look up the handler for this channel
-    TrustmeUnixSocketResponseHandler handler =
-        (TrustmeUnixSocketResponseHandler) this.rspHandlers.get(socketChannel);
+    TrustmeUnixSocketResponseHandler handler = this.rspHandlers.get(socketChannel);
 
     // And pass the response to it
     if (handler.handleResponse(rspData)) {
@@ -247,7 +240,7 @@ public class TrustmeUnixSocketThread implements Runnable {
     final UnixSocketChannel channel = this.getChannel(key);
 
     synchronized (this.pendingData) {
-      List<ByteBuffer> queue = (List<ByteBuffer>) this.pendingData.get(channel);
+      List<ByteBuffer> queue = this.pendingData.get(channel);
 
       // Write until there's not more data
       while (!queue.isEmpty()) {
@@ -267,7 +260,7 @@ public class TrustmeUnixSocketThread implements Runnable {
     }
   }
 
-  private void finishConnection(SelectionKey key) throws IOException {
+  private void finishConnection(SelectionKey key) {
     final UnixSocketChannel channel = this.getChannel(key);
 
     // Finish the connection. If the connection operation failed this will raise an
@@ -304,16 +297,16 @@ public class TrustmeUnixSocketThread implements Runnable {
                 socketFile.getAbsolutePath(), retries));
       }
     }
-    this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());
-    this.channel = UnixSocketChannel.open(this.address);
-    this.channel.configureBlocking(false);
+    UnixSocketAddress address = new UnixSocketAddress(socketFile.getAbsoluteFile());
+    UnixSocketChannel channel = UnixSocketChannel.open(address);
+    channel.configureBlocking(false);
     // synchronize pending changes
     synchronized (this.pendingChanges) {
       this.pendingChanges.add(
           new ChangeRequest(
-              channel, ChangeRequest.REGISTER, SelectionKey.OP_CONNECT | SelectionKey.OP_WRITE));
+                  channel, ChangeRequest.REGISTER, SelectionKey.OP_CONNECT | SelectionKey.OP_WRITE));
     }
-    return this.channel;
+    return channel;
   }
 
   // initialize the selector

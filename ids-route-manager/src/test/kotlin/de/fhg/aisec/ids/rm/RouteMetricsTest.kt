@@ -19,11 +19,11 @@
  */
 package de.fhg.aisec.ids.rm
 
-import java.util.*
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.model.ModelCamelContext
 import org.apache.camel.test.junit4.CamelTestSupport
 import org.junit.Test
+import java.util.Arrays
 
 class RouteMetricsTest : CamelTestSupport() {
     @Test

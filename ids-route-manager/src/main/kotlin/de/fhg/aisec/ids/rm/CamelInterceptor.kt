@@ -26,7 +26,11 @@ import org.apache.camel.CamelContext
 import org.apache.camel.NamedNode
 import org.apache.camel.Processor
 import org.apache.camel.spi.InterceptStrategy
-import org.osgi.service.component.annotations.*
+import org.osgi.service.component.annotations.Activate
+import org.osgi.service.component.annotations.Component
+import org.osgi.service.component.annotations.Reference
+import org.osgi.service.component.annotations.ReferenceCardinality
+import org.osgi.service.component.annotations.ReferencePolicy
 
 @Component(immediate = true, name = "ids-camel-interceptor")
 class CamelInterceptor : InterceptStrategy {

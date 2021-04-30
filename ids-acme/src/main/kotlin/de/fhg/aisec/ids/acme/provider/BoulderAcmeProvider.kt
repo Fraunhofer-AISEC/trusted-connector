@@ -19,12 +19,12 @@
  */
 package de.fhg.aisec.ids.acme.provider
 
+import org.shredzone.acme4j.provider.AbstractAcmeProvider
+import org.shredzone.acme4j.provider.AcmeProvider
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
 import java.util.regex.Pattern
-import org.shredzone.acme4j.provider.AbstractAcmeProvider
-import org.shredzone.acme4j.provider.AcmeProvider
 
 /**
  * An [AcmeProvider] for *Boulder*.

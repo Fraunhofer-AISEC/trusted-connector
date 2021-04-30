@@ -21,22 +21,37 @@ package de.fhg.aisec.ids
 
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.infomodel.InfoModel
+import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.rm.RouteManagerService
-import java.util.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.util.Arrays
 
 @Configuration
 class ConnectorConfiguration {
 
     @Autowired(required = false) private var cml: ContainerManager? = null
 
+    @Autowired private lateinit var settings: Settings
+
     @Autowired private lateinit var im: InfoModel
 
     @Autowired private lateinit var rm: RouteManagerService
+
+    @Bean
+    fun configureIdscp2(): CommandLineRunner {
+        return CommandLineRunner {
+            Utils.connectorUrlProducer = { settings.connectorProfile.connectorUrl }
+            Utils.maintainerUrlProducer = { settings.connectorProfile.maintainerUrl }
+            Utils.dapsUrlProducer = { settings.connectorConfig.dapsUrl }
+            TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
+            Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
+        }
+    }
 
     @Bean
     fun listBeans(ctx: ApplicationContext): CommandLineRunner? {

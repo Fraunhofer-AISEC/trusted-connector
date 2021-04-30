@@ -30,11 +30,10 @@ import alice.tuprolog.exceptions.NoSolutionException
 import alice.tuprolog.interfaces.event.LibraryListener
 import de.fhg.aisec.ids.api.router.CounterExample
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
+import org.slf4j.LoggerFactory
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
-import java.util.*
 import java.util.regex.Pattern
-import org.slf4j.LoggerFactory
 
 /**
  * LUCON (Logic based Usage Control) policy decision engine.

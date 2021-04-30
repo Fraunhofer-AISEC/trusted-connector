@@ -26,7 +26,7 @@ tasks.clean {
 configure<IdeaModel> {
     module {
         // mark as generated sources for IDEA
-        generatedSourceDirs.add(File("${protobufGeneratedDir}/main/java"))
+        generatedSourceDirs.add(File("$protobufGeneratedDir/main/java"))
     }
 }
 
@@ -42,7 +42,7 @@ dependencies {
         exclude("com.github.jnr", "jnr-unixsocket")
     }
 
-    //implementation(project(":jnr-unixsocket-wrapper"))
+    // implementation(project(":jnr-unixsocket-wrapper"))
     implementation("com.github.jnr", "jnr-unixsocket", libraryVersions["jnrunix"])
     implementation("com.github.jnr", "jnr-ffi", libraryVersions["jnrffi"])
 

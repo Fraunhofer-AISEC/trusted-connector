@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.dataflowcontrol.lucon
 import alice.tuprolog.Struct
 import alice.tuprolog.Term
 import de.fhg.aisec.ids.api.router.CounterExample
-import java.util.*
+import java.util.LinkedList
 
 class CounterExampleImpl(term: Term) : CounterExample() {
 

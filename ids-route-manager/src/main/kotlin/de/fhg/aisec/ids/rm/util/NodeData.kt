@@ -19,9 +19,22 @@
  */
 package de.fhg.aisec.ids.rm.util
 
-import java.util.*
-import org.apache.camel.model.*
+import org.apache.camel.model.AggregateDefinition
+import org.apache.camel.model.BeanDefinition
+import org.apache.camel.model.ChoiceDefinition
+import org.apache.camel.model.FilterDefinition
+import org.apache.camel.model.FromDefinition
+import org.apache.camel.model.OtherwiseDefinition
+import org.apache.camel.model.ProcessorDefinition
+import org.apache.camel.model.RecipientListDefinition
+import org.apache.camel.model.ResequenceDefinition
+import org.apache.camel.model.RoutingSlipDefinition
+import org.apache.camel.model.SplitDefinition
+import org.apache.camel.model.ToDefinition
+import org.apache.camel.model.TransformDefinition
+import org.apache.camel.model.WhenDefinition
 import org.apache.camel.util.ObjectHelper
+import java.util.Locale
 
 /** Represents a node in Graphviz representation of a route. */
 class NodeData(var id: String, node: Any?, imagePrefix: String) {
@@ -36,11 +49,12 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
     var outputs: List<ProcessorDefinition<*>>? = null
 
     private fun removeQueryString(text: String?): String? {
-        val idx = text!!.indexOf('?')
-        return if (idx <= 0) {
-            text
-        } else {
-            text.substring(0, idx)
+        return text?.indexOf('?')?.let { idx ->
+            if (idx <= 0) {
+                text
+            } else {
+                text.substring(0, idx)
+            }
         }
     }
 
@@ -178,9 +192,11 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
         }
         if (ObjectHelper.isEmpty(url) && ObjectHelper.isNotEmpty(nodeType)) {
             url =
-                ("http://camel.apache.org/" +
-                    nodeType!!.toLowerCase(Locale.ENGLISH).replace(' ', '-') +
-                    ".html")
+                (
+                    "http://camel.apache.org/" +
+                        nodeType!!.toLowerCase(Locale.ENGLISH).replace(' ', '-') +
+                        ".html"
+                    )
         }
         if (node is ProcessorDefinition<*> && outputs == null) {
             outputs = node.outputs
