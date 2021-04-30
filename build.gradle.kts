@@ -1,4 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.yaml.snakeyaml.Yaml
 
@@ -29,8 +28,8 @@ plugins {
     id("com.google.protobuf") version "0.8.12" apply false
 
     // Kotlin specific
-    kotlin("jvm") version "1.4.31" apply false
-    kotlin("plugin.spring") version "1.4.31" apply false
+    kotlin("jvm") version "1.4.32" apply false
+    kotlin("plugin.spring") version "1.4.32" apply false
 
     id("com.diffplug.spotless") version "5.11.0"
     id("com.github.jk1.dependency-license-report") version "1.16"
@@ -112,13 +111,37 @@ subprojects {
         // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
         compileOnly("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
 
-        // We need to explicitly specify the 1.4 version for all kotlin dependencies,
-        // because otherwise something (maybe a plugin) downgrades the kotlin version to 1.3,
+        // Some versions are downgraded for unknown reasons, fix this here
+        val groupPins = mapOf(
+            "org.jetbrains.kotlin" to mapOf(
+                "*" to "kotlin"
+            ),
+            "com.squareup.okhttp3" to mapOf(
+                "*" to "okhttp"
+            ),
+            "com.google.guava" to mapOf(
+                "guava" to "guava"
+            )
+        )
+        // We need to explicitly specify the kotlin version for all kotlin dependencies,
+        // because otherwise something (maybe a plugin) downgrades the kotlin version,
         // which produces errors in the kotlin compiler. This is really nasty.
         configurations.all {
             resolutionStrategy.eachDependency {
-                if (requested.group == "org.jetbrains.kotlin") {
-                    useVersion(libraryVersions["kotlin"] ?: throw RuntimeException("kotlin version not set"))
+                groupPins[requested.group]?.let { pins ->
+                    pins["*"]?.let {
+                        // Pin all names when asterisk is set
+                        useVersion(
+                            libraryVersions[it]
+                                ?: throw RuntimeException("Key \"$it\" not set in libraryVersions.yaml")
+                        )
+                    } ?: pins[requested.name]?.let { pin ->
+                        // Pin only for specific names given in map
+                        useVersion(
+                            libraryVersions[pin]
+                                ?: throw RuntimeException("Key \"$pin\" not set in libraryVersions.yaml")
+                        )
+                    }
                 }
             }
         }

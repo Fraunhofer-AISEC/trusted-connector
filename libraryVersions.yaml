@@ -1,7 +1,8 @@
-idscp2: "0.4.0"
+idscp2: "0.4.3"
+okhttp: "4.9.1"
 
 # Kotlin library/compiler version
-kotlin: "1.4.31"
+kotlin: "1.4.32"
 kotlinxCoroutines: "1.4.3"
 # basically, the first requirement, all other libraries depend on this version
 karaf: "4.2.10"
