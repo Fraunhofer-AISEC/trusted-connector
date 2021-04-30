@@ -28,7 +28,6 @@ import org.apache.camel.support.jsse.TrustManagersParameters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.File
-import java.nio.file.FileSystems
 
 @Configuration
 open class ExampleIdscpClient {
