@@ -27,6 +27,7 @@ import org.apache.camel.support.jsse.SSLContextParameters
 import org.apache.camel.support.jsse.TrustManagersParameters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.io.File
 import java.nio.file.FileSystems
 
 @Configuration
@@ -39,12 +40,23 @@ open class ExampleIdscpClient {
         ctx.keyManagers = KeyManagersParameters()
         ctx.keyManagers.keyStore = KeyStoreParameters()
         ctx.keyManagers.keyStore.resource =
-            FileSystems.getDefault().getPath("etc", "provider-keystore.p12").toFile().path
+            File(
+                Thread.currentThread()
+                    .contextClassLoader
+                    .getResource("etc/consumer-core-protocol-test.p12")
+                    .path
+            )
+                .path
         ctx.keyManagers.keyStore.password = "password"
         ctx.trustManagers = TrustManagersParameters()
         ctx.trustManagers.keyStore = KeyStoreParameters()
         ctx.trustManagers.keyStore.resource =
-            FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
+            File(
+                Thread.currentThread()
+                    .contextClassLoader
+                    .getResource("etc/truststore.p12")
+                    .path
+            ).path
         ctx.trustManagers.keyStore.password = "password"
 
         return ctx
@@ -58,7 +70,7 @@ open class ExampleIdscpClient {
                     .setBody().simple("PING")
                     .setHeader("idscp2-header").simple("ping")
                     .log("Client sends: \${body} (Header: \${headers[idscp2-header]})")
-                    .to("idscp2client://consumer-core:29292?awaitResponse=true&sslContextParameters=#clientSslContext")
+                    .to("idscp2client://127.0.0.1:29292?awaitResponse=true&sslContextParameters=#clientSslContext")
                     .log("Client received: \${body} (Header: \${headers[idscp2-header]})")
                     .removeHeader("idscp2-header") // Prevents client consumer from sending the message back to the server
                     .setBody().simple("\${null}")
