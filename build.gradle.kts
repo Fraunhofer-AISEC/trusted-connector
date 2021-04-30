@@ -74,9 +74,6 @@ subprojects {
         }
     }
 
-    // just to make bills of materials (bom) easier to see in the dependency tree
-    val bom by configurations.creating
-
     // Configuration for dependencies that will be provided through features in the OSGi environment
     val providedByFeature by configurations.creating
 
@@ -85,11 +82,6 @@ subprojects {
     val providedByBundle by configurations.creating
     val unixSocketBundle by configurations.creating
     val infomodelBundle by configurations.creating
-
-    // Configurations for bundles grouped to dedicated features apart from the main ids feature
-    val influxFeature by configurations.creating
-
-    val zmqFeature by configurations.creating
 
     // OSGi core dependencies which will just be there during runtime
     val osgiCore by configurations.creating
@@ -104,9 +96,7 @@ subprojects {
         // Logging API
         providedByBundle("org.slf4j", "slf4j-api", libraryVersions["slf4j"])
 
-        val implementation by configurations
         val compileOnly by configurations
-        val testImplementation by configurations
 
         // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
         compileOnly("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])

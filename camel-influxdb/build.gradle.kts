@@ -2,8 +2,6 @@
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 dependencies {
-    val influxFeature by configurations
-
-    influxFeature("org.influxdb", "influxdb-java", libraryVersions["influxDB"])
-    influxFeature("org.apache.camel", "camel-influxdb", libraryVersions["camel"])
+    implementation("org.influxdb", "influxdb-java", libraryVersions["influxDB"])
+    implementation("org.apache.camel", "camel-influxdb", libraryVersions["camel"])
 }
