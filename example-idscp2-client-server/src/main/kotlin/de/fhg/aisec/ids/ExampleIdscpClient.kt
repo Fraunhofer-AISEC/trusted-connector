@@ -27,7 +27,7 @@ import org.apache.camel.support.jsse.SSLContextParameters
 import org.apache.camel.support.jsse.TrustManagersParameters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.io.File
+import java.nio.file.FileSystems
 
 @Configuration
 open class ExampleIdscpClient {
@@ -39,24 +39,12 @@ open class ExampleIdscpClient {
         ctx.keyManagers = KeyManagersParameters()
         ctx.keyManagers.keyStore = KeyStoreParameters()
         ctx.keyManagers.keyStore.resource =
-            File(
-                Thread.currentThread()
-                    .contextClassLoader
-                    // .getResource("etc/provider-core-protocol-test.p12")
-                    .getResource("etc/provider-keystore.p12")
-                    .path
-            )
-                .path
+            FileSystems.getDefault().getPath("etc", "provider-keystore.p12").toFile().path
         ctx.keyManagers.keyStore.password = "password"
         ctx.trustManagers = TrustManagersParameters()
         ctx.trustManagers.keyStore = KeyStoreParameters()
         ctx.trustManagers.keyStore.resource =
-            File(
-                Thread.currentThread()
-                    .contextClassLoader
-                    .getResource("etc/truststore.p12")
-                    .path
-            ).path
+            FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
         ctx.trustManagers.keyStore.password = "password"
 
         return ctx
