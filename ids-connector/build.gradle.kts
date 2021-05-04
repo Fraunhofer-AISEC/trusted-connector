@@ -12,6 +12,14 @@ plugins {
     kotlin("plugin.spring")
 }
 
+tasks.withType<Jar> {
+    enabled = true
+}
+
+tasks.withType<BootJar> {
+    archiveClassifier.set("boot")
+}
+
 apply(plugin = "idea")
 
 buildConfig {
