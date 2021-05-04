@@ -62,6 +62,7 @@ subprojects {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "com.diffplug.spotless")
 
     configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
         imports {
@@ -149,6 +150,7 @@ subprojects {
         options.encoding = "UTF-8"
         options.compilerArgs.add("-Xlint:unchecked")
 //        options.isDeprecation = true
+        dependsOn("spotlessApply")
     }
 
     tasks.jar {
