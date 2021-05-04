@@ -42,7 +42,7 @@ open class ExampleIdscpClient {
             File(
                 Thread.currentThread()
                     .contextClassLoader
-                    //.getResource("etc/provider-core-protocol-test.p12")
+                    // .getResource("etc/provider-core-protocol-test.p12")
                     .getResource("etc/provider-keystore.p12")
                     .path
             )
