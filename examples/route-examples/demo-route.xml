@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-		   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		   xmlns:camel="http://camel.apache.org/schema/blueprint" xsi:schemaLocation="
- http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
- http://camel.apache.org/schema/blueprint https://camel.apache.org/schema/blueprint/camel-blueprint-3.3.0.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:camel="http://camel.apache.org/schema/spring"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+          http://camel.apache.org/schema/spring
+          http://camel.apache.org/schema/spring/camel-spring.xsd
+          http://www.springframework.org/schema/util
+          http://www.springframework.org/schema/util/spring-util-4.2.xsd">
 
 	<camel:sslContextParameters id="sslContext" certAlias="1.0.1">
 		<camel:keyManagers keyPassword="password">
@@ -26,8 +31,7 @@
 	<bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.IdsMessageTypeExtractionProcessor" />
 
 	<!-- Routes -->
-	<camelContext xmlns="http://camel.apache.org/schema/blueprint">
-
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
 		<route id="server">
 			<from uri="idscp2server://0.0.0.0:29292?sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
 			<process ref="TypeExtractionProcessor"/>
@@ -169,4 +173,4 @@
 			</choice>
 		</route>
 	</camelContext>
-</blueprint>
+</beans>
