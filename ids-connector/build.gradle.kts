@@ -17,7 +17,7 @@ tasks.withType<Jar> {
 }
 
 tasks.withType<BootJar> {
-    classifier = "boot"
+    archiveClassifier.set("boot")
 }
 
 apply(plugin = "idea")
