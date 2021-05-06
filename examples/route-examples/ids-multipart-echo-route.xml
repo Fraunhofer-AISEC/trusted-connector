@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:camel="http://camel.apache.org/schema/spring"
-       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
           http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
           http://camel.apache.org/schema/spring
-          http://camel.apache.org/schema/spring/camel-spring.xsd
-          http://www.springframework.org/schema/util
-          http://www.springframework.org/schema/util/spring-util-4.2.xsd">
+          http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <!-- Define a reference for our REST MIME-Multipart Processor -->
     <bean id="mpOutProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartOutputProcessor" />
