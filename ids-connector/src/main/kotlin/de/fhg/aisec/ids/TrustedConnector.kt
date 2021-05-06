@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -29,7 +30,7 @@ class TrustedConnector {
 
     companion object {
 
-        val LOG = LoggerFactory.getLogger(TrustedConnector::class.java)
+        val LOG: Logger = LoggerFactory.getLogger(TrustedConnector::class.java)
 
         @JvmStatic
         fun main(args: Array<String>) {

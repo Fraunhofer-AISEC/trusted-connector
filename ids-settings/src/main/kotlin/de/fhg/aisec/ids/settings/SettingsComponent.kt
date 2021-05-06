@@ -28,12 +28,13 @@ import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import java.nio.file.FileSystems
 import java.util.Collections
 import java.util.concurrent.ConcurrentMap
 import javax.annotation.PreDestroy
 
-@org.springframework.stereotype.Component
+@Component
 class SettingsComponent : Settings {
 
     init {

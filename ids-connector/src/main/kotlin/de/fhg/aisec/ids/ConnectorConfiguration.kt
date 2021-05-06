@@ -35,11 +35,8 @@ import java.util.Arrays
 class ConnectorConfiguration {
 
     @Autowired(required = false) private var cml: ContainerManager? = null
-
     @Autowired private lateinit var settings: Settings
-
     @Autowired private lateinit var im: InfoModel
-
     @Autowired private lateinit var rm: RouteManagerService
 
     @Bean
