@@ -1,3 +1,4 @@
+import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.yaml.snakeyaml.Yaml
 
@@ -13,7 +14,6 @@ repositories {
 
 plugins {
     java
-    maven
 
     // Spring Boot
     id("org.springframework.boot") version "2.3.4.RELEASE" apply false
@@ -64,14 +64,14 @@ subprojects {
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "com.diffplug.spotless")
 
-    configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
+    configure<DependencyManagementExtension> {
         imports {
             mavenBom("org.springframework.boot:spring-boot-dependencies:${libraryVersions["springBoot"]}")
         }
 
         imports {
-            // need to stick to 3.0 because of org.apache.camel.support.dump.RouteStatDump and ModelHelper
-            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:3.0.0")
+            // need to stick to 3.0.1 because of org.apache.camel.support.dump.RouteStatDump and ModelHelper
+            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:3.0.1")
         }
     }
 

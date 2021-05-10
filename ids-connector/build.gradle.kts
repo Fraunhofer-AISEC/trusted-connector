@@ -1,3 +1,5 @@
+// import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 @Suppress("UNCHECKED_CAST")
@@ -7,6 +9,7 @@ plugins {
     application
     id("org.springframework.boot")
     id("com.github.gmazzo.buildconfig") version "2.0.2"
+    // id("com.github.johnrengelman.shadow") version "7.0.0"
 
     kotlin("jvm")
     kotlin("plugin.spring")
@@ -17,8 +20,17 @@ tasks.withType<Jar> {
 }
 
 tasks.withType<BootJar> {
-    archiveClassifier.set("boot")
+    archiveFileName.set("ids-connector.jar")
+    layered()
 }
+
+configure<JavaApplication> {
+    mainClass.set("de.fhg.aisec.ids.TrustedConnector")
+}
+
+// tasks.withType<ShadowJar> {
+//     archiveFileName.set("ids-connector.jar")
+// }
 
 apply(plugin = "idea")
 
@@ -32,16 +44,11 @@ buildConfig {
     }
 }
 
-configure<org.gradle.plugins.ide.idea.model.IdeaModel> {
+configure<IdeaModel> {
     module {
         // mark as generated sources for IDEA
         generatedSourceDirs.add(File("$buildDir/generated/source/buildConfig/main/main"))
     }
-}
-
-tasks.getByName<BootJar>("bootJar") {
-    launchScript()
-    layered()
 }
 
 dependencies {
@@ -59,9 +66,7 @@ dependencies {
     implementation("org.apache.camel.springboot:camel-rest-starter")
     implementation("org.apache.camel.springboot:camel-http-starter")
 
-    implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"]) {
-        exclude("org.slf4j", "slf4j-simple") // needed until https://github.com/industrial-data-space/idscp2-java/pull/4 is merged
-    }
+    implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"])
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter")
