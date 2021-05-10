@@ -122,38 +122,38 @@ node {
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {
-    inputs.file("src/main/resources/www/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/resources/www/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
-    outputs.dir("src/main/resources/www/node_modules")
+    inputs.file("src/main/angular/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir("src/main/angular/node_modules")
     outputs.cacheIf { true }
 
-    workingDir.set(file("src/main/resources/www"))
+    workingDir.set(file("src/main/angular"))
     yarnCommand.set(listOf("install", "--ignore-optional"))
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
 val yarnLint by tasks.registering(YarnTask::class) {
-    inputs.file("src/main/resources/www/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/resources/www/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/resources/www/tslint.json").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir("src/main/resources/www/src").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/tslint.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir("src/main/angular/src").withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.upToDateWhen { true }
     outputs.cacheIf { true }
 
-    workingDir.set(file("src/main/resources/www"))
+    workingDir.set(file("src/main/angular"))
     yarnCommand.set(listOf("lint"))
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 
 val yarnBuild by tasks.registering(YarnTask::class) {
-    inputs.file("src/main/resources/www/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/resources/www/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/resources/www/angular.json").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir("src/main/resources/www/src").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/angular.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir("src/main/angular/src").withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.dir("build/resources/main/www")
     outputs.cacheIf { true }
 
-    workingDir.set(file("src/main/resources/www"))
+    workingDir.set(file("src/main/angular"))
     yarnCommand.set(listOf("bundle"))
     onlyIf { !rootProject.hasProperty("skipAngular") }
 

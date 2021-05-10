@@ -6,7 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "bundle": "ng build --prod --no-progress --output-path=\"../../../../build/resources/main/www\"",
+    "bundle": "ng build --prod --no-progress --output-path=\"../../../build/resources/main/www\"",
     "lint": "ng lint"
   },
   "private": true,
