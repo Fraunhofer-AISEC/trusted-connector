@@ -2,3 +2,11 @@ logging:
   level:
     ROOT: INFO
     de.fhg.aisec: TRACE
+
+#spring:
+#  resources:
+#    static-locations=classpath:/static/
+
+#spring:
+#  mvc:
+#    static-path-pattern=/static/
