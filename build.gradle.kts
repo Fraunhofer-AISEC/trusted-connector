@@ -16,8 +16,8 @@ plugins {
     java
 
     // Spring Boot
-    id("org.springframework.boot") version "2.3.4.RELEASE" apply false
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    id("org.springframework.boot") version "2.4.5" apply false
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     // Other needed plugins
     id("com.moowork.node") version "1.3.1" apply false
@@ -70,8 +70,7 @@ subprojects {
         }
 
         imports {
-            // need to stick to 3.0.1 because of org.apache.camel.support.dump.RouteStatDump and ModelHelper
-            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:3.0.1")
+            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:${libraryVersions["camel"]}")
         }
     }
 
