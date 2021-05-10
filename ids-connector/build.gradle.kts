@@ -1,4 +1,3 @@
-// import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -9,28 +8,32 @@ plugins {
     application
     id("org.springframework.boot")
     id("com.github.gmazzo.buildconfig") version "2.0.2"
-    // id("com.github.johnrengelman.shadow") version "7.0.0"
 
     kotlin("jvm")
     kotlin("plugin.spring")
 }
 
+// Clears library JARs before copying
+val cleanLibs = tasks.create<Delete>("deleteLibs") {
+    delete("$buildDir/libs/lib")
+}
+// Copies all runtime library JARs to build/libs/lib
+val copyLibs = tasks.create<Copy>("copyLibs") {
+    from(configurations.runtimeClasspath)
+    destinationDir = file("$buildDir/libs/lib")
+    dependsOn(cleanLibs)
+}
+
 tasks.withType<Jar> {
     enabled = true
-}
-
-tasks.withType<BootJar> {
     archiveFileName.set("ids-connector.jar")
-    layered()
+    dependsOn(copyLibs)
 }
 
-configure<JavaApplication> {
-    mainClass.set("de.fhg.aisec.ids.TrustedConnector")
+// Disable bootJar, as the JAR packaging of Spring Boot prevents dynamic Spring XML parsing due to classpath issues!
+tasks.withType<BootJar> {
+    enabled = false
 }
-
-// tasks.withType<ShadowJar> {
-//     archiveFileName.set("ids-connector.jar")
-// }
 
 apply(plugin = "idea")
 

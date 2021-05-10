@@ -116,8 +116,9 @@ dependencies {
 }
 
 node {
-    // download.set(true)
-    // currently broken on M1
+    // This is important for a hassle-free build without pre-installed yarn!
+    // To disable, pass -PnodeDownload=false to gradle!
+    download.set(findProperty("nodeDownload")?.toString()?.toBoolean() ?: true)
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {
