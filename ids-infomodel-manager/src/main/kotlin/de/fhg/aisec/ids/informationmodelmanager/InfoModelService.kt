@@ -35,8 +35,6 @@ import de.fraunhofer.iais.eis.TrustedConnectorBuilder
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import de.fraunhofer.iais.eis.util.ConstraintViolationException
 import de.fraunhofer.iais.eis.util.TypedLiteral
-import org.osgi.service.component.annotations.Reference
-import org.osgi.service.component.annotations.ReferenceCardinality
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.net.URI
@@ -47,11 +45,8 @@ import java.net.URISyntaxException
 @org.springframework.stereotype.Component
 class InfoModelService : InfoModel {
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     @Autowired
     private lateinit var settings: Settings
-
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     @Autowired(required = false)
     private var connectionManager: ConnectionManager? = null
 

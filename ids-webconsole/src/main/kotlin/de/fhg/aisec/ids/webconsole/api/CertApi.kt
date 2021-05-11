@@ -51,9 +51,6 @@ import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
 import java.security.KeyStore
-import java.security.KeyStoreException
-import java.security.NoSuchAlgorithmException
-import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.UUID
@@ -266,16 +263,7 @@ class CertApi {
                 }
             }
             true
-        } catch (e: CertificateException) {
-            LOG.error(e.message, e)
-            false
-        } catch (e: KeyStoreException) {
-            LOG.error(e.message, e)
-            false
-        } catch (e: NoSuchAlgorithmException) {
-            LOG.error(e.message, e)
-            false
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             LOG.error(e.message, e)
             false
         }
@@ -374,13 +362,7 @@ class CertApi {
                     certs.add(cert)
                 }
             }
-        } catch (e: CertificateException) {
-            LOG.error(e.message, e)
-        } catch (e: KeyStoreException) {
-            LOG.error(e.message, e)
-        } catch (e: NoSuchAlgorithmException) {
-            LOG.error(e.message, e)
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             LOG.error(e.message, e)
         }
         return certs
@@ -437,21 +419,12 @@ class CertApi {
                 keystore.load(fis, KEYSTORE_PWD.toCharArray())
                 if (keystore.containsAlias(alias)) {
                     keystore.deleteEntry(alias)
-                    FileOutputStream(file).use { fos -> keystore.store(fos, KEYSTORE_PWD.toCharArray()) }
+                    FileOutputStream(file).use { keystore.store(it, KEYSTORE_PWD.toCharArray()) }
                 } else {
                     LOG.warn("Alias not available. Cannot delete it: $alias")
                 }
             }
-        } catch (e: CertificateException) {
-            LOG.error(e.message, e)
-            return false
-        } catch (e: NoSuchAlgorithmException) {
-            LOG.error(e.message, e)
-            return false
-        } catch (e: KeyStoreException) {
-            LOG.error(e.message, e)
-            return false
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             LOG.error(e.message, e)
             return false
         }
@@ -461,15 +434,13 @@ class CertApi {
     companion object {
         private val LOG = LoggerFactory.getLogger(CertApi::class.java)
         private const val KEYSTORE_PWD = "password"
+
         @Throws(IOException::class)
-        private fun fullStream(fname: String): InputStream {
-            val fis = FileInputStream(fname)
-            val dis = DataInputStream(fis)
-            val bytes = ByteArray(dis.available())
-            dis.readFully(bytes)
-            val bais = ByteArrayInputStream(bytes)
-            dis.close()
-            return bais
+        private fun fullStream(fileName: String): InputStream {
+            DataInputStream(FileInputStream(fileName)).use { dis ->
+                val bytes = dis.readAllBytes()
+                return ByteArrayInputStream(bytes)
+            }
         }
     }
 }

@@ -27,19 +27,12 @@ configure<IdeaModel> {
 }
 
 dependencies {
-    infomodelBundle(project(":ids-api")) { isTransitive = false }
-
+    implementation(project(":ids-api")) { isTransitive = false }
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("de.fraunhofer.iais.eis.ids", "infomodel-serializer", libraryVersions["infomodel"])
-
-    infomodelBundle("commons-cli", "commons-cli", libraryVersions["commonsCli"])
-
-    infomodelBundle("javax.validation", "validation-api", libraryVersions["javaxValidation"])
-
-    infomodelBundle("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
-    infomodelBundle("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
-
-    osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
-
+    implementation("commons-cli", "commons-cli", libraryVersions["commonsCli"])
+    implementation("javax.validation", "validation-api", libraryVersions["javaxValidation"])
+    implementation("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
+    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
     implementation("org.springframework.boot:spring-boot-starter")
 }

@@ -2,9 +2,6 @@
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 dependencies {
-    providedByBundle(project(":ids-api")) { isTransitive = false }
-
-    osgiCore("org.osgi", "org.osgi.core", libraryVersions["osgi"])
-
-    providedByFeature("org.eclipse.jetty", "jetty-util", libraryVersions["jetty"])
+    implementation(project(":ids-api")) { isTransitive = false }
+    implementation("org.eclipse.jetty", "jetty-util", libraryVersions["jetty"])
 }

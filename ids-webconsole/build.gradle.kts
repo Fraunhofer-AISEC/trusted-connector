@@ -69,37 +69,17 @@ and is used by the default administration dashboard ("web console").
 dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-jersey")
-
-    // Actual implementation must be provided by ids-infomodel-manager
-    compileOnly("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-
-    providedByFeature("javax.servlet", "javax.servlet-api", libraryVersions["javaxServlet"])
-
-    providedByFeature("org.apache.camel", "camel-core", libraryVersions["camel"])
-
-    providedByFeature("org.apache.cxf", "cxf-rt-frontend-jaxrs", libraryVersions["cxf"])
-    providedByFeature("org.apache.cxf", "cxf-rt-rs-extension-providers", libraryVersions["cxf"])
-
-    // This is required for compilation only, and provided by karaf automatically, likely by some included feature
-    compileOnly("javax.ws.rs", "javax.ws.rs-api", libraryVersions["wsRsApi"])
-
-    compileOnly("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
-
-    // use our specified version of jackson instead of the cxf-jackson feature
-    providedByBundle("com.fasterxml.jackson.core", "jackson-core", libraryVersions["jackson"])
-    providedByBundle("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
-    providedByBundle("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
-    providedByBundle("com.fasterxml.jackson.dataformat", "jackson-dataformat-yaml", libraryVersions["jackson"])
-    providedByBundle("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-json-provider", libraryVersions["jackson"])
-
-    providedByBundle("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
+    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
+    implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
+    implementation("org.apache.cxf", "cxf-rt-rs-extension-providers", libraryVersions["cxf"])
+    implementation("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
     implementation("com.auth0", "java-jwt", libraryVersions["auth0Jwt"])
 
+    compileOnly("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
     compileOnly("io.swagger", "swagger-jaxrs", libraryVersions["swagger"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
-
     testImplementation("org.apache.cxf", "cxf-rt-transports-local", libraryVersions["cxf"])
     testImplementation("org.apache.cxf", "cxf-rt-rs-client", libraryVersions["cxf"])
 }

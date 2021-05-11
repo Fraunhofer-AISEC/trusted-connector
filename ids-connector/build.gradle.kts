@@ -55,6 +55,7 @@ configure<IdeaModel> {
 }
 
 dependencies {
+    api(project(":ids-api"))
     api(project(":ids-webconsole"))
     api(project(":ids-settings"))
     api(project(":ids-container-manager"))
@@ -64,12 +65,10 @@ dependencies {
 
     // Camel Spring Boot integration
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")
-
     // Camel components
     implementation("org.apache.camel.springboot:camel-rest-starter")
     implementation("org.apache.camel.springboot:camel-http-starter")
     implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"])
-
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")

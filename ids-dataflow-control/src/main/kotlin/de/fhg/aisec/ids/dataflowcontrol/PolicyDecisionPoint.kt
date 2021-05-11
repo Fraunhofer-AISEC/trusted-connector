@@ -39,14 +39,9 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.escape
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
-import org.osgi.service.component.ComponentContext
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
-import org.osgi.service.component.annotations.Reference
-import org.osgi.service.component.annotations.ReferenceCardinality
-import org.osgi.service.component.annotations.ReferencePolicy
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.io.File
 import java.util.LinkedList
 import java.util.concurrent.ExecutionException
@@ -59,16 +54,13 @@ import javax.annotation.PostConstruct
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(immediate = true, name = "ids-dataflow-control")
-@org.springframework.stereotype.Component
+@Component("idsDataflowControl")
 class PolicyDecisionPoint : PDP, PAP {
 
     // Convenience val for this thread's LuconEngine instance
     private val engine: LuconEngine
         get() = threadEngine.get()
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    @Volatile
     @Autowired(required = false)
     private var routeManager: RouteManager? = null
 
@@ -151,12 +143,6 @@ class PolicyDecisionPoint : PDP, PAP {
             .append("collect_creates_labels(SC, ACraw), set_of(ACraw, Adds),\n")
             .append("collect_removes_labels(SC, RCraw), set_of(RCraw, Removes).")
         return sb.toString()
-    }
-
-    @Activate
-    @Suppress("UNUSED_PARAMETER")
-    private fun activate(ignored: ComponentContext) {
-        loadPolicies()
     }
 
     @PostConstruct

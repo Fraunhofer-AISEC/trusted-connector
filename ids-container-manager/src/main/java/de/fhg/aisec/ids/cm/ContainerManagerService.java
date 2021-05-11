@@ -23,15 +23,11 @@ import de.fhg.aisec.ids.api.cm.*;
 import de.fhg.aisec.ids.cm.impl.docker.DockerCM;
 import de.fhg.aisec.ids.cm.impl.dummy.DummyCM;
 import de.fhg.aisec.ids.cm.impl.trustx.TrustXCM;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -42,27 +38,15 @@ import java.util.Optional;
  *
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(name = "ids-cml", immediate = true)
-@org.springframework.stereotype.Component
+@Component("idsContainerManager")
 public class ContainerManagerService implements ContainerManager {
   private static final Logger LOG = LoggerFactory.getLogger(ContainerManagerService.class);
-  private ContainerManager containerManager = null;
+  private final ContainerManager containerManager;
 
   public ContainerManagerService() {
-    activate();
-  }
-
-  @Activate
-  protected void activate() {
-    LOG.info("Activating Container Manager");
     // When activated, try to set container management instance
     containerManager = getDefaultCM();
     LOG.info("Default container management is {}", containerManager);
-  }
-
-  @Deactivate
-  protected void deactivate(ComponentContext cContext, Map<String, Object> properties) {
-    containerManager = null;
   }
 
   private ContainerManager getDefaultCM() {

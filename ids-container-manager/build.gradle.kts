@@ -31,24 +31,14 @@ configure<IdeaModel> {
 }
 
 dependencies {
-    providedByBundle(project(":ids-api")) { isTransitive = false }
-
+    implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter")
-
     // Provided dependency of docker-java-api
-    providedByBundle("org.glassfish", "javax.json", libraryVersions["javaxJson"])
+    implementation("org.glassfish", "javax.json", libraryVersions["javaxJson"])
     // Required until our library PR has been accepted
-    providedByBundle("com.amihaiemil.web", "docker-java-api", libraryVersions["dockerJavaApi"]) {
-        exclude("com.github.jnr", "jnr-unixsocket")
-    }
-
-    // implementation(project(":jnr-unixsocket-wrapper"))
+    implementation("com.amihaiemil.web", "docker-java-api", libraryVersions["dockerJavaApi"])
     implementation("com.github.jnr", "jnr-unixsocket", libraryVersions["jnrunix"])
-    implementation("com.github.jnr", "jnr-ffi", libraryVersions["jnrffi"])
-
-    providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
-
-    osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
+    implementation("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])

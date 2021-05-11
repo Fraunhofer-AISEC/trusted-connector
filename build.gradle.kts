@@ -41,7 +41,7 @@ val libraryVersions: Map<String, String> =
 extra.set("libraryVersions", libraryVersions)
 
 licenseReport {
-    configurations = arrayOf("compile", "providedByFeature", "providedByBundle")
+    configurations = arrayOf("compile")
 }
 
 allprojects {
@@ -74,29 +74,9 @@ subprojects {
         }
     }
 
-    // Configuration for dependencies that will be provided through features in the OSGi environment
-    val providedByFeature by configurations.creating
-
-    // Configurations for dependencies that will be provided through bundles in the OSGi environment
-    // Separate configurations are required when two bundles depend on different versions of the same bundle!
-    val providedByBundle by configurations.creating
-    val unixSocketBundle by configurations.creating
-    val infomodelBundle by configurations.creating
-
-    // OSGi core dependencies which will just be there during runtime
-    val osgiCore by configurations.creating
-
-    // For artifacts that should be included as "compile" dependencies into published maven artifacts
-    val publishCompile by configurations.creating
-
-    configurations["compile"].extendsFrom(
-        providedByFeature, providedByBundle, unixSocketBundle, infomodelBundle,
-        osgiCore, publishCompile
-    )
-
     dependencies {
         // Logging API
-        providedByBundle("org.slf4j", "slf4j-api", libraryVersions["slf4j"])
+        implementation("org.slf4j", "slf4j-api", libraryVersions["slf4j"])
 
         val compileOnly by configurations
 

@@ -24,10 +24,6 @@ import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable
 import de.fhg.aisec.ids.api.settings.Settings
 import org.apache.karaf.scheduler.Scheduler
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
-import org.osgi.service.component.annotations.Reference
-import org.osgi.service.component.annotations.ReferenceCardinality
 import org.shredzone.acme4j.Account
 import org.shredzone.acme4j.AccountBuilder
 import org.shredzone.acme4j.Order
@@ -57,17 +53,18 @@ import java.util.Collections
 import java.util.Date
 
 @Component(
-    immediate = true,
-    name = "ids-acme-client",
+    "idsAcmeClient"
+    // TODO: Scheduling in Spring
     // Every day at 3:00 (3 am)
-    property = [Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"]
+    // property = [Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"]
 )
 class AcmeClientService : AcmeClient, Runnable {
 
     /*
      * The following block subscribes this component to the Settings Service
      */
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL) private var settings: Settings? = null
+    @Autowired(required = false)
+    private var settings: Settings? = null
 
     private val sslReloadables = Collections.synchronizedSet(HashSet<SslContextFactoryReloadable>())
     /*
@@ -76,12 +73,13 @@ class AcmeClientService : AcmeClient, Runnable {
      * A SslContextFactoryReloader is expected to refresh all TLS connections with new
      * certificates from the key store.
      */
-    @Reference(
-        name = "dynamic-tls-reload-service",
-        service = SslContextFactoryReloadable::class,
-        cardinality = ReferenceCardinality.MULTIPLE,
-        unbind = "unbindSslContextFactoryReloadable"
-    )
+    // TODO: Adapt for Spring
+    // @Reference(
+    //     name = "dynamic-tls-reload-service",
+    //     service = SslContextFactoryReloadable::class,
+    //     cardinality = ReferenceCardinality.MULTIPLE,
+    //     unbind = "unbindSslContextFactoryReloadable"
+    // )
     private fun bindSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
         LOG.info("Bound SslContextFactoryReloadable in AcmeClientService")
         this.sslReloadables.add(reloadable)
