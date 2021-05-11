@@ -11,25 +11,22 @@ import { LoginService } from '../login/login.service';
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
 
-  constructor(public loginService: LoginService) {}
+  constructor(public loginService: LoginService) { }
 
-    public intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        // add Authorization header with jwt token to outgoing HTTP request
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            request = request.clone({
-                setHeaders: {
-                    /* eslint-disable @typescript-eslint/naming-convention */
-                    Authorization: `Bearer ${currentUser}`
-                }
-            });
+  public intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // add Authorization header with jwt token to outgoing HTTP request
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      request = request.clone({
+        setHeaders: {
+          /* eslint-disable @typescript-eslint/naming-convention */
+          Authorization: `Bearer ${currentUser}`
         }
-
-        // If we receive 401 (or other error), log out the user immediately.
-        return next.handle(request).pipe(
-          catchError((err: HttpErrorResponse) =>  {
-          this.loginService.logout();
-          return throwError(err);
-        }));
+      });
     }
+
+    // If we receive 401 (or other error), log out the user immediately.
+    return next.handle(request)
+      .pipe(catchError((err: HttpErrorResponse) => throwError(err)));
+  }
 }
