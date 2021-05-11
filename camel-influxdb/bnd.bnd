@@ -1,3 +1,0 @@
-Bundle-Name: IDS :: Camel InfluxDB adapter
-Bundle-Description: InfluxDB support for Camel messages
-Import-Package: *

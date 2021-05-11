@@ -23,7 +23,6 @@ import de.fhg.aisec.ids.api.acme.AcmeClient
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable
 import de.fhg.aisec.ids.api.settings.Settings
-import org.apache.karaf.scheduler.Scheduler
 import org.shredzone.acme4j.Account
 import org.shredzone.acme4j.AccountBuilder
 import org.shredzone.acme4j.Order
@@ -35,6 +34,8 @@ import org.shredzone.acme4j.exception.AcmeNetworkException
 import org.shredzone.acme4j.util.CSRBuilder
 import org.shredzone.acme4j.util.KeyPairUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URI
@@ -48,9 +49,9 @@ import java.security.KeyStore
 import java.security.cert.X509Certificate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Arrays
 import java.util.Collections
 import java.util.Date
+import javax.annotation.PostConstruct
 
 @Component(
     "idsAcmeClient"
@@ -60,35 +61,8 @@ import java.util.Date
 )
 class AcmeClientService : AcmeClient, Runnable {
 
-    /*
-     * The following block subscribes this component to the Settings Service
-     */
-    @Autowired(required = false)
-    private var settings: Settings? = null
-
-    private val sslReloadables = Collections.synchronizedSet(HashSet<SslContextFactoryReloadable>())
-    /*
-     * The following block subscribes this component to any SslContextFactoryReloader.
-     *
-     * A SslContextFactoryReloader is expected to refresh all TLS connections with new
-     * certificates from the key store.
-     */
-    // TODO: Adapt for Spring
-    // @Reference(
-    //     name = "dynamic-tls-reload-service",
-    //     service = SslContextFactoryReloadable::class,
-    //     cardinality = ReferenceCardinality.MULTIPLE,
-    //     unbind = "unbindSslContextFactoryReloadable"
-    // )
-    private fun bindSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
-        LOG.info("Bound SslContextFactoryReloadable in AcmeClientService")
-        this.sslReloadables.add(reloadable)
-    }
-
-    @Suppress("unused")
-    private fun unbindSslContextFactoryReloadable(factory: SslContextFactoryReloadable) {
-        this.sslReloadables.remove(factory)
-    }
+    @Autowired
+    private lateinit var settings: Settings
 
     override fun getTermsOfService(acmeServerUri: URI): AcmeTermsOfService {
         try {
@@ -113,7 +87,7 @@ class AcmeClientService : AcmeClient, Runnable {
     }
 
     private fun ensureKeys(targetDirectory: Path) {
-        Arrays.asList("acme.key", "domain.key").forEach { keyFile ->
+        listOf("acme.key", "domain.key").forEach { keyFile ->
             val keyFilePath = targetDirectory.resolve(keyFile)
             if (!keyFilePath.toFile().exists()) {
                 val keyPair = KeyPairUtils.createKeyPair(4096)
@@ -301,9 +275,7 @@ class AcmeClientService : AcmeClient, Runnable {
                                                     "Reloading of {} SslContextFactoryReloadable implementations...",
                                                     sslReloadables.size
                                                 )
-                                                sslReloadables.forEach { r ->
-                                                    r.reload(keyStorePath.toString())
-                                                }
+                                                sslReloadables.forEach { it.reload(keyStorePath.toString()) }
                                             }
                                         } catch (e: Exception) {
                                             LOG.error("Error whilst creating new KeyStore!", e)
@@ -333,6 +305,7 @@ class AcmeClientService : AcmeClient, Runnable {
         }
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun renewalCheck(
         targetDirectory: Path,
         acmeServerUrl: String,
@@ -395,11 +368,11 @@ class AcmeClientService : AcmeClient, Runnable {
         }
     }
 
-    @Activate
+    @PostConstruct
     override fun run() {
         LOG.info("ACME renewal job has been triggered (once upon start and daily at 3:00).")
         try {
-            val config = settings!!.connectorConfig
+            val config = settings.connectorConfig
             renewalCheck(
                 FileSystems.getDefault().getPath("etc", "tls-webconsole"),
                 config.acmeServerWebcon,
@@ -420,7 +393,24 @@ class AcmeClientService : AcmeClient, Runnable {
 
         const val RENEWAL_THRESHOLD = 100.0 / 3.0
         const val KEYSTORE_LATEST = "keystore_latest.p12"
-        private val LOG = LoggerFactory.getLogger(AcmeClientService::class.java)!!
+        private val LOG = LoggerFactory.getLogger(AcmeClientService::class.java)
         private val challengeMap = HashMap<String, String>()
+        private val sslReloadables = Collections.synchronizedSet(HashSet<SslContextFactoryReloadable>())
+
+        /*
+         * The following block subscribes this component to any SslContextFactoryReloader.
+         *
+         * A SslContextFactoryReloader is expected to refresh all TLS connections with new
+         * certificates from the key store.
+         */
+        fun registerSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
+            LOG.info("Registered SslContextFactoryReloadable in AcmeClientService")
+            this.sslReloadables.add(reloadable)
+        }
+
+        @Suppress("unused")
+        fun removeSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
+            this.sslReloadables.remove(reloadable)
+        }
     }
 }
