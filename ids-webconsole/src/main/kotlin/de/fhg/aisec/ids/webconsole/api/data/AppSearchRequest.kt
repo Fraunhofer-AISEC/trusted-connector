@@ -17,13 +17,8 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data;
+package de.fhg.aisec.ids.webconsole.api.data
 
-public class Identity {
-  public String cn;
-  public String ou;
-  public String o;
-  public String l;
-  public String s;
-  public String c;
+class AppSearchRequest {
+    val searchTerm = ""
 }

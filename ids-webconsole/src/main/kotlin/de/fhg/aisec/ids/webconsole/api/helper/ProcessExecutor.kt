@@ -17,13 +17,25 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data;
+package de.fhg.aisec.ids.webconsole.api.helper
 
-import de.fhg.aisec.ids.api.router.CounterExample;
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.io.OutputStream
 
-import java.util.List;
+class ProcessExecutor {
+    @Throws(InterruptedException::class, IOException::class)
+    fun execute(cmd: Array<String>?, stdout: OutputStream?, stderr: OutputStream?): Int {
+        val rt = Runtime.getRuntime()
+        val proc = rt.exec(cmd)
+        val errorGobbler = StreamGobbler(proc.errorStream, stderr)
+        val outputGobbler = StreamGobbler(proc.inputStream, stdout)
+        errorGobbler.start()
+        outputGobbler.start()
+        return proc.waitFor()
+    }
 
-public class ValidationInfo {
-  public boolean valid;
-  public List<CounterExample> counterExamples = null;
+    companion object {
+        private val LOG = LoggerFactory.getLogger(ProcessExecutor::class.java)
+    }
 }

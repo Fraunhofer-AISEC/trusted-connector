@@ -17,15 +17,11 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api;
+package de.fhg.aisec.ids.webconsole.api.data
 
-import javax.ws.rs.NameBinding;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@NameBinding
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(value = RetentionPolicy.RUNTIME)
-public @interface AuthorizationRequired {}
+class User {
+    @kotlin.jvm.JvmField
+    var username: String? = null
+    @kotlin.jvm.JvmField
+    var password: String? = null
+}

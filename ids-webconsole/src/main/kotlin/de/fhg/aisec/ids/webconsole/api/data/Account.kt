@@ -17,28 +17,9 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.helper;
+package de.fhg.aisec.ids.webconsole.api.data
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-public class ProcessExecutor {
-  private static final Logger LOG = LoggerFactory.getLogger(ProcessExecutor.class);
-
-  public int execute(String[] cmd, OutputStream stdout, OutputStream stderr)
-      throws InterruptedException, IOException {
-    Runtime rt = Runtime.getRuntime();
-    Process proc = rt.exec(cmd);
-
-    StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), stderr);
-    StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), stdout);
-
-    errorGobbler.start();
-    outputGobbler.start();
-
-    return proc.waitFor();
-  }
+class Account {
+    var username: String? = null
+    var password: String? = null
 }

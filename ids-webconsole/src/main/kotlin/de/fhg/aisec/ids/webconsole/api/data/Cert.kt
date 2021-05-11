@@ -17,9 +17,18 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data;
+package de.fhg.aisec.ids.webconsole.api.data
 
-public class User {
-  public String username;
-  public String password;
+class Cert {
+    var subjectC: String? = null
+    var subjectS: String? = null
+    var subjectL: String? = null
+    var subjectO: String? = null
+    var subjectOU: String? = null
+    var subjectAltNames: Collection<List<*>>? = null
+    var subjectCN: String? = null
+    @kotlin.jvm.JvmField
+    var alias: String? = null
+    var file: String? = null
+    var certificate: String? = null
 }

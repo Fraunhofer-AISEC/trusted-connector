@@ -17,9 +17,11 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data;
+package de.fhg.aisec.ids.webconsole.api.data
 
-public class Account {
-  public String username;
-  public String password;
+import de.fhg.aisec.ids.api.router.CounterExample
+
+class ValidationInfo {
+    var valid = false
+    var counterExamples: List<CounterExample>? = null
 }

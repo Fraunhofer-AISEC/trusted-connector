@@ -15,15 +15,6 @@ plugins {
 
 description = "IDS Core Platform Webconsole"
 
-sourceSets {
-    main {
-        // only include the OSGI blueprint and the built angular app
-        resources {
-            include("OSGI-INF/blueprint/*")
-        }
-    }
-}
-
 swagger {
     apiSource(
         closureOf<ApiSourceExtension> {
@@ -103,8 +94,6 @@ dependencies {
 
     providedByBundle("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
     implementation("com.auth0", "java-jwt", libraryVersions["auth0Jwt"])
-    osgiCore("org.apache.felix", "org.apache.felix.framework", libraryVersions["felixFramework"])
-    osgiCore("org.osgi", "osgi.cmpn", libraryVersions["osgiCompendium"])
 
     compileOnly("io.swagger", "swagger-jaxrs", libraryVersions["swagger"])
 

@@ -17,20 +17,17 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data;
+package de.fhg.aisec.ids.webconsole.api
 
-import java.util.Collection;
-import java.util.List;
+import javax.ws.rs.NameBinding
 
-public class Cert {
-  public String subjectC;
-  public String subjectS;
-  public String subjectL;
-  public String subjectO;
-  public String subjectOU;
-  public Collection<List<?>> subjectAltNames;
-  public String subjectCN;
-  public String alias;
-  public String file;
-  public String certificate;
-}
+@NameBinding
+@Target(
+    AnnotationTarget.ANNOTATION_CLASS,
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class AuthorizationRequired

@@ -17,16 +17,17 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data;
+package de.fhg.aisec.ids.webconsole.api.data
 
-public class AppSearchRequest {
-  private final String searchTerm;
-
-  public AppSearchRequest() {
-    searchTerm = "";
-  }
-
-  public String getSearchTerm() {
-    return searchTerm;
-  }
+class Identity {
+    @kotlin.jvm.JvmField
+    var cn: String? = null
+    var ou: String? = null
+    var o: String? = null
+    @kotlin.jvm.JvmField
+    var l: String? = null
+    @kotlin.jvm.JvmField
+    var s: String? = null
+    @kotlin.jvm.JvmField
+    var c: String? = null
 }
