@@ -1,10 +1,9 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { Observable } from 'rxjs';
 
 import { LoginService } from './login/login.service';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 @Component({
   selector: 'iot-connector',

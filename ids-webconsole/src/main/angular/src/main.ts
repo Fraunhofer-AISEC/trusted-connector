@@ -1,4 +1,4 @@
-// tslint:disable:no-floating-promises
+/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';

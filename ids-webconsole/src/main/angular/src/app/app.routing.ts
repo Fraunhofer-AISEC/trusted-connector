@@ -21,7 +21,7 @@ const appRoutes: Routes = [
   // Pages using the "home" layout (with sidebar and topnav)
   { path: '', component: HomeLayoutComponent, canActivate: [AuthGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full', canActivate: [AuthGuard] },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',  component: DashboardComponent,  data: { title: 'Dashboard' }, canActivate: [AuthGuard] },
       { path: 'apps', component: AppsComponent, canActivate: [AuthGuard] },
       { path: 'appsearch', component: AppsSearchComponent, canActivate: [AuthGuard] },
@@ -45,4 +45,4 @@ const appRoutes: Routes = [
   }
 ];
 
-export const routing = RouterModule.forRoot(appRoutes, { useHash: true });
+export const routing = RouterModule.forRoot(appRoutes, { useHash: true, relativeLinkResolution: 'legacy' });

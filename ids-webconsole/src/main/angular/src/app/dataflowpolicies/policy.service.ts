@@ -19,8 +19,8 @@ export class PolicyService {
     public install(policy: Policy, policyFile: any): Observable<string> {
         const headers = new HttpHeaders({ 'Content-Type': 'multipart/form-data' });
         const model = new FormData();
-        model.append('policy_name', policy.policy_name);
-        model.append('policy_description', policy.policy_description);
+        model.append('policy_name', policy.policyName);
+        model.append('policy_description', policy.policyDescription);
         model.append('policy_file', policyFile);
 
         return this.http.post<string>(environment.apiURL + '/policies/install', model, { headers })

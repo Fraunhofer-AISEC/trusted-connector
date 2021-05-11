@@ -16,89 +16,89 @@ export class ConfirmComponent implements OnInit {
     public okText: string;
     public cancelText: string;
 
-    private readonly _defaults = {
+    private readonly defaultTexts = {
         title: 'Confirmation',
         message: 'Do you want to cancel your changes?',
-        cancelText: 'Cancel',
-        okText: 'OK'
+        okText: 'OK',
+        cancelText: 'Cancel'
     };
 
-    private _confirmElement: any;
-    private _cancelButton: any;
-    private _okButton: any;
+    private confirmElement: any;
+    private cancelButton: any;
+    private okButton: any;
 
     constructor(confirmService: ConfirmService) {
         confirmService.activate = this.activate.bind(this);
     }
 
     public ngOnInit(): void {
-        this._confirmElement = document.getElementById('confirmationModal');
-        this._cancelButton = document.getElementById('cancelButton');
-        this._okButton = document.getElementById('okButton');
+        this.confirmElement = document.getElementById('confirmationModal');
+        this.cancelButton = document.getElementById('cancelButton');
+        this.okButton = document.getElementById('okButton');
     }
 
-    public _setLabels(message: string = this._defaults.message, title: string = this._defaults.title): void {
+    public setLabels(message: string = this.defaultTexts.message, title: string = this.defaultTexts.title): void {
         this.title = title;
         this.message = message;
-        this.okText = this._defaults.okText;
-        this.cancelText = this._defaults.cancelText;
+        this.okText = this.defaultTexts.okText;
+        this.cancelText = this.defaultTexts.cancelText;
     }
 
-    public async activate(message: string = this._defaults.message, title: string = this._defaults.title): Promise<boolean> {
-        this._setLabels(message, title);
+    public async activate(message: string = this.defaultTexts.message, title: string = this.defaultTexts.title): Promise<boolean> {
+        this.setLabels(message, title);
 
         return new Promise<boolean>(resolve => {
-            this._show(resolve);
+            this.show(resolve);
         });
     }
 
-    private _show(resolve: ((b: boolean) => any)): void {
+    private show(resolve: ((b: boolean) => any)): void {
         document.onkeyup = undefined;
 
-        const negativeOnClick = (e: any) => resolve(false);
-        const positiveOnClick = (e: any) => resolve(true);
+        const negativeOnClick = (_e: any) => resolve(false);
+        const positiveOnClick = (_e: any) => resolve(true);
 
-        if (!this._confirmElement || !this._cancelButton || !this._okButton) {
+        if (!this.confirmElement || !this.cancelButton || !this.okButton) {
             return;
         }
 
-        this._confirmElement.style.opacity = 0;
-        this._confirmElement.style.zIndex = 9999;
+        this.confirmElement.style.opacity = 0;
+        this.confirmElement.style.zIndex = 9999;
 
-        this._cancelButton.onclick = ((e: any) => {
+        this.cancelButton.onclick = ((e: any) => {
             e.preventDefault();
             if (!negativeOnClick(e)) {
-                this._hideDialog();
+                this.hideDialog();
             }
         });
 
-        this._okButton.onclick = ((e: any) => {
+        this.okButton.onclick = ((e: any) => {
             e.preventDefault();
             if (!positiveOnClick(e)) {
-                this._hideDialog();
+                this.hideDialog();
             }
         });
 
-        this._confirmElement.onclick = () => {
-            this._hideDialog();
+        this.confirmElement.onclick = () => {
+            this.hideDialog();
 
             return negativeOnClick(undefined);
         };
 
         document.onkeyup = (e: any) => {
             if (e.which === KEY_ESC) {
-                this._hideDialog();
+                this.hideDialog();
 
                 return negativeOnClick(undefined);
             }
         };
 
-        this._confirmElement.style.opacity = 1;
+        this.confirmElement.style.opacity = 1;
     }
 
-    private _hideDialog(): void {
+    private hideDialog(): void {
         document.onkeyup = undefined;
-        this._confirmElement.style.opacity = 0;
-        window.setTimeout(() => this._confirmElement.style.zIndex = -1, 400);
+        this.confirmElement.style.opacity = 0;
+        window.setTimeout(() => this.confirmElement.style.zIndex = -1, 400);
     }
 }

@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { App } from './app';
 import { AppService } from './app.service';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 @Component({
   templateUrl: './apps.component.html',

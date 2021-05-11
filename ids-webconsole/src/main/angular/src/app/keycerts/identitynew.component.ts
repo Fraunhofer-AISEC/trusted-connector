@@ -15,14 +15,14 @@ export class NewIdentityComponent implements OnInit {
     public data: Identity;
     public events: any[] = [];
 
-    constructor(private readonly _fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
+    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
                 private readonly router: Router) {
         this.titleService.setTitle('New Identity');
     }
 
     public ngOnInit(): void {
         // the short way to create a FormGroup
-        this.myForm = this._fb.group({
+        this.myForm = this.fb.group({
             s: ['', Validators.required as any],
             cn: ['', Validators.required as any],
             o: '',

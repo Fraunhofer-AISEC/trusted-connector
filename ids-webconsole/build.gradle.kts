@@ -135,13 +135,13 @@ val yarnInstall by tasks.registering(YarnTask::class) {
 val yarnLint by tasks.registering(YarnTask::class) {
     inputs.file("src/main/angular/package.json").withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file("src/main/angular/yarn.lock").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file("src/main/angular/tslint.json").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file("src/main/angular/.eslintrc.json").withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir("src/main/angular/src").withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.upToDateWhen { true }
     outputs.cacheIf { true }
 
     workingDir.set(file("src/main/angular"))
-    yarnCommand.set(listOf("lint"))
+    yarnCommand.set(listOf("ng", "lint"))
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 

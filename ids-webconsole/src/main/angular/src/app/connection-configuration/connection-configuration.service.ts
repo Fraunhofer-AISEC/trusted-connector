@@ -26,7 +26,7 @@ export class ConnectionConfigurationService {
   }
 
   public getAllConfiguration(): Observable<Configuration[]> {
-    return this.http.get<object>(environment.apiURL + '/config/connectionConfigs')
+    return this.http.get<Record<string, Settings>>(environment.apiURL + '/config/connectionConfigs')
       .pipe(map(configMap => Object.keys(configMap)
         .map(key => new Configuration(key, configMap[key]))));
   }

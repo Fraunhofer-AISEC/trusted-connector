@@ -3,6 +3,7 @@ import { from, Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import 'svg-pan-zoom';
 
+/* eslint-disable @typescript-eslint/naming-convention */
 declare const Viz: any;
 
 @Component({
@@ -15,14 +16,9 @@ export class ZoomVizComponent implements OnInit {
   @ViewChild('vizCanvas', { static: true }) private readonly vizCanvasRef: ElementRef;
   private zoom?: SvgPanZoom.Instance;
   private isLocked = false;
-  private removeMoveListener: () => void = (() => undefined);
   private isInitialized = false;
 
   constructor(private readonly renderer: Renderer2) {}
-
-  get locked(): boolean {
-    return this.isLocked;
-  }
 
   public ngOnInit(): void {
     const viz = new Viz();
@@ -41,7 +37,7 @@ export class ZoomVizComponent implements OnInit {
         if (someNode !== null) {
           zoomFactor = 50 / (someNode as HTMLElement).getBoundingClientRect().height;
         }
-        // tslint:disable-next-line:curly
+        // eslint-disable-next-line curly
         if (zoomFactor > 1) {
           // lazy init on first mouseenter event
           const mouseEnterListener = this.renderer.listen(vizCanvas, 'mouseenter', () => {
@@ -89,6 +85,12 @@ export class ZoomVizComponent implements OnInit {
           });
         }
       });
+  }
+
+  private removeMoveListener: () => void = (() => undefined);
+
+  get locked(): boolean {
+    return this.isLocked;
   }
 
 }

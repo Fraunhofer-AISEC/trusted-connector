@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'prettify'
 })
 export class PrettifyPipe implements PipeTransform {
-  public transform(val: any): object {
+  public transform(val: any): Record<string, unknown> {
     const obj =  JSON.stringify(val)
         .replace('\n', '<br />')
         .replace(/&/g, '&amp;')

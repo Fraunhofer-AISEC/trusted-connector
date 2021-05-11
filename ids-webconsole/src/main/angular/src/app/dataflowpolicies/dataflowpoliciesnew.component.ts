@@ -17,20 +17,20 @@ export class NewDataflowPolicyComponent implements OnInit {
     public multiple: false;
     public fileUpload: AbstractControl;
 
-    constructor(private readonly _fb: FormBuilder, private readonly titleService: Title, private readonly policyService: PolicyService) {
+    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly policyService: PolicyService) {
         this.titleService.setTitle('New Policy');
     }
 
     public ngOnInit(): void {
         // the short way to create a FormGroup
-        this.myForm = this._fb.group({
-            policy_file: ['', Validators.required as any]
+        this.myForm = this.fb.group({
+            policyFile: ['', Validators.required]
         });
 
-        this.fileUpload = this.myForm.get('policy_file');
+        this.fileUpload = this.myForm.get('policyFile');
     }
 
-    public save(policy: Policy, fileInputElement: any, isValid: boolean): void {
+    public save(policy: Policy, fileInputElement: any, _isValid: boolean): void {
         // console.log(policy, fileInputElement, isValid);
         // console.log(fileInputElement.files[0]);
 

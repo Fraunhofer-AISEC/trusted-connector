@@ -30,7 +30,7 @@ export class ConnectionConfigurationComponent implements OnInit {
       });
   }
 
-  public trackModels(index: number, item: Configuration): string {
+  public trackModels(_index: number, item: Configuration): string {
     return item.connection;
   }
 

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { Certificate } from './certificate';
@@ -9,13 +9,12 @@ import { CertificateService } from './keycert.service';
     templateUrl: './keycerts.component.html'
 })
 export class KeycertsComponent implements OnInit {
+    @Output() public readonly changeTitle = new EventEmitter();
     public title = 'Current Certificates';
     public identities: Certificate[];
     public certificates: Certificate[];
 
-    @Output() public readonly changeTitle = new EventEmitter();
-
-    constructor(private readonly titleService: Title, private readonly certificateService: CertificateService, vcRef: ViewContainerRef) {
+    constructor(private readonly titleService: Title, private readonly certificateService: CertificateService) {
         this.titleService.setTitle('Identities');
 
         this.certificateService.getIdentities()
@@ -35,7 +34,7 @@ export class KeycertsComponent implements OnInit {
 
     public deleteCert(alias: string): void {
         this.certificateService.deleteCert(alias)
-            .subscribe(result => {
+            .subscribe(_result => {
                 //             this.result = result;
                 //             if(result.toString() === "true") {
                 //                location.reload();
@@ -45,7 +44,7 @@ export class KeycertsComponent implements OnInit {
 
     public deleteIdentity(alias: string): void {
         this.certificateService.deleteIdentity(alias)
-            .subscribe(result => {
+            .subscribe(_result => {
                 //             this.result = result;
                 //             if(result.toString() === "true") {
                 //                location.reload();

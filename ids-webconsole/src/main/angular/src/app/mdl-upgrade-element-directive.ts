@@ -1,5 +1,5 @@
 import { AfterViewChecked, Directive } from '@angular/core';
-declare var componentHandler: {
+declare let componentHandler: {
     upgradeAllRegistered(): void;
 };
 

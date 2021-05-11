@@ -61,7 +61,7 @@ export class AppCardComponent implements OnInit {
 
     public onDeleteBtnClick(containerId: string): void {
       this.appService.wipeApp(containerId)
-        .subscribe(result => undefined);
+        .subscribe(_result => undefined);
       const index = this.appsComponent.apps.indexOf(this.app);
       this.appsComponent.apps.splice(index, 1) ;
     }

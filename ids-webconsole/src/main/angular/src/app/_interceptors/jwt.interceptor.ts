@@ -1,7 +1,6 @@
-import { HttpRequest, HttpHandler, HttpErrorResponse, HttpEvent, HttpInterceptor, HttpResponse } from '@angular/common/http';
+import { HttpRequest, HttpHandler, HttpErrorResponse, HttpEvent, HttpInterceptor } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { throwError, of } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { LoginService } from '../login/login.service';
@@ -20,6 +19,7 @@ export class JwtInterceptor implements HttpInterceptor {
         if (currentUser) {
             request = request.clone({
                 setHeaders: {
+                    /* eslint-disable @typescript-eslint/naming-convention */
                     Authorization: `Bearer ${currentUser}`
                 }
             });
@@ -27,10 +27,9 @@ export class JwtInterceptor implements HttpInterceptor {
 
         // If we receive 401 (or other error), log out the user immediately.
         return next.handle(request).pipe(
-                                         catchError((err: HttpErrorResponse) =>  {
-                                         this.loginService.logout();
-                                         return throwError(err);
-                                       }));
-
+          catchError((err: HttpErrorResponse) =>  {
+          this.loginService.logout();
+          return throwError(err);
+        }));
     }
 }

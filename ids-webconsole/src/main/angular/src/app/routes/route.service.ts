@@ -46,7 +46,7 @@ export class RouteService {
 
   public saveRoute(routeId: string, routeString: string): Observable<RouteResult> {
     // Update Camel route
-    const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
+    const headers = new HttpHeaders({ 'Content-Type': 'text/plain; charset=utf-8' });
     // console.log('Sending Update: ' + routeString);
 
     return this.httpClient.post(environment.apiURL + '/routes/save/' + routeId,
@@ -55,7 +55,7 @@ export class RouteService {
 
   public addRoute(routeString: string): Observable<Result> {
     // Save new Camel route
-    const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
+    const headers = new HttpHeaders({ 'Content-Type': 'text/plain; charset=utf-8' });
     // console.log('Sending New: ' + routeString);
 
     return this.httpClient.put(environment.apiURL + '/routes/add',

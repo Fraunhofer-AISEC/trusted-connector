@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 
 import { PolicyService } from './policy.service';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 @Component({
   templateUrl: './dataflowpolicies.component.html'

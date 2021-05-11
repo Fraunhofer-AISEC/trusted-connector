@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 
 import { LoginService } from '../../login/login.service';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 @Component({
   selector: 'app-home-layout',

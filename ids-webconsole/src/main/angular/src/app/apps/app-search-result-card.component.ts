@@ -3,7 +3,7 @@ import { AfterViewInit, Component, Input } from '@angular/core';
 import { App } from './app';
 import { AppService } from './app.service';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 @Component({
     selector: 'app-search-result-card',

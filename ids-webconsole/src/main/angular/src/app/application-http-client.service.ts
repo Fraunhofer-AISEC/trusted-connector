@@ -31,6 +31,7 @@ export interface RequestOptionsCached extends RequestOptions {
 export interface ApplicationHttpClient {
   /**
    * GET request
+   *
    * @param endPoint The endpoint, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
@@ -38,6 +39,7 @@ export interface ApplicationHttpClient {
 
   /**
    * POST request
+   *
    * @param endPoint The endpoint at the API, starting with a slash
    * @param body Body of the request
    * @param options Options of the request like headers, body, etc.
@@ -47,14 +49,16 @@ export interface ApplicationHttpClient {
 
   /**
    * PUT request
+   *
    * @param endPoint The endpoint at the API, starting with a slash
    * @param params Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  put<T>(endPoint: string, params: object, options?: RequestOptions): Observable<T>;
+  put<T>(endPoint: string, params: Record<string, unknown>, options?: RequestOptions): Observable<T>;
 
   /**
    * DELETE request
+   *
    * @param endPoint The endpoint at the API, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
@@ -69,6 +73,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
 
   /**
    * GET request
+   *
    * @param endPoint The endpoint, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */
@@ -91,6 +96,7 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
 
   /**
    * POST request
+   *
    * @param endPoint The endpoint at the API, starting with a slash
    * @param body Body of the request
    * @param options Options of the request like headers, body, etc.
@@ -101,16 +107,18 @@ export class ApplicationHttpClientImpl implements ApplicationHttpClient {
 
   /**
    * PUT request
+   *
    * @param endPoint The endpoint at the API, starting with a slash
    * @param params Body of the request
    * @param options Options of the request like headers, body, etc.
    */
-  public put(endPoint: string, params: object, options?: any): any {
+  public put(endPoint: string, params: Record<string, unknown>, options?: any): any {
     return this.http.put(environment.apiURL + endPoint, params, options);
   }
 
   /**
    * DELETE request
+   *
    * @param endPoint The endpoint at the API, starting with a slash
    * @param options Options of the request like headers, body, etc.
    */

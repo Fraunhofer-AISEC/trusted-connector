@@ -27,7 +27,7 @@ export class RouteeditorComponent implements OnInit {
   private statusIcon: string;
   private readonly _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
-  constructor(private readonly titleService: Title, private readonly _fb: FormBuilder, private readonly router: Router,
+  constructor(private readonly titleService: Title, private readonly fb: FormBuilder, private readonly router: Router,
               private readonly navRoute: ActivatedRoute, private readonly routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
   }
@@ -107,7 +107,7 @@ export class RouteeditorComponent implements OnInit {
         });
     });
 
-    this.myForm = this._fb.group({
+    this.myForm = this.fb.group({
       txtRepresentation: ['', [Validators.required as any, Validators.minLength(5) as any]]
     });
   }
@@ -178,9 +178,6 @@ export class RouteeditorComponent implements OnInit {
                   this._validationInfo = validationInfo;
                 });
             }
-          },
-          error => {
-            // console.log(error);
           }
         );
     } else {
@@ -194,9 +191,6 @@ export class RouteeditorComponent implements OnInit {
               // console.log('Route editor: Created route(s)');
               return this.router.navigate(['routes']);
             }
-          },
-          error => {
-            // console.log(error);
           }
         );
     }

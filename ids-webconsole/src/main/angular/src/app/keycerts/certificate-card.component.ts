@@ -4,7 +4,7 @@ import { ConfirmService } from '../confirm/confirm.service';
 
 import { Certificate } from './certificate';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 @Component({
   selector: 'certificate-card',
@@ -15,8 +15,8 @@ declare var componentHandler: any;
 export class CertificateCardComponent implements OnInit {
   @Input() public certificates: Certificate[];
   @Input() public trusts: Certificate[];
-  public result: string;
   @Input() private readonly onDeleteCallback: (alias: string) => void;
+  public result: string;
 
   constructor(private readonly confirmService: ConfirmService) { }
 
