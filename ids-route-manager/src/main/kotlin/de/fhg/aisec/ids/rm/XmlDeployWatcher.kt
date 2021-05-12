@@ -70,6 +70,10 @@ class XmlDeployWatcher {
     private fun startXmlDeployWatcher() {
         val fs = FileSystems.getDefault()
         val deployPath = fs.getPath("deploy")
+        if (Files.notExists(deployPath)) {
+            LOG.info("No deploy folder found, skipping start of XML deploy watcher.")
+            return
+        }
         Files.walk(deployPath)
             .filter { Files.isRegularFile(it) && it.toString().endsWith(".xml") }
             .forEach { startXmlApplicationContext(it.toString()) }
@@ -87,7 +91,7 @@ class XmlDeployWatcher {
                     val key: WatchKey = try {
                         watcher.take()
                     } catch (x: InterruptedException) {
-                        LOG.warn("Watcher stopped by interrupt")
+                        LOG.warn("XML watcher stopped by interrupt")
                         break
                     }
                     // Poll the events that happened since last iteration
@@ -113,17 +117,17 @@ class XmlDeployWatcher {
                                 }
                             }
                         } catch (e: Exception) {
-                            LOG.error("Error occurred in Deploy Watcher", e)
+                            LOG.error("Error occurred in deploy watcher", e)
                         }
                     }
                     // Key must be reset for next iteration, if reset() returns false, key is invalid -> exit
                     if (!key.reset()) {
-                        LOG.warn("Watcher stopped by failed reset()")
+                        LOG.warn("XML watcher stopped by failed reset()")
                         break
                     }
                 }
             },
-            "XML Deploy Folder Watcher"
+            "XML deploy folder watcher"
         ).run {
             isDaemon = true
             start()
