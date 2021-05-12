@@ -28,7 +28,7 @@ export class JwtInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
         // If we receive 401 (Unauthorized), trigger logout to redirect user to login form
-        if (err.status == 401) {
+        if (err.status === 401) {
           this.loginService.logout();
         }
         return throwError(err);
