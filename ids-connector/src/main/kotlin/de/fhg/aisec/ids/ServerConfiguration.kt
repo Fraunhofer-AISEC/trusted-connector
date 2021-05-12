@@ -20,35 +20,29 @@
 package de.fhg.aisec.ids
 
 import de.fhg.aisec.ids.dynamictls.AcmeSslContextFactory
-import org.eclipse.jetty.server.Connector
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
-import org.springframework.boot.web.embedded.jetty.JettyServerCustomizer
-import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class TlsConfiguration {
+class ServerConfiguration {
 
     @Bean
     fun sslContextFactory(): SslContextFactory.Server {
         return AcmeSslContextFactory()
     }
 
-    @Bean
-    fun webServerFactory(sslContextFactory: SslContextFactory.Server): ConfigurableServletWebServerFactory {
-        return JettyServletWebServerFactory().apply {
-            port = 8443
-            serverCustomizers = listOf(
-                JettyServerCustomizer { server: Server ->
-                    server.connectors = arrayOf<Connector>(
-                        ServerConnector(server, sslContextFactory)
-                    )
-                }
-            )
-        }
-    }
+    // @Bean
+    // fun webServerFactory(sslContextFactory: SslContextFactory.Server): ConfigurableServletWebServerFactory {
+    //     return JettyServletWebServerFactory().apply {
+    //         port = 8443
+    //         serverCustomizers = listOf(
+    //             JettyServerCustomizer { server: Server ->
+    //                 server.connectors = arrayOf<Connector>(
+    //                     ServerConnector(server, sslContextFactory)
+    //                 )
+    //             }
+    //         )
+    //     }
+    // }
 }
