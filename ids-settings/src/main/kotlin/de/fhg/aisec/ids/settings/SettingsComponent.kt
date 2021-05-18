@@ -139,6 +139,20 @@ class SettingsComponent : Settings {
     override val allConnectionSettings: MutableMap<String, ConnectionSettings>
         get() = Collections.unmodifiableMap(connectionSettings)
 
+    override fun isUserStoreEmpty() = userStore.isEmpty()
+
+    override fun getUserHash(username: String) = userStore[username]
+
+    override fun saveUser(username: String, hash: String) {
+        userStore += username to hash
+        mapDB.commit()
+    }
+
+    override fun removeUser(username: String) {
+        userStore.remove(username)
+        mapDB.commit()
+    }
+
     companion object {
         internal const val DB_VERSION_KEY = "db_version"
         internal const val CURRENT_DB_VERSION = 3
@@ -161,6 +175,13 @@ class SettingsComponent : Settings {
                 .hashMap("connection_settings")
                 .keySerializer(Serializer.STRING)
                 .valueSerializer(OsgiElsaSerializer<ConnectionSettings>())
+                .createOrOpen()
+        }
+        private val userStore: ConcurrentMap<String, String> by lazy {
+            mapDB
+                .hashMap("user_store")
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(Serializer.STRING)
                 .createOrOpen()
         }
     }
