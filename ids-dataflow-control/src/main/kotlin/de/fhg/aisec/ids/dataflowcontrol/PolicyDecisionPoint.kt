@@ -119,13 +119,7 @@ class PolicyDecisionPoint : PDP, PAP {
      */
     private fun createTransformationQuery(target: ServiceNode): String {
         val sb = StringBuilder()
-        val plEndpoint: String
-        if (target.endpoint != null) {
-            plEndpoint = escape(target.endpoint)
-            //            sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ")
-        } else {
-            throw RuntimeException("No endpoint specified!")
-        }
+        val plEndpoint = escape(target.endpoint)
         // Removed due to unclear relevance
         //        if (target.capabilties.size + target.properties.size > 0) {
         //            val capProp = LinkedList<String>()
@@ -366,10 +360,10 @@ class PolicyDecisionPoint : PDP, PAP {
         transformationCache.invalidateAll()
     }
 
-    override fun loadPolicy(theory: String?) {
+    override fun loadPolicy(theory: String) {
         // Load policy into engine, possibly overwriting the existing one.
-        this.engine.loadPolicy(theory ?: "")
-        LuconEngine.setDefaultPolicy(theory ?: "")
+        this.engine.loadPolicy(theory)
+        LuconEngine.setDefaultPolicy(theory)
     }
 
     override fun listRules(): List<String> {
@@ -382,9 +376,8 @@ class PolicyDecisionPoint : PDP, PAP {
         }
     }
 
-    override fun getPolicy(): String {
-        return this.engine.theory
-    }
+    override val policy: String
+        get() = this.engine.theory
 
     override fun verifyRoute(routeId: String): RouteVerificationProof? {
         val rm = this.routeManager

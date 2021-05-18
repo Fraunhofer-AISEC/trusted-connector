@@ -192,7 +192,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                                             // else may be added later)
                                             container.imageDigests.any {
                                                 it.split(":").last() == hash
-                                            } || container.imageId.split(":").last() == hash
+                                            } || container.imageId?.split(":")?.last() == hash
                                         }
                                     // Save all ip addresses of allowed containers in one list
                                     val allowedIPs =
@@ -226,17 +226,17 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
             }
         }
 
-        val sourceServiceNode = ServiceNode(source, null, null)
-        val destinationServiceNode = ServiceNode(destination, null, null)
+        val sourceServiceNode = ServiceNode(source)
+        val destinationServiceNode = ServiceNode(destination)
 
         // Call PDP to transform labels and decide whether to forward the Exchange
         applyLabelTransformation(pdp.requestTranformations(sourceServiceNode), exchange)
-        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet<String>() }
+        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet() }
         val decision =
             pdp.requestDecision(
                 DecisionRequest(sourceServiceNode, destinationServiceNode, labels, null)
             )
-        return when (decision.decision!!) {
+        return when (decision.decision) {
             PolicyDecision.Decision.ALLOW -> true
             PolicyDecision.Decision.DENY -> {
                 if (LOG.isWarnEnabled) {
@@ -263,7 +263,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
         requestTransformations: TransformationDecision,
         exchange: Exchange
     ) {
-        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet<String>() }
+        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet() }
 
         // Remove labels from exchange
         labels.removeAll(requestTransformations.labelsToRemove)

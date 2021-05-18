@@ -28,7 +28,7 @@ class CounterExampleImpl(term: Term) : CounterExample() {
 
     init {
         val traceIterator = (term as Struct).listIterator()
-        val steps = LinkedList<String?>()
+        val steps = LinkedList<String>()
         // process explanation
         val reasonIterator = (traceIterator.next() as Struct).listIterator()
         val sb =

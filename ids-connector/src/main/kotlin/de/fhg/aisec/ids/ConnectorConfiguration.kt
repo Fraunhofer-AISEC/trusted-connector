@@ -29,6 +29,7 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.net.URI
 import java.util.Arrays
 
 @Configuration
@@ -42,8 +43,14 @@ class ConnectorConfiguration {
     @Bean
     fun configureIdscp2(): CommandLineRunner {
         return CommandLineRunner {
-            Utils.connectorUrlProducer = { settings.connectorProfile.connectorUrl }
-            Utils.maintainerUrlProducer = { settings.connectorProfile.maintainerUrl }
+            Utils.connectorUrlProducer = {
+                settings.connectorProfile.connectorUrl
+                    ?: URI.create("http://connector.ids")
+            }
+            Utils.maintainerUrlProducer = {
+                settings.connectorProfile.maintainerUrl
+                    ?: URI.create("http://connector-maintainer.ids")
+            }
             Utils.dapsUrlProducer = { settings.connectorConfig.dapsUrl }
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION

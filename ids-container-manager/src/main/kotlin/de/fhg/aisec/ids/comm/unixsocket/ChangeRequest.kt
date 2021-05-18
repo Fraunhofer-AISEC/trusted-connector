@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-webconsole
+ * ids-container-manager
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
@@ -17,17 +17,13 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data
+package de.fhg.aisec.ids.comm.unixsocket
 
-class Cert {
-    var subjectC: String? = null
-    var subjectS: String? = null
-    var subjectL: String? = null
-    var subjectO: String? = null
-    var subjectOU: String? = null
-    var subjectAltNames: Collection<List<*>>? = null
-    var subjectCN: String? = null
-    var alias: String? = null
-    var file: String? = null
-    var certificate: String? = null
+import jnr.unixsocket.UnixSocketChannel
+
+class ChangeRequest(var channel: UnixSocketChannel, var type: Int, var ops: Int) {
+    companion object {
+        const val REGISTER = 1
+        const val CHANGEOPS = 2
+    }
 }

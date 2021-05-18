@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.IOException
 import java.time.ZonedDateTime
-import java.util.concurrent.Executors
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import javax.ws.rs.Consumes
@@ -118,7 +118,7 @@ class AppApi {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun start(
-        @ApiParam(value = "ID of the app to start") @PathParam("containerId") containerId: String?
+        @ApiParam(value = "ID of the app to start") @PathParam("containerId") containerId: String
     ): Boolean {
         return start(containerId, null)
     }
@@ -140,7 +140,7 @@ class AppApi {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun start(
-        @ApiParam(value = "ID of the app to start") @PathParam("containerId") containerId: String?,
+        @ApiParam(value = "ID of the app to start") @PathParam("containerId") containerId: String,
         @ApiParam(value = "Key for user token (required for trustX containers)") @PathParam("key") key: String?
     ): Boolean {
         return try {
@@ -172,7 +172,7 @@ class AppApi {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun stop(
-        @ApiParam(value = "ID of the app to stop") @PathParam("containerId") containerId: String?
+        @ApiParam(value = "ID of the app to stop") @PathParam("containerId") containerId: String
     ): Boolean {
         return try {
             cml.stopContainer(containerId)
@@ -219,15 +219,9 @@ class AppApi {
             throw InternalServerErrorException("Null image")
         }
         LOG.debug("Pulling app {}", image)
-        val executor = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
-
-        // Pull image asynchronously and create new container
-        val handler = executor.submit<String> {
-            val containerId = cml.pullImage(app)
-            containerId.orElse(null)
-        }
-        // Cancel pulling after 20 minutes, just in case.
-        executor.schedule<Boolean>({ handler.cancel(true) }, PULL_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        CompletableFuture.supplyAsync {
+            cml.pullImage(app)
+        }.completeOnTimeout(null, PULL_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         return "OK"
     }
 
@@ -240,7 +234,7 @@ class AppApi {
     )
     @AuthorizationRequired
     fun wipe(
-        @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") containerId: String?
+        @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") containerId: String
     ): String {
         try {
             cml.wipe(containerId)
@@ -295,11 +289,11 @@ class AppApi {
                     .parallelStream()
                     .filter { app: ApplicationContainer ->
                         (
-                            app.name != null && app.name.contains(term) ||
-                                app.description != null && app.description.contains(term) ||
-                                app.image != null && app.image.contains(term) ||
-                                app.id != null && app.id.contains(term) ||
-                                app.categories != null && app.categories.contains(term)
+                            app.name?.contains(term) ?: false ||
+                                app.description?.contains(term) ?: false ||
+                                app.image?.contains(term) ?: false ||
+                                app.id?.contains(term) ?: false ||
+                                app.categories.contains(term)
                             )
                     }
                     .collect(Collectors.toList())

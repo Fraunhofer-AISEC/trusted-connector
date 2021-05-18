@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-webconsole
+ * ids-api
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
@@ -17,17 +17,20 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data
+package de.fhg.aisec.ids.api.conm
 
-class Cert {
-    var subjectC: String? = null
-    var subjectS: String? = null
-    var subjectL: String? = null
-    var subjectO: String? = null
-    var subjectOU: String? = null
-    var subjectAltNames: Collection<List<*>>? = null
-    var subjectCN: String? = null
-    var alias: String? = null
-    var file: String? = null
-    var certificate: String? = null
+/**
+ * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle
+ * exposed endpoints of the IDSCP.
+ *
+ * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ */
+class IDSCPServerEndpoint {
+    var endpointIdentifier: String? = null
+    var defaultProtocol: String? = null
+    var port: String? = null
+    var host: String? = null
+    override fun toString(): String {
+        return "IDSCPEndpoint [endpoint_identifier=$endpointIdentifier]"
+    }
 }

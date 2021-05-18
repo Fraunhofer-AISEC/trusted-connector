@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-webconsole
+ * ids-api
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
@@ -17,17 +17,9 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data
+package de.fhg.aisec.ids.api.policy
 
-class Cert {
-    var subjectC: String? = null
-    var subjectS: String? = null
-    var subjectL: String? = null
-    var subjectO: String? = null
-    var subjectOU: String? = null
-    var subjectAltNames: Collection<List<*>>? = null
-    var subjectCN: String? = null
-    var alias: String? = null
-    var file: String? = null
-    var certificate: String? = null
-}
+class Obligation(
+    var action: String? = null,
+    var alternativeDecision: PolicyDecision.Decision? = null
+)

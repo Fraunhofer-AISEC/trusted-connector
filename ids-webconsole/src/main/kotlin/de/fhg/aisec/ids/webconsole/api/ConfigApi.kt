@@ -126,25 +126,23 @@ class ConfigApi {
         @PathParam("con") connection: String,
         conSettings: ConnectionSettings?
     ): Response {
-        if (conSettings == null) {
-            Response.serverError().entity("No valid connection settings received!").build()
-        }
+        return conSettings?.let {
+            // connection has format "<route_id> - host:port"
+            // store only "host:port" in database to make connection available in other parts of the application
+            // where rout_id is not available
+            val m = CONNECTION_CONFIG_PATTERN.matcher(connection)
+            if (!m.matches()) {
+                // GENERAL_CONFIG has changed
+                settings.setConnectionSettings(connection, it)
+            } else {
+                // specific endpoint config has changed
+                settings.setConnectionSettings(m.group(1), it)
 
-        // connection has format "<route_id> - host:port"
-        // store only "host:port" in database to make connection available in other parts of the application
-        // where rout_id is not available
-        val m = CONNECTION_CONFIG_PATTERN.matcher(connection)
-        if (!m.matches()) {
-            // GENERAL_CONFIG has changed
-            settings.setConnectionSettings(connection, conSettings)
-        } else {
-            // specific endpoint config has changed
-            settings.setConnectionSettings(m.group(1), conSettings)
-
-            // notify EndpointConfigurationListeners that some endpointConfig has changed
-            endpointConfigManager?.notify(m.group(1))
-        }
-        return Response.ok().build()
+                // notify EndpointConfigurationListeners that some endpointConfig has changed
+                endpointConfigManager?.notify(m.group(1))
+            }
+            Response.ok().build()
+        } ?: Response.serverError().entity("No valid connection settings received!").build()
     }
 
     /**
@@ -160,7 +158,7 @@ class ConfigApi {
         MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
-    fun getConnectionConfigurations(@PathParam("con") connection: String?): ConnectionSettings {
+    fun getConnectionConfigurations(@PathParam("con") connection: String): ConnectionSettings {
         return settings.getConnectionSettings(connection)
     } // add endpoint configurations// For every currently available endpoint, go through all preferences and check
     // if the id is already there. If not, create empty config.
@@ -217,7 +215,7 @@ class ConfigApi {
             allSettings.putIfAbsent(Constants.GENERAL_CONFIG, ConnectionSettings())
             val routeInputs = routeManager
                 .routes
-                .map { it.id }
+                .mapNotNull { it.id }
                 .associateWith { routeManager.getRouteInputUris(it) }
 
             // add all available endpoints

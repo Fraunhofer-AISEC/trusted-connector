@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-webconsole
+ * ids-api
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
@@ -17,17 +17,19 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data
+package de.fhg.aisec.ids.api.policy
 
-class Cert {
-    var subjectC: String? = null
-    var subjectS: String? = null
-    var subjectL: String? = null
-    var subjectO: String? = null
-    var subjectOU: String? = null
-    var subjectAltNames: Collection<List<*>>? = null
-    var subjectCN: String? = null
-    var alias: String? = null
-    var file: String? = null
-    var certificate: String? = null
+/**
+ * Bean representing the decision of a Policy Decision Point (PDP).
+ *
+ * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
+ */
+class PolicyDecision {
+    enum class Decision {
+        ALLOW, DENY
+    }
+
+    var reason = "Default deny"
+    var decision = Decision.DENY
+    var obligations: List<Obligation> = emptyList()
 }

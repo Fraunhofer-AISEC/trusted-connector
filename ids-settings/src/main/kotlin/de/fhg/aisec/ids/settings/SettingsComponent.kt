@@ -91,37 +91,36 @@ class SettingsComponent : Settings {
     }
 
     @PreDestroy
+    @Suppress("unused")
     fun deactivate() {
         LOG.debug("Close Settings Database...")
         mapDB.close()
     }
 
-    override fun getConnectorConfig() =
-        settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
-
-    override fun setConnectorConfig(connectorConfig: ConnectorConfig) {
-        settingsStore[CONNECTOR_SETTINGS_KEY] = connectorConfig
-        mapDB.commit()
-    }
-
-    override fun getConnectorProfile() =
-        settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
-
-    override fun setConnectorProfile(connectorProfile: ConnectorProfile) {
-        settingsStore[CONNECTOR_PROFILE_KEY] = connectorProfile
-        mapDB.commit()
-    }
-
-    override fun getConnectorJsonLd() = settingsStore[CONNECTOR_JSON_LD_KEY] as String?
-
-    override fun setConnectorJsonLd(jsonLd: String?) {
-        if (jsonLd == null) {
-            settingsStore -= CONNECTOR_JSON_LD_KEY
-        } else {
-            settingsStore[CONNECTOR_JSON_LD_KEY] = jsonLd
+    override var connectorConfig: ConnectorConfig
+        get() = settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
+        set(value) {
+            settingsStore[CONNECTOR_SETTINGS_KEY] = value
+            mapDB.commit()
         }
-        mapDB.commit()
-    }
+
+    override var connectorProfile: ConnectorProfile
+        get() = settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
+        set(value) {
+            settingsStore[CONNECTOR_PROFILE_KEY] = value
+            mapDB.commit()
+        }
+
+    override var connectorJsonLd: String?
+        get() = settingsStore[CONNECTOR_JSON_LD_KEY] as String?
+        set(value) {
+            if (value == null) {
+                settingsStore -= CONNECTOR_JSON_LD_KEY
+            } else {
+                settingsStore[CONNECTOR_JSON_LD_KEY] = value
+            }
+            mapDB.commit()
+        }
 
     override fun getConnectionSettings(connection: String): ConnectionSettings =
         if (connection == Constants.GENERAL_CONFIG) {
@@ -132,13 +131,13 @@ class SettingsComponent : Settings {
             }
         }
 
-    override fun setConnectionSettings(connection: String, conSettings: ConnectionSettings) {
-        connectionSettings[connection] = conSettings
+    override fun setConnectionSettings(connection: String, cSettings: ConnectionSettings) {
+        connectionSettings[connection] = cSettings
         mapDB.commit()
     }
 
-    override fun getAllConnectionSettings(): MutableMap<String, ConnectionSettings> =
-        Collections.unmodifiableMap(connectionSettings)
+    override val allConnectionSettings: MutableMap<String, ConnectionSettings>
+        get() = Collections.unmodifiableMap(connectionSettings)
 
     companion object {
         internal const val DB_VERSION_KEY = "db_version"
