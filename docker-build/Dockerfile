@@ -10,4 +10,4 @@ COPY run.sh .
 RUN chmod +x run.sh
 
 ENTRYPOINT ["/run.sh"]
-CMD ["yarnBuild", "check", ":build", "--parallel"]
+CMD ["yarnBuild", "check", "build", "--parallel"]

@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * example-idscp2-client-server
+ * example-route-builder
  * %%
  * Copyright (C) 2021 Fraunhofer AISEC
  * %%

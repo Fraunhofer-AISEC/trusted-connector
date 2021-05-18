@@ -77,14 +77,9 @@ class UserApi {
             if (!authenticate(user.username, user.password)) {
                 return Response.status(Response.Status.UNAUTHORIZED).build()
             }
-
             // Issue a token for the user
             val token = issueToken(user.username)
-
-            // Return the token on the response
-            val result: MutableMap<String, String> = HashMap()
-            result["token"] = token
-            Response.ok().entity(result).build()
+            Response.ok().entity(mapOf("token" to token)).build()
         } catch (e: Throwable) {
             e.printStackTrace()
             Response.status(Response.Status.UNAUTHORIZED).build()

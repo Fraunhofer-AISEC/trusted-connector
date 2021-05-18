@@ -46,7 +46,7 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "4.0.0"
+    version = "5.0.0"
 }
 
 subprojects {
@@ -130,15 +130,6 @@ subprojects {
         options.compilerArgs.add("-Xlint:unchecked")
 //        options.isDeprecation = true
         dependsOn("spotlessApply")
-    }
-
-    tasks.jar {
-        manifest {
-            attributes(
-                "Bundle-Vendor" to "Fraunhofer AISEC",
-                "-noee" to true
-            )
-        }
     }
 }
 

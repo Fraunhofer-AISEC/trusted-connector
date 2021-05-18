@@ -18,13 +18,13 @@ RUN apt-get update -qq && apt-get install -qq wget git zsh fonts-powerline \
   # Inject karaf console start command into zsh history
   && echo ": 0:0;bin/client" > ~/.zsh_history
 
-# Add the actual core platform files to /root
-ADD build/libs/lib /root/lib/
-ADD build/libs/ids-connector.jar /root/
+# Add the actual core platform JARs to /root/jars, as two layers
+ADD build/libs/libraryJars/* /root/jars/
+ADD build/libs/projectJars/* /root/jars/
 
 WORKDIR "/root"
 
 # Ports to expose
 EXPOSE 8080 29292
 
-ENTRYPOINT ["java", "--class-path", "./ids-connector.jar:./lib/*", "de.fhg.aisec.ids.TrustedConnector"]
+CMD ["java", "--class-path", "./jars/*", "de.fhg.aisec.ids.TrustedConnector"]

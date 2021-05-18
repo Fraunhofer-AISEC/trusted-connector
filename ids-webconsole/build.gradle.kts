@@ -69,13 +69,13 @@ and is used by the default administration dashboard ("web console").
 dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-jersey")
+    implementation("org.springframework.security", "spring-security-crypto")
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
     implementation("org.apache.cxf", "cxf-rt-rs-extension-providers", libraryVersions["cxf"])
     implementation("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
     implementation("com.auth0", "java-jwt", libraryVersions["auth0Jwt"])
 
-    compileOnly("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
     compileOnly("io.swagger", "swagger-jaxrs", libraryVersions["swagger"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
