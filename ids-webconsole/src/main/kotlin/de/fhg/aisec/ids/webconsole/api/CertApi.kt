@@ -76,13 +76,10 @@ import javax.ws.rs.core.MediaType
 @Component
 @Path("/certs")
 @Api(value = "Identities and Certificates", authorizations = [Authorization(value = "oauth2")])
-class CertApi {
+class CertApi(@Autowired private val settings: Settings) {
 
     @Autowired(required = false)
     private var acmeClient: AcmeClient? = null
-
-    @Autowired
-    private lateinit var settings: Settings
 
     @GET
     @ApiOperation(value = "Starts ACME renewal over X509v3 certificates")

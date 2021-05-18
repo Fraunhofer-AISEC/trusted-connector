@@ -82,6 +82,8 @@ dependencies {
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
     testImplementation("org.apache.cxf", "cxf-rt-transports-local", libraryVersions["cxf"])
     testImplementation("org.apache.cxf", "cxf-rt-rs-client", libraryVersions["cxf"])
+    testImplementation("com.fasterxml.jackson.core", "jackson-core", libraryVersions["jackson"])
+    testImplementation("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-json-provider", libraryVersions["jackson"])
 }
 
 node {
