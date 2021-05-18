@@ -126,4 +126,35 @@ class UserApi {
         ctx.login()
         return true
     }
+
+    @POST
+    @Path("/setPassword")
+    @AuthorizationRequired
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun setPassword(password: String) {
+        // find user
+        // val u:User = null
+
+        // set password
+        // u.password = password
+
+        // save user
+    }
+
+    @POST
+    @Path("/addUser")
+    @AuthorizationRequired
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun addUser(user: User) {
+    }
+
+    @POST
+    @Path("/removeUser")
+    @AuthorizationRequired
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun removeUser(username: String) {
+    }
 }
