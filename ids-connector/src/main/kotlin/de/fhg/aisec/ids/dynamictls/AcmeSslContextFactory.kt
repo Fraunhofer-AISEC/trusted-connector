@@ -19,25 +19,29 @@
  */
 package de.fhg.aisec.ids.dynamictls
 
-import de.fhg.aisec.ids.acme.AcmeClientService
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable
+import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadableRegistry
 import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
- * This SslContextFactory registers started instances to an OSGi service that allows reloading of
+ * This SslContextFactory registers started instances to a service that allows reloading of
  * all active SslContextFactory instances.
  *
  * @author Michael Lux
  */
 class AcmeSslContextFactory : SslContextFactory.Server(), SslContextFactoryReloadable {
 
+    @Autowired
+    private lateinit var reloadableRegistry: SslContextFactoryReloadableRegistry
+
     @Throws(Exception::class)
     override fun doStart() {
         if (LOG.isDebugEnabled) {
             LOG.debug("Starting {}", this)
         }
-        AcmeClientService.registerSslContextFactoryReloadable(this)
+        reloadableRegistry.registerSslContextFactoryReloadable(this)
         super.doStart()
     }
 
@@ -46,7 +50,7 @@ class AcmeSslContextFactory : SslContextFactory.Server(), SslContextFactoryReloa
         if (LOG.isDebugEnabled) {
             LOG.debug("Stopping {}", this)
         }
-        AcmeClientService.removeSslContextFactoryReloadable(this)
+        reloadableRegistry.removeSslContextFactoryReloadable(this)
         super.doStop()
     }
 

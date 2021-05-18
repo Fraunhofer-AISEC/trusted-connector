@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.acme
 import de.fhg.aisec.ids.api.acme.AcmeClient
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable
+import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadableRegistry
 import de.fhg.aisec.ids.api.settings.Settings
 import org.shredzone.acme4j.Account
 import org.shredzone.acme4j.AccountBuilder
@@ -59,7 +60,7 @@ import javax.annotation.PostConstruct
     // Every day at 3:00 (3 am)
     // property = [Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"]
 )
-class AcmeClientService : AcmeClient, Runnable {
+class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegistry {
 
     @Autowired
     private lateinit var settings: Settings
@@ -389,6 +390,21 @@ class AcmeClientService : AcmeClient, Runnable {
         }
     }
 
+    /**
+     * The following block subscribes this component to any SslContextFactoryReloader.
+     *
+     * A SslContextFactoryReloader is expected to refresh all TLS connections with new
+     * certificates from the key store.
+     */
+    override fun registerSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
+        LOG.info("Registered SslContextFactoryReloadable in AcmeClientService")
+        sslReloadables.add(reloadable)
+    }
+
+    override fun removeSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
+        sslReloadables.remove(reloadable)
+    }
+
     companion object {
 
         const val RENEWAL_THRESHOLD = 100.0 / 3.0
@@ -396,21 +412,5 @@ class AcmeClientService : AcmeClient, Runnable {
         private val LOG = LoggerFactory.getLogger(AcmeClientService::class.java)
         private val challengeMap = HashMap<String, String>()
         private val sslReloadables = Collections.synchronizedSet(HashSet<SslContextFactoryReloadable>())
-
-        /*
-         * The following block subscribes this component to any SslContextFactoryReloader.
-         *
-         * A SslContextFactoryReloader is expected to refresh all TLS connections with new
-         * certificates from the key store.
-         */
-        fun registerSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
-            LOG.info("Registered SslContextFactoryReloadable in AcmeClientService")
-            this.sslReloadables.add(reloadable)
-        }
-
-        @Suppress("unused")
-        fun removeSslContextFactoryReloadable(reloadable: SslContextFactoryReloadable) {
-            this.sslReloadables.remove(reloadable)
-        }
     }
 }
