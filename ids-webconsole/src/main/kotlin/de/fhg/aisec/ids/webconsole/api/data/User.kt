@@ -20,8 +20,6 @@
 package de.fhg.aisec.ids.webconsole.api.data
 
 class User {
-    @kotlin.jvm.JvmField
     var username: String? = null
-    @kotlin.jvm.JvmField
     var password: String? = null
 }

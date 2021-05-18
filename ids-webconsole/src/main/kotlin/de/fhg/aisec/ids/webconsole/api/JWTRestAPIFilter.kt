@@ -53,7 +53,7 @@ class JWTRestAPIFilter : ContainerRequestFilter {
 
             // Verify token
             val jwt = authorizationHeader.substring(7).trim { it <= ' ' }
-            val algorithm: Algorithm = Algorithm.HMAC256(UserApi.key!!.encoded)
+            val algorithm: Algorithm = Algorithm.HMAC256(UserApi.key)
             val verifier = JWT.require(algorithm).withIssuer("ids-connector").build() // Reusable verifier instance
             verifier.verify(jwt)
         } catch (e: Exception) {

@@ -28,4 +28,8 @@ interface Settings {
     fun getConnectionSettings(connection: String): ConnectionSettings
     fun setConnectionSettings(connection: String, cSettings: ConnectionSettings)
     val allConnectionSettings: Map<String, ConnectionSettings>
+    fun isUserStoreEmpty(): Boolean
+    fun getUserHash(username: String): String?
+    fun saveUser(username: String, hash: String)
+    fun removeUser(username: String)
 }
