@@ -19,29 +19,41 @@
  */
 package de.fhg.aisec.ids.rm.util
 
-import java.util.*
-import org.apache.camel.model.*
+import org.apache.camel.model.AggregateDefinition
+import org.apache.camel.model.BeanDefinition
+import org.apache.camel.model.ChoiceDefinition
+import org.apache.camel.model.FilterDefinition
+import org.apache.camel.model.FromDefinition
+import org.apache.camel.model.OtherwiseDefinition
+import org.apache.camel.model.ProcessorDefinition
+import org.apache.camel.model.RecipientListDefinition
+import org.apache.camel.model.ResequenceDefinition
+import org.apache.camel.model.RoutingSlipDefinition
+import org.apache.camel.model.SplitDefinition
+import org.apache.camel.model.ToDefinition
+import org.apache.camel.model.TransformDefinition
+import org.apache.camel.model.WhenDefinition
 import org.apache.camel.util.ObjectHelper
 
 /** Represents a node in the EIP diagram tree */
 class PrologNode(node: Any) {
-    //	public String id;
+    // 	public String id;
     private var nodeType: String? = null
     private var value: String? = null
 
-    //	public String predicate = "has_url";
+    // 	public String predicate = "has_url";
     private var outputs: List<ProcessorDefinition<*>>? = null
 
     init {
-        //		this.id = id;
+        // 		this.id = id;
         if (node is ProcessorDefinition<*>) {
-            //			this.predicate = "has_operation";
+            // 			this.predicate = "has_operation";
             value = node.label
         }
         when (node) {
             is FromDefinition -> {
                 nodeType = "from"
-                //			this.predicate = "has_url";
+                // 			this.predicate = "has_url";
                 value = node.endpointUri
             }
             is ToDefinition -> {
@@ -68,7 +80,7 @@ class PrologNode(node: Any) {
                 nodeType = "choice"
             }
             is RecipientListDefinition<*> -> {
-                //			this.predicate = "recipient_list";
+                // 			this.predicate = "recipient_list";
                 value = node.label
                 nodeType = "recipients"
             }
@@ -83,16 +95,16 @@ class PrologNode(node: Any) {
                 nodeType = "aggregator"
             }
             is ResequenceDefinition -> {
-                //			this.predicate = "resequence";
+                // 			this.predicate = "resequence";
                 value = node.label
             }
             is BeanDefinition -> {
-                //			this.predicate = "bean";
+                // 			this.predicate = "bean";
                 value = node.label
             }
             is TransformDefinition -> {
                 value = node.label
-                //			this.predicate = "transform";
+                // 			this.predicate = "transform";
             }
         }
 

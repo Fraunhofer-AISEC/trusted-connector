@@ -19,16 +19,13 @@
  */
 package de.fhg.aisec.ids.rm
 
-import de.fhg.aisec.ids.api.router.*
+import de.fhg.aisec.ids.api.router.RouteComponent
+import de.fhg.aisec.ids.api.router.RouteException
+import de.fhg.aisec.ids.api.router.RouteManager
+import de.fhg.aisec.ids.api.router.RouteMetrics
+import de.fhg.aisec.ids.api.router.RouteObject
 import de.fhg.aisec.ids.rm.util.CamelRouteToDot
 import de.fhg.aisec.ids.rm.util.PrologPrinter
-import java.io.*
-import java.nio.charset.StandardCharsets
-import java.util.*
-import java.util.stream.Collectors
-import javax.management.*
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.JAXBException
 import org.apache.camel.CamelContext
 import org.apache.camel.Endpoint
 import org.apache.camel.ServiceStatus
@@ -37,41 +34,53 @@ import org.apache.camel.management.DefaultManagementAgent
 import org.apache.camel.model.ModelCamelContext
 import org.apache.camel.model.ModelHelper
 import org.apache.camel.model.RouteDefinition
+import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon
 import org.apache.camel.support.dump.RouteStatDump
-import org.osgi.framework.FrameworkUtil
-import org.osgi.framework.InvalidSyntaxException
-import org.osgi.service.component.ComponentContext
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
+import org.springframework.stereotype.Component
+import java.io.BufferedWriter
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.OutputStreamWriter
+import java.io.StringReader
+import java.io.StringWriter
+import java.nio.charset.StandardCharsets
+import java.util.stream.Collectors
+import javax.management.AttributeNotFoundException
+import javax.management.InstanceNotFoundException
+import javax.management.MBeanException
+import javax.management.MalformedObjectNameException
+import javax.management.ObjectName
+import javax.management.ReflectionException
+import javax.xml.bind.JAXBContext
+import javax.xml.bind.JAXBException
 
 /**
  * Manages Camel routes.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(immediate = true, name = "ids-routemanager")
+@Component
 class RouteManagerService : RouteManager {
-    private lateinit var ctx: ComponentContext
+    @Autowired private lateinit var ctx: ApplicationContext
 
-    @Activate
-    private fun activate(ctx: ComponentContext) {
-        this.ctx = ctx
-    }
+    override val routes: List<RouteObject>
+        get() {
+            val result: MutableList<RouteObject> = ArrayList()
+            val camelContexts = camelContexts
 
-    override fun getRoutes(): List<RouteObject> {
-        val result: MutableList<RouteObject> = ArrayList()
-        val camelContexts = camelContexts
-
-        // Create response
-        for (cCtx in camelContexts) {
-            val mcc = cCtx.adapt(ModelCamelContext::class.java)
-            for (rd in mcc.routeDefinitions) {
-                result.add(routeDefinitionToObject(cCtx, rd))
+            // Create response
+            for (cCtx in camelContexts) {
+                val mcc = cCtx.adapt(ModelCamelContext::class.java)
+                for (rd in mcc.routeDefinitions) {
+                    result.add(routeDefinitionToObject(cCtx, rd))
+                }
             }
+            return result
         }
-        return result
-    }
 
     override fun getRoute(id: String): RouteObject? {
         val camelContexts = camelContexts
@@ -118,44 +127,33 @@ class RouteManagerService : RouteManager {
     }
 
     override fun listComponents(): List<RouteComponent> {
-        val componentNames: MutableList<RouteComponent> = ArrayList()
-        val bCtx =
-            FrameworkUtil.getBundle(RouteManagerService::class.java).bundleContext
-                ?: return componentNames
-        try {
-            val services = bCtx.getServiceReferences("org.apache.camel.spi.ComponentResolver", null)
-            for (sr in services) {
-                var bundle = sr.bundle.headers["Bundle-Name"]
-                if (bundle == null || "" == bundle) {
-                    bundle = sr.bundle.symbolicName
+        val beanNamesForType =
+            ctx.getBeanNamesForType(ComponentConfigurationPropertiesCommon::class.java)
+
+        // yes, this is a bit hacky but will do fow now
+        return beanNamesForType
+            .mapNotNull { name ->
+                val first = name.split("-org")[0]
+
+                if (first == "camel.component") {
+                    null
+                } else {
+                    RouteComponent("camel-" + first.split("camel.component.")[1], "")
                 }
-                var description = sr.bundle.headers["Bundle-Description"]
-                if (description == null) {
-                    description = ""
-                }
-                componentNames.add(RouteComponent(bundle, description))
             }
-        } catch (e: InvalidSyntaxException) {
-            LOG.error(e.message, e)
-        }
-        return componentNames
     }
 
-    override fun getEndpoints(): Map<String, Collection<String>> {
-        return camelContexts
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    { obj: CamelContext -> obj.name },
-                    { c: CamelContext ->
-                        c.endpoints
-                            .stream()
-                            .map { obj: Endpoint -> obj.endpointUri }
-                            .collect(Collectors.toList())
-                    }
+    override val endpoints: Map<String, Collection<String>>
+        get() {
+            return camelContexts
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        { obj: CamelContext -> obj.name },
+                        { c: CamelContext -> c.endpoints.map { obj: Endpoint -> obj.endpointUri } }
+                    )
                 )
-            )
-    }
+        }
 
     override fun listEndpoints(): Map<String, String> {
         val epURIs: MutableMap<String, String> = HashMap()
@@ -167,45 +165,46 @@ class RouteManagerService : RouteManager {
         return epURIs
     }
 
-    override fun getRouteMetrics(): Map<String, RouteMetrics> {
-        val rdump: MutableMap<String, RouteMetrics> = HashMap()
-        val cCtxs = camelContexts
-        for (cCtx in cCtxs) {
-            val mcc = cCtx.adapt(ModelCamelContext::class.java)
-            val rds = mcc.routeDefinitions
-            for (rd in rds) {
-                var stat: RouteStatDump?
-                try {
-                    stat = getRouteStats(cCtx, rd)
-                    if (stat != null) {
-                        val m = RouteMetrics()
-                        m.completed = stat.exchangesCompleted
-                        m.redeliveries = stat.redeliveries
-                        m.failed = stat.exchangesFailed
-                        m.failuresHandled = stat.failuresHandled
-                        m.inflight = stat.exchangesInflight
-                        m.maxProcessingTime = stat.maxProcessingTime
-                        m.minProcessingTime = stat.minProcessingTime
-                        m.meanProcessingTime = stat.meanProcessingTime
-                        rdump[rd.id] = m
+    override val routeMetrics: Map<String, RouteMetrics>
+        get() {
+            val rdump: MutableMap<String, RouteMetrics> = HashMap()
+            val cCtxs = camelContexts
+            for (cCtx in cCtxs) {
+                val mcc = cCtx.adapt(ModelCamelContext::class.java)
+                val rds = mcc.routeDefinitions
+                for (rd in rds) {
+                    var stat: RouteStatDump?
+                    try {
+                        stat = getRouteStats(cCtx, rd)
+                        if (stat != null) {
+                            val m = RouteMetrics()
+                            m.completed = stat.exchangesCompleted
+                            m.redeliveries = stat.redeliveries
+                            m.failed = stat.exchangesFailed
+                            m.failuresHandled = stat.failuresHandled
+                            m.inflight = stat.exchangesInflight
+                            m.maxProcessingTime = stat.maxProcessingTime
+                            m.minProcessingTime = stat.minProcessingTime
+                            m.meanProcessingTime = stat.meanProcessingTime
+                            rdump[rd.id] = m
+                        }
+                    } catch (e: MalformedObjectNameException) {
+                        LOG.error(e.message, e)
+                    } catch (e: AttributeNotFoundException) {
+                        LOG.error(e.message, e)
+                    } catch (e: InstanceNotFoundException) {
+                        LOG.error(e.message, e)
+                    } catch (e: MBeanException) {
+                        LOG.error(e.message, e)
+                    } catch (e: ReflectionException) {
+                        LOG.error(e.message, e)
+                    } catch (e: JAXBException) {
+                        LOG.error(e.message, e)
                     }
-                } catch (e: MalformedObjectNameException) {
-                    LOG.error(e.message, e)
-                } catch (e: AttributeNotFoundException) {
-                    LOG.error(e.message, e)
-                } catch (e: InstanceNotFoundException) {
-                    LOG.error(e.message, e)
-                } catch (e: MBeanException) {
-                    LOG.error(e.message, e)
-                } catch (e: ReflectionException) {
-                    LOG.error(e.message, e)
-                } catch (e: JAXBException) {
-                    LOG.error(e.message, e)
                 }
             }
+            return rdump
         }
-        return rdump
-    }
 
     override fun delRoute(routeId: String) {
         val cCtxs = camelContexts
@@ -228,12 +227,11 @@ class RouteManagerService : RouteManager {
     private val camelContexts: List<CamelContext>
         get() {
             return try {
-                ctx.bundleContext.getServiceReferences(CamelContext::class.java.name, null)?.run {
-                    mapNotNull { reference -> ctx.bundleContext.getService(reference) }
-                        .map { CamelContext::class.java.cast(it) }
-                        .sortedWith(Comparator.comparing { it.name })
-                }
-                    ?: emptyList()
+                val contexts = ctx.getBeansOfType(CamelContext::class.java).values.toMutableList()
+
+                contexts.sortWith(Comparator.comparing { it.name })
+
+                return contexts
             } catch (e: Exception) {
                 LOG.warn("Cannot retrieve the list of Camel contexts.", e)
                 emptyList()
@@ -401,7 +399,7 @@ class RouteManagerService : RouteManager {
                 val serviceStatus = cCtx.routeController.getRouteStatus(routeId)
                 routeStarted =
                     serviceStatus == ServiceStatus.Started ||
-                        serviceStatus == ServiceStatus.Starting
+                    serviceStatus == ServiceStatus.Starting
                 break
             }
         }
@@ -465,16 +463,16 @@ class RouteManagerService : RouteManager {
     /**
      * Create a new route in a fresh context from text
      *
-     * @param routeRepresentation The textual representation of the route to be inserted
+     * @param routeDefinition The textual representation of the route to be inserted
      * @throws RouteException If a route with that name already exists
      */
     @Throws(RouteException::class)
-    override fun addRoute(routeRepresentation: String) {
-        LOG.debug("Adding new route: $routeRepresentation")
+    override fun addRoute(routeDefinition: String) {
+        LOG.debug("Adding new route: $routeDefinition")
         val existingRoutes = this.routes
         val cCtx: CamelContext = DefaultCamelContext()
         try {
-            ByteArrayInputStream(routeRepresentation.toByteArray(StandardCharsets.UTF_8)).use { bis
+            ByteArrayInputStream(routeDefinition.toByteArray(StandardCharsets.UTF_8)).use { bis
                 ->
                 // Load route(s) from XML
                 val rd = ModelHelper.loadRoutesDefinition(cCtx, bis)

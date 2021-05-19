@@ -26,22 +26,20 @@ import org.apache.camel.CamelContext
 import org.apache.camel.NamedNode
 import org.apache.camel.Processor
 import org.apache.camel.spi.InterceptStrategy
-import org.osgi.service.component.annotations.*
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
-@Component(immediate = true, name = "ids-camel-interceptor")
+@Component("idsCamelInterceptor")
 class CamelInterceptor : InterceptStrategy {
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    @Volatile
+
+    @Autowired(required = false)
     private var pdp: PDP? = null
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    @Volatile
+    @Autowired(required = false)
     private var usageControlInterface: Idscp2UsageControlInterface? = null
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    @Volatile
+    @Autowired(required = false)
     private var containerManager: ContainerManager? = null
 
-    @Activate
-    private fun activate() {
+    init {
         instance = this
     }
 

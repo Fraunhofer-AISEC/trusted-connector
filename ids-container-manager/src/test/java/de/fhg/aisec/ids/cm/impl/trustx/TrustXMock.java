@@ -20,12 +20,6 @@
 package de.fhg.aisec.ids.cm.impl.trustx;
 
 import de.fhg.aisec.ids.comm.unixsocket.ChangeRequest;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.util.*;
 import jnr.enxio.channels.NativeSelectorProvider;
 import jnr.unixsocket.UnixServerSocketChannel;
 import jnr.unixsocket.UnixSocketAddress;
@@ -33,25 +27,31 @@ import jnr.unixsocket.UnixSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.*;
+
 public class TrustXMock implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(TrustXMock.class);
-  private UnixSocketAddress address;
   private UnixServerSocketChannel channel;
   private String socket;
 
   // The selector we'll be monitoring
-  private Selector selector;
+  private final Selector selector;
 
   // The buffer into which we'll read data when it's available
-  private ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 1024);
+  private final ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 1024);
 
   // A list of PendingChange instances
-  private List<ChangeRequest> pendingChanges = new LinkedList<>();
+  private final List<ChangeRequest> pendingChanges = new LinkedList<>();
 
   // Maps a UnixSocketChannel to a list of ByteBuffer instances
-  private Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
+  private final Map<UnixSocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 
-  private TrustXMockHandler handler;
+  private final TrustXMockHandler handler;
 
   // constructor setting another socket address
   public TrustXMock(String socket, TrustXMockHandler handler) throws IOException {
@@ -67,11 +67,7 @@ public class TrustXMock implements Runnable {
           new ChangeRequest(socket, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
       // And queue the data we want written
       synchronized (this.pendingData) {
-        List<ByteBuffer> queue = (List<ByteBuffer>) this.pendingData.get(socket);
-        if (queue == null) {
-          queue = new ArrayList<ByteBuffer>();
-          this.pendingData.put(socket, queue);
-        }
+        List<ByteBuffer> queue = this.pendingData.computeIfAbsent(socket, k -> new ArrayList<>());
         queue.add(ByteBuffer.wrap(data));
       }
       // Finally, wake up our selecting thread so it can make the required changes
@@ -86,14 +82,10 @@ public class TrustXMock implements Runnable {
       try {
         // Process any pending changes
         synchronized (this.pendingChanges) {
-          Iterator<ChangeRequest> changes = this.pendingChanges.iterator();
-          while (changes.hasNext()) {
-            ChangeRequest change = (ChangeRequest) changes.next();
-            switch (change.type) {
-              case ChangeRequest.CHANGEOPS:
-                SelectionKey key = change.channel.keyFor(this.selector);
-                key.interestOps(change.ops);
-                break;
+          for (ChangeRequest change : this.pendingChanges) {
+            if (change.type == ChangeRequest.CHANGEOPS) {
+              SelectionKey key = change.channel.keyFor(this.selector);
+              key.interestOps(change.ops);
             }
           }
           this.pendingChanges.clear();
@@ -105,7 +97,7 @@ public class TrustXMock implements Runnable {
         // Iterate over the set of keys for which events are available
         Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
         while (selectedKeys.hasNext()) {
-          SelectionKey key = (SelectionKey) selectedKeys.next();
+          SelectionKey key = selectedKeys.next();
           selectedKeys.remove();
           if (!key.isValid()) {
             continue;
@@ -125,6 +117,7 @@ public class TrustXMock implements Runnable {
     }
   }
 
+  @SuppressWarnings("unused")
   private void accept(SelectionKey key) throws IOException {
     // Accept the connection and make it non-blocking
     UnixSocketChannel client = channel.accept();
@@ -167,7 +160,7 @@ public class TrustXMock implements Runnable {
     final UnixSocketChannel channel = this.getChannel(key);
 
     synchronized (this.pendingData) {
-      List<ByteBuffer> queue = (List<ByteBuffer>) this.pendingData.get(channel);
+      List<ByteBuffer> queue = this.pendingData.get(channel);
 
       // Write until there's not more data
       while (!queue.isEmpty()) {
@@ -192,10 +185,11 @@ public class TrustXMock implements Runnable {
     Selector socketSelector = NativeSelectorProvider.getInstance().openSelector();
 
     File socketFile = new File(getSocket());
+    //noinspection ResultOfMethodCallIgnored
     socketFile.delete();
     socketFile.deleteOnExit();
 
-    this.address = new UnixSocketAddress(socketFile.getAbsoluteFile());
+    UnixSocketAddress address = new UnixSocketAddress(socketFile.getAbsoluteFile());
     this.channel = UnixServerSocketChannel.open();
     this.channel.configureBlocking(false);
     this.channel.socket().bind(address);

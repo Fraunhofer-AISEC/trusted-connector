@@ -19,12 +19,18 @@
  */
 package de.fhg.aisec.ids.rm.util
 
+import org.apache.camel.model.ChoiceDefinition
+import org.apache.camel.model.FromDefinition
+import org.apache.camel.model.MulticastDefinition
+import org.apache.camel.model.PipelineDefinition
+import org.apache.camel.model.ProcessorDefinition
+import org.apache.camel.model.RouteDefinition
+import org.apache.camel.model.ToDefinition
+import org.apache.camel.util.ObjectHelper
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.Writer
-import java.util.*
-import org.apache.camel.model.*
-import org.apache.camel.util.ObjectHelper
+import java.util.IdentityHashMap
 
 /**
  * Camel route definition to GraphViz converter.
@@ -46,8 +52,10 @@ class CamelRouteToDot {
     @Throws(IOException::class)
     private fun printRoutes(writer: Writer, group: String?, routes: List<RouteDefinition>) {
         if (group != null) {
-            writer.write("""subgraph cluster_${clusterCounter++} {
-""")
+            writer.write(
+                """subgraph cluster_${clusterCounter++} {
+"""
+            )
             writer.write("label = \"$group\";\n")
             writer.write("color = grey;\n")
             writer.write("style = \"dashed\";\n")
@@ -145,19 +153,25 @@ class CamelRouteToDot {
         if (!data!!.nodeWritten) {
             data.nodeWritten = true
             writer.write("\n")
-            writer.write("""
+            writer.write(
+                """
     ${data.id}
     
-    """.trimIndent())
+                """.trimIndent()
+            )
             writer.write(" [\n")
-            writer.write("""
+            writer.write(
+                """
     label = "${data.label}"
     
-    """.trimIndent())
-            writer.write("""
+                """.trimIndent()
+            )
+            writer.write(
+                """
     tooltip = "${data.tooltip}"
     
-    """.trimIndent())
+                """.trimIndent()
+            )
             val image = data.image
             if (image != null) {
                 writer.write("shapefile = \"$image\"\n")

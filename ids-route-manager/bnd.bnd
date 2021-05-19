@@ -1,9 +1,0 @@
-Bundle-Name: IDS :: Route Manager
-Bundle-Description: Manages data routes
-Export-Package: \
-	de.fhg.aisec.ids.rm
-Import-Package: \
-	!org.checkerframework.checker*,\
-	*
--contract: !org.apache.camel.CamelContext,*
-DynamicImport-Package: org.apache.camel.*

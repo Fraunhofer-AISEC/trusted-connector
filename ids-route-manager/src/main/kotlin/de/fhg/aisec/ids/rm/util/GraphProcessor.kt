@@ -22,12 +22,11 @@ package de.fhg.aisec.ids.rm.util
 import de.fhg.aisec.ids.api.router.graph.Edge
 import de.fhg.aisec.ids.api.router.graph.GraphData
 import de.fhg.aisec.ids.api.router.graph.Node
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import org.apache.camel.model.ChoiceDefinition
 import org.apache.camel.model.OptionalIdentifiedDefinition
 import org.apache.camel.model.ProcessorDefinition
 import org.apache.camel.model.RouteDefinition
+import java.util.concurrent.atomic.AtomicInteger
 
 object GraphProcessor {
     /**

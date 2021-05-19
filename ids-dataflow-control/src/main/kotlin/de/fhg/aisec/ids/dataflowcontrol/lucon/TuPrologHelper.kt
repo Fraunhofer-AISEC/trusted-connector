@@ -21,7 +21,8 @@ package de.fhg.aisec.ids.dataflowcontrol.lucon
 
 import alice.tuprolog.Struct
 import alice.tuprolog.Term
-import java.util.*
+import java.util.Spliterator
+import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 

@@ -19,30 +19,31 @@
  */
 package de.fhg.aisec.ids.cm.impl.trustx;
 
-import java.util.LinkedList;
-import java.util.List;
 import jnr.unixsocket.UnixSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class TrustXMockHandler implements Runnable {
-  private Logger LOG = LoggerFactory.getLogger(TrustXMockHandler.class);
-  private List<ServerDataEvent> queue = new LinkedList<>();
+  private final List<ServerDataEvent> queue = new LinkedList<>();
 
   @Override
   public void run() {
     ServerDataEvent dataEvent;
 
+    //noinspection InfiniteLoopStatement
     while (true) {
       // Wait for data to become available
       synchronized (queue) {
         while (queue.isEmpty()) {
           try {
             queue.wait();
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignored) {
           }
         }
-        dataEvent = (ServerDataEvent) queue.remove(0);
+        dataEvent = queue.remove(0);
       }
 
       // Print

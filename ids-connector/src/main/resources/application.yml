@@ -1,0 +1,8 @@
+logging:
+  level:
+    ROOT: INFO
+    de.fhg.aisec: DEBUG
+
+spring:
+  resources:
+    static-locations: classpath:/www

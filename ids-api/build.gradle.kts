@@ -26,21 +26,17 @@ tasks.clean {
 configure<IdeaModel> {
     module {
         // mark as generated sources for IDEA
-        generatedSourceDirs.add(File("${protobufGeneratedDir}/main/java"))
+        generatedSourceDirs.add(File("$protobufGeneratedDir/main/java"))
     }
 }
 
 dependencies {
-    providedByBundle("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
+    implementation("com.google.protobuf", "protobuf-java", libraryVersions["protobuf"])
+    implementation("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
+    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
+    implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
 
-    providedByBundle("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
-
-    publishCompile("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
-
-    // Actual implementation must be provided by ids-infomodel-manager
-    publishCompile("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-
-    publishCompile("org.apache.camel", "camel-core", libraryVersions["camel"])
+    compileOnly("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])

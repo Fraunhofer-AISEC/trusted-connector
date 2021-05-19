@@ -7,10 +7,11 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ../log/:/root/log/
       - /var/run/docker.sock:/var/run/docker.sock
-      - ../cert-stores/consumer-keystore.p12:/root/etc/consumer-keystore.p12
-      - ../cert-stores/truststore.p12:/root/etc/truststore.p12
+      - ../deploy/allow-all-flows.pl:/root/deploy/allow-all-flows.pl
+      - ../etc/settings2.mapdb:/root/etc/settings.mapdb
+      - ../etc/consumer-keystore.p12:/root/etc/consumer-keystore.p12
+      - ../etc/truststore.p12:/root/etc/truststore.p12
       - ./example-idscp2-client-broadcast.xml:/root/deploy/example-idscp2-client.xml
     # Enable this port mappings for debugging or UI access from localhost
 #    ports:

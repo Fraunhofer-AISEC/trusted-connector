@@ -20,9 +20,6 @@
 package de.fhg.aisec.ids.camel.multipart
 
 import de.fhg.aisec.ids.api.infomodel.InfoModel
-import java.io.InputStream
-import java.nio.charset.StandardCharsets
-import java.util.*
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.apache.http.entity.ContentType
@@ -30,6 +27,9 @@ import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.InputStreamBody
 import org.apache.http.entity.mime.content.StringBody
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 /**
  * The MultiPartOutputProcessor will read the Exchange's header "ids" (if present) and the

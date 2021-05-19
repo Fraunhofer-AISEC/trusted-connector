@@ -20,10 +20,8 @@
 package de.fhg.aisec.ids.camel.multipart
 
 import de.fhg.aisec.ids.api.infomodel.InfoModel
-import org.osgi.service.component.annotations.Activate
-import org.osgi.service.component.annotations.Component
-import org.osgi.service.component.annotations.Reference
-import org.osgi.service.component.annotations.ReferenceCardinality
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 /**
  * The only purpose of this OSGi component is to connect to the InfoModelManager.
@@ -33,13 +31,12 @@ import org.osgi.service.component.annotations.ReferenceCardinality
  *
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(name = "ids-multipart-component")
+@Component("idsMultipartComponent")
 class MultiPartComponent {
-    @Reference(cardinality = ReferenceCardinality.MANDATORY)
+    @Autowired
     lateinit var infoModelManager: InfoModel
 
-    @Activate
-    fun activate() {
+    init {
         instance = this
     }
 

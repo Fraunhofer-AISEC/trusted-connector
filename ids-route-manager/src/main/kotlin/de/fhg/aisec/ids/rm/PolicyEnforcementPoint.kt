@@ -27,16 +27,18 @@ import de.fhg.aisec.ids.api.policy.TransformationDecision
 import de.fraunhofer.iais.eis.BinaryOperator
 import de.fraunhofer.iais.eis.Constraint
 import de.fraunhofer.iais.eis.LeftOperand
-import java.net.InetAddress
-import java.net.URI
-import java.util.*
-import org.apache.camel.*
+import org.apache.camel.AsyncCallback
+import org.apache.camel.Exchange
+import org.apache.camel.NamedNode
+import org.apache.camel.Processor
 import org.apache.camel.model.EndpointRequiredDefinition
 import org.apache.camel.model.FromDefinition
 import org.apache.camel.model.RouteDefinition
 import org.apache.camel.model.ToDefinition
 import org.apache.camel.support.processor.DelegateAsyncProcessor
 import org.slf4j.LoggerFactory
+import java.net.InetAddress
+import java.net.URI
 
 class PolicyEnforcementPoint
 internal constructor(private val destinationNode: NamedNode, target: Processor) :
@@ -95,7 +97,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
         }
         // Only take action for nodes of type <from> (= input) and <to> (= output)
         if ((sourceNode is EndpointRequiredDefinition && isIdscp2Endpoint(sourceNode)) ||
-                destinationNode is ToDefinition
+            destinationNode is ToDefinition
         ) {
             val ucContract =
                 try {
@@ -151,9 +153,11 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                         // Check whether we deal with an entry node ("from:...") or a response of a
                         // To node ("to...")...
                         if (sourceNode is FromDefinition ||
-                                (sourceNode is ToDefinition &&
+                            (
+                                sourceNode is ToDefinition &&
                                     !ucInterface.isProtected(exchange) &&
-                                    isIdscp2Endpoint(sourceNode))
+                                    isIdscp2Endpoint(sourceNode)
+                                )
                         ) {
                             // If we found an entry node, then protect exchange's body
                             ucInterface.protectBody(exchange, ucContract.id)
@@ -165,7 +169,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                             // ... or output ("to:...") node as destination of this transition.
                             // Additionally check whether exchange's body was protected.
                         } else if (destinationNode is ToDefinition &&
-                                ucInterface.isProtected(exchange)
+                            ucInterface.isProtected(exchange)
                         ) {
                             // Compare hash value and port of camelRoute's containerUri with local
                             // Docker containers
@@ -188,7 +192,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                                             // else may be added later)
                                             container.imageDigests.any {
                                                 it.split(":").last() == hash
-                                            } || container.imageId.split(":").last() == hash
+                                            } || container.imageId?.split(":")?.last() == hash
                                         }
                                     // Save all ip addresses of allowed containers in one list
                                     val allowedIPs =
@@ -196,8 +200,8 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                                     // Check whether all endpoint's ip-addresses belong to allowed
                                     // containers
                                     if (InetAddress.getAllByName(endpointUri.host).all {
-                                            allowedIPs.contains(it)
-                                        }
+                                        allowedIPs.contains(it)
+                                    }
                                     ) {
                                         ucInterface.unprotectBody(exchange)
                                         if (LOG.isDebugEnabled) {
@@ -208,7 +212,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                                     } else {
                                         LOG.warn(
                                             "UC: Some or all IP addresses of the host ${endpointUri.host} " +
-                                                "do not belong to the permitted containers (${allowedContainers})"
+                                                "do not belong to the permitted containers ($allowedContainers)"
                                         )
                                     }
                                 }
@@ -222,17 +226,17 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
             }
         }
 
-        val sourceServiceNode = ServiceNode(source, null, null)
-        val destinationServiceNode = ServiceNode(destination, null, null)
+        val sourceServiceNode = ServiceNode(source)
+        val destinationServiceNode = ServiceNode(destination)
 
         // Call PDP to transform labels and decide whether to forward the Exchange
         applyLabelTransformation(pdp.requestTranformations(sourceServiceNode), exchange)
-        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet<String>() }
+        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet() }
         val decision =
             pdp.requestDecision(
                 DecisionRequest(sourceServiceNode, destinationServiceNode, labels, null)
             )
-        return when (decision.decision!!) {
+        return when (decision.decision) {
             PolicyDecision.Decision.ALLOW -> true
             PolicyDecision.Decision.DENY -> {
                 if (LOG.isWarnEnabled) {
@@ -259,7 +263,7 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
         requestTransformations: TransformationDecision,
         exchange: Exchange
     ) {
-        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet<String>() }
+        val labels = exchangeLabels.computeIfAbsent(exchange) { HashSet() }
 
         // Remove labels from exchange
         labels.removeAll(requestTransformations.labelsToRemove)

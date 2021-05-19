@@ -26,37 +26,43 @@ import alice.tuprolog.exceptions.NoMoreSolutionException
 import alice.tuprolog.exceptions.NoSolutionException
 import alice.tuprolog.exceptions.PrologException
 import com.google.common.cache.CacheBuilder
-import de.fhg.aisec.ids.api.policy.*
+import de.fhg.aisec.ids.api.policy.DecisionRequest
+import de.fhg.aisec.ids.api.policy.Obligation
+import de.fhg.aisec.ids.api.policy.PAP
+import de.fhg.aisec.ids.api.policy.PDP
+import de.fhg.aisec.ids.api.policy.PolicyDecision
 import de.fhg.aisec.ids.api.policy.PolicyDecision.Decision
+import de.fhg.aisec.ids.api.policy.ServiceNode
+import de.fhg.aisec.ids.api.policy.TransformationDecision
 import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.escape
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
-import java.io.File
-import java.util.*
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.util.LinkedList
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
-import org.osgi.service.component.ComponentContext
-import org.osgi.service.component.annotations.*
-import org.slf4j.LoggerFactory
+import javax.annotation.PostConstruct
 
 /**
- * servicefactory=false is the default and actually not required. But we want to make clear that
- * this is a singleton, i.e. there will only be one instance of PolicyDecisionPoint within the whole
+ * This is a singleton, i.e. there will only be one instance of PolicyDecisionPoint within the whole
  * runtime.
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-@Component(immediate = true, name = "ids-dataflow-control")
+@Component("idsDataflowControl")
 class PolicyDecisionPoint : PDP, PAP {
 
     // Convenience val for this thread's LuconEngine instance
     private val engine: LuconEngine
         get() = threadEngine.get()
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    @Volatile
+    @Autowired(required = false)
     private var routeManager: RouteManager? = null
 
     private val transformationCache =
@@ -114,13 +120,7 @@ class PolicyDecisionPoint : PDP, PAP {
      */
     private fun createTransformationQuery(target: ServiceNode): String {
         val sb = StringBuilder()
-        val plEndpoint: String
-        if (target.endpoint != null) {
-            plEndpoint = escape(target.endpoint)
-            //            sb.append("dominant_allow_rules(").append(plEndpoint).append(", _T, _), ")
-        } else {
-            throw RuntimeException("No endpoint specified!")
-        }
+        val plEndpoint = escape(target.endpoint)
         // Removed due to unclear relevance
         //        if (target.capabilties.size + target.properties.size > 0) {
         //            val capProp = LinkedList<String>()
@@ -140,33 +140,27 @@ class PolicyDecisionPoint : PDP, PAP {
         return sb.toString()
     }
 
-    @Activate
-    @Suppress("UNUSED_PARAMETER")
-    private fun activate(ignored: ComponentContext) {
-        loadPolicies()
-    }
-
+    @PostConstruct
     fun loadPolicies() {
-        // Try to load existing policies from deploy dir at activation
-        val dir = File(System.getProperty("karaf.base") + File.separator + "deploy")
-        val directoryListing = dir.listFiles()
-        if (directoryListing == null || !dir.isDirectory) {
-            LOG.warn("Unexpected or not running in karaf: Not a directory: " + dir.absolutePath)
+        // Try to load existing policies from deploy folder at activation
+        val fs = FileSystems.getDefault()
+        val deployPath = fs.getPath("deploy")
+        if (Files.notExists(deployPath)) {
+            LOG.info("No deploy folder found, skipping start of XML deploy watcher.")
             return
         }
-
         var loaded = false
-        for (f in directoryListing) {
-            if (f.name.endsWith(LUCON_FILE_EXTENSION)) {
+        Files.walk(deployPath)
+            .filter { Files.isRegularFile(it) && it.toString().endsWith(LUCON_FILE_EXTENSION) }
+            .forEach {
                 if (!loaded) {
-                    LOG.info("Loading Lucon policy from " + f.absolutePath)
-                    loadPolicy(f.readText())
+                    LOG.info("Loading Lucon policy from $it")
+                    loadPolicy(Files.readString(it))
                     loaded = true
                 } else {
-                    LOG.warn("Multiple policy files. Will load only one! " + f.absolutePath)
+                    LOG.warn("Multiple policy files. Will load only one!")
                 }
             }
-        }
     }
 
     override fun requestTranformations(lastServiceNode: ServiceNode): TransformationDecision {
@@ -363,10 +357,10 @@ class PolicyDecisionPoint : PDP, PAP {
         transformationCache.invalidateAll()
     }
 
-    override fun loadPolicy(theory: String?) {
+    override fun loadPolicy(theory: String) {
         // Load policy into engine, possibly overwriting the existing one.
-        this.engine.loadPolicy(theory ?: "")
-        LuconEngine.setDefaultPolicy(theory ?: "")
+        this.engine.loadPolicy(theory)
+        LuconEngine.setDefaultPolicy(theory)
     }
 
     override fun listRules(): List<String> {
@@ -379,9 +373,8 @@ class PolicyDecisionPoint : PDP, PAP {
         }
     }
 
-    override fun getPolicy(): String {
-        return this.engine.theory
-    }
+    override val policy: String
+        get() = this.engine.theory
 
     override fun verifyRoute(routeId: String): RouteVerificationProof? {
         val rm = this.routeManager

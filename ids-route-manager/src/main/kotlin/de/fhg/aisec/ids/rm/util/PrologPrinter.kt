@@ -19,14 +19,13 @@
  */
 package de.fhg.aisec.ids.rm.util
 
-import java.io.IOException
-import java.io.Writer
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import org.apache.camel.model.ChoiceDefinition
 import org.apache.camel.model.OptionalIdentifiedDefinition
 import org.apache.camel.model.ProcessorDefinition
 import org.apache.camel.model.RouteDefinition
+import java.io.IOException
+import java.io.Writer
+import java.util.concurrent.atomic.AtomicInteger
 
 class PrologPrinter {
     /**
@@ -62,20 +61,24 @@ class PrologPrinter {
         preds: List<OptionalIdentifiedDefinition<*>>
     ): List<ProcessorDefinition<*>> {
         for (p in preds) {
-            writer.write("""
+            writer.write(
+                """
     succ(${p.id}, ${current.id}).
     
-    """.trimIndent())
+                """.trimIndent()
+            )
         }
-        writer.write("""
+        writer.write(
+            """
     stmt(${current.id}).
     
-    """.trimIndent())
+            """.trimIndent()
+        )
         writer.write(
             """
     has_action(${current.id}, "${current.label}").
     
-    """.trimIndent()
+            """.trimIndent()
         )
 
         // predecessor of next recursion is the current node
@@ -120,18 +123,24 @@ class PrologPrinter {
             i.customId = true
             i.id = "input" + counter.incrementAndGet()
         }
-        writer.write("""
+        writer.write(
+            """
     stmt(${i.id}).
     
-    """.trimIndent())
-        writer.write("""
+            """.trimIndent()
+        )
+        writer.write(
+            """
     entrynode(${i.id}).
     
-    """.trimIndent())
-        writer.write("""
+            """.trimIndent()
+        )
+        writer.write(
+            """
     has_action(${i.id}, "${i.label}").
     
-    """.trimIndent())
+            """.trimIndent()
+        )
         var prev: OptionalIdentifiedDefinition<*>? = i
         for (next in route.outputs) {
             printNode(writer, next, prev?.let { listOf(it) } ?: emptyList())

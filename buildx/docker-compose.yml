@@ -13,7 +13,7 @@ services:
   core:
     image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
     build:
-      context: '../karaf-assembly'
+      context: '../ids-connector'
       args:
         JDK_BASE_IMAGE: fraunhoferaisec/jdk-base:${DOCKER_BUILD_TAG:-develop}
 

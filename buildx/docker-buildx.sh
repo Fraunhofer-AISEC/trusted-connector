@@ -92,9 +92,9 @@ if [ $BUILD_CONTAINER = 1 ]; then
   eval "docker buildx bake build-container $*"
   exit
 # Check whether preconditions are fulfilled
-elif [[ ! -d "../karaf-assembly/build/assembly" ]]; then
+elif [[ ! -d "../ids-connector/build/libs/projectJars" ]]; then
   printf "\e[31m################################################################################\n"
-  printf "Directory karaf-assembly/build/assembly not found, this build might fail.\n"
+  printf "Directory ../ids-connector/build/libs/projectJars not found, this build might fail.\n"
   printf "Please build trusted connector first via \"build.sh\".\n"
   printf "If build.sh cannot pull build-container, run this command first:\n%s --build-container\n" "$0"
   printf "################################################################################\e[0m\n\n"

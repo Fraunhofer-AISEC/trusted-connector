@@ -19,15 +19,15 @@
  */
 package de.fhg.aisec.ids.camel.multipart
 
+import org.apache.commons.fileupload.FileUpload
+import org.apache.commons.fileupload.UploadContext
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import org.apache.commons.fileupload.FileUpload
-import org.apache.commons.fileupload.UploadContext
-import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.slf4j.LoggerFactory
 
 class MultiPartStringParser internal constructor(private val multipartInput: InputStream) :
     UploadContext {
