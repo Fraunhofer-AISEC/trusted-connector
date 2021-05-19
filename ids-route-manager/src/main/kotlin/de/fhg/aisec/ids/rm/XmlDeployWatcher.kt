@@ -22,6 +22,8 @@ package de.fhg.aisec.ids.rm
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.context.event.EventListener
 import org.springframework.context.support.AbstractXmlApplicationContext
 import org.springframework.context.support.FileSystemXmlApplicationContext
@@ -34,13 +36,20 @@ import java.nio.file.WatchKey
 import java.util.concurrent.CompletableFuture
 
 @Component("xmlDeployWatcher")
-class XmlDeployWatcher {
+class XmlDeployWatcher : ApplicationContextAware {
+
+    private lateinit var applicationContext: ApplicationContext
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.applicationContext = applicationContext
+    }
+
     private val xmlContexts = mutableMapOf<String, CompletableFuture<AbstractXmlApplicationContext>>()
 
     private fun startXmlApplicationContext(xmlPath: String) {
         LOG.info("XML file {} detected, creating XmlApplicationContext...", xmlPath)
         val xmlContextFuture: CompletableFuture<AbstractXmlApplicationContext> = CompletableFuture.supplyAsync {
-            FileSystemXmlApplicationContext(xmlPath)
+            FileSystemXmlApplicationContext(arrayOf(xmlPath), applicationContext)
         }
         xmlContexts += xmlPath to xmlContextFuture
     }
@@ -59,7 +68,7 @@ class XmlDeployWatcher {
             ctxFuture.thenAccept { ctx ->
                 ctx.stop()
                 val xmlContextFuture: CompletableFuture<AbstractXmlApplicationContext> = CompletableFuture.supplyAsync {
-                    FileSystemXmlApplicationContext(xmlPath)
+                    FileSystemXmlApplicationContext(arrayOf(xmlPath), applicationContext)
                 }
                 xmlContexts += xmlPath to xmlContextFuture
             }

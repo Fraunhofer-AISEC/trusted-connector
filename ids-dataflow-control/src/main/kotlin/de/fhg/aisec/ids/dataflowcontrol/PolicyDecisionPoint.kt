@@ -42,7 +42,8 @@ import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.io.File
+import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.util.LinkedList
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -141,29 +142,25 @@ class PolicyDecisionPoint : PDP, PAP {
 
     @PostConstruct
     fun loadPolicies() {
-        // Try to load existing policies from deploy dir at activation
-        // val dir = File(System.getProperty("karaf.base") + File.separator + "deploy")
-        val url = Thread.currentThread().contextClassLoader.getResource("deploy") ?: return
-        val file = File(url.path)
-
-        val directoryListing = file.listFiles()
-        if (directoryListing == null || !file.isDirectory) {
-            LOG.warn("Unexpected or not running in karaf: Not a directory: " + file.absolutePath)
+        // Try to load existing policies from deploy folder at activation
+        val fs = FileSystems.getDefault()
+        val deployPath = fs.getPath("deploy")
+        if (Files.notExists(deployPath)) {
+            LOG.info("No deploy folder found, skipping start of XML deploy watcher.")
             return
         }
-
         var loaded = false
-        for (f in directoryListing) {
-            if (f.name.endsWith(LUCON_FILE_EXTENSION)) {
+        Files.walk(deployPath)
+            .filter { Files.isRegularFile(it) && it.toString().endsWith(LUCON_FILE_EXTENSION) }
+            .forEach {
                 if (!loaded) {
-                    LOG.info("Loading Lucon policy from " + f.absolutePath)
-                    loadPolicy(f.readText())
+                    LOG.info("Loading Lucon policy from $it")
+                    loadPolicy(Files.readString(it))
                     loaded = true
                 } else {
-                    LOG.warn("Multiple policy files. Will load only one! " + f.absolutePath)
+                    LOG.warn("Multiple policy files. Will load only one!")
                 }
             }
-        }
     }
 
     override fun requestTranformations(lastServiceNode: ServiceNode): TransformationDecision {
