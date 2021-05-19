@@ -132,9 +132,4 @@ class UserApi(@Autowired private val settings: Settings) {
         var key = ByteArray(32).apply { SecureRandom().nextBytes(this) }
         val randomHash: String = argonEncoder.encode(String(key, StandardCharsets.UTF_8))
     }
-
-    init {
-        LOG.info(String(key, StandardCharsets.UTF_8))
-        LOG.info(randomHash)
-    }
 }

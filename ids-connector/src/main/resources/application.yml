@@ -1,7 +1,7 @@
 logging:
   level:
     ROOT: INFO
-    de.fhg.aisec: TRACE
+    de.fhg.aisec: DEBUG
 
 spring:
   resources:
