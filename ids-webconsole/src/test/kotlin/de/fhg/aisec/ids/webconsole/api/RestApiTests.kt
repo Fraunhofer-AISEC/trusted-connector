@@ -45,14 +45,14 @@ import javax.ws.rs.core.Response
 import kotlin.String
 
 class RestApiTests : Assert() {
-    private fun newClient(vararg token: String): WebClient {
+    private fun newClient(token: String?): WebClient {
         // Client uses Jackson for JSON mapping
         val jackson = JacksonJsonProvider()
         jackson.setMapper(ObjectMapper())
         val client = WebClient.create(ENDPOINT_ADDRESS, listOf(jackson))
         WebClient.getConfig(client).requestContext[LocalConduit.DIRECT_DISPATCH] = true
-        if (token.isNotEmpty()) {
-            client.header("Authorization", "Bearer: " + token[0])
+        token?.let {
+            client.header("Authorization", "Bearer: $it")
         }
         return client
     }
@@ -168,19 +168,18 @@ class RestApiTests : Assert() {
     }
 
     // Access a protected endpoint
-    @get:Test
-    val metrics: Unit
-        get() {
-            val token = login()
+    @Test
+    fun getMetricsTest() {
+        val token = login()
 
-            // Access a protected endpoint
-            val c = newClient(token!!)
-            c.accept(MediaType.APPLICATION_JSON)
-            c.path("/metric/get")
-            val metrics: Map<String, String> =
-                c.get(object : GenericType<Map<String, String>>() {})
-            Assume.assumeFalse(metrics.isEmpty())
-        }
+        // Access a protected endpoint
+        val c = newClient(token!!)
+        c.accept(MediaType.APPLICATION_JSON)
+        c.path("/metric/get")
+        val metrics: Map<String, String> =
+            c.get(object : GenericType<Map<String, String>>() {})
+        Assume.assumeFalse(metrics.isEmpty())
+    }
 
     /**
      * Retrieves a fresh JWT from server.
@@ -188,7 +187,7 @@ class RestApiTests : Assert() {
      * @return The generated authentication token
      */
     private fun login(): String? {
-        val c = newClient()
+        val c = newClient(null)
         c.path("/user/login")
         c.accept(MediaType.APPLICATION_JSON)
         c.header("Content-type", MediaType.APPLICATION_JSON)
@@ -204,7 +203,7 @@ class RestApiTests : Assert() {
 
     companion object {
         private const val ENDPOINT_ADDRESS = "local://testserver"
-        private var server: Server? = null
+        private lateinit var server: Server
         private val settings = Mockito.mock(
             Settings::class.java
         )
@@ -214,6 +213,7 @@ class RestApiTests : Assert() {
         fun initialize() {
             val connectorConfig = ConnectorConfig()
             Mockito.`when`(settings.connectorConfig).thenReturn(connectorConfig)
+            Mockito.`when`(settings.isUserStoreEmpty()).thenReturn(true)
             startServer()
         }
 
@@ -234,7 +234,7 @@ class RestApiTests : Assert() {
             sf.providers = providers
             sf.setResourceProvider(CertApi::class.java, SingletonResourceProvider(CertApi(settings), true))
             sf.setResourceProvider(MetricAPI::class.java, SingletonResourceProvider(MetricAPI(), true))
-            sf.setResourceProvider(UserApi::class.java, SingletonResourceProvider(UserApi(), true))
+            sf.setResourceProvider(UserApi::class.java, SingletonResourceProvider(UserApi(settings), true))
             sf.address = ENDPOINT_ADDRESS
             server = sf.create()
         }
@@ -242,7 +242,7 @@ class RestApiTests : Assert() {
         @AfterClass
         @JvmStatic
         fun destroy() {
-            server?.run {
+            server.run {
                 stop()
                 destroy()
             }

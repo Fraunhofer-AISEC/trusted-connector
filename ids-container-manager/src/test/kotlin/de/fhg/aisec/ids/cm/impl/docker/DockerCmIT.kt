@@ -63,12 +63,12 @@ class DockerCmIT {
         val oContainerID = d.pullImage(app)
 
         // We expect a new container to be created
-        Assert.assertTrue(oContainerID.isPresent)
-        Assert.assertNotEquals("", oContainerID.get())
-        wipes.add(oContainerID.get())
+        Assert.assertNotNull(oContainerID)
+        Assert.assertNotEquals("", oContainerID)
+        wipes.add(oContainerID!!)
 
         // we expect the container to be in list()
-        val container = d.list(false).firstOrNull { it.id == oContainerID.get() }
+        val container = d.list(false).firstOrNull { it.id == oContainerID }
         Assert.assertNotNull(container)
         Assert.assertEquals(ContainerStatus.CREATED, container?.status)
     }
@@ -98,8 +98,8 @@ class DockerCmIT {
         val oContainerID = d.pullImage(app)
 
         // We expect a new container to be created
-        Assert.assertTrue(oContainerID.isPresent)
-        val containerID = oContainerID.get()
+        Assert.assertNotNull(oContainerID)
+        val containerID = oContainerID!!
         wipes.add(containerID)
         Assert.assertNotNull(containerID)
 

@@ -23,7 +23,7 @@ import java.net.URI
 import java.nio.file.Path
 
 interface AcmeClient {
-    fun getChallengeAuthorization(challenge: String): String
+    fun getChallengeAuthorization(challenge: String): String?
 
     fun renewCertificate(
         targetDirectory: Path,
