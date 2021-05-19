@@ -7,8 +7,7 @@ val copyExample = tasks.create<Copy>("copyExample") {
         delete(project.buildDir)
     }
     from(project.projectDir) {
-        include("example-*/**", "tpmsim/tpmsim_data.tar", "tpmsim/rootCA.crt", "cert-stores/*")
-        exclude("example-idscp/example-client", "example-idscp/example-server")
+        include("example-*/**", "deploy/*", "etc/*")
     }
     into(project.buildDir)
 }
