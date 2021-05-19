@@ -134,8 +134,8 @@ class LuconEngineTest {
         pdp.loadPolicy(EXAMPLE_POLICY)
 
         // Simple source and dest nodes
-        val source = ServiceNode("seda:test_source", null, null)
-        val dest = ServiceNode("hdfs://some_url", null, null)
+        val source = ServiceNode("seda:test_source")
+        val dest = ServiceNode("hdfs://some_url")
         val dec = pdp.requestDecision(DecisionRequest(source, dest, setOf("private"), null))
         Assert.assertEquals(PolicyDecision.Decision.ALLOW, dec.decision)
 
@@ -156,8 +156,8 @@ class LuconEngineTest {
         pdp.loadPolicy(EXTENDED_LABELS_POLICY)
 
         // Simple source and dest nodes
-        val source = ServiceNode("seda:test_source", null, null)
-        val dest = ServiceNode("ahc://some_url", null, null)
+        val source = ServiceNode("seda:test_source")
+        val dest = ServiceNode("ahc://some_url")
         val dec = pdp.requestDecision(DecisionRequest(source, dest, setOf("purpose(green)"), null))
         Assert.assertEquals(PolicyDecision.Decision.ALLOW, dec.decision)
 
@@ -192,7 +192,7 @@ class LuconEngineTest {
         val pdp = PolicyDecisionPoint()
         pdp.loadPolicies()
         pdp.loadPolicy(EXAMPLE_POLICY)
-        val node = ServiceNode("paho:tcp://broker.hivemq.com:1883/blablubb", null, null)
+        val node = ServiceNode("paho:tcp://broker.hivemq.com:1883/blablubb")
         val trans = pdp.requestTranformations(node)
         Assert.assertNotNull(trans)
         Assert.assertNotNull(trans.labelsToAdd)
@@ -208,7 +208,7 @@ class LuconEngineTest {
         val pdp = PolicyDecisionPoint()
         pdp.loadPolicies()
         pdp.loadPolicy(EXAMPLE_POLICY)
-        val node = ServiceNode("someendpointwhichisnotmatchedbypolicy", null, null)
+        val node = ServiceNode("someendpointwhichisnotmatchedbypolicy")
         val trans = pdp.requestTranformations(node)
         Assert.assertNotNull(trans)
         Assert.assertNotNull(trans.labelsToAdd)
@@ -281,8 +281,8 @@ class LuconEngineTest {
             val loadTime = stop - start
 
             // Simple source and dest nodes
-            val source = ServiceNode("seda:test_source", null, null)
-            val dest = ServiceNode("hdfs://some_url", null, null)
+            val source = ServiceNode("seda:test_source")
+            val dest = ServiceNode("hdfs://some_url")
             start = System.nanoTime()
             val dec = pdp.requestDecision(DecisionRequest(source, dest, emptySet(), null))
             stop = System.nanoTime()
@@ -309,8 +309,8 @@ class LuconEngineTest {
             val loadTime = stop - start
 
             // Simple source and dest nodes
-            val source = ServiceNode("seda:test_source", null, null)
-            val dest = ServiceNode("hdfs://some_url", null, null)
+            val source = ServiceNode("seda:test_source")
+            val dest = ServiceNode("hdfs://some_url")
             start = System.nanoTime()
             val dec = pdp.requestDecision(DecisionRequest(source, dest, emptySet(), null))
             stop = System.nanoTime()
@@ -334,8 +334,8 @@ class LuconEngineTest {
             pdp.loadPolicy(theory)
 
             // Simple source and dest nodes
-            val source = ServiceNode("seda:test_source", null, null)
-            val dest = ServiceNode("hdfs://some_url", null, null)
+            val source = ServiceNode("seda:test_source")
+            val dest = ServiceNode("hdfs://some_url")
             System.gc()
             System.gc()
             System.gc() // Empty level 1- & 2-LRUs.
@@ -373,8 +373,8 @@ class LuconEngineTest {
             pdp.loadPolicy(theory)
 
             // Simple source and dest nodes
-            val source = ServiceNode("seda:test_source", null, null)
-            val dest = ServiceNode("hdfs://some_url", null, null)
+            val source = ServiceNode("seda:test_source")
+            val dest = ServiceNode("hdfs://some_url")
             System.gc()
             System.gc()
             System.gc() // Empty level 1- & 2-LRUs.
@@ -415,10 +415,9 @@ class LuconEngineTest {
         Assert.assertEquals("testRulePrioTwo", ruleTwo)
 
         // FALL-THROUGH: Test fall-through decision (no msg label matches)
-        var from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
-        var to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
-        var envCtx: Map<String?, Any?> = HashMap()
-        var req = DecisionRequest(from, to, emptySet(), envCtx)
+        var from = ServiceNode("IAmMatchedByRuleThreeOnly")
+        var to = ServiceNode("hdfs://IAmMatchedByBothRules")
+        var req = DecisionRequest(from, to, emptySet(), emptyMap())
         var dec = pdp.requestDecision(req)
         Assert.assertNotNull(dec)
         var d = dec.decision
@@ -427,10 +426,9 @@ class LuconEngineTest {
 
         // FALL-THROUGH: presence of a label "public" (w/o any specific value) does not yet trigger
         // testRulePrioTwo, because label "filtered" is required in addition.
-        from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
-        to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
-        envCtx = HashMap()
-        req = DecisionRequest(from, to, setOf("public"), envCtx)
+        from = ServiceNode("IAmMatchedByRuleThreeOnly")
+        to = ServiceNode("hdfs://IAmMatchedByBothRules")
+        req = DecisionRequest(from, to, setOf("public"), emptyMap())
         dec = pdp.requestDecision(req)
         Assert.assertNotNull(dec)
         d = dec.decision
@@ -440,10 +438,9 @@ class LuconEngineTest {
         // testRulePrioTwo: now we have labels "public" AND "filtered" set, which makes
         // testRulePrioTwo
         // match
-        from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
-        to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
-        envCtx = HashMap()
-        req = DecisionRequest(from, to, setOf("public", "filtered"), envCtx)
+        from = ServiceNode("IAmMatchedByRuleThreeOnly")
+        to = ServiceNode("hdfs://IAmMatchedByBothRules")
+        req = DecisionRequest(from, to, setOf("public", "filtered"), emptyMap())
         dec = pdp.requestDecision(req)
         Assert.assertNotNull(dec)
         d = dec.decision
@@ -453,10 +450,9 @@ class LuconEngineTest {
         // testRulePrioTwo: "public" AND "filtered" makes testRulePrioTwo match. Additional labels
         // do
         // not harm
-        from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
-        to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
-        envCtx = HashMap()
-        req = DecisionRequest(from, to, setOf("public", "unusedlabel"), envCtx)
+        from = ServiceNode("IAmMatchedByRuleThreeOnly")
+        to = ServiceNode("hdfs://IAmMatchedByBothRules")
+        req = DecisionRequest(from, to, setOf("public", "unusedlabel"), emptyMap())
         dec = pdp.requestDecision(req)
         Assert.assertNotNull(dec)
         d = dec.decision
@@ -465,10 +461,9 @@ class LuconEngineTest {
 
         // testRulePrioTwo: labels "public", "filtered", "private" will trigger testRulePrioOne and
         // testRulePrioTwo. Rule with higher prio wins.
-        from = ServiceNode("IAmMatchedByRuleThreeOnly", null, null)
-        to = ServiceNode("hdfs://IAmMatchedByBothRules", null, null)
-        envCtx = HashMap()
-        req = DecisionRequest(from, to, setOf("public", "unusedlabel", "private"), envCtx)
+        from = ServiceNode("IAmMatchedByRuleThreeOnly")
+        to = ServiceNode("hdfs://IAmMatchedByBothRules")
+        req = DecisionRequest(from, to, setOf("public", "unusedlabel", "private"), emptyMap())
         dec = pdp.requestDecision(req)
         Assert.assertNotNull(dec)
         d = dec.decision

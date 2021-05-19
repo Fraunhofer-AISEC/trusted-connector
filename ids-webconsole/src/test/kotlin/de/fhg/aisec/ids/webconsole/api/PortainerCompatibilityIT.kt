@@ -54,7 +54,7 @@ class PortainerCompatibilityIT {
             200, 201 -> {
                 val br = BufferedReader(InputStreamReader(c.inputStream))
                 val sb = StringBuilder()
-                var line: String
+                var line: String?
                 while (br.readLine().also { line = it } != null) {
                     sb.append(
                         """

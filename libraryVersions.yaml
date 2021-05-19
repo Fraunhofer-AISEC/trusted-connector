@@ -99,3 +99,4 @@ servicemixHamcrest: "1.3_1"
 javaxAnnotation: "1.3.2"
 
 springBoot: "2.4.5"
+bouncyCastle: "1.68"

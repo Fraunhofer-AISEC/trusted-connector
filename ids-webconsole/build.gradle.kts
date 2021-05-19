@@ -70,6 +70,7 @@ dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-jersey")
     implementation("org.springframework.security", "spring-security-crypto")
+    implementation("org.bouncycastle", "bcprov-jdk15on", libraryVersions["bouncyCastle"])
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
     implementation("org.apache.cxf", "cxf-rt-rs-extension-providers", libraryVersions["cxf"])
