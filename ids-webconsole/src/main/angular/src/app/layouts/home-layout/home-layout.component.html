@@ -3,12 +3,13 @@
   <div class="iot-connector-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
     <header class="iot-connector-header mdl-layout__header mdl-layout__header--seamed">
       <div class="mdl-layout__header-row">
-        <span class="mdl-layout-title iot-connector-product-title">Connector </span><span class="mdl-layout-title"> Console > {{ title }}</span>
+        <span class="mdl-layout-title iot-connector-product-title">Connector </span><span class="mdl-layout-title">
+          Console > {{ title }}</span>
         <div class="mdl-layout-spacer"></div>
         <a class="mdl-color-text--grey-100" *ngIf="isLoggedIn" (click)="logout()" href="#">Log out</a>
         <!--<div class=" mdl-textfield mdl-js-textfield mdl-textfield--expandable">
         <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
-          <i class="material-icons">search</i>
+          <em class="material-icons">search</em>
         </label>
         <div class="mdl-textfield__expandable-holder">
           <input class="mdl-textfield__input" type="text" id="search">
@@ -21,27 +22,29 @@
     </header>
     <div class="iot-connector-drawer mdl-layout__drawer">
       <header class="iot-connector-drawer-header">
-        <img class="iot-connector-aisec-logo" src="images/aisec.png"/>
+        <img class="iot-connector-aisec-logo" src="images/aisec.png" />
       </header>
       <nav class="iot-connector-navigation mdl-navigation">
-        <a class="mdl-navigation__link" routerLink="/dashboard"><i class="material-icons" role="presentation">home</i>
+        <a class="mdl-navigation__link" routerLink="/dashboard"><em class="material-icons" role="presentation">home</em>
           Overview</a>
-        <a class="mdl-navigation__link" routerLink="/apps"><i class="fas fa-cube material-icons"></i> Apps</a>
+        <a class="mdl-navigation__link" routerLink="/apps"><em class="fas fa-cube material-icons"></em> Apps</a>
 
-        <a class="mdl-navigation__link" routerLink="/routes"><i class="material-icons"
-                                                                role="presentation">call_split</i>
+        <a class="mdl-navigation__link" routerLink="/routes"><em class="material-icons"
+            role="presentation">call_split</em>
           Message Routes</a>
-        <a class="mdl-navigation__link" routerLink="/dataflowpolicies"><i class="fas fa-code-branch material-icons"></i>
+        <a class="mdl-navigation__link" routerLink="/dataflowpolicies"><em
+            class="fas fa-code-branch material-icons"></em>
           Data Flow Control</a>
-        <a class="mdl-navigation__link" routerLink="/connections"><i class="fas fa-exchange-alt material-icons"></i>
+        <a class="mdl-navigation__link" routerLink="/connections"><em class="fas fa-exchange-alt material-icons"></em>
           Connections</a>
-        <a class="mdl-navigation__link" routerLink="/connectionconfiguration"><i class="material-icons"
-                                                                                 role="presentation">security</i>
+        <a class="mdl-navigation__link" routerLink="/connectionconfiguration"><em class="material-icons"
+            role="presentation">security</em>
           Security Requirements</a>
 
-        <a class="mdl-navigation__link" routerLink="/certificates"><i class="material-icons" role="presentation">fingerprint</i>
+        <a class="mdl-navigation__link" routerLink="/certificates"><em class="material-icons"
+            role="presentation">fingerprint</em>
           Certificates</a>
-        <a class="mdl-navigation__link" routerLink="/ids"><i class="material-icons" role="presentation">settings</i>
+        <a class="mdl-navigation__link" routerLink="/ids"><em class="material-icons" role="presentation">settings</em>
           Settings</a>
       </nav>
     </div>

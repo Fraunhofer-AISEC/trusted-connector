@@ -1,30 +1,31 @@
 <div class="mdl-grid">
 
- 	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
-	  <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">My Identities</h2>
-      </div>
-      <div class="mdl-card__supporting-text">
-	 	<certificate-card [certificates]="identities" [onDeleteCallback]="deleteIdentity"></certificate-card>
-	  </div>
-	  <div class="mdl-card__menu">
- 			 <button routerLink="/identitynew" class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black">
- 			 	<i class="material-icons">add</i>
- 			 </button>
-      </div>
-</div>
+	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">My Identities</h2>
+		</div>
+		<div class="mdl-card__supporting-text">
+			<certificate-card [certificates]="identities" [onDeleteCallback]="deleteIdentity"></certificate-card>
+		</div>
+		<div class="mdl-card__menu">
+			<button routerLink="/identitynew"
+				class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black">
+				<em class="material-icons">add</em>
+			</button>
+		</div>
+	</div>
 
 
- 	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
-	  <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Trusted Certificates</h2>
-      </div>
-      <div class="mdl-card__supporting-text">
-	 	<certificate-card [certificates]="certificates" [onDeleteCallback]="deleteCert"></certificate-card>
-	  </div>
-	  <div class="mdl-card__menu">
-		 <file-uploading #cu2 (change)="cu2.upload()" [multiple]="true"></file-uploading>
-      </div>
+	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col  mdl-shadow--2dp">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">Trusted Certificates</h2>
+		</div>
+		<div class="mdl-card__supporting-text">
+			<certificate-card [certificates]="certificates" [onDeleteCallback]="deleteCert"></certificate-card>
+		</div>
+		<div class="mdl-card__menu">
+			<file-uploading #cu2 (change)="cu2.upload()" [multiple]="true"></file-uploading>
+		</div>
 	</div>
 
 

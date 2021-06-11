@@ -1,7 +1,7 @@
 <ul class="mdl-list">
   <li class="mdl-list__item mdl-list__item--three-line" *ngFor="let certificate of certificates; trackBy: trackCerts">
     <span class="mdl-list__item-primary-content">
-      <i class="material-icons mdl-list__item-avatar">person</i>
+      <em class="material-icons mdl-list__item-avatar">person</em>
       <span>{{ certificate.subjectCN }}</span>
       <span class="mdl-list__item-text-body">
         {{ certificate.subjectOU }}
@@ -11,7 +11,7 @@
     </span>
     <span class="mdl-list__item-secondary-content" style="text-align:right">
       <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete(certificate.alias)">
-        <i class="material-icons">delete</i>
+        <em class="material-icons">delete</em>
       </a>
     </span>
   </li>

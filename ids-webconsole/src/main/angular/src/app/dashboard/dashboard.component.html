@@ -1,73 +1,84 @@
 <!-- Status cards -->
 <div class="mdl-grid">
-  <div metricCard [text]="'Apps'" [value]="apps?apps.length:'--'" class="mdl-cell mdl-cell--3-col"></div>
-  <div metricCard [text]="'Usage Control Rules'" [value]="policies?policies:'--'" class="mdl-cell mdl-cell--3-col"></div>
-  <div metricCard [text]="'CPU %'" [value]="metric['cpu.loadavg']?metric['cpu.loadavg']:'--'" class="mdl-cell mdl-cell--3-col"></div>
-  <div metricCard [text]="'Mem (MB)'" [value]="metric['mem.total']?metric['mem.total']/1024/1024:'--'" class="mdl-cell mdl-cell--3-col"></div>
-
-  <div class="card-dark mdl-card mdl-cell mdl-cell--6-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Available Protocol Adapters</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
-	  <ul class="mdl-list">
-	  	<li class="mdl-list__item mdl-list__item--two-line" *ngFor="let camelComponent of camelComponents; trackBy: trackComponents">
-	  		<span class="mdl-list__item-primary-content">
-	  			<span>{{ camelComponent.bundle }}</span>
-	  			<span class="mdl-list__item-sub-title">{{ camelComponent.description }}</span>
-  			</span>
-	  	</li>
-	  </ul>
+	<div metricCard [text]="'Apps'" [value]="apps?apps.length:'--'" class="mdl-cell mdl-cell--3-col"></div>
+	<div metricCard [text]="'Usage Control Rules'" [value]="policies?policies:'--'" class="mdl-cell mdl-cell--3-col">
 	</div>
-  </div>
+	<div metricCard [text]="'CPU %'" [value]="metric['cpu.loadavg']?metric['cpu.loadavg']:'--'"
+		class="mdl-cell mdl-cell--3-col"></div>
+	<div metricCard [text]="'Mem (MB)'" [value]="metric['mem.total']?metric['mem.total']/1024/1024:'--'"
+		class="mdl-cell mdl-cell--3-col"></div>
 
-  <div class="card-dark mdl-card mdl-cell mdl-cell--6-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Trust Status</h2>
-    </div>
-	  <ul class="mdl-list">
-		  <li class="mdl-list__item mdl-list__item--two-line">
-		    <span class="mdl-list__item-primary-content">
-		      <span>Data Flow Control</span>
-		      <span class="mdl-list__item-sub-title">Prevents data leakage and privacy violations</span>
-		    </span>
-		    <span class="mdl-list__item-secondary-content">
-		      <span class="mdl-list__item-secondary-info">Active</span>
-		      <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--teal">done</i></a>
-		    </span>
-		  </li>
-		  <li class="mdl-list__item mdl-list__item--two-line">
-		    <span class="mdl-list__item-primary-content">
-		      <span>Application Isolation</span>
-		      <span class="mdl-list__item-sub-title">Ensures that applications are sandboxed</span>
-		    </span>
-		    <span class="mdl-list__item-secondary-content">
-		      <span class="mdl-list__item-secondary-info" *ngIf="cmlVersion">{{ cmlVersion }}</span>
-		      <a class="mdl-list__item-secondary-action" href="#"  *ngIf="cmlVersion"><i class="material-icons mdl-color-text--teal">done</i></a>
-		      <span class="mdl-list__item-secondary-info" *ngIf="!cmlVersion">Not supported</span>
-		      <a class="mdl-list__item-secondary-action" href="#" *ngIf="!cmlVersion"><i class="material-icons mdl-color-text--grey">remove</i></a>
-		    </span>
-		  </li>
-		  <li class="mdl-list__item mdl-list__item--two-line">
-		    <span class="mdl-list__item-primary-content">
-		      <span>Measured Boot</span>
-		      <span class="mdl-list__item-sub-title">Collects trusted evidence of the current software stack</span>
-		    </span>
-		    <span class="mdl-list__item-secondary-content">
-		      <span class="mdl-list__item-secondary-info">Not supported</span>
-		      <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--grey">remove</i></a>
-		    </span>
-		  </li>
-		  <li class="mdl-list__item mdl-list__item--two-line">
-		    <span class="mdl-list__item-primary-content">
-		      <span>Secure Boot</span>
-		      <span class="mdl-list__item-sub-title">Ensures that only a trusted software stack and configuration is booted</span>
-		    </span>
-		    <span class="mdl-list__item-secondary-content">
-		      <span class="mdl-list__item-secondary-info">Not supported</span>
-		      <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons mdl-color-text--grey">remove</i></a>
-		    </span>
-		  </li>
-	  </ul>
-    </div>
-  </div>
+	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">Available Protocol Adapters</h2>
+		</div>
+		<div class="mdl-card__supporting-text">
+			<ul class="mdl-list">
+				<li class="mdl-list__item mdl-list__item--two-line"
+					*ngFor="let camelComponent of camelComponents; trackBy: trackComponents">
+					<span class="mdl-list__item-primary-content">
+						<span>{{ camelComponent.bundle }}</span>
+						<span class="mdl-list__item-sub-title">{{ camelComponent.description }}</span>
+					</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="card-dark mdl-card mdl-cell mdl-cell--6-col">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">Trust Status</h2>
+		</div>
+		<ul class="mdl-list">
+			<li class="mdl-list__item mdl-list__item--two-line">
+				<span class="mdl-list__item-primary-content">
+					<span>Data Flow Control</span>
+					<span class="mdl-list__item-sub-title">Prevents data leakage and privacy violations</span>
+				</span>
+				<span class="mdl-list__item-secondary-content">
+					<span class="mdl-list__item-secondary-info">Active</span>
+					<a class="mdl-list__item-secondary-action" href="#"><em
+							class="material-icons mdl-color-text--teal">done</em></a>
+				</span>
+			</li>
+			<li class="mdl-list__item mdl-list__item--two-line">
+				<span class="mdl-list__item-primary-content">
+					<span>Application Isolation</span>
+					<span class="mdl-list__item-sub-title">Ensures that applications are sandboxed</span>
+				</span>
+				<span class="mdl-list__item-secondary-content">
+					<span class="mdl-list__item-secondary-info" *ngIf="cmlVersion">{{ cmlVersion }}</span>
+					<a class="mdl-list__item-secondary-action" href="#" *ngIf="cmlVersion"><em
+							class="material-icons mdl-color-text--teal">done</em></a>
+					<span class="mdl-list__item-secondary-info" *ngIf="!cmlVersion">Not supported</span>
+					<a class="mdl-list__item-secondary-action" href="#" *ngIf="!cmlVersion"><em
+							class="material-icons mdl-color-text--grey">remove</em></a>
+				</span>
+			</li>
+			<li class="mdl-list__item mdl-list__item--two-line">
+				<span class="mdl-list__item-primary-content">
+					<span>Measured Boot</span>
+					<span class="mdl-list__item-sub-title">Collects trusted evidence of the current software
+						stack</span>
+				</span>
+				<span class="mdl-list__item-secondary-content">
+					<span class="mdl-list__item-secondary-info">Not supported</span>
+					<a class="mdl-list__item-secondary-action" href="#"><em
+							class="material-icons mdl-color-text--grey">remove</em></a>
+				</span>
+			</li>
+			<li class="mdl-list__item mdl-list__item--two-line">
+				<span class="mdl-list__item-primary-content">
+					<span>Secure Boot</span>
+					<span class="mdl-list__item-sub-title">Ensures that only a trusted software stack and configuration
+						is booted</span>
+				</span>
+				<span class="mdl-list__item-secondary-content">
+					<span class="mdl-list__item-secondary-info">Not supported</span>
+					<a class="mdl-list__item-secondary-action" href="#"><em
+							class="material-icons mdl-color-text--grey">remove</em></a>
+				</span>
+			</li>
+		</ul>
+	</div>
+</div>

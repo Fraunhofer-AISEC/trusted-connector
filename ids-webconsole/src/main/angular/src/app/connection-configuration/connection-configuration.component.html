@@ -6,72 +6,74 @@
     <p>Configure the security requirements which remote endpoints must meet to connect to this Trusted Connector.
       Endpoints that do meet these requirements will not be able to exchange data with this connector.</p>
 
-    <button class="mdl-button mdl-js-button mdl-button--raised"
-            (click)="save()"
-            [class.mdl-button--accent]="model && model.dirty">
+    <button class="mdl-button mdl-js-button mdl-button--raised" (click)="save()"
+      [class.mdl-button--accent]="model && model.dirty">
       Save Settings
     </button>
 
     <div class="mdl-tabs mdl-js-tabs">
       <div class="mdl-tabs__tab-bar" style="justify-content: flex-start">
         <a *ngFor="let ep of models; let i = index; trackBy: trackModels" href="#id-{{i}}" class="mdl-tabs__tab"
-        [class.is-active]="i === selectedIndex" [class.mdl-button--accent]="ep.dirty && i !== selectedIndex"
-        (click)="selectedIndex = i; $event.preventDefault()">
+          [class.is-active]="i === selectedIndex" [class.mdl-button--accent]="ep.dirty && i !== selectedIndex"
+          (click)="selectedIndex = i; $event.preventDefault()">
           {{ ep.connection }}
         </a>
       </div>
 
       <div *ngFor="let ep of models; let i = index; trackBy: trackModels" class="mdl-tabs__panel" id="id-{{i}}"
-      [class.is-active]="i === selectedIndex">
+        [class.is-active]="i === selectedIndex">
         <div class="tbl-content">
           <p class="loading" *ngIf="!model">Loading Settings...</p>
           <table *ngIf="model" cellpadding="0" cellspacing="0" border="0" (click)="model.dirty = true">
             <tbody>
 
-            <tr>
-              <td>
-                <h5>Required Security Profile</h5>
-                <ul class="mdl-list">
-                  <li class="mdl-list__item mdl-list__item--two-line">
-                    <span class="mdl-list__item-primary-content">
-                      <span><b>BASE Security Profile</b></span>
-                    <span class="mdl-list__item-sub-title">BASE security profile required. Lower security requirements for incoming connection requests.</span>
-                  </span>
-                  </li>
-                  <li class="mdl-list__item mdl-list__item--two-line">
-                    <span class="mdl-list__item-primary-content">
-                      <span><b>TRUST Security Profile</b></span>
-                    <span class="mdl-list__item-sub-title">TRUST security profile required. High security requirments for incoming connection requests.</span>
-                  </span>
-                  <li class="mdl-list__item mdl-list__item--two-line">
-                    <span class="mdl-list__item-primary-content">
-                      <span><b>TRUST+ Security Profile</b></span>
-                    <span class="mdl-list__item-sub-title">TRUST+ security profile required. Highest security requirments for incoming connection requests.</span>
-                  </span>
-                </ul>
-              </td>
-              <td>
-                <form class="form">
-                  <div class="switch-field">
-                    <input class="switch-button" type="radio" id="switch_2_left"
-                           [(ngModel)]="model.settings.securityProfile"
-                           name="securityProfile"
-                           [value]="'idsc:BASE_CONNECTOR_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:BASE_CONNECTOR_SECURITY_PROFILE'"/>
-                    <label class="labelSmall" for="switch_2_left">Base Profile</label>
-                    <input class="switch-button" type="radio" id="switch_2_center"
-                           [(ngModel)]="model.settings.securityProfile"
-                           name="securityProfile"
-                           [value]="'idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE'"/>
-                    <label class="labelWide" for="switch_2_center">Trust Profile</label>
-                    <input class="switch-button" type="radio" id="switch_2_right"
-                           [(ngModel)]="model.settings.securityProfile"
-                           name="securityProfile"
-                           [value]="'idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE'" [checked]="model.settings.securityProfile === 'idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE'"/>
-                    <label class="labelWide" for="switch_2_right">Trust+ Profile</label>
-                  </div>
-                </form>
-              </td>
-            </tr>
+              <tr>
+                <td>
+                  <h5>Required Security Profile</h5>
+                  <ul class="mdl-list">
+                    <li class="mdl-list__item mdl-list__item--two-line">
+                      <span class="mdl-list__item-primary-content">
+                        <span><strong>BASE Security Profile</strong></span>
+                        <span class="mdl-list__item-sub-title">BASE security profile required. Lower security
+                          requirements for incoming connection requests.</span>
+                      </span>
+                    </li>
+                    <li class="mdl-list__item mdl-list__item--two-line">
+                      <span class="mdl-list__item-primary-content">
+                        <span><strong>TRUST Security Profile</strong></span>
+                        <span class="mdl-list__item-sub-title">TRUST security profile required. High security
+                          requirments for incoming connection requests.</span>
+                      </span>
+                    <li class="mdl-list__item mdl-list__item--two-line">
+                      <span class="mdl-list__item-primary-content">
+                        <span><strong>TRUST+ Security Profile</strong></span>
+                        <span class="mdl-list__item-sub-title">TRUST+ security profile required. Highest security
+                          requirments for incoming connection requests.</span>
+                      </span>
+                  </ul>
+                </td>
+                <td>
+                  <form class="form">
+                    <div class="switch-field">
+                      <input class="switch-button" type="radio" id="switch_2_left"
+                        [(ngModel)]="model.settings.securityProfile" name="securityProfile"
+                        [value]="'idsc:BASE_CONNECTOR_SECURITY_PROFILE'"
+                        [checked]="model.settings.securityProfile === 'idsc:BASE_CONNECTOR_SECURITY_PROFILE'" />
+                      <label class="labelSmall" for="switch_2_left">Base Profile</label>
+                      <input class="switch-button" type="radio" id="switch_2_center"
+                        [(ngModel)]="model.settings.securityProfile" name="securityProfile"
+                        [value]="'idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE'"
+                        [checked]="model.settings.securityProfile === 'idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE'" />
+                      <label class="labelWide" for="switch_2_center">Trust Profile</label>
+                      <input class="switch-button" type="radio" id="switch_2_right"
+                        [(ngModel)]="model.settings.securityProfile" name="securityProfile"
+                        [value]="'idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE'"
+                        [checked]="model.settings.securityProfile === 'idsc:TRUSTED_CONNECTOR_PLUS_SECURITY_PROFILE'" />
+                      <label class="labelWide" for="switch_2_right">Trust+ Profile</label>
+                    </div>
+                  </form>
+                </td>
+              </tr>
 
             </tbody>
           </table>
