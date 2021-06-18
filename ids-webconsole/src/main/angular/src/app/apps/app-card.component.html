@@ -20,17 +20,17 @@
                 {{ app.uptime }}
             </div>
             <div class="mdl-cell mdl-cell--4-col">
-            	<span style="display:block" *ngFor="let p of ports; trackBy: trackPorts;">
+                <span style="display:block" *ngFor="let p of ports; trackBy: trackPorts;">
                     <a *ngIf="p.isLink" [href]="p.link">{{ p.text }}</a>
                     <a *ngIf="!p.isLink">{{ p.text }}</a>
-            	</span>
+                </span>
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(app.id)">
-                    <i class="material-icons">{{ statusIcon }}</i>
+                    <em class="material-icons">{{ statusIcon }}</em>
                 </button>
                 <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onDeleteBtnClick(app.id)">
-                    <i class="material-icons">delete</i>
+                    <em class="material-icons">delete</em>
                 </button>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
   <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
     <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Exposed Endpoints</h2>
+      <h2 class="mdl-card__title-text" id="tab">Exposed Endpoints</h2>
     </div>
     <div class="tbl-content">
       <table class="table table-striped">
@@ -67,7 +67,9 @@
             {{ conn.endpointIdentifier }}
           </td>
           <td>
-            <span class="color-warning text-bold">{{ conn.attestationResult.status }}</span> <span *ngIf="conn.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{ conn.attestationResult.reason }}</span>
+            <span class="color-warning text-bold">{{ conn.attestationResult.status }}</span> <span
+              *ngIf="conn.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{
+              conn.attestationResult.reason }}</span>
           </td>
           <td>
             {{ conn.remoteHostName }}
@@ -101,7 +103,9 @@
             {{ connOut.endpointIdentifier }}
           </td>
           <td>
-            <span class="color-warning text-bold">{{ connOut.attestationResult.status }}</span> <span *ngIf="connOut.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{ connOut.attestationResult.reason }}</span>
+            <span class="color-warning text-bold">{{ connOut.attestationResult.status }}</span> <span
+              *ngIf="connOut.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{
+              connOut.attestationResult.reason }}</span>
           </td>
           <td>
             {{ connOut.remoteIdentity }}

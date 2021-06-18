@@ -20,13 +20,13 @@
     </div>
     <div class="mdl-card__actions mdl-card--border">
         <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onToggle(route.id)">
-            <i class="material-icons">{{ statusIcon }}</i>
+            <em class="material-icons">{{ statusIcon }}</em>
         </button>
         <button class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
-            <i class="material-icons">delete</i>
+            <em class="material-icons">delete</em>
         </button>
         <a class="mdl-button mdl-js-button mdl-js-ripple-effect" [routerLink]="['/routeeditor', route.id]">
-            <i class="material-icons">edit</i>
+            <em class="material-icons">edit</em>
         </a>
     </div>
 </div>
