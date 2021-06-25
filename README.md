@@ -9,7 +9,7 @@ The _Trusted Connector_ is an Apache Karaf-based platform for the Industrial Int
 * Data flow- and data usage control
 * An Apache Camel component for secure communication and remote attestation between Connectors.
 
-The _Trusted Connector_ has acquired the IDS_ready label.
+The _Trusted Connector_ has acquired the IDS_ready label. _Trusted Connector_ is a composite of the Core Container and the overall system. Please see the online documentation for details. 
 
 ![IDS_ready](https://github.com/industrial-data-space/trusted-connector-documentation/blob/master/docs/assets/img/IDS-ready-component.jpg?raw=true)
 
