@@ -34,20 +34,21 @@ open class ExampleIdscpClient {
 
     @Bean("clientSslContext")
     open fun createSSLContext(): SSLContextParameters {
-        val ctx = SSLContextParameters()
-        ctx.certAlias = "1.0.1"
-        ctx.keyManagers = KeyManagersParameters()
-        ctx.keyManagers.keyStore = KeyStoreParameters()
-        ctx.keyManagers.keyStore.resource =
-            FileSystems.getDefault().getPath("etc", "provider-keystore.p12").toFile().path
-        ctx.keyManagers.keyStore.password = "password"
-        ctx.trustManagers = TrustManagersParameters()
-        ctx.trustManagers.keyStore = KeyStoreParameters()
-        ctx.trustManagers.keyStore.resource =
-            FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
-        ctx.trustManagers.keyStore.password = "password"
-
-        return ctx
+        return SSLContextParameters().apply {
+            certAlias = "1.0.1"
+            keyManagers = KeyManagersParameters().apply {
+                keyStore = KeyStoreParameters().apply {
+                    resource = FileSystems.getDefault().getPath("etc", "provider-keystore.p12").toFile().path
+                    password = "password"
+                }
+            }
+            trustManagers = TrustManagersParameters().apply {
+                keyStore = KeyStoreParameters().apply {
+                    resource = FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
+                    password = "password"
+                }
+            }
+        }
     }
 
     @Bean

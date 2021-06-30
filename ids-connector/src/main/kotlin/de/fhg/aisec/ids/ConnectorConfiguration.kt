@@ -58,7 +58,7 @@ class ConnectorConfiguration {
     }
 
     @Bean
-    fun listBeans(ctx: ApplicationContext): CommandLineRunner? {
+    fun listBeans(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
             val beans: Array<String> = ctx.beanDefinitionNames
 
@@ -71,7 +71,7 @@ class ConnectorConfiguration {
     }
 
     @Bean
-    fun listContainers(ctx: ApplicationContext): CommandLineRunner? {
+    fun listContainers(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
             val containers = cml?.list(false)
 
@@ -82,7 +82,7 @@ class ConnectorConfiguration {
     }
 
     @Bean
-    fun showConnectorProfile(ctx: ApplicationContext): CommandLineRunner? {
+    fun showConnectorProfile(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
             val connector = im.connector
 
@@ -95,7 +95,7 @@ class ConnectorConfiguration {
     }
 
     @Bean
-    fun showCamelInfo(ctx: ApplicationContext): CommandLineRunner? {
+    fun showCamelInfo(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
             val routes = rm.routes
 
