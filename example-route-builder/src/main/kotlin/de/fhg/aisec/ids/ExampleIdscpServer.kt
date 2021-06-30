@@ -21,35 +21,14 @@ package de.fhg.aisec.ids
 
 import org.apache.camel.RoutesBuilder
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.support.jsse.KeyManagersParameters
-import org.apache.camel.support.jsse.KeyStoreParameters
-import org.apache.camel.support.jsse.SSLContextParameters
-import org.apache.camel.support.jsse.TrustManagersParameters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.nio.file.FileSystems
 
 @Configuration
 open class ExampleIdscpServer {
 
     @Bean("serverSslContext")
-    open fun createSSLContext(): SSLContextParameters {
-        return SSLContextParameters().apply {
-            certAlias = "1.0.1"
-            keyManagers = KeyManagersParameters().apply {
-                keyStore = KeyStoreParameters().apply {
-                    resource = FileSystems.getDefault().getPath("etc", "consumer-keystore.p12").toFile().path
-                    password = "password"
-                }
-            }
-            trustManagers = TrustManagersParameters().apply {
-                keyStore = KeyStoreParameters().apply {
-                    resource = FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
-                    password = "password"
-                }
-            }
-        }
-    }
+    open fun createSSLContext() = ExampleConnector.getSslContext()
 
     @Bean
     open fun server(): RoutesBuilder {
