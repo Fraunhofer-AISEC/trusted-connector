@@ -135,14 +135,14 @@ class DockerCM : ContainerManager {
             for (unit in PERIOD_UNITS) {
                 val elapsed = period[unit]
                 if (elapsed > 0) {
-                    units.add(elapsed.toString() + " " + unit.toString().toLowerCase())
+                    units.add(elapsed.toString() + " " + unit.toString().lowercase())
                 }
             }
             for (unit in DURATION_UNITS) {
                 val unitDuration = unit.duration.toSeconds()
                 val elapsed = duration / unitDuration
                 if (elapsed > 0) {
-                    units.add(elapsed.toString() + " " + unit.toString().toLowerCase())
+                    units.add(elapsed.toString() + " " + unit.toString().lowercase())
                 }
                 duration %= unitDuration
             }
@@ -211,7 +211,7 @@ class DockerCM : ContainerManager {
                         "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
                         "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
                     app.created = info.getString("Created")
-                    app.status = ContainerStatus.valueOf(state.getString("Status").toUpperCase())
+                    app.status = ContainerStatus.valueOf(state.getString("Status").uppercase())
                     app.ports =
                         ports
                             .entries
