@@ -194,7 +194,7 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
             url =
                 (
                     "http://camel.apache.org/" +
-                        nodeType!!.toLowerCase(Locale.ENGLISH).replace(' ', '-') +
+                        nodeType!!.lowercase(Locale.ENGLISH).replace(' ', '-') +
                         ".html"
                     )
         }

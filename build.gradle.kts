@@ -28,8 +28,8 @@ plugins {
     id("com.google.protobuf") version "0.8.12" apply false
 
     // Kotlin specific
-    kotlin("jvm") version "1.4.32" apply false
-    kotlin("plugin.spring") version "1.4.32" apply false
+    kotlin("jvm") version "1.5.20" apply false
+    kotlin("plugin.spring") version "1.5.20" apply false
 
     id("com.diffplug.spotless") version "5.11.0"
     id("com.github.jk1.dependency-license-report") version "1.16"

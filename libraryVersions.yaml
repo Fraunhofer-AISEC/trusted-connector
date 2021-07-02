@@ -1,11 +1,11 @@
-idscp2: "0.4.3"
+idscp2: "0.4.4"
 ktlint: "0.41.0"
 
 # Pinning
 okhttp: "4.9.1"
 
 # Kotlin library/compiler version
-kotlin: "1.4.32"
+kotlin: "1.5.20"
 kotlinxCoroutines: "1.4.3"
 # basically, the first requirement, all other libraries depend on this version
 karaf: "4.2.10"

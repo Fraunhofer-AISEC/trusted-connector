@@ -103,6 +103,8 @@ class XmlDeployWatcher : ApplicationContextAware {
                         LOG.warn("XML watcher stopped by interrupt")
                         break
                     }
+                    // Remember newly created XML files
+                    val createdPaths = mutableSetOf<String>()
                     // Poll the events that happened since last iteration
                     for (watchEvent in key.pollEvents()) {
                         try {
@@ -110,6 +112,7 @@ class XmlDeployWatcher : ApplicationContextAware {
                             val xmlPathString = xmlPath.toString()
                             when (watchEvent.kind()) {
                                 StandardWatchEventKinds.ENTRY_CREATE -> {
+                                    createdPaths += xmlPathString
                                     // Must check whether the path represents a valid XML file
                                     if (Files.isRegularFile(xmlPath) || xmlPathString.endsWith(".xml")) {
                                         startXmlApplicationContext(xmlPathString)
@@ -119,7 +122,10 @@ class XmlDeployWatcher : ApplicationContextAware {
                                     stopXmlApplicationContext(xmlPathString)
                                 }
                                 StandardWatchEventKinds.ENTRY_MODIFY -> {
-                                    restartXmlApplicationContext(xmlPathString)
+                                    // Ignore MODIFY events for newly created XML files
+                                    if (xmlPathString !in createdPaths) {
+                                        restartXmlApplicationContext(xmlPathString)
+                                    }
                                 }
                                 else -> {
                                     LOG.warn("Unhandled WatchEvent: {}", watchEvent)

@@ -19,8 +19,13 @@
  */
 package de.fhg.aisec.ids
 
+import org.apache.camel.support.jsse.KeyManagersParameters
+import org.apache.camel.support.jsse.KeyStoreParameters
+import org.apache.camel.support.jsse.SSLContextParameters
+import org.apache.camel.support.jsse.TrustManagersParameters
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import java.nio.file.FileSystems
 
 @SpringBootApplication
 open class ExampleConnector : TrustedConnector() {
@@ -29,6 +34,24 @@ open class ExampleConnector : TrustedConnector() {
         @JvmStatic
         fun main(args: Array<String>) {
             runApplication<ExampleConnector>(*args)
+        }
+
+        fun getSslContext(): SSLContextParameters {
+            return SSLContextParameters().apply {
+                certAlias = "1.0.1"
+                keyManagers = KeyManagersParameters().apply {
+                    keyStore = KeyStoreParameters().apply {
+                        resource = FileSystems.getDefault().getPath("etc", "consumer-keystore.p12").toFile().path
+                        password = "password"
+                    }
+                }
+                trustManagers = TrustManagersParameters().apply {
+                    keyStore = KeyStoreParameters().apply {
+                        resource = FileSystems.getDefault().getPath("etc", "truststore.p12").toFile().path
+                        password = "password"
+                    }
+                }
+            }
         }
     }
 }
