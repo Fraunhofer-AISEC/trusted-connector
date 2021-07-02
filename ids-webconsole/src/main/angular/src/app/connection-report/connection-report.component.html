@@ -68,7 +68,7 @@
           </td>
           <td>
             <span class="color-warning text-bold">{{ conn.attestationResult.status }}</span> <span
-              *ngIf="conn.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{
+              *ngIf="conn.attestationResult.reason !== null" style="padding-left:10px;font-style:italic">{{
               conn.attestationResult.reason }}</span>
           </td>
           <td>
@@ -104,7 +104,7 @@
           </td>
           <td>
             <span class="color-warning text-bold">{{ connOut.attestationResult.status }}</span> <span
-              *ngIf="connOut.attestationResult.reason != null" style="padding-left:10px;font-style:italic">{{
+              *ngIf="connOut.attestationResult.reason !== null" style="padding-left:10px;font-style:italic">{{
               connOut.attestationResult.reason }}</span>
           </td>
           <td>
