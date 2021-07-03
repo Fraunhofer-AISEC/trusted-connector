@@ -1,0 +1,16 @@
+<div appNgxMdl class="mdl-grid">
+
+  <div class="card-dark mdl-card mdl-cell mdl-cell--12-col  mdl-shadow--2dp">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">User accounts</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+      <user-card [users]="users" [onDeleteCallback]="deleteUser"></user-card>
+    </div>
+    <div class="mdl-card__menu">
+      <button routerLink="/usernew" class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black">
+        <i class="material-icons">add</i>
+      </button>
+    </div>
+  </div>
+</div>

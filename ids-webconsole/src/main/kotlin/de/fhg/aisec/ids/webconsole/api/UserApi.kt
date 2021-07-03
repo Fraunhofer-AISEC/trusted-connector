@@ -126,6 +126,23 @@ class UserApi(@Autowired private val settings: Settings) {
         settings.removeUser(username)
     }
 
+    /*
+    @GET
+    @Path("list_users")
+    @ApiOperation(
+            value = "List installed certificates from the private key store.",
+            notes = "Certificates in this list refer to private keys that can be used as identities by the connector."
+    )
+    @Produces(
+            MediaType.APPLICATION_JSON
+    )
+    @AuthorizationRequired
+    fun listUsers(): List<User> {
+        val keystoreFile = getKeystoreFile(settings.connectorConfig.keystoreName)
+        return getKeystoreEntries(keystoreFile)
+    }
+    */
+
     companion object {
         private val LOG = LoggerFactory.getLogger(UserApi::class.java)
         val argonEncoder = Argon2PasswordEncoder(16, 32, 1, 1 shl 13, 10)

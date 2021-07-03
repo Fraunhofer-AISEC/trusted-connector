@@ -15,6 +15,9 @@ import { HomeLayoutComponent } from './layouts/home-layout/home-layout.component
 import { LoginLayoutComponent } from './layouts/login-layout/login-layout.component';
 import { LoginComponent } from './login/login.component';
 import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component';
+import { UsersComponent } from './users/users.component';
+import { NewUserComponent } from './users/usernew.component';
+import { DetailUserComponent } from './users/userdetail.component';
 import { RoutesComponent } from './routes/routes.component';
 
 const appRoutes: Routes = [
@@ -34,6 +37,9 @@ const appRoutes: Routes = [
       { path: 'routeeditor/:id', component: RouteeditorComponent, canActivate: [AuthGuard] },
       { path: 'routeeditor', component: RouteeditorComponent, canActivate: [AuthGuard] },
       { path: 'ids', component: IdsComponent, canDeactivate: [IdsComponent], canActivate: [AuthGuard] },
+      { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
+      { path: 'usernew', component: NewUserComponent, canActivate: [AuthGuard] },
+      { path: 'userdetail', component: DetailUserComponent, canActivate: [AuthGuard] },
       { path: 'certificates', component: KeycertsComponent, canActivate: [AuthGuard]  }
     ]
   },
