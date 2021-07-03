@@ -161,6 +161,17 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
+    /*
+    override fun setPassword(username: String, hash: String) {
+        userStore += username to hash
+        mapDB.commit()
+    }
+
+    override fun getUsers(): Map<String,String> {
+
+    }
+    */
+
     override fun removeUser(username: String) {
         userStore.remove(username)
         mapDB.commit()
