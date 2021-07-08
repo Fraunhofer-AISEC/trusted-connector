@@ -14,15 +14,15 @@
             </div>
             <div class="mdl-cell mdl-cell--2-col">
                 <div>
-                    <span *ngIf="app.platform == 'windows'" style="padding-right:10px"><em
+                    <span *ngIf="app.platform === 'windows'" style="padding-right:10px"><em
                             class="fab fa-windows fa-2x"></em></span>
-                    <span *ngIf="app.platform == 'linux'" style="padding-right:10px"><em
+                    <span *ngIf="app.platform === 'linux'" style="padding-right:10px"><em
                             class="fab fa-linux fa-2x"></em></span>
                     <span *ngIf="app.privileged" style="padding-right:10px;color:#a04040"><em
                             class="fas fa-exclamation-triangle fa-2x"></em></span>
-                    <span *ngIf="app.type == 'stack'" style="padding-right:10px"><em
+                    <span *ngIf="app.type === 'stack'" style="padding-right:10px"><em
                             class="fas fa-cubes fa-2x"></em></span>
-                    <span *ngIf="app.type == 'container'" style="padding-right:10px"><em
+                    <span *ngIf="app.type === 'container'" style="padding-right:10px"><em
                             class="fas fa-cube fa-2x"></em></span>
                 </div>
                 <div style="margin-top:15px;" *ngFor="let cat of app.categories; trackBy: trackCat">
@@ -34,9 +34,9 @@
             </div>
             <div class="mdl-card__actions mdl-card--border">
 
-                <button *ngIf="app.type == 'container'" [attr.id]="'menu_' + app.name"
+                <button *ngIf="app.type === 'container'" [attr.id]="'menu_' + app.name"
                     class="mdl-button mdl-js-button mdl-button--colored" (click)="onInstall(app)">Install</button>
-                <button *ngIf="app.type == 'stack'" [attr.id]="'menu_' + app.name"
+                <button *ngIf="app.type === 'stack'" [attr.id]="'menu_' + app.name"
                     class="mdl-button mdl-button--disabled mdl-js-button mdl-button--colored"
                     (click)="onInstall(app)">Stacks cannot be installed</button>
             </div>
