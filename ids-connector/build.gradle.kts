@@ -24,11 +24,13 @@ dependencies {
     api(project(":ids-route-manager"))
     api(project(":ids-infomodel-manager"))
     api(project(":ids-dataflow-control"))
+    api(project(":camel-multipart-processor"))
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-jersey")
+    implementation("org.springframework.boot:spring-boot-starter-jetty")
     // Camel Spring Boot integration
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")
     implementation("org.apache.camel.springboot:camel-rest-starter")
