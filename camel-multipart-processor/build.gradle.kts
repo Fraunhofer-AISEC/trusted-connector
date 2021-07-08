@@ -5,9 +5,12 @@ dependencies {
     implementation(project(":ids-api")) { isTransitive = false }
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
+    implementation("org.apache.camel", "camel-jetty", libraryVersions["camel"])
     implementation("org.apache.camel", "camel-http4", libraryVersions["camelHttp4"])
-    implementation("org.apache.httpcomponents", "httpcore-osgi", libraryVersions["httpcore"])
-    implementation("org.apache.httpcomponents", "httpclient-osgi", libraryVersions["httpclient"])
+
+    implementation("org.apache.httpcomponents", "httpcore", libraryVersions["httpcore"])
+    implementation("org.apache.httpcomponents", "httpclient", libraryVersions["httpclient"])
+    implementation("org.apache.httpcomponents", "httpmime", libraryVersions["httpclient"])
     implementation("commons-fileupload", "commons-fileupload", libraryVersions["commonsFileUpload"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])

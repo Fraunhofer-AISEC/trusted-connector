@@ -1,4 +1,4 @@
-idscp2: "0.4.4"
+idscp2: "0.4.5"
 ktlint: "0.41.0"
 
 # Pinning
@@ -82,7 +82,6 @@ commonsCli: "1.4"
 javaxValidation: "2.0.1.Final"
 
 # Needed for token manager to assemble JWTs
-jsonwebtoken: "0.11.2"
 jose4j: "0.7.6"
 
 # Needed for web console
