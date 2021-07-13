@@ -1,7 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-//import {of, timer } from 'rxjs'; //
-//import { map, switchMap, take } from 'rxjs/operators';//
 
 import { User } from './user';
 import { UserService } from './user.service';
