@@ -4,7 +4,7 @@ import org.yaml.snakeyaml.Yaml
 
 buildscript {
     dependencies {
-        classpath("org.yaml:snakeyaml:1.26")
+        classpath("org.yaml:snakeyaml:1.29")
     }
 }
 

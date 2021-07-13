@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.policy.DecisionRequest
 import de.fhg.aisec.ids.api.policy.PolicyDecision
 import de.fhg.aisec.ids.api.policy.ServiceNode
 import de.fhg.aisec.ids.api.policy.TransformationDecision
+import de.fraunhofer.iais.eis.AbstractConstraint
 import de.fraunhofer.iais.eis.BinaryOperator
 import de.fraunhofer.iais.eis.Constraint
 import de.fraunhofer.iais.eis.LeftOperand
@@ -112,19 +113,20 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Applying Contract $contract")
                 }
-                val dockerConstraint = { c: Constraint ->
-                    c.operator == BinaryOperator.SAME_AS && c.leftOperand == LeftOperand.SYSTEM
+                val isDockerConstraint = { c: AbstractConstraint ->
+                    c is Constraint && c.operator == BinaryOperator.SAME_AS && c.leftOperand == LeftOperand.SYSTEM
                 }
-                contract
+                val dockerConstraint = contract
                     .permission
                     .firstOrNull { p ->
                         // Check whether any constraint is given which fits the rules given above
-                        p.constraint.firstOrNull(dockerConstraint) != null
+                        p.constraint.firstOrNull(isDockerConstraint) != null
                         // So far previous checks answered: "Can we principally work with given
                         // constraint?"
                     }
                     ?.constraint
-                    ?.first(dockerConstraint)
+                    ?.first(isDockerConstraint) as Constraint?
+                dockerConstraint
                     ?.rightOperandReference
                     ?.let { dockerUri ->
                         if (LOG.isDebugEnabled) {
