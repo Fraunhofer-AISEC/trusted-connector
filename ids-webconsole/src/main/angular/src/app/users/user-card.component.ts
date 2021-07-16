@@ -14,8 +14,7 @@ declare let componentHandler: any;
 
 export class UserCardComponent implements OnInit {
   @Input() public users: User[];
-  @Input() public trusts: User[];
-  @Input() private readonly onDeleteCallback: (alias: string) => void;
+  @Input() private readonly onDeleteCallback: (username: string) => void;
   public result: string;
 
   constructor(private readonly confirmService: ConfirmService) { }
@@ -24,15 +23,15 @@ export class UserCardComponent implements OnInit {
     componentHandler.upgradeDom();
   }
 
-  public trackCerts(index: number, item: User): string {
+  public trackUsers(index: number, item: User): string {
     return item.username;
   }
 
-  public async onDelete(alias: string): Promise<void> {
+  public async onDelete(username: string): Promise<void> {
     return this.confirmService.activate('Are you sure that you want to delete this user?')
       .then(res => {
         if (res) {
-          this.onDeleteCallback(alias);
+          this.onDeleteCallback(username);
         }
       });
   }

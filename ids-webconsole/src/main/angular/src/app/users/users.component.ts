@@ -1,5 +1,4 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { User } from './user';
 import { UserService } from './user.service';
@@ -12,12 +11,10 @@ import { Title } from '@angular/platform-browser';
 })
 export class UsersComponent implements OnInit {
     @Output() public readonly changeTitle = new EventEmitter();
-    public settingsForm?: FormGroup;
     public saved = true;
     public users: User[];
 
-    constructor(private readonly titleService: Title, private readonly userService: UserService,
-                private readonly formBuilder: FormBuilder) {
+    constructor(private readonly titleService: Title, private readonly userService: UserService) {
       this.titleService.setTitle('Users');
       this.userService.getUsers()
                   .subscribe(users => {
@@ -30,8 +27,8 @@ export class UsersComponent implements OnInit {
         return target.saved;
     }
 
-    public deleteUser(alias: string): void {
-        this.userService.deleteUser(alias)
+    public deleteUser(username: string): void {
+        this.userService.deleteUser(username)
             .subscribe(_result => {
                 //             this.result = result;
                 //             if(result.toString() === "true") {
