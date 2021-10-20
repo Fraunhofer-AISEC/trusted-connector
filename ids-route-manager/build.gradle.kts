@@ -6,8 +6,6 @@ dependencies {
 
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.apache.camel.springboot:camel-spring-boot-starter")
-    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("javax.xml.bind", "jaxb-api", libraryVersions["jaxbApi"])
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
     implementation("org.apache.camel", "camel-management", libraryVersions["camel"])

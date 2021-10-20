@@ -6,6 +6,8 @@ dependencies {
 
     implementation(project(":ids-api")) { isTransitive = false }
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
+    implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
     implementation("com.google.guava", "guava", libraryVersions["guava"])
     implementation("it.unibo.alice.tuprolog", "2p-core", libraryVersions["2p"])
     implementation("it.unibo.alice.tuprolog", "2p-parser", libraryVersions["2p"])

@@ -30,7 +30,11 @@
                     <simple>${exchangeProperty.ids-type} == 'ContractRequestMessage'</simple>
                     <log message="### Handle ContractRequestMessage ###"/>
                     <setProperty name="containerUri">
-                        <constant>https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080</constant>
+                        <constant>
+                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080
+                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-d461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080
+                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-e461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8081
+                        </constant>
                     </setProperty>
                     <process ref="ContractRequestProcessor"/>
                 </when>

@@ -34,10 +34,14 @@ object TuPrologHelper {
         }
         val sb = StringBuilder()
         sb.append('\'')
-        val charLength = s.length
-        for (i in 0 until charLength) {
-            val c = s[i]
-            sb.append(if (c == '\'') "''" else c)
+        s.toCharArray().forEach {
+            when (it) {
+                '\'' -> sb.append("''")
+                '\n' -> sb.append("\\n")
+                '\r' -> sb.append("\\r")
+                '\t' -> sb.append("\\t")
+                else -> sb.append(it)
+            }
         }
         sb.append('\'')
         return sb.toString()

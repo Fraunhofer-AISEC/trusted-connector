@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-route-manager
+ * ids-dataflow-control
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.rm
+package de.fhg.aisec.ids.dataflowcontrol
 
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.idscp2.Idscp2UsageControlInterface
