@@ -22,7 +22,11 @@ package de.fhg.aisec.ids
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.Utils
+import de.fhg.aisec.ids.camel.idscp2.listeners.ExchangeListener
+import de.fhg.aisec.ids.camel.idscp2.listeners.TransferContractListener
+import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import de.fhg.aisec.ids.rm.RouteManagerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
@@ -54,6 +58,19 @@ class ConnectorConfiguration {
             Utils.dapsUrlProducer = { settings.connectorConfig.dapsUrl }
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
+
+            ListenerManager.addExchangeListener(
+                ExchangeListener {
+                    connection, exchange ->
+                    UsageControlMaps.setExchangeConnection(exchange, connection)
+                }
+            )
+            ListenerManager.addTransferContractListener(
+                TransferContractListener {
+                    connection, transferContract ->
+                    UsageControlMaps.setConnectionContract(connection, transferContract)
+                }
+            )
         }
     }
 

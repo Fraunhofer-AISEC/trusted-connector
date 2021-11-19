@@ -19,8 +19,9 @@
  */
 package de.fhg.aisec.ids
 
+import com.google.common.collect.MapMaker
 import de.fhg.aisec.ids.api.idscp2.Idscp2UsageControlInterface
-import de.fhg.aisec.ids.camel.idscp2.UsageControlMaps
+import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import org.apache.camel.Exchange
 import org.springframework.stereotype.Component
 import java.net.URI
@@ -30,10 +31,20 @@ class Idscp2UsageControlComponent : Idscp2UsageControlInterface {
     override fun getExchangeContract(exchange: Exchange) =
         UsageControlMaps.getExchangeContract(exchange)
 
-    override fun isProtected(exchange: Exchange) = UsageControlMaps.isProtected(exchange)
+    override fun protectBody(exchange: Exchange, contractUri: URI) {
+        protectedBodies[exchange] = exchange.message.body
+        exchange.message.body = "### Usage control protected body, contract $contractUri ###"
+    }
 
-    override fun protectBody(exchange: Exchange, contractUri: URI) =
-        UsageControlMaps.protectBody(exchange, contractUri)
+    override fun isProtected(exchange: Exchange) = protectedBodies.containsKey(exchange)
 
-    override fun unprotectBody(exchange: Exchange) = UsageControlMaps.unprotectBody(exchange)
+    override fun unprotectBody(exchange: Exchange) {
+        exchange.message.body = protectedBodies[exchange]
+        protectedBodies -= exchange
+    }
+
+    companion object {
+        private val protectedBodies: MutableMap<Exchange, Any> =
+            MapMaker().weakKeys().makeMap()
+    }
 }
