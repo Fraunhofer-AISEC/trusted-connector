@@ -24,6 +24,7 @@ dependencies {
     api(project(":ids-route-manager"))
     api(project(":ids-infomodel-manager"))
     api(project(":ids-dataflow-control"))
+    api(project(":camel-processors"))
     api(project(":camel-multipart-processor"))
 
     // Spring Boot

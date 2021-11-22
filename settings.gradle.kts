@@ -2,6 +2,7 @@ rootProject.name = "trusted-connector-core"
 
 include(":camel-influxdb")
 include(":camel-multipart-processor")
+include(":camel-processors")
 include(":examples")
 include(":ids-acme")
 include(":ids-api")

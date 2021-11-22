@@ -16,10 +16,10 @@
         </camel:trustManagers>
     </camel:sslContextParameters>
 
-    <bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestCreationProcessor" />
-    <bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestCreationProcessor"/>
-    <bean id="ContractResponseProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractResponseProcessor"/>
-    <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.IdsMessageTypeExtractionProcessor" />
+    <bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.processors.ArtifactRequestCreationProcessor" />
+    <bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.processors.ContractRequestCreationProcessor"/>
+    <bean id="ContractResponseProcessor" class="de.fhg.aisec.ids.camel.processors.ContractResponseProcessor"/>
+    <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.processors.IdsMessageTypeExtractionProcessor" />
 
     <camelContext xmlns="http://camel.apache.org/schema/spring">
         <route>

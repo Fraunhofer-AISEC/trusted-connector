@@ -17,15 +17,15 @@
 	</camel:sslContextParameters>
 
 	<!-- Processors for ArtifactMessages -->
-	<bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestCreationProcessor" />
-	<bean id="ArtifactRequestProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ArtifactRequestProcessor" />
+	<bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.processors.ArtifactRequestCreationProcessor" />
+	<bean id="ArtifactRequestProcessor" class="de.fhg.aisec.ids.camel.processors.ArtifactRequestProcessor" />
 	<!-- Processors for ContractMessages -->
-	<bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestCreationProcessor"/>
-	<bean id="ContractRequestProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractRequestProcessor"/>
-	<bean id="ContractResponseProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractResponseProcessor"/>
-	<bean id="ContractAgreementReceiverProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.ContractAgreementReceiverProcessor"/>
+	<bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.processors.ContractRequestCreationProcessor"/>
+	<bean id="ContractRequestProcessor" class="de.fhg.aisec.ids.camel.processors.ContractRequestProcessor"/>
+	<bean id="ContractResponseProcessor" class="de.fhg.aisec.ids.camel.processors.ContractResponseProcessor"/>
+	<bean id="ContractAgreementReceiverProcessor" class="de.fhg.aisec.ids.camel.processors.ContractAgreementReceiverProcessor"/>
 	<!-- Processors for Camel intern stuff -->
-	<bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.idscp2.processors.IdsMessageTypeExtractionProcessor" />
+	<bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.processors.IdsMessageTypeExtractionProcessor" />
 
 	<!-- Routes -->
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
