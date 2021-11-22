@@ -20,16 +20,10 @@
 package de.fhg.aisec.ids.camel.processors
 
 import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
-import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
-import de.fraunhofer.iais.eis.ContractAgreementBuilder
-import de.fraunhofer.iais.eis.ContractAgreementMessageBuilder
-import de.fraunhofer.iais.eis.ContractOffer
-import de.fraunhofer.iais.eis.ContractRejectionMessageBuilder
 import de.fraunhofer.iais.eis.ContractResponseMessage
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
-import java.net.URI
 
 /**
  * This Processor handles a ContractResponseMessage and creates a ContractAgreementMessage.
@@ -45,65 +39,7 @@ class ContractResponseProcessor : Processor {
             IDSCP2_HEADER, ContractResponseMessage::class.java
         )
 
-        val contractOfferReceived = SERIALIZER.deserialize(
-            exchange.message.getBody(String::class.java),
-            ContractOffer::class.java
-        )
-
-        // if contract is denied send ContractRejectionMsg else send ContractAgreementMsg
-        val contractOfferIsAccepted = true
-        if (!contractOfferIsAccepted) {
-            createContractRejectionMessage(exchange, contractResponseMessage.id)
-        } else {
-            ContractAgreementMessageBuilder()
-                ._correlationMessage_(contractResponseMessage.id)
-                .let {
-                    if (LOG.isDebugEnabled) {
-                        LOG.debug("Serialization Header: {}", SERIALIZER.serialize(it.build()))
-                    }
-                    exchange.message.setHeader(IDSCP2_HEADER, it)
-                }
-
-            val contractAgreement = ContractAgreementBuilder()
-                ._consumer_(contractOfferReceived.consumer)
-                ._provider_(contractOfferReceived.provider)
-                ._contractAnnex_(contractOfferReceived.contractAnnex)
-                ._contractDate_(contractOfferReceived.contractDate)
-                ._contractDocument_(contractOfferReceived.contractDocument)
-                ._contractEnd_(contractOfferReceived.contractEnd)
-                ._contractStart_(contractOfferReceived.contractStart)
-                ._obligation_(contractOfferReceived.obligation)
-                ._prohibition_(contractOfferReceived.prohibition)
-                ._permission_(contractOfferReceived.permission)
-                .build()
-
-            UsageControlMaps.addContractAgreement(contractAgreement)
-            if (LOG.isDebugEnabled) {
-                LOG.debug("Consumer saved contract ${contractAgreement.id}")
-            }
-
-            SERIALIZER.serialize(contractAgreement).let {
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("ContractAgreement ID: {}", contractAgreement.id)
-                    LOG.debug("Serialization body: {}", it)
-                }
-                exchange.message.body = it
-            }
-        }
-    }
-
-    private fun createContractRejectionMessage(exchange: Exchange, correlationId: URI) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("Constructing ContractRejectionMessage")
-        }
-        ContractRejectionMessageBuilder()
-            ._correlationMessage_(correlationId)
-            .let {
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("Serialization Header: {}", SERIALIZER.serialize(it.build()))
-                }
-                exchange.message.setHeader(IDSCP2_HEADER, it)
-            }
+        ContractHandler.handleContractOffer(exchange, contractResponseMessage.id, LOG)
     }
 
     companion object {
