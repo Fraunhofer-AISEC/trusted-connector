@@ -62,6 +62,7 @@ val copyProjectJars = tasks.create<Copy>("copyProjectJars") {
     )
     destinationDir = file("$buildDir/libs/projectJars")
     dependsOn(cleanLibs)
+    dependsOn(":jar")
 }
 
 tasks.withType<Jar> {

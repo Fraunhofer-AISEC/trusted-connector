@@ -112,7 +112,7 @@ class SettingsApi {
             LOG.warn("Connector description build failed, building empty description.", e)
             null
         }
-        // TODO Document ApiOperation 
+        // TODO Document ApiOperation
         set(selfInformation) {
             try {
                 im.setConnectorByJsonLd(selfInformation)

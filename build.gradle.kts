@@ -46,7 +46,7 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "5.0.2"
+    version = "6.0.0"
 }
 
 subprojects {
@@ -77,11 +77,6 @@ subprojects {
     dependencies {
         // Logging API
         implementation("org.slf4j", "slf4j-api", libraryVersions["slf4j"])
-
-        val compileOnly by configurations
-
-        // Needed for kotlin modules, provided at runtime via kotlin-osgi-bundle in karaf-features-ids
-        compileOnly("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", libraryVersions["kotlin"])
 
         // Some versions are downgraded for unknown reasons, fix this here
         val groupPins = mapOf(
