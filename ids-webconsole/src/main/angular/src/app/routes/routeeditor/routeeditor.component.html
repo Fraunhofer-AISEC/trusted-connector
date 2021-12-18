@@ -1,8 +1,4 @@
-<section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
-	<div class="page-content"><!-- Your content goes here --></div>
-</section>
-
-<form [formGroup]="myForm" novalidate (ngSubmit)="save()" class="mdl-cell--12-col mdl-grid">
+<form [formGroup]="myForm" novalidate class="mdl-cell--12-col mdl-grid"> <!--(ngSubmit)="save()"-->
 	<div class="mdl-grid mdl-cell mdl-cell--12-col" *ngIf="route">
 		<div class="mdl-cell mdl-cell--12-col">
 			<h3 >{{ route.id }}</h3>
@@ -64,9 +60,9 @@
 				[durationBeforeCallback]="100"
 				style="min-height: 400px; width:100%; overflow: auto; font-size:16px; font-family: Consolas,Monaco,'Andale Mono',monospace;"></div>
 		</div>
-		<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
+		<!-- <button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
 			<span>{{ route ? 'Apply' : 'Save' }}</span>
-		</button>
+		</button> -->
 	</div>
 
 </form>

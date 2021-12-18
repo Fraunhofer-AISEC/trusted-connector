@@ -43,7 +43,7 @@
                     <log message="### Handle ContractAgreementMessage ###"/>
                     <!-- Only processing of incoming request must be performed, no reply -->
                     <process ref="ContractAgreementReceiverProcessor"/>
-                    <removeHeader headerName="idscp2-header" />
+                    <removeHeader name="idscp2-header" />
                     <setBody><simple>${null}</simple></setBody>
                 </when>
                 <when>
@@ -53,7 +53,7 @@
                 </when>
                 <otherwise>
                     <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-                    <removeHeader headerName="idscp2-header" />
+                    <removeHeader name="idscp2-header" />
                     <setBody><simple>${null}</simple></setBody>
                 </otherwise>
             </choice>

@@ -1,12 +1,12 @@
-idscp2: "0.8.0"
+idscp2: "0.8.1"
 ktlint: "0.43.2"
 
 # Pinning
 okhttp: "4.9.1"
 
 # Kotlin library/compiler version
-kotlin: "1.6.0"
-kotlinxCoroutines: "1.6.0-RC2"
+kotlin: "1.6.10"
+kotlinxCoroutines: "1.5.2"
 
 # The used version of the infomodel from IESE
 infomodel: "4.1.0"
@@ -18,8 +18,7 @@ jaxbCore: "2.3.0.1"
 jaxbImpl: "2.3.3"
 jaxActivation: "1.2.0"
 
-# Starting with camel 3.1.0, XML dump features and metrics have been removed!
-camel: "3.0.1"
+camel: "3.14.0"
 camelHttp4: "3.0.0-M4"
 influxDB: "2.14"
 
