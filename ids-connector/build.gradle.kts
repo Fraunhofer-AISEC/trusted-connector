@@ -34,6 +34,8 @@ dependencies {
     implementation("org.apache.camel.springboot:camel-jsonpath-starter")
     // IDSCP2
     implementation(libs.camel.idscp2)
+    implementation(libs.idscp2.ra.cmc)
+    implementation(libs.grpc.netty)
     // Guava for weakly-keyed Map
     implementation(libs.guava)
 }
