@@ -189,7 +189,7 @@ class DockerCM : ContainerManager {
                     app.imageId = imageInfo?.getString("Id")
                     app.imageDigests =
                         imageInfo?.getJsonArray("RepoDigests")?.map { (it as JsonString).string }
-                        ?: emptyList()
+                            ?: emptyList()
                     app.ipAddresses =
                         networks
                             .values

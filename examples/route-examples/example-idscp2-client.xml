@@ -33,7 +33,7 @@
             <from uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#clientSslContext"/>
             <log message="Client received: ${body} (Header: ${headers[idscp2-header]})"/>
             <!-- Prevents the client consumer from sending the message back to the server -->
-            <removeHeader headerName="idscp2-header"/>
+            <removeHeader name="idscp2-header"/>
         </route>
 
     </camelContext>

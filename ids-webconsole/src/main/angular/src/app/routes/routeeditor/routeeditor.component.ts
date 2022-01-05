@@ -96,11 +96,6 @@ export class RouteeditorComponent implements OnInit {
           // console.log('Route editor: Loaded route with id ' + this._route.id);
         });
 
-      this.routeService.getRouteAsString(id)
-        .subscribe(routeString => {
-          this._textRepresentation = routeString.trim();
-        });
-
       this.routeService.getValidationInfo(id)
         .subscribe(validationInfo => {
           this._validationInfo = validationInfo;
@@ -155,44 +150,6 @@ export class RouteeditorComponent implements OnInit {
         });
 
       this.route.status = 'Stopped';
-    }
-  }
-
-  public save(): void {
-    this._saved = true;
-
-    // Call REST POST/PUT to store route
-    if (this._route) {
-      const id = this._route.id;
-      this.routeService.saveRoute(id, this._textRepresentation)
-        .subscribe(
-          result => {
-            // If saved successfully, user may leave the route editor
-            this._result = result;
-            this._saved = true;
-            if (result.successful) {
-              // console.log('Route editor: Updated route with id ' + id);
-              this.route = result.route;
-              this.routeService.getValidationInfo(id)
-                .subscribe(validationInfo => {
-                  this._validationInfo = validationInfo;
-                });
-            }
-          }
-        );
-    } else {
-      this.routeService.addRoute(this._textRepresentation)
-        .subscribe(
-          async result => {
-            // If created successfully, redirect user to routes overview
-            this._result = result;
-            this._saved = true;
-            if (result.successful) {
-              // console.log('Route editor: Created route(s)');
-              return this.router.navigate(['routes']);
-            }
-          }
-        );
     }
   }
 }

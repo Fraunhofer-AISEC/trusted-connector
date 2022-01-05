@@ -39,7 +39,7 @@
                 </when>
                 <otherwise>
                     <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-                    <removeHeader headerName="idscp2-header" />
+                    <removeHeader name="idscp2-header" />
                     <setBody><simple>${null}</simple></setBody>
                 </otherwise>
             </choice>

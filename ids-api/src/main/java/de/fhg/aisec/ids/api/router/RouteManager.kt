@@ -79,35 +79,6 @@ interface RouteManager {
     fun listEndpoints(): Map<String, String>
 
     /**
-     * Save a route, replacing it with a new representation within the same context
-     *
-     * @param routeId ID of the route to save
-     * @param routeRepresentation The new textual representation of the route (XML etc.)
-     * @return The object representing the modified route
-     * @throws RouteException If the route does not exist or some Exception was thrown during route
-     * replacement.
-     */
-    @Throws(RouteException::class)
-    fun saveRoute(routeId: String, routeRepresentation: String): RouteObject
-
-    /**
-     * Adds a route and starts it.
-     *
-     *
-     * Endpoint declarations must be supported by the underlying implementation.
-     *
-     *
-     * If the route id already exists, this method will throw a RouteException and not overwrite
-     * the existing route.
-     *
-     * @param routeDefinition Textual representation of the route (XML etc.)
-     * @throws RouteException if a route with the same id already exists or if any Exception is thrown
-     * during loading and starting the route.
-     */
-    @Throws(RouteException::class)
-    fun addRoute(routeDefinition: String)
-
-    /**
      * Removes a route from one endpoint to another.
      *
      *
@@ -121,34 +92,12 @@ interface RouteManager {
     fun delRoute(routeId: String)
 
     /**
-     * Returns the given route in its original representation of the implementing engine.
-     *
-     *
-     * Note that this method may return null if the implementing engine does not support a textual
-     * route configuration.
-     *
-     *
-     * For Apache Camel, this method will return the XML-based Camel DSL configuration file.
-     *
-     * @param routeId ID of the route to retrieve the String representation for
-     * @return String representation of the route
-     */
-    fun getRouteAsString(routeId: String): String?
-
-    /**
      * Returns a List of URIs of the given route's inputs (from definitions)
      *
      * @param routeId The identifier of the route
      * @return The from (input) URIs of the route
      */
     fun getRouteInputUris(routeId: String): List<String>
-
-    /**
-     * Returns aggregated runtime metrics of all installed routes.
-     *
-     * @return Map&lt;k,v&gt; where k is a string indicating the route id.
-     */
-    val routeMetrics: Map<String, RouteMetrics>
 
     /**
      * Returns the given route configuration in a Prolog representation.

@@ -167,14 +167,14 @@ class SettingsComponent : Settings {
             mapDB
                 .hashMap("settings_store")
                 .keySerializer(Serializer.STRING)
-                .valueSerializer(OsgiElsaSerializer<Any>())
+                .valueSerializer(ElsaSerializer<Any>())
                 .createOrOpen()
         }
         private val connectionSettings: ConcurrentMap<String, ConnectionSettings> by lazy {
             mapDB
                 .hashMap("connection_settings")
                 .keySerializer(Serializer.STRING)
-                .valueSerializer(OsgiElsaSerializer<ConnectionSettings>())
+                .valueSerializer(ElsaSerializer<ConnectionSettings>())
                 .createOrOpen()
         }
         private val userStore: ConcurrentMap<String, String> by lazy {

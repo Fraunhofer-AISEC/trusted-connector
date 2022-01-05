@@ -1,16 +1,5 @@
 <div class="mdl-grid">
-  <div metricCard [text]="'Messages Processed'" [value]="routemetrics.completed" class="mdl-cell mdl-cell--3-col"></div>
-  <div metricCard [text]="'Messages Failed'" [value]="routemetrics.failed" class="mdl-cell mdl-cell--3-col"></div>
-  <div metricCard [text]="'Mean Proc. (ms)'" [value]="routemetrics.meanProcessingTime" class="mdl-cell mdl-cell--3-col">
-  </div>
-  <div metricCard [text]="'Max Proc. (ms)'" [value]="routemetrics.maxProcessingTime" class="mdl-cell mdl-cell--3-col">
-  </div>
-</div>
-<div class="mdl-grid">
   <div class="mdl-cell mdl-cell--6-col" *ngFor="let route of routes; trackBy: trackRoutes">
     <route-card [route]="route"></route-card>
   </div>
 </div>
-<!-- <button [routerLink]="['/routeeditor']" class="new-route-button mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-  <em class="material-icons">add</em>
-</button> -->

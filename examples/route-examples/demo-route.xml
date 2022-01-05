@@ -57,7 +57,7 @@
 					<log message="### Handle ContractAgreementMessage ###"/>
 					<!-- Only processing of incoming request must be performed, no reply -->
 					<process ref="ContractAgreementReceiverProcessor"/>
-					<removeHeader headerName="idscp2-header" />
+					<removeHeader name="idscp2-header" />
 					<setBody><simple>${null}</simple></setBody>
 				</when>
 				<!-- ArtifactRequestMessage -->
@@ -69,7 +69,7 @@
 				<!-- all other messages -->
 				<otherwise>
 					<log message="### Server received (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-					<removeHeader headerName="idscp2-header" />
+					<removeHeader name="idscp2-header" />
 					<setBody><simple>${null}</simple></setBody>
 				</otherwise>
 			</choice>
@@ -158,13 +158,13 @@
 					<to uri="http://172.17.0.2:8080"/>
 					<log message="Response body\n\n${body}"/>
 					<!-- End of message exchange reached -->
-					<removeHeader headerName="idscp2-header" />
+					<removeHeader name="idscp2-header" />
 					<setBody><simple>${null}</simple></setBody>
 				</when>
 				<!-- all other messages -->
 				<otherwise>
 					<log message="### Client received (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-					<removeHeader headerName="idscp2-header" />
+					<removeHeader name="idscp2-header" />
 					<setBody><simple>${null}</simple></setBody>
 				</otherwise>
 			</choice>

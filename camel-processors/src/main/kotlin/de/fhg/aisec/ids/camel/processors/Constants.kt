@@ -24,5 +24,4 @@ object Constants {
     const val IDS_TYPE = "ids-type"
     const val CONTAINER_URI_PROPERTY = "containerUri"
     const val ARTIFACT_URI_PROPERTY = "artifactUri"
-    const val DEFAULT_DAPS_URL = "https://daps.aisec.fraunhofer.de"
 }
