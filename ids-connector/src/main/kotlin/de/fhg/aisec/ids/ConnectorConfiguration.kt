@@ -55,7 +55,11 @@ class ConnectorConfiguration {
                 settings.connectorProfile.maintainerUrl
                     ?: URI.create("http://connector-maintainer.ids")
             }
-            Utils.dapsUrlProducer = { settings.connectorConfig.dapsUrl }
+            Utils.dapsUrlProducer = {
+                System.getenv("TC_DAPS_URL")?.also {
+                    TrustedConnector.LOG.info("Found DAPS_URL env var, DAPS URL is overridden with $it")
+                } ?: settings.connectorConfig.dapsUrl
+            }
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
 
