@@ -31,9 +31,6 @@ if [ "$TARGET_UID" == "root" ] || [ "$TARGET_UID" == "0" ]; then
   ln -s "$M2_DIR" /root/.m2
   echo "Build parameters passed: $*"
   echo "User running ./gradlew: $(id)"
-  # Stop potentially conflicting gradle daemons
-  echo "Stopping potentially conflicting gradle daemons..."
-  ./gradlew --stop
   # Run build using all arguments from CMD
   ./gradlew "$@"
 else
@@ -50,6 +47,5 @@ else
   # Run build using all arguments from CMD, passing correct HOME variable
   sudo -u build -E sh -c "export HOME=\"/home/build\";
     echo \"User running ./gradlew: \$(id)\";
-    echo \"Stopping potentially conflicting gradle daemons...\";
-    ./gradlew --stop; ./gradlew $*"
+    ./gradlew $*"
 fi
