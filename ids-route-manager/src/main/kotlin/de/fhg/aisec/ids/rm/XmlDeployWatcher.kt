@@ -21,6 +21,7 @@ package de.fhg.aisec.ids.rm
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.BeansException
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -43,8 +44,6 @@ class XmlDeployWatcher : ApplicationContextAware {
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
     }
-
-    private val xmlContexts = mutableMapOf<String, CompletableFuture<AbstractXmlApplicationContext>>()
 
     private fun startXmlApplicationContext(xmlPath: String) {
         LOG.info("XML file {} detected, creating XmlApplicationContext...", xmlPath)
@@ -150,6 +149,20 @@ class XmlDeployWatcher : ApplicationContextAware {
     }
 
     companion object {
-        val LOG: Logger = LoggerFactory.getLogger(XmlDeployWatcher::class.java)
+        private val LOG: Logger = LoggerFactory.getLogger(XmlDeployWatcher::class.java)
+        private val xmlContexts = mutableMapOf<String, CompletableFuture<AbstractXmlApplicationContext>>()
+
+        @Throws(BeansException::class)
+        fun <T> getBeansOfType(type: Class<T>?): List<T> {
+            return xmlContexts.values
+                .mapNotNull {
+                    if (it.isDone) {
+                        it.get()
+                    } else {
+                        null
+                    }
+                }
+                .flatMap { it.getBeansOfType(type).values }
+        }
     }
 }

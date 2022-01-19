@@ -170,11 +170,9 @@ class RouteManagerService : RouteManager {
     private val camelContexts: List<CamelContext>
         get() {
             return try {
-                val contexts = ctx.getBeansOfType(CamelContext::class.java).values.toMutableList()
-
-                contexts.sortWith(Comparator.comparing { it.name })
-
-                return contexts
+                val appContexts = ctx.getBeansOfType(CamelContext::class.java).values.toList()
+                val watcherContexts = XmlDeployWatcher.getBeansOfType(CamelContext::class.java)
+                return listOf(appContexts, watcherContexts).flatten().sortedBy { it.name }
             } catch (e: Exception) {
                 LOG.warn("Cannot retrieve the list of Camel contexts.", e)
                 emptyList()
