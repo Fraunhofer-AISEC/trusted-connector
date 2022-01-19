@@ -15,7 +15,7 @@ export class KeycertsComponent implements OnInit {
     public certificates: Certificate[];
 
     constructor(private readonly titleService: Title, private readonly certificateService: CertificateService) {
-        this.titleService.setTitle('Identities');
+        this.titleService.setTitle('Certificates');
 
         this.certificateService.getIdentities()
             .subscribe(identities => {

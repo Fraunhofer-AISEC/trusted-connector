@@ -24,6 +24,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.webconsole.api.data.User
 import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
@@ -33,6 +34,7 @@ import java.security.SecureRandom
 import java.util.Calendar
 import javax.security.auth.login.LoginException
 import javax.ws.rs.Consumes
+import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
@@ -118,12 +120,50 @@ class UserApi(@Autowired private val settings: Settings) {
     }
 
     @POST
+    @Path("/setPassword")
+    @AuthorizationRequired
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun setPassword(user: User) {
+        if (user.username.isNullOrBlank() || user.password.isNullOrBlank()) {
+            LOG.error("Username or password blank, please provide valid credentials!")
+        } else {
+            settings.setPassword(user.username!!, argonEncoder.encode(user.password))
+        }
+    }
+
+    @POST
     @Path("/removeUser")
     @AuthorizationRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun removeUser(username: String) {
         settings.removeUser(username)
+    }
+
+    @GET
+    @Path("list_users")
+    @ApiOperation(
+        value = "List of all users.",
+        notes = "User accounts."
+    )
+    @Produces(
+        MediaType.APPLICATION_JSON
+    )
+    @AuthorizationRequired
+    fun listUsers(): List<User> {
+        val uList: List<User> = emptyList()
+        val uMap = settings.getUsers()
+        for ((k, v) in uMap) {
+            val user: User?
+            user = null
+            if (user != null) {
+                user.username = "$k"
+                user.password = ""
+                uList.toMutableList().add(user)
+            }
+        }
+        return uList
     }
 
     companion object {

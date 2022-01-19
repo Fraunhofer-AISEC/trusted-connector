@@ -47,6 +47,11 @@ import { RoutesComponent } from './routes/routes.component';
 import { ZoomVizComponent } from './routes/zoom-viz/zoom-viz.component';
 import { SensorService } from './sensor/sensor.service';
 import { ValuesPipe } from './values.pipe';
+import { UsersComponent } from './users/users.component';
+import { NewUserComponent } from './users/usernew.component';
+import { DetailUserComponent } from './users/userdetail.component';
+import { UserService } from './users/user.service';
+import { UserCardComponent } from './users/user-card.component';
 
 @NgModule({
   imports: [
@@ -88,7 +93,11 @@ import { ValuesPipe } from './values.pipe';
     ConnectionReportComponent,
     MDLUpgradeElementDirective,
     HomeLayoutComponent,
-    LoginLayoutComponent
+    LoginLayoutComponent,
+    NewUserComponent,
+    DetailUserComponent,
+    UserCardComponent,
+    UsersComponent
   ],
   providers: [
     HTTP_PROVIDER,
@@ -110,7 +119,8 @@ import { ValuesPipe } from './values.pipe';
             provide: HTTP_INTERCEPTORS,
             useClass: JwtInterceptor,
             multi: true
-    }
+    },
+    UserService
   ],
   bootstrap: [
     AppComponent
