@@ -83,6 +83,19 @@ class SettingsComponent : Settings {
                     settingsStore -= DAT_KEY
                     dbVersion = 3
                 }
+                3 -> {
+                    if (connectorConfig.dapsUrl == "https://daps.aisec.fraunhofer.de") {
+                        connectorConfig.let {
+                            connectorConfig = ConnectorConfig(
+                                it.appstoreUrl, it.brokerUrl, it.ttpHost, it.ttpPort, it.acmeServerWebcon,
+                                it.acmeDnsWebcon, it.acmePortWebcon, it.tosAcceptWebcon,
+                                "https://daps.aisec.fraunhofer.de/v2",
+                                it.keystoreName, it.keystorePassword, it.keystoreAliasName, it.truststoreName
+                            )
+                        }
+                    }
+                    dbVersion = 4
+                }
             }
             settingsStore[DB_VERSION_KEY] = dbVersion
             mapDB.commit()
@@ -155,7 +168,7 @@ class SettingsComponent : Settings {
 
     companion object {
         internal const val DB_VERSION_KEY = "db_version"
-        internal const val CURRENT_DB_VERSION = 3
+        internal const val CURRENT_DB_VERSION = 4
         internal const val CONNECTOR_SETTINGS_KEY = "main_config"
         internal const val CONNECTOR_PROFILE_KEY = "connector_profile"
         internal const val CONNECTOR_JSON_LD_KEY = "connector_json_ld"

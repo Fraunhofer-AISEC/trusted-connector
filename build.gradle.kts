@@ -16,7 +16,7 @@ plugins {
     java
 
     // Spring Boot
-    id("org.springframework.boot") version "2.6.1" apply false
+    id("org.springframework.boot") version "2.5.8" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     // Other needed plugins

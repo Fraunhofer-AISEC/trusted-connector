@@ -21,21 +21,21 @@ package de.fhg.aisec.ids.api.settings
 
 import java.io.Serializable
 
-class ConnectorConfig : Serializable {
-    val appstoreUrl = "https://raw.githubusercontent.com/industrial-data-space/templates/master/templates.json"
-    val brokerUrl = ""
-    val ttpHost = ""
-    val ttpPort = 443
-    val acmeServerWebcon = ""
-    val acmeDnsWebcon = ""
-    val acmePortWebcon = 80
-    val tosAcceptWebcon = false
-    val dapsUrl = "https://daps.aisec.fraunhofer.de"
-    val keystoreName = "provider-keystore.p12"
-    val keystorePassword = "password"
-    val keystoreAliasName = "1"
-    val truststoreName = "truststore.p12"
-
+data class ConnectorConfig(
+    val appstoreUrl: String = "https://raw.githubusercontent.com/industrial-data-space/templates/master/templates.json",
+    val brokerUrl: String = "",
+    val ttpHost: String = "",
+    val ttpPort: Int = 443,
+    val acmeServerWebcon: String = "",
+    val acmeDnsWebcon: String = "",
+    val acmePortWebcon: Int = 80,
+    val tosAcceptWebcon: Boolean = false,
+    val dapsUrl: String = "https://daps.aisec.fraunhofer.de/v2",
+    val keystoreName: String = "provider-keystore.p12",
+    val keystorePassword: String = "password",
+    val keystoreAliasName: String = "1",
+    val truststoreName: String = "truststore.p12"
+) : Serializable {
     companion object {
         private const val serialVersionUID = 1L
     }

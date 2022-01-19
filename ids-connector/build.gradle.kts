@@ -67,6 +67,8 @@ val copyProjectJars = tasks.create<Copy>("copyProjectJars") {
 
 tasks.withType<Jar> {
     enabled = true
+    // Always execute!
+    outputs.upToDateWhen { false }
     dependsOn(copyLibraryJars)
     dependsOn(copyProjectJars)
     // Copy the resulting JAR to internal libraries
