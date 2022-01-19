@@ -68,5 +68,5 @@ auth0Jwt: "3.8.2"
 swagger: "1.5.18"
 jose4j: "0.7.6"
 
-springBoot: "2.6.1"
+springBoot: "2.5.8"
 bouncyCastle: "1.68"
