@@ -19,7 +19,6 @@ jaxbImpl: "2.3.3"
 jaxActivation: "1.2.0"
 
 camel: "3.14.0"
-camelHttp4: "3.0.0-M4"
 influxDB: "2.14"
 
 # Camel ships with cxf, however it is slightly older so we want a newer version
