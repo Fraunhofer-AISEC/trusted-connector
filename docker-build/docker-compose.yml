@@ -2,7 +2,7 @@ version: '3'
 services:
   # Trusted Connector build container
   build-container:
-    image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-2.0}
+    image: fraunhoferaisec/docker-build:2.0
     tty: true
     stdin_open: true
     environment:
