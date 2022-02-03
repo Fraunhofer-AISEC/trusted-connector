@@ -1,0 +1,8 @@
+**/build
+**/.gradle
+.idea
+.git
+**/node_modules
+
+/etc
+/deploy

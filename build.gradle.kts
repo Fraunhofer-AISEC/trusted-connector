@@ -126,6 +126,18 @@ subprojects {
 //        options.isDeprecation = true
         dependsOn("spotlessApply")
     }
+
+    // Disable time-wasting tasks
+    tasks.withType<Zip> {
+        if (name in setOf("distZip", "bootDistZip")) {
+            enabled = false
+        }
+    }
+    tasks.withType<Tar> {
+        if (name in setOf("distTar", "bootDistTar")) {
+            enabled = false
+        }
+    }
 }
 
 configure(subprojects.filter { it.name != "examples" }) {

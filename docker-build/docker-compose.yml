@@ -1,9 +1,8 @@
 version: '3'
 services:
-
   # Trusted Connector build container
   build-container:
-    image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-develop}
+    image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-2.0}
     tty: true
     stdin_open: true
     environment:
@@ -13,5 +12,10 @@ services:
     volumes:
       - ..:/core-platform
       - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.gradle:/.gradle
-      - ~/.m2:/.m2
+      - tc-build-gradle:/.gradle
+      - tc-build-m2:/.m2
+      - tc-build-build:/build
+volumes:
+  tc-build-gradle:
+  tc-build-m2:
+  tc-build-build:

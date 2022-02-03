@@ -22,7 +22,10 @@ fi
 JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v javac))))
 export JAVA_HOME
 
-cd "$PROJECT_DIR" || exit 1
+echo "Synchronize build-relevant files to /build (build volume)..."
+rsync --exclude='/.git' --filter="dir-merge,- .dockerignore" -av --delete-after "$PROJECT_DIR" /build/
+
+cd /build
 
 # Get user UID of the /core-platfrom mount
 TARGET_UID=$(stat -c %u "$PROJECT_DIR")
@@ -49,3 +52,7 @@ else
     echo \"User running ./gradlew: \$(id)\";
     ./gradlew $*"
 fi
+
+echo "Synchronize built artifacts back to $PROJECT_DIR..."
+rsync -av --delete /build/ids-connector/build/libs/ "$PROJECT_DIR/ids-connector/build/libs/"
+echo ""
