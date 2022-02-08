@@ -3,6 +3,7 @@
 .idea
 .git
 **/node_modules
+.angular
 
 /etc
 /deploy

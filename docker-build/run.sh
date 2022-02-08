@@ -23,7 +23,7 @@ JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v javac))))
 export JAVA_HOME
 
 echo "Synchronize build-relevant files to /build (build volume)..."
-rsync --exclude='/.git' --filter="dir-merge,- .dockerignore" -av --delete-after "$PROJECT_DIR" /build/
+rsync --exclude='/.git' --filter="dir-merge,- .dockerignore" -av --delete-after "$PROJECT_DIR/" /build/
 echo ""
 
 cd /build
