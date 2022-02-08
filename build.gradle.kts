@@ -122,9 +122,8 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.compilerArgs.add("-Xlint:unchecked")
-//        options.isDeprecation = true
-        dependsOn("spotlessApply")
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
     }
 
     // Disable time-wasting tasks
@@ -145,7 +144,7 @@ configure(subprojects.filter { it.name != "examples" }) {
 
     spotless {
         kotlin {
-            target("**/*.kt")
+            target("src/*/kotlin/**/*.kt")
             ktlint(libraryVersions["ktlint"])
             licenseHeader(
                 """/*-
