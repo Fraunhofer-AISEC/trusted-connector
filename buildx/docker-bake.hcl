@@ -5,7 +5,3 @@ target "build-container" {
 target "core" {
   output = ["type=docker"]
 }
-
-//target "tpmsim" {
-//  output = ["type=docker"]
-//}

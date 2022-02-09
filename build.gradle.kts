@@ -46,7 +46,7 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "6.0.0"
+    version = "6.1.0"
 }
 
 subprojects {
@@ -122,9 +122,20 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.compilerArgs.add("-Xlint:unchecked")
-//        options.isDeprecation = true
-        dependsOn("spotlessApply")
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
+    }
+
+    // Disable time-wasting tasks
+    tasks.withType<Zip> {
+        if (name in setOf("distZip", "bootDistZip")) {
+            enabled = false
+        }
+    }
+    tasks.withType<Tar> {
+        if (name in setOf("distTar", "bootDistTar")) {
+            enabled = false
+        }
     }
 }
 
@@ -133,7 +144,7 @@ configure(subprojects.filter { it.name != "examples" }) {
 
     spotless {
         kotlin {
-            target("**/*.kt")
+            target("src/*/kotlin/**/*.kt")
             ktlint(libraryVersions["ktlint"])
             licenseHeader(
                 """/*-

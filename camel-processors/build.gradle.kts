@@ -1,8 +1,6 @@
 @Suppress("UNCHECKED_CAST")
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
-version = libraryVersions["idscp2"] ?: error("IDSCP2 version not specified")
-
 dependencies {
     implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"])
 

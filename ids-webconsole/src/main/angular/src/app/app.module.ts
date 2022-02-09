@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import 'material-design-lite';
-import { AceEditorModule } from 'ng2-ace-editor';
 
 import { AuthGuard } from './_guards/auth.guard';
 import { JwtInterceptor } from './_interceptors/jwt.interceptor';
@@ -50,7 +49,6 @@ import { ValuesPipe } from './values.pipe';
 
 @NgModule({
   imports: [
-    AceEditorModule,
     BrowserModule,
     routing,
     HttpClientModule,
