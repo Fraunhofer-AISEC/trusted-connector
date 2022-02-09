@@ -1,68 +1,50 @@
-<form [formGroup]="myForm" novalidate class="mdl-cell--12-col mdl-grid"> <!--(ngSubmit)="save()"-->
-	<div class="mdl-grid mdl-cell mdl-cell--12-col" *ngIf="route">
-		<div class="mdl-cell mdl-cell--12-col">
-			<h3 >{{ route.id }}</h3>
-		</div>
+<div class="mdl-grid mdl-cell mdl-cell--12-col" *ngIf="route">
+	<div class="mdl-cell mdl-cell--12-col">
+		<h3 >{{ route.id }}</h3>
+	</div>
 
-		<div class="app-card mdl-card mdl-cell mdl-cell--4-col mdl-shadow--2dp">
-			<div class="mdl-card__title">
-				Route data
-			</div>
-			<div class="mdl-card__supporting-text">
-				{{ route.description }}
-				<div class="mdl-grid">
-					<div class="mdl-cell mdl-cell--6-col">Ctx Uptime</div>
-					<div class="mdl-cell mdl-cell--6-col">{{ routeUpMinutes }} minutes</div>
-					<div class="mdl-cell mdl-cell--6-col">Context</div>
-					<div class="mdl-cell mdl-cell--6-col">{{ route.context }}</div>
-					<div class="mdl-cell mdl-cell--6-col">Status</div>
-					<div class="mdl-cell mdl-cell--6-col">{{ route.status }}</div>
-				</div>
+	<div class="app-card mdl-card mdl-cell mdl-cell--4-col mdl-shadow--2dp">
+		<div class="mdl-card__title">
+			Route data
+		</div>
+		<div class="mdl-card__supporting-text">
+			{{ route.description }}
+			<div class="mdl-grid">
+				<div class="mdl-cell mdl-cell--6-col">Ctx Uptime</div>
+				<div class="mdl-cell mdl-cell--6-col">{{ routeUpMinutes }} minutes</div>
+				<div class="mdl-cell mdl-cell--6-col">Context</div>
+				<div class="mdl-cell mdl-cell--6-col">{{ route.context }}</div>
+				<div class="mdl-cell mdl-cell--6-col">Status</div>
+				<div class="mdl-cell mdl-cell--6-col">{{ route.status }}</div>
 			</div>
 		</div>
+	</div>
 
-		<div class="app-card mdl-card mdl-cell mdl-cell--8-col mdl-shadow--2dp">
-			<div class="mdl-card__title">
-				Visualization
-			</div>
-			<div class="mdl-card__supporting-text">
-				<zoom-viz [dotSubject]="dotSubject"></zoom-viz>
-			</div>
+	<div class="app-card mdl-card mdl-cell mdl-cell--8-col mdl-shadow--2dp">
+		<div class="mdl-card__title">
+			Visualization
 		</div>
+		<div class="mdl-card__supporting-text">
+			<zoom-viz [dotSubject]="dotSubject"></zoom-viz>
+		</div>
+	</div>
 
-		<div class="mdl-cell mdl-cell--12-col">
-			<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
-			<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
-				class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{ validationInfo.valid ? 'Valid' : 'Invalid' }}</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">
-				<p>This route does not violate any usage control policies</p>
-			</div>
-			<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
-				<p>This route violates usage control policies</p>
-				<pre *ngFor="let ce of validationInfo.counterExamples; trackBy: trackCounterExamples">
+	<div class="mdl-cell mdl-cell--12-col">
+		<div class="mdl-cell mdl-cell--3-col typo-styles__demo mdl-typography--title">Data Flow Validity</div>
+		<div [ngClass]="{'mdl-color-text--green': validationInfo.valid, 'mdl-color-text--red-A700': !validationInfo.valid}"
+			class="mdl-cell mdl-cell--9-col typo-styles__demo mdl-typography--title">{{ validationInfo.valid ? 'Valid' : 'Invalid' }}</div>
+		<div class="mdl-cell mdl-cell--12-col" *ngIf="validationInfo.valid">
+			<p>This route does not violate any usage control policies</p>
+		</div>
+		<div class="mdl-cell mdl-cell--12-col" *ngIf="!validationInfo.valid">
+			<p>This route violates usage control policies</p>
+			<pre *ngFor="let ce of validationInfo.counterExamples; trackBy: trackCounterExamples">
 <em class="mdl-color-text--red-A700">{{ ce.explanation }}</em>
 <span *ngFor="let step of ce.steps; trackBy: trackSteps">{{ step }}
 </span></pre>
-			</div>
 		</div>
 	</div>
-	<div class="mdl-grid mdl-cell mdl-cell--12-col" *ngIf="route || newRoute">
-		<div class="mdl-textfield__error" style="visibility: visible;position:relative;margin-left:8px" *ngIf="!result.successful">{{ result.message }}</div>
-
-		<div class="mdl-cell mdl-cell--12-col">
-			<div ace-editor
-				[(text)]="textRepresentation"
-				[mode]="'xml'"
-				[theme]="'eclipse'"
-				[options]="{maxLines: 1000, printMargin: false}"
-				[readOnly]="false"
-				[autoUpdateContent]="true"
-				[durationBeforeCallback]="100"
-				style="min-height: 400px; width:100%; overflow: auto; font-size:16px; font-family: Consolas,Monaco,'Andale Mono',monospace;"></div>
-		</div>
-		<!-- <button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved }">
-			<span>{{ route ? 'Apply' : 'Save' }}</span>
-		</button> -->
-	</div>
-
-</form>
+</div>
+<div class="mdl-grid mdl-cell mdl-cell--12-col" *ngIf="route || newRoute">
+	<div class="mdl-textfield__error" style="visibility: visible;position:relative;margin-left:8px" *ngIf="!result.successful">{{ result.message }}</div>
+</div>

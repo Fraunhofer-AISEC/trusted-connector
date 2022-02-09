@@ -6,10 +6,7 @@ val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, St
 
 apply(plugin = "com.google.protobuf")
 
-val protobufGeneratedDir = "$projectDir/generated"
-
 protobuf {
-    generatedFilesBaseDir = protobufGeneratedDir
     if (findProperty("protocDownload")?.toString()?.toBoolean() != false) {
         protoc {
             artifact = "com.google.protobuf:protoc:${libraryVersions["protobuf"]}"
@@ -17,16 +14,7 @@ protobuf {
     }
 }
 
-// Since there are no Java sources in this project except the protobuf-generated ones,
-// we use this to silence output (protobuf deprecation warnings) during standard build.
-tasks.withType<JavaCompile> {
-    logging.captureStandardError(LogLevel.INFO)
-}
-
 tasks.clean {
-    doFirst {
-        delete(protobufGeneratedDir)
-    }
     // Sometimes required to fix an error caused by non-existence of this folder.
     doLast {
         mkdir("${project.buildDir}/classes/kotlin/main")
