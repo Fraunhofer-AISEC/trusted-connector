@@ -19,10 +19,10 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.camel.processors.Constants.CONTAINER_URI_PROPERTY
 import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
+import de.fhg.aisec.ids.camel.processors.Utils.TYPE_DATETIMESTAMP
 import de.fraunhofer.iais.eis.Action
 import de.fraunhofer.iais.eis.BinaryOperator
 import de.fraunhofer.iais.eis.ConstraintBuilder
@@ -32,10 +32,12 @@ import de.fraunhofer.iais.eis.ContractRequestMessage
 import de.fraunhofer.iais.eis.ContractResponseMessageBuilder
 import de.fraunhofer.iais.eis.LeftOperand
 import de.fraunhofer.iais.eis.PermissionBuilder
+import de.fraunhofer.iais.eis.util.TypedLiteral
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
 import java.net.URI
+import de.fhg.aisec.ids.camel.idscp2.Utils as Idscp2Utils
 
 /**
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
@@ -71,12 +73,24 @@ class ContractRequestProcessor : Processor {
             .split(Regex("\\s+"))
             .map { URI.create(it.trim()) }
             .toList()
-        val contractDate = Utils.createGregorianCalendarTimestamp(System.currentTimeMillis())
+        val contractDate = Idscp2Utils.createGregorianCalendarTimestamp(System.currentTimeMillis())
+        val timeConstraint = ConstraintBuilder()
+            ._leftOperand_(LeftOperand.POLICY_EVALUATION_TIME)
+            ._operator_(BinaryOperator.LT)
+            ._rightOperand_(
+                TypedLiteral(
+                    contractDate.copy().apply {
+                        add(Utils.newDuration(3_600_000))
+                    }.toString(),
+                    TYPE_DATETIMESTAMP
+                )
+            )
+            .build()
         val contractOffer = ContractOfferBuilder()
             ._contractDate_(contractDate)
             ._contractStart_(contractDate)
             // Contract end one year in the future
-            ._contractEnd_(contractDate.apply { year += 1 })
+            ._contractEnd_(contractDate.copy().apply { year += 1 })
             // Permissions for data processing inside specific "systems" (docker containers)
             ._permission_(
                 containerUris.map {
@@ -89,7 +103,8 @@ class ContractRequestProcessor : Processor {
                                     ._leftOperand_(LeftOperand.SYSTEM)
                                     ._operator_(BinaryOperator.SAME_AS)
                                     ._rightOperandReference_(it)
-                                    .build()
+                                    .build(),
+                                timeConstraint
                             )
                         )
                         .build()
