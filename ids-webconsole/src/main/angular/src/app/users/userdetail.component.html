@@ -2,31 +2,38 @@
 <div class="mdl-grid">
 	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
 		<div class="mdl-card__title">
-			<h2 class="mdl-card__title-text">User details</h2>
+			<h2 class="mdl-card__title-text">User settings</h2>
 		</div>
     <div class="mdl-card__supporting-text">
 
 
-      <form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
+      <form [formGroup]="myForm" novalidate (ngSubmit)="save()" class="mdl-cell--12-col mdl-grid">
         <div class="mdl-cell--12-col">
         <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="username">User Name*</label>
-            <input class="mdl-textfield__input" id="username" type="text" formControlName="username">
-            <span [hidden]="myForm.controls.username.valid || !myForm.controls.username.dirty" class="mdl-textfield__error">User name is required.</span>
+          <label class="mdl-textfield__label">User Name</label>
+          <input class="mdl-textfield__input" type="text" id="user" name="user" [value]="userId"/>
+          <span [hidden]="myForm.controls.username.valid || !myForm.controls.username.dirty" class="mdl-textfield__error">User name is required.</span>
           </div>
         </div>
         <div class="mdl-cell--12-col">
           <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="password">New Password*</label>
-            <input class="mdl-textfield__input" id="password" type="password" formControlName="password" required minlength="4" password>
-            <span [hidden]="myForm.controls.password.valid || (myForm.controls.password.pristine)" class="mdl-textfield__error">Password is required.</span>
+            <label class="mdl-textfield__label" for="oldpassword">Old Password*</label>
+            <input class="mdl-textfield__input" id="oldpassword" type="password" formControlName="oldpassword" required minlength="4" password>
+            <span [hidden]="myForm.controls.oldpassword.valid || (myForm.controls.oldpassword.pristine)" class="mdl-textfield__error">Password is required.</span>
+          </div>
+          <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+            <label class="mdl-textfield__label" for="newpassword">New Password*</label>
+            <input class="mdl-textfield__input" id="newpassword" type="password" formControlName="newpassword" required minlength="4" password>
+            <span [hidden]="myForm.controls.newpassword.valid || (myForm.controls.newpassword.pristine)" class="mdl-textfield__error">Password is required.</span>
+          </div>
+          <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+            <label class="mdl-textfield__label" for="repeatpassword">Repeat new Password*</label>
+            <input class="mdl-textfield__input" id="repeatpassword" type="password" formControlName="repeatpassword" required minlength="4" password>
+            <span [hidden]="myForm.controls.repeatpassword.valid || (myForm.controls.repeatpassword.pristine)" class="mdl-textfield__error">Password is required.</span>
           </div>
         </div>
         <div class="mdl-cell--12-col" style="margin-top:20px">
           <button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Change Password</button>
-        </div>
-        <div class="mdl-cell--12-col" style="margin-top:20px">
-          <button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Delete User</button>
         </div>
       </form>
     </div>
