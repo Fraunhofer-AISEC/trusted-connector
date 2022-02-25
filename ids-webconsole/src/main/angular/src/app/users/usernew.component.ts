@@ -28,11 +28,16 @@ export class NewUserComponent implements OnInit {
       });
     }
 
-    public async save(user: User): Promise<boolean> {
+    public async save(user: User): Promise<void> {
          // Call REST to create user
         this.userService.createUser(user)
             .subscribe(() => undefined);
-       return this.router.navigate(['/users']);
+       this.router.navigate(['/users'])
+       .then(() => {
+           window.location.reload();
+         });
     }
+
+
 
 }

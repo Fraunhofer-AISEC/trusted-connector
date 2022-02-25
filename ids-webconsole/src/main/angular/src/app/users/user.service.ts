@@ -4,15 +4,15 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 
-import { User } from './user';
+import { User } from './user.interface';
 
 @Injectable()
 export class UserService {
   constructor(private readonly http: HttpClient) { }
 
   // get users
-  public getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(environment.apiURL + '/user/list_users');
+  public getUsers(): Observable<string[]> {
+    return this.http.get<string[]>(environment.apiURL + '/user/list_user_names');
   }
 
   // create new user
@@ -26,19 +26,20 @@ export class UserService {
     }
 
   // set password
-  public setPassword(user: User): Observable<string> {
+  public setPassword(user: string, oldPW: string, newPW: string): Observable<string> {
       const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-      const body = JSON.stringify(user);
-      return this.http.post(environment.apiURL + '/user/setPassword', body, {
+      const s = '{\"username\":\"'+user+'\",\"oldPassword\":\"'+oldPW+'\",\"newPassword\":\"'+newPW+'\"}';
+      return this.http.post(environment.apiURL + '/user/setPassword', s, {
         headers,
         responseType: 'text'
       });
   }
 
   // delete user
-  public deleteUser(alias: string): Observable<string> {
+  public deleteUser(user: string): Observable<string> {
+    console.log('delete:'+ environment.apiURL + '/user/removeUser/' + user);
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post(environment.apiURL + '/user/removeUser', alias, {
+    return this.http.delete(environment.apiURL + '/user/removeUser/'+  user, {
       headers,
       responseType: 'text'
     });
