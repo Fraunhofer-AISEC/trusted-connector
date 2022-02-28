@@ -29,6 +29,7 @@ checkerQual: "2.5.2"
 guava: "30.1-jre"
 slf4j: "1.7.30"
 junit4: "4.13.2"
+junit5: "5.8.2"
 mockito: "3.8.0"
 mapdb: "3.0.7"
 # jnrunix and jnrffi must be consistent

@@ -21,8 +21,8 @@ package de.fhg.aisec.ids.webconsole.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.fhg.aisec.ids.api.cm.ApplicationContainer
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -69,7 +69,7 @@ class PortainerCompatibilityIT {
         }
         val mapper = ObjectMapper()
         val cont = mapper.readValue(json.toByteArray(), Array<ApplicationContainer>::class.java)
-        Assert.assertNotNull(cont)
-        Assert.assertTrue(cont.isNotEmpty())
+        Assertions.assertNotNull(cont)
+        Assertions.assertTrue(cont.isNotEmpty())
     }
 }
