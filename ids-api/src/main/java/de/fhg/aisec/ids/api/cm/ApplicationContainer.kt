@@ -63,6 +63,7 @@ class ApplicationContainer {
     var platform = "linux"
     var logo: String? = null
     var registry = ""
+    var command = ""
     var network: String? = null
     var env: List<Map<String, Any>> = emptyList()
     var isPrivileged = false
