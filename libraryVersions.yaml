@@ -2,7 +2,7 @@ idscp2: "0.9.2"
 ktlint: "0.43.2"
 
 # Pinning
-okhttp: "5.0.0-alpha.3"
+okhttp: "5.0.0-alpha.5"
 
 # Kotlin library/compiler version
 kotlin: "1.6.10"
