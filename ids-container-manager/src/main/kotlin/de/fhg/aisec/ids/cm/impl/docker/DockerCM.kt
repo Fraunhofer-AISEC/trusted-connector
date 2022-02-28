@@ -169,11 +169,18 @@ class DockerCM : ContainerManager {
     }
 
     override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
+        val jsonArrayToList = { jsonValue: JsonValue? ->
+            when (jsonValue) {
+                is JsonArray -> jsonValue.map { (it as JsonString).string }
+                else -> null
+            }
+        }
         return getContainerSequence(!onlyRunning, withSize = true)
             .map { c: Container ->
                 try {
                     val info = c.inspect()
                     val imageInfo = getImage(c)?.inspect()
+                    val imageConfig = imageInfo?.getJsonObject("Config")
                     val state = info.getJsonObject("State")
                     val config = info.getJsonObject("Config")
                     val running = state.getBoolean("Running")
@@ -187,9 +194,11 @@ class DockerCM : ContainerManager {
                     app.id = c.containerId()
                     app.image = config.getString("Image")
                     app.imageId = imageInfo?.getString("Id")
-                    app.imageDigests =
-                        imageInfo?.getJsonArray("RepoDigests")?.map { (it as JsonString).string }
-                            ?: emptyList()
+                    app.cmd = jsonArrayToList(config["Cmd"])
+                    app.entrypoint = jsonArrayToList(config["Entrypoint"])
+                    app.imageCmd = jsonArrayToList(imageConfig?.get("Cmd"))
+                    app.imageEntrypoint = jsonArrayToList(imageConfig?.get("Entrypoint"))
+                    app.repoDigest = jsonArrayToList(imageInfo?.get("RepoDigests"))
                     app.ipAddresses =
                         networks
                             .values
@@ -355,7 +364,7 @@ class DockerCM : ContainerManager {
                     )
                 } else {
                     val groups = match.groupValues
-                    val protocol = (if (groups[4].isEmpty()) "tcp" else groups[4])
+                    val protocol = (groups[4].ifEmpty { "tcp" })
                     exposedPorts.add(groups[3] + "/" + protocol, JsonValue.EMPTY_JSON_OBJECT)
                     val portBinding = Json.createObjectBuilder()
                     if (groups[1].isNotEmpty()) {

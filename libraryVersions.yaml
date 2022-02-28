@@ -55,6 +55,8 @@ dockerJavaApi: "0.0.11"
 # We will pull in a newer version of jackson because of security fixes
 jackson: "2.13.0"
 
+orgJson: "20210307"
+
 # Needed for camel multipart processor
 commonsFileUpload: "1.4"
 

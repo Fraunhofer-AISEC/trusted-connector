@@ -21,14 +21,18 @@ package de.fhg.aisec.ids.camel.processors
 
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import java.net.URI
+import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
-import javax.xml.datatype.Duration
 import javax.xml.datatype.XMLGregorianCalendar
 
 object Utils {
     val SERIALIZER: Serializer by lazy { Serializer() }
     val TYPE_DATETIMESTAMP: URI = URI.create("http://www.w3.org/2001/XMLSchema#dateTimeStamp")
-    fun newDuration(millis: Long): Duration = DatatypeFactory.newInstance().newDuration(millis)
+    val DATATYPE_FACTORY: DatatypeFactory = DatatypeFactory.newInstance()
+    fun newGregorianCalendar(millis: Long = System.currentTimeMillis()): XMLGregorianCalendar =
+        DATATYPE_FACTORY.newXMLGregorianCalendar(
+            GregorianCalendar().apply { timeInMillis = millis }
+        )
 }
 
 fun XMLGregorianCalendar.copy() = this.clone() as XMLGregorianCalendar

@@ -19,28 +19,18 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.camel.processors.Constants.CONTAINER_URI_PROPERTY
 import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
-import de.fhg.aisec.ids.camel.processors.Utils.TYPE_DATETIMESTAMP
-import de.fraunhofer.iais.eis.AbstractConstraint
-import de.fraunhofer.iais.eis.Action
-import de.fraunhofer.iais.eis.BinaryOperator
-import de.fraunhofer.iais.eis.ConstraintBuilder
-import de.fraunhofer.iais.eis.ContractOfferBuilder
 import de.fraunhofer.iais.eis.ContractOfferMessageBuilder
-import de.fraunhofer.iais.eis.LeftOperand
-import de.fraunhofer.iais.eis.PermissionBuilder
-import de.fraunhofer.iais.eis.util.TypedLiteral
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
 import java.net.URI
-import de.fhg.aisec.ids.camel.idscp2.Utils as Idscp2Utils
 
 /**
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
  */
+@Suppress("unused")
 class ContractOfferCreationProcessor : Processor {
 
     override fun process(exchange: Exchange) {
@@ -55,7 +45,6 @@ class ContractOfferCreationProcessor : Processor {
             exchange.message.setHeader(IDSCP2_HEADER, it)
         }
 
-        val constraints = mutableListOf<AbstractConstraint>()
         // create ContractOffer, allowing use of received data in the given container only
         val artifactUri = exchange.getProperty(Constants.ARTIFACT_URI_PROPERTY)?.let {
             if (it is URI) {
@@ -63,48 +52,9 @@ class ContractOfferCreationProcessor : Processor {
             } else {
                 URI.create(it.toString())
             }
-        }
-        exchange.getProperty(CONTAINER_URI_PROPERTY).let {
-            val containerUri = if (it is URI) {
-                it
-            } else {
-                URI.create(it.toString())
-            }
-            constraints += ConstraintBuilder()
-                ._leftOperand_(LeftOperand.SYSTEM)
-                ._operator_(BinaryOperator.SAME_AS)
-                ._rightOperandReference_(containerUri)
-                .build()
-        }
-        val contractDate = Idscp2Utils.createGregorianCalendarTimestamp(System.currentTimeMillis())
-        constraints += ConstraintBuilder()
-            ._leftOperand_(LeftOperand.POLICY_EVALUATION_TIME)
-            ._operator_(BinaryOperator.LT)
-            ._rightOperand_(
-                TypedLiteral(
-                    contractDate.apply {
-                        add(Utils.newDuration(3_600_000))
-                    }.toString(),
-                    TYPE_DATETIMESTAMP
-                )
-            )
-            .build()
-        val contractOffer = ContractOfferBuilder()
-            ._contractDate_(contractDate)
-            ._contractStart_(contractDate)
-            // Contract end one year in the future
-            ._contractEnd_(contractDate.apply { year += 1 })
-            // Permission for data processing inside a specific system (docker container)
-            ._permission_(
-                listOf(
-                    PermissionBuilder()
-                        ._target_(artifactUri)
-                        ._action_(listOf(Action.USE))
-                        ._constraint_(constraints)
-                        .build()
-                )
-            )
-            .build()
+        } ?: throw RuntimeException("No property \"artifactUri\" found in Exchange, cannot build contract!")
+
+        val contractOffer = ContractFactory.buildContractOffer(artifactUri, exchange)
 
         SERIALIZER.serialize(contractOffer).let {
             if (LOG.isDebugEnabled) {
