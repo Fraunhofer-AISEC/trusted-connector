@@ -31,20 +31,23 @@ import org.apache.cxf.jaxrs.JAXRSServerFactoryBean
 import org.apache.cxf.jaxrs.client.WebClient
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider
 import org.apache.cxf.transport.local.LocalConduit
-import org.junit.AfterClass
-import org.junit.Assert
-import org.junit.Assume
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.mockito.Mockito
 import javax.ws.rs.core.GenericType
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import kotlin.String
 
-class RestApiTests : Assert() {
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
+class RestApiTests : Assertions() {
     private fun newClient(token: String?): WebClient {
         // Client uses Jackson for JSON mapping
         val jackson = JacksonJsonProvider()
@@ -57,7 +60,7 @@ class RestApiTests : Assert() {
         return client
     }
 
-    @Before
+    @BeforeEach
     fun before() {
         val certApi = CertApi(settings)
         val idSpec = Identity()
@@ -69,6 +72,7 @@ class RestApiTests : Assert() {
     }
 
     @Test
+    @Order(1)
     fun testListCerts() {
         val token = login()
         val client = newClient(token!!)
@@ -80,6 +84,7 @@ class RestApiTests : Assert() {
     }
 
     @Test
+    @Order(1)
     fun testListIdentities() {
         val token = login()
         val client = newClient(token!!)
@@ -91,6 +96,7 @@ class RestApiTests : Assert() {
     }
 
     @Test
+    @Order(2)
     fun testCreateIdentity() {
         val token = login()
         val client = newClient(token!!)
@@ -107,6 +113,7 @@ class RestApiTests : Assert() {
     }
 
     @Test
+    @Order(3)
     fun testDeleteIdentity() {
         val token = login()
 
@@ -115,7 +122,7 @@ class RestApiTests : Assert() {
         client.accept(MediaType.APPLICATION_JSON)
         client.path("/certs/list_identities")
         val certs: List<Cert> = client.get(object : GenericType<List<Cert>>() {})
-        Assume.assumeFalse(certs.isEmpty())
+        assertFalse(certs.isEmpty())
 
         // Choose an identity and delete it
         client = newClient(token)
@@ -136,7 +143,7 @@ class RestApiTests : Assert() {
         assertFalse(contained)
     }
 
-    @Ignore("Needs Fix, non-critical")
+    @Disabled("Needs Fix, non-critical")
     @Test
     fun deleteCerts() {
         val token = login()
@@ -146,7 +153,7 @@ class RestApiTests : Assert() {
         client.accept(MediaType.APPLICATION_JSON)
         client.path("/certs/list_certs")
         val certs: List<Cert> = client.get(object : GenericType<List<Cert>>() {})
-        Assume.assumeFalse(certs.isEmpty())
+        assertFalse(certs.isEmpty())
 
         // Choose a cert and delete it
         client = newClient(token)
@@ -178,7 +185,7 @@ class RestApiTests : Assert() {
         c.path("/metric/get")
         val metrics: Map<String, String> =
             c.get(object : GenericType<Map<String, String>>() {})
-        Assume.assumeFalse(metrics.isEmpty())
+        assertFalse(metrics.isEmpty())
     }
 
     /**
@@ -208,7 +215,7 @@ class RestApiTests : Assert() {
             Settings::class.java
         )
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun initialize() {
             val connectorConfig = ConnectorConfig()
@@ -239,7 +246,7 @@ class RestApiTests : Assert() {
             server = sf.create()
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun destroy() {
             server.run {

@@ -79,7 +79,7 @@ dependencies {
 
     compileOnly("io.swagger", "swagger-jaxrs", libraryVersions["swagger"])
 
-    testImplementation("junit", "junit", libraryVersions["junit4"])
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", libraryVersions["junit5"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
     testImplementation("org.apache.cxf", "cxf-rt-transports-local", libraryVersions["cxf"])
     testImplementation("org.apache.cxf", "cxf-rt-rs-client", libraryVersions["cxf"])

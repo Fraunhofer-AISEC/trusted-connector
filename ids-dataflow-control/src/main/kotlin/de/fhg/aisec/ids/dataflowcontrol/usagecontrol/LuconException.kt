@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-processors
+ * ids-dataflow-control
  * %%
- * Copyright (C) 2021 Fraunhofer AISEC
+ * Copyright (C) 2022 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.processors
+package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
 
-object Constants {
-    const val IDSCP2_HEADER = "idscp2-header"
-    const val IDS_TYPE = "ids-type"
-    const val UC_DOCKER_IMAGE_URIS = "uc-docker-image-uris"
-    const val UC_NOT_BEFORE_DATETIME = "uc-not-before-datetime"
-    const val UC_NOT_AFTER_DATETIME = "uc-not-after-datetime"
-    const val ARTIFACT_URI_PROPERTY = "artifactUri"
+class LuconException : RuntimeException {
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

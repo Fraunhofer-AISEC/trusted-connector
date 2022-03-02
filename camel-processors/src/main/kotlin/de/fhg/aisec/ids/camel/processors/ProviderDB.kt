@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 object ProviderDB {
     val availableArtifactURIs: ConcurrentHashMap<URI, String> = ConcurrentHashMap()
     val artifactUrisMapped2ContractAgreements:
-        ConcurrentHashMap<Pair<URI, AppLayerConnection>, URI> = ConcurrentHashMap()
+        ConcurrentHashMap<Pair<URI, AppLayerConnection?>, URI> = ConcurrentHashMap()
     val contractAgreements: ConcurrentHashMap<URI, ContractAgreement> = ConcurrentHashMap()
 
     init {
