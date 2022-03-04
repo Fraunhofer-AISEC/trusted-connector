@@ -36,7 +36,11 @@ dependencies {
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")
     implementation("org.apache.camel.springboot:camel-rest-starter")
     implementation("org.apache.camel.springboot:camel-http-starter")
+
+    // IDSCP2
     implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"])
+    // Guava for weakly-keyed Map
+    implementation("com.google.guava", "guava", libraryVersions["guava"])
 }
 
 // Clears library JARs before copying

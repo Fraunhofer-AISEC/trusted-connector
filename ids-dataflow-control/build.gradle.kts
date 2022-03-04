@@ -15,8 +15,10 @@ dependencies {
     implementation("org.apache.commons", "commons-text", libraryVersions["commonsText"])
     implementation("com.codepoetics", "protonpack", libraryVersions["protonpack"])
     implementation("org.antlr", "antlr4-runtime", libraryVersions["antlr4"])
-    implementation("com.squareup.okhttp3", "okhttp", libraryVersions["okhttp"])
-    implementation("org.json", "json", libraryVersions["orgJson"])
+    implementation("io.ktor", "ktor-client-core", libraryVersions["ktor"])
+    implementation("io.ktor", "ktor-client-java", libraryVersions["ktor"])
+    implementation("io.ktor", "ktor-client-content-negotiation", libraryVersions["ktor"])
+    implementation("io.ktor", "ktor-serialization-jackson", libraryVersions["ktor"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
