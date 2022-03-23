@@ -4,7 +4,7 @@ import org.yaml.snakeyaml.Yaml
 
 buildscript {
     dependencies {
-        classpath("org.yaml:snakeyaml:1.29")
+        classpath("org.yaml:snakeyaml:1.30")
     }
 }
 
@@ -16,23 +16,23 @@ plugins {
     java
 
     // Spring Boot
-    id("org.springframework.boot") version "2.5.8" apply false
+    id("org.springframework.boot") version "2.6.4" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     // Other needed plugins
     id("com.moowork.node") version "1.3.1" apply false
-    // Latest version compiled with Java 11
-    id("com.benjaminsproule.swagger") version "1.0.8" apply false
+    id("com.benjaminsproule.swagger") version "1.0.14" apply false
 
     // Protobuf
-    id("com.google.protobuf") version "0.8.17" apply false
+    id("com.google.protobuf") version "0.8.18" apply false
 
     // Kotlin specific
     kotlin("jvm") version "1.6.10" apply false
     kotlin("plugin.spring") version "1.6.10" apply false
 
-    id("com.diffplug.spotless") version "5.11.0"
-    id("com.github.jk1.dependency-license-report") version "1.16"
+    id("com.diffplug.spotless") version "6.3.0"
+    id("com.github.jk1.dependency-license-report") version "2.1"
+    id("com.github.ben-manes.versions") version "0.42.0"
 }
 
 @Suppress("UNCHECKED_CAST")

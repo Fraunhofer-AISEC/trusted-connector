@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.cm.impl.docker
 import com.amihaiemil.docker.Container
 import com.amihaiemil.docker.Docker
 import com.amihaiemil.docker.Images
-import com.amihaiemil.docker.LocalDocker
+import com.amihaiemil.docker.UnixDocker
 import de.fhg.aisec.ids.api.cm.ApplicationContainer
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.cm.ContainerStatus
@@ -86,11 +86,11 @@ class DockerCM : ContainerManager {
             }
 
         init {
-            try { // We have to modify the thread class loader for docker-java-api to find its
-                // config
+            try {
+                // We have to modify the thread class loader for docker-java-api to find its config
                 val threadContextClassLoader = Thread.currentThread().contextClassLoader
-                Thread.currentThread().contextClassLoader = LocalDocker::class.java.classLoader
-                DOCKER_CLIENT = LocalDocker(File("/var/run/docker.sock"))
+                Thread.currentThread().contextClassLoader = UnixDocker::class.java.classLoader
+                DOCKER_CLIENT = UnixDocker(File("/var/run/docker.sock"))
                 Thread.currentThread().contextClassLoader = threadContextClassLoader
             } catch (x: Exception) {
                 LOG.error("Error initializing docker client", x)

@@ -1,7 +1,7 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 plugins {
-    id("com.github.gmazzo.buildconfig") version "2.0.2"
+    id("com.github.gmazzo.buildconfig") version "3.0.3"
 }
 
 @Suppress("UNCHECKED_CAST")
