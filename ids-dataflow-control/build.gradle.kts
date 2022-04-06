@@ -14,7 +14,6 @@ dependencies {
 //    implementation("it.unibo.alice.tuprolog", "2p-presentation", libraryVersions["2p"])
     implementation("org.apache.commons", "commons-text", libraryVersions["commonsText"])
     implementation("com.codepoetics", "protonpack", libraryVersions["protonpack"])
-    implementation("org.antlr", "antlr4-runtime", libraryVersions["antlr4"])
     implementation("com.squareup.okhttp3", "okhttp", libraryVersions["okhttp"])
     implementation("org.json", "json", libraryVersions["orgJson"])
 

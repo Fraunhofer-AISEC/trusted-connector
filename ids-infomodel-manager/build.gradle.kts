@@ -33,6 +33,6 @@ dependencies {
     implementation("commons-cli", "commons-cli", libraryVersions["commonsCli"])
     implementation("javax.validation", "validation-api", libraryVersions["javaxValidation"])
     implementation("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
-    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
+    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jacksonDatabind"])
     implementation("org.springframework.boot:spring-boot-starter")
 }

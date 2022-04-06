@@ -16,7 +16,7 @@ plugins {
     java
 
     // Spring Boot
-    id("org.springframework.boot") version "2.6.4" apply false
+    id("org.springframework.boot") version "2.6.6" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     // Other needed plugins
@@ -27,10 +27,10 @@ plugins {
     id("com.google.protobuf") version "0.8.18" apply false
 
     // Kotlin specific
-    kotlin("jvm") version "1.6.10" apply false
-    kotlin("plugin.spring") version "1.6.10" apply false
+    kotlin("jvm") version "1.6.20" apply false
+    kotlin("plugin.spring") version "1.6.20" apply false
 
-    id("com.diffplug.spotless") version "6.3.0"
+    id("com.diffplug.spotless") version "6.4.1"
     id("com.github.jk1.dependency-license-report") version "2.1"
     id("com.github.ben-manes.versions") version "0.42.0"
 }

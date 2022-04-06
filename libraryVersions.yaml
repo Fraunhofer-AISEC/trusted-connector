@@ -5,20 +5,20 @@ ktlint: "0.43.2"
 okhttp: "5.0.0-alpha.5"
 
 # Kotlin library/compiler version
-kotlin: "1.6.10"
+kotlin: "1.6.20"
 kotlinxCoroutines: "1.5.2"
 
 # The used version of the infomodel from IESE
 infomodel: "4.1.0"
 
 # Provided by feature, but required for compilation
-jaxbApi: "2.3.1"
+jaxbApi: "2.4.0-b180830.0359"
 # Required for RouteManager metrics tests
 jaxbCore: "3.0.2"
 jaxbImpl: "3.0.2"
 jaxActivation: "1.2.0"
 
-camel: "3.15.0"
+camel: "3.16.0"
 influxDB: "2.22"
 
 # Camel ships with cxf, however it is slightly older so we want a newer version
@@ -32,14 +32,13 @@ mockito: "4.4.0"
 mapdb: "3.0.8"
 jnrunix: "0.38.17"
 protobuf: "3.19.4"
-httpcore: "4.4.11"
-httpclient: "4.5.7"
+httpcore: "4.4.15"
+httpclient: "4.5.13"
 
 # Needed for policy reasoning with 2p (formerly tuProlog)
 2p: "4.1.1"
 commonsText: "1.9"
 protonpack: "1.16"
-antlr4: "4.9.3"
 
 # Needed for ACME module
 acme: "2.12"
@@ -51,8 +50,9 @@ dockerJavaApi: "0.0.13"
 
 # We will pull in a newer version of jackson because of security fixes
 jackson: "2.13.2"
+jacksonDatabind: "2.13.2.2"
 
-orgJson: "20210307"
+orgJson: "20220320"
 
 # Needed for camel multipart processor
 commonsFileUpload: "1.4"
@@ -62,9 +62,9 @@ commonsCli: "1.5.0"
 javaxValidation: "2.0.1.Final"
 
 # Needed for web console
-auth0Jwt: "3.19.0"
-swagger: "1.6.5"
+auth0Jwt: "3.19.1"
+swagger: "1.6.6"
 jose4j: "0.7.11"
 
-springBoot: "2.6.4"
+springBoot: "2.6.6"
 bouncyCastle: "1.70"
