@@ -19,7 +19,6 @@
  */
 package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
 
-import org.json.JSONObject
 import org.slf4j.Logger
 import java.net.URI
 
@@ -28,5 +27,5 @@ class EnforcementContext(
     val log: Logger
 ) {
     val enforcementCache = mutableMapOf<String, Any>()
-    val ucPolicies = JSONObject()
+    val ucPolicies = mutableMapOf<String, Any>()
 }

@@ -83,9 +83,6 @@ subprojects {
             "org.jetbrains.kotlin" to mapOf(
                 "*" to "kotlin"
             ),
-            "com.squareup.okhttp3" to mapOf(
-                "*" to "okhttp"
-            ),
             "com.google.guava" to mapOf(
                 "guava" to "guava"
             )
@@ -165,7 +162,8 @@ configure(subprojects.filter { it.name != "examples" }) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * =========================LICENSE_END==================================
- */"""
+ */
+                """.trim()
             ).yearSeparator(" - ")
         }
     }
