@@ -7,8 +7,6 @@ dependencies {
     implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
 
-    compileOnly("org.checkerframework", "checker-qual", libraryVersions["checkerQual"])
-
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
 }
