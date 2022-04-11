@@ -1,8 +1,8 @@
-idscp2: "0.9.2"
+idscp2: "0.10.1"
 ktlint: "0.43.2"
 
-# Pinning
-okhttp: "5.0.0-alpha.5"
+# HTTP client
+ktor: "2.0.0-beta-1"
 
 # Kotlin library/compiler version
 kotlin: "1.6.10"
@@ -24,7 +24,6 @@ influxDB: "2.14"
 # Camel ships with cxf, however it is slightly older so we want a newer version
 cxf: "3.3.4"
 
-ahc: "2.4.9"
 checkerQual: "2.5.2"
 guava: "30.1-jre"
 slf4j: "1.7.30"
@@ -32,12 +31,10 @@ junit4: "4.13.2"
 junit5: "5.8.2"
 mockito: "3.8.0"
 mapdb: "3.0.7"
-# jnrunix and jnrffi must be consistent
-jnrunix: "0.22"
-jnrffi: "2.1.5"
+jnrunix: "0.38.17"
 protobuf: "3.19.4"
-httpcore: "4.4.11"
-httpclient: "4.5.7"
+httpcore: "4.4.15"
+httpclient: "4.5.13"
 
 # Needed for policy reasoning with 2p (formerly tuProlog)
 2p: "4.1.1"

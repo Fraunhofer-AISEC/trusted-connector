@@ -9,9 +9,7 @@ dependencies {
 
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
 
-    implementation("com.google.guava", "guava", libraryVersions["guava"]) {
-        isTransitive = false // Avoid pulling in of checker framework and other annotation stuff
-    }
+    implementation("com.google.guava", "guava", libraryVersions["guava"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.apache.camel", "camel-test", libraryVersions["camel"])

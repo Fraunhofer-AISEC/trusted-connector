@@ -20,10 +20,15 @@
 package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
 
 import de.fraunhofer.iais.eis.ContractAgreement
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.ContentNegotiation
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.jackson.jackson
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.Collections
@@ -40,7 +45,7 @@ class LuconContract private constructor(contract: ContractAgreement) {
                     ectx.log.debug("Checking permission # ${i + 1} of contract $contractId...")
                 }
                 p.checkEnforcible(ectx)
-                if (!ectx.ucPolicies.isEmpty) {
+                if (ectx.ucPolicies.isNotEmpty()) {
                     LOG.warn(
                         "UC policies have been added to EnforcementContext in LuconPermission::checkEnforcible(), " +
                             "before actual enforcement in LuconPermission::enforce()." +
@@ -63,14 +68,17 @@ class LuconContract private constructor(contract: ContractAgreement) {
             }
         }
         if (enforcementSuccessful) {
-            val client = OkHttpClient.Builder().build()
-            val ucUrl = "http://${ectx.endpointUri.host}/usage-control"
-            val request = Request.Builder()
-                .url(ucUrl)
-                .post(ectx.ucPolicies.toString().toRequestBody(MEDIA_TYPE_JSON))
-                .build()
-            if (!client.newCall(request).execute().isSuccessful) {
-                throw LuconException("Enforcement checks were successful, but POSTing UC policies to $ucUrl failed.")
+            runBlocking {
+                val ucUrl = "http://${ectx.endpointUri.host}/usage-control"
+                val response = HTTP_CLIENT.post(ucUrl) {
+                    contentType(ContentType.Application.Json)
+                    setBody(ectx.ucPolicies)
+                }
+                if (response.status.value !in 200..299) {
+                    throw LuconException(
+                        "Enforcement checks were successful, but POSTing UC policies to $ucUrl failed."
+                    )
+                }
             }
         } else {
             throw LuconException(
@@ -82,7 +90,11 @@ class LuconContract private constructor(contract: ContractAgreement) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(LuconContract::class.java)
-        val MEDIA_TYPE_JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
+        private val HTTP_CLIENT = HttpClient(Java) {
+            install(ContentNegotiation) {
+                jackson()
+            }
+        }
         private val contracts: MutableMap<URI, LuconContract> = Collections.synchronizedMap(hashMapOf<URI, LuconContract>())
         fun getContract(contract: ContractAgreement) =
             contracts.computeIfAbsent(contract.id) {
