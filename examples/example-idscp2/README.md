@@ -6,10 +6,10 @@ This examples demonstrate data transfer between trusted connectors via the IDSCP
 
 First, start the server (consumer) with the command `docker-compose -f docker-compose-server.yaml up`.
 When the Karaf shell appears, you may attach to it via a separate SSH client connection using the command
-`docker-compose -f docker-compose-server.yaml exec server-core bin/client`, and show logs output `log:tail`.
+`docker-compose -f docker-compose-server.yaml exec consumer-core bin/client`, and show logs output `log:tail`.
 
-Second, start the client (provider) using the command `docker-compose -f docker-compose-provider.yaml up`.
-When the Karaf shell appears, you may use `docker-compose -f docker-compose-provider.yaml exec client-core bin/client`
+Second, start the client (provider) using the command `docker-compose -f docker-compose-client.yaml up`.
+When the Karaf shell appears, you may use `docker-compose -f docker-compose-provider.yaml exec provider-core bin/client`
 and `log:tail` analogous to the server.
 
 ### Broadcast example
