@@ -259,6 +259,6 @@ class RouteManagerService : RouteManager {
     }
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(RouteManagerService::class.java)
+        val LOG = LoggerFactory.getLogger(RouteManagerService::class.java)
     }
 }

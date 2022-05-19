@@ -46,8 +46,8 @@ import javax.ws.rs.core.MediaType
 @Api(value = "IDSCP Connections", authorizations = [Authorization(value = "oauth2")])
 class ConnectionAPI {
 
-    @Autowired(required = false)
-    private var connectionManager: ConnectionManager? = null
+    @Autowired
+    private lateinit var connectionManager: ConnectionManager
 
     @get:AuthorizationRequired
     @get:Produces(MediaType.APPLICATION_JSON)
@@ -59,7 +59,7 @@ class ConnectionAPI {
     @get:Path("/incoming")
     @get:GET
     val incoming: List<IDSCPIncomingConnection>
-        get() = connectionManager?.listIncomingConnections() ?: emptyList()
+        get() = connectionManager.listIncomingConnections() ?: emptyList()
 
     @get:AuthorizationRequired
     @get:Produces(MediaType.APPLICATION_JSON)
@@ -71,17 +71,20 @@ class ConnectionAPI {
     @get:Path("/outgoing")
     @get:GET
     val outgoing: List<IDSCPOutgoingConnection>
-        get() = connectionManager?.listOutgoingConnections() ?: emptyList()
+        get() = connectionManager.listOutgoingConnections() ?: emptyList()
 
-    @get:AuthorizationRequired
-    @get:Produces(MediaType.APPLICATION_JSON)
-    @get:ApiOperation(
+    @AuthorizationRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
         value = "Returns a list of all endpoints provided by this connector",
         response = IDSCPServerEndpoint::class,
         responseContainer = "List"
     )
-    @get:Path("/endpoints")
-    @get:GET
-    val availableEndpoints: List<IDSCPServerEndpoint>
-        get() = connectionManager?.listAvailableEndpoints() ?: emptyList()
+    @Path("/endpoints")
+    @GET
+    // val availableEndpoints: List<IDSCPServerEndpoint>
+    //    get() = connectionManager.listAvailableEndpoints()
+    fun listendpoints(): List<IDSCPServerEndpoint> {
+        return connectionManager.listAvailableEndpoints()
+    }
 }
