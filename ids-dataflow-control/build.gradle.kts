@@ -1,7 +1,8 @@
 description = "Camel IDS Component"
 
 dependencies {
-    @Suppress("UNCHECKED_CAST") val libraryVersions =
+    @Suppress("UNCHECKED_CAST")
+    val libraryVersions =
         rootProject.extra.get("libraryVersions") as Map<String, String>
 
     implementation(project(":ids-api")) { isTransitive = false }

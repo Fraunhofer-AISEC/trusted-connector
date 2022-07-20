@@ -255,8 +255,7 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
                                         val keyStorePath =
                                             targetDirectory.resolve("keystore_$timestamp.p12")
                                         try {
-                                            Files.newOutputStream(keyStorePath).use { ksOutputStream
-                                                ->
+                                            Files.newOutputStream(keyStorePath).use { ksOutputStream ->
                                                 val store = KeyStore.getInstance("PKCS12")
                                                 store.load(null)
                                                 store.setKeyEntry(
