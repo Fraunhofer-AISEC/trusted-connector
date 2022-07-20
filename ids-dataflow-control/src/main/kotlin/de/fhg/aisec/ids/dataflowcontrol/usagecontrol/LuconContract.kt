@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
 import de.fraunhofer.iais.eis.ContractAgreement
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.java.Java
-import io.ktor.client.plugins.ContentNegotiation
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType

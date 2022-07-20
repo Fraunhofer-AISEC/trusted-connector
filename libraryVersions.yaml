@@ -1,12 +1,11 @@
 idscp2: "0.10.3"
 ktlint: "0.43.2"
 
-# HTTP client
-ktor: "2.0.0-beta-1"
-
 # Kotlin library/compiler version
-kotlin: "1.6.20"
-kotlinxCoroutines: "1.5.2"
+kotlin: "1.7.10"
+kotlinxCoroutines: "1.6.3"
+# HTTP client
+ktor: "2.0.3"
 
 # The used version of the infomodel from IESE
 infomodel: "4.1.0"
