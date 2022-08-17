@@ -1,32 +1,23 @@
 import com.google.protobuf.gradle.protobuf
-import org.gradle.plugins.ide.idea.model.IdeaModel
+import com.google.protobuf.gradle.protoc
 
 @Suppress("UNCHECKED_CAST")
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 apply(plugin = "com.google.protobuf")
-apply(plugin = "idea")
-
-val protobufGeneratedDir = "$projectDir/generated"
 
 protobuf {
-    generatedFilesBaseDir = protobufGeneratedDir
+    if (findProperty("protocDownload")?.toString()?.toBoolean() != false) {
+        protoc {
+            artifact = "com.google.protobuf:protoc:${libraryVersions["protobuf"]}"
+        }
+    }
 }
 
 tasks.clean {
-    doFirst {
-        delete(protobufGeneratedDir)
-    }
-    // Sometimes required to fix an error caused by a non-existing folder
+    // Sometimes required to fix an error caused by non-existence of this folder.
     doLast {
         mkdir("${project.buildDir}/classes/kotlin/main")
-    }
-}
-
-configure<IdeaModel> {
-    module {
-        // mark as generated sources for IDEA
-        generatedSourceDirs.add(File("$protobufGeneratedDir/main/java"))
     }
 }
 

@@ -9,7 +9,7 @@ import com.github.gradle.node.yarn.task.YarnTask
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 plugins {
-    id("com.github.node-gradle.node") version "3.0.1"
+    id("com.github.node-gradle.node") version "3.2.1"
     id("com.benjaminsproule.swagger")
 }
 
@@ -58,10 +58,10 @@ and is used by the default administration dashboard ("web console").
                     )
                 }
             )
-        /* the plugin could theoretically also generate the html files, however it currently only allows 
+        /* the plugin could theoretically also generate the html files, however it currently only allows
         for the generation of html OR swagger.json, not both. Therefore we still need to use spectacle using yarn */
             // templatePath = "${project.projectDir}/src/test/resources/strapdown.html.hbs"
-            // outputPath = "${project.projectDir}/generated/document.html"   
+            // outputPath = "${project.projectDir}/generated/document.html"
         }
     )
 }
@@ -79,7 +79,7 @@ dependencies {
 
     compileOnly("io.swagger", "swagger-jaxrs", libraryVersions["swagger"])
 
-    testImplementation("junit", "junit", libraryVersions["junit4"])
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", libraryVersions["junit5"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
     testImplementation("org.apache.cxf", "cxf-rt-transports-local", libraryVersions["cxf"])
     testImplementation("org.apache.cxf", "cxf-rt-rs-client", libraryVersions["cxf"])
@@ -91,6 +91,7 @@ node {
     // This is important for a hassle-free build without pre-installed yarn!
     // To disable, pass -PnodeDownload=false to gradle!
     download.set(findProperty("nodeDownload")?.toString()?.toBoolean() ?: true)
+    version.set("16.13.2")
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {

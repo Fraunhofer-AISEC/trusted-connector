@@ -50,6 +50,7 @@ class ContractAgreementReceiverProcessor : Processor {
 
         ProviderDB.contractAgreements[contractAgreement.id] = contractAgreement
         for (permission in contractAgreement.permission) {
+            // Entry for the case when provider is setting up multiple agreements with different requesting connectors
             ProviderDB.artifactUrisMapped2ContractAgreements[
                 Pair(
                     permission.target,
@@ -60,6 +61,8 @@ class ContractAgreementReceiverProcessor : Processor {
                         )
                 )
             ] = contractAgreement.id
+            // Additional entry for the case when an artifact is pushed directly to the consumer
+            ProviderDB.artifactUrisMapped2ContractAgreements[Pair(permission.target, null)] = contractAgreement.id
         }
 
         if (LOG.isDebugEnabled) {

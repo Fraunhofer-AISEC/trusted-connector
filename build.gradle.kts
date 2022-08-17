@@ -4,7 +4,7 @@ import org.yaml.snakeyaml.Yaml
 
 buildscript {
     dependencies {
-        classpath("org.yaml:snakeyaml:1.29")
+        classpath("org.yaml:snakeyaml:1.30")
     }
 }
 
@@ -16,23 +16,23 @@ plugins {
     java
 
     // Spring Boot
-    id("org.springframework.boot") version "2.5.8" apply false
+    id("org.springframework.boot") version "2.6.6" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     // Other needed plugins
     id("com.moowork.node") version "1.3.1" apply false
-    // Latest version compiled with Java 11
-    id("com.benjaminsproule.swagger") version "1.0.8" apply false
+    id("com.benjaminsproule.swagger") version "1.0.14" apply false
 
     // Protobuf
-    id("com.google.protobuf") version "0.8.17" apply false
+    id("com.google.protobuf") version "0.8.18" apply false
 
     // Kotlin specific
-    kotlin("jvm") version "1.6.10" apply false
-    kotlin("plugin.spring") version "1.6.10" apply false
+    kotlin("jvm") version "1.7.10" apply false
+    kotlin("plugin.spring") version "1.7.10" apply false
 
-    id("com.diffplug.spotless") version "5.11.0"
-    id("com.github.jk1.dependency-license-report") version "1.16"
+    id("com.diffplug.spotless") version "6.4.1"
+    id("com.github.jk1.dependency-license-report") version "2.1"
+    id("com.github.ben-manes.versions") version "0.42.0"
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -46,7 +46,7 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "6.0.0"
+    version = "6.3.0"
 }
 
 subprojects {
@@ -82,9 +82,6 @@ subprojects {
         val groupPins = mapOf(
             "org.jetbrains.kotlin" to mapOf(
                 "*" to "kotlin"
-            ),
-            "com.squareup.okhttp3" to mapOf(
-                "*" to "okhttp"
             ),
             "com.google.guava" to mapOf(
                 "guava" to "guava"
@@ -122,9 +119,20 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.compilerArgs.add("-Xlint:unchecked")
-//        options.isDeprecation = true
-        dependsOn("spotlessApply")
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
+    }
+
+    // Disable time-wasting tasks
+    tasks.withType<Zip> {
+        if (name in setOf("distZip", "bootDistZip")) {
+            enabled = false
+        }
+    }
+    tasks.withType<Tar> {
+        if (name in setOf("distTar", "bootDistTar")) {
+            enabled = false
+        }
     }
 }
 
@@ -133,7 +141,7 @@ configure(subprojects.filter { it.name != "examples" }) {
 
     spotless {
         kotlin {
-            target("**/*.kt")
+            target("src/*/kotlin/**/*.kt")
             ktlint(libraryVersions["ktlint"])
             licenseHeader(
                 """/*-
@@ -154,7 +162,8 @@ configure(subprojects.filter { it.name != "examples" }) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * =========================LICENSE_END==================================
- */"""
+ */
+                """.trim()
             ).yearSeparator(" - ")
         }
     }

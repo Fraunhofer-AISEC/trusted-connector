@@ -1,7 +1,8 @@
 description = "Camel IDS Component"
 
 dependencies {
-    @Suppress("UNCHECKED_CAST") val libraryVersions =
+    @Suppress("UNCHECKED_CAST")
+    val libraryVersions =
         rootProject.extra.get("libraryVersions") as Map<String, String>
 
     implementation(project(":ids-api")) { isTransitive = false }
@@ -15,6 +16,10 @@ dependencies {
     implementation("org.apache.commons", "commons-text", libraryVersions["commonsText"])
     implementation("com.codepoetics", "protonpack", libraryVersions["protonpack"])
     implementation("org.antlr", "antlr4-runtime", libraryVersions["antlr4"])
+    implementation("io.ktor", "ktor-client-core", libraryVersions["ktor"])
+    implementation("io.ktor", "ktor-client-java", libraryVersions["ktor"])
+    implementation("io.ktor", "ktor-client-content-negotiation", libraryVersions["ktor"])
+    implementation("io.ktor", "ktor-serialization-jackson", libraryVersions["ktor"])
 
     testImplementation("junit", "junit", libraryVersions["junit4"])
     testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])

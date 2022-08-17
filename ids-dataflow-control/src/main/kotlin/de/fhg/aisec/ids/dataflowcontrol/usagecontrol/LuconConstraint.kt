@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-settings
+ * ids-dataflow-control
  * %%
- * Copyright (C) 2021 Fraunhofer AISEC
+ * Copyright (C) 2022 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,9 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.settings
+package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
 
-import org.mapdb.DataInput2
-import org.mapdb.DataOutput2
-import org.mapdb.Serializer
-import org.mapdb.elsa.ElsaMaker
-import org.mapdb.elsa.ElsaSerializerPojo
-
-class ElsaSerializer<T : Any> : Serializer<T> {
-    private val serializer: ElsaSerializerPojo = ElsaMaker().make()
-
-    override fun serialize(output: DataOutput2, obj: T) {
-        serializer.serialize(output, obj)
-    }
-
-    override fun deserialize(input: DataInput2, available: Int): T {
-        return serializer.deserialize(input)
-    }
+interface LuconConstraint {
+    fun checkEnforcible(context: EnforcementContext, permission: LuconPermission)
+    fun enforce(context: EnforcementContext)
 }

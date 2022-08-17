@@ -24,8 +24,6 @@ import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.Utils
-import de.fhg.aisec.ids.camel.idscp2.listeners.ExchangeListener
-import de.fhg.aisec.ids.camel.idscp2.listeners.TransferContractListener
 import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import de.fhg.aisec.ids.rm.ConnectionManagerService
 import de.fhg.aisec.ids.rm.RouteManagerService
@@ -65,18 +63,12 @@ class ConnectorConfiguration {
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
 
-            ListenerManager.addExchangeListener(
-                ExchangeListener {
-                    connection, exchange ->
-                    UsageControlMaps.setExchangeConnection(exchange, connection)
-                }
-            )
-            ListenerManager.addTransferContractListener(
-                TransferContractListener {
-                    connection, transferContract ->
-                    UsageControlMaps.setConnectionContract(connection, transferContract)
-                }
-            )
+            ListenerManager.addExchangeListener { connection, exchange ->
+                UsageControlMaps.setExchangeConnection(exchange, connection)
+            }
+            ListenerManager.addTransferContractListener { connection, transferContract ->
+                UsageControlMaps.setConnectionContract(connection, transferContract)
+            }
         }
     }
 

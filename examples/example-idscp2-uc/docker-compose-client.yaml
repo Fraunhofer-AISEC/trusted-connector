@@ -26,6 +26,10 @@ services:
     image: jmalloc/echo-server@sha256:c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d
     networks:
       - provider-internal
+    environment:
+      PORT: "80"
+      LOG_HTTP_HEADERS: 1
+      LOG_HTTP_BODY: 1
 
 networks:
   ids-wide:

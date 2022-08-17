@@ -9,7 +9,7 @@ val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, St
 plugins {
     application
     id("org.springframework.boot")
-    id("com.github.gmazzo.buildconfig") version "2.0.2"
+    id("com.github.gmazzo.buildconfig") version "3.0.3"
 
     kotlin("jvm")
     kotlin("plugin.spring")
@@ -36,7 +36,10 @@ dependencies {
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")
     implementation("org.apache.camel.springboot:camel-rest-starter")
     implementation("org.apache.camel.springboot:camel-http-starter")
+    // IDSCP2
     implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"])
+    // Guava for weakly-keyed Map
+    implementation("com.google.guava", "guava", libraryVersions["guava"])
 }
 
 // Clears library JARs before copying
