@@ -43,44 +43,8 @@ class ConnectionManagerService : ConnectionManager {
                 emptyList()
             }
         }
-
-    override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
-        var list: List<IDSCPIncomingConnection> = emptyList()
-        var tmp = IDSCPIncomingConnection()
-        for (cCtx in camelContexts) {
-            for (ep in cCtx.endpoints) {
-                when (ep) {
-                    //  is Idscp2ServerEndpoint -> {ep.}
-                    else -> {}
-                }
-                //  var ep2 = Idscp2ServerEndpoint()
-                //  ep2 = ep as Idscp2ServerEndpoint
-            }
-        }
-
-        list += tmp
-        return list
-    }
-
-    override fun listOutgoingConnections(): List<IDSCPOutgoingConnection> {
-        var list: List<IDSCPOutgoingConnection> = emptyList()
-
-        for (cCtx in camelContexts) {
-            var tmp = IDSCPOutgoingConnection()
-            for ((key, value) in cCtx.endpointRegistry) {
-                // cast
-
-                list += tmp
-            }
-
-            //  cCtx.endpoints.
-        }
-        return list
-    }
-
     override fun listAvailableEndpoints(): List<IDSCPServerEndpoint> {
         var list: List<IDSCPServerEndpoint> = emptyList()
-
         for (cCtx in camelContexts) {
             var tmp = IDSCPServerEndpoint()
             for ((key, value) in cCtx.endpointRegistry) {
@@ -90,25 +54,57 @@ class ConnectionManagerService : ConnectionManager {
                 tmp.host = value.endpointBaseUri.substringAfter("://").substringBefore(':')
                 list += tmp
             }
+        }
+        return list
+    }
 
-            //  cCtx.endpoints.
+    // TODO: Register Listener, get connection information and return results in listOutgoing/IncomingConnections()
+
+ /*   listenerManager.addConnectionListener(object: ConnectionListener {
+        override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
+            // first register a idscp2connectionListener to keep track of connection cleanup
+            connection.addConnectionListener(object : Idscp2ConnectionListener {
+                override fun onError(t: Throwable) {
+                    // TODO connection error handling
+                }
+
+                override fun onClose() {
+                    // TODO connection was closed
+                }
+            })
+
+            // TODO handle information from connection and endpoint
+            val remotePeer = connection.remotePeer()
         }
 
-        /*
-        //Test
-        val tmp = IDSCPServerEndpoint()
-        tmp.endpointIdentifier = "test"
-        tmp.defaultProtocol = "test"
-        tmp.port = "test"
-        tmp.host = "test"
-        // list.toMutableList().add(tmp)
-        list += tmp
-        */
-        // Test
-        println(message = "#################################")
-        println(message = list.size)
-        println(message = "#################################")
+        override fun onServerConnection(connection: AppLayerConnection, endpoint: Idscp2ServerEndpoint) {
+            // TODO do the same for server connections
+        }
+    })
+*/
+    override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
+        var list: List<IDSCPIncomingConnection> = emptyList()
+        var tmp = IDSCPIncomingConnection()
+        for (cCtx in camelContexts) {
+            for (ep in cCtx.endpoints) {
+                when (ep) {
+                    else -> {}
+                }
+            }
+        }
 
+        list += tmp
+        return list
+    }
+
+    override fun listOutgoingConnections(): List<IDSCPOutgoingConnection> {
+        var list: List<IDSCPOutgoingConnection> = emptyList()
+        for (cCtx in camelContexts) {
+            var tmp = IDSCPOutgoingConnection()
+            for ((key, value) in cCtx.endpointRegistry) {
+                list += tmp
+            }
+        }
         return list
     }
 }
