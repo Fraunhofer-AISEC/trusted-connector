@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.cm.impl.docker
 import com.amihaiemil.docker.Container
 import com.amihaiemil.docker.Docker
 import com.amihaiemil.docker.Images
-import com.amihaiemil.docker.UnixDocker
+import com.amihaiemil.docker.LocalDocker
 import de.fhg.aisec.ids.api.cm.ApplicationContainer
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.cm.ContainerStatus
@@ -86,11 +86,11 @@ class DockerCM : ContainerManager {
             }
 
         init {
-            try {
-                // We have to modify the thread class loader for docker-java-api to find its config
+            try { // We have to modify the thread class loader for docker-java-api to find its
+                // config
                 val threadContextClassLoader = Thread.currentThread().contextClassLoader
-                Thread.currentThread().contextClassLoader = UnixDocker::class.java.classLoader
-                DOCKER_CLIENT = UnixDocker(File("/var/run/docker.sock"))
+                Thread.currentThread().contextClassLoader = LocalDocker::class.java.classLoader
+                DOCKER_CLIENT = LocalDocker(File("/var/run/docker.sock"))
                 Thread.currentThread().contextClassLoader = threadContextClassLoader
             } catch (x: Exception) {
                 LOG.error("Error initializing docker client", x)
@@ -169,18 +169,11 @@ class DockerCM : ContainerManager {
     }
 
     override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
-        val jsonArrayToList = { jsonValue: JsonValue? ->
-            when (jsonValue) {
-                is JsonArray -> jsonValue.map { (it as JsonString).string }
-                else -> null
-            }
-        }
         return getContainerSequence(!onlyRunning, withSize = true)
             .map { c: Container ->
                 try {
                     val info = c.inspect()
                     val imageInfo = getImage(c)?.inspect()
-                    val imageConfig = imageInfo?.getJsonObject("Config")
                     val state = info.getJsonObject("State")
                     val config = info.getJsonObject("Config")
                     val running = state.getBoolean("Running")
@@ -194,11 +187,9 @@ class DockerCM : ContainerManager {
                     app.id = c.containerId()
                     app.image = config.getString("Image")
                     app.imageId = imageInfo?.getString("Id")
-                    app.cmd = jsonArrayToList(config["Cmd"])
-                    app.entrypoint = jsonArrayToList(config["Entrypoint"])
-                    app.imageCmd = jsonArrayToList(imageConfig?.get("Cmd"))
-                    app.imageEntrypoint = jsonArrayToList(imageConfig?.get("Entrypoint"))
-                    app.repoDigest = jsonArrayToList(imageInfo?.get("RepoDigests"))
+                    app.imageDigests =
+                        imageInfo?.getJsonArray("RepoDigests")?.map { (it as JsonString).string }
+                            ?: emptyList()
                     app.ipAddresses =
                         networks
                             .values
@@ -364,7 +355,7 @@ class DockerCM : ContainerManager {
                     )
                 } else {
                     val groups = match.groupValues
-                    val protocol = (groups[4].ifEmpty { "tcp" })
+                    val protocol = (if (groups[4].isEmpty()) "tcp" else groups[4])
                     exposedPorts.add(groups[3] + "/" + protocol, JsonValue.EMPTY_JSON_OBJECT)
                     val portBinding = Json.createObjectBuilder()
                     if (groups[1].isNotEmpty()) {

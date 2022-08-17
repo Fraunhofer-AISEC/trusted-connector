@@ -24,9 +24,10 @@ import de.fhg.aisec.ids.api.policy.DecisionRequest
 import de.fhg.aisec.ids.api.policy.PolicyDecision
 import de.fhg.aisec.ids.api.policy.ServiceNode
 import de.fhg.aisec.ids.api.policy.TransformationDecision
-import de.fhg.aisec.ids.dataflowcontrol.usagecontrol.EnforcementContext
-import de.fhg.aisec.ids.dataflowcontrol.usagecontrol.LuconContract
-import de.fhg.aisec.ids.dataflowcontrol.usagecontrol.LuconException
+import de.fraunhofer.iais.eis.AbstractConstraint
+import de.fraunhofer.iais.eis.BinaryOperator
+import de.fraunhofer.iais.eis.Constraint
+import de.fraunhofer.iais.eis.LeftOperand
 import org.apache.camel.AsyncCallback
 import org.apache.camel.Exchange
 import org.apache.camel.NamedNode
@@ -37,6 +38,7 @@ import org.apache.camel.model.RouteDefinition
 import org.apache.camel.model.ToDefinition
 import org.apache.camel.support.processor.DelegateAsyncProcessor
 import org.slf4j.LoggerFactory
+import java.net.InetAddress
 import java.net.URI
 
 class PolicyEnforcementPoint
@@ -109,9 +111,52 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
             // If there is no known ContractAgreement for this Exchange, nothing to do here.
             ucContract?.let { contract ->
                 if (LOG.isDebugEnabled) {
-                    LOG.debug("Applying Contract ${contract.id}")
+                    LOG.debug("Applying Contract $contract")
                 }
-                val luconContract = LuconContract.getContract(contract)
+                val isDockerConstraint = { c: AbstractConstraint ->
+                    c is Constraint && c.operator == BinaryOperator.SAME_AS && c.leftOperand == LeftOperand.SYSTEM
+                }
+                val permittedContainerUris = contract
+                    .permission
+                    .mapNotNull { p ->
+                        // Check whether any constraint is given which fits the rules given above
+                        (p.constraint.firstOrNull(isDockerConstraint) as Constraint?)?.rightOperandReference
+                        // So far previous checks answered: "Can we principally work with given
+                        // constraint?"
+                    }
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("UC: Permitted Container URIs: $permittedContainerUris")
+                }
+                val permittedContainerHashPortPairs = permittedContainerUris
+                    .mapNotNull { dockerUri ->
+                        // Extracting hash and port of containerUri given by CamelRoute
+                        val hashPart = dockerUri.path.split("/").last()
+                        if (!hashPart.startsWith("sha256-")) {
+                            LOG.warn(
+                                "Invalid docker URI for UC, last path component must start with \"sha256-\"!"
+                            )
+                            return@mapNotNull null
+                        }
+                        val hash = hashPart.substring(7)
+                        val port =
+                            try {
+                                dockerUri.fragment.toInt().also { assert(it in 1..65535) }
+                            } catch (nfe: NumberFormatException) {
+                                LOG.warn(
+                                    "Invalid docker URI for UC, fragment must represent a valid port number!"
+                                )
+                                return@mapNotNull null
+                            } catch (ae: AssertionError) {
+                                LOG.warn(
+                                    "Invalid docker URI for UC, ${dockerUri.fragment} is not a valid port number!"
+                                )
+                                return@mapNotNull null
+                            }
+                        return@mapNotNull Pair(hash, port)
+                    }
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("UC: Permitted container hash/port pairs: $permittedContainerHashPortPairs")
+                }
                 // Check whether we deal with an entry node ("from:...") or a response of a
                 // To node ("to...")...
                 if (sourceNode is FromDefinition ||
@@ -133,18 +178,53 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
                 } else if (destinationNode is ToDefinition &&
                     ucInterface.isProtected(exchange)
                 ) {
-                    val endpointUri = URI.create(destinationNode.endpointUri)
-                    val enforcementContext = EnforcementContext(endpointUri, LOG)
-                    try {
-                        luconContract.enforce(enforcementContext)
-                        // Restore exchange body
-                        ucInterface.unprotectBody(exchange)
+                    // Compare hash value and port of camelRoute's containerUri with local
+                    // Docker containers
+                    CamelInterceptor.containerManager?.let { cm ->
+                        val endpointUri = URI.create(destinationNode.endpointUri)
+                        // Filter out all targets where the specified port matches the one of the endpoint URI
+                        val targetPort = endpointUri.port
+                        val permittedHashes = permittedContainerHashPortPairs
+                            .filter { targetPort == it.second }
+                            .map { it.first }
                         if (LOG.isDebugEnabled) {
-                            LOG.debug("UC: Contract permits data flow, Exchange body has been restored.")
+                            LOG.debug("UC: permitted hashes, filtered by port ($targetPort): $permittedHashes")
                         }
-                    } catch (le: LuconException) {
-                        LOG.warn(le.message)
+                        // Check is containerUri's port matched CamelRoute ToNode's port
+                        val allowedContainers =
+                            cm.list(true).filter { container ->
+                                // From running docker containers get all with the given hash and the right port
+                                // Normally there is only one hash type, but there can be more
+                                // Currently requested type is only sha256 (e.g. sha3 or else may be added later)
+                                container.imageId?.split(":")?.last() in permittedHashes ||
+                                    container.imageDigests.any {
+                                        it.split(":").last() in permittedHashes
+                                    }
+                            }
+                        // Save all ip addresses of allowed containers in one list
+                        val allowedIPs = allowedContainers.flatMap { it.ipAddresses }.toSet()
+                        // Check whether all endpoint's ip-addresses belong to allowed containers
+                        if (InetAddress.getAllByName(endpointUri.host).all {
+                            allowedIPs.contains(it)
+                        }
+                        ) {
+                            ucInterface.unprotectBody(exchange)
+                            if (LOG.isDebugEnabled) {
+                                LOG.debug(
+                                    "UC: Contract permits data flow, Exchange body has been restored."
+                                )
+                            }
+                        } else {
+                            throw Exception(
+                                "UC: Some or all IP addresses of the host ${endpointUri.host} " +
+                                    "do not belong to the permitted containers list ($allowedContainers)"
+                            )
+                        }
                     }
+                        ?: throw Exception(
+                            "UC: ContainerManager is not available, " +
+                                "cannot verify container-binding contract!"
+                        )
                 }
             }
         }

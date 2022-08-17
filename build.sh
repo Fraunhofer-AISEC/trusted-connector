@@ -14,6 +14,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || return
 
 echo "In case of build errors, please verify that recent versions of docker and docker-compose are installed."
 echo ""
+# Stop potentially conflicting gradle daemons
+echo "Trying to stop potentially conflicting gradle daemons..."
+./gradlew --stop
+echo ""
 # Pull is allowed to fail, ignore if it happens.
 ! docker-compose -f docker-build/docker-compose.yml pull
 if [ -z "$*" ]; then

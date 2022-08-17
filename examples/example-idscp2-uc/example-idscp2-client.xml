@@ -57,7 +57,8 @@
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ArtifactResponseMessage'</simple>
                     <log message="### Handle ArtifactResponseMessage ###"/>
-                    <to uri="http://echo-server:80"/>
+                    <to uri="http://echo-server:8080"/>
+                    <log message="Response body\n\n${body}"/>
                 </when>
                 <otherwise>
                     <log loggingLevel="ERROR" message="Expected ArtifactResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>

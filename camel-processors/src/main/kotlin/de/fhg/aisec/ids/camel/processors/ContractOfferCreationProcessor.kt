@@ -19,9 +19,16 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
+import de.fhg.aisec.ids.camel.idscp2.Utils
+import de.fhg.aisec.ids.camel.processors.Constants.CONTAINER_URI_PROPERTY
 import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
+import de.fraunhofer.iais.eis.BinaryOperator
+import de.fraunhofer.iais.eis.ConstraintBuilder
+import de.fraunhofer.iais.eis.ContractOfferBuilder
 import de.fraunhofer.iais.eis.ContractOfferMessageBuilder
+import de.fraunhofer.iais.eis.LeftOperand
+import de.fraunhofer.iais.eis.PermissionBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
@@ -30,7 +37,6 @@ import java.net.URI
 /**
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
  */
-@Suppress("unused")
 class ContractOfferCreationProcessor : Processor {
 
     override fun process(exchange: Exchange) {
@@ -52,9 +58,38 @@ class ContractOfferCreationProcessor : Processor {
             } else {
                 URI.create(it.toString())
             }
-        } ?: throw RuntimeException("No property \"artifactUri\" found in Exchange, cannot build contract!")
-
-        val contractOffer = ContractFactory.buildContractOffer(artifactUri, exchange)
+        }
+        val containerUri = exchange.getProperty(CONTAINER_URI_PROPERTY).let {
+            if (it is URI) {
+                it
+            } else {
+                URI.create(it.toString())
+            }
+        }
+        val contractDate = Utils.createGregorianCalendarTimestamp(System.currentTimeMillis())
+        val contractOffer = ContractOfferBuilder()
+            ._contractDate_(contractDate)
+            ._contractStart_(contractDate)
+            // Contract end one year in the future
+            ._contractEnd_(contractDate.apply { year += 1 })
+            // Permission for data processing inside a specific system (docker container)
+            ._permission_(
+                listOf(
+                    PermissionBuilder()
+                        ._target_(artifactUri)
+                        ._constraint_(
+                            listOf(
+                                ConstraintBuilder()
+                                    ._leftOperand_(LeftOperand.SYSTEM)
+                                    ._operator_(BinaryOperator.SAME_AS)
+                                    ._rightOperandReference_(containerUri)
+                                    .build()
+                            )
+                        )
+                        .build()
+                )
+            )
+            .build()
 
         SERIALIZER.serialize(contractOffer).let {
             if (LOG.isDebugEnabled) {

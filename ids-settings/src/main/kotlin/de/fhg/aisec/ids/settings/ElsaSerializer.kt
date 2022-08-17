@@ -25,7 +25,7 @@ import org.mapdb.Serializer
 import org.mapdb.elsa.ElsaMaker
 import org.mapdb.elsa.ElsaSerializerPojo
 
-class ElsaSerializer<T : Any> : Serializer<T> {
+class ElsaSerializer<T> : Serializer<T> {
     private val serializer: ElsaSerializerPojo = ElsaMaker().make()
 
     override fun serialize(output: DataOutput2, obj: T) {

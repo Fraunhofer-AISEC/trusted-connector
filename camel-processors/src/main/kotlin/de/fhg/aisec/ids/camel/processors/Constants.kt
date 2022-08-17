@@ -22,8 +22,6 @@ package de.fhg.aisec.ids.camel.processors
 object Constants {
     const val IDSCP2_HEADER = "idscp2-header"
     const val IDS_TYPE = "ids-type"
-    const val UC_DOCKER_IMAGE_URIS = "uc-docker-image-uris"
-    const val UC_NOT_BEFORE_DATETIME = "uc-not-before-datetime"
-    const val UC_NOT_AFTER_DATETIME = "uc-not-after-datetime"
+    const val CONTAINER_URI_PROPERTY = "containerUri"
     const val ARTIFACT_URI_PROPERTY = "artifactUri"
 }

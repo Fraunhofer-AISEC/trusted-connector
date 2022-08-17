@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ReplaySubject } from 'rxjs';
 
 import { Result } from '../../result';
@@ -15,15 +16,19 @@ import { ValidationInfo } from '../validation-info';
   styleUrls: ['./routeeditor.component.css']
 })
 export class RouteeditorComponent implements OnInit {
+  public myForm: FormGroup;
+
   private _route?: Route;
   private _newRoute = false;
+  private _textRepresentation?: string;
   private _validationInfo: ValidationInfo = new ValidationInfo();
   private _result: Result = new Result();
+  private _saved = true;
   private statusIcon: string;
   private readonly _dotSubject: ReplaySubject<string> = new ReplaySubject(1);
 
-  constructor(private readonly titleService: Title, private readonly navRoute: ActivatedRoute,
-              private readonly routeService: RouteService) {
+  constructor(private readonly titleService: Title, private readonly fb: FormBuilder, private readonly router: Router,
+              private readonly navRoute: ActivatedRoute, private readonly routeService: RouteService) {
     this.titleService.setTitle('Edit Message Route');
   }
 
@@ -49,12 +54,26 @@ export class RouteeditorComponent implements OnInit {
     return this._newRoute;
   }
 
+  get textRepresentation(): string {
+    return this._textRepresentation;
+  }
+
+  set textRepresentation(textRepresentation: string) {
+    const trimmedTextRep = textRepresentation.trim();
+    this._saved = this._saved && (this._textRepresentation === trimmedTextRep);
+    this._textRepresentation = trimmedTextRep;
+  }
+
   get validationInfo(): ValidationInfo {
     return this._validationInfo;
   }
 
   get result(): Result {
     return this._result;
+  }
+
+  get saved(): boolean {
+    return this._saved;
   }
 
   get dotSubject(): ReplaySubject<string> {
@@ -81,6 +100,10 @@ export class RouteeditorComponent implements OnInit {
         .subscribe(validationInfo => {
           this._validationInfo = validationInfo;
         });
+    });
+
+    this.myForm = this.fb.group({
+      txtRepresentation: ['', [Validators.required as any, Validators.minLength(5) as any]]
     });
   }
 

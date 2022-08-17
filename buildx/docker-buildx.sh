@@ -21,8 +21,8 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
   exit 1
 fi
 
-OPTIONS=t:b:f:s
-LONGOPTS=base-image:,docker-build-tag:,file:,targets:,skip-build,build-container,fast
+OPTIONS=t:b:f:
+LONGOPTS=example-tag:,base-image:,file:,docker-build-tag:,build-container
 
 ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
 if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
@@ -32,18 +32,21 @@ fi
 
 eval set -- "$PARSED"
 
+EXAMPLE_TAG_ARG="develop"
 DOCKER_BUILD_TAG_ARG="develop"
-BASE_IMAGE_ARG="gcr.io/distroless/java17-debian11"
+BASE_IMAGE_ARG="adoptopenjdk:11-jdk-hotspot-focal"
 TARGETS="core"
 FILES=""
 BUILD_CONTAINER=0
-SKIP_BUILD=0
-FAST_BUILD=0
 
 while true; do
   case "$1" in
   -f | --file)
     FILES="${FILES}-f $2 "
+    shift 2
+    ;;
+  -t | --example-tag)
+    EXAMPLE_TAG_ARG="$2"
     shift 2
     ;;
   --targets)
@@ -54,20 +57,12 @@ while true; do
     BASE_IMAGE_ARG="$2"
     shift 2
     ;;
-  -t | --docker-build-tag)
+  --docker-build-tag)
     DOCKER_BUILD_TAG_ARG="$2"
     shift 2
     ;;
   --build-container)
     BUILD_CONTAINER=1
-    shift 1
-    ;;
-  -s | --skip-build)
-    SKIP_BUILD=1
-    shift 1
-    ;;
-  --fast)
-    FAST_BUILD=1
     shift 1
     ;;
   --)
@@ -85,27 +80,17 @@ done
 export DOCKER_CLI_EXPERIMENTAL="enabled"
 
 # Export vars for buildx bake yaml resolution
+export EXAMPLE_TAG="$EXAMPLE_TAG_ARG"
 export DOCKER_BUILD_TAG="$DOCKER_BUILD_TAG_ARG"
 export BASE_IMAGE="$BASE_IMAGE_ARG"
 printf "######################################################################\n"
-printf "Using build tag \"%s\" and base image \"%s\"\n" "$DOCKER_BUILD_TAG" "$BASE_IMAGE"
+printf "Using build tag \"%s\" and base image \"%s\"\n" "$EXAMPLE_TAG" "$BASE_IMAGE"
 printf "######################################################################\n\n"
 
 if [ $BUILD_CONTAINER = 1 ]; then
-  echo "Building build-container via \"docker buildx bake build-container ${FILES}$*\"..."
-  eval "docker buildx bake build-container ${FILES}$*"
+  echo "Building build-container via \"docker buildx bake build-container $*\"..."
+  eval "docker buildx bake build-container $*"
   exit
-fi
-if [ $SKIP_BUILD = 0 ]; then
-  if [ $FAST_BUILD = 1 ]; then
-    echo "Executing fast local build with fastBuild.sh..."
-    echo ""
-    ../fastBuild.sh
-  else
-    echo "Executing Docker build with build.sh..."
-    echo ""
-    ../build.sh
-  fi
 # Check whether preconditions are fulfilled
 elif [[ ! -d "../ids-connector/build/libs/projectJars" ]]; then
   printf "\e[31m################################################################################\n"

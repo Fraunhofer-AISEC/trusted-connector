@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * ids-dataflow-control
+ * ids-webconsole
  * %%
- * Copyright (C) 2022 Fraunhofer AISEC
+ * Copyright (C) 2021 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,18 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
+package de.fhg.aisec.ids.webconsole
 
-import org.slf4j.Logger
-import java.net.URI
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RequestMapping
 
-class EnforcementContext(
-    val endpointUri: URI,
-    val log: Logger
-) {
-    val enforcementCache = mutableMapOf<String, Any>()
-    val ucPolicies = mutableMapOf<String, Any>()
+@Controller
+class Controller {
+    /**
+     * This maps browser access to the web root to index.html
+     */
+    @RequestMapping("/")
+    fun webRoot(): String {
+        return "/index.html"
+    }
 }

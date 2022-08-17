@@ -33,7 +33,10 @@
               "node_modules/viz.js/viz.js",
               "node_modules/viz.js/full.render.js",
               "node_modules/svg-pan-zoom/dist/svg-pan-zoom.js",
-              "node_modules/vis/dist/vis.js"
+              "node_modules/vis/dist/vis.js",
+              "node_modules/ace-builds/src-min/ace.js",
+              "node_modules/ace-builds/src-min/theme-eclipse.js",
+              "node_modules/ace-builds/src-min/mode-xml.js"
             ],
             "vendorChunk": true,
             "extractLicenses": false,

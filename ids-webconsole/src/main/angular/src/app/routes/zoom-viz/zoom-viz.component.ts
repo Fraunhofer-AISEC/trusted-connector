@@ -24,14 +24,9 @@ export class ZoomVizComponent implements OnInit {
     const viz = new Viz();
     const vizCanvas = this.vizCanvasRef.nativeElement;
     const container = document.createElement('div');
-    container.style.height = '100%';
     vizCanvas.appendChild(container);
     this.dotSubject.pipe(switchMap(dot => from(viz.renderSVGElement(dot) as Promise<SVGElement>)))
       .subscribe(svgElement => {
-        // Apply important styles to SVG element
-        svgElement.style.width = '100%';
-        svgElement.style.height = '100%';
-        svgElement.style.minHeight = '62px';
         // remove old mousemove listener that relies on old dimensions
         this.removeMoveListener();
         // replace old graph with new one

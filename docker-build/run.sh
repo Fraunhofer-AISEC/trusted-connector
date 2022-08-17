@@ -22,11 +22,7 @@ fi
 JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v javac))))
 export JAVA_HOME
 
-echo "Synchronize build-relevant files to /build (build volume)..."
-rsync --exclude='/.git' --filter="dir-merge,- .dockerignore" -av --delete-after "$PROJECT_DIR/" /build/
-echo ""
-
-cd /build
+cd "$PROJECT_DIR" || exit 1
 
 # Get user UID of the /core-platfrom mount
 TARGET_UID=$(stat -c %u "$PROJECT_DIR")
@@ -37,8 +33,6 @@ if [ "$TARGET_UID" == "root" ] || [ "$TARGET_UID" == "0" ]; then
   echo "User running ./gradlew: $(id)"
   # Run build using all arguments from CMD
   ./gradlew "$@"
-  # Create target directory for results, see below
-  mkdir -p "$PROJECT_DIR/ids-connector/build/libs"
 else
   DOCKER_GID=$(stat -c %g /var/run/docker.sock)
   addgroup --gid "$DOCKER_GID" --quiet docker
@@ -51,13 +45,7 @@ else
   ln -s "$M2_DIR" /home/build/.m2
   echo "Build parameters passed: $*"
   # Run build using all arguments from CMD, passing correct HOME variable
-  # Finally, create target directory for results with right owner
   sudo -u build -E sh -c "export HOME=\"/home/build\";
     echo \"User running ./gradlew: \$(id)\";
-    ./gradlew $*;
-    mkdir -p \"$PROJECT_DIR/ids-connector/build/libs\""
+    ./gradlew $*"
 fi
-
-echo "Synchronize built artifacts back to $PROJECT_DIR..."
-rsync -cav --delete /build/ids-connector/build/libs/ "$PROJECT_DIR/ids-connector/build/libs/"
-echo ""

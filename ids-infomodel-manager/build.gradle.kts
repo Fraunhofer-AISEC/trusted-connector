@@ -1,7 +1,7 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 plugins {
-    id("com.github.gmazzo.buildconfig") version "3.0.3"
+    id("com.github.gmazzo.buildconfig") version "2.0.2"
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -33,6 +33,6 @@ dependencies {
     implementation("commons-cli", "commons-cli", libraryVersions["commonsCli"])
     implementation("javax.validation", "validation-api", libraryVersions["javaxValidation"])
     implementation("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
-    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jacksonDatabind"])
+    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
     implementation("org.springframework.boot:spring-boot-starter")
 }

@@ -44,11 +44,7 @@ class ApplicationContainer {
     var owner: String? = null
     var image: String? = null
     var imageId: String? = null
-    var repoDigest: List<String>? = null
-    var cmd: List<String>? = null
-    var entrypoint: List<String>? = null
-    var imageCmd: List<String>? = null
-    var imageEntrypoint: List<String>? = null
+    var imageDigests: List<String> = emptyList()
     var ipAddresses: List<InetAddress> = emptyList()
 
     // Portainer attributes:
@@ -59,19 +55,18 @@ class ApplicationContainer {
     var title: String? = null
     var description: String? = null
     var note: String? = null
-    var categories: List<String> = emptyList()
+    var categories: List<String> = ArrayList()
     var platform = "linux"
     var logo: String? = null
     var registry = ""
     var command = ""
     var network: String? = null
-    var env: List<Map<String, Any>> = emptyList()
+    var env: List<Map<String, Any>> = ArrayList()
     var isPrivileged = false
     var isInteractive = false
     var restartPolicy = "always"
-    var labels: Map<String, Any> = emptyMap()
-    var volumes: List<Any> = emptyList()
-
+    var labels: Map<String, Any> = HashMap()
+    var volumes: List<Any> = ArrayList()
     override fun toString(): String {
         return (
             "ApplicationContainer [id=" +

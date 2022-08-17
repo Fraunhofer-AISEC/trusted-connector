@@ -38,12 +38,13 @@ rat-repository/src/main/docker/jar/*
 bin
 out
 
-# Remnants of local runs
-/etc
-/deploy
+# Karaf Deploy
+/karaf-assembly/src/main/resources/deploy/*.xml
+*.sock
 
 # Lock files
 .lock
 
 # Version file
 /version.txt
+etc/settings.mapdb

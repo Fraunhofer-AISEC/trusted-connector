@@ -54,7 +54,7 @@ class XmlDeployWatcher : ApplicationContextAware {
     }
 
     private fun stopXmlApplicationContext(xmlPath: String) {
-        // If entry is in xmlContexts, remove it and stop XmlApplicationContext
+        // If entry is in xmlContexts, remove it stop XmlApplicationContext
         xmlContexts.remove(xmlPath)?.let { ctxFuture ->
             LOG.info("XML file {} deleted, stopping XmlApplicationContext...", xmlPath)
             ctxFuture.thenAccept { it.stop() }

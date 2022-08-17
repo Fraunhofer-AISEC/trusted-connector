@@ -8,4 +8,4 @@ logging:
 
 spring:
   resources:
-    static-locations: classpath:/www/
+    static-locations: classpath:/www

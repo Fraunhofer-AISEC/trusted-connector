@@ -6,7 +6,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
     implementation("org.apache.camel", "camel-jetty", libraryVersions["camel"])
-    implementation("org.apache.camel", "camel-http", libraryVersions["camel"])
+    implementation("org.apache.camel", "camel-http4", libraryVersions["camelHttp4"])
 
     implementation("org.apache.httpcomponents", "httpcore", libraryVersions["httpcore"])
     implementation("org.apache.httpcomponents", "httpclient", libraryVersions["httpclient"])

@@ -6,9 +6,19 @@ services:
     image: fraunhoferaisec/docker-build:${DOCKER_BUILD_TAG:-develop}
     build:
       context: '../docker-build'
+      args:
+        JDK_BASE_IMAGE: fraunhoferaisec/jdk-base:${DOCKER_BUILD_TAG:-develop}
 
   # Trusted Connector core platform
   core:
-    image: fraunhoferaisec/trusted-connector-core:${DOCKER_BUILD_TAG:-develop}
+    image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
     build:
       context: '../ids-connector'
+      args:
+        JDK_BASE_IMAGE: fraunhoferaisec/jdk-base:${DOCKER_BUILD_TAG:-develop}
+
+#  # TPM simulator
+#  tpmsim:
+#    image: fraunhoferaisec/tpmsim:${EXAMPLE_TAG:-develop}
+#    build:
+#      context: '../examples/tpmsim'

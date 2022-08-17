@@ -57,6 +57,7 @@ import java.util.UUID
 import javax.ws.rs.Consumes
 import javax.ws.rs.GET
 import javax.ws.rs.InternalServerErrorException
+import javax.ws.rs.NotFoundException
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
@@ -131,8 +132,8 @@ class CertApi(@Autowired private val settings: Settings) {
     )
     @AuthorizationRequired
     fun listCerts(): List<Cert> {
-        val truststoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
-        return getKeystoreEntries(truststoreFile)
+        val truststore = getKeystoreFile(settings.connectorConfig.truststoreName)
+        return getKeystoreEntries(truststore)
     }
 
     @GET
@@ -277,83 +278,91 @@ class CertApi(@Autowired private val settings: Settings) {
      * If the file cannot be found, this method returns null.
      */
     private fun getKeystoreFile(fileName: String): File {
-        // We allow to override the default directory "etc" by specifying -Dkeystore.dir=...
-        val keystoreDir = System.getProperty("keystore.dir", "etc")
-        File(keystoreDir + File.separator + fileName).let {
-            if (it.exists()) {
-                return it
+        // If we run in karaf platform, we expect the keystore to be in
+        // KARAF_BASE/etc
+        val etcDir = System.getProperty("karaf.etc")
+        if (etcDir != null) {
+            val f = File(etcDir + File.separator + fileName)
+            if (f.exists()) {
+                return f
             }
         }
 
-        File(fileName).let {
-            if (it.exists()) {
-                return it
+        // Otherwise, we allow setting the directory to search for by
+        // -Dkeystore.dir=...
+        val keystoreDir = System.getProperty("keystore.dir")
+        if (keystoreDir != null) {
+            val f = File(keystoreDir + File.separator + fileName)
+            if (f.exists()) {
+                return f
             }
+        }
+
+        // In case of unit tests, we expect resources to be "somehow" available in current working dir
+        val f = File(fileName)
+        if (f.exists()) {
+            return f
         }
 
         // Last resort: let the classloader find the file
-        Thread.currentThread().contextClassLoader.getResource(fileName).let {
-            try {
-                if (it != null) {
-                    return File(it.toURI())
-                }
-            } catch (e: URISyntaxException) {
-                LOG.error(e.message, e)
+        val clFile = Thread.currentThread().contextClassLoader.getResource(fileName)
+        try {
+            if (clFile != null) {
+                return File(clFile.toURI())
             }
+        } catch (e: URISyntaxException) {
+            LOG.error(e.message, e)
         }
-
-        throw RuntimeException(
-            "Keystore/truststore file could not be found. Cannot continue. Given filename: $fileName"
+        throw NotFoundException(
+            "Keystore/truststore file could not be found. Cannot continue. Given filename: " +
+                fileName
         )
     }
 
     /** Returns all entries (private keys and certificates) from a Java keystore.  */
     private fun getKeystoreEntries(keystoreFile: File): List<Cert> {
+        val certs: MutableList<Cert> = ArrayList()
         try {
             FileInputStream(keystoreFile).use { fis ->
                 val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
                 keystore.load(fis, KEYSTORE_PWD.toCharArray())
-                val aliases = keystore.aliases().toList()
-                return aliases
-                    .mapNotNull {
-                        val certificate = keystore.getCertificate(it)
-                        if (certificate is X509Certificate) {
-                            Pair(it, certificate)
-                        } else {
-                            null
-                        }
+                val enumeration = keystore.aliases()
+                while (enumeration.hasMoreElements()) {
+                    val alias = enumeration.nextElement()
+                    val certificate = keystore.getCertificate(alias)
+                    val cert = Cert()
+                    cert.alias = alias
+                    cert.file = keystoreFile.name.replaceFirst("[.][^.]+$".toRegex(), "")
+                    cert.certificate = certificate.toString()
+                    if (certificate !is X509Certificate) {
+                        continue
                     }
-                    .map { (alias, certificate) ->
-                        Cert().also { cert ->
-                            cert.alias = alias
-                            cert.file = keystoreFile.name.replaceFirst("[.][^.]+$".toRegex(), "")
-                            cert.certificate = certificate.toString()
-                            cert.subjectAltNames = certificate.subjectAlternativeNames
-                            // Get distinguished name
-                            val dn = certificate.subjectX500Principal.name
-                            for (entry in dn.split(",".toRegex()).toTypedArray()) {
-                                val kv = entry.split("=".toRegex()).toTypedArray()
-                                if (kv.size < 2) {
-                                    continue
-                                }
-                                when (kv[0]) {
-                                    "CN" -> cert.subjectCN = kv[1]
-                                    "OU" -> cert.subjectOU = kv[1]
-                                    "O" -> cert.subjectO = kv[1]
-                                    "L" -> cert.subjectL = kv[1]
-                                    "S" -> cert.subjectS = kv[1]
-                                    "C" -> cert.subjectC = kv[1]
-                                    else -> {
-                                    }
-                                }
+                    cert.subjectAltNames = certificate.subjectAlternativeNames
+                    // Get distinguished name
+                    val dn = certificate.subjectX500Principal.name
+                    for (entry in dn.split(",".toRegex()).toTypedArray()) {
+                        val kv = entry.split("=".toRegex()).toTypedArray()
+                        if (kv.size < 2) {
+                            continue
+                        }
+                        when (kv[0]) {
+                            "CN" -> cert.subjectCN = kv[1]
+                            "OU" -> cert.subjectOU = kv[1]
+                            "O" -> cert.subjectO = kv[1]
+                            "L" -> cert.subjectL = kv[1]
+                            "S" -> cert.subjectS = kv[1]
+                            "C" -> cert.subjectC = kv[1]
+                            else -> {
                             }
                         }
                     }
+                    certs.add(cert)
+                }
             }
         } catch (e: Exception) {
             LOG.error(e.message, e)
-            throw e
         }
+        return certs
     }
 
     /**
@@ -397,7 +406,7 @@ class CertApi(@Autowired private val settings: Settings) {
         )
         val bos = ByteArrayOutputStream()
         ProcessExecutor().execute(keytoolCmd, bos, bos)
-        LOG.debug("Keytool:\n\n{}", bos.toString(StandardCharsets.UTF_8))
+        LOG.debug("Keytool: {}", bos.toString(StandardCharsets.UTF_8))
     }
 
     private fun delete(alias: String, file: File): Boolean {
