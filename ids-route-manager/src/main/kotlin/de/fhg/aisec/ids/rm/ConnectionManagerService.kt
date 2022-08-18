@@ -23,6 +23,7 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint
+import de.fhg.aisec.ids.api.conm.RatResult
 import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.client.Idscp2ClientEndpoint
 import de.fhg.aisec.ids.camel.idscp2.listeners.ConnectionListener
@@ -72,25 +73,68 @@ class ConnectionManagerService : ConnectionManager {
     // The connection listener is notified each time a new connection is created.
     // We use this in order to make a list of connections available to the web console
 
+    val outgoingConnections: MutableList<IDSCPOutgoingConnection> = mutableListOf()
+    val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
+
     val connectionListener = object : ConnectionListener {
         override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
+            // When we are a client endpoint, we create an outgoing connection
+            val outgoing = IDSCPOutgoingConnection()
+
             // first register a idscp2connectionListener to keep track of connection cleanup
             connection.addConnectionListener(object : Idscp2ConnectionListener {
+                private fun removeConnection() {
+                    connection.removeConnectionListener(this)
+                    outgoingConnections -= outgoing
+                }
+
                 override fun onError(t: Throwable) {
-                    // TODO connection error handling
+                    // TODO: I don't think that we have to do any error handling here
+                    removeConnection()
                 }
 
                 override fun onClose() {
-                    // TODO connection was closed
+                    removeConnection()
                 }
             })
 
             // TODO handle information from connection and endpoint
-            val remotePeer = connection.remotePeer()
+            outgoing.apply {
+                endpointIdentifier = endpoint.endpointBaseUri
+                attestationResult = RatResult(RatResult.Status.FAILED, "Not Implemented")
+                remoteIdentity = connection.remotePeer()
+            }
+            outgoingConnections += outgoing
         }
 
         override fun onServerConnection(connection: AppLayerConnection, endpoint: Idscp2ServerEndpoint) {
-            // TODO do the same for server connections
+            // Since we are a server and therefore listening, all connections should be incomming
+            val incoming = IDSCPIncomingConnection()
+
+            // first register a idscp2connectionListener to keep track of connection cleanup
+            connection.addConnectionListener(object : Idscp2ConnectionListener {
+                private fun removeConnection() {
+                    connection.removeConnectionListener(this)
+                    incomingConnections -= incoming
+                }
+
+                override fun onError(t: Throwable) {
+                    // TODO: I don't think that we have to do any error handling here
+                    removeConnection()
+                }
+
+                override fun onClose() {
+                    removeConnection()
+                }
+            })
+
+            // TODO handle information from connection and endpoint
+            incoming.apply {
+                endpointIdentifier = endpoint.endpointBaseUri
+                attestationResult = RatResult(RatResult.Status.FAILED, "Not Implemented")
+                remoteHostName = connection.remotePeer()
+            }
+            incomingConnections += incoming
         }
     }
 
@@ -106,28 +150,10 @@ class ConnectionManagerService : ConnectionManager {
     }
 
     override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
-        var list: List<IDSCPIncomingConnection> = emptyList()
-        var tmp = IDSCPIncomingConnection()
-        for (cCtx in camelContexts) {
-            for (ep in cCtx.endpoints) {
-                when (ep) {
-                    else -> {}
-                }
-            }
-        }
-
-        list += tmp
-        return list
+        return incomingConnections
     }
 
     override fun listOutgoingConnections(): List<IDSCPOutgoingConnection> {
-        var list: List<IDSCPOutgoingConnection> = emptyList()
-        for (cCtx in camelContexts) {
-            var tmp = IDSCPOutgoingConnection()
-            for ((key, value) in cCtx.endpointRegistry) {
-                list += tmp
-            }
-        }
-        return list
+        return outgoingConnections
     }
 }
