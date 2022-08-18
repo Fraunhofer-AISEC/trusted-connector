@@ -23,10 +23,18 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint
+import de.fhg.aisec.ids.camel.idscp2.ListenerManager
+import de.fhg.aisec.ids.camel.idscp2.client.Idscp2ClientEndpoint
+import de.fhg.aisec.ids.camel.idscp2.listeners.ConnectionListener
+import de.fhg.aisec.ids.camel.idscp2.server.Idscp2ServerEndpoint
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
 import org.apache.camel.CamelContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
+import javax.annotation.PostConstruct
+import javax.annotation.PreDestroy
 
 @Component
 class ConnectionManagerService : ConnectionManager {
@@ -60,7 +68,11 @@ class ConnectionManagerService : ConnectionManager {
 
     // TODO: Register Listener, get connection information and return results in listOutgoing/IncomingConnections()
 
- /*   listenerManager.addConnectionListener(object: ConnectionListener {
+    // Register a connection listener with idscp2-camel.
+    // The connection listener is notified each time a new connection is created.
+    // We use this in order to make a list of connections available to the web console
+
+    val connectionListener = object : ConnectionListener {
         override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
             // first register a idscp2connectionListener to keep track of connection cleanup
             connection.addConnectionListener(object : Idscp2ConnectionListener {
@@ -80,8 +92,19 @@ class ConnectionManagerService : ConnectionManager {
         override fun onServerConnection(connection: AppLayerConnection, endpoint: Idscp2ServerEndpoint) {
             // TODO do the same for server connections
         }
-    })
-*/
+    }
+
+    @PostConstruct
+    private fun registerConnectionListener() {
+        ListenerManager.addConnectionListener(connectionListener)
+    }
+
+    @PreDestroy
+    private fun deregisterConnectionListener() {
+        // TODO: Also remove all idscp2 connection listeners
+        ListenerManager.removeConnectionListener(connectionListener)
+    }
+
     override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
         var list: List<IDSCPIncomingConnection> = emptyList()
         var tmp = IDSCPIncomingConnection()
