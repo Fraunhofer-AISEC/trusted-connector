@@ -5,12 +5,9 @@ import com.benjaminsproule.swagger.gradleplugin.model.ScopeExtension
 import com.benjaminsproule.swagger.gradleplugin.model.SecurityDefinitionExtension
 import com.github.gradle.node.yarn.task.YarnTask
 
-@Suppress("UNCHECKED_CAST")
-val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
-
 plugins {
-    id("com.github.node-gradle.node") version "3.4.0"
-    id("com.benjaminsproule.swagger")
+    alias(libs.plugins.node)
+    alias(libs.plugins.swagger)
 }
 
 description = "IDS Core Platform Webconsole"
@@ -70,21 +67,20 @@ dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-jersey")
     implementation("org.springframework.security", "spring-security-crypto")
-    implementation("org.bouncycastle", "bcprov-jdk15on", libraryVersions["bouncyCastle"])
-    implementation("de.fraunhofer.iais.eis.ids.infomodel", "java", libraryVersions["infomodel"])
-    implementation("org.apache.camel", "camel-core", libraryVersions["camel"])
-    implementation("org.apache.cxf", "cxf-rt-rs-extension-providers", libraryVersions["cxf"])
-    implementation("org.bitbucket.b_c", "jose4j", libraryVersions["jose4j"])
-    implementation("com.auth0", "java-jwt", libraryVersions["auth0Jwt"])
+    implementation(libs.bouncycastle)
+    implementation(libs.infomodel.model)
+    implementation(libs.camel.core)
+    implementation(libs.cxf.rtRsExtProviders)
+    implementation(libs.jose4j)
+    implementation(libs.auth0Jwt)
 
-    compileOnly("io.swagger", "swagger-jaxrs", libraryVersions["swagger"])
+    compileOnly(libs.swagger.jaxrs)
 
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", libraryVersions["junit5"])
-    testImplementation("org.mockito", "mockito-core", libraryVersions["mockito"])
-    testImplementation("org.apache.cxf", "cxf-rt-transports-local", libraryVersions["cxf"])
-    testImplementation("org.apache.cxf", "cxf-rt-rs-client", libraryVersions["cxf"])
-    testImplementation("com.fasterxml.jackson.core", "jackson-core", libraryVersions["jackson"])
-    testImplementation("com.fasterxml.jackson.jaxrs", "jackson-jaxrs-json-provider", libraryVersions["jackson"])
+    testImplementation(libs.bundles.test5)
+    testImplementation(libs.cxf.rtTransportsLocal)
+    testImplementation(libs.cxf.rtRsClient)
+    testImplementation(libs.jackson.core)
+    testImplementation(libs.jackson.jaxrsJsonProvider)
 }
 
 node {

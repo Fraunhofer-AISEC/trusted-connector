@@ -3,16 +3,12 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.nio.file.Files
 import java.nio.file.Paths
 
-@Suppress("UNCHECKED_CAST")
-val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
-
 plugins {
     application
-    id("org.springframework.boot")
-    id("com.github.gmazzo.buildconfig") version "3.1.0"
-
-    kotlin("jvm")
-    kotlin("plugin.spring")
+    alias(libs.plugins.springboot)
+    alias(libs.plugins.buildconfig)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.plugin.spring)
 }
 
 dependencies {
@@ -37,9 +33,9 @@ dependencies {
     implementation("org.apache.camel.springboot:camel-rest-starter")
     implementation("org.apache.camel.springboot:camel-http-starter")
     // IDSCP2
-    implementation("de.fhg.aisec.ids", "camel-idscp2", libraryVersions["idscp2"])
+    implementation(libs.camel.idscp2)
     // Guava for weakly-keyed Map
-    implementation("com.google.guava", "guava", libraryVersions["guava"])
+    implementation(libs.guava)
 }
 
 // Clears library JARs before copying
@@ -96,7 +92,7 @@ buildConfig {
         buildConfigField(
             "String",
             "INFOMODEL_VERSION",
-            "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\""
+            "\"${libs.versions.infomodel.get()}\""
         )
     }
 }
