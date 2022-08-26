@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-          http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+          http://www.springframework.org/schema/beans/spring-beans.xsd
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
@@ -15,7 +15,7 @@
         <restConfiguration component="jetty" host="0.0.0.0" port="1080" bindingMode="off" />
 
         <rest>
-            <post uri="/echo">
+            <post path="/echo">
                 <to uri="direct:echo" />
             </post>
         </rest>
