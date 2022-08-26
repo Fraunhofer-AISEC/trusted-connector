@@ -9,7 +9,7 @@ val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, St
 plugins {
     application
     id("org.springframework.boot")
-    id("com.github.gmazzo.buildconfig") version "3.0.3"
+    id("com.github.gmazzo.buildconfig") version "3.1.0"
 
     kotlin("jvm")
     kotlin("plugin.spring")
@@ -94,7 +94,8 @@ buildConfig {
     sourceSets.getByName("main") {
         packageName("de.fhg.aisec.ids")
         buildConfigField(
-            "String", "INFOMODEL_VERSION",
+            "String",
+            "INFOMODEL_VERSION",
             "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\""
         )
     }

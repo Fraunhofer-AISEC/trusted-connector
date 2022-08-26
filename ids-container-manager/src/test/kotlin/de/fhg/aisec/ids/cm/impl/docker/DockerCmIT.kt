@@ -29,6 +29,7 @@ import org.junit.Test
 
 class DockerCmIT {
     private val wipes: MutableSet<String> = HashSet()
+
     @After
     fun cleanUp() {
         // Remove containers created during test

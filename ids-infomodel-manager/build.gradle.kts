@@ -1,7 +1,7 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 plugins {
-    id("com.github.gmazzo.buildconfig") version "3.0.3"
+    id("com.github.gmazzo.buildconfig") version "3.1.0"
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -13,7 +13,8 @@ buildConfig {
     sourceSets.getByName("main") {
         packageName("de.fhg.aisec.ids.informationmodelmanager")
         buildConfigField(
-            "String", "INFOMODEL_VERSION",
+            "String",
+            "INFOMODEL_VERSION",
             "\"${libraryVersions["infomodel"] ?: error("Infomodel version not available")}\""
         )
     }
@@ -33,6 +34,6 @@ dependencies {
     implementation("commons-cli", "commons-cli", libraryVersions["commonsCli"])
     implementation("javax.validation", "validation-api", libraryVersions["javaxValidation"])
     implementation("com.fasterxml.jackson.core", "jackson-annotations", libraryVersions["jackson"])
-    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jacksonDatabind"])
+    implementation("com.fasterxml.jackson.core", "jackson-databind", libraryVersions["jackson"])
     implementation("org.springframework.boot:spring-boot-starter")
 }

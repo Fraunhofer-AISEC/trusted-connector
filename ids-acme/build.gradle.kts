@@ -1,6 +1,6 @@
 dependencies {
-    @Suppress("UNCHECKED_CAST") val libraryVersions =
-        rootProject.extra.get("libraryVersions") as Map<String, String>
+    @Suppress("UNCHECKED_CAST")
+    val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
     implementation(project(":ids-api")) { isTransitive = false }
 

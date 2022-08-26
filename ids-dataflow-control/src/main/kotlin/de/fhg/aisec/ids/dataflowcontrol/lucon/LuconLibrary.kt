@@ -185,7 +185,7 @@ trace_walk(A, B, Log, T) :-              % We can walk from A to B if  [ O(|Ep_S
         // Both regex and input string must be ground
         return if (isComplex(regex) || isComplex(input)) {
             false
-        } else
+        } else {
             try {
                 val regexString = TuPrologHelper.unquote(regex.term.toString())
                 val inputString = TuPrologHelper.unquote(input.term.toString())
@@ -200,6 +200,7 @@ trace_walk(A, B, Log, T) :-              % We can walk from A to B if  [ O(|Ep_S
                 }
                 false
             }
+        }
     }
 
     companion object {

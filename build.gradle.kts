@@ -1,3 +1,4 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.yaml.snakeyaml.Yaml
@@ -16,21 +17,21 @@ plugins {
     java
 
     // Spring Boot
-    id("org.springframework.boot") version "2.6.6" apply false
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.springframework.boot") version "2.7.3" apply false
+    id("io.spring.dependency-management") version "1.0.13.RELEASE"
 
     // Other needed plugins
-    id("com.moowork.node") version "1.3.1" apply false
+    // id("com.moowork.node") version "1.3.1" apply false
     id("com.benjaminsproule.swagger") version "1.0.14" apply false
 
     // Protobuf
-    id("com.google.protobuf") version "0.8.18" apply false
+    id("com.google.protobuf") version "0.8.19" apply false
 
     // Kotlin specific
     kotlin("jvm") version "1.7.10" apply false
     kotlin("plugin.spring") version "1.7.10" apply false
 
-    id("com.diffplug.spotless") version "6.4.1"
+    id("com.diffplug.spotless") version "6.10.0"
     id("com.github.jk1.dependency-license-report") version "2.1"
     id("com.github.ben-manes.versions") version "0.42.0"
 }
@@ -46,7 +47,13 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "6.3.0"
+    version = "6.3.1"
+
+    tasks.withType<DependencyUpdatesTask> {
+        rejectVersionIf {
+            ".*(rc-?[0-9]*|Beta)$".toRegex().matches(candidate.version)
+        }
+    }
 }
 
 subprojects {

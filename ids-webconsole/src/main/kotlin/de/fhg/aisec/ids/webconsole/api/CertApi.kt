@@ -86,7 +86,8 @@ class CertApi(@Autowired private val settings: Settings) {
     @AuthorizationRequired
     fun getAcmeCert(
         @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-        @PathParam("target") target: String
+        @PathParam("target")
+        target: String
     ): Boolean {
         val config = settings.connectorConfig
         return if ("webconsole" == target && acmeClient != null) {
@@ -111,7 +112,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_tos")
     @AuthorizationRequired
     fun getAcmeTermsOfService(
-        @ApiParam(value = "URI to retrieve the TOS from") @QueryParam("uri") uri: String
+        @ApiParam(value = "URI to retrieve the TOS from")
+        @QueryParam("uri")
+        uri: String
     ): AcmeTermsOfService? {
         return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
     }
@@ -161,7 +164,11 @@ class CertApi(@Autowired private val settings: Settings) {
         val alias = UUID.randomUUID().toString()
         try {
             doGenKeyPair(
-                alias, spec, "RSA", 2048, "SHA1WITHRSA",
+                alias,
+                spec,
+                "RSA",
+                2048,
+                "SHA1WITHRSA",
                 getKeystoreFile(settings.connectorConfig.keystoreName)
             )
         } catch (e: Exception) {
@@ -215,7 +222,9 @@ class CertApi(@Autowired private val settings: Settings) {
         IOException::class
     )
     fun installTrustedCert(
-        @ApiParam(hidden = true, name = "attachment") @Multipart("upfile") attachment: Attachment
+        @ApiParam(hidden = true, name = "attachment")
+        @Multipart("upfile")
+        attachment: Attachment
     ): String {
         val filename = attachment.contentDisposition.getParameter("filename")
         val tempPath = File.createTempFile(filename, "cert")

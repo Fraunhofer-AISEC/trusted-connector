@@ -277,7 +277,8 @@ class TrustmeUnixSocketThread(private val socket: String) : Runnable {
                 LOG.debug(
                     String.format(
                         "error: socket \"%s\" does not exist after %s retry.",
-                        socketFile.absolutePath, retries
+                        socketFile.absolutePath,
+                        retries
                     )
                 )
             }
@@ -289,7 +290,9 @@ class TrustmeUnixSocketThread(private val socket: String) : Runnable {
         synchronized(pendingChanges) {
             pendingChanges.add(
                 ChangeRequest(
-                    channel, ChangeRequest.REGISTER, SelectionKey.OP_CONNECT or SelectionKey.OP_WRITE
+                    channel,
+                    ChangeRequest.REGISTER,
+                    SelectionKey.OP_CONNECT or SelectionKey.OP_WRITE
                 )
             )
         }

@@ -194,6 +194,7 @@ class TrustXMock(private var socket: String, private var handler: TrustXMockHand
 
     companion object {
         private val LOG = LoggerFactory.getLogger(TrustXMock::class.java)
+
         @JvmStatic
         fun main(args: Array<String>) {
             try {

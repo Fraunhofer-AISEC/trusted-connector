@@ -35,7 +35,8 @@ class ContractAgreementReceiverProcessor : Processor {
         }
 
         val contractAgreementMessage = exchange.message.getHeader(
-            IDSCP2_HEADER, ContractAgreementMessage::class.java
+            IDSCP2_HEADER,
+            ContractAgreementMessage::class.java
         )
 
         val contractAgreement = SERIALIZER.deserialize(

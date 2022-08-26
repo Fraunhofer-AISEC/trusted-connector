@@ -9,7 +9,7 @@ import com.github.gradle.node.yarn.task.YarnTask
 val libraryVersions = rootProject.extra.get("libraryVersions") as Map<String, String>
 
 plugins {
-    id("com.github.node-gradle.node") version "3.2.1"
+    id("com.github.node-gradle.node") version "3.4.0"
     id("com.benjaminsproule.swagger")
 }
 

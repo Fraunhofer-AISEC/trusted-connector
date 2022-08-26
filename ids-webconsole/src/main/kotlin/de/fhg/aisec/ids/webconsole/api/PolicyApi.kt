@@ -91,8 +91,12 @@ class PolicyApi {
     )
     @AuthorizationRequired
     fun install(
-        @FormParam(value = "policy_name") @DefaultValue(value = "default policy") policyName: String?,
-        @FormParam(value = "policy_description") @DefaultValue(value = "") policyDescription: String?,
+        @FormParam(value = "policy_name")
+        @DefaultValue(value = "default policy")
+        policyName: String?,
+        @FormParam(value = "policy_description")
+        @DefaultValue(value = "")
+        policyDescription: String?,
         @FormParam(value = "policy_file") policy: String
     ): String {
         LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription)

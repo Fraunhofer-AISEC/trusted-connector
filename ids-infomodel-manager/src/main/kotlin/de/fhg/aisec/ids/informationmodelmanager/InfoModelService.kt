@@ -47,6 +47,7 @@ class InfoModelService : InfoModel {
 
     @Autowired
     private lateinit var settings: Settings
+
     @Autowired(required = false)
     private var connectionManager: ConnectionManager? = null
 

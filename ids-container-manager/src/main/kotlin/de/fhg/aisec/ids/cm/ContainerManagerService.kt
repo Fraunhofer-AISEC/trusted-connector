@@ -133,7 +133,13 @@ class ContainerManagerService : ContainerManager {
         decision: Decision
     ) {
         containerManager.setIpRule(
-            containerID, direction, srcPort, dstPort, srcDstRange, protocol, decision
+            containerID,
+            direction,
+            srcPort,
+            dstPort,
+            srcDstRange,
+            protocol,
+            decision
         )
     }
 

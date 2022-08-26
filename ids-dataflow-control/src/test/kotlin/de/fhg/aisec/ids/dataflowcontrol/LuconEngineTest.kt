@@ -270,7 +270,6 @@ class LuconEngineTest {
     fun testPerformanceEvaluationScaleRules() {
         var i = 10
         while (i <= 5000) {
-
             // Load n test rules into PDP
             val theory = generateRules(i)
             val pdp = PolicyDecisionPoint()
@@ -298,7 +297,6 @@ class LuconEngineTest {
     fun testPerformanceEvaluationScaleLabels() {
         var i = 0
         while (i <= 5000) {
-
             // Load n test rules into PDP
             val theory = generateLabels(i)
             val pdp = PolicyDecisionPoint()
@@ -326,7 +324,6 @@ class LuconEngineTest {
     fun testmemoryEvaluationScaleRules() {
         var i = 10
         while (i <= 5000) {
-
             // Load n test rules into PDP
             val theory = generateRules(i)
             val pdp = PolicyDecisionPoint()
@@ -365,7 +362,6 @@ class LuconEngineTest {
     fun testmemoryEvaluationScaleLabels() {
         var i = 10
         while (i <= 5000) {
-
             // Load n test rules into PDP
             val theory = generateLabels(i)
             val pdp = PolicyDecisionPoint()
