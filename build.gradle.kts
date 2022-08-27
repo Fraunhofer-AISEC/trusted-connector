@@ -1,6 +1,7 @@
+
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.yaml.snakeyaml.Yaml
 
 buildscript {
     dependencies {
@@ -14,31 +15,16 @@ repositories {
 
 plugins {
     java
-
-    // Spring Boot
-    id("org.springframework.boot") version "2.6.6" apply false
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-
-    // Other needed plugins
-    id("com.moowork.node") version "1.3.1" apply false
-    id("com.benjaminsproule.swagger") version "1.0.14" apply false
-
-    // Protobuf
-    id("com.google.protobuf") version "0.8.18" apply false
-
-    // Kotlin specific
-    kotlin("jvm") version "1.7.10" apply false
-    kotlin("plugin.spring") version "1.7.10" apply false
-
-    id("com.diffplug.spotless") version "6.4.1"
-    id("com.github.jk1.dependency-license-report") version "2.1"
-    id("com.github.ben-manes.versions") version "0.42.0"
+    alias(libs.plugins.springboot) apply false
+    alias(libs.plugins.spring.dependencyManagement)
+    alias(libs.plugins.swagger) apply false
+    alias(libs.plugins.protobuf) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.plugin.spring) apply false
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.licenseReport)
+    alias(libs.plugins.versions)
 }
-
-@Suppress("UNCHECKED_CAST")
-val libraryVersions: Map<String, String> =
-    Yaml().loadAs(file("$rootDir/libraryVersions.yaml").inputStream(), Map::class.java) as Map<String, String>
-extra.set("libraryVersions", libraryVersions)
 
 licenseReport {
     configurations = arrayOf("compile")
@@ -46,7 +32,13 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "6.3.0"
+    version = "6.3.1"
+
+    tasks.withType<DependencyUpdatesTask> {
+        rejectVersionIf {
+            ".*(rc-?[0-9]*|Beta)$".toRegex().matches(candidate.version)
+        }
+    }
 }
 
 subprojects {
@@ -66,25 +58,25 @@ subprojects {
 
     configure<DependencyManagementExtension> {
         imports {
-            mavenBom("org.springframework.boot:spring-boot-dependencies:${libraryVersions["springBoot"]}")
+            mavenBom("org.springframework.boot:spring-boot-dependencies:${rootProject.libs.versions.springBoot.get()}")
         }
 
         imports {
-            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:${libraryVersions["camel"]}")
+            mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:${rootProject.libs.versions.camel.get()}")
         }
     }
 
     dependencies {
         // Logging API
-        implementation("org.slf4j", "slf4j-api", libraryVersions["slf4j"])
+        implementation(rootProject.libs.slf4j.api)
 
         // Some versions are downgraded for unknown reasons, fix this here
         val groupPins = mapOf(
             "org.jetbrains.kotlin" to mapOf(
-                "*" to "kotlin"
+                "*" to rootProject.libs.versions.kotlin.get()
             ),
             "com.google.guava" to mapOf(
-                "guava" to "guava"
+                "guava" to rootProject.libs.versions.guava.get()
             )
         )
         // We need to explicitly specify the kotlin version for all kotlin dependencies,
@@ -95,16 +87,10 @@ subprojects {
                 groupPins[requested.group]?.let { pins ->
                     pins["*"]?.let {
                         // Pin all names when asterisk is set
-                        useVersion(
-                            libraryVersions[it]
-                                ?: throw RuntimeException("Key \"$it\" not set in libraryVersions.yaml")
-                        )
+                        useVersion(it)
                     } ?: pins[requested.name]?.let { pin ->
                         // Pin only for specific names given in map
-                        useVersion(
-                            libraryVersions[pin]
-                                ?: throw RuntimeException("Key \"$pin\" not set in libraryVersions.yaml")
-                        )
+                        useVersion(pin)
                     }
                 }
             }
@@ -142,7 +128,7 @@ configure(subprojects.filter { it.name != "examples" }) {
     spotless {
         kotlin {
             target("src/*/kotlin/**/*.kt")
-            ktlint(libraryVersions["ktlint"])
+            ktlint(libs.versions.ktlint.get())
             licenseHeader(
                 """/*-
  * ========================LICENSE_START=================================

@@ -45,7 +45,8 @@ class ContractRequestProcessor : Processor {
         val requestedArtifact = contractRequest.permission[0].target
 
         val contractRequestMessage = exchange.message.getHeader(
-            IDSCP2_HEADER, ContractRequestMessage::class.java
+            IDSCP2_HEADER,
+            ContractRequestMessage::class.java
         )
 
         ContractResponseMessageBuilder()

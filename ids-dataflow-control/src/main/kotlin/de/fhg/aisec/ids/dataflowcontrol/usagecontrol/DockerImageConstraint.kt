@@ -82,6 +82,7 @@ class DockerImageConstraint(dockerUri: URI) : LuconConstraint {
         // Check local Docker containers' image hashes and port against Camel route's endpoint
         CamelInterceptor.containerManager?.let { cm ->
             val endpointIPs = InetAddress.getAllByName(context.endpointUri.host).toHashSet()
+
             // Gather meta of all currently running Docker containers and cache it for other DockerImageConstraint
             // instances using the same EnforcementContext
             @Suppress("UNCHECKED_CAST")

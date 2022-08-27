@@ -1,0 +1,168 @@
+[versions]
+idscp2 = "0.11.1"
+ktlint = "0.46.1"
+
+# Kotlin library/compiler version
+kotlin = "1.7.10"
+kotlinxCoroutines = "1.6.4"
+# HTTP client
+ktor = "2.1.0"
+
+# The used version of the infomodel from IESE
+infomodel = "4.1.0"
+
+# Provided by feature, but required for compilation
+jaxbApi = "2.4.0-b180830.0359"
+# Required for RouteManager metrics tests
+jaxbImpl = "4.0.0"
+jaxActivation = "1.2.0"
+
+camel = "3.18.1"
+influxDB = "2.23"
+
+# Camel ships with cxf, however it is slightly older so we want a newer version
+cxf = "3.5.3"
+
+guava = "31.1-jre"
+slf4j = "2.0.0"
+junit4 = "4.13.2"
+junit5 = "5.9.0"
+mockito = "4.7.0"
+mapdb = "3.0.8"
+jnrunix = "0.38.17"
+protobuf = "3.21.5"
+httpcore = "4.4.15"
+httpclient = "4.5.13"
+
+# Needed for policy reasoning with 2p (formerly tuProlog)
+tup = "4.1.1"
+commonsText = "1.9"
+protonpack = "1.16"
+
+# Needed for ACME module
+acme = "2.14"
+nanohttpd = "2.3.1"
+
+# Docker API dependencies
+javaxJson = "1.1.4"
+dockerJavaApi = "0.0.13"
+
+# We will pull in a newer version of jackson because of security fixes
+jackson = "2.13.3"
+
+orgJson = "20220320"
+
+# Needed for camel multipart processor
+commonsFileUpload = "1.4"
+
+# Needed for info model manager
+commonsCli = "1.5.0"
+javaxValidation = "2.0.1.Final"
+
+# Needed for web console
+auth0Jwt = "3.19.1"
+swagger = "1.6.6"
+jose4j = "0.7.12"
+
+springBoot = "2.7.3"
+bouncyCastle = "1.70"
+
+[libraries]
+# common libraries
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+camel-core = { group = "org.apache.camel", name = "camel-core", version.ref = "camel" }
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+protobuf = { group = "com.google.protobuf", name = "protobuf-java", version.ref = "protobuf" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-java = { group = "io.ktor", name = "ktor-client-java", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
+jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+
+# common test libraries
+junit = { group = "junit", name = "junit", version.ref = "junit4" }
+mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+camel-test = { group = "org.apache.camel", name = "camel-test", version.ref = "camel" }
+junit5 = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit5" }
+
+# camel-influxdb
+influxdb = { group = "org.influxdb", name = "influxdb-java", version.ref = "influxDB" }
+camel-influxdb = { group = "org.apache.camel", name = "camel-influxdb", version.ref = "camel" }
+
+# camel-multipart-processor
+camel-jetty = { group = "org.apache.camel", name = "camel-jetty", version.ref = "camel" }
+camel-http = { group = "org.apache.camel", name = "camel-http", version.ref = "camel" }
+apacheHttp-core = { group = "org.apache.httpcomponents", name = "httpcore", version.ref = "httpcore" }
+apacheHttp-client = { group = "org.apache.httpcomponents", name = "httpclient", version.ref = "httpclient" }
+apacheHttp-mime = { group = "org.apache.httpcomponents", name = "httpmime", version.ref = "httpclient" }
+commons-fileupload = { group = "commons-fileupload", name = "commons-fileupload", version.ref = "commonsFileUpload" }
+
+# camel-processors
+camel-idscp2 = { group = "de.fhg.aisec.ids", name = "camel-idscp2", version.ref = "idscp2" }
+infomodel-model = { group = "de.fraunhofer.iais.eis.ids.infomodel", name = "java", version.ref = "infomodel" }
+infomodel-serializer = { group = "de.fraunhofer.iais.eis.ids", name = "infomodel-serializer", version.ref = "infomodel" }
+
+# ids-acme
+acme4j-client = { group = "org.shredzone.acme4j", name = "acme4j-client", version.ref = "acme" }
+acme4j-utils = { group = "org.shredzone.acme4j", name = "acme4j-utils", version.ref = "acme" }
+nanohttpd = { group = "org.nanohttpd", name = "nanohttpd", version.ref = "nanohttpd" }
+
+# ids-container-manager
+javax-json = { group = "org.glassfish", name = "javax.json", version.ref = "javaxJson" }
+dockerJavaApi = { group = "com.amihaiemil.web", name = "docker-java-api", version.ref = "dockerJavaApi" }
+jnrunix = { group = "com.github.jnr", name = "jnr-unixsocket", version.ref = "jnrunix" }
+
+# ids-dataflow-control
+tup-core = { group = "it.unibo.alice.tuprolog", name = "2p-core", version.ref = "tup" }
+tup-parser = { group = "it.unibo.alice.tuprolog", name = "2p-parser", version.ref = "tup" }
+# tup-presentation = { group = "it.unibo.alice.tuprolog", name = "2p-presentation", version.ref = "tup" }
+commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "commonsText" }
+protonpack = { group = "com.codepoetics", name = "protonpack", version.ref = "protonpack" }
+
+# ids-infomodel-manager
+commons-cli = { group = "commons-cli", name = "commons-cli", version.ref = "commonsCli" }
+javax-validation = { group = "javax.validation", name = "validation-api", version.ref = "javaxValidation" }
+
+# ids-route-manager
+jaxb-api = { group = "javax.xml.bind", name = "jaxb-api", version.ref = "jaxbApi" }
+camel-management = { group = "org.apache.camel", name = "camel-management", version.ref = "camel" }
+jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxbImpl" }
+jaxb-impl = { group = "com.sun.xml.bind", name = "jaxb-impl", version.ref = "jaxbImpl" }
+javax-activation = { group = "com.sun.activation", name = "javax.activation", version.ref = "jaxActivation" }
+
+# ids-settings
+mapdb = { group = "org.mapdb", name = "mapdb", version.ref = "mapdb" }
+
+# ids-webconsole
+bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk15on", version.ref = "bouncyCastle" }
+cxf-rtRsExtProviders = { group = "org.apache.cxf", name = "cxf-rt-rs-extension-providers", version.ref = "cxf" }
+jose4j = { group = "org.bitbucket.b_c", name = "jose4j", version.ref = "jose4j" }
+auth0Jwt = { group = "com.auth0", name = "java-jwt", version.ref = "auth0Jwt" }
+swagger-jaxrs = { group = "io.swagger", name = "swagger-jaxrs", version.ref = "swagger" }
+cxf-rtTransportsLocal = { group = "org.apache.cxf", name = "cxf-rt-transports-local", version.ref = "cxf" }
+cxf-rtRsClient = { group = "org.apache.cxf", name = "cxf-rt-rs-client", version.ref = "cxf" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
+jackson-jaxrsJsonProvider = { group = "com.fasterxml.jackson.jaxrs", name = "jackson-jaxrs-json-provider", version.ref = "jackson" }
+
+[bundles]
+camelTest = ["junit", "mockito", "camel-test"]
+test4 = ["junit", "mockito"]
+test5 = ["junit5", "mockito"]
+acme4jFull = ["acme4j-client", "acme4j-utils"]
+ktor-richClient = ["ktor-client-core", "ktor-client-java", "ktor-client-content-negotiation", "ktor-serialization-jackson"]
+tup = ["tup-core", "tup-parser"]
+jaxbImpl = ["jaxb-core", "jaxb-impl"]
+
+[plugins]
+springboot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependencyManagement = { id = "io.spring.dependency-management", version = "1.0.13.RELEASE" }
+swagger = { id = "com.benjaminsproule.swagger", version = "1.0.14" }
+protobuf = { id = "com.google.protobuf",  version = "0.8.19" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-plugin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+spotless = { id = "com.diffplug.spotless", version = "6.10.0" }
+licenseReport = { id = "com.github.jk1.dependency-license-report", version = "2.1" }
+versions = { id = "com.github.ben-manes.versions", version = "0.42.0" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version = "3.1.0" }
+node = { id = "com.github.node-gradle.node", version = "3.4.0" }

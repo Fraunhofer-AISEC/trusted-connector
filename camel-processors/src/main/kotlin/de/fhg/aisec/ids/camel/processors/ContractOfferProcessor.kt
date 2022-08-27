@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
 /**
  * This Processor handles a ContractOfferMessage and creates a ContractAgreementMessage.
  */
+@Suppress("unused")
 class ContractOfferProcessor : Processor {
 
     override fun process(exchange: Exchange) {
@@ -36,7 +37,8 @@ class ContractOfferProcessor : Processor {
         }
 
         val contractOfferMessage = exchange.message.getHeader(
-            IDSCP2_HEADER, ContractOfferMessage::class.java
+            IDSCP2_HEADER,
+            ContractOfferMessage::class.java
         )
 
         ContractHandler.handleContractOffer(exchange, contractOfferMessage.id, LOG)
