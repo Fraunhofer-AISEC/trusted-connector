@@ -3,8 +3,7 @@
 This example demonstrates client-server communication between trusted connectors via the IDSCP2 protocol,
 including LUCON UC (Usage Control), limiting execution to a particular docker container, identified by its content hash.
 
-The example is started in the same way as described in `example-idscp2/README.md`, with the only difference that
-container names in `exec` commands (`server-core` and `client-core`) switch places.
+The example is started in the same way as described in `example-idscp2/README.md`.
 
 If the UC demo fails, check whether the repo digest needs to be adapted in the XML file`example-idscp2-server.xml`
 (last part of DockerHub URI). 
