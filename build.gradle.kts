@@ -1,13 +1,6 @@
-
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-buildscript {
-    dependencies {
-        classpath("org.yaml:snakeyaml:1.30")
-    }
-}
 
 repositories {
     mavenCentral()
