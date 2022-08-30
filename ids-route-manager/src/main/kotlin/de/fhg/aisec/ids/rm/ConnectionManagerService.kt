@@ -29,6 +29,9 @@ import de.fhg.aisec.ids.camel.idscp2.client.Idscp2ClientEndpoint
 import de.fhg.aisec.ids.camel.idscp2.listeners.ConnectionListener
 import de.fhg.aisec.ids.camel.idscp2.server.Idscp2ServerEndpoint
 import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.demo.DemoRaVerifier
+import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.dummy.RaVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.dummy.RaVerifierDummy2
 import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
 import org.apache.camel.CamelContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,6 +76,29 @@ class ConnectionManagerService : ConnectionManager {
     // The connection listener is notified each time a new connection is created.
     // We use this in order to make a list of connections available to the web console
 
+    // Return the attestation status of an endpoint based on it's supported and expected RA suites.
+    // An attestation is considered successfull if it does not accpet any known insecure driver.
+    private fun getAttestationStatus(supportedRaSuites: String, expectedRaSuites: String): RatResult {
+        // This array contains all insecure default verifiers.
+        // If one of these is detected, the attestation will be considered insecure.
+        val insecureVerifier = arrayOf(
+            RaVerifierDummy2.RA_VERIFIER_DUMMY2_ID,
+            RaVerifierDummy.RA_VERIFIER_DUMMY_ID,
+            DemoRaVerifier.DEMO_RA_VERIFIER_ID
+        )
+
+        val supportedRaSuites = supportedRaSuites.split('|')
+        val expectedRaSuites = expectedRaSuites.split('|')
+        return if (expectedRaSuites.any(insecureVerifier::contains)) {
+            RatResult(RatResult.Status.FAILED, "Endpoint accepts dummy attestation")
+        } else {
+            RatResult(
+                RatResult.Status.SUCCESS,
+                "Supported RA Suites: ${supportedRaSuites.joinToString()}, Expected RA Suites: ${expectedRaSuites.joinToString()}"
+            )
+        }
+    }
+
     val outgoingConnections: MutableList<IDSCPOutgoingConnection> = mutableListOf()
     val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
 
@@ -99,9 +125,10 @@ class ConnectionManagerService : ConnectionManager {
             })
 
             // TODO handle information from connection and endpoint
+
             outgoing.apply {
                 endpointIdentifier = endpoint.endpointBaseUri
-                attestationResult = RatResult(RatResult.Status.FAILED, "Not Implemented")
+                attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
                 remoteIdentity = connection.remotePeer()
             }
             outgoingConnections += outgoing
@@ -129,9 +156,10 @@ class ConnectionManagerService : ConnectionManager {
             })
 
             // TODO handle information from connection and endpoint
+
             incoming.apply {
                 endpointIdentifier = endpoint.endpointBaseUri
-                attestationResult = RatResult(RatResult.Status.FAILED, "Not Implemented")
+                attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
                 remoteHostName = connection.remotePeer()
             }
             incomingConnections += incoming
