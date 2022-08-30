@@ -114,10 +114,7 @@ class ConnectionManagerService : ConnectionManager {
                     outgoingConnections -= outgoing
                 }
 
-                override fun onError(t: Throwable) {
-                    // TODO: I don't think that we have to do any error handling here
-                    removeConnection()
-                }
+                override fun onError(t: Throwable) {}
 
                 override fun onClose() {
                     removeConnection()
@@ -145,10 +142,7 @@ class ConnectionManagerService : ConnectionManager {
                     incomingConnections -= incoming
                 }
 
-                override fun onError(t: Throwable) {
-                    // TODO: I don't think that we have to do any error handling here
-                    removeConnection()
-                }
+                override fun onError(t: Throwable) {}
 
                 override fun onClose() {
                     removeConnection()
