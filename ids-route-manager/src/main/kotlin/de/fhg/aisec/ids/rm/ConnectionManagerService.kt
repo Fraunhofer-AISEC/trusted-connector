@@ -23,10 +23,22 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint
+import de.fhg.aisec.ids.api.conm.RatResult
+import de.fhg.aisec.ids.camel.idscp2.ListenerManager
+import de.fhg.aisec.ids.camel.idscp2.client.Idscp2ClientEndpoint
+import de.fhg.aisec.ids.camel.idscp2.listeners.ConnectionListener
+import de.fhg.aisec.ids.camel.idscp2.server.Idscp2ServerEndpoint
+import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.demo.DemoRaVerifier
+import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.dummy.RaVerifierDummy
+import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.dummy.RaVerifierDummy2
+import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
 import org.apache.camel.CamelContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
+import javax.annotation.PostConstruct
+import javax.annotation.PreDestroy
 
 @Component
 class ConnectionManagerService : ConnectionManager {
@@ -60,51 +72,110 @@ class ConnectionManagerService : ConnectionManager {
 
     // TODO: Register Listener, get connection information and return results in listOutgoing/IncomingConnections()
 
- /*   listenerManager.addConnectionListener(object: ConnectionListener {
+    // Register a connection listener with idscp2-camel.
+    // The connection listener is notified each time a new connection is created.
+    // We use this in order to make a list of connections available to the web console
+
+    // Return the attestation status of an endpoint based on it's supported and expected RA suites.
+    // An attestation is considered successfull if it does not accpet any known insecure driver.
+    private fun getAttestationStatus(supportedRaSuites: String, expectedRaSuites: String): RatResult {
+        // This array contains all insecure default verifiers.
+        // If one of these is detected, the attestation will be considered insecure.
+        val insecureVerifier = arrayOf(
+            RaVerifierDummy2.RA_VERIFIER_DUMMY2_ID,
+            RaVerifierDummy.RA_VERIFIER_DUMMY_ID,
+            DemoRaVerifier.DEMO_RA_VERIFIER_ID
+        )
+
+        val supportedRaSuites = supportedRaSuites.split('|')
+        val expectedRaSuites = expectedRaSuites.split('|')
+        return if (expectedRaSuites.any(insecureVerifier::contains)) {
+            RatResult(RatResult.Status.FAILED, "Endpoint accepts dummy attestation")
+        } else {
+            RatResult(
+                RatResult.Status.SUCCESS,
+                "Supported RA Suites: ${supportedRaSuites.joinToString()}, Expected RA Suites: ${expectedRaSuites.joinToString()}"
+            )
+        }
+    }
+
+    val outgoingConnections: MutableList<IDSCPOutgoingConnection> = mutableListOf()
+    val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
+
+    val connectionListener = object : ConnectionListener {
         override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
+            // When we are a client endpoint, we create an outgoing connection
+            val outgoing = IDSCPOutgoingConnection()
+
             // first register a idscp2connectionListener to keep track of connection cleanup
             connection.addConnectionListener(object : Idscp2ConnectionListener {
-                override fun onError(t: Throwable) {
-                    // TODO connection error handling
+                private fun removeConnection() {
+                    connection.removeConnectionListener(this)
+                    outgoingConnections -= outgoing
                 }
 
+                override fun onError(t: Throwable) {}
+
                 override fun onClose() {
-                    // TODO connection was closed
+                    removeConnection()
                 }
             })
 
             // TODO handle information from connection and endpoint
-            val remotePeer = connection.remotePeer()
+
+            outgoing.apply {
+                endpointIdentifier = endpoint.endpointBaseUri
+                attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
+                remoteIdentity = connection.remotePeer()
+            }
+            outgoingConnections += outgoing
         }
 
         override fun onServerConnection(connection: AppLayerConnection, endpoint: Idscp2ServerEndpoint) {
-            // TODO do the same for server connections
-        }
-    })
-*/
-    override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
-        var list: List<IDSCPIncomingConnection> = emptyList()
-        var tmp = IDSCPIncomingConnection()
-        for (cCtx in camelContexts) {
-            for (ep in cCtx.endpoints) {
-                when (ep) {
-                    else -> {}
-                }
-            }
-        }
+            // Since we are a server and therefore listening, all connections should be incomming
+            val incoming = IDSCPIncomingConnection()
 
-        list += tmp
-        return list
+            // first register a idscp2connectionListener to keep track of connection cleanup
+            connection.addConnectionListener(object : Idscp2ConnectionListener {
+                private fun removeConnection() {
+                    connection.removeConnectionListener(this)
+                    incomingConnections -= incoming
+                }
+
+                override fun onError(t: Throwable) {}
+
+                override fun onClose() {
+                    removeConnection()
+                }
+            })
+
+            // TODO handle information from connection and endpoint
+
+            incoming.apply {
+                endpointIdentifier = endpoint.endpointBaseUri
+                attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
+                remoteHostName = connection.remotePeer()
+            }
+            incomingConnections += incoming
+        }
+    }
+
+    @PostConstruct
+    private fun registerConnectionListener() {
+        ListenerManager.addConnectionListener(connectionListener)
+    }
+
+    @PreDestroy
+    private fun deregisterConnectionListener() {
+        // TODO: Also remove all idscp2 connection listeners
+        ListenerManager.removeConnectionListener(connectionListener)
+    }
+
+    override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
+        return incomingConnections
     }
 
     override fun listOutgoingConnections(): List<IDSCPOutgoingConnection> {
-        var list: List<IDSCPOutgoingConnection> = emptyList()
-        for (cCtx in camelContexts) {
-            var tmp = IDSCPOutgoingConnection()
-            for ((key, value) in cCtx.endpointRegistry) {
-                list += tmp
-            }
-        }
-        return list
+        return outgoingConnections
     }
 }
