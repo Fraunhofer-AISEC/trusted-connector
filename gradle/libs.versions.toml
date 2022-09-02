@@ -24,7 +24,7 @@ influxDB = "2.23"
 cxf = "3.5.3"
 
 guava = "31.1-jre"
-slf4j = "2.0.0"
+slf4j = "1.7.36"
 junit4 = "4.13.2"
 junit5 = "5.9.0"
 mockito = "4.7.0"
