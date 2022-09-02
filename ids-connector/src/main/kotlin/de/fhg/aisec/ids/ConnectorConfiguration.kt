@@ -24,8 +24,6 @@ import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.Utils
-import de.fhg.aisec.ids.camel.idscp2.listeners.ExchangeListener
-import de.fhg.aisec.ids.camel.idscp2.listeners.TransferContractListener
 import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import de.fhg.aisec.ids.rm.ConnectionManagerService
 import de.fhg.aisec.ids.rm.RouteManagerService
@@ -40,10 +38,15 @@ import java.util.Arrays
 @Configuration
 class ConnectorConfiguration {
 
-    @Autowired(required = false) private var cml: ContainerManager? = null
+    @Autowired(required = false)
+    private var cml: ContainerManager? = null
+
     @Autowired private lateinit var settings: Settings
+
     @Autowired private lateinit var im: InfoModel
+
     @Autowired private lateinit var rm: RouteManagerService
+
     @Autowired private lateinit var cm: ConnectionManagerService
 
     @Bean
@@ -65,18 +68,12 @@ class ConnectorConfiguration {
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
 
-            ListenerManager.addExchangeListener(
-                ExchangeListener {
-                    connection, exchange ->
-                    UsageControlMaps.setExchangeConnection(exchange, connection)
-                }
-            )
-            ListenerManager.addTransferContractListener(
-                TransferContractListener {
-                    connection, transferContract ->
-                    UsageControlMaps.setConnectionContract(connection, transferContract)
-                }
-            )
+            ListenerManager.addExchangeListener { connection, exchange ->
+                UsageControlMaps.setExchangeConnection(exchange, connection)
+            }
+            ListenerManager.addTransferContractListener { connection, transferContract ->
+                UsageControlMaps.setConnectionContract(connection, transferContract)
+            }
         }
     }
 

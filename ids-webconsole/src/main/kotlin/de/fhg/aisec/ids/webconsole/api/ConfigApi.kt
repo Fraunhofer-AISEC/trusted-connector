@@ -64,10 +64,13 @@ class ConfigApi {
 
     @Autowired
     private lateinit var settings: Settings
+
     @Autowired
     private lateinit var routeManager: RouteManager
+
     @Autowired(required = false)
     private var connectionManager: ConnectionManager? = null
+
     @Autowired(required = false)
     private var endpointConfigManager: EndpointConfigManager? = null
 
@@ -82,7 +85,8 @@ class ConfigApi {
         return settings.connectorConfig
     }
 
-    @POST // @OPTIONS
+    @POST
+    // @OPTIONS
     @Path("/connectorConfig")
     @ApiOperation(value = "Sets the overall configuration of the connector")
     @ApiResponses(

@@ -144,34 +144,7 @@ class UserApi(@Autowired private val settings: Settings) {
     @AuthorizationRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun removeUser(@PathParam("user")username: String) {
-        settings.removeUser(username)
-    }
-
-    @GET
-    @Path("list_users")
-    @ApiOperation(
-        value = "List of all users.",
-        notes = "User accounts."
-    )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun listUsers(): List<User> {
-        val uList: List<User> = emptyList()
-        val uMap = settings.getUsers()
-        for ((k, v) in uMap) {
-            val user: User?
-            user = null
-            if (user != null) {
-                user.username = "$k"
-                user.password = ""
-                uList.toMutableList().add(user)
-            }
-        }
-        return uList
-    }
+    fun removeUser(@PathParam("user") username: String) = settings.removeUser(username)
 
     @GET
     @Path("list_user_names")
@@ -188,12 +161,7 @@ class UserApi(@Autowired private val settings: Settings) {
         MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
-    fun listUsersNames(): List<String> {
-        var uList: List<String> = emptyList()
-        val uMap = settings.getUsers()
-        uList = uMap.keys.toList()
-        return uList
-    }
+    fun listUsersNames(): List<String> = settings.getUsers().keys.toList()
 
     companion object {
         private val LOG = LoggerFactory.getLogger(UserApi::class.java)

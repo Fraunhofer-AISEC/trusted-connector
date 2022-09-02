@@ -20,14 +20,17 @@
 package de.fhg.aisec.ids.webconsole.api.data
 
 class Identity {
-    @kotlin.jvm.JvmField
+    @JvmField
     var cn: String? = null
     var ou: String? = null
     var o: String? = null
-    @kotlin.jvm.JvmField
+
+    @JvmField
     var l: String? = null
-    @kotlin.jvm.JvmField
+
+    @JvmField
     var s: String? = null
-    @kotlin.jvm.JvmField
+
+    @JvmField
     var c: String? = null
 }

@@ -41,7 +41,8 @@ class ArtifactRequestProcessor : Processor {
         }
 
         val artifactRequestMessage = exchange.message.getHeader(
-            IDSCP2_HEADER, ArtifactRequestMessage::class.java
+            IDSCP2_HEADER,
+            ArtifactRequestMessage::class.java
         )
         val requestedArtifact = artifactRequestMessage.requestedArtifact
 //        val transferContract = artifactRequestMessage.transferContract

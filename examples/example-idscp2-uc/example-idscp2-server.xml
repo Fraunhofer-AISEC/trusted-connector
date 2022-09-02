@@ -3,7 +3,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:camel="http://camel.apache.org/schema/spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-          http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+          http://www.springframework.org/schema/beans/spring-beans.xsd
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
@@ -29,12 +29,19 @@
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ContractRequestMessage'</simple>
                     <log message="### Handle ContractRequestMessage ###"/>
-                    <setProperty name="containerUri">
+                    <setProperty name="uc-docker-image-uris">
                         <constant>
                             https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080
+                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#80
                             https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-d461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080
-                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-e461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8081
                         </constant>
+                    </setProperty>
+                    <!-- These values are examples that are always fulfilled (until 2100), replace them with your own values as necessary. -->
+                    <setProperty name="uc-not-before-datetime">
+                        <constant>2022-01-01T00:00:00.0Z</constant>
+                    </setProperty>
+                    <setProperty name="uc-not-after-datetime">
+                        <constant>2100-01-01T00:00:00.0Z</constant>
                     </setProperty>
                     <process ref="ContractRequestProcessor"/>
                 </when>

@@ -36,7 +36,8 @@ class ContractResponseProcessor : Processor {
         }
 
         val contractResponseMessage = exchange.message.getHeader(
-            IDSCP2_HEADER, ContractResponseMessage::class.java
+            IDSCP2_HEADER,
+            ContractResponseMessage::class.java
         )
 
         ContractHandler.handleContractOffer(exchange, contractResponseMessage.id, LOG)

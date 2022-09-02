@@ -69,6 +69,7 @@ import javax.ws.rs.core.MediaType
 class AppApi {
 
     @Autowired private lateinit var cml: ContainerManager
+
     @Autowired private lateinit var settings: Settings
 
     @GET
@@ -118,7 +119,9 @@ class AppApi {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun start(
-        @ApiParam(value = "ID of the app to start") @PathParam("containerId") containerId: String
+        @ApiParam(value = "ID of the app to start")
+        @PathParam("containerId")
+        containerId: String
     ): Boolean {
         return start(containerId, null)
     }
@@ -140,8 +143,12 @@ class AppApi {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun start(
-        @ApiParam(value = "ID of the app to start") @PathParam("containerId") containerId: String,
-        @ApiParam(value = "Key for user token (required for trustX containers)") @PathParam("key") key: String?
+        @ApiParam(value = "ID of the app to start")
+        @PathParam("containerId")
+        containerId: String,
+        @ApiParam(value = "Key for user token (required for trustX containers)")
+        @PathParam("key")
+        key: String?
     ): Boolean {
         return try {
             cml.startContainer(containerId, key)
@@ -172,7 +179,9 @@ class AppApi {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun stop(
-        @ApiParam(value = "ID of the app to stop") @PathParam("containerId") containerId: String
+        @ApiParam(value = "ID of the app to stop")
+        @PathParam("containerId")
+        containerId: String
     ): Boolean {
         return try {
             cml.stopContainer(containerId)
@@ -186,7 +195,8 @@ class AppApi {
         }
     }
 
-    @POST // @OPTIONS
+    @POST
+    // @OPTIONS
     @Path("install")
     @ApiOperation(value = "Install an app", notes = "Requests to install an app.", response = Boolean::class)
     @ApiResponses(
@@ -234,7 +244,9 @@ class AppApi {
     )
     @AuthorizationRequired
     fun wipe(
-        @ApiParam(value = "ID of the app to wipe") @QueryParam("containerId") containerId: String
+        @ApiParam(value = "ID of the app to wipe")
+        @QueryParam("containerId")
+        containerId: String
     ): String {
         try {
             cml.wipe(containerId)

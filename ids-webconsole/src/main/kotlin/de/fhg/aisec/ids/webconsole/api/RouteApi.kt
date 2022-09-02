@@ -59,6 +59,7 @@ class RouteApi {
 
     @Autowired
     private lateinit var rm: RouteManager
+
     @Autowired(required = false)
     private var policyAdministrationPoint: PAP? = null
 
@@ -94,7 +95,11 @@ class RouteApi {
     @ApiOperation(value = "Get a Camel route", response = RouteObject::class)
     @Produces(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
-    operator fun get(@ApiParam(value = "Route ID") @PathParam("id") id: String): RouteObject {
+    operator fun get(
+        @ApiParam(value = "Route ID")
+        @PathParam("id")
+        id: String
+    ): RouteObject {
         return rm.getRoute(id) ?: throw NotFoundException("Route not found")
     }
 

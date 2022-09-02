@@ -17,6 +17,8 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+@file:Suppress("DEPRECATION")
+
 package de.fhg.aisec.ids.rm
 
 import de.fhg.aisec.ids.api.conm.ConnectionManager
@@ -56,10 +58,10 @@ class ConnectionManagerService : ConnectionManager {
             }
         }
     override fun listAvailableEndpoints(): List<IDSCPServerEndpoint> {
-        var list: List<IDSCPServerEndpoint> = emptyList()
+        val list: MutableList<IDSCPServerEndpoint> = mutableListOf()
         for (cCtx in camelContexts) {
-            var tmp = IDSCPServerEndpoint()
-            for ((key, value) in cCtx.endpointRegistry) {
+            val tmp = IDSCPServerEndpoint()
+            for ((_, value) in cCtx.endpointRegistry) {
                 tmp.endpointIdentifier = value.endpointBaseUri
                 tmp.defaultProtocol = value.endpointBaseUri.substringBefore(':')
                 tmp.port = value.endpointBaseUri.substringAfter("://").substringAfter(':')
@@ -81,28 +83,29 @@ class ConnectionManagerService : ConnectionManager {
     private fun getAttestationStatus(supportedRaSuites: String, expectedRaSuites: String): RatResult {
         // This array contains all insecure default verifiers.
         // If one of these is detected, the attestation will be considered insecure.
-        val insecureVerifier = arrayOf(
+        val insecureVerifier = setOf(
             RaVerifierDummy2.RA_VERIFIER_DUMMY2_ID,
             RaVerifierDummy.RA_VERIFIER_DUMMY_ID,
             DemoRaVerifier.DEMO_RA_VERIFIER_ID
         )
 
-        val supportedRaSuites = supportedRaSuites.split('|')
-        val expectedRaSuites = expectedRaSuites.split('|')
-        return if (expectedRaSuites.any(insecureVerifier::contains)) {
+        val supportedRaSuitesList = supportedRaSuites.split('|')
+        val expectedRaSuitesList = expectedRaSuites.split('|')
+        return if (expectedRaSuitesList.any(insecureVerifier::contains)) {
             RatResult(RatResult.Status.FAILED, "Endpoint accepts dummy attestation")
         } else {
             RatResult(
                 RatResult.Status.SUCCESS,
-                "Supported RA Suites: ${supportedRaSuites.joinToString()}, Expected RA Suites: ${expectedRaSuites.joinToString()}"
+                "Supported RA Suites: ${supportedRaSuitesList.joinToString()}, " +
+                    "Expected RA Suites: ${expectedRaSuitesList.joinToString()}"
             )
         }
     }
 
-    val outgoingConnections: MutableList<IDSCPOutgoingConnection> = mutableListOf()
-    val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
+    private val outgoingConnections: MutableList<IDSCPOutgoingConnection> = mutableListOf()
+    private val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
 
-    val connectionListener = object : ConnectionListener {
+    private val connectionListener = object : ConnectionListener {
         override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
             // When we are a client endpoint, we create an outgoing connection
             val outgoing = IDSCPOutgoingConnection()

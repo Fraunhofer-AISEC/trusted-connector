@@ -1,6 +1,6 @@
 plugins {
     application
-    id("org.springframework.boot")
+    alias(libs.plugins.springboot)
 }
 
 springBoot {

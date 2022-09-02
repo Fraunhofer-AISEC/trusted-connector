@@ -34,8 +34,10 @@ class CamelInterceptor : InterceptStrategy {
 
     @Autowired(required = false)
     private var pdp: PDP? = null
+
     @Autowired(required = false)
     private var usageControlInterface: Idscp2UsageControlInterface? = null
+
     @Autowired(required = false)
     private var containerManager: ContainerManager? = null
 

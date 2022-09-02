@@ -59,7 +59,7 @@ class ConnectionAPI {
     @get:Path("/incoming")
     @get:GET
     val incoming: List<IDSCPIncomingConnection>
-        get() = connectionManager.listIncomingConnections() ?: emptyList()
+        get() = connectionManager.listIncomingConnections()
 
     @get:AuthorizationRequired
     @get:Produces(MediaType.APPLICATION_JSON)
@@ -71,8 +71,10 @@ class ConnectionAPI {
     @get:Path("/outgoing")
     @get:GET
     val outgoing: List<IDSCPOutgoingConnection>
-        get() = connectionManager.listOutgoingConnections() ?: emptyList()
+        get() = connectionManager.listOutgoingConnections()
 
+    // val availableEndpoints: List<IDSCPServerEndpoint>
+    //    get() = connectionManager.listAvailableEndpoints()
     @AuthorizationRequired
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
@@ -82,8 +84,6 @@ class ConnectionAPI {
     )
     @Path("/endpoints")
     @GET
-    // val availableEndpoints: List<IDSCPServerEndpoint>
-    //    get() = connectionManager.listAvailableEndpoints()
     fun listendpoints(): List<IDSCPServerEndpoint> {
         return connectionManager.listAvailableEndpoints()
     }
