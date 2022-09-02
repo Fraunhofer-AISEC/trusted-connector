@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.webconsole.api
 import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection
-import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint
+import de.fhg.aisec.ids.api.conm.ServerEndpoint
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
@@ -79,12 +79,12 @@ class ConnectionAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
         value = "Returns a list of all endpoints provided by this connector",
-        response = IDSCPServerEndpoint::class,
+        response = ServerEndpoint::class,
         responseContainer = "List"
     )
     @Path("/endpoints")
     @GET
-    fun listendpoints(): List<IDSCPServerEndpoint> {
+    fun listendpoints(): List<ServerEndpoint> {
         return connectionManager.listAvailableEndpoints()
     }
 }

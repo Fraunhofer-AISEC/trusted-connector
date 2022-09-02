@@ -27,5 +27,5 @@ package de.fhg.aisec.ids.api.conm
 interface ConnectionManager {
     fun listIncomingConnections(): List<IDSCPIncomingConnection>
     fun listOutgoingConnections(): List<IDSCPOutgoingConnection>
-    fun listAvailableEndpoints(): List<IDSCPServerEndpoint>
+    fun listAvailableEndpoints(): List<ServerEndpoint>
 }

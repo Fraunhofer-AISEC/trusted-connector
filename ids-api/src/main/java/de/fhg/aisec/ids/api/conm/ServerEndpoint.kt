@@ -20,17 +20,14 @@
 package de.fhg.aisec.ids.api.conm
 
 /**
- * Bean representing an "IDSCP Endpoint". This maps to a camel endpoint and is used to handle
- * exposed endpoints of the IDSCP.
+ * Bean representing an "Endpoint".
+ * This maps to a camel endpoint and is used to represent exposed endpoints.
  *
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
-class IDSCPServerEndpoint {
-    var endpointIdentifier: String? = null
-    var defaultProtocol: String? = null
-    var port: String? = null
-    var host: String? = null
-    override fun toString(): String {
-        return "IDSCPEndpoint [endpoint_identifier=$endpointIdentifier]"
-    }
-}
+data class ServerEndpoint(
+    var endpointIdentifier: String,
+    var defaultProtocol: String,
+    var host: String,
+    var port: String
+)

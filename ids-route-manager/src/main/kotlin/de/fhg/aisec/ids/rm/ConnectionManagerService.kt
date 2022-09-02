@@ -24,8 +24,8 @@ package de.fhg.aisec.ids.rm
 import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection
-import de.fhg.aisec.ids.api.conm.IDSCPServerEndpoint
 import de.fhg.aisec.ids.api.conm.RatResult
+import de.fhg.aisec.ids.api.conm.ServerEndpoint
 import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.client.Idscp2ClientEndpoint
 import de.fhg.aisec.ids.camel.idscp2.listeners.ConnectionListener
@@ -57,19 +57,23 @@ class ConnectionManagerService : ConnectionManager {
                 emptyList()
             }
         }
-    override fun listAvailableEndpoints(): List<IDSCPServerEndpoint> {
-        val list: MutableList<IDSCPServerEndpoint> = mutableListOf()
-        for (cCtx in camelContexts) {
-            val tmp = IDSCPServerEndpoint()
-            for ((_, value) in cCtx.endpointRegistry) {
-                tmp.endpointIdentifier = value.endpointBaseUri
-                tmp.defaultProtocol = value.endpointBaseUri.substringBefore(':')
-                tmp.port = value.endpointBaseUri.substringAfter("://").substringAfter(':')
-                tmp.host = value.endpointBaseUri.substringAfter("://").substringBefore(':')
-                list += tmp
+    override fun listAvailableEndpoints(): List<ServerEndpoint> {
+        return camelContexts.flatMapTo(mutableSetOf()) { cCtx ->
+            cCtx.endpointRegistry.values.mapNotNull {
+                if (it is Idscp2ServerEndpoint) {
+                    val baseUri = it.endpointBaseUri
+                    val matchGroups = "(.*?)://(.*?)(?::([0-9]+))?/.*".toRegex().matchEntire(baseUri)?.groupValues
+                    ServerEndpoint(
+                        baseUri,
+                        matchGroups?.get(1) ?: "?",
+                        matchGroups?.get(2) ?: "?",
+                        matchGroups?.get(3) ?: "?"
+                    )
+                } else {
+                    null
+                }
             }
-        }
-        return list
+        }.toList()
     }
 
     // TODO: Register Listener, get connection information and return results in listOutgoing/IncomingConnections()
