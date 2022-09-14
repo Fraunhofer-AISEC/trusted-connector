@@ -20,12 +20,14 @@
 package de.fhg.aisec.ids.api.conm
 
 /**
- * List and interacts with open connections over the IDS communication protocol
+ * Bean representing an "Endpoint".
+ * This maps to a camel endpoint and is used to represent exposed endpoints.
  *
- * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
+ * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
-interface ConnectionManager {
-    fun listIncomingConnections(): List<IDSCPIncomingConnection>
-    fun listOutgoingConnections(): List<IDSCPOutgoingConnection>
-    fun listAvailableEndpoints(): List<ServerEndpoint>
-}
+data class ServerEndpoint(
+    var endpointIdentifier: String,
+    var defaultProtocol: String,
+    var host: String,
+    var port: String
+)

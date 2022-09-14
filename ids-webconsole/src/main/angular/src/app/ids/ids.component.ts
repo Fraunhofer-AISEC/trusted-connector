@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { of, timer } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 
 import { SettingsService } from './settings.service';
 import { TermsOfService } from './terms-of-service.interface';
-
+import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'my-app',
     templateUrl: './ids.component.html',
@@ -13,17 +13,22 @@ import { TermsOfService } from './terms-of-service.interface';
     providers: [SettingsService]
 })
 export class IdsComponent implements OnInit {
+    @Output() public readonly changeTitle = new EventEmitter();
     public settingsForm?: FormGroup;
     public saved = true;
     public tosWebconsole?: TermsOfService;
 
-    constructor(private readonly settingsService: SettingsService, private readonly formBuilder: FormBuilder) { }
+    constructor(private readonly titleService: Title, private readonly settingsService: SettingsService,
+                private readonly formBuilder: FormBuilder) {
+      this.titleService.setTitle('Settings');
+    }
 
     public canDeactivate(target: IdsComponent): boolean {
         return target.saved;
     }
 
     public ngOnInit(): void {
+        this.changeTitle.emit('Settings');
         // Pull settings from server
         this.settingsService.getSettings()
             .subscribe(response => {

@@ -7,5 +7,6 @@ logging:
 #    de.fhg.aisec.ids.camel.idscp2: TRACE
 
 spring:
-  resources:
-    static-locations: classpath:/www/
+  web:
+    resources:
+      static-locations: classpath:/www/

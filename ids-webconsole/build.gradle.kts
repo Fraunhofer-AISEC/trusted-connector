@@ -112,6 +112,8 @@ val yarnLint by tasks.registering(YarnTask::class) {
     workingDir.set(file("src/main/angular"))
     yarnCommand.set(listOf("ng", "lint"))
     onlyIf { !rootProject.hasProperty("skipAngular") }
+
+    dependsOn(yarnInstall)
 }
 
 val yarnBuild by tasks.registering(YarnTask::class) {
@@ -127,8 +129,6 @@ val yarnBuild by tasks.registering(YarnTask::class) {
     onlyIf { !rootProject.hasProperty("skipAngular") }
 
     dependsOn(yarnLint)
-    // make sure yarn install is executed first
-    dependsOn(yarnInstall)
 }
 
 tasks.processResources {

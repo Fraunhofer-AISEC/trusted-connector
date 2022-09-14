@@ -22,8 +22,12 @@ package de.fhg.aisec.ids.webconsole.api
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.webconsole.api.data.PasswordChangeRequest
 import de.fhg.aisec.ids.webconsole.api.data.User
 import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
@@ -33,8 +37,11 @@ import java.security.SecureRandom
 import java.util.Calendar
 import javax.security.auth.login.LoginException
 import javax.ws.rs.Consumes
+import javax.ws.rs.DELETE
+import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
+import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -118,13 +125,43 @@ class UserApi(@Autowired private val settings: Settings) {
     }
 
     @POST
-    @Path("/removeUser")
+    @Path("/setPassword")
     @AuthorizationRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    fun removeUser(username: String) {
-        settings.removeUser(username)
+    fun setPassword(change: PasswordChangeRequest) {
+        if (change.username.isNullOrBlank() || change.oldPassword.isNullOrBlank() || change.newPassword.isNullOrBlank()) {
+            LOG.error("Username or password blank, please provide valid credentials!")
+        } else if (argonEncoder.matches(change.oldPassword, (settings.getUserHash(change.username.toString()) ?: randomHash))) {
+            settings.setPassword(change.username!!, argonEncoder.encode(change.newPassword))
+        } else {
+            LOG.error("Old password is wrong")
+        }
     }
+
+    @DELETE
+    @Path("/removeUser/{user}")
+    @AuthorizationRequired
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    fun removeUser(@PathParam("user") username: String) = settings.removeUser(username)
+
+    @GET
+    @Path("list_user_names")
+    @ApiOperation(value = "Lists user names", responseContainer = "List")
+    @ApiResponses(
+        ApiResponse(
+            code = 200,
+            message = "List of user names",
+            response = String::class,
+            responseContainer = "List"
+        )
+    )
+    @Produces(
+        MediaType.APPLICATION_JSON
+    )
+    @AuthorizationRequired
+    fun listUsersNames(): List<String> = settings.getUsers().keys.toList()
 
     companion object {
         private val LOG = LoggerFactory.getLogger(UserApi::class.java)
