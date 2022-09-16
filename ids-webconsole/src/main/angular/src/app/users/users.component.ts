@@ -14,21 +14,21 @@ export class UsersComponent implements AfterViewInit {
     private _isLoaded = false;
 
     constructor(private readonly titleService: Title, private readonly userService: UserService, private readonly router: Router) {
-      this.titleService.setTitle('Users');
+        this.titleService.setTitle('Users');
 
-      this.userService.getUsers()
-           .subscribe(users => {
-             this._users = users;
-             this._isLoaded = this._users && this._users.length > 0;
-           });
+        this.userService.getUsers()
+            .subscribe(users => {
+                this._users = users;
+                this._isLoaded = this._users && this._users.length > 0;
+            });
     }
 
     public ngAfterViewInit(): void {
-      componentHandler.upgradeAllRegistered();
+        componentHandler.upgradeAllRegistered();
     }
 
     get users(): string[] {
-      return this._users;
+        return this._users;
     }
 
     public async onDeleteBtnClick(userId: string) {
@@ -37,16 +37,15 @@ export class UsersComponent implements AfterViewInit {
     }
 
     public async onSettingsBtnClick(userId: string): Promise<boolean> {
-        return this.router.navigate(['/userdetail'], { queryParams: { user: userId } });
+        return this.router.navigate(['/userdetail'], {queryParams: {user: userId}});
     }
 
     get isLoaded(): boolean {
-      return this._isLoaded;
+        return this._isLoaded;
     }
 
     public trackUsers(index: number, item: string): string {
-      return item;
+        return item;
     }
-
 
 }
