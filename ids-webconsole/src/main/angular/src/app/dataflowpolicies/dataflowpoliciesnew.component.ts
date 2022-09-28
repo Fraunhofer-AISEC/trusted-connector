@@ -18,8 +18,7 @@ export class NewDataflowPolicyComponent implements OnInit {
 
     constructor(private readonly fb: UntypedFormBuilder,
                 private readonly titleService: Title,
-                private readonly policyService: PolicyService
-    ) {
+                private readonly policyService: PolicyService) {
         this.titleService.setTitle('New Policy');
     }
 

@@ -17,8 +17,7 @@ export class NewIdentityComponent implements OnInit {
     constructor(private readonly fb: UntypedFormBuilder,
                 private readonly titleService: Title,
                 private readonly certService: CertificateService,
-                private readonly router: Router
-    ) {
+                private readonly router: Router) {
         this.titleService.setTitle('New Identity');
     }
 
