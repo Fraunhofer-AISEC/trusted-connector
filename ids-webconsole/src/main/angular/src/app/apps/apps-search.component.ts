@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 
 import { App } from './app';
 import { AppService } from './app.service';
@@ -11,12 +11,12 @@ declare let componentHandler: any;
   providers: []
 })
 export class AppsSearchComponent implements OnInit, AfterViewInit {
-    public myForm: FormGroup;
+    public myForm: UntypedFormGroup;
     public submitted: boolean;
     public saved: boolean;
     public searchResults: App[] = [];
 
-    constructor(private readonly fb: FormBuilder, private readonly appService: AppService) {
+    constructor(private readonly fb: UntypedFormBuilder, private readonly appService: AppService) {
         this.saved = true;
         this.submitted = false;
     }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
@@ -9,13 +9,14 @@ import { ActivatedRoute } from '@angular/router';
     templateUrl: './userdetail.component.html'
 })
 export class DetailUserComponent implements OnInit {
-    public myForm: FormGroup;
+
+    public myForm: UntypedFormGroup;
     userId: string;
     oldPW: string;
     newPW: string;
     rePW: string;
 
-    constructor(private readonly fb: FormBuilder,
+    constructor(private readonly fb: UntypedFormBuilder,
                 private readonly titleService: Title,
                 private readonly userService: UserService,
                 private readonly router: Router,

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
 import { Policy } from './policy.interface';
@@ -9,14 +9,17 @@ import { PolicyService } from './policy.service';
     templateUrl: './dataflowpoliciesnew.component.html'
 })
 export class NewDataflowPolicyComponent implements OnInit {
-    public myForm: FormGroup;
+
+    public myForm: UntypedFormGroup;
     public data: Policy;
     public policyFileLabel = 'Select lucon file ...';
-    public events: any[] = [];
     public multiple: false;
     public fileUpload: AbstractControl;
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly policyService: PolicyService) {
+    constructor(private readonly fb: UntypedFormBuilder,
+                private readonly titleService: Title,
+                private readonly policyService: PolicyService
+    ) {
         this.titleService.setTitle('New Policy');
     }
 

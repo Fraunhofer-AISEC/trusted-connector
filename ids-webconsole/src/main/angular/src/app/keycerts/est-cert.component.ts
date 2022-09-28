@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
@@ -9,10 +9,10 @@ import { ESTService } from './est-service';
     templateUrl: './est-cert.component.html'
 })
 export class ESTCertComponent implements OnInit {
-    public myForm: FormGroup;
+    public myForm: UntypedFormGroup;
     public cacert = '';
 
-    constructor(private readonly fb: FormBuilder,
+    constructor(private readonly fb: UntypedFormBuilder,
                 private readonly titleService: Title,
                 private readonly estService: ESTService,
                 private readonly router: Router) {
