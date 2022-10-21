@@ -61,8 +61,10 @@ export class IdsComponent implements OnInit {
                     keystoreName: response.keystoreName,
                     keystorePassword: response.keystorePassword,
                     keystoreAliasName: response.keystoreAliasName,
-                    truststoreName: response.truststoreName
-
+                    truststoreName: response.truststoreName,
+                    rootCAUrl: response.rootCAUrl,
+                    onboardingSecret: response.onboardingSecret,
+                    certificateHash: response.certificateHash
                 });
                 this.subscribeToFormChanges();
             });

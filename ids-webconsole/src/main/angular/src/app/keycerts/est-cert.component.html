@@ -1,0 +1,46 @@
+<!-- Status cards -->
+<div class="mdl-grid">
+	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">EST Root Certificate</h2>
+		</div>
+		<div class="mdl-card__supporting-text">
+
+		<form [formGroup]="myForm" novalidate (ngSubmit)="saveEstCert()" class="mdl-cell--12-col mdl-grid">
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="ESTUrl">EST Url</label>
+					<input class="mdl-textfield__input" id="ESTUrl" type="text" formControlName="ESTUrl">
+				</div>
+			</div>
+
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="certificateHash">CertificateHash (SHA-256)</label>
+					<input class="mdl-textfield__input" id="certificateHash" type="text" formControlName="certificateHash">
+				</div>
+			</div>
+
+			<div class="mdl-cell--8-col">
+				<div mdl-textarea class="mdl-textfield mdl-js-textfield  mdl-text-field--textarea mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="certificate">Certificate</label>
+          <textarea class="mdl-text-field__input" mdl-text-field--disabled aria-labelledby="my-label-id" rows="8"
+                    cols="100" maxlength="5000"  id="certificate" type="text" formControlName="certificate"></textarea>
+				</div>
+			</div>
+
+
+
+			<div class="mdl-cell--12-col" style="margin-top:20px">
+				<button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Save</button>
+			</div>
+		</form>
+      <div class="mdl-cell--4-col">
+        <button class="mdl-button mdl-js-button mdl-button--raised" (click)="onGetCertBtnClick()">
+          Get certificate
+        </button>
+      </div>
+
+      </div>
+	</div>
+</div>

@@ -12,5 +12,7 @@ export interface Settings {
   keystorePassword: string;
   keystoreAliasName: string;
   truststoreName: string;
-
+  rootCAUrl: string;
+  onboardingSecret: string;
+  certificateHash: string;
 }

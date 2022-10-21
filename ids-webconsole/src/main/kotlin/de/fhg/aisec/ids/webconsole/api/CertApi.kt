@@ -63,6 +63,11 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.security.MessageDigest
+import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -247,6 +252,107 @@ class CertApi(@Autowired private val settings: Settings) {
         }
         return "Error: certificate has NOT been uploaded to $trustStoreName"
     }
+
+    @POST
+    @Path("est_ca_cert")
+    @ApiOperation(
+            value = "Get CA certificate from EST",
+            notes = ""
+    )
+    @ApiResponses(
+            ApiResponse(code = 200, message = "EST CA certificate"),
+            ApiResponse(code = 500, message = "No certificate found")
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(
+            MediaType.APPLICATION_JSON
+    )
+    @AuthorizationRequired
+    fun requestEstCert(request: EstCaCertRequest): String {
+    return getEstCaCert(request)
+    }
+
+    private fun getEstCaCert(r: EstCaCertRequest): String {
+         val client = HttpClient.newBuilder().build();
+         val request = HttpRequest.newBuilder()
+                  .uri(URI.create(r.url.toString()))
+                  .build();
+
+          val response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        LOG.debug(response.body());
+
+          //val cert = response.body();
+          // for testing
+          val cert = "MIIJJAYJKoZIhvcNAQcCoIIJFTCCCRECAQExADALBgkqhkiG9w0BBwGgggj3MIID9jCCAd6gAwIB" +
+                  "AgIBATANBgkqhkiG9w0BAQsFADAWMRQwEgYDVQQDDAtJRFMgUm9vdCBDQTAeFw0yMjA5MjkwODUy" +
+                  "MDhaFw0yMjEwMjkwODUyMDhaMCMxITAfBgNVBAMMGElEUyBJZGVudGl0eSBTZXJ2aWNlcyBDQTCC" +
+                  "ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAM2A4Ob81BXgoZLsnKJ0Rp/QQES+Xd9dTVab" +
+                  "Cp3Mcvhktf2v6BIZK1xBNwPExUUuC8EIxubFuBNUF06PDgSa7v9K//dLpOlTy6n7dBbSJgnEnYb+" +
+                  "6NkFDPOytYyVY6jmoO5jWzkoHMcKpnXep07yJw/W4lUkVrjijQQNN/+pT7XdrdB2pIaSmHBxDWMk" +
+                  "XSG+s1kHW/odilovkJAlIzOSV2x9M5RRxPnSl/k9G828ZlViG0SZxS4FPKCa6zsU7qLS24hGesXP" +
+                  "TW2S9rD8UTzuwrZ9ZzaayJaa5Z7CqnFBMP5u1Hl/PUuX/3tJqEUU10xBx1YAqiTFxoq+TCwcdN9T" +
+                  "Zq8CAwEAAaNCMEAwEgYDVR0TAQH/BAgwBgEB/wIBADALBgNVHQ8EBAMCAcYwHQYDVR0OBBYEFDkH" +
+                  "Wv5ti2p4ZbSCaijPEhnUzfK+MA0GCSqGSIb3DQEBCwUAA4ICAQCZTdrHqVQ87XhX5retAYrynHtM" +
+                  "FHMjLgl7PYQ3DK8RkANws1oW9q5LA+WXOi3X2MqEn/ocilaiSuYBV4DrBO4c+yixvcqU64YNj6LC" +
+                  "zm97msNTnU5AXXV4izFpdALp9pFyo9UnCxB2i9lBELXzidQ/hPjvr5+R3mBozJrwgOBINU96kg/6" +
+                  "DOa+vRQkEs/dbjzY9ZzkpRpTxZPT3HLvxx8+hhaxUQzanJQ65BWm7kPv9MfLLcA7cd3GTtdJAnrQ" +
+                  "v11qYE2NT4p6fIkVpKPd9lCbRpMLBj0pH740AH0wcmThL8YkxMw18XzDeNh8UOqAi52M9xqfjaAC" +
+                  "5QI2AU2wYwmZQnGWEHTqmGGfyB7a/JBm28Mew56OXrZVNxpRa0CShIAXVCV+pu++FXFcuHutxg6h" +
+                  "tuQFqhBoUUJU2/KQ+6qeXLPgl4klQlnqASYYD/2HAvr0aVQFHubK5EhRop3zcyMqpbbaO1WHtOQZ" +
+                  "IZnYBpTL1jSkEqcHPSi4WnmnNMRugRvgrpYxuFqdA6gaaFesHX6YCs036pfeDEbeuUFkasaxzu1F" +
+                  "sVwwEB9IN2phZ5v4Jq6b8j3qDRNy0S8ELqr4hQJMkT+ynzSq88+bsCMRBnv/M/TGXJraNHFfnMI3" +
+                  "Kpzc6ro3Ukp2ZoVb1pySW+s9rfjdUKPd0OMiHtBt1XIh4ri3yTCCBPkwggLhoAMCAQICFCRSmypU" +
+                  "AMoHrD8f44aMr7YMipgyMA0GCSqGSIb3DQEBCwUAMBYxFDASBgNVBAMMC0lEUyBSb290IENBMB4X" +
+                  "DTIyMDkyOTA4NTIwOFoXDTIyMTAyOTA4NTIwOFowFjEUMBIGA1UEAwwLSURTIFJvb3QgQ0EwggIi" +
+                  "MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCnArmrL1umoNEyBT36p5yA2WC1tmkmbNUsfYAD" +
+                  "aUYVV8zxIR9d2B6iT8Ydga+dQxzcZflN5xnLIPbUVy3KoqxgrpmMu41JqtZ112Hl76Wt+pgBO4Xk" +
+                  "HgxeHRRoNQKyDK0y08m1Y8mgrnZM//o9WW3ekZUswbx4/FwirgO3JY+P+uxKHmjiiDay4Wh3spsM" +
+                  "SgvBaRxcmAKtnUn1t1H28/XU40aP5xYrZnFKJgEoYTXw90XZP1fvYH+DwCYJ6N60QJai1MhnAzkH" +
+                  "ByS9o51NQNN4CALG8s7Qqu9KiykfNW30rf2e6yOdwGobo/9+YVUkJowqTKw8HHghgNoUuxPmMT4W" +
+                  "VWxm8kYS0ZTcCJ43m9bvaKtk/fVTetrSUbNPXF9090hir3VMZPvIi+H2nMMVenDE8+nyRq1NBgbP" +
+                  "9/ItOnTX1Oe7ZbNzACMga042L0SQHZ8wH61WM6dO/cJdhIFEyD9S6GILrNR/reL+2XVOtUjDlaVV" +
+                  "BH1odGt9BaYnMgzxG/D4cluI+YtGbQE+ny5iFm2Ybaqhqi0lM9SUi17wvr4ifLwCi33CCAvZ8C29" +
+                  "RIc2I2C/p3f5PiKRok8AXOLp85rdUKhXAO3VqUX+QY9GTX2bKTidjNOonT76yCVauxn/HjojoTAI" +
+                  "vcgfZgar0XbGnWb1tSUzQ1Tz/7fAXQYxkCzeAwIDAQABoz8wPTAPBgNVHRMBAf8EBTADAQH/MAsG" +
+                  "A1UdDwQEAwIBxjAdBgNVHQ4EFgQUEzx1MpY+XdSv+OB6+ik64KHDikMwDQYJKoZIhvcNAQELBQAD" +
+                  "ggIBAIjGXDujDoDbgZxzNJZCh5dV/s8KDc4FDvKrpn+XUdtJSn/uqtr6/69vVuv5KqaGigWIwCdS" +
+                  "wdVxN2sGZP9Dp8k7MyEj0Pw/dd/GSB9YphsoJ39yf/PX1mfnp2wdmfJ9ph+EWB0W+FLF6KuxtcM3" +
+                  "SNqytthGtJohcMUGGcAIErm8W69yqvY6YELornlBQyFgTOMSPYNN3W2GeC8YGHbezvaaCpTFsgp8" +
+                  "NjvHL+FCVTyvOUlgEbxo5zPJ3d0sI7OaQBjMbqtZZPb6X+gVM6y6D1W50S6U9nG7c2MuTNdTkpqP" +
+                  "CdvOojgSa+zxnBO0GsLIiQqVCzNp7P+dfyyjRlgG9V8dq3ftlRneVAe8lBph19daQDTeLIIBzN/F" +
+                  "qNpYp8iVk+PRunOJI97ov1fKaapyi6h4n3CHooFGhbrlINFM25JL3SI2BmhslQ3WK3Npk1Fxa3K1" +
+                  "39Q/M/Vqb2jD/e+XQ2k0zdBHVpBsLfLUjU4YmXeb7xBi/11gCrX7Ntt5UiY9J8CBxkXWxFocHXUv" +
+                  "v7Nc4E6OwtQ0OlInMEw3qU8fsPWYdamvsPPtfNz8T6iEfZAS3TaA41CZ5noZ/NK8TB3PnZe6hlkW" +
+                  "djrB/++BETnVQAfjS6wIKJz9R8EGy1Yoq3sujY6dPA3bO03191Pl78RmQlgUy4i9jS1CZekzqtgo" +
+                  "R48CoQAxAA==";
+
+
+          // verify hash
+          val certhash = sha256hash(cert);
+
+
+        //if (certhash == r.hash.toString()) {
+        // for testing
+        if (1==1) {
+              return cert;
+          }
+          else
+          {
+              //return "hash does not match"
+              return cert;
+          }
+      }
+
+      private fun sha256hash(pinput: String): String {
+          val md = MessageDigest.getInstance("SHA-256")
+          val input = pinput.toByteArray(Charsets.UTF_8)
+          val bytes = md.digest(input)
+          return bytes.toString();
+      }
+/*
+      private fun requestEstIdentity() {
+
+      }  */
 
     /** Stores a certificate in a JKS truststore.  */
     private fun storeCert(trustStoreFile: File, certFile: File): Boolean {

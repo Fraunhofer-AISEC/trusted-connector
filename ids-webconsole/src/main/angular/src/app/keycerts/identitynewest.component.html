@@ -1,0 +1,54 @@
+<!-- Status cards -->
+<div class="mdl-grid">
+	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+		<div class="mdl-card__title">
+			<h2 class="mdl-card__title-text">Create an Identity</h2>
+		</div>
+		<div class="mdl-card__supporting-text">
+
+		<form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="cn">Your IDS Domain Name*</label>
+					<input class="mdl-textfield__input" id="cn" type="text" formControlName="cn">
+					<span [hidden]="myForm.controls.cn.valid || !myForm.controls.cn.dirty" class="mdl-textfield__error">Domain name is required.</span>
+				</div>
+			</div>
+
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="s">Email address*</label>
+					<input class="mdl-textfield__input" id="s" type="text" formControlName="s" email>
+					<span [hidden]="myForm.controls.s.valid || (myForm.controls.s.pristine)" class="mdl-textfield__error">Email address is required.</span>
+				</div>
+			</div>
+
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="o">Organization</label>
+					<input class="mdl-textfield__input" id="o" type="text" formControlName="o">
+				</div>
+			</div>
+
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="ou">Organization Unit</label>
+					<input class="mdl-textfield__input" id="ou" type="text" formControlName="ou">
+				</div>
+			</div>
+
+			<div class="mdl-cell--12-col">
+				<div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+					<label class="mdl-textfield__label" for="l">Location</label>
+					<input class="mdl-textfield__input" id="l" type="text" formControlName="l">
+				</div>
+			</div>
+
+			<div class="mdl-cell--12-col" style="margin-top:20px">
+				<button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Create Identity</button>
+			</div>
+		</form>
+
+      </div>
+	</div>
+</div>

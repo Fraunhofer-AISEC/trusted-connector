@@ -51,6 +51,8 @@ import { NewUserComponent } from './users/usernew.component';
 import { DetailUserComponent } from './users/userdetail.component';
 import { UserService } from './users/user.service';
 import { UserCardComponent } from './users/user-card.component';
+import { NewIdentityESTComponent } from './keycerts/identitynewest.component';
+import { ESTCertComponent } from './keycerts/est-cert.component';
 
 @NgModule({
   imports: [
@@ -95,7 +97,9 @@ import { UserCardComponent } from './users/user-card.component';
     NewUserComponent,
     DetailUserComponent,
     UserCardComponent,
-    UsersComponent
+    UsersComponent,
+    NewIdentityESTComponent,
+    ESTCertComponent
   ],
   providers: [
     HTTP_PROVIDER,
