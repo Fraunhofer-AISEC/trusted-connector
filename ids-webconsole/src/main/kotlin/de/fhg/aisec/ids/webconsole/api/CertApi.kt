@@ -17,57 +17,42 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 package de.fhg.aisec.ids.webconsole.api
+
 
 import de.fhg.aisec.ids.api.acme.AcmeClient
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.webconsole.api.data.Cert
+import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
+import de.fhg.aisec.ids.webconsole.api.data.EstIdRequest
 import de.fhg.aisec.ids.webconsole.api.data.Identity
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
-import io.swagger.annotations.ApiParam
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.ApiResponses
-import io.swagger.annotations.Authorization
+import io.swagger.annotations.*
 import org.apache.cxf.jaxrs.ext.multipart.Attachment
 import org.apache.cxf.jaxrs.ext.multipart.Multipart
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
+import java.io.*
 import java.net.URI
 import java.net.URISyntaxException
-import java.nio.charset.StandardCharsets
-import java.nio.file.FileSystems
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.UUID
-import javax.ws.rs.Consumes
-import javax.ws.rs.GET
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
-import javax.ws.rs.QueryParam
-import javax.ws.rs.core.MediaType
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.security.MessageDigest
-import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
+import java.nio.charset.StandardCharsets
+import java.nio.file.FileSystems
+import java.security.*
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.*
+import javax.security.auth.x500.X500Principal
+import javax.ws.rs.*
+import javax.ws.rs.core.MediaType
+
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -90,9 +75,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_renew/{target}")
     @AuthorizationRequired
     fun getAcmeCert(
-        @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-        @PathParam("target")
-        target: String
+            @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
+            @PathParam("target")
+            target: String,
     ): Boolean {
         val config = settings.connectorConfig
         return if ("webconsole" == target && acmeClient != null) {
@@ -117,9 +102,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_tos")
     @AuthorizationRequired
     fun getAcmeTermsOfService(
-        @ApiParam(value = "URI to retrieve the TOS from")
-        @QueryParam("uri")
-        uri: String
+            @ApiParam(value = "URI to retrieve the TOS from")
+            @QueryParam("uri")
+            uri: String,
     ): AcmeTermsOfService? {
         return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
     }
@@ -164,7 +149,7 @@ class CertApi(@Autowired private val settings: Settings) {
     @Consumes(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun createIdentity(
-        @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
+            @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity,
     ): String {
         val alias = UUID.randomUUID().toString()
         try {
@@ -227,9 +212,9 @@ class CertApi(@Autowired private val settings: Settings) {
         IOException::class
     )
     fun installTrustedCert(
-        @ApiParam(hidden = true, name = "attachment")
-        @Multipart("upfile")
-        attachment: Attachment
+            @ApiParam(hidden = true, name = "attachment")
+            @Multipart("upfile")
+            attachment: Attachment,
     ): String {
         val filename = attachment.contentDisposition.getParameter("filename")
         val tempPath = File.createTempFile(filename, "cert")
@@ -349,10 +334,104 @@ class CertApi(@Autowired private val settings: Settings) {
           val bytes = md.digest(input)
           return bytes.toString();
       }
-/*
-      private fun requestEstIdentity() {
 
-      }  */
+    @POST
+    @Path("request_est_identitiy")
+    @ApiOperation(
+            value = "Get CA certificate from EST",
+            notes = ""
+    )
+    @ApiResponses(
+            ApiResponse(code = 200, message = "EST CA certificate"),
+            ApiResponse(code = 500, message = "No certificate found")
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(
+            MediaType.APPLICATION_JSON
+    )
+    @AuthorizationRequired
+    fun requestEstIdentity(request: EstIdRequest) {
+        getEstId(request);
+    }
+
+    private fun getEstId(r: EstIdRequest) {
+        // generate key and csr
+        var keys: KeyPair = generateKeyPair()
+        var csr: ByteArray? = r.id?.let { generateCSR(it, keys) }
+        // send request
+        // body = ..
+        // cert = sendEstIdReq()
+
+
+        // save identity
+
+
+    }
+
+    private fun generateKeyPair(): KeyPair{
+        val kpg = KeyPairGenerator.getInstance("RSA");
+        kpg.initialize(4096)
+        val kp = kpg.generateKeyPair()
+        return kp;
+    }
+
+    private fun generateCSR(request: Identity, keys: KeyPair): ByteArray? {
+        val tmp: ByteArray? = request.cn?.let {
+            request.ou?.let { it1 ->
+                request.o?.let { it2 ->
+                    request.l?.let { it3 ->
+                        request.s?.let { it4 ->
+                            request.c?.let { it5 ->
+                                request.email?.let { it6 ->
+                                    generatePKCS10(
+                                            it, it1, it2,
+                                            it3, it4, it5, it6, keys
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return tmp
+    }
+
+    // source: https://stackoverflow.com/questions/8160606/how-do-you-generate-a-csr-in-java-without-signing-it-by-the-requester
+    @Throws(java.lang.Exception::class)
+    private fun generatePKCS10(
+            CN: String, OU: String, O: String,
+            L: String, S: String, C: String, Email: String, keys: KeyPair
+    ): ByteArray? {
+        // generate PKCS10 certificate request
+        val sigAlg = "MD5WithRSA"
+        val pkcs: PKCS10 = PKCS10(keys.public)
+        val signature: Signature = Signature.getInstance(sigAlg)
+        signature.initSign(keys.private)
+        // common, orgUnit, org, locality, state, country
+        val principal = X500Principal("CN="+CN+", OU="+OU+", O="+O+", C="+C+", EMAIL="+Email)
+
+        var x500name: X500Name? = null
+        x500name = X500Name(principal.encoded)
+        pkcs.encodeAndSign(x500name, signature)
+        val bs = ByteArrayOutputStream()
+        val ps = PrintStream(bs)
+        pkcs.print(ps)
+        val c = bs.toByteArray()
+        try {
+            if (ps != null) ps.close()
+            if (bs != null) bs.close()
+        } catch (th: Throwable) {
+        }
+        return c
+    }
+
+    private fun sendEstIdReq(){
+
+    }
+
+
+
 
     /** Stores a certificate in a JKS truststore.  */
     private fun storeCert(trustStoreFile: File, certFile: File): Boolean {
@@ -480,12 +559,12 @@ class CertApi(@Autowired private val settings: Settings) {
     @Suppress("SameParameterValue")
     @Throws(InterruptedException::class, IOException::class)
     private fun doGenKeyPair(
-        alias: String,
-        spec: Identity,
-        keyAlgName: String,
-        keySize: Int,
-        sigAlgName: String,
-        keyStoreFile: File
+            alias: String,
+            spec: Identity,
+            keyAlgName: String,
+            keySize: Int,
+            sigAlgName: String,
+            keyStoreFile: File,
     ) {
         val keytoolCmd = arrayOf(
             "/bin/sh",

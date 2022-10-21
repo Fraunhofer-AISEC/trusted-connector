@@ -14,8 +14,9 @@ export class ESTCertComponent implements OnInit {
     public myForm: FormGroup;
     public data: Identity;
     public events: any[] = [];
+    public estService: ESTService;
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private estService: ESTService,
+    constructor(private readonly fb: FormBuilder, private readonly titleService: Title,
                 private readonly router: Router) {
         this.titleService.setTitle('Set EST CA cert');
     }
@@ -46,5 +47,6 @@ export class ESTCertComponent implements OnInit {
               .then(() => {
               window.location.reload();
           });
-    }
+}
+
 }

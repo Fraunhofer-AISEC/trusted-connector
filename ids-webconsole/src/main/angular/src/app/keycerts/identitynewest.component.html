@@ -2,7 +2,7 @@
 <div class="mdl-grid">
 	<div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
 		<div class="mdl-card__title">
-			<h2 class="mdl-card__title-text">Create an Identity</h2>
+			<h2 class="mdl-card__title-text">Request a certificate</h2>
 		</div>
 		<div class="mdl-card__supporting-text">
 
@@ -44,8 +44,26 @@
 				</div>
 			</div>
 
+<div>
+  <h5>EST Authentication</h5>
+</div>
+   <div class="mdl-cell--12-col">
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <label class="mdl-textfield__label" for="username">User Name*</label>
+          <input class="mdl-textfield__input" id="username" type="text" formControlName="username">
+        </div>
+      </div>
+      <div class="mdl-cell--12-col">
+        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+          <label class="mdl-textfield__label" for="password">Password*</label>
+          <input class="mdl-textfield__input" id="password" type="password" formControlName="password" required minlength="4" password>
+        </div>
+      </div>
+
+
+
 			<div class="mdl-cell--12-col" style="margin-top:20px">
-				<button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Create Identity</button>
+				<button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Request certificate</button>
 			</div>
 		</form>
 

@@ -2,9 +2,10 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import {v4 as uuidv4} from 'uuid';
 
 import { Identity } from './identity.interface';
-import { CertificateService } from './keycert.service';
+import { ESTService } from './est-service';
 
 @Component({
     templateUrl: './identitynew.component.html'
@@ -15,7 +16,7 @@ export class NewIdentityComponent implements OnInit {
     public data: Identity;
     public events: any[] = [];
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
+    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly estService: ESTService,
                 private readonly router: Router) {
         this.titleService.setTitle('New Identity');
     }
@@ -23,17 +24,21 @@ export class NewIdentityComponent implements OnInit {
     public ngOnInit(): void {
         // the short way to create a FormGroup
         this.myForm = this.fb.group({
-            s: ['', Validators.required as any],
+            s: [uuidv4(), Validators.required as any],
             cn: ['', Validators.required as any],
             o: '',
             ou: '',
-            l: ''
+            l: '',
+            username: '',
+            password: ''
         });
+        console.log('here');
+        console.log(uuidv4());
     }
 
     public async save(identity: Identity): Promise<boolean> {
          // Call REST to create identity
-        this.certService.createIdentity(identity)
+        this.estService.createIdentity(identity,this.myForm.get('username')?.value,this.myForm.get('password')?.value)
             .subscribe(() => undefined);
 
         return this.router.navigate(['/certificates']);
