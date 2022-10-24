@@ -291,7 +291,7 @@ class CertApi(@Autowired private val settings: Settings) {
                   .uri(URI.create(r.url.toString()+"/.well-known/est/cacerts"))
                   .build();
 
-          val response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString());
         LOG.debug(response.body());
 
           //val cert = response.body();
@@ -356,12 +356,38 @@ class CertApi(@Autowired private val settings: Settings) {
           }
       }
 
-      private fun sha256hash(pinput: String): String {
-          val md = MessageDigest.getInstance("SHA-256")
-          val input = pinput.toByteArray(Charsets.UTF_8)
-          val bytes = md.digest(input)
-          return bytes.toString();
-      }
+
+    private fun sha256hash(pinput: String): String {
+        val md = MessageDigest.getInstance("SHA-256")
+        val input = pinput.toByteArray(Charsets.UTF_8)
+        val bytes = md.digest(input)
+        return bytes.toString();
+    }
+
+    @POST
+    @Path("store_est_ca_cert")
+    @ApiOperation(
+            value = "Store est CA certificate",
+            notes = ""
+    )
+    @ApiResponses(
+            ApiResponse(code = 200, message = "EST CA certificate"),
+            ApiResponse(code = 500, message = "No certificate found")
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(
+            MediaType.APPLICATION_JSON
+    )
+    @AuthorizationRequired
+    fun storeEstCACert(cert: String): Boolean {
+        val filename = "tmp";
+        val tempPath = File.createTempFile(filename, "cert")
+        File("tmp.cert").writeText(cert)
+        val trustStoreName = settings.connectorConfig.truststoreName
+        return storeCert(getKeystoreFile(trustStoreName), tempPath);
+    }
+
+
 
     @POST
     @Path("request_est_identitiy")

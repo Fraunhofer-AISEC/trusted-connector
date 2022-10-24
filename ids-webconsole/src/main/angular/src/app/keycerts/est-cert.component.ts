@@ -14,9 +14,8 @@ export class ESTCertComponent implements OnInit {
     public myForm: FormGroup;
     public data: Identity;
     public events: any[] = [];
-    public estService: ESTService;
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title,
+    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly estService: ESTService,
                 private readonly router: Router) {
         this.titleService.setTitle('Set EST CA cert');
     }
@@ -31,7 +30,7 @@ export class ESTCertComponent implements OnInit {
     }
 
     public async requestEstCaCert(url: string, hash: string): Promise<void> {
-            await this.estService.requestEstCaCert(url, hash).subscribe(e => {this.myForm.patchValue({
+         await this.estService.requestEstCaCert(url, hash).subscribe(e => {this.myForm.patchValue({
                                                                                           certificate: e
                                                                                           });
                                                                               });
@@ -39,11 +38,12 @@ export class ESTCertComponent implements OnInit {
         }
 
     public async onGetCertBtnClick(): Promise<void> {
-          this.requestEstCaCert(this.myForm.get('ESTUrl')?.value,this.myForm.get('certificateHash')?.value);
+         this.requestEstCaCert(this.myForm.get('ESTUrl')?.value,this.myForm.get('certificateHash')?.value);
+
     }
 
     public saveEstCert(): void {
-          this.estService.uploadCert(this.myForm.get('certificate')?.value);
+         this.estService.uploadCert(this.myForm.get('certificate')?.value);
           this.router.navigate(['/certificates'])
               .then(() => {
               window.location.reload();

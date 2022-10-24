@@ -23,8 +23,8 @@ export class ESTService {
 
   // save root certificate to connector
   public uploadCert(cert: string): Observable<string> {
-  const body = cert;
-      return this.http.post(environment.apiURL + '/certs/install_trusted_cert', body, { responseType: 'text' });
+      const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      return this.http.post(environment.apiURL + '/certs/store_est_ca_cert', cert, { responseType: 'text' });
     }
 
 // Client certs
@@ -32,7 +32,6 @@ export class ESTService {
   public createIdentity(identity: Identity, username: string, password: string, esturl: string): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = JSON.stringify([identity,username,password,esturl]);
-    console.log(username+password+esturl);
     return this.http.post(environment.apiURL + '/certs/request_est_identity', body, {
       headers,
       responseType: 'text'
