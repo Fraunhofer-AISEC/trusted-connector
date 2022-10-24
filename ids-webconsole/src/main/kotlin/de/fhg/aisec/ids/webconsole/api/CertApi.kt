@@ -415,9 +415,8 @@ class CertApi(@Autowired private val settings: Settings) {
         // send request
         var cert: java.security.cert.Certificate? = sendEstIdReq(r, csr)
         // save identity
-        val trustStoreName = settings.connectorConfig.truststoreName
         if (cert != null) {
-            storeEstId(getKeystoreFile(trustStoreName),cert)
+            storeEstId(cert)
         };
 
     }
@@ -494,25 +493,12 @@ class CertApi(@Autowired private val settings: Settings) {
         return cert;
     }
 
-    private fun storeEstId(trustStoreFile: File, cert: java.security.cert.Certificate): Boolean{
-        val alias = ""
-        return try {
-            FileInputStream(trustStoreFile).use { fis ->
-                FileOutputStream(trustStoreFile).use { fos ->
-                    val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-                    val password = KEYSTORE_PWD
-                    keystore.load(fis, password.toCharArray())
-
-                    // Add the certificate
-                    keystore.setCertificateEntry(alias, cert)
-                    keystore.store(fos, password.toCharArray())
-                }
-            }
-            true
-        } catch (e: Exception) {
-            LOG.error(e.message, e)
-            false
-        }
+    private fun storeEstId(cert: java.security.cert.Certificate): Boolean{
+        val filename = "tmp";
+        val tempPath = File.createTempFile(filename, "cert")
+        File("tmp.cert").writeText(cert.toString())
+        val keyStoreName = settings.connectorConfig.keystoreName
+        return storeCert(getKeystoreFile(keyStoreName), tempPath);
     }
 
 
