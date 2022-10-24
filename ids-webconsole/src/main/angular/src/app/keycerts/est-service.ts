@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-
-import { Certificate } from './certificate';
 import { Identity } from './identity.interface';
 
 @Injectable()
@@ -31,37 +29,11 @@ export class ESTService {
 
 // Client certs
   // create new identity via est
-  public createIdentity(identity: Identity, username: string, password: string): Observable<string> {
+  public createIdentity(identity: Identity, username: string, password: string, esturl: string): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const body = JSON.stringify([identity,username,password]);
-    console.log(username+password);
-    return this.http.post(environment.apiURL + '/certs/create_identity', body, {
-      headers,
-      responseType: 'text'
-    });
-  }
-
-  public getIdentities(): Observable<Certificate[]> {
-    return this.http.get<Certificate[]>(environment.apiURL + '/certs/list_identities');
-  }
-
-  public getCertificates(): Observable<Certificate[]> {
-    return this.http.get<Certificate[]>(environment.apiURL + '/certs/list_certs');
-  }
-
-  public deleteCert(alias: string): Observable<string> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-
-    return this.http.post(environment.apiURL + '/certs/delete_cert', alias, {
-      headers,
-      responseType: 'text'
-    });
-  }
-
-  public deleteIdentity(alias: string): Observable<string> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-
-    return this.http.post(environment.apiURL + '/certs/delete_identity', alias, {
+    const body = JSON.stringify([identity,username,password,esturl]);
+    console.log(username+password+esturl);
+    return this.http.post(environment.apiURL + '/certs/request_est_identity', body, {
       headers,
       responseType: 'text'
     });

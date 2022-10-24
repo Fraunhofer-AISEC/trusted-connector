@@ -31,15 +31,16 @@ export class ESTCertComponent implements OnInit {
     }
 
     public async requestEstCaCert(url: string, hash: string): Promise<void> {
-             // Call REST to create user
-           this.estService.requestEstCaCert(url, hash)
-                .subscribe(() => undefined);
+            await this.estService.requestEstCaCert(url, hash).subscribe(e => {this.myForm.patchValue({
+                                                                                          certificate: e
+                                                                                          });
+                                                                              });
+
         }
 
-    public onGetCertBtnClick(): void {
-           this.requestEstCaCert(this.myForm.get('ESTUrl')?.value,this.myForm.get('certificateHash')?.value);
+    public async onGetCertBtnClick(): Promise<void> {
+          this.requestEstCaCert(this.myForm.get('ESTUrl')?.value,this.myForm.get('certificateHash')?.value);
     }
-
 
     public saveEstCert(): void {
           this.estService.uploadCert(this.myForm.get('certificate')?.value);
