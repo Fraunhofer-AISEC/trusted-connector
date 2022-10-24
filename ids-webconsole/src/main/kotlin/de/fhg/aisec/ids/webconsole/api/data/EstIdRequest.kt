@@ -18,9 +18,9 @@
  * =========================LICENSE_END==================================
  */
 package de.fhg.aisec.ids.webconsole.api.data
-import de.fhg.aisec.ids.webconsole.api.data.Identity as Identity
 class EstIdRequest {
     var id: Identity? = null
     var username: String? = null
     var password: String? = null
+    var esturl: String? = null
 }

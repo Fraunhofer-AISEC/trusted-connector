@@ -46,6 +46,7 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
 import java.security.*
+import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.*
@@ -260,7 +261,7 @@ class CertApi(@Autowired private val settings: Settings) {
     private fun getEstCaCert(r: EstCaCertRequest): String {
          val client = HttpClient.newBuilder().build();
          val request = HttpRequest.newBuilder()
-                  .uri(URI.create(r.url.toString()))
+                  .uri(URI.create(r.url.toString()+"/.well-known/est/cacerts"))
                   .build();
 
           val response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -359,12 +360,12 @@ class CertApi(@Autowired private val settings: Settings) {
         var keys: KeyPair = generateKeyPair()
         var csr: ByteArray? = r.id?.let { generateCSR(it, keys) }
         // send request
-        // body = ..
-        // cert = sendEstIdReq()
-
-
+        var cert: java.security.cert.Certificate? = sendEstIdReq(r, csr)
         // save identity
-
+        val trustStoreName = settings.connectorConfig.truststoreName
+        if (cert != null) {
+            storeEstId(getKeystoreFile(trustStoreName),cert)
+        };
 
     }
 
@@ -426,9 +427,41 @@ class CertApi(@Autowired private val settings: Settings) {
         return c
     }
 
-    private fun sendEstIdReq(){
+    private fun sendEstIdReq(r: EstIdRequest, csr: ByteArray? ): Certificate? {
+        val client = HttpClient.newBuilder().build();
+        val request = HttpRequest.newBuilder()
+                .header("Content-Type", "application/pkcs10")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
+                .uri(URI.create(r.esturl.toString()))
+                .build();
 
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        var cert: Certificate? = null
+        LOG.debug(response.body());
+        return cert;
     }
+
+    private fun storeEstId(trustStoreFile: File, cert: java.security.cert.Certificate): Boolean{
+        val alias = ""
+        return try {
+            FileInputStream(trustStoreFile).use { fis ->
+                FileOutputStream(trustStoreFile).use { fos ->
+                    val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+                    val password = KEYSTORE_PWD
+                    keystore.load(fis, password.toCharArray())
+
+                    // Add the certificate
+                    keystore.setCertificateEntry(alias, cert)
+                    keystore.store(fos, password.toCharArray())
+                }
+            }
+            true
+        } catch (e: Exception) {
+            LOG.error(e.message, e)
+            false
+        }
+    }
+
 
 
 
