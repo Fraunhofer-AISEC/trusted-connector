@@ -381,16 +381,18 @@ class CertApi(@Autowired private val settings: Settings) {
     @AuthorizationRequired
     fun storeEstCACert(cert: String): Boolean {
         val filename = "tmp";
-        val tempPath = File.createTempFile(filename, "cert")
-        File("tmp.cert").writeText(cert)
+        val f = File(filename)
+        f.writeText(cert);
         val trustStoreName = settings.connectorConfig.truststoreName
-        return storeCert(getKeystoreFile(trustStoreName), tempPath);
+        val res = storeCert(getKeystoreFile(trustStoreName), f.absoluteFile);
+        f.delete();
+        return res;
     }
 
 
 
     @POST
-    @Path("request_est_identitiy")
+    @Path("request_est_identity")
     @ApiOperation(
             value = "Get CA certificate from EST",
             notes = ""
@@ -410,11 +412,15 @@ class CertApi(@Autowired private val settings: Settings) {
 
     private fun getEstId(r: EstIdRequest) {
         // generate key and csr
+        LOG.debug("step 1")
         var keys: KeyPair = generateKeyPair()
+        LOG.debug("step 2")
         var csr: ByteArray? = r.id?.let { generateCSR(it, keys) }
         // send request
+        LOG.debug("step 3"+csr)
         var cert: java.security.cert.Certificate? = sendEstIdReq(r, csr)
         // save identity
+        LOG.debug("step 4")
         if (cert != null) {
             storeEstId(cert)
         };
@@ -454,7 +460,7 @@ class CertApi(@Autowired private val settings: Settings) {
     @Throws(java.lang.Exception::class)
     private fun generatePKCS10(
             CN: String, OU: String, O: String,
-            L: String, S: String, C: String, Email: String, keys: KeyPair
+            L: String, S: String, C: String, Email: String, keys: KeyPair,
     ): ByteArray? {
         // generate PKCS10 certificate request
         val sigAlg = "MD5WithRSA"
@@ -483,10 +489,10 @@ class CertApi(@Autowired private val settings: Settings) {
         val client = HttpClient.newBuilder().build();
         val request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/pkcs10")
+                .uri(URI.create(r.esturl.toString()+"/.well-known/est/simplerenroll"))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
-                .uri(URI.create(r.esturl.toString()))
                 .build();
-
+        LOG.debug("here")
         val response = client.send(request, HttpResponse.BodyHandlers.ofString());
         var cert: Certificate? = null
         LOG.debug(response.body());

@@ -23,7 +23,6 @@ export class ESTService {
 
   // save root certificate to connector
   public uploadCert(cert: string): Observable<string> {
-      const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
       return this.http.post(environment.apiURL + '/certs/store_est_ca_cert', cert, { responseType: 'text' });
     }
 
