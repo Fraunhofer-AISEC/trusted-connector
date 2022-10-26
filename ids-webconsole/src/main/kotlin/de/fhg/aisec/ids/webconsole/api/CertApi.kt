@@ -363,7 +363,7 @@ class CertApi(@Autowired private val settings: Settings) {
      */
     private fun encodeHexString(byteArray: ByteArray): String {
         return byteArray.map { hexLookup.computeIfAbsent(it) { num: Byte -> byteToHex(num.toInt()) } }
-            .joinToString { "" }
+                .joinToString("")
     }
 
     private fun sha256Hash(certificate: Certificate): String {
@@ -513,7 +513,7 @@ class CertApi(@Autowired private val settings: Settings) {
     private fun storeEstId(cert: Certificate): Boolean {
         val filename = "tmp"
         val tempPath = File.createTempFile(filename, "cert")
-        File("tmp.cert").writeText(cert.toString())
+        tempPath.writeText(cert.toString())
         val keyStoreName = settings.connectorConfig.keystoreName
         return storeCert(getKeystoreFile(keyStoreName), tempPath)
     }
