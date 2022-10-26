@@ -12,9 +12,9 @@ export class ESTService {
 
 // EST Root cert
   // request root  certificate from est
-    public requestEstCaCert(url: string, hash: string): Observable<string> {
+    public requestEstCaCert(purl: string, phash: string): Observable<string> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-        const body = JSON.stringify([url, hash]);
+        const body = JSON.stringify({ url: purl, hash: phash});
         return this.http.post(environment.apiURL + '/certs/est_ca_cert', body, {
           headers,
           responseType: 'text'
