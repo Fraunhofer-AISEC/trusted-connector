@@ -53,6 +53,7 @@ import { UserService } from './users/user.service';
 import { UserCardComponent } from './users/user-card.component';
 import { NewIdentityESTComponent } from './keycerts/identitynewest.component';
 import { ESTCertComponent } from './keycerts/est-cert.component';
+import { ESTService } from './keycerts/est-service';
 
 @NgModule({
   imports: [
@@ -108,6 +109,7 @@ import { ESTCertComponent } from './keycerts/est-cert.component';
     PolicyService,
     SettingsService,
     CertificateService,
+    ESTService,
     LoginService,
     SensorService,
     ConfirmService,
