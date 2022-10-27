@@ -37,6 +37,14 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -73,14 +81,6 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -103,9 +103,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_renew/{target}")
     @AuthorizationRequired
     fun getAcmeCert(
-            @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-            @PathParam("target")
-            target: String,
+        @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
+        @PathParam("target")
+        target: String
     ): Boolean {
         val config = settings.connectorConfig
         return if ("webconsole" == target && acmeClient != null) {
@@ -130,9 +130,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_tos")
     @AuthorizationRequired
     fun getAcmeTermsOfService(
-            @ApiParam(value = "URI to retrieve the TOS from")
-            @QueryParam("uri")
-            uri: String,
+        @ApiParam(value = "URI to retrieve the TOS from")
+        @QueryParam("uri")
+        uri: String
     ): AcmeTermsOfService? {
         return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
     }
@@ -177,7 +177,7 @@ class CertApi(@Autowired private val settings: Settings) {
     @Consumes(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun createIdentity(
-            @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity,
+        @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
     ): String {
         val alias = UUID.randomUUID().toString()
         try {
@@ -240,9 +240,9 @@ class CertApi(@Autowired private val settings: Settings) {
         IOException::class
     )
     fun installTrustedCert(
-            @ApiParam(hidden = true, name = "attachment")
-            @Multipart("upfile")
-            attachment: Attachment,
+        @ApiParam(hidden = true, name = "attachment")
+        @Multipart("upfile")
+        attachment: Attachment
     ): String {
         val filename = attachment.contentDisposition.getParameter("filename")
         val tempPath = File.createTempFile(filename, "cert")
@@ -288,24 +288,23 @@ class CertApi(@Autowired private val settings: Settings) {
     private fun getEstCaCert(r: EstCaCertRequest): Certificate? {
         val client = HttpClient.newBuilder().build()
         val request = HttpRequest.newBuilder()
-                .uri(URI.create(r.url.toString() + "/.well-known/est/cacerts"))
-                .build()
+            .uri(URI.create(r.url.toString() + "/.well-known/est/cacerts"))
+            .build()
 
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val res = response.body()
         LOG.debug(response.body())
 
-        //verify hash
+        // verify hash
         val p = FileInputStream(res.toString())
         val cf = CertificateFactory.getInstance("X.509")
         val cert = cf.generateCertificate(p)
         val certhash = sha256Hash(cert)
         return if (certhash == r.hash.toString()) {
-            cert;
-        }
-        else null
-
+            cert
+        } else null
     }
+
     /**
      * Convert byte to hexadecimal chars without any dependencies to libraries.
      * @param num Byte to get hexadecimal representation for
@@ -390,7 +389,7 @@ class CertApi(@Autowired private val settings: Settings) {
         // send request
         LOG.debug("step 3, csr=$csr")
         val res: PKCS7 = sendEstIdReq(r, csr)
-        val cert: Certificate? = extractCert(res,keys.public)
+        val cert: Certificate? = extractCert(res, keys.public)
         // save identity
         LOG.debug("step 4")
         if (cert != null) {
@@ -619,12 +618,12 @@ class CertApi(@Autowired private val settings: Settings) {
     @Suppress("SameParameterValue")
     @Throws(InterruptedException::class, IOException::class)
     private fun doGenKeyPair(
-            alias: String,
-            spec: Identity,
-            keyAlgName: String,
-            keySize: Int,
-            sigAlgName: String,
-            keyStoreFile: File,
+        alias: String,
+        spec: Identity,
+        keyAlgName: String,
+        keySize: Int,
+        sigAlgName: String,
+        keyStoreFile: File
     ) {
         val keytoolCmd = arrayOf(
             "/bin/sh",
