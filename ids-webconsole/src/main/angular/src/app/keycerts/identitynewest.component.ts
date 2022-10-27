@@ -16,9 +16,8 @@ export class NewIdentityESTComponent implements OnInit {
     public myForm: FormGroup;
     public data: Identity;
     public events: any[] = [];
-    private readonly estService: ESTService;
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, /*private readonly estService: ESTService,*/
+    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly estService: ESTService,
                 private readonly router: Router) {
         this.titleService.setTitle('New Identity via EST');
     }
