@@ -67,12 +67,12 @@ dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-jersey")
     implementation("org.springframework.security", "spring-security-crypto")
-    implementation(libs.bouncycastle)
     implementation(libs.infomodel.model)
     implementation(libs.camel.core)
     implementation(libs.cxf.rtRsExtProviders)
     implementation(libs.jose4j)
     implementation(libs.auth0Jwt)
+    implementation(libs.bundles.ktor.richClient)
 
     compileOnly(libs.swagger.jaxrs)
 

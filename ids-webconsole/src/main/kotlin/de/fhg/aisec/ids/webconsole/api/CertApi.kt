@@ -29,6 +29,12 @@ import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
 import de.fhg.aisec.ids.webconsole.api.data.EstIdRequest
 import de.fhg.aisec.ids.webconsole.api.data.Identity
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor
+import io.ktor.client.*
+import io.ktor.client.engine.java.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.serialization.jackson.*
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
@@ -37,14 +43,6 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -56,9 +54,6 @@ import java.io.InputStream
 import java.io.PrintStream
 import java.net.URI
 import java.net.URISyntaxException
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
 import java.security.KeyPair
@@ -70,7 +65,10 @@ import java.security.Signature
 import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.util.Base64
 import java.util.UUID
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
 import javax.ws.rs.Consumes
 import javax.ws.rs.GET
@@ -81,6 +79,16 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -95,6 +103,26 @@ import javax.ws.rs.core.MediaType
 @Api(value = "Identities and Certificates", authorizations = [Authorization(value = "oauth2")])
 class CertApi(@Autowired private val settings: Settings) {
 
+    private val insecureHttpClient = HttpClient(Java) {
+        engine {
+            config {
+                sslContext(SSLContext.getInstance("TLS").apply {
+                    init(null, arrayOf(object : X509TrustManager {
+                        override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+
+                        override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+
+                        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+
+                    }), null)
+                })
+            }
+        }
+        install(ContentNegotiation) {
+            jackson()
+        }
+    }
+
     @Autowired(required = false)
     private var acmeClient: AcmeClient? = null
 
@@ -103,9 +131,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_renew/{target}")
     @AuthorizationRequired
     fun getAcmeCert(
-        @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-        @PathParam("target")
-        target: String
+            @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
+            @PathParam("target")
+            target: String,
     ): Boolean {
         val config = settings.connectorConfig
         return if ("webconsole" == target && acmeClient != null) {
@@ -130,9 +158,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_tos")
     @AuthorizationRequired
     fun getAcmeTermsOfService(
-        @ApiParam(value = "URI to retrieve the TOS from")
-        @QueryParam("uri")
-        uri: String
+            @ApiParam(value = "URI to retrieve the TOS from")
+            @QueryParam("uri")
+            uri: String,
     ): AcmeTermsOfService? {
         return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
     }
@@ -177,7 +205,7 @@ class CertApi(@Autowired private val settings: Settings) {
     @Consumes(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun createIdentity(
-        @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
+            @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity,
     ): String {
         val alias = UUID.randomUUID().toString()
         try {
@@ -240,9 +268,9 @@ class CertApi(@Autowired private val settings: Settings) {
         IOException::class
     )
     fun installTrustedCert(
-        @ApiParam(hidden = true, name = "attachment")
-        @Multipart("upfile")
-        attachment: Attachment
+            @ApiParam(hidden = true, name = "attachment")
+            @Multipart("upfile")
+            attachment: Attachment,
     ): String {
         val filename = attachment.contentDisposition.getParameter("filename")
         val tempPath = File.createTempFile(filename, "cert")
@@ -281,28 +309,31 @@ class CertApi(@Autowired private val settings: Settings) {
         MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
-    fun requestEstCert(request: EstCaCertRequest): Certificate? {
+    fun requestEstCert(request: EstCaCertRequest): String? {
         return getEstCaCert(request)
     }
 
-    private fun getEstCaCert(r: EstCaCertRequest): Certificate? {
-        val client = HttpClient.newBuilder().build()
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create(r.url.toString() + "/.well-known/est/cacerts"))
-            .build()
-
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        val res = response.body()
-        LOG.debug(response.body())
+    private fun getEstCaCert(r: EstCaCertRequest): String? {
+        val res = runBlocking(Dispatchers.IO) {
+            val ucUrl = "${r.url}/.well-known/est/cacerts"
+            LOG.debug("ucUrl: {}", ucUrl)
+            val response = insecureHttpClient.get(ucUrl)
+            if (response.status.value !in 200..299) {
+                throw RuntimeException("Failed to fetch root certificate")
+            }
+            response.bodyAsText()
+        }
+        LOG.debug(res)
 
         // verify hash
-        val p = FileInputStream(res.toString())
-        val cf = CertificateFactory.getInstance("X.509")
-        val cert = cf.generateCertificate(p)
-        val certhash = sha256Hash(cert)
+        val encoded = Base64.getDecoder().decode(res.replace(Regex("\\s"), ""))
+        val certs = PKCS7(encoded).certificates
+        val certhash = sha256Hash(certs[0])
         return if (certhash == r.hash.toString()) {
-            cert
-        } else null
+            res
+        } else {
+            null
+        }
     }
 
     /**
@@ -310,14 +341,14 @@ class CertApi(@Autowired private val settings: Settings) {
      * @param num Byte to get hexadecimal representation for
      * @return The hexadecimal representation of the given byte value
      */
-    private fun byteToHex(num: Int): CharArray {
+    private fun byteToHex(num: Int): String {
         val hexDigits = CharArray(2)
         hexDigits[0] = Character.forDigit(num shr 4 and 0xF, 16)
         hexDigits[1] = Character.forDigit(num and 0xF, 16)
-        return hexDigits
+        return String(hexDigits)
     }
 
-    private val hexLookup = HashMap<Byte, CharArray>()
+    private val hexLookup = HashMap<Byte, String>()
 
     /**
      * Encode a byte array to a hex string
@@ -325,8 +356,7 @@ class CertApi(@Autowired private val settings: Settings) {
      * @return Hexadecimal representation of the given bytes
      */
     private fun encodeHexString(byteArray: ByteArray): String {
-        return byteArray.map { hexLookup.computeIfAbsent(it) { num: Byte -> byteToHex(num.toInt()) } }
-            .joinToString("")
+        return byteArray.joinToString("") { hexLookup.computeIfAbsent(it) { num: Byte -> byteToHex(num.toInt()) } }
     }
 
     private fun sha256Hash(certificate: Certificate): String {
@@ -354,7 +384,7 @@ class CertApi(@Autowired private val settings: Settings) {
     fun storeEstCACert(cert: String): Boolean {
         val filename = "tmp"
         val f = File(filename)
-        f.writeText(cert)
+        f.writeText(cert.replace(Regex("\\s"), ""))
         val trustStoreName = settings.connectorConfig.truststoreName
         val res = storeCert(getKeystoreFile(trustStoreName), f.absoluteFile)
         f.delete()
@@ -460,16 +490,17 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private fun sendEstIdReq(r: EstIdRequest, csr: ByteArray?): PKCS7 {
-        val client = HttpClient.newBuilder().build()
-        val request = HttpRequest.newBuilder()
-            .header("Content-Type", "application/pkcs10")
-            .uri(URI.create(r.esturl.toString() + "/.well-known/est/simpleenroll"))
-            .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
-            .build()
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        val res = PKCS7(response.body().toByteArray())
-        LOG.debug(response.body())
-        return res
+//        val client = HttpClient.newBuilder().build()
+//        val request = HttpRequest.newBuilder()
+//            .header("Content-Type", "application/pkcs10")
+//            .uri(URI.create(r.esturl.toString() + "/.well-known/est/simpleenroll"))
+//            .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
+//            .build()
+//        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+//        val res = PKCS7(response.body().toByteArray())
+//        LOG.debug(response.body())
+//        return res
+        return PKCS7(byteArrayOf())
     }
 
     private fun extractCert(p: PKCS7, publicK: PublicKey): Certificate? {
@@ -618,12 +649,12 @@ class CertApi(@Autowired private val settings: Settings) {
     @Suppress("SameParameterValue")
     @Throws(InterruptedException::class, IOException::class)
     private fun doGenKeyPair(
-        alias: String,
-        spec: Identity,
-        keyAlgName: String,
-        keySize: Int,
-        sigAlgName: String,
-        keyStoreFile: File
+            alias: String,
+            spec: Identity,
+            keyAlgName: String,
+            keySize: Int,
+            sigAlgName: String,
+            keyStoreFile: File,
     ) {
         val keytoolCmd = arrayOf(
             "/bin/sh",
