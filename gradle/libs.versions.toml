@@ -1,6 +1,6 @@
 [versions]
 idscp2 = "0.15.0"
-ktlint = "0.46.1"
+ktlint = "0.47.1"
 
 # Kotlin library/compiler version
 kotlin = "1.7.22"
@@ -14,26 +14,25 @@ infomodel = "4.1.0"
 # Provided by feature, but required for compilation
 jaxbApi = "2.4.0-b180830.0359"
 # Required for RouteManager metrics tests
-jaxbImpl = "4.0.0"
+jaxbImpl = "4.0.1"
 jaxActivation = "1.2.0"
 
-camel = "3.18.1"
+camel = "3.18.2"
 influxDB = "2.23"
 
 guava = "31.1-jre"
-slf4j = "1.7.36"
 junit4 = "4.13.2"
-junit5 = "5.9.0"
-mockito = "4.7.0"
+junit5 = "5.9.1"
+mockito = "4.8.1"
 mapdb = "3.0.8"
 jnrunix = "0.38.17"
-protobuf = "3.21.5"
+protobuf = "3.21.9"
 httpcore = "4.4.15"
 httpclient = "4.5.13"
 
 # Needed for policy reasoning with 2p (formerly tuProlog)
 tup = "4.1.1"
-commonsText = "1.9"
+commonsText = "1.10.0"
 protonpack = "1.16"
 
 # Needed for ACME module
@@ -45,7 +44,8 @@ javaxJson = "1.1.4"
 dockerJavaApi = "0.0.13"
 
 # We will pull in a newer version of jackson because of security fixes
-jackson = "2.13.3"
+jackson = "2.13.4"
+jacksonDatabind = "2.13.4.2"
 
 orgJson = "20220320"
 
@@ -57,11 +57,11 @@ commonsCli = "1.5.0"
 javaxValidation = "2.0.1.Final"
 
 # Needed for web console
-auth0Jwt = "3.19.1"
-swagger = "1.6.6"
-jose4j = "0.7.12"
+auth0Jwt = "4.2.1"
+swagger = "1.6.8"
+jose4j = "0.9.1"
 
-springBoot = "2.7.3"
+springBoot = "2.7.5"
 bouncyCastle = "1.70"
 
 [libraries]
@@ -78,7 +78,7 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
-jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jacksonDatabind" }
 
 # common test libraries
 junit = { group = "junit", name = "junit", version.ref = "junit4" }
@@ -157,13 +157,13 @@ jaxbImpl = ["jaxb-core", "jaxb-impl"]
 
 [plugins]
 springboot = { id = "org.springframework.boot", version.ref = "springBoot" }
-spring-dependencyManagement = { id = "io.spring.dependency-management", version = "1.0.13.RELEASE" }
+spring-dependencyManagement = { id = "io.spring.dependency-management", version = "1.1.0" }
 swagger = { id = "com.benjaminsproule.swagger", version = "1.0.14" }
-protobuf = { id = "com.google.protobuf",  version = "0.8.19" }
+protobuf = { id = "com.google.protobuf",  version = "0.9.1" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-plugin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
-spotless = { id = "com.diffplug.spotless", version = "6.10.0" }
+spotless = { id = "com.diffplug.spotless", version = "6.11.0" }
 licenseReport = { id = "com.github.jk1.dependency-license-report", version = "2.1" }
-versions = { id = "com.github.ben-manes.versions", version = "0.42.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.43.0" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version = "3.1.0" }
-node = { id = "com.github.node-gradle.node", version = "3.4.0" }
+node = { id = "com.github.node-gradle.node", version = "3.5.0" }
