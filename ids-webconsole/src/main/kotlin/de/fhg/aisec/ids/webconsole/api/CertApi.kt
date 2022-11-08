@@ -333,19 +333,35 @@ class CertApi(@Autowired private val settings: Settings) {
         val certhash = sha256Hash(certs[0])
         val x509Certificate = certs[0] as X509Certificate
 
-        val ips = FileInputStream(certs[0].toString())
-        val cf = CertificateFactory.getInstance("X.509")
-
         return if (certhash == r.hash.toString()) {
             //res
             //certs[0].toString()
-
-            cf.generateCertificate(ips).toString()
-            //x509Certificate.encoded.toString()
+            var c: ByteArray = Base64.getEncoder().encode(x509Certificate.encoded)
+            var str = c.decodeToString()
+            str= stringtoDerFormat(str)
+            LOG.debug(str)
+            str
         } else {
             null
         }
     }
+
+    fun stringtoDerFormat(s: String): String {
+        fun String.addCharAtIndex(char: Char, index: Int) =
+                StringBuilder(this).apply { insert(index, char) }.toString()
+
+        var i = 0
+        var str = s
+        while (i < str.length) {
+            str = str.addCharAtIndex('\n',i)
+            i = i + 65
+        }
+        str = "-----BEGIN CERTIFICATE-----"+str+"\n-----END CERTIFICATE-----"
+        return str
+    }
+
+    fun String.addCharAtIndex(char: Char, index: Int) =
+    StringBuilder(this).apply { insert(index, char) }.toString()
 
     /**
      * Convert byte to hexadecimal chars without any dependencies to libraries.
@@ -401,12 +417,17 @@ class CertApi(@Autowired private val settings: Settings) {
         tempPath.writeText(cert.toString())
         val keyStoreName = settings.connectorConfig.keystoreName
         return storeCert(getKeystoreFile(keyStoreName), tempPath) */
-        val filename = "tmp"
+        val filename = "tmp.cer"
         val f = File(filename)
-        var c = "-----BEGIN CERTIFICATE-----"+cert.replace("\\n", "").replace("\\r", "").replace("\"","")+"-----END CERTIFICATE-----";
+        var c = cert.replace("\\n", "").replace("\\r", "").replace("\"","").replace("-----BEGIN CERTIFICATE-----","").replace("-----END CERTIFICATE-----","");
         LOG.debug("cert:")
         LOG.debug(c)
-        f.writeText(c)
+        val encoded = Base64.getDecoder().decode(c.replace(Regex("\\s"), ""))
+        val cf = CertificateFactory.getInstance("X.509")
+        val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
+        LOG.debug(cert.encoded.toString())
+
+        f.writeBytes(cert.encoded)
         val res = storeCert(getKeystoreFile(trustStoreName), f)
         //f.delete()
         return res
