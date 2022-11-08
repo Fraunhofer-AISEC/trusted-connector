@@ -14,6 +14,7 @@ export class ESTCertComponent implements OnInit {
     public myForm: FormGroup;
     public data: Identity;
     public events: any[] = [];
+    public cacert = '';
 
     constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly estService: ESTService,
                 private readonly router: Router) {
@@ -29,25 +30,35 @@ export class ESTCertComponent implements OnInit {
         });
     }
 
-    public async requestEstCaCert(url: string, hash: string): Promise<void> {
-         await this.estService.requestEstCaCert(url, hash).subscribe(e => {this.myForm.patchValue({
-                                                                                          certificate: e
-                                                                                          });
-                                                                              });
-
-        }
-
     public async onGetCertBtnClick(): Promise<void> {
          this.requestEstCaCert(this.myForm.get('ESTUrl')?.value,this.myForm.get('certificateHash')?.value);
 
     }
 
-    public saveEstCert(): void {
-         this.estService.uploadCert(this.myForm.get('certificate')?.value);
-          this.router.navigate(['/certificates'])
-              .then(() => {
-              window.location.reload();
-          });
+    public async requestEstCaCert(url: string, hash: string): Promise<void> {
+        await this.estService.requestEstCaCert(url, hash).subscribe(e => {this.myForm.patchValue({
+                                                                                          certificate: e
+                                                                                          });
+                                                                                          this.cacert = e;
+
+                                                                              });
+        }
+
+    public async onStoreCertBtnClick(): Promise<void> {
+         this.storeEstCaCert(this.cacert);
+    }
+
+    public async storeEstCaCert(cert: string): Promise<void> {
+         await this.estService.uploadCert(cert).subscribe(() => undefined);
+                   this.router.navigate(['/certificates'])
+                       .then(() => {
+                       window.location.reload();
+                   });
+
+        }
+
+    public async saveEstCert(): Promise<void> {
+    //
 }
 
 }

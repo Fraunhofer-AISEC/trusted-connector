@@ -25,19 +25,17 @@
 				<div mdl-textarea class="mdl-textfield mdl-js-textfield  mdl-text-field--textarea mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
 					<label class="mdl-textfield__label" for="certificate">Certificate</label>
           <textarea class="mdl-text-field__input" mdl-text-field--disabled aria-labelledby="my-label-id" rows="8"
-                    cols="100" maxlength="5000"  id="certificate" type="text" formControlName="certificate"></textarea>
+                    cols="100" maxlength="5000"  id="certificate" type="text" formControlName="certificate" readonly></textarea>
 				</div>
 			</div>
-
-
-
-			<div class="mdl-cell--12-col" style="margin-top:20px">
-				<button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Save</button>
-			</div>
 		</form>
+
       <div class="mdl-cell--4-col">
         <button class="mdl-button mdl-js-button mdl-button--raised" (click)="onGetCertBtnClick()">
           Get certificate
+        </button>
+        <button class="mdl-button mdl-js-button mdl-button--raised" (click)="onStoreCertBtnClick()">
+          Store certificate
         </button>
       </div>
 

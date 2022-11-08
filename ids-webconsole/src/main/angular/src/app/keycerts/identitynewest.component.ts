@@ -38,12 +38,8 @@ export class NewIdentityESTComponent implements OnInit {
 
     public async save(identity: Identity): Promise<boolean> {
        // Call REST to create identity
-       this.estService.createIdentity(identity,
-       this.myForm.get('username')?.value,
-       this.myForm.get('password')?.value,
-       this.myForm.get('esturl')?.value)
+       this.estService.createIdentity(identity)
             .subscribe(() => undefined);
-
        return this.router.navigate(['/certificates']);
     }
 }

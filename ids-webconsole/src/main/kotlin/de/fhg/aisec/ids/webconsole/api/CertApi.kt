@@ -90,6 +90,7 @@ import sun.security.pkcs.PKCS7
 import sun.security.pkcs10.PKCS10
 import sun.security.x509.X500Name
 
+
 /**
  * REST API interface for managing certificates in the connector.
  *
@@ -310,6 +311,7 @@ class CertApi(@Autowired private val settings: Settings) {
     )
     @AuthorizationRequired
     fun requestEstCert(request: EstCaCertRequest): String? {
+        LOG.debug("request ca cert")
         return getEstCaCert(request)
     }
 
@@ -329,8 +331,17 @@ class CertApi(@Autowired private val settings: Settings) {
         val encoded = Base64.getDecoder().decode(res.replace(Regex("\\s"), ""))
         val certs = PKCS7(encoded).certificates
         val certhash = sha256Hash(certs[0])
+        val x509Certificate = certs[0] as X509Certificate
+
+        val ips = FileInputStream(certs[0].toString())
+        val cf = CertificateFactory.getInstance("X.509")
+
         return if (certhash == r.hash.toString()) {
-            res
+            //res
+            //certs[0].toString()
+
+            cf.generateCertificate(ips).toString()
+            //x509Certificate.encoded.toString()
         } else {
             null
         }
@@ -382,12 +393,22 @@ class CertApi(@Autowired private val settings: Settings) {
     )
     @AuthorizationRequired
     fun storeEstCACert(cert: String): Boolean {
+        LOG.debug("store cert")
+        val trustStoreName = settings.connectorConfig.truststoreName
+        //storeCertfromString(getKeystoreFile(trustStoreName),cert)
+        /* val filename = "tmp"
+        val tempPath = File.createTempFile(filename, "cert")
+        tempPath.writeText(cert.toString())
+        val keyStoreName = settings.connectorConfig.keystoreName
+        return storeCert(getKeystoreFile(keyStoreName), tempPath) */
         val filename = "tmp"
         val f = File(filename)
-        f.writeText(cert.replace(Regex("\\s"), ""))
-        val trustStoreName = settings.connectorConfig.truststoreName
-        val res = storeCert(getKeystoreFile(trustStoreName), f.absoluteFile)
-        f.delete()
+        var c = "-----BEGIN CERTIFICATE-----"+cert.replace("\\n", "").replace("\\r", "").replace("\"","")+"-----END CERTIFICATE-----";
+        LOG.debug("cert:")
+        LOG.debug(c)
+        f.writeText(c)
+        val res = storeCert(getKeystoreFile(trustStoreName), f)
+        //f.delete()
         return res
     }
 
@@ -407,6 +428,7 @@ class CertApi(@Autowired private val settings: Settings) {
     )
     @AuthorizationRequired
     fun requestEstIdentity(request: EstIdRequest) {
+        LOG.debug("step 0")
         getEstId(request)
     }
 
@@ -415,10 +437,11 @@ class CertApi(@Autowired private val settings: Settings) {
         LOG.debug("step 1")
         val keys: KeyPair = generateKeyPair()
         LOG.debug("step 2")
-        val csr: ByteArray? = r.id?.let { generateCSR(it, keys) }
+        val csr: ByteArray? = r.cn?.let { generateCSR(r, keys) }
         // send request
         LOG.debug("step 3, csr=$csr")
         val res: PKCS7 = sendEstIdReq(r, csr)
+        LOG.debug("step3a")
         val cert: Certificate? = extractCert(res, keys.public)
         // save identity
         LOG.debug("step 4")
@@ -433,14 +456,14 @@ class CertApi(@Autowired private val settings: Settings) {
         return kpg.generateKeyPair()
     }
 
-    private fun generateCSR(request: Identity, keys: KeyPair): ByteArray? {
+    private fun generateCSR(request: EstIdRequest, keys: KeyPair): ByteArray? {
         val tmp: ByteArray? = request.cn?.let {
             request.ou?.let { it1 ->
                 request.o?.let { it2 ->
                     request.l?.let { it3 ->
                         request.s?.let { it4 ->
-                            request.c?.let { it5 ->
-                                request.email?.let { it6 ->
+                            request.cn?.let { it5 ->
+                                request.s?.let { it6 ->
                                     generatePKCS10(
                                         it,
                                         it1,
@@ -490,17 +513,44 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private fun sendEstIdReq(r: EstIdRequest, csr: ByteArray?): PKCS7 {
-//        val client = HttpClient.newBuilder().build()
-//        val request = HttpRequest.newBuilder()
-//            .header("Content-Type", "application/pkcs10")
-//            .uri(URI.create(r.esturl.toString() + "/.well-known/est/simpleenroll"))
-//            .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
-//            .build()
-//        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-//        val res = PKCS7(response.body().toByteArray())
-//        LOG.debug(response.body())
-//        return res
-        return PKCS7(byteArrayOf())
+        LOG.debug("sending id request")
+        val res = runBlocking(Dispatchers.IO) {
+            val ucUrl = "${r.esturl}/.well-known/est/simpleenroll"
+            LOG.debug("ucUrl: {}", ucUrl)
+
+
+            //val response = insecureHttpClient.post(ucUrl,csr)
+
+            val response: HttpResponse = insecureHttpClient.post(ucUrl) {
+                setBody(csr)
+                headers {
+                    append("Content-Type", "application/pkcs10")
+                }
+            }
+
+
+            if (response.status.value !in 200..299) {
+                throw RuntimeException("Failed to fetch root certificate")
+            }
+            response.bodyAsText()
+        }
+        LOG.debug("request send")
+        LOG.debug(res)
+        val encoded = Base64.getDecoder().decode(res.replace(Regex("\\s"), ""))
+        return PKCS7(encoded);
+
+
+        /* val client = HttpClient.newBuilder().build()
+       val request = HttpRequest.newBuilder()
+            .header("Content-Type", "application/pkcs10")
+            .uri(URI.create(r.esturl.toString() + "/.well-known/est/simpleenroll"))
+            .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
+            .build()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        val res = PKCS7(response.body().toByteArray())
+        LOG.debug(response.body())
+        return res
+        //return PKCS7(byteArrayOf())*/
     }
 
     private fun extractCert(p: PKCS7, publicK: PublicKey): Certificate? {
@@ -539,6 +589,30 @@ class CertApi(@Autowired private val settings: Settings) {
 
                     // Add the certificate
                     keystore.setCertificateEntry(alias, certs)
+                    keystore.store(fos, password.toCharArray())
+                }
+            }
+            true
+        } catch (e: Exception) {
+            LOG.error(e.message, e)
+            false
+        }
+    }
+
+    private fun storeCertfromString(trustStoreFile: File, cert: String): Boolean {
+        val encoded = Base64.getDecoder().decode(cert.replace(Regex("\\s"), ""))
+        val certs = PKCS7(encoded).certificates
+        val c = certs[0]
+
+        return try {
+            FileInputStream(trustStoreFile).use { fis ->
+                FileOutputStream(trustStoreFile).use { fos ->
+                    val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+                    val password = KEYSTORE_PWD
+                    keystore.load(fis, password.toCharArray())
+
+                    // Add the certificate
+                    keystore.setCertificateEntry("", c)
                     keystore.store(fos, password.toCharArray())
                 }
             }

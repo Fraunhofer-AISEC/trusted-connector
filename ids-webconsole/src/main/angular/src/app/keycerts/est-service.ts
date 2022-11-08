@@ -9,7 +9,6 @@ import { Identity } from './identity.interface';
 export class ESTService {
 
   constructor(private readonly http: HttpClient) { }
-
 // EST Root cert
   // request root  certificate from est
     public requestEstCaCert(purl: string, phash: string): Observable<string> {
@@ -23,14 +22,19 @@ export class ESTService {
 
   // save root certificate to connector
   public uploadCert(cert: string): Observable<string> {
-      return this.http.post(environment.apiURL + '/certs/store_est_ca_cert', cert, { responseType: 'text' });
+      const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      const body = JSON.stringify(cert);
+      return this.http.post(environment.apiURL + '/certs/store_est_ca_cert', body, {
+        headers,
+        responseType: 'text'
+       });
     }
 
 // Client certs
   // create new identity via est
-  public createIdentity(identity: Identity, username: string, password: string, esturl: string): Observable<string> {
+  public createIdentity(identity: Identity): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const body = JSON.stringify([identity,username,password,esturl]);
+    const body = JSON.stringify(identity);
     return this.http.post(environment.apiURL + '/certs/request_est_identity', body, {
       headers,
       responseType: 'text'
