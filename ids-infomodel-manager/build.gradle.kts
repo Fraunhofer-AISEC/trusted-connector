@@ -1,10 +1,9 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 plugins {
+    idea
     alias(libs.plugins.buildconfig)
 }
-
-apply(plugin = "idea")
 
 buildConfig {
     sourceSets.getByName("main") {
