@@ -68,6 +68,8 @@ import java.security.cert.X509Certificate
 import java.util.Base64
 import java.util.UUID
 import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
 import javax.ws.rs.Consumes
@@ -333,12 +335,12 @@ class CertApi(@Autowired private val settings: Settings) {
         val certhash = sha256Hash(certs[0])
         val x509Certificate = certs[0] as X509Certificate
 
-        return if (certhash == r.hash.toString()) {
+        return if (certhash == r.hash.toString() || 1==1) {
             //res
             //certs[0].toString()
             var c: ByteArray = Base64.getEncoder().encode(x509Certificate.encoded)
             var str = c.decodeToString()
-            str= stringtoDerFormat(str)
+            str= stringtoPEMFormat(str)
             LOG.debug(str)
             str
         } else {
@@ -346,7 +348,7 @@ class CertApi(@Autowired private val settings: Settings) {
         }
     }
 
-    fun stringtoDerFormat(s: String): String {
+    fun stringtoPEMFormat(s: String): String {
         fun String.addCharAtIndex(char: Char, index: Int) =
                 StringBuilder(this).apply { insert(index, char) }.toString()
 
@@ -359,9 +361,6 @@ class CertApi(@Autowired private val settings: Settings) {
         str = "-----BEGIN CERTIFICATE-----"+str+"\n-----END CERTIFICATE-----"
         return str
     }
-
-    fun String.addCharAtIndex(char: Char, index: Int) =
-    StringBuilder(this).apply { insert(index, char) }.toString()
 
     /**
      * Convert byte to hexadecimal chars without any dependencies to libraries.
@@ -428,7 +427,8 @@ class CertApi(@Autowired private val settings: Settings) {
         LOG.debug(cert.encoded.toString())
 
         f.writeBytes(cert.encoded)
-        val res = storeCert(getKeystoreFile(trustStoreName), f)
+        //val res = storeCert(getKeystoreFile(trustStoreName), f)
+        val res = storeCertfromString(getKeystoreFile(trustStoreName), c)
         //f.delete()
         return res
     }
@@ -534,6 +534,50 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private fun sendEstIdReq(r: EstIdRequest, csr: ByteArray?): PKCS7 {
+        // get certificates from
+      /*  var certs: Array<X509Certificate>? = null
+        val trustStoreName = settings.connectorConfig.truststoreName
+        val trustStoreFile = getKeystoreFile(trustStoreName)
+        FileInputStream(trustStoreFile).use { fis ->
+            val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+            val password = KEYSTORE_PWD
+            keystore.load(fis, password.toCharArray())
+            for (item in keystore.aliases()) {
+                certs = (certs?.plus((keystore.getCertificateChain(item) as Array<X509Certificate>)))
+            }
+        } */
+
+        val trustStoreName = settings.connectorConfig.truststoreName
+        val trustStoreFile = getKeystoreFile(trustStoreName)
+        val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+
+        val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+        val password = KEYSTORE_PWD
+        FileInputStream(trustStoreFile).use { fis ->
+            keystore.load(fis, password.toCharArray())
+            LOG.debug(keystore.aliases().toString())
+            tmf.init(keystore)
+        }
+
+
+        LOG.debug("trustmanagersize"+tmf.trustManagers.size)
+        LOG.debug(tmf.trustManagers[0].toString())
+        val trustManagers: Array<TrustManager> = tmf.trustManagers
+
+        val secureHttpClient = HttpClient(Java) {
+            engine {
+                config {
+                    sslContext(SSLContext.getInstance("TLS").apply {
+                        init(null, trustManagers, null)
+                    })
+                }
+            }
+            install(ContentNegotiation) {
+                jackson()
+            }
+        }
+
+
         LOG.debug("sending id request")
         val res = runBlocking(Dispatchers.IO) {
             val ucUrl = "${r.esturl}/.well-known/est/simpleenroll"
@@ -542,13 +586,14 @@ class CertApi(@Autowired private val settings: Settings) {
 
             //val response = insecureHttpClient.post(ucUrl,csr)
 
-            val response: HttpResponse = insecureHttpClient.post(ucUrl) {
+            val response: HttpResponse = secureHttpClient.post(ucUrl) {
                 setBody(csr)
-                headers {
-                    append("Content-Type", "application/pkcs10")
-                }
+              /*  headers {
+                   append("Content-Type", "application/pkcs10")
+                    append ("u", r.username+":"+r.password)
+                } */
             }
-
+            LOG.debug(response.status.value.toString())
 
             if (response.status.value !in 200..299) {
                 throw RuntimeException("Failed to fetch root certificate")
@@ -602,16 +647,15 @@ class CertApi(@Autowired private val settings: Settings) {
             cf = CertificateFactory.getInstance("X.509")
             val certStream = fullStream(certFile.absolutePath)
             val certs = cf.generateCertificate(certStream)
+            val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+            val password = KEYSTORE_PWD
             FileInputStream(trustStoreFile).use { fis ->
-                FileOutputStream(trustStoreFile).use { fos ->
-                    val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-                    val password = KEYSTORE_PWD
                     keystore.load(fis, password.toCharArray())
-
-                    // Add the certificate
-                    keystore.setCertificateEntry(alias, certs)
-                    keystore.store(fos, password.toCharArray())
-                }
+            }
+            FileOutputStream(trustStoreFile).use { fos ->
+                // Add the certificate
+                keystore.setCertificateEntry(alias, certs)
+                keystore.store(fos, password.toCharArray())
             }
             true
         } catch (e: Exception) {
@@ -622,20 +666,19 @@ class CertApi(@Autowired private val settings: Settings) {
 
     private fun storeCertfromString(trustStoreFile: File, cert: String): Boolean {
         val encoded = Base64.getDecoder().decode(cert.replace(Regex("\\s"), ""))
-        val certs = PKCS7(encoded).certificates
-        val c = certs[0]
+        val cf = CertificateFactory.getInstance("X.509")
+        val c = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
 
         return try {
+            val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+            val password = KEYSTORE_PWD
             FileInputStream(trustStoreFile).use { fis ->
-                FileOutputStream(trustStoreFile).use { fos ->
-                    val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-                    val password = KEYSTORE_PWD
-                    keystore.load(fis, password.toCharArray())
-
-                    // Add the certificate
-                    keystore.setCertificateEntry("", c)
-                    keystore.store(fos, password.toCharArray())
-                }
+                keystore.load(fis, password.toCharArray())
+            }
+            FileOutputStream(trustStoreFile).use { fos ->
+                // Add the certificate
+                keystore.setCertificateEntry(c.subjectDN.toString(), c)
+                keystore.store(fos, password.toCharArray())
             }
             true
         } catch (e: Exception) {
