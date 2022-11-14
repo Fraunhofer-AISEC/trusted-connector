@@ -98,16 +98,6 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
 
 /**
  * REST API interface for managing certificates in the connector.
