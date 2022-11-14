@@ -50,6 +50,16 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -520,23 +530,25 @@ class CertApi(@Autowired private val settings: Settings) {
     // source: https://stackoverflow.com/questions/8160606/how-do-you-generate-a-csr-in-java-without-signing-it-by-the-requester
     @Throws(java.lang.Exception::class)
     private fun generatePKCS10(
-            CN: String,
-            OU: String,
-            O: String,
-            L: String,
-            S: String,
-            C: String,
-            Email: String,
-            keys: KeyPair
+        CN: String,
+        OU: String,
+        O: String,
+        L: String,
+        C: String,
+        Email: String,
+        S: String,
+        keys: KeyPair
     ): ByteArray? {
         // generate PKCS10 certificate request
-        val sigAlg = "MD5WithRSA"
-        val pkcs = PKCS10(keys.public)
+        val sigAlg = "SHA256WithRSA"
+        val pkcs: PKCS10 = PKCS10(keys.public)
+        val signature: Signature = Signature.getInstance(sigAlg)
+        signature.initSign(/* privateKey = */ keys.private)
         // common, orgUnit, org, locality, state, country
         val principal = X500Principal("CN=$CN, OU=$OU, O=$O, C=$C, L=$L, S=$S, EMAIL=$Email")
 
         val x500name = X500Name(principal.encoded)
-        pkcs.encodeAndSign(x500name, keys.private, sigAlg)
+        pkcs.encodeAndSign(x500name, signature)
         ByteArrayOutputStream().use { bs ->
             PrintStream(bs).use { ps ->
                 pkcs.print(ps)
@@ -574,12 +586,12 @@ class CertApi(@Autowired private val settings: Settings) {
                 basic {
                     sendWithoutRequest { true }
                     credentials {
-                            r.password?.let { it1 ->
-                                BasicAuthCredentials(
-                                    username = "username",
-                                    password = it1
-                                )
-                            }
+                        r.password?.let { it1 ->
+                            BasicAuthCredentials(
+                                username = "username",
+                                password = it1
+                            )
+                        }
                     }
                 }
             }
@@ -614,23 +626,26 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private fun extractCert(p: PKCS7, publicK: PublicKey): Certificate? {
-        val ips = FileInputStream(p.toString())
-        val cf = CertificateFactory.getInstance("X.509")
-        val i: Iterator<*> = cf.generateCertificates(ips).iterator()
+        // LOG.debug("extract cert pkcs7-----")
+        // LOG.debug(p.toString())
+        // LOG.debug("number of certs-----")
+        // LOG.debug(p.certificates.size.toString())
         var res: Certificate? = null
-        while (i.hasNext()) {
-            val c = i.next() as Certificate
-            if (c.publicKey === publicK) res = c
+        for (e in p.certificates) {
+            if (e.publicKey == publicK) res = e
         }
+        // LOG.debug("found cert-----")
+        // LOG.debug(res.toString())
         return res
     }
 
     private fun storeEstId(cert: Certificate): Boolean {
-        val filename = "tmp"
-        val tempPath = File.createTempFile(filename, "cert")
-        tempPath.writeText(cert.toString())
+        val filename = cert.hashCode().toString() + ".cer"
+        val f = File(filename)
+        f.writeBytes(cert.encoded)
+
         val keyStoreName = settings.connectorConfig.keystoreName
-        return storeCert(getKeystoreFile(keyStoreName), tempPath)
+        return storeCert(getKeystoreFile(keyStoreName), f)
     }
 
     /** Stores a certificate in a JKS truststore.  */
