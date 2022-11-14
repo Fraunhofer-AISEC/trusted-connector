@@ -41,7 +41,7 @@ export class ESTCertComponent implements OnInit {
                                                                                           });
                                                                                           this.cacert = e;
 
-                                                                              });
+                                                                          });
         }
 
     public async onStoreCertBtnClick(): Promise<void> {
