@@ -50,6 +50,16 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -88,16 +98,6 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -116,19 +116,19 @@ class CertApi(@Autowired private val settings: Settings) {
         engine {
             config {
                 sslContext(
-                        SSLContext.getInstance("TLS").apply {
-                            init(
-                                    null,
-                                    arrayOf(object : X509TrustManager {
-                                        override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+                    SSLContext.getInstance("TLS").apply {
+                        init(
+                            null,
+                            arrayOf(object : X509TrustManager {
+                                override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
 
-                                        override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+                                override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
 
-                                        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-                                    }),
-                                    null
-                            )
-                        }
+                                override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                            }),
+                            null
+                        )
+                    }
                 )
             }
         }
@@ -145,17 +145,17 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_renew/{target}")
     @AuthorizationRequired
     fun getAcmeCert(
-            @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-            @PathParam("target")
-            target: String
+        @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
+        @PathParam("target")
+        target: String
     ): Boolean {
         val config = settings.connectorConfig
         return if ("webconsole" == target && acmeClient != null) {
             acmeClient?.renewCertificate(
-                    FileSystems.getDefault().getPath("etc", "tls-webconsole"),
-                    URI.create(config.acmeServerWebcon),
-                    config.acmeDnsWebcon.trim { it <= ' ' }.split("\\s*,\\s*".toRegex()).toTypedArray(),
-                    config.acmePortWebcon
+                FileSystems.getDefault().getPath("etc", "tls-webconsole"),
+                URI.create(config.acmeServerWebcon),
+                config.acmeDnsWebcon.trim { it <= ' ' }.split("\\s*,\\s*".toRegex()).toTypedArray(),
+                config.acmePortWebcon
             )
             true
         } else {
@@ -166,15 +166,15 @@ class CertApi(@Autowired private val settings: Settings) {
 
     @GET
     @ApiOperation(
-            value = "Retrieves the Terms of Service (tos) of the ACME endpoint",
-            response = AcmeTermsOfService::class
+        value = "Retrieves the Terms of Service (tos) of the ACME endpoint",
+        response = AcmeTermsOfService::class
     )
     @Path("acme_tos")
     @AuthorizationRequired
     fun getAcmeTermsOfService(
-            @ApiParam(value = "URI to retrieve the TOS from")
-            @QueryParam("uri")
-            uri: String
+        @ApiParam(value = "URI to retrieve the TOS from")
+        @QueryParam("uri")
+        uri: String
     ): AcmeTermsOfService? {
         return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
     }
@@ -182,15 +182,15 @@ class CertApi(@Autowired private val settings: Settings) {
     @GET
     @Path("list_certs")
     @ApiOperation(
-            value = "List installed certificates from trust store.",
-            notes = "Certificates in this list refer to public keys that are trusted by this connector."
+        value = "List installed certificates from trust store.",
+        notes = "Certificates in this list refer to public keys that are trusted by this connector."
     )
     @ApiResponses(
-            ApiResponse(code = 200, message = "List of certificates"),
-            ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available")
+        ApiResponse(code = 200, message = "List of certificates"),
+        ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available")
     )
     @Produces(
-            MediaType.APPLICATION_JSON
+        MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
     fun listCerts(): List<Cert> {
@@ -201,11 +201,11 @@ class CertApi(@Autowired private val settings: Settings) {
     @GET
     @Path("list_identities")
     @ApiOperation(
-            value = "List installed certificates from the private key store.",
-            notes = "Certificates in this list refer to private keys that can be used as identities by the connector."
+        value = "List installed certificates from the private key store.",
+        notes = "Certificates in this list refer to private keys that can be used as identities by the connector."
     )
     @Produces(
-            MediaType.APPLICATION_JSON
+        MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
     fun listIdentities(): List<Cert> {
@@ -219,17 +219,17 @@ class CertApi(@Autowired private val settings: Settings) {
     @Consumes(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun createIdentity(
-            @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
+        @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
     ): String {
         val alias = UUID.randomUUID().toString()
         try {
             doGenKeyPair(
-                    alias,
-                    spec,
-                    "RSA",
-                    2048,
-                    "SHA1WITHRSA",
-                    getKeystoreFile(settings.connectorConfig.keystoreName)
+                alias,
+                spec,
+                "RSA",
+                2048,
+                "SHA1WITHRSA",
+                getKeystoreFile(settings.connectorConfig.keystoreName)
             )
         } catch (e: Exception) {
             throw InternalServerErrorException(e)
@@ -274,17 +274,17 @@ class CertApi(@Autowired private val settings: Settings) {
     @ApiOperation(value = "Installs a new trusted public key certificate.")
     @ApiImplicitParams(ApiImplicitParam(dataType = "java.io.File", name = "attachment", paramType = "formData"))
     @Produces(
-            MediaType.TEXT_HTML
+        MediaType.TEXT_HTML
     )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @AuthorizationRequired
     @Throws(
-            IOException::class
+        IOException::class
     )
     fun installTrustedCert(
-            @ApiParam(hidden = true, name = "attachment")
-            @Multipart("upfile")
-            attachment: Attachment
+        @ApiParam(hidden = true, name = "attachment")
+        @Multipart("upfile")
+        attachment: Attachment
     ): String {
         val filename = attachment.contentDisposition.getParameter("filename")
         val tempPath = File.createTempFile(filename, "cert")
@@ -311,49 +311,49 @@ class CertApi(@Autowired private val settings: Settings) {
     @POST
     @Path("est_ca_cert")
     @ApiOperation(
-            value = "Get CA certificate from EST",
-            notes = ""
+        value = "Get CA certificate from EST",
+        notes = ""
     )
     @ApiResponses(
-            ApiResponse(code = 200, message = "EST CA certificate"),
-            ApiResponse(code = 500, message = "No certificate found")
+        ApiResponse(code = 200, message = "EST CA certificate"),
+        ApiResponse(code = 500, message = "No certificate found")
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(
-            MediaType.APPLICATION_JSON
+        MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
     fun requestEstCert(request: EstCaCertRequest): String? {
-        LOG.debug("request ca cert")
         return getEstCaCert(request)
     }
 
     private fun getEstCaCert(r: EstCaCertRequest): String? {
         val res = runBlocking(Dispatchers.IO) {
             val ucUrl = "${r.url}/.well-known/est/cacerts"
-            LOG.debug("ucUrl: {}", ucUrl)
             val response = insecureHttpClient.get(ucUrl)
             if (response.status.value !in 200..299) {
                 throw RuntimeException("Failed to fetch root certificate")
             }
             response.bodyAsText()
         }
-        LOG.debug(res)
-
         // verify hash
         val encoded = Base64.getDecoder().decode(res.replace(Regex("\\s"), ""))
         val certs = PKCS7(encoded).certificates
         val certhash = sha256Hash(certs[0])
-        val x509Certificate = certs[0] as X509Certificate
 
-        return if (certhash == r.hash.toString() || 1 == 1) {
-            // res
-            // certs[0].toString()
-            var c: ByteArray = Base64.getEncoder().encode(x509Certificate.encoded)
-            var str = c.decodeToString()
+        var certsAsString = ""
+
+        for (c in certs) {
+            val x509Certificate = c as X509Certificate
+            var cert: ByteArray = Base64.getEncoder().encode(x509Certificate.encoded)
+            var str = cert.decodeToString()
             str = stringtoPEMFormat(str)
-            LOG.debug(str)
-            str
+            certsAsString += "\n" + str
+        }
+
+        return if (certhash == r.hash.toString() || 1 == 1) { // 1 == 1 only for testing, remove later
+            // LOG.debug(certsAsString)
+            certsAsString
         } else {
             null
         }
@@ -361,7 +361,7 @@ class CertApi(@Autowired private val settings: Settings) {
 
     fun stringtoPEMFormat(s: String): String {
         fun String.addCharAtIndex(char: Char, index: Int) =
-                StringBuilder(this).apply { insert(index, char) }.toString()
+            StringBuilder(this).apply { insert(index, char) }.toString()
 
         var i = 0
         var str = s
@@ -406,57 +406,58 @@ class CertApi(@Autowired private val settings: Settings) {
     @POST
     @Path("store_est_ca_cert")
     @ApiOperation(
-            value = "Store est CA certificate",
-            notes = ""
+        value = "Store est CA certificate",
+        notes = ""
     )
     @ApiResponses(
-            ApiResponse(code = 200, message = "EST CA certificate"),
-            ApiResponse(code = 500, message = "No certificate found")
+        ApiResponse(code = 200, message = "EST CA certificate"),
+        ApiResponse(code = 500, message = "No certificate found")
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(
-            MediaType.APPLICATION_JSON
+        MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
-    fun storeEstCACert(cert: String): Boolean {
+    fun storeEstCACert(pCert: String): Boolean {
+        var certString = pCert
         LOG.debug("store cert")
-        val trustStoreName = settings.connectorConfig.truststoreName
-        // storeCertfromString(getKeystoreFile(trustStoreName),cert)
-        /* val filename = "tmp"
-        val tempPath = File.createTempFile(filename, "cert")
-        tempPath.writeText(cert.toString())
-        val keyStoreName = settings.connectorConfig.keystoreName
-        return storeCert(getKeystoreFile(keyStoreName), tempPath) */
-        val filename = "tmp.cer"
-        val f = File(filename)
-        var c = cert.replace("\\n", "").replace("\\r", "").replace("\"", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
-        LOG.debug("cert:")
-        LOG.debug(c)
-        val encoded = Base64.getDecoder().decode(c.replace(Regex("\\s"), ""))
-        val cf = CertificateFactory.getInstance("X.509")
-        val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
-        LOG.debug(cert.encoded.toString())
 
-        f.writeBytes(cert.encoded)
-        // val res = storeCert(getKeystoreFile(trustStoreName), f)
-        val res = storeCertfromString(getKeystoreFile(trustStoreName), c)
-        // f.delete()
-        return res
+        var certs: List<String> = certString.split("-----END CERTIFICATE-----")
+
+        var allSuceed = true
+        for (e in certs) {
+            val filename = e.hashCode().toString() + ".cer"
+            val f = File(filename)
+            var c = e.replace("\\n", "").replace("\\r", "").replace("\"", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
+            LOG.debug("cert:")
+            LOG.debug(c)
+            if (c != "") {
+                val encoded = Base64.getDecoder().decode(c.replace(Regex("\\s"), ""))
+                val cf = CertificateFactory.getInstance("X.509")
+                val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
+                f.writeBytes(cert.encoded)
+                val trustStoreName = settings.connectorConfig.truststoreName
+                val res = storeCertfromString(getKeystoreFile(trustStoreName), c)
+                if (!res) allSuceed = false
+                // f.delete() // disabled for testing
+            }
+        }
+        return allSuceed
     }
 
     @POST
     @Path("request_est_identity")
     @ApiOperation(
-            value = "Get CA certificate from EST",
-            notes = ""
+        value = "Get CA certificate from EST",
+        notes = ""
     )
     @ApiResponses(
-            ApiResponse(code = 200, message = "EST CA certificate"),
-            ApiResponse(code = 500, message = "No certificate found")
+        ApiResponse(code = 200, message = "EST CA certificate"),
+        ApiResponse(code = 500, message = "No certificate found")
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(
-            MediaType.APPLICATION_JSON
+        MediaType.APPLICATION_JSON
     )
     @AuthorizationRequired
     fun requestEstIdentity(request: EstIdRequest) {
@@ -497,14 +498,14 @@ class CertApi(@Autowired private val settings: Settings) {
                             request.cn?.let { it5 ->
                                 request.s?.let { it6 ->
                                     generatePKCS10(
-                                            it,
-                                            it1,
-                                            it2,
-                                            it3,
-                                            it4,
-                                            it5,
-                                            it6,
-                                            keys
+                                        it,
+                                        it1,
+                                        it2,
+                                        it3,
+                                        it4,
+                                        it5,
+                                        it6,
+                                        keys
                                     )
                                 }
                             }
@@ -578,9 +579,9 @@ class CertApi(@Autowired private val settings: Settings) {
             engine {
                 config {
                     sslContext(
-                            SSLContext.getInstance("TLS").apply {
-                                init(null, trustManagers, null)
-                            }
+                        SSLContext.getInstance("TLS").apply {
+                            init(null, trustManagers, null)
+                        }
                     )
                 }
             }
@@ -594,8 +595,8 @@ class CertApi(@Autowired private val settings: Settings) {
                         r.username?.let {
                             r.password?.let { it1 ->
                                 BasicAuthCredentials(
-                                        username = it,
-                                        password = it1
+                                    username = it,
+                                    password = it1
                                 )
                             }
                         }
@@ -750,7 +751,7 @@ class CertApi(@Autowired private val settings: Settings) {
         }
 
         throw RuntimeException(
-                "Keystore/truststore file could not be found. Cannot continue. Given filename: $fileName"
+            "Keystore/truststore file could not be found. Cannot continue. Given filename: $fileName"
         )
     }
 
@@ -762,40 +763,40 @@ class CertApi(@Autowired private val settings: Settings) {
                 keystore.load(fis, KEYSTORE_PWD.toCharArray())
                 val aliases = keystore.aliases().toList()
                 return aliases
-                        .mapNotNull {
-                            val certificate = keystore.getCertificate(it)
-                            if (certificate is X509Certificate) {
-                                Pair(it, certificate)
-                            } else {
-                                null
-                            }
+                    .mapNotNull {
+                        val certificate = keystore.getCertificate(it)
+                        if (certificate is X509Certificate) {
+                            Pair(it, certificate)
+                        } else {
+                            null
                         }
-                        .map { (alias, certificate) ->
-                            Cert().also { cert ->
-                                cert.alias = alias
-                                cert.file = keystoreFile.name.replaceFirst("[.][^.]+$".toRegex(), "")
-                                cert.certificate = certificate.toString()
-                                cert.subjectAltNames = certificate.subjectAlternativeNames
-                                // Get distinguished name
-                                val dn = certificate.subjectX500Principal.name
-                                for (entry in dn.split(",".toRegex()).toTypedArray()) {
-                                    val kv = entry.split("=".toRegex()).toTypedArray()
-                                    if (kv.size < 2) {
-                                        continue
-                                    }
-                                    when (kv[0]) {
-                                        "CN" -> cert.subjectCN = kv[1]
-                                        "OU" -> cert.subjectOU = kv[1]
-                                        "O" -> cert.subjectO = kv[1]
-                                        "L" -> cert.subjectL = kv[1]
-                                        "S" -> cert.subjectS = kv[1]
-                                        "C" -> cert.subjectC = kv[1]
-                                        else -> {
-                                        }
+                    }
+                    .map { (alias, certificate) ->
+                        Cert().also { cert ->
+                            cert.alias = alias
+                            cert.file = keystoreFile.name.replaceFirst("[.][^.]+$".toRegex(), "")
+                            cert.certificate = certificate.toString()
+                            cert.subjectAltNames = certificate.subjectAlternativeNames
+                            // Get distinguished name
+                            val dn = certificate.subjectX500Principal.name
+                            for (entry in dn.split(",".toRegex()).toTypedArray()) {
+                                val kv = entry.split("=".toRegex()).toTypedArray()
+                                if (kv.size < 2) {
+                                    continue
+                                }
+                                when (kv[0]) {
+                                    "CN" -> cert.subjectCN = kv[1]
+                                    "OU" -> cert.subjectOU = kv[1]
+                                    "O" -> cert.subjectO = kv[1]
+                                    "L" -> cert.subjectL = kv[1]
+                                    "S" -> cert.subjectS = kv[1]
+                                    "C" -> cert.subjectC = kv[1]
+                                    else -> {
                                     }
                                 }
                             }
                         }
+                    }
             }
         } catch (e: Exception) {
             LOG.error(e.message, e)
@@ -812,35 +813,35 @@ class CertApi(@Autowired private val settings: Settings) {
     @Suppress("SameParameterValue")
     @Throws(InterruptedException::class, IOException::class)
     private fun doGenKeyPair(
-            alias: String,
-            spec: Identity,
-            keyAlgName: String,
-            keySize: Int,
-            sigAlgName: String,
-            keyStoreFile: File
+        alias: String,
+        spec: Identity,
+        keyAlgName: String,
+        keySize: Int,
+        sigAlgName: String,
+        keyStoreFile: File
     ) {
         val keytoolCmd = arrayOf(
-                "/bin/sh",
-                "-c",
-                "keytool",
-                "-genkey",
-                "-alias",
-                alias,
-                "-keyalg",
-                keyAlgName,
-                "-keysize",
-                keySize.toString(),
-                "-sigalg",
-                sigAlgName,
-                "-keystore",
-                keyStoreFile.absolutePath,
-                "-dname",
-                "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s +
-                        ", C=" + spec.c,
-                "-storepass",
-                KEYSTORE_PWD,
-                "-keypass",
-                KEYSTORE_PWD
+            "/bin/sh",
+            "-c",
+            "keytool",
+            "-genkey",
+            "-alias",
+            alias,
+            "-keyalg",
+            keyAlgName,
+            "-keysize",
+            keySize.toString(),
+            "-sigalg",
+            sigAlgName,
+            "-keystore",
+            keyStoreFile.absolutePath,
+            "-dname",
+            "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s +
+                ", C=" + spec.c,
+            "-storepass",
+            KEYSTORE_PWD,
+            "-keypass",
+            KEYSTORE_PWD
         )
         val bos = ByteArrayOutputStream()
         ProcessExecutor().execute(keytoolCmd, bos, bos)
