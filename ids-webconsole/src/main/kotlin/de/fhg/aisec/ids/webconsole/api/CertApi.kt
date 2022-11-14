@@ -592,14 +592,12 @@ class CertApi(@Autowired private val settings: Settings) {
                 basic {
                     sendWithoutRequest { true }
                     credentials {
-                        r.username?.let {
                             r.password?.let { it1 ->
                                 BasicAuthCredentials(
-                                    username = it,
+                                    username = "username",
                                     password = it1
                                 )
                             }
-                        }
                     }
                 }
             }
