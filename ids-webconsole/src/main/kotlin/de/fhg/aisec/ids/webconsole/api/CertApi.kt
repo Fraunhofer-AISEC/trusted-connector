@@ -31,6 +31,8 @@ import de.fhg.aisec.ids.webconsole.api.data.Identity
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -91,6 +93,9 @@ import org.springframework.stereotype.Component
 import sun.security.pkcs.PKCS7
 import sun.security.pkcs10.PKCS10
 import sun.security.x509.X500Name
+
+
+
 
 
 /**
@@ -575,6 +580,21 @@ class CertApi(@Autowired private val settings: Settings) {
             install(ContentNegotiation) {
                 jackson()
             }
+            install(Auth) {
+                basic {
+                    sendWithoutRequest { true }
+                    credentials {
+                        r.username?.let {
+                            r.password?.let { it1 ->
+                                BasicAuthCredentials(
+                                        username = it,
+                                        password = it1,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -588,15 +608,16 @@ class CertApi(@Autowired private val settings: Settings) {
 
             val response: HttpResponse = secureHttpClient.post(ucUrl) {
                 setBody(csr)
-              /*  headers {
+                headers {
                    append("Content-Type", "application/pkcs10")
-                    append ("u", r.username+":"+r.password)
-                } */
+                    append ("Content-Transfer-Encoding","base64")
+                }
             }
             LOG.debug(response.status.value.toString())
+            LOG.debug(response.bodyAsText())
 
             if (response.status.value !in 200..299) {
-                throw RuntimeException("Failed to fetch root certificate")
+                throw RuntimeException("Failed to fetch certificate")
             }
             response.bodyAsText()
         }
