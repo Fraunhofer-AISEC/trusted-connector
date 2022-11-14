@@ -29,14 +29,19 @@ import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
 import de.fhg.aisec.ids.webconsole.api.data.EstIdRequest
 import de.fhg.aisec.ids.webconsole.api.data.Identity
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor
-import io.ktor.client.*
-import io.ktor.client.engine.java.*
-import io.ktor.client.plugins.auth.*
-import io.ktor.client.plugins.auth.providers.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.serialization.jackson.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BasicAuthCredentials
+import io.ktor.client.plugins.auth.providers.basic
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.serialization.jackson.jackson
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
@@ -45,6 +50,16 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -83,20 +98,6 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
-
-
-
-
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -114,16 +115,21 @@ class CertApi(@Autowired private val settings: Settings) {
     private val insecureHttpClient = HttpClient(Java) {
         engine {
             config {
-                sslContext(SSLContext.getInstance("TLS").apply {
-                    init(null, arrayOf(object : X509TrustManager {
-                        override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+                sslContext(
+                    SSLContext.getInstance("TLS").apply {
+                        init(
+                            null,
+                            arrayOf(object : X509TrustManager {
+                                override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
 
-                        override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+                                override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
 
-                        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-
-                    }), null)
-                })
+                                override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                            }),
+                            null
+                        )
+                    }
+                )
             }
         }
         install(ContentNegotiation) {
@@ -139,9 +145,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_renew/{target}")
     @AuthorizationRequired
     fun getAcmeCert(
-            @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-            @PathParam("target")
-            target: String,
+        @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
+        @PathParam("target")
+        target: String
     ): Boolean {
         val config = settings.connectorConfig
         return if ("webconsole" == target && acmeClient != null) {
@@ -166,9 +172,9 @@ class CertApi(@Autowired private val settings: Settings) {
     @Path("acme_tos")
     @AuthorizationRequired
     fun getAcmeTermsOfService(
-            @ApiParam(value = "URI to retrieve the TOS from")
-            @QueryParam("uri")
-            uri: String,
+        @ApiParam(value = "URI to retrieve the TOS from")
+        @QueryParam("uri")
+        uri: String
     ): AcmeTermsOfService? {
         return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
     }
@@ -213,7 +219,7 @@ class CertApi(@Autowired private val settings: Settings) {
     @Consumes(MediaType.APPLICATION_JSON)
     @AuthorizationRequired
     fun createIdentity(
-            @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity,
+        @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
     ): String {
         val alias = UUID.randomUUID().toString()
         try {
@@ -276,9 +282,9 @@ class CertApi(@Autowired private val settings: Settings) {
         IOException::class
     )
     fun installTrustedCert(
-            @ApiParam(hidden = true, name = "attachment")
-            @Multipart("upfile")
-            attachment: Attachment,
+        @ApiParam(hidden = true, name = "attachment")
+        @Multipart("upfile")
+        attachment: Attachment
     ): String {
         val filename = attachment.contentDisposition.getParameter("filename")
         val tempPath = File.createTempFile(filename, "cert")
@@ -340,12 +346,12 @@ class CertApi(@Autowired private val settings: Settings) {
         val certhash = sha256Hash(certs[0])
         val x509Certificate = certs[0] as X509Certificate
 
-        return if (certhash == r.hash.toString() || 1==1) {
-            //res
-            //certs[0].toString()
+        return if (certhash == r.hash.toString() || 1 == 1) {
+            // res
+            // certs[0].toString()
             var c: ByteArray = Base64.getEncoder().encode(x509Certificate.encoded)
             var str = c.decodeToString()
-            str= stringtoPEMFormat(str)
+            str = stringtoPEMFormat(str)
             LOG.debug(str)
             str
         } else {
@@ -355,15 +361,15 @@ class CertApi(@Autowired private val settings: Settings) {
 
     fun stringtoPEMFormat(s: String): String {
         fun String.addCharAtIndex(char: Char, index: Int) =
-                StringBuilder(this).apply { insert(index, char) }.toString()
+            StringBuilder(this).apply { insert(index, char) }.toString()
 
         var i = 0
         var str = s
         while (i < str.length) {
-            str = str.addCharAtIndex('\n',i)
+            str = str.addCharAtIndex('\n', i)
             i = i + 65
         }
-        str = "-----BEGIN CERTIFICATE-----"+str+"\n-----END CERTIFICATE-----"
+        str = "-----BEGIN CERTIFICATE-----" + str + "\n-----END CERTIFICATE-----"
         return str
     }
 
@@ -415,7 +421,7 @@ class CertApi(@Autowired private val settings: Settings) {
     fun storeEstCACert(cert: String): Boolean {
         LOG.debug("store cert")
         val trustStoreName = settings.connectorConfig.truststoreName
-        //storeCertfromString(getKeystoreFile(trustStoreName),cert)
+        // storeCertfromString(getKeystoreFile(trustStoreName),cert)
         /* val filename = "tmp"
         val tempPath = File.createTempFile(filename, "cert")
         tempPath.writeText(cert.toString())
@@ -423,7 +429,7 @@ class CertApi(@Autowired private val settings: Settings) {
         return storeCert(getKeystoreFile(keyStoreName), tempPath) */
         val filename = "tmp.cer"
         val f = File(filename)
-        var c = cert.replace("\\n", "").replace("\\r", "").replace("\"","").replace("-----BEGIN CERTIFICATE-----","").replace("-----END CERTIFICATE-----","");
+        var c = cert.replace("\\n", "").replace("\\r", "").replace("\"", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
         LOG.debug("cert:")
         LOG.debug(c)
         val encoded = Base64.getDecoder().decode(c.replace(Regex("\\s"), ""))
@@ -432,9 +438,9 @@ class CertApi(@Autowired private val settings: Settings) {
         LOG.debug(cert.encoded.toString())
 
         f.writeBytes(cert.encoded)
-        //val res = storeCert(getKeystoreFile(trustStoreName), f)
+        // val res = storeCert(getKeystoreFile(trustStoreName), f)
         val res = storeCertfromString(getKeystoreFile(trustStoreName), c)
-        //f.delete()
+        // f.delete()
         return res
     }
 
@@ -564,17 +570,18 @@ class CertApi(@Autowired private val settings: Settings) {
             tmf.init(keystore)
         }
 
-
-        LOG.debug("trustmanagersize"+tmf.trustManagers.size)
+        LOG.debug("trustmanagersize" + tmf.trustManagers.size)
         LOG.debug(tmf.trustManagers[0].toString())
         val trustManagers: Array<TrustManager> = tmf.trustManagers
 
         val secureHttpClient = HttpClient(Java) {
             engine {
                 config {
-                    sslContext(SSLContext.getInstance("TLS").apply {
-                        init(null, trustManagers, null)
-                    })
+                    sslContext(
+                        SSLContext.getInstance("TLS").apply {
+                            init(null, trustManagers, null)
+                        }
+                    )
                 }
             }
             install(ContentNegotiation) {
@@ -587,8 +594,8 @@ class CertApi(@Autowired private val settings: Settings) {
                         r.username?.let {
                             r.password?.let { it1 ->
                                 BasicAuthCredentials(
-                                        username = it,
-                                        password = it1,
+                                    username = it,
+                                    password = it1
                                 )
                             }
                         }
@@ -597,20 +604,18 @@ class CertApi(@Autowired private val settings: Settings) {
             }
         }
 
-
         LOG.debug("sending id request")
         val res = runBlocking(Dispatchers.IO) {
             val ucUrl = "${r.esturl}/.well-known/est/simpleenroll"
             LOG.debug("ucUrl: {}", ucUrl)
 
-
-            //val response = insecureHttpClient.post(ucUrl,csr)
+            // val response = insecureHttpClient.post(ucUrl,csr)
 
             val response: HttpResponse = secureHttpClient.post(ucUrl) {
                 setBody(csr)
                 headers {
-                   append("Content-Type", "application/pkcs10")
-                    append ("Content-Transfer-Encoding","base64")
+                    append("Content-Type", "application/pkcs10")
+                    append("Content-Transfer-Encoding", "base64")
                 }
             }
             LOG.debug(response.status.value.toString())
@@ -624,8 +629,7 @@ class CertApi(@Autowired private val settings: Settings) {
         LOG.debug("request send")
         LOG.debug(res)
         val encoded = Base64.getDecoder().decode(res.replace(Regex("\\s"), ""))
-        return PKCS7(encoded);
-
+        return PKCS7(encoded)
 
         /* val client = HttpClient.newBuilder().build()
        val request = HttpRequest.newBuilder()
@@ -671,7 +675,7 @@ class CertApi(@Autowired private val settings: Settings) {
             val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
             val password = KEYSTORE_PWD
             FileInputStream(trustStoreFile).use { fis ->
-                    keystore.load(fis, password.toCharArray())
+                keystore.load(fis, password.toCharArray())
             }
             FileOutputStream(trustStoreFile).use { fos ->
                 // Add the certificate
@@ -808,12 +812,12 @@ class CertApi(@Autowired private val settings: Settings) {
     @Suppress("SameParameterValue")
     @Throws(InterruptedException::class, IOException::class)
     private fun doGenKeyPair(
-            alias: String,
-            spec: Identity,
-            keyAlgName: String,
-            keySize: Int,
-            sigAlgName: String,
-            keyStoreFile: File,
+        alias: String,
+        spec: Identity,
+        keyAlgName: String,
+        keySize: Int,
+        sigAlgName: String,
+        keyStoreFile: File
     ) {
         val keytoolCmd = arrayOf(
             "/bin/sh",
