@@ -551,7 +551,7 @@ class CertApi(@Autowired private val settings: Settings) {
         val trustStoreName = settings.connectorConfig.truststoreName
         val trustStoreFile = getKeystoreFile(trustStoreName)
         val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-        val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+        val keystore = KeyStore.getInstance("pkcs12")
         val password = KEYSTORE_PWD
         FileInputStream(trustStoreFile).use { fis ->
             keystore.load(fis, password.toCharArray())
@@ -646,7 +646,7 @@ class CertApi(@Autowired private val settings: Settings) {
             cf = CertificateFactory.getInstance("X.509")
             val certStream = fullStream(certFile.absolutePath)
             val certs = cf.generateCertificate(certStream)
-            val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+            val keystore = KeyStore.getInstance("pkcs12")
             val password = KEYSTORE_PWD
             FileInputStream(trustStoreFile).use { fis ->
                 keystore.load(fis, password.toCharArray())
@@ -669,7 +669,7 @@ class CertApi(@Autowired private val settings: Settings) {
         val c = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
 
         return try {
-            val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+            val keystore = KeyStore.getInstance("pkcs12")
             val password = KEYSTORE_PWD
             FileInputStream(trustStoreFile).use { fis ->
                 keystore.load(fis, password.toCharArray())
@@ -732,7 +732,7 @@ class CertApi(@Autowired private val settings: Settings) {
     private fun getKeystoreEntries(keystoreFile: File): List<Cert> {
         try {
             FileInputStream(keystoreFile).use { fis ->
-                val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+                val keystore = KeyStore.getInstance("pkcs12")
                 keystore.load(fis, KEYSTORE_PWD.toCharArray())
                 val aliases = keystore.aliases().toList()
                 return aliases
@@ -824,7 +824,7 @@ class CertApi(@Autowired private val settings: Settings) {
     private fun delete(alias: String, file: File): Boolean {
         try {
             FileInputStream(file).use { fis ->
-                val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+                val keystore = KeyStore.getInstance("pkcs12")
                 keystore.load(fis, KEYSTORE_PWD.toCharArray())
                 if (keystore.containsAlias(alias)) {
                     keystore.deleteEntry(alias)
