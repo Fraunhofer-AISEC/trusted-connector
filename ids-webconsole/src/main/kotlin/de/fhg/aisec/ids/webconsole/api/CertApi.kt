@@ -50,16 +50,6 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -98,6 +88,16 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -546,23 +546,9 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private fun sendEstIdReq(r: EstIdRequest, csr: ByteArray?): PKCS7 {
-        // get certificates from
-        /*  var certs: Array<X509Certificate>? = null
-          val trustStoreName = settings.connectorConfig.truststoreName
-          val trustStoreFile = getKeystoreFile(trustStoreName)
-          FileInputStream(trustStoreFile).use { fis ->
-              val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-              val password = KEYSTORE_PWD
-              keystore.load(fis, password.toCharArray())
-              for (item in keystore.aliases()) {
-                  certs = (certs?.plus((keystore.getCertificateChain(item) as Array<X509Certificate>)))
-              }
-          } */
-
         val trustStoreName = settings.connectorConfig.truststoreName
         val trustStoreFile = getKeystoreFile(trustStoreName)
         val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-
         val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
         val password = KEYSTORE_PWD
         FileInputStream(trustStoreFile).use { fis ->
@@ -570,11 +556,7 @@ class CertApi(@Autowired private val settings: Settings) {
             LOG.debug(keystore.aliases().toString())
             tmf.init(keystore)
         }
-
-        LOG.debug("trustmanagersize" + tmf.trustManagers.size)
-        LOG.debug(tmf.trustManagers[0].toString())
         val trustManagers: Array<TrustManager> = tmf.trustManagers
-
         val secureHttpClient = HttpClient(Java) {
             engine {
                 config {
@@ -607,11 +589,11 @@ class CertApi(@Autowired private val settings: Settings) {
         val res = runBlocking(Dispatchers.IO) {
             val ucUrl = "${r.esturl}/.well-known/est/simpleenroll"
             LOG.debug("ucUrl: {}", ucUrl)
-
-            // val response = insecureHttpClient.post(ucUrl,csr)
-
+            var pkcs10String = (csr?.let { String(it, StandardCharsets.UTF_8) })?.replace("\\n", "")?.replace("\\r", "")?.replace("\"", "")?.replace("-----BEGIN NEW CERTIFICATE REQUEST-----", "")?.replace("-----END NEW CERTIFICATE REQUEST-----\n", "")
+            LOG.debug(pkcs10String)
+            LOG.debug(Base64.getEncoder().encode(csr).toString())
             val response: HttpResponse = secureHttpClient.post(ucUrl) {
-                setBody(csr)
+                setBody(pkcs10String)
                 headers {
                     append("Content-Type", "application/pkcs10")
                     append("Content-Transfer-Encoding", "base64")
@@ -629,18 +611,6 @@ class CertApi(@Autowired private val settings: Settings) {
         LOG.debug(res)
         val encoded = Base64.getDecoder().decode(res.replace(Regex("\\s"), ""))
         return PKCS7(encoded)
-
-        /* val client = HttpClient.newBuilder().build()
-       val request = HttpRequest.newBuilder()
-            .header("Content-Type", "application/pkcs10")
-            .uri(URI.create(r.esturl.toString() + "/.well-known/est/simpleenroll"))
-            .POST(HttpRequest.BodyPublishers.ofByteArray(csr))
-            .build()
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        val res = PKCS7(response.body().toByteArray())
-        LOG.debug(response.body())
-        return res
-        //return PKCS7(byteArrayOf())*/
     }
 
     private fun extractCert(p: PKCS7, publicK: PublicKey): Certificate? {
