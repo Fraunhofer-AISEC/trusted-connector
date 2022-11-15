@@ -350,8 +350,8 @@ class CertApi(@Autowired private val settings: Settings) {
             str = stringtoPEMFormat(str)
             certsAsString += "\n" + str
         }
-
-        return if (certhash == r.hash.toString() || 1 == 1) { // 1 == 1 only for testing, remove later
+        val test = true; // set true, to disable hash verification for testing
+        return if (certhash == r.hash.toString() || test) {
             certsAsString
         } else {
             null
