@@ -420,26 +420,16 @@ class CertApi(@Autowired private val settings: Settings) {
     @AuthorizationRequired
     fun storeEstCACert(pCert: String): Boolean {
         var certString = pCert
-        LOG.debug("store cert")
-
         var certs: List<String> = certString.split("-----END CERTIFICATE-----")
-
         var allSuceed = true
         for (e in certs) {
-            val filename = e.hashCode().toString() + ".cer"
-            val f = File(filename)
             var c = e.replace("\\n", "").replace("\\r", "").replace("\"", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
             LOG.debug("cert:")
             LOG.debug(c)
             if (c != "") {
-                val encoded = Base64.getDecoder().decode(c.replace(Regex("\\s"), ""))
-                val cf = CertificateFactory.getInstance("X.509")
-                val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
-                f.writeBytes(cert.encoded)
                 val trustStoreName = settings.connectorConfig.truststoreName
                 val res = storeCertfromString(getKeystoreFile(trustStoreName), c)
                 if (!res) allSuceed = false
-                // f.delete() // disabled for testing
             }
         }
         return allSuceed
@@ -630,12 +620,12 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private fun storeEstId(cert: Certificate): Boolean {
-        val filename = cert.hashCode().toString() + ".cer"
-        val f = File(filename)
-        f.writeBytes(cert.encoded)
-
         val keyStoreName = settings.connectorConfig.keystoreName
-        return storeCert(getKeystoreFile(keyStoreName), f)
+        LOG.debug("store this:+++++++++++++")
+        var c: ByteArray = Base64.getEncoder().encode(cert.encoded)
+        var str = c.decodeToString()
+        LOG.debug(str)
+        return storeCertfromString(getKeystoreFile(keyStoreName), str)
     }
 
     /** Stores a certificate in a JKS truststore.  */
