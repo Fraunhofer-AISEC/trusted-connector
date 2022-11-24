@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 
 object UsageControlMaps {
-    private val LOG = LoggerFactory.getLogger(Utils::class.java)
+    private val LOG = LoggerFactory.getLogger(UsageControlMaps::class.java)
 
     private val contractMap: MutableMap<URI, ContractAgreement> =
         MapMaker().makeMap()

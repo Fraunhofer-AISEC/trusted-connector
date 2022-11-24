@@ -16,45 +16,29 @@
         </camel:trustManagers>
     </camel:sslContextParameters>
 
-    <bean id="ArtifactRequestProcessor" class="de.fhg.aisec.ids.camel.processors.ArtifactRequestProcessor" />
-    <bean id="ContractRequestProcessor" class="de.fhg.aisec.ids.camel.processors.ContractRequestProcessor"/>
-    <bean id="ContractAgreementReceiverProcessor" class="de.fhg.aisec.ids.camel.processors.ContractAgreementReceiverProcessor"/>
-    <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.processors.IdsMessageTypeExtractionProcessor" />
-
     <camelContext xmlns="http://camel.apache.org/schema/spring">
         <route id="server">
             <from uri="idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext&amp;useIdsMessages=true"/>
-            <process ref="TypeExtractionProcessor"/>
+            <process ref="idsMessageTypeExtractionProcessor"/>
             <choice>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ContractRequestMessage'</simple>
                     <log message="### Handle ContractRequestMessage ###"/>
-                    <setProperty name="uc-docker-image-uris">
-                        <constant>
-                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080
-                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#80
-                            https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-d461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080
-                        </constant>
+                    <setProperty name="contract-store-key">
+                        <constant>some_contract</constant>
                     </setProperty>
-                    <!-- These values are examples that are always fulfilled (until 2100), replace them with your own values as necessary. -->
-                    <setProperty name="uc-not-before-datetime">
-                        <constant>2022-01-01T00:00:00.0Z</constant>
-                    </setProperty>
-                    <setProperty name="uc-not-after-datetime">
-                        <constant>2100-01-01T00:00:00.0Z</constant>
-                    </setProperty>
-                    <process ref="ContractRequestProcessor"/>
+                    <process ref="contractRequestProcessor"/>
                 </when>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ContractAgreementMessage'</simple>
                     <log message="### Handle ContractAgreementMessage ###"/>
                     <!-- Only processing of incoming request must be performed, no reply -->
-                    <process ref="ContractAgreementReceiverProcessor"/>
+                    <process ref="contractAgreementReceiverProcessor"/>
                 </when>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>
                     <log message="### Handle ArtifactRequestMessage ###"/>
-                    <process ref="ArtifactRequestProcessor" />
+                    <process ref="artifactRequestProcessor" />
                 </when>
                 <otherwise>
                     <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>

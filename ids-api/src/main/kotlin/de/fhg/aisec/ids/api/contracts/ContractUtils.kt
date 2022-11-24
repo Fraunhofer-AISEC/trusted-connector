@@ -17,10 +17,22 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.processors
+package de.fhg.aisec.ids.api.contracts
 
-object Constants {
-    const val IDSCP2_HEADER = "idscp2-header"
-    const val IDS_TYPE = "ids-type"
-    const val CONTRACT_STORE_KEY = "contract-store-key"
+import de.fraunhofer.iais.eis.ids.jsonld.Serializer
+import java.net.URI
+import java.util.GregorianCalendar
+import javax.xml.datatype.DatatypeFactory
+import javax.xml.datatype.XMLGregorianCalendar
+
+object ContractUtils {
+    val SERIALIZER: Serializer by lazy { Serializer() }
+    val TYPE_DATETIMESTAMP: URI = URI.create("http://www.w3.org/2001/XMLSchema#dateTimeStamp")
+    val DATATYPE_FACTORY: DatatypeFactory = DatatypeFactory.newInstance()
+    fun newGregorianCalendar(millis: Long = System.currentTimeMillis()): XMLGregorianCalendar =
+        DATATYPE_FACTORY.newXMLGregorianCalendar(
+            GregorianCalendar().apply { timeInMillis = millis }
+        )
 }
+
+fun XMLGregorianCalendar.copy() = this.clone() as XMLGregorianCalendar

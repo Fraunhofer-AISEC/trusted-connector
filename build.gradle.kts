@@ -25,7 +25,7 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "6.3.1"
+    version = "7.0.0-rc2"
 
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
@@ -144,15 +144,6 @@ configure(subprojects.filter { it.name != "examples" }) {
  */
                 """.trim()
             ).yearSeparator(" - ")
-        }
-    }
-}
-
-// Always write project version to version.txt after build/install
-tasks.build {
-    doLast {
-        file(project.projectDir).resolve("version.txt").bufferedWriter().use {
-            it.write(project.version.toString())
         }
     }
 }

@@ -34,4 +34,6 @@ interface Settings {
     fun removeUser(username: String)
     fun setPassword(username: String, hash: String)
     fun getUsers(): Map<String, String>
+    fun loadContract(key: String): String?
+    fun storeContract(key: String, contract: String)
 }

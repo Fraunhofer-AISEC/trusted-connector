@@ -176,6 +176,13 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
+    override fun storeContract(key: String, contract: String) {
+        contractStore[key] = contract
+        mapDB.commit()
+    }
+
+    override fun loadContract(key: String) = contractStore[key]
+
     companion object {
         internal const val DB_VERSION_KEY = "db_version"
         internal const val CURRENT_DB_VERSION = 4
@@ -190,7 +197,7 @@ class SettingsComponent : Settings {
             mapDB
                 .hashMap("settings_store")
                 .keySerializer(Serializer.STRING)
-                .valueSerializer(ElsaSerializer<Any>())
+                .valueSerializer(ElsaSerializer())
                 .createOrOpen()
         }
         private val connectionSettings: ConcurrentMap<String, ConnectionSettings> by lazy {
@@ -203,6 +210,13 @@ class SettingsComponent : Settings {
         private val userStore: ConcurrentMap<String, String> by lazy {
             mapDB
                 .hashMap("user_store")
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(Serializer.STRING)
+                .createOrOpen()
+        }
+        private val contractStore: ConcurrentMap<String, String> by lazy {
+            mapDB
+                .hashMap("contract_store")
                 .keySerializer(Serializer.STRING)
                 .valueSerializer(Serializer.STRING)
                 .createOrOpen()

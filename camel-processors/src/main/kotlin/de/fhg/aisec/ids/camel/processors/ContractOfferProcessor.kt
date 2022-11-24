@@ -24,11 +24,12 @@ import de.fraunhofer.iais.eis.ContractOfferMessage
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 
 /**
  * This Processor handles a ContractOfferMessage and creates a ContractAgreementMessage.
  */
-@Suppress("unused")
+@Component("contractOfferProcessor")
 class ContractOfferProcessor : Processor {
 
     override fun process(exchange: Exchange) {
@@ -41,7 +42,7 @@ class ContractOfferProcessor : Processor {
             ContractOfferMessage::class.java
         )
 
-        ContractHandler.handleContractOffer(exchange, contractOfferMessage.id, LOG)
+        ContractHelper.handleContractOffer(exchange, contractOfferMessage.id, LOG)
     }
 
     companion object {

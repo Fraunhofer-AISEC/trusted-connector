@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-processors
+ * ids-api
  * %%
- * Copyright (C) 2021 Fraunhofer AISEC
+ * Copyright (C) 2022 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,14 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.processors
+package de.fhg.aisec.ids.api.contracts
 
-object Constants {
-    const val IDSCP2_HEADER = "idscp2-header"
-    const val IDS_TYPE = "ids-type"
-    const val CONTRACT_STORE_KEY = "contract-store-key"
+import de.fraunhofer.iais.eis.ContractOffer
+
+interface ContractManager {
+    fun makeContract(contractProperties: Map<String, Any>): ContractOffer
+
+    fun storeContract(key: String, contract: ContractOffer)
+
+    fun loadContract(key: String): ContractOffer?
 }

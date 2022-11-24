@@ -19,15 +19,17 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.camel.processors.Constants.ARTIFACT_URI_PROPERTY
+import de.fhg.aisec.ids.api.contracts.ContractConstants.ARTIFACT_URI_PROPERTY
+import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
 import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
-import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
 import de.fraunhofer.iais.eis.ArtifactRequestMessageBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import java.net.URI
 
+@Component("artifactRequestCreationProcessor")
 class ArtifactRequestCreationProcessor : Processor {
 
     override fun process(exchange: Exchange) {

@@ -17,22 +17,11 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.processors
+package de.fhg.aisec.ids.api.contracts
 
-import de.fraunhofer.iais.eis.ids.jsonld.Serializer
-import java.net.URI
-import java.util.GregorianCalendar
-import javax.xml.datatype.DatatypeFactory
-import javax.xml.datatype.XMLGregorianCalendar
-
-object Utils {
-    val SERIALIZER: Serializer by lazy { Serializer() }
-    val TYPE_DATETIMESTAMP: URI = URI.create("http://www.w3.org/2001/XMLSchema#dateTimeStamp")
-    val DATATYPE_FACTORY: DatatypeFactory = DatatypeFactory.newInstance()
-    fun newGregorianCalendar(millis: Long = System.currentTimeMillis()): XMLGregorianCalendar =
-        DATATYPE_FACTORY.newXMLGregorianCalendar(
-            GregorianCalendar().apply { timeInMillis = millis }
-        )
+object ContractConstants {
+    const val UC_DOCKER_IMAGE_URIS = "uc-docker-image-uris"
+    const val UC_NOT_BEFORE_DATETIME = "uc-not-before-datetime"
+    const val UC_NOT_AFTER_DATETIME = "uc-not-after-datetime"
+    const val ARTIFACT_URI_PROPERTY = "artifactUri"
 }
-
-fun XMLGregorianCalendar.copy() = this.clone() as XMLGregorianCalendar

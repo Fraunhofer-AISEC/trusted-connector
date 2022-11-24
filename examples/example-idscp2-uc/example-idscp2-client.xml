@@ -16,11 +16,6 @@
         </camel:trustManagers>
     </camel:sslContextParameters>
 
-    <bean id="ArtifactRequestCreationProcessor" class="de.fhg.aisec.ids.camel.processors.ArtifactRequestCreationProcessor" />
-    <bean id="ContractRequestCreationProcessor" class="de.fhg.aisec.ids.camel.processors.ContractRequestCreationProcessor"/>
-    <bean id="ContractResponseProcessor" class="de.fhg.aisec.ids.camel.processors.ContractResponseProcessor"/>
-    <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.processors.IdsMessageTypeExtractionProcessor" />
-
     <camelContext xmlns="http://camel.apache.org/schema/spring">
         <errorHandler id="infErrorHandler" type="DeadLetterChannel" deadLetterUri="log:dead?level=ERROR">
             <redeliveryPolicy maximumRedeliveries="-1" redeliveryDelay="0"/>
@@ -31,14 +26,14 @@
             <setProperty name="artifactUri">
                 <constant>https://example.com/some_artifact</constant>
             </setProperty>
-            <process ref="ContractRequestCreationProcessor" />
+            <process ref="contractRequestCreationProcessor" />
             <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
-            <process ref="TypeExtractionProcessor"/>
+            <process ref="idsMessageTypeExtractionProcessor"/>
             <choice>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ContractResponseMessage'</simple>
                     <log message="### Handle ContractResponseMessage ###"/>
-                    <process ref="ContractResponseProcessor"/>
+                    <process ref="contractResponseProcessor"/>
                     <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
                     <process ref="TypeExtractionProcessor"/>
                     <choice>
@@ -67,9 +62,9 @@
             <setProperty name="artifactUri">
                 <constant>https://example.com/some_artifact</constant>
             </setProperty>
-            <process ref="ArtifactRequestCreationProcessor" />
+            <process ref="artifactRequestCreationProcessor" />
             <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
-            <process ref="TypeExtractionProcessor"/>
+            <process ref="idsMessageTypeExtractionProcessor"/>
             <choice>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ArtifactResponseMessage'</simple>

@@ -27,6 +27,8 @@ import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.InputStreamBody
 import org.apache.http.entity.mime.content.StringBody
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -71,7 +73,12 @@ import java.util.UUID
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
  */
-class MultiPartOutputProcessor : Processor {
+@Component("idsMultiPartOutputProcessor")
+class IdsMultiPartOutputProcessor : Processor {
+
+    @Autowired
+    lateinit var infoModelManager: InfoModel
+
     @Throws(Exception::class)
     override fun process(exchange: Exchange) {
         val boundary = UUID.randomUUID().toString()
@@ -81,8 +88,7 @@ class MultiPartOutputProcessor : Processor {
 
         // Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
         // will be sent as a multipart "header"
-        val infoModel: InfoModel = MultiPartComponent.infoModelManager
-        val rdfHeader = infoModel.connectorAsJsonLd
+        val rdfHeader = infoModelManager.connectorAsJsonLd
 
         // Use the self-description provided by the InfoModelManager as "header"
         multipartEntityBuilder.addPart(
