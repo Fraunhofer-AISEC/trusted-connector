@@ -3,7 +3,7 @@ idscp2 = "0.15.0"
 ktlint = "0.46.1"
 
 # Kotlin library/compiler version
-kotlin = "1.7.10"
+kotlin = "1.7.22"
 kotlinxCoroutines = "1.6.4"
 # HTTP client
 ktor = "2.2.2"

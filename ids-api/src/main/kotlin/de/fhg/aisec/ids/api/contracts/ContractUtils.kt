@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-processors
+ * ids-api
  * %%
  * Copyright (C) 2021 Fraunhofer AISEC
  * %%
