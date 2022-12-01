@@ -1,11 +1,9 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
 import { Identity } from './identity.interface';
-
-import {v4 as uuidv4} from 'uuid';
 import { ESTService } from './est-service';
 
 @Component({
@@ -25,12 +23,6 @@ export class NewIdentityESTComponent implements OnInit {
     public ngOnInit(): void {
         // the short way to create a FormGroup
         this.myForm = this.fb.group({
-            s: ['', Validators.required as any],
-            cn: [uuidv4(), Validators.required as any],
-            o: '',
-            ou: '',
-            l: '',
-            username: '',
             password: '',
             esturl: ''
         });

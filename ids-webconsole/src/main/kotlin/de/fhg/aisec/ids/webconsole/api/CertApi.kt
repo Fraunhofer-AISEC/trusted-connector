@@ -50,16 +50,6 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import sun.security.pkcs.PKCS7
-import sun.security.pkcs10.PKCS10
-import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -98,6 +88,16 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.apache.cxf.jaxrs.ext.multipart.Attachment
+import org.apache.cxf.jaxrs.ext.multipart.Multipart
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import sun.security.pkcs.PKCS7
+import sun.security.pkcs10.PKCS10
+import sun.security.x509.X500Name
 
 /**
  * REST API interface for managing certificates in the connector.
@@ -457,7 +457,7 @@ class CertApi(@Autowired private val settings: Settings) {
         LOG.debug("Step 1 - generate Keys")
         val keys: KeyPair = generateKeyPair()
         LOG.debug("Step 2 - generate CSR")
-        val csr: ByteArray? = r.cn?.let { generateCSR(r, keys) }
+        val csr: ByteArray? = generateCSR(keys)
         // send request
         LOG.debug("Step 3 - send requests")
         val res: PKCS7 = sendEstIdReq(r, csr)
@@ -476,50 +476,23 @@ class CertApi(@Autowired private val settings: Settings) {
         return kpg.generateKeyPair()
     }
 
-    private fun generateCSR(request: EstIdRequest, keys: KeyPair): ByteArray? {
-        val tmp: ByteArray? = request.cn?.let {
-            request.ou?.let { it1 ->
-                request.o?.let { it2 ->
-                    request.l?.let { it3 ->
-                        request.s?.let { it4 ->
-                            request.cn?.let { it5 ->
-                                request.s?.let { it6 ->
-                                    generatePKCS10(
-                                        it,
-                                        it1,
-                                        it2,
-                                        it3,
-                                        it4,
-                                        it5,
-                                        it6,
+    private fun generateCSR(keys: KeyPair): ByteArray? {
+        val tmp: ByteArray? = generatePKCS10(
                                         keys
                                     )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
         return tmp
     }
 
     @Throws(java.lang.Exception::class)
     private fun generatePKCS10(
-        CN: String,
-        OU: String,
-        O: String,
-        L: String,
-        C: String,
-        Email: String,
-        S: String,
         keys: KeyPair
     ): ByteArray? {
         val sigAlg = "SHA256WithRSA"
         val pkcs: PKCS10 = PKCS10(keys.public)
         val signature: Signature = Signature.getInstance(sigAlg)
+        val CN="Common Name"
         signature.initSign(keys.private)
-        val principal = X500Principal("CN=$CN, OU=$OU, O=$O, C=$C, L=$L, S=$S, EMAIL=$Email")
+        val principal = X500Principal("CN=$CN")
 
         val x500name = X500Name(principal.encoded)
         pkcs.encodeAndSign(x500name, signature)
