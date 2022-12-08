@@ -78,6 +78,7 @@ protobuf = { group = "com.google.protobuf", name = "protobuf-java", version.ref 
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-java = { group = "io.ktor", name = "ktor-client-java", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
@@ -138,6 +139,7 @@ mapdb = { group = "org.mapdb", name = "mapdb", version.ref = "mapdb" }
 
 # ids-webconsole
 bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk15on", version.ref = "bouncyCastle" }
+bouncycastlePkix = { group = "org.bouncycastle", name = "bcpkix-jdk15to18", version.ref = "bouncyCastle" }
 cxf-rtRsExtProviders = { group = "org.apache.cxf", name = "cxf-rt-rs-extension-providers", version.ref = "cxf" }
 jose4j = { group = "org.bitbucket.b_c", name = "jose4j", version.ref = "jose4j" }
 auth0Jwt = { group = "com.auth0", name = "java-jwt", version.ref = "auth0Jwt" }

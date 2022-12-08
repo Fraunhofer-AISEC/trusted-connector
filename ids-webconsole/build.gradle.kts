@@ -73,7 +73,8 @@ dependencies {
     implementation(libs.jose4j)
     implementation(libs.auth0Jwt)
     implementation(libs.bundles.ktor.richClient)
-    implementation("io.ktor:ktor-client-auth:2.1.0")
+    implementation(libs.ktor.client.auth)
+    implementation(libs.bouncycastlePkix)
 
     compileOnly(libs.swagger.jaxrs)
 
