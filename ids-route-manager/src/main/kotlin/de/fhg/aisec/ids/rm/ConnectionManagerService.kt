@@ -30,11 +30,11 @@ import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.client.Idscp2ClientEndpoint
 import de.fhg.aisec.ids.camel.idscp2.listeners.ConnectionListener
 import de.fhg.aisec.ids.camel.idscp2.server.Idscp2ServerEndpoint
-import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
-import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.demo.DemoRaVerifier
-import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.dummy.RaVerifierDummy
-import de.fhg.aisec.ids.idscp2.default_drivers.remote_attestation.dummy.RaVerifierDummy2
-import de.fhg.aisec.ids.idscp2.idscp_core.api.idscp_connection.Idscp2ConnectionListener
+import de.fhg.aisec.ids.idscp2.applayer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.defaultdrivers.remoteattestation.demo.DemoRaVerifier
+import de.fhg.aisec.ids.idscp2.defaultdrivers.remoteattestation.dummy.RaVerifierDummy
+import de.fhg.aisec.ids.idscp2.defaultdrivers.remoteattestation.dummy.RaVerifierDummy2
+import de.fhg.aisec.ids.idscp2.api.connection.Idscp2ConnectionListener
 import org.apache.camel.CamelContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext

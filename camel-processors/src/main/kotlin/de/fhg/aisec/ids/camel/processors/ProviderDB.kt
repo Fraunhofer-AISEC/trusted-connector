@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.idscp2.app_layer.AppLayerConnection
+import de.fhg.aisec.ids.idscp2.applayer.AppLayerConnection
 import de.fraunhofer.iais.eis.ContractAgreement
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
