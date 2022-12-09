@@ -138,6 +138,9 @@ javax-activation = { group = "com.sun.activation", name = "javax.activation", ve
 mapdb = { group = "org.mapdb", name = "mapdb", version.ref = "mapdb" }
 
 # ids-webconsole
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-reactive = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactive", version.ref = "kotlinxCoroutines" }
+kotlinx-reactor = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactor", version.ref = "kotlinxCoroutines" }
 bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk15on", version.ref = "bouncyCastle" }
 bouncycastlePkix = { group = "org.bouncycastle", name = "bcpkix-jdk15to18", version.ref = "bouncyCastle" }
 cxf-rtRsExtProviders = { group = "org.apache.cxf", name = "cxf-rt-rs-extension-providers", version.ref = "cxf" }

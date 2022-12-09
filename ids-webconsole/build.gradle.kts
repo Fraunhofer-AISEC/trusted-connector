@@ -74,6 +74,9 @@ dependencies {
     implementation(libs.auth0Jwt)
     implementation(libs.bundles.ktor.richClient)
     implementation(libs.ktor.client.auth)
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.reactive)
+    implementation(libs.kotlinx.reactor)
     implementation(libs.bouncycastlePkix)
 
     compileOnly(libs.swagger.jaxrs)

@@ -13,4 +13,7 @@ WORKDIR "/root"
 EXPOSE 8080 29292
 
 ENTRYPOINT ["java"]
-CMD ["--class-path", "./jars/*", "de.fhg.aisec.ids.TrustedConnector"]
+CMD ["--add-exports=java.base/sun.security.x509=ALL-UNNAMED", \
+"--add-exports=java.base/sun.security.pkcs=ALL-UNNAMED", \
+"--add-exports=java.base/sun.security.pkcs10=ALL-UNNAMED", \
+"--class-path", "./jars/*", "de.fhg.aisec.ids.TrustedConnector"]
