@@ -92,7 +92,7 @@
           <span class="mdl-textfield__error"> Valid DAPS Token URL required </span>
         </div>
         <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="keystoreName"	type="string" formControlName="keystoreName"
+          <input class="mdl-textfield__input" id="keystoreName"	type="text" formControlName="keystoreName"
                  required minlength="4">
           <label class="mdl-textfield__label" for="keystoreName">Keystore file name</label>
           <span class="mdl-textfield__error"> Valid keystore name required </span>
@@ -104,50 +104,17 @@
           <span class="mdl-textfield__error"> Password required </span>
         </div>
         <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="keystoreAliasName"	type="string" formControlName="keystoreAliasName"
+          <input class="mdl-textfield__input" id="keystoreAliasName"	type="text" formControlName="keystoreAliasName"
                  required minlength="1">
           <label class="mdl-textfield__label" for="keystoreAliasName">Keystore alias of certificate</label>
           <span class="mdl-textfield__error"> Valid Alias required </span>
         </div>
         <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="truststoreName"	type="string" formControlName="truststoreName"
+          <input class="mdl-textfield__input" id="truststoreName"	type="text" formControlName="truststoreName"
                  required minlength="4">
           <label class="mdl-textfield__label" for="truststoreName">Truststore file name</label>
           <span class="mdl-textfield__error"> Valid truststore name required </span>
         </div>
-
-
-
-        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="rootCAUrl"	type="string" formControlName="rootCAUrl"
-                 required minlength="4">
-          <label class="mdl-textfield__label" for="rootCAUrl">Root CA URL</label>
-          <span class="mdl-textfield__error"> Valid root CA  URL required </span>
-        </div>
-
-        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="onboardingSecret"	type="string" formControlName="onboardingSecret"
-                 required minlength="4">
-          <label class="mdl-textfield__label" for="onboardingSecret">Onboarding Secret</label>
-          <span class="mdl-textfield__error"> Onboarding Secret required </span>
-        </div>
-
-        <div class="mdl-cell--8-col">
-        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <input class="mdl-textfield__input" id="certificateHash"	type="string" formControlName="certificateHash"
-                 required minlength="4">
-          <label class="mdl-textfield__label" for="certificateHash">Certificate Hash</label>
-        </div>
-        </div>
-        <div class="mdl-cell--4-col">
-        <button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved}">
-            Get certificate
-          </button>
-        </div>
-
-
-
-
         <div class="mdl-cell--12-col">
 					<button type="submit" class="mdl-button mdl-js-button mdl-button--raised" [ngClass]="{'mdl-button--colored': !saved}">
 						Save Settings
