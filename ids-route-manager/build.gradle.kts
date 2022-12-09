@@ -2,6 +2,7 @@ dependencies {
     implementation(project(":ids-api")) { isTransitive = false }
 
     implementation(libs.camel.idscp2)
+    implementation(libs.idscp2.core)
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation(libs.jaxb.api)

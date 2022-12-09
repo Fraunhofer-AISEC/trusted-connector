@@ -1,5 +1,5 @@
 [versions]
-idscp2 = "0.11.1"
+idscp2 = "0.14.3"
 ktlint = "0.46.1"
 
 # Kotlin library/compiler version
@@ -69,6 +69,8 @@ bouncyCastle = "1.70"
 
 [libraries]
 # common libraries
+idscp2-core = { group = "de.fhg.aisec.ids", name = "idscp2-core", version.ref = "idscp2" }
+idscp2-daps = { group = "de.fhg.aisec.ids", name = "idscp2-daps-aisec", version.ref = "idscp2" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 camel-core = { group = "org.apache.camel", name = "camel-core", version.ref = "camel" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }

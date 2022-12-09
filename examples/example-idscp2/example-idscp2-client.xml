@@ -7,14 +7,35 @@
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <camel:sslContextParameters id="clientSslContext" certAlias="1.0.1">
+    <camel:sslContextParameters id="clientSslContext" certAlias="1">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/provider-keystore.p12" password="password"/>
+            <camel:keyStore resource="etc/keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
             <camel:keyStore resource="etc/truststore.p12" password="password"/>
         </camel:trustManagers>
     </camel:sslContextParameters>
+
+    <bean name="dapsDriver" class="de.fhg.aisec.ids.idscp2.beans.AisecDapsDriverFactoryBean">
+        <property name="dapsUrl" value="https://daps.aisec.fraunhofer.de/v3"/>
+        <property name="dapsSslParameters" ref="clientSslContext"/>
+        <property name="transportCertificatesParameters" ref="clientSslContext"/>
+    </bean>
+
+    <bean name="attestationConfig" class="de.fhg.aisec.ids.idscp2.beans.AttestationConfigFactoryBean">
+        <property name="expectedRaSuite" value="Dummy2|Dummy"/>
+        <property name="supportedRaSuite" value="Dummy2|Dummy"/>
+    </bean>
+
+    <bean name="idscp2Config" class="de.fhg.aisec.ids.idscp2.beans.Idscp2ConfigurationFactoryBean">
+        <property name="attestationConfig" ref="attestationConfig"/>
+        <property name="dapsDriver" ref="dapsDriver"/>
+        <property name="handshakeTimeoutDelay" value="10000"/>
+    </bean>
+
+    <bean name="tlsConfig" class="de.fhg.aisec.ids.idscp2.beans.NativeTlsConfigurationBuilderFactoryBean">
+        <property name="sslParameters" ref="clientSslContext"/>
+    </bean>
 
     <camelContext xmlns="http://camel.apache.org/schema/spring">
 
@@ -27,7 +48,7 @@
                 <simple>ping</simple>
             </setHeader>
             <log message="Client sends: ${body} (Header: ${headers[idscp2-header]})"/>
-            <to uri="idscp2client://consumer-core:29292?awaitResponse=true&amp;sslContextParameters=#clientSslContext"/>
+            <to uri="idscp2client://consumer-core:29292?awaitResponse=true&amp;idscp2Configuration=#idscp2Config&amp;secureChannelConfigurationBuilder=#tlsConfig"/>
             <log message="Client received: ${body} (Header: ${headers[idscp2-header]})"/>
             <!-- Prevents the client consumer from sending the message back to the server -->
             <removeHeader name="idscp2-header"/>

@@ -7,7 +7,7 @@
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-	<camel:sslContextParameters id="sslContext" certAlias="1.0.1">
+	<camel:sslContextParameters id="sslContext" certAlias="1">
 		<camel:keyManagers keyPassword="password">
 			<camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.p12" password="password"/>
 		</camel:keyManagers>
