@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { Route } from './route';
@@ -10,8 +10,7 @@ import { RouteService } from './route.service';
     styleUrls: ['./routes.component.css']
 })
 
-export class RoutesComponent implements OnInit {
-    @Output() public readonly changeTitle = new EventEmitter();
+export class RoutesComponent {
     public title = 'Current Routes';
     public routes: Route[];
     public selectedRoute: Route;
@@ -23,10 +22,6 @@ export class RoutesComponent implements OnInit {
             .subscribe(routes => {
                 this.routes = routes;
             });
-    }
-
-    public ngOnInit(): void {
-        this.changeTitle.emit('Camel Routes');
     }
 
     public trackRoutes(index: number, item: Route): string {

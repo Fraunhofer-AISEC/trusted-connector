@@ -1,32 +1,43 @@
 <!-- Status cards -->
 <div class="mdl-grid">
-  <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">Request a certificate</h2>
-    </div>
-    <div class="mdl-card__supporting-text">
+    <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">Request a certificate</h2>
+        </div>
+        <div class="mdl-card__supporting-text">
 
-      <form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
-        <div>
-          <h5>EST Authentication</h5>
-        </div>
-        <div class="mdl-cell--12-col">
-          <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="esturl">EST Url*</label>
-            <input class="mdl-textfield__input" id="esturl" type="text" formControlName="esturl">
-          </div>
-        </div>
-        <div class="mdl-cell--12-col">
-          <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="password">Enrolement Key*</label>
-            <input class="mdl-textfield__input" id="password" type="text" formControlName="password" required minlength="4" password>
-          </div>
-        </div>
-        <div class="mdl-cell--12-col" style="margin-top:20px">
-          <button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Request certificate</button>
-        </div>
-      </form>
+            <form [formGroup]="myForm" novalidate (ngSubmit)="save(myForm.value)" class="mdl-cell--12-col mdl-grid">
+                <div>
+                    <h5>EST Enrollment</h5>
+                </div>
+                <div class="mdl-cell--12-col">
+                    <div mdl-textfield
+                         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="estUrl">EST Url*</label>
+                        <input class="mdl-textfield__input" id="estUrl" type="url" formControlName="estUrl">
+                    </div>
+                </div>
+                <div class="mdl-cell--12-col">
+                    <div mdl-textfield
+                         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="iet">Initial Enrollment Token*</label>
+                        <input class="mdl-textfield__input" id="iet" type="password" formControlName="iet"
+                               required minlength="4">
+                    </div>
+                </div>
+                <div class="mdl-cell--12-col">
+                    <div mdl-textfield
+                         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="alias">KeyStore Alias*</label>
+                        <input class="mdl-textfield__input" id="alias" type="text" formControlName="alias"
+                               required minlength="1">
+                    </div>
+                </div>
+                <div class="mdl-cell--12-col" style="margin-top:20px">
+                    <button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Request certificate</button>
+                </div>
+            </form>
 
+        </div>
     </div>
-  </div>
 </div>

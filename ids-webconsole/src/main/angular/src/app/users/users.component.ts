@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 
 import { UserService } from './user.service';
 import { Title } from '@angular/platform-browser';
@@ -9,8 +9,7 @@ declare let componentHandler: any;
 @Component({
     templateUrl: './users.component.html'
 })
-export class UsersComponent implements OnInit, AfterViewInit {
-    @Output() public readonly changeTitle = new EventEmitter();
+export class UsersComponent implements AfterViewInit {
     public saved = true;
     private _users?: string[];
     private _isLoaded = false;
@@ -23,10 +22,6 @@ export class UsersComponent implements OnInit, AfterViewInit {
              this._users = users;
              this._isLoaded = this._users && this._users.length > 0;
            });
-    }
-
-    public ngOnInit(): void {
-        this.changeTitle.emit('Users');
     }
 
     public ngAfterViewInit(): void {

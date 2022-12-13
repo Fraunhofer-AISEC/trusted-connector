@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
 import { PolicyService } from './policy.service';
@@ -8,8 +8,7 @@ declare let componentHandler: any;
 @Component({
   templateUrl: './dataflowpolicies.component.html'
 })
-export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
-  @Output() public readonly changeTitle = new EventEmitter();
+export class DataflowPoliciesComponent implements AfterViewInit {
   private _policies?: string[];
   private _isLoaded = false;
 
@@ -21,10 +20,6 @@ export class DataflowPoliciesComponent implements OnInit, AfterViewInit {
         this._policies = policies;
         this._isLoaded = this._policies && this._policies.length > 0;
       });
-  }
-
-  public ngOnInit(): void {
-    this.changeTitle.emit('Data Flow Control');
   }
 
   public ngAfterViewInit(): void {

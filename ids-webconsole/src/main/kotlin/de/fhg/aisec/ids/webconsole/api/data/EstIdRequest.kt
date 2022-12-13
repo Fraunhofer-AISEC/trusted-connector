@@ -18,13 +18,4 @@
  * =========================LICENSE_END==================================
  */
 package de.fhg.aisec.ids.webconsole.api.data
-class EstIdRequest {
-    var cn: String? = null
-    var ou: String? = null
-    var o: String? = null
-    var l: String? = null
-    var s: String? = null
-    var username: String? = null
-    var password: String? = null
-    var esturl: String? = null
-}
+class EstIdRequest(val estUrl: String, val iet: String, val alias: String)

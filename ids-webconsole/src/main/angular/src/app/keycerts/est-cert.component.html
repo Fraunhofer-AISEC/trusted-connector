@@ -1,44 +1,51 @@
 <!-- Status cards -->
 <div class="mdl-grid">
-  <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">EST CA Certificate</h2>
+    <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">EST CA Certificate</h2>
+        </div>
+        <div class="mdl-card__supporting-text">
+
+            <form [formGroup]="myForm" class="mdl-cell--12-col mdl-grid">
+                <div class="mdl-cell--12-col">
+                    <div mdl-textfield
+                         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="estUrl">EST Url</label>
+                        <input class="mdl-textfield__input" id="estUrl" type="text" formControlName="estUrl">
+                    </div>
+                </div>
+
+                <div class="mdl-cell--12-col">
+                    <div mdl-textfield
+                         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="certificateHash">Root CA CertificateHash
+                            (SHA-256)</label>
+                        <input class="mdl-textfield__input" id="certificateHash" type="text"
+                               formControlName="certificateHash">
+                    </div>
+                </div>
+
+                <div class="mdl-cell--8-col">
+                    <div mdl-textarea
+                         class="mdl-textfield mdl-js-textfield  mdl-text-field--textarea mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="certificate">Certificate</label>
+                        <textarea class="mdl-text-field__input" mdl-text-field--disabled aria-labelledby="my-label-id"
+                                  rows="8"
+                                  cols="100" maxlength="5000" id="certificate" type="text" formControlName="certificate"
+                                  readonly></textarea>
+                    </div>
+                </div>
+            </form>
+
+            <div class="mdl-cell--4-col">
+                <button class="mdl-button mdl-js-button mdl-button--raised" (click)="fetchEstCert()">
+                    Get certificate
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--raised" (click)="storeEstCert()">
+                    Store certificate
+                </button>
+            </div>
+
+        </div>
     </div>
-    <div class="mdl-card__supporting-text">
-
-      <form [formGroup]="myForm" novalidate (ngSubmit)="saveEstCert()" class="mdl-cell--12-col mdl-grid">
-        <div class="mdl-cell--12-col">
-          <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="ESTUrl">EST Url</label>
-            <input class="mdl-textfield__input" id="ESTUrl" type="text" formControlName="ESTUrl">
-          </div>
-        </div>
-
-        <div class="mdl-cell--12-col">
-          <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="certificateHash">Root CA CertificateHash (SHA-256)</label>
-            <input class="mdl-textfield__input" id="certificateHash" type="text" formControlName="certificateHash">
-          </div>
-        </div>
-
-        <div class="mdl-cell--8-col">
-          <div mdl-textarea class="mdl-textfield mdl-js-textfield  mdl-text-field--textarea mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-            <label class="mdl-textfield__label" for="certificate">Certificate</label>
-            <textarea class="mdl-text-field__input" mdl-text-field--disabled aria-labelledby="my-label-id" rows="8"
-                      cols="100" maxlength="5000"  id="certificate" type="text" formControlName="certificate" readonly></textarea>
-          </div>
-        </div>
-      </form>
-
-      <div class="mdl-cell--4-col">
-        <button class="mdl-button mdl-js-button mdl-button--raised" (click)="onGetCertBtnClick()">
-          Get certificate
-        </button>
-        <button class="mdl-button mdl-js-button mdl-button--raised" (click)="onStoreCertBtnClick()">
-          Store certificate
-        </button>
-      </div>
-
-    </div>
-  </div>
 </div>

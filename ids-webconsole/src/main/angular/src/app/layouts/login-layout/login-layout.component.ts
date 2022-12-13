@@ -18,7 +18,7 @@ export class LoginLayoutComponent implements OnInit  {
   constructor(public titleService: Title, public loginService: LoginService) {}
 
     public ngOnInit(): void {
-      this.isLoggedIn = localStorage.getItem('currentUser') != null;
+      this.isLoggedIn = sessionStorage.getItem('currentUser') != null;
     }
 
   get title(): string {

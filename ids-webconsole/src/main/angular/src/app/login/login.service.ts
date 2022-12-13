@@ -6,33 +6,37 @@ import { map } from 'rxjs/operators';
 import { ApplicationHttpClient, HTTP_INJECTION_TOKEN } from '../application-http-client.service';
 
 import { Token } from './token.interface';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Injectable()
 export class LoginService {
 
-  constructor(@Inject(HTTP_INJECTION_TOKEN) private readonly http: ApplicationHttpClient) {
-  }
+    constructor(@Inject(HTTP_INJECTION_TOKEN) private readonly http: ApplicationHttpClient,
+                private route: ActivatedRoute,
+                private router: Router) {
+    }
 
-  public login(username: string, password: string): Observable<any> {
-    const headers = {
-      headers: new HttpHeaders({
-        contentType: 'application/json',
-        responseType: 'application/json'
-      })
-    };
-    return this.http.post<Token>('/user/login', { username, password }, headers).pipe(map(token => {
-      if (token) {
-        // login successful if there's a jwt token in the response
-        // store user details and jwt token in local storage to keep user logged in between page refreshes
-        localStorage.setItem('currentUser', token.token);
-        return token.token;
-      } else {
-        throw new Error('No token received, login credentials invalid?');
-      }
-    }));
-  }
+    public login(username: string, password: string): Observable<string> {
+        const headers = {
+            headers: new HttpHeaders({
+                contentType: 'application/json',
+                responseType: 'application/json'
+            })
+        };
+        return this.http.post<Token>('/user/login', {username, password}, headers).pipe(map(token => {
+            if (token) {
+                // login successful if there's a jwt token in the response
+                // store user details and jwt token in local storage to keep user logged in between page refreshes
+                sessionStorage.setItem('currentUser', token.token);
+                return token.token;
+            } else {
+                throw new Error('No token received, login credentials invalid?');
+            }
+        }));
+    }
 
-  public logout(): void {
-    localStorage.removeItem('currentUser');
-  }
+    public logout(): void {
+        sessionStorage.removeItem('currentUser');
+        this.router.navigate(['/login']);
+    }
 }

@@ -3,7 +3,7 @@ export class Certificate {
   public file: string;
   public certificate: string;
   public subjectDistinguishedName: string;
-  public subjectAltnames: string[];
+  public subjectAltNames: string[];
   public subjectCN: string;
   public subjectOU: string;
   public subjectO: string;

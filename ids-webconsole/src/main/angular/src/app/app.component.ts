@@ -20,7 +20,7 @@ export class AppComponent implements AfterViewInit, OnInit  {
   }
 
     public ngOnInit(): void {
-      this.isLoggedIn = localStorage.getItem('currentUser') != null;
+      this.isLoggedIn = sessionStorage.getItem('currentUser') != null;
     }
 
   get title(): string {

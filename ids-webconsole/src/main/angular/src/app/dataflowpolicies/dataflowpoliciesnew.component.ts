@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 
@@ -9,7 +9,6 @@ import { PolicyService } from './policy.service';
     templateUrl: './dataflowpoliciesnew.component.html'
 })
 export class NewDataflowPolicyComponent implements OnInit {
-    @Output() public readonly changeTitle = new EventEmitter();
     public myForm: FormGroup;
     public data: Policy;
     public policyFileLabel = 'Select lucon file ...';

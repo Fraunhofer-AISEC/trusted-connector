@@ -19,7 +19,4 @@
  */
 package de.fhg.aisec.ids.webconsole.api.data
 
-class EstCaCertRequest {
-    var url: String? = null
-    var hash: String? = null
-}
+class EstCaCertRequest(val url: String, val hash: String)

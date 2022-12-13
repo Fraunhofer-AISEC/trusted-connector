@@ -3,7 +3,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { interval, Observable } from 'rxjs';
 import { mergeMap, takeWhile } from 'rxjs/operators';
 
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class MetricService implements OnDestroy {

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { LoginService } from './login.service';
 
@@ -12,9 +12,12 @@ export class LoginComponent {
     public form: FormGroup;
     public errorText: string = undefined;
 
-    constructor(private fb: FormBuilder,
+    constructor(
+        private fb: FormBuilder,
         private authService: LoginService,
-        private router: Router) {
+        private router: Router,
+        private route: ActivatedRoute
+    ) {
         this.form = this.fb.group({
             username: [''],
             password: ['']
@@ -32,8 +35,8 @@ export class LoginComponent {
         if (val.username && val.password) {
             this.authService.login(val.username, val.password)
                 .subscribe(() => {
-                    // console.log('User is logged in');
-                    this.router.navigateByUrl('/');
+                    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+                    return this.router.navigate([returnUrl]);
                 }, () => {
                     this.errorText = 'Login rejected, wrong username or password?';
                 });
