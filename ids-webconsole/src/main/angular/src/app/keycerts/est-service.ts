@@ -14,18 +14,18 @@ export class ESTService {
     // Request EST root certificate
     public requestEstCaCert(url: string, hash: string): Observable<string> {
         const headers = new HttpHeaders({'Content-Type': 'application/json'});
-        const body = JSON.stringify({url, hash});
-        return this.http.post(environment.apiURL + '/certs/est_ca_cert', body, {
+
+        return this.http.post(environment.apiURL + '/certs/est_ca_certs', {url, hash}, {
             headers,
             responseType: 'text'
         });
     }
 
     // Save root certificate to connector
-    public uploadCert(cert: string): Observable<string> {
-        const headers = new HttpHeaders({'Content-Type': 'application/json'});
-        const body = JSON.stringify(cert);
-        return this.http.post(environment.apiURL + '/certs/store_est_ca_cert', body, {
+    public uploadEstCaCert(cert: string): Observable<string> {
+        const headers = new HttpHeaders({'Content-Type': 'text/plain'});
+
+        return this.http.post(environment.apiURL + '/certs/store_est_ca_cert', cert, {
             headers,
             responseType: 'text'
         });
@@ -34,8 +34,8 @@ export class ESTService {
     // Create new identity via EST
     public createIdentity(data: EstEnrollment): Observable<string> {
         const headers = new HttpHeaders({'Content-Type': 'application/json'});
-        const body = JSON.stringify(data);
-        return this.http.post(environment.apiURL + '/certs/request_est_identity', body, {
+
+        return this.http.post(environment.apiURL + '/certs/request_est_identity', data, {
             headers,
             responseType: 'text'
         });

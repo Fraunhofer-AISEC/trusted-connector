@@ -18,7 +18,7 @@
           <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
             <label class="mdl-textfield__label" for="password">Password*</label>
             <input class="mdl-textfield__input" id="password" type="password" formControlName="password" required minlength="4" password>
-            <span [hidden]="userForm.controls.password.valid || (userForm.controls.password.pristine)" class="mdl-textfield__error">Password is required.</span>
+            <span [hidden]="userForm.controls.password.valid || userForm.controls.password.pristine" class="mdl-textfield__error">Password is required.</span>
           </div>
         </div>
         <div class="mdl-cell--12-col" style="margin-top:20px">

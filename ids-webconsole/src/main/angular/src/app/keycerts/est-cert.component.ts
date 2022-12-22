@@ -42,7 +42,7 @@ export class ESTCertComponent implements OnInit {
     }
 
     public async storeEstCert(): Promise<void> {
-         await this.estService.uploadCert(this.cacert).subscribe(() => this.router.navigate(['/certificates']));
+         await this.estService.uploadEstCaCert(this.cacert).subscribe(() => this.router.navigate(['/certificates']));
     }
 
 }

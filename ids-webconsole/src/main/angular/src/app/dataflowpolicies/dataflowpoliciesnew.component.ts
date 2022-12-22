@@ -34,8 +34,7 @@ export class NewDataflowPolicyComponent implements OnInit {
         // console.log(fileInputElement.files[0]);
 
         // Call REST POST to store settings
-        this.policyService.install(policy, fileInputElement.files[0])
-            .subscribe(() => undefined);
+        this.policyService.install(policy, fileInputElement.files[0]).subscribe();
     }
 
     // Update caption of upload button with file name when a file is selected

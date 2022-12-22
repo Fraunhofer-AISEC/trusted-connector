@@ -24,6 +24,7 @@ package de.fhg.aisec.ids.webconsole.api
 import de.fhg.aisec.ids.api.acme.AcmeClient
 import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.webconsole.ApiController
 import de.fhg.aisec.ids.webconsole.api.data.Cert
 import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
 import de.fhg.aisec.ids.webconsole.api.data.EstIdRequest
@@ -43,20 +44,21 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.jackson.jackson
 import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.apache.cxf.jaxrs.ext.multipart.Attachment
-import org.apache.cxf.jaxrs.ext.multipart.Multipart
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.server.ResponseStatusException
 import sun.security.pkcs.PKCS7
 import sun.security.pkcs10.PKCS10
 import sun.security.x509.X500Name
@@ -87,14 +89,6 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
-import javax.ws.rs.Consumes
-import javax.ws.rs.GET
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
-import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
 
 /**
@@ -105,80 +99,51 @@ import javax.ws.rs.core.MediaType
  *
  * @author Hamed Rasifard (hamed.rasifard@aisec.fraunhofer.de)
 </method> */
-@Component
-@Path("/certs")
+@ApiController
+@RequestMapping("/certs")
 @Api(value = "Identities and Certificates", authorizations = [Authorization(value = "oauth2")])
 class CertApi(@Autowired private val settings: Settings) {
-
-    private val insecureHttpClient = HttpClient(Java) {
-        engine {
-            config {
-                sslContext(
-                    SSLContext.getInstance("TLS").apply {
-                        init(
-                            null,
-                            arrayOf(object : X509TrustManager {
-                                override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
-
-                                override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
-
-                                override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-                            }),
-                            null
-                        )
-                    }
-                )
-            }
-        }
-        install(ContentNegotiation) {
-            jackson()
-        }
-    }
 
     @Autowired(required = false)
     private var acmeClient: AcmeClient? = null
 
-    @GET
     @ApiOperation(value = "Starts ACME renewal over X509v3 certificates")
-    @Path("acme_renew/{target}")
-    @AuthorizationRequired
+    @GetMapping("acme_renew/{target}")
     fun getAcmeCert(
         @ApiParam(value = "Identifier of the component to renew. Currently, the only valid value is __webconsole__")
-        @PathParam("target")
+        @PathVariable("target")
         target: String
-    ): Boolean {
+    ) {
         val config = settings.connectorConfig
-        return if ("webconsole" == target && acmeClient != null) {
+        if ("webconsole" == target && acmeClient != null) {
             acmeClient?.renewCertificate(
                 FileSystems.getDefault().getPath("etc", "tls-webconsole"),
                 URI.create(config.acmeServerWebcon),
                 config.acmeDnsWebcon.trim { it <= ' ' }.split("\\s*,\\s*".toRegex()).toTypedArray(),
                 config.acmePortWebcon
             )
-            true
         } else {
-            LOG.warn("ACME renewal for services other than WebConsole is not yet implemented!")
-            false
+            throw ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "ACME renewal for services other than WebConsole is not yet implemented!"
+            )
         }
     }
 
-    @GET
     @ApiOperation(
         value = "Retrieves the Terms of Service (tos) of the ACME endpoint",
         response = AcmeTermsOfService::class
     )
-    @Path("acme_tos")
-    @AuthorizationRequired
+    @GetMapping("/acme_tos")
     fun getAcmeTermsOfService(
         @ApiParam(value = "URI to retrieve the TOS from")
-        @QueryParam("uri")
+        @RequestParam
         uri: String
     ): AcmeTermsOfService? {
-        return acmeClient?.getTermsOfService(URI.create(uri.trim { it <= ' ' }))
+        return acmeClient?.getTermsOfService(URI.create(uri.trim()))
     }
 
-    @GET
-    @Path("list_certs")
+    @GetMapping("list_certs", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "List installed certificates from trust store.",
         notes = "Certificates in this list refer to public keys that are trusted by this connector."
@@ -187,37 +152,26 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "List of certificates"),
         ApiResponse(code = 500, message = "_Truststore not found_: If no trust store available")
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun listCerts(): List<Cert> {
         val truststoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
         return getKeystoreEntries(truststoreFile)
     }
 
-    @GET
-    @Path("list_identities")
+    @GetMapping("list_identities", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "List installed certificates from the private key store.",
         notes = "Certificates in this list refer to private keys that can be used as identities by the connector."
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun listIdentities(): List<Cert> {
         val keystoreFile = getKeystoreFile(settings.connectorConfig.keystoreName)
         return getKeystoreEntries(keystoreFile)
     }
 
-    @POST
-    @Path("create_identity")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
+    @PostMapping("create_identity", consumes = [MediaType.APPLICATION_JSON], produces = [MediaType.TEXT_PLAIN])
     fun createIdentity(
-        @ApiParam(value = "Specification of the identity to create a key pair for") spec: Identity
+        @ApiParam(value = "Specification of the identity to create a key pair for")
+        @RequestBody
+        spec: Identity
     ): String {
         val alias = UUID.randomUUID().toString()
         try {
@@ -225,87 +179,70 @@ class CertApi(@Autowired private val settings: Settings) {
                 alias,
                 spec,
                 "RSA",
-                2048,
-                "SHA1WITHRSA",
+                4096,
+                "SHA256WITHRSA",
                 getKeystoreFile(settings.connectorConfig.keystoreName)
             )
         } catch (e: Exception) {
-            throw InternalServerErrorException(e)
+            throw throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message, e)
         }
         return alias
     }
 
     /** Delete a private/public key pair.  */
-    @POST
-    @Path("delete_identity")
+    @PostMapping("delete_identity", consumes = [MediaType.TEXT_PLAIN], produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Deletes a public/private key pair")
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
-    fun deleteIdentity(alias: String): String {
+    fun deleteIdentity(@RequestBody alias: String): String {
         val keyStoreFile = getKeystoreFile(settings.connectorConfig.keystoreName)
-        val success = delete(alias, keyStoreFile)
-        return if (success) {
+        return if (delete(alias, keyStoreFile)) {
             alias
         } else {
-            throw InternalServerErrorException()
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
     /** Deletes a trusted certificate.  */
-    @POST
-    @Path("delete_cert")
+    @PostMapping("delete_cert", consumes = [MediaType.TEXT_PLAIN], produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Deletes a trusted certificate")
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
-    fun deleteCert(alias: String): String {
+    fun deleteCert(@RequestBody alias: String): String {
         val keyStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
-        val success = delete(alias, keyStoreFile)
-        return if (success) {
+        return if (delete(alias, keyStoreFile)) {
             alias
         } else {
-            throw InternalServerErrorException()
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
-    @POST
-    @Path("/install_trusted_cert")
-    @ApiOperation(value = "Installs a new trusted public key certificate.")
-    @ApiImplicitParams(ApiImplicitParam(dataType = "java.io.File", name = "attachment", paramType = "formData"))
-    @Produces(MediaType.TEXT_HTML)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @AuthorizationRequired
-    @Throws(
-        IOException::class
-    )
-    fun installTrustedCert(
-        @ApiParam(hidden = true, name = "attachment")
-        @Multipart("upfile")
-        attachment: Attachment
-    ): String {
-        val filename = attachment.contentDisposition.getParameter("filename")
-        val tempPath = File.createTempFile(filename, "cert")
-        FileOutputStream(tempPath).use { out ->
-            attachment.getObject(InputStream::class.java).use { inputStream ->
-                var read: Int
-                val bytes = ByteArray(1024)
-                while (inputStream.read(bytes).also { read = it } != -1) {
-                    out.write(bytes, 0, read)
-                }
-            }
-        }
-        val trustStoreName = settings.connectorConfig.truststoreName
-        val success = storeCert(getKeystoreFile(trustStoreName), tempPath)
-        if (success) {
-            if (!tempPath.delete()) {
-                LOG.warn("Failed to delete temporary file $tempPath")
-            }
-            return "Trusted certificate has been uploaded to $trustStoreName"
-        }
-        return "Error: certificate has NOT been uploaded to $trustStoreName"
-    }
+    // @PostMapping("/install_trusted_cert", produces = [MediaType.TEXT_HTML], consumes = [MediaType.MULTIPART_FORM_DATA])
+    // @ApiOperation(value = "Installs a new trusted public key certificate.")
+    // @ApiImplicitParams(ApiImplicitParam(dataType = "java.io.File", name = "attachment", paramType = "formData"))
+    //     // @Throws(
+    //     IOException::class
+    // )
+    // fun installTrustedCert(
+    //     @ApiParam(hidden = true, name = "attachment")
+    //     @Multipart("upfile")
+    //     attachment: Attachment
+    // ): String {
+    //     val filename = attachment.contentDisposition.getParameter("filename")
+    //     val tempPath = File.createTempFile(filename, "cert")
+    //     FileOutputStream(tempPath).use { out ->
+    //         attachment.getObject(InputStream::class.java).use { inputStream ->
+    //             inputStream.copyTo(out)
+    //         }
+    //     }
+    //     val trustStoreName = settings.connectorConfig.truststoreName
+    //     val success = storeCert(getKeystoreFile(trustStoreName), tempPath)
+    //     if (success) {
+    //         if (!tempPath.delete()) {
+    //             LOG.warn("Failed to delete temporary file $tempPath")
+    //         }
+    //         return "Trusted certificate has been uploaded to $trustStoreName"
+    //     }
+    //     return "Error: certificate has NOT been uploaded to $trustStoreName"
+    // }
 
-    @POST
-    @Path("est_ca_cert")
+    @PostMapping("/est_ca_certs", consumes = [MediaType.APPLICATION_JSON], produces = [MediaType.TEXT_PLAIN])
     @ApiOperation(
         value = "Get CA certificate from EST",
         notes = ""
@@ -314,20 +251,16 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "EST CA certificate"),
         ApiResponse(code = 500, message = "Error fetching CA certificate via EST")
     )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    @AuthorizationRequired
-    fun requestEstCert(request: EstCaCertRequest): String {
+    suspend fun requestEstCaCerts(@RequestBody request: EstCaCertRequest): String {
         val ucUrl = "${request.url}/.well-known/est/cacerts"
-        val res = runBlocking(Dispatchers.IO) {
-            val response = insecureHttpClient.get(ucUrl)
-            if (response.status.value !in 200..299) {
-                throw InternalServerErrorException(
-                    "Failed to fetch root certificate, error code ${response.status.value}"
-                )
-            }
-            response.bodyAsText()
+        val response = insecureHttpClient.get(ucUrl)
+        if (response.status.value !in 200..299) {
+            throw ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to fetch root certificate, error code ${response.status.value}"
+            )
         }
+        val res = response.bodyAsText()
         val encoded = Base64.getDecoder().decode(res.replace(WHITESPACE_REGEX, ""))
         val certs = PKCS7(encoded).certificates
         val certHash = sha256Hash(certs[0])
@@ -338,7 +271,8 @@ class CertApi(@Autowired private val settings: Settings) {
                 "-----BEGIN CERTIFICATE-----\n$s\n-----END CERTIFICATE-----"
             }
         } else {
-            throw InternalServerErrorException(
+            throw ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
                 "Hash check for EST root failed, expected was ${request.hash}, actual hash is $certHash."
             )
         }
@@ -374,8 +308,7 @@ class CertApi(@Autowired private val settings: Settings) {
         return encodeHexString(digest).lowercase()
     }
 
-    @POST
-    @Path("store_est_ca_cert")
+    @PostMapping("/store_est_ca_cert", consumes = [MediaType.TEXT_PLAIN], produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Store est CA certificate",
         notes = ""
@@ -384,22 +317,16 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "EST CA certificate"),
         ApiResponse(code = 500, message = "No certificate found")
     )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun storeEstCACert(pCert: String): Boolean {
-        return pCert.split("-----END CERTIFICATE-----").map {
-            it.replace(CLEAR_PEM_REGEX, "").trim('"').replace("\\n", "")
+    fun storeEstCACerts(@RequestBody certificates: String): Boolean {
+        return certificates.split("-----END CERTIFICATE-----").map {
+            it.replace(CLEAR_PEM_REGEX, "")
         }.filter { it.isNotEmpty() }.map { c ->
             val trustStoreName = settings.connectorConfig.truststoreName
             storeCertFromString(getKeystoreFile(trustStoreName), c)
         }.all { it }
     }
 
-    @POST
-    @Path("request_est_identity")
+    @PostMapping("/request_est_identity", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Get CA certificate from EST",
         notes = ""
@@ -408,12 +335,7 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "EST CA certificate"),
         ApiResponse(code = 500, message = "No certificate found")
     )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun requestEstIdentity(r: EstIdRequest) {
+    suspend fun requestEstIdentity(@RequestBody r: EstIdRequest) {
         LOG.debug("Requesting certificate over EST...")
         LOG.debug("Step 1 - generate Keys")
         KeyPairGenerator.getInstance("RSA").apply { initialize(4096) }.generateKeyPair().let { keys ->
@@ -447,7 +369,7 @@ class CertApi(@Autowired private val settings: Settings) {
         }
     }
 
-    private fun sendEstIdReq(r: EstIdRequest, csr: ByteArray): PKCS7 {
+    private suspend fun sendEstIdReq(r: EstIdRequest, csr: ByteArray): PKCS7 {
         val trustStoreName = settings.connectorConfig.truststoreName
         val trustStoreFile = getKeystoreFile(trustStoreName)
         val trustManagers = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
@@ -486,20 +408,18 @@ class CertApi(@Autowired private val settings: Settings) {
         }
         val ucUrl = "${r.estUrl}/.well-known/est/simpleenroll"
         val pkcs10String = String(csr, StandardCharsets.UTF_8).replace(CLEAR_PEM_REGEX, "")
-        val res = runBlocking(Dispatchers.IO) {
-            val response: HttpResponse = secureHttpClient.post(ucUrl) {
-                setBody(pkcs10String)
-                headers {
-                    append("Content-Type", "application/pkcs10")
-                    append("Content-Transfer-Encoding", "base64")
-                }
+        val response: HttpResponse = secureHttpClient.post(ucUrl) {
+            setBody(pkcs10String)
+            headers {
+                append("Content-Type", "application/pkcs10")
+                append("Content-Transfer-Encoding", "base64")
             }
-
-            if (response.status.value !in 200..299) {
-                throw RuntimeException("Failed to fetch certificate: ${response.status}\n${response.bodyAsText()}")
-            }
-            response.bodyAsText()
         }
+
+        if (response.status.value !in 200..299) {
+            throw RuntimeException("Failed to fetch certificate: ${response.status}\n${response.bodyAsText()}")
+        }
+        val res = response.bodyAsText()
         val encoded = Base64.getDecoder().decode(res.replace(WHITESPACE_REGEX, ""))
         return PKCS7(encoded)
     }
@@ -732,6 +652,31 @@ class CertApi(@Autowired private val settings: Settings) {
         private const val KEYSTORE_PWD = "password"
         private val WHITESPACE_REGEX = Regex("\\s+")
         private val CLEAR_PEM_REGEX = Regex("\\s+|-----(?:BEGIN|END) [A-Z ]+-----")
+
+        private val insecureHttpClient = HttpClient(Java) {
+            engine {
+                config {
+                    sslContext(
+                        SSLContext.getInstance("TLS").apply {
+                            init(
+                                null,
+                                arrayOf(object : X509TrustManager {
+                                    override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+
+                                    override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+
+                                    override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                                }),
+                                null
+                            )
+                        }
+                    )
+                }
+            }
+            install(ContentNegotiation) {
+                jackson()
+            }
+        }
 
         @Throws(IOException::class)
         private fun fullStream(fileName: String): InputStream {

@@ -19,37 +19,38 @@
  */
 package de.fhg.aisec.ids.webconsole.api
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import de.fhg.aisec.ids.api.cm.ApplicationContainer
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.cm.NoContainerExistsException
 import de.fhg.aisec.ids.api.settings.Settings
-import de.fhg.aisec.ids.webconsole.api.data.AppSearchRequest
+import de.fhg.aisec.ids.webconsole.ApiController
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.http.ContentType
+import io.ktor.serialization.jackson.jackson
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import java.io.IOException
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
-import javax.ws.rs.Consumes
-import javax.ws.rs.GET
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
-import javax.ws.rs.QueryParam
-import javax.ws.rs.ServiceUnavailableException
-import javax.ws.rs.client.ClientBuilder
 import javax.ws.rs.core.MediaType
 
 /**
@@ -63,17 +64,19 @@ import javax.ws.rs.core.MediaType
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
 </method> */
-@Component
-@Path("app")
+
+@ApiController
+@RequestMapping("/app")
 @Api(value = "Applications", authorizations = [Authorization(value = "oauth2")])
 class AppApi {
 
-    @Autowired private lateinit var cml: ContainerManager
+    @Autowired
+    private lateinit var cml: ContainerManager
 
-    @Autowired private lateinit var settings: Settings
+    @Autowired
+    private lateinit var settings: Settings
 
-    @GET
-    @Path("list")
+    @GetMapping("list", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "List all applications installed in the connector",
         notes = "Returns an empty list if no apps are installed",
@@ -81,10 +84,6 @@ class AppApi {
         responseContainer = "List"
     )
     @ApiResponses(ApiResponse(code = 200, message = "List of apps"))
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun list(): List<ApplicationContainer> {
         return cml.list(false).sortedWith(
             java.util.Comparator { app1: ApplicationContainer, app2: ApplicationContainer ->
@@ -100,8 +99,7 @@ class AppApi {
         )
     }
 
-    @GET
-    @Path("start/{containerId}")
+    @GetMapping("start/{containerId}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Start an application",
         notes = "Starting an application may take some time. " +
@@ -116,18 +114,15 @@ class AppApi {
                 "false if no container management layer is available"
         )
     )
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
     fun start(
         @ApiParam(value = "ID of the app to start")
-        @PathParam("containerId")
+        @PathVariable("containerId")
         containerId: String
     ): Boolean {
         return start(containerId, null)
     }
 
-    @GET
-    @Path("start/{containerId}/{key}")
+    @GetMapping("start/{containerId}/{key}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Start an application",
         notes = "Starting an application may take some time. This method will start the app asynchronously and return immediately. This methods starts a specific version of the app.",
@@ -140,14 +135,12 @@ class AppApi {
                 "false if no container management layer is available"
         )
     )
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
     fun start(
         @ApiParam(value = "ID of the app to start")
-        @PathParam("containerId")
+        @PathVariable("containerId")
         containerId: String,
         @ApiParam(value = "Key for user token (required for trustX containers)")
-        @PathParam("key")
+        @PathVariable("key")
         key: String?
     ): Boolean {
         return try {
@@ -156,14 +149,10 @@ class AppApi {
         } catch (e: NoContainerExistsException) {
             LOG.error("Error starting container", e)
             false
-        } catch (e: ServiceUnavailableException) {
-            LOG.error("Error starting container", e)
-            false
         }
     }
 
-    @GET
-    @Path("stop/{containerId}")
+    @GetMapping("stop/{containerId}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Stop an app",
         notes = "Stops an application. The application will remain installed and can be re-started later. All temporary data will be lost, however.",
@@ -176,11 +165,9 @@ class AppApi {
                 "false if no container management layer is available"
         )
     )
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
     fun stop(
         @ApiParam(value = "ID of the app to stop")
-        @PathParam("containerId")
+        @PathVariable("containerId")
         containerId: String
     ): Boolean {
         return try {
@@ -189,15 +176,10 @@ class AppApi {
         } catch (e: NoContainerExistsException) {
             LOG.error(e.message, e)
             false
-        } catch (e: ServiceUnavailableException) {
-            LOG.error(e.message, e)
-            false
         }
     }
 
-    @POST
-    // @OPTIONS
-    @Path("install")
+    @PostMapping("install", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Install an app", notes = "Requests to install an app.", response = Boolean::class)
     @ApiResponses(
         ApiResponse(
@@ -214,111 +196,89 @@ class AppApi {
         ),
         ApiResponse(code = 500, message = "_Null image_: If imageID not given", response = String::class)
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun install(
-        @ApiParam(value = "String with imageID", collectionFormat = "Map") apps: Map<String?, ApplicationContainer?>
-    ): String {
-        val app = apps["app"]
-        LOG.debug("Request to load {}", app!!.image)
+        @ApiParam(
+            value = "String with imageID",
+            collectionFormat = "Map"
+        )
+        @RequestBody
+        app: ApplicationContainer
+    ) {
+        LOG.debug("Request to load {}", app.image)
         val image = app.image
         if (image == null) {
             LOG.warn("Null image")
-            throw InternalServerErrorException("Null image")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Null image")
         }
         LOG.debug("Pulling app {}", image)
-        CompletableFuture.supplyAsync {
+        CoroutineScope(Dispatchers.IO).launch {
             cml.pullImage(app)
-        }.completeOnTimeout(null, PULL_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        return "OK"
+        }
     }
 
-    @GET
-    @Path("wipe")
+    @GetMapping("wipe")
     @ApiOperation(value = "Wipes an app and all its data")
     @ApiResponses(
         ApiResponse(code = 200, message = "If the app is being wiped"),
         ApiResponse(code = 500, message = "_No cmld_ if no container management layer is available")
     )
-    @AuthorizationRequired
     fun wipe(
         @ApiParam(value = "ID of the app to wipe")
-        @QueryParam("containerId")
+        @RequestParam
         containerId: String
-    ): String {
-        try {
-            cml.wipe(containerId)
-        } catch (e: NullPointerException) {
-            LOG.error(e.message, e)
-        } catch (e: NoContainerExistsException) {
-            LOG.error(e.message, e)
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                cml.wipe(containerId)
+            } catch (e: Throwable) {
+                LOG.error(e.message, e)
+            }
         }
-        return "OK"
     }
 
-    @GET
-    @Path("cml_version")
+    @GetMapping("cml_version", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Returns the version of the currently active container management layer",
         response = MutableMap::class
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun getCml(): Map<String, String> {
         return try {
             val result: MutableMap<String, String> = HashMap()
             result["cml_version"] = cml.version
             result
-        } catch (sue: ServiceUnavailableException) {
+        } catch (sue: Exception) {
             emptyMap()
         }
     }
 
-    @POST
-    @Path("search")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
-    fun search(searchRequest: AppSearchRequest): List<ApplicationContainer> {
-        val term = searchRequest.searchTerm
-        return try {
-            val client = ClientBuilder.newBuilder().build()
-            val url = settings.connectorConfig.appstoreUrl
-            val r = client.target(url).request(MediaType.APPLICATION_JSON).get(
-                String::class.java
-            )
-            val mapper = ObjectMapper()
-            val result: List<ApplicationContainer> = mapper.readValue(
-                r,
-                object : TypeReference<List<ApplicationContainer>>() {}
-            )
-            if (term != "") {
-                result
-                    .parallelStream()
-                    .filter { app: ApplicationContainer ->
-                        (
-                            app.name?.contains(term) ?: false ||
-                                app.description?.contains(term) ?: false ||
-                                app.image?.contains(term) ?: false ||
-                                app.id?.contains(term) ?: false ||
-                                app.categories.contains(term)
-                            )
-                    }
-                    .collect(Collectors.toList())
+    @PostMapping(
+        "search",
+        consumes = [MediaType.TEXT_PLAIN],
+        produces = [MediaType.APPLICATION_JSON]
+    )
+    suspend fun search(@RequestBody term: String?): List<ApplicationContainer> {
+        return httpClient.get(settings.connectorConfig.appstoreUrl).body<List<ApplicationContainer>>().let { res ->
+            if (term?.isNotBlank() == true) {
+                res.filter { app: ApplicationContainer ->
+                    app.name?.contains(term, true) ?: false ||
+                        app.description?.contains(term, true) ?: false ||
+                        app.image?.contains(term, true) ?: false ||
+                        app.id?.contains(term, true) ?: false ||
+                        app.categories.any { it.contains(term, true) }
+                }
             } else {
-                result
+                res
             }
-        } catch (e: IOException) {
-            throw InternalServerErrorException(e)
         }
     }
 
     companion object {
-        private const val PULL_TIMEOUT_MINUTES: Long = 20
         private val LOG = LoggerFactory.getLogger(AppApi::class.java)
+
+        private val httpClient = HttpClient(Java) {
+            install(ContentNegotiation) {
+                jackson(ContentType.Any)
+            }
+        }
     }
 }

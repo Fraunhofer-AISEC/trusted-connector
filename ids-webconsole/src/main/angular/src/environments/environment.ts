@@ -5,6 +5,5 @@
 
 export const environment = {
   production: false,
-  apiURL: '/cxf/api/v1'
-  // apiURL: 'http://iot-connector1.netsec.aisec.fraunhofer.de:8181/cxf/api/v1'
+  apiURL: '/api/v1'
 };

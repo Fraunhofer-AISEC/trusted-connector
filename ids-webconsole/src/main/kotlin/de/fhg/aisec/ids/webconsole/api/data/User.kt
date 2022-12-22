@@ -19,7 +19,4 @@
  */
 package de.fhg.aisec.ids.webconsole.api.data
 
-class User {
-    var username: String? = null
-    var password: String? = null
-}
+data class User(val username: String, val password: String)

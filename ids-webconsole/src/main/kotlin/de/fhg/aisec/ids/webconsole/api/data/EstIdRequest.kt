@@ -18,4 +18,5 @@
  * =========================LICENSE_END==================================
  */
 package de.fhg.aisec.ids.webconsole.api.data
-class EstIdRequest(val estUrl: String, val iet: String, val alias: String)
+
+data class EstIdRequest(val estUrl: String, val iet: String, val alias: String)

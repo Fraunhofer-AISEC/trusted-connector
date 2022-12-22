@@ -10,7 +10,6 @@ declare let componentHandler: any;
     templateUrl: './users.component.html'
 })
 export class UsersComponent implements AfterViewInit {
-    public saved = true;
     private _users?: string[];
     private _isLoaded = false;
 
@@ -28,40 +27,17 @@ export class UsersComponent implements AfterViewInit {
       componentHandler.upgradeAllRegistered();
     }
 
-    public canDeactivate(target: UsersComponent): boolean {
-        return target.saved;
-    }
-
     get users(): string[] {
       return this._users;
     }
 
-    public onDeleteBtnClick(userId: string): void {
-          this.userService.deleteUser(userId).subscribe(() => undefined);
-          //window.location.reload();
-           this.router.navigate(['/users'])
-                 .then(() => {
-                     window.location.reload();
-                   });
+    public async onDeleteBtnClick(userId: string) {
+        await this.userService.deleteUser(userId);
+        window.location.reload();
     }
 
-    public onSettingsBtnClick(userId: string): void {
-          //window.location.reload();
-          console.log('settingsclick');
-           this.router.navigate(['/userdetail'],{ queryParams: {user: userId}});
-                 //.then(() => {
-                     //window.location.reload();
-                   //});
-    }
-
-    public deleteUser(username: string): void {
-        this.userService.deleteUser(username);
-            //.subscribe(_result => {
-                //             this.result = result;
-                //             if(result.toString() === "true") {
-                //                location.reload();
-                //              }
-            // });
+    public async onSettingsBtnClick(userId: string): Promise<boolean> {
+        return this.router.navigate(['/userdetail'], { queryParams: { user: userId } });
     }
 
     get isLoaded(): boolean {

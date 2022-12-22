@@ -8,7 +8,6 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
     templateUrl: './userdetail.component.html'
 })
-
 export class DetailUserComponent implements OnInit {
     public myForm: FormGroup;
     userId: string;
@@ -16,7 +15,8 @@ export class DetailUserComponent implements OnInit {
     newPW: string;
     rePW: string;
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title,
+    constructor(private readonly fb: FormBuilder,
+                private readonly titleService: Title,
                 private readonly userService: UserService,
                 private readonly router: Router,
                 private route: ActivatedRoute) {
@@ -25,9 +25,9 @@ export class DetailUserComponent implements OnInit {
 
     public ngOnInit(): void {
         this.myForm = this.fb.group({
-            oldpassword: ['', Validators.required as any],
-            newpassword: ['', Validators.required as any],
-            repeatpassword: ['', Validators.required as any]
+            oldpassword: ['', Validators.required],
+            newpassword: ['', Validators.required],
+            repeatpassword: ['', Validators.required]
         });
         this.userId = this.route.snapshot.queryParamMap.get('user');
     }
@@ -38,11 +38,9 @@ export class DetailUserComponent implements OnInit {
         this.newPW = this.myForm.get('newpassword').value;
         this.rePW = this.myForm.get('repeatpassword').value;
 
-        console.log('userpw' + this.oldPW + this.newPW + this.rePW);
-
         if (this.newPW === this.rePW) {
             console.log('changing password');
-            this.userService.setPassword(this.userId, this.oldPW, this.newPW);
+            await this.userService.setPassword(this.userId, this.oldPW, this.newPW);
         } else {
             console.log('New passwords not equal, password not changed');
         }

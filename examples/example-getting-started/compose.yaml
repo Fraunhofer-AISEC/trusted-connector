@@ -19,7 +19,7 @@ services:
       - "8080:8080"
 #      - "8443:8443"
     environment:
-      TC_DAPS_URL: "https://daps-dev.aisec.fraunhofer.de/daps/v4"
+      TC_DAPS_URL: "https://daps-dev.aisec.fraunhofer.de/v4"
     networks:
       example-internal:
         aliases:

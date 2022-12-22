@@ -33,7 +33,3 @@ export interface App {
     restartPolicy: string;
     volumes: any[];
 }
-
-export class AppSearchTerm {
-    public searchTerm: string;
-}

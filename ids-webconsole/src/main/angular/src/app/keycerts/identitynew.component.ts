@@ -32,8 +32,7 @@ export class NewIdentityComponent implements OnInit {
 
     public async save(identity: Identity): Promise<boolean> {
         // Call REST to create identity
-        this.certService.createIdentity(identity)
-            .subscribe(() => undefined);
+        await this.certService.createIdentity(identity).subscribe();
 
         return this.router.navigate(['/certificates']);
     }

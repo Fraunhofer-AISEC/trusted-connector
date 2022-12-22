@@ -22,16 +22,15 @@ export class CertificateService {
 
   public createIdentity(identity: Identity): Observable<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const body = JSON.stringify(identity);
 
-    return this.http.post(environment.apiURL + '/certs/create_identity', body, {
+    return this.http.post(environment.apiURL + '/certs/create_identity', identity, {
       headers,
       responseType: 'text'
     });
   }
 
   public deleteCert(alias: string): Observable<string> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ 'Content-Type': 'text/plain' });
 
     return this.http.post(environment.apiURL + '/certs/delete_cert', alias, {
       headers,
@@ -40,7 +39,7 @@ export class CertificateService {
   }
 
   public deleteIdentity(alias: string): Observable<string> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ 'Content-Type': 'text/plain' });
 
     return this.http.post(environment.apiURL + '/certs/delete_identity', alias, {
       headers,

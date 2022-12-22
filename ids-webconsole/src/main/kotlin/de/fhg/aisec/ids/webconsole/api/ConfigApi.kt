@@ -26,26 +26,24 @@ import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.webconsole.ApiController
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.server.ResponseStatusException
 import java.util.TreeMap
-import java.util.function.Consumer
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import javax.ws.rs.BadRequestException
-import javax.ws.rs.Consumes
-import javax.ws.rs.GET
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 
 /**
  * REST API interface for configurations in the connector.
@@ -57,8 +55,8 @@ import javax.ws.rs.core.Response
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
  * @author Michael Lux (michael.lux@aisec.fraunhofer.de)
 </method> */
-@Component
-@Path("/config")
+@ApiController
+@RequestMapping("/config")
 @Api(value = "Connector Configuration", authorizations = [Authorization(value = "oauth2")])
 class ConfigApi {
 
@@ -74,20 +72,13 @@ class ConfigApi {
     @Autowired(required = false)
     private var endpointConfigManager: EndpointConfigManager? = null
 
-    @GET
     @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig::class)
-    @Path("/connectorConfig")
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun get(): ConnectorConfig {
+    @GetMapping("/connectorConfig", produces = [MediaType.APPLICATION_JSON])
+        fun get(): ConnectorConfig {
         return settings.connectorConfig
     }
 
-    @POST
-    // @OPTIONS
-    @Path("/connectorConfig")
+    @PostMapping("/connectorConfig", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Sets the overall configuration of the connector")
     @ApiResponses(
         ApiResponse(
@@ -95,16 +86,8 @@ class ConfigApi {
             message = "_No valid preferences received_: If incorrect configuration parameter is provided"
         )
     )
-    @Consumes(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun set(config: ConnectorConfig?): String {
-        if (config == null) {
-            throw BadRequestException("No valid preferences received!")
-        }
+    fun setConnectorConfig(@RequestBody config: ConnectorConfig) {
         settings.connectorConfig = config
-        return "OK"
     }
 
     /**
@@ -113,8 +96,7 @@ class ConfigApi {
      * @param connection The name of the connection
      * @param conSettings The connection configuration of the connection
      */
-    @POST
-    @Path("/connectionConfigs/{con}")
+    @PostMapping("/connectionConfigs/{con}", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Save connection configuration of a particular connection")
     @ApiResponses(
         ApiResponse(
@@ -122,15 +104,8 @@ class ConfigApi {
             message = "_No valid connection settings received!_: If incorrect connection settings parameter is provided"
         )
     )
-    @Consumes(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun setConnectionConfigurations(
-        @PathParam("con") connection: String,
-        conSettings: ConnectionSettings?
-    ): Response {
-        return conSettings?.let {
+        fun setConnectionConfigurations(@PathVariable("con") connection: String, conSettings: ConnectionSettings) {
+        conSettings.let {
             // connection has format "<route_id> - host:port"
             // store only "host:port" in database to make connection available in other parts of the application
             // where rout_id is not available
@@ -145,8 +120,7 @@ class ConfigApi {
                 // notify EndpointConfigurationListeners that some endpointConfig has changed
                 endpointConfigManager?.notify(m.group(1))
             }
-            Response.ok().build()
-        } ?: Response.serverError().entity("No valid connection settings received!").build()
+        } ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No valid connection settings received!")
     }
 
     /**
@@ -155,34 +129,18 @@ class ConfigApi {
      * @param connection Connection identifier
      * @return The connection configuration of the requested connection
      */
-    @GET
-    @Path("/connectionConfigs/{con}")
+    @GetMapping("/connectionConfigs/{con}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings::class)
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun getConnectionConfigurations(@PathParam("con") connection: String): ConnectionSettings {
+        fun getConnectionConfigurations(@PathVariable("con") connection: String): ConnectionSettings {
         return settings.getConnectionSettings(connection)
-    } // add endpoint configurations// For every currently available endpoint, go through all preferences and check
-    // if the id is already there. If not, create empty config.
+    }
 
-    // create missing endpoint configurations
-
-    // add route id before host identifier for web console view
-// Set of all connection configurations, properly ordered
-    // Load all existing entries
-    // Assert global configuration entry
-
-    // add all available endpoints
     /**
      * Sends configurations of all connections
      *
      * @return Map of connection names/configurations
      */
-    @get:AuthorizationRequired
-    @get:Produces(MediaType.APPLICATION_JSON)
-    @get:ApiResponses(
+        @ApiResponses(
         ApiResponse(
             code = 200,
             message = "Map of connections and configurations",
@@ -190,11 +148,10 @@ class ConfigApi {
             responseContainer = "Map"
         )
     )
-    @get:ApiOperation(value = "Retrieves configurations of all connections")
-    @get:Path("/connectionConfigs")
-    @get:GET
-    val allConnectionConfigurations: Map<String, ConnectionSettings>
-        get() {
+    @ApiOperation(value = "Retrieves configurations of all connections")
+    @GetMapping("/connectionConfigs", produces = [MediaType.APPLICATION_JSON])
+    fun getAllConnectionConfigurations(): Map<String, ConnectionSettings> {
+        try {
             val connectionManager = connectionManager ?: return emptyMap()
 
             // Set of all connection configurations, properly ordered
@@ -235,7 +192,7 @@ class ConfigApi {
             }
 
             // add route id before host identifier for web console view
-            val retAllSettings: MutableMap<String, ConnectionSettings> = HashMap()
+            val retAllSettings = mutableMapOf<String, ConnectionSettings>()
             for ((key, value) in allSettings) {
                 if (key == Constants.GENERAL_CONFIG) {
                     retAllSettings[key] = value
@@ -253,19 +210,21 @@ class ConfigApi {
                     }
 
                     // add endpoint configurations
-                    endpointIdentifiers.forEach(
-                        Consumer { endpointIdentifier: String ->
-                            if (retAllSettings.keys.stream()
+                    endpointIdentifiers.forEach { endpointIdentifier: String ->
+                        if (retAllSettings.keys.stream()
                                 .noneMatch { anObject: String? -> endpointIdentifier == anObject }
-                            ) {
-                                retAllSettings[endpointIdentifier] = value
-                            }
+                        ) {
+                            retAllSettings[endpointIdentifier] = value
                         }
-                    )
+                    }
                 }
             }
             return retAllSettings
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            return emptyMap()
         }
+    }
 
     companion object {
         private val CONNECTION_CONFIG_PATTERN = Pattern.compile(".* - ([^ ]+)$")

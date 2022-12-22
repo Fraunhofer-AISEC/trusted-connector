@@ -1,7 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 
@@ -16,14 +15,13 @@ export class PolicyService {
     }
 
     // Installs a LUCON policy through the PAP
-    public install(policy: Policy, policyFile: any): Observable<string> {
+    public install(policy: Policy, policyFile: any): Observable<void> {
         const headers = new HttpHeaders({ 'Content-Type': 'multipart/form-data' });
         const model = new FormData();
         model.append('policy_name', policy.policyName);
         model.append('policy_description', policy.policyDescription);
         model.append('policy_file', policyFile);
 
-        return this.http.post<string>(environment.apiURL + '/policies/install', model, { headers })
-            .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
+        return this.http.post<void>(environment.apiURL + '/policies/install', model, { headers });
     }
 }

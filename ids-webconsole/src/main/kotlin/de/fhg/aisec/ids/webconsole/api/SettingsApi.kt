@@ -21,21 +21,20 @@ package de.fhg.aisec.ids.webconsole.api
 
 import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.infomodel.InfoModel
+import de.fhg.aisec.ids.webconsole.ApiController
 import de.fraunhofer.iais.eis.util.TypedLiteral
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import java.util.stream.Collectors
-import javax.ws.rs.Consumes
-import javax.ws.rs.DELETE
-import javax.ws.rs.GET
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.server.ResponseStatusException
 import javax.ws.rs.core.MediaType
 
 /**
@@ -44,77 +43,58 @@ import javax.ws.rs.core.MediaType
  *
  * The API will be available at http://localhost:8181/cxf/api/v1/settings/<method>.
 </method> */
-// ConnectorProfile will be processed by custom Jackson deserializer
-@Component
-@Path("/settings")
+@ApiController
+@RequestMapping("/settings")
 @Api(value = "Self-Description and Connector Profiles", authorizations = [Authorization(value = "oauth2")])
 class SettingsApi {
 
     @Autowired
     private lateinit var im: InfoModel
 
-    @POST
-    @Path("/connectorProfile")
+    @PostMapping("/connectorProfile", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Configure the connector's self-description (\"Connector Profile\").")
-    @Consumes(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun postConnectorProfile(profile: ConnectorProfile?): String {
-        return if (im.setConnector(profile!!)) {
-            "ConnectorProfile successfully stored."
-        } else {
-            throw InternalServerErrorException("Error while storing ConnectorProfile")
+    fun postConnectorProfile(@RequestBody profile: ConnectorProfile) {
+        if (!im.setConnector(profile)) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while storing ConnectorProfile")
         }
     }
 
     /** Returns Connector profile based on currently stored preferences or empty Connector profile  */
-    @get:AuthorizationRequired
-    @get:ApiOperation(
+    @ApiOperation(
         value = "Returns this connector's self-description (\"Connector Profile\")",
         response = ConnectorProfile::class
     )
-    @get:Produces(MediaType.APPLICATION_JSON)
-    @get:Path("/connectorProfile")
-    @get:GET
-    val connectorProfile: ConnectorProfile
-        get() {
-            val c = im.connector
-            return if (c == null) {
-                ConnectorProfile()
-            } else {
-                ConnectorProfile(
-                    c.securityProfile,
-                    c.id,
-                    c.maintainer,
-                    c.description.stream().map { obj: Any? -> TypedLiteral::class.java.cast(obj) }
-                        .collect(Collectors.toList())
-                )
-            }
+    @GetMapping("/connectorProfile", produces = [MediaType.APPLICATION_JSON])
+    fun getConnectorProfile(): ConnectorProfile {
+        val c = im.connector
+        return if (c == null) {
+            ConnectorProfile()
+        } else {
+            ConnectorProfile(
+                c.securityProfile,
+                c.id,
+                c.maintainer,
+                c.description.map { obj: Any? -> TypedLiteral::class.java.cast(obj) }
+            )
         }
+    }
 
     /**
      * Returns connector profile based on currently stored preferences or statically provided JSON-LD
      * model, or empty connector profile if none of those are available.
      */
-    @get:Produces("application/ld+json")
-    @get:Path("/selfInformation")
-    @get:GET
-    @set:AuthorizationRequired
-    @set:Consumes("application/ld+json")
-    @set:Path("/selfInformation")
-    @set:POST
-    var selfInformation: String?
+    @get:GetMapping("/selfInformation", produces = ["application/ld+json"])
+    @set:PostMapping("/selfInformation", consumes = ["application/ld+json"])
+    var selfInformation: String
         // TODO Document ApiOperation
         get() = try {
             im.connectorAsJsonLd
-        } catch (e: NullPointerException) {
-            LOG.warn("Connector description build failed, building empty description.", e)
-            null
+        } catch (e: Throwable) {
+            LOG.error("Connector description build failed", e)
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Connector description build failed", e)
         }
-
         // TODO Document ApiOperation
-        set(selfInformation) {
+        set(@RequestBody selfInformation) {
             try {
                 im.setConnectorByJsonLd(selfInformation)
             } catch (e: NullPointerException) {
@@ -124,15 +104,12 @@ class SettingsApi {
 
     /** Remove static connector profile based on JSON-LD data  */
     // TODO Document ApiOperation
-    @DELETE
-    @Path("/selfInformation")
-    @Consumes("application/ld+json")
-    @AuthorizationRequired
+    @DeleteMapping("/selfInformation")
     fun removeSelfInformation() {
         try {
             im.setConnectorByJsonLd(null)
-        } catch (e: NullPointerException) {
-            LOG.warn("Connector description build failed, building empty description.", e)
+        } catch (e: Throwable) {
+            LOG.error("Connector description build failed", e)
         }
     }
 

@@ -23,14 +23,13 @@ import de.fhg.aisec.ids.api.conm.ConnectionManager
 import de.fhg.aisec.ids.api.conm.IDSCPIncomingConnection
 import de.fhg.aisec.ids.api.conm.IDSCPOutgoingConnection
 import de.fhg.aisec.ids.api.conm.ServerEndpoint
+import de.fhg.aisec.ids.webconsole.ApiController
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.Authorization
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import javax.ws.rs.GET
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import javax.ws.rs.core.MediaType
 
 /**
@@ -41,50 +40,37 @@ import javax.ws.rs.core.MediaType
  *
  * @author Gerd Brost (gerd.brost@aisec.fraunhofer.de)
 </method> */
-@Component
-@Path("/connections")
+@ApiController
+@RequestMapping("/connections")
 @Api(value = "IDSCP Connections", authorizations = [Authorization(value = "oauth2")])
-class ConnectionAPI {
+class ConnectionApi {
 
     @Autowired
     private lateinit var connectionManager: ConnectionManager
 
-    @get:AuthorizationRequired
-    @get:Produces(MediaType.APPLICATION_JSON)
-    @get:ApiOperation(
+        @ApiOperation(
         value = "Returns a list of all inbound connections",
         response = IDSCPIncomingConnection::class,
         responseContainer = "List"
     )
-    @get:Path("/incoming")
-    @get:GET
-    val incoming: List<IDSCPIncomingConnection>
-        get() = connectionManager.listIncomingConnections()
+    @GetMapping("/incoming", produces = [MediaType.APPLICATION_JSON])
+    fun getIncomingConnections() = connectionManager.listIncomingConnections()
 
-    @get:AuthorizationRequired
-    @get:Produces(MediaType.APPLICATION_JSON)
-    @get:ApiOperation(
+        @ApiOperation(
         value = "Returns a list of all outbound connections",
         response = IDSCPOutgoingConnection::class,
         responseContainer = "List"
     )
-    @get:Path("/outgoing")
-    @get:GET
-    val outgoing: List<IDSCPOutgoingConnection>
-        get() = connectionManager.listOutgoingConnections()
+    @GetMapping("/outgoing", produces = [MediaType.APPLICATION_JSON])
+    fun getOutgoingConnections() = connectionManager.listOutgoingConnections()
 
-    // val availableEndpoints: List<IDSCPServerEndpoint>
-    //    get() = connectionManager.listAvailableEndpoints()
-    @AuthorizationRequired
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(
+        @ApiOperation(
         value = "Returns a list of all endpoints provided by this connector",
         response = ServerEndpoint::class,
         responseContainer = "List"
     )
-    @Path("/endpoints")
-    @GET
-    fun listendpoints(): List<ServerEndpoint> {
+    @GetMapping("/endpoints", produces = [MediaType.APPLICATION_JSON])
+    fun availableEndpoints(): List<ServerEndpoint> {
         return connectionManager.listAvailableEndpoints()
     }
 }

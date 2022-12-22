@@ -36,7 +36,7 @@ export class LoginComponent {
             this.authService.login(val.username, val.password)
                 .subscribe(() => {
                     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-                    return this.router.navigate([returnUrl]);
+                    return this.router.navigateByUrl(returnUrl);
                 }, () => {
                     this.errorText = 'Login rejected, wrong username or password?';
                 });
