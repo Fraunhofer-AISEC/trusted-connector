@@ -48,7 +48,7 @@ class ConnectionApi {
     @Autowired
     private lateinit var connectionManager: ConnectionManager
 
-        @ApiOperation(
+    @ApiOperation(
         value = "Returns a list of all inbound connections",
         response = IDSCPIncomingConnection::class,
         responseContainer = "List"
@@ -56,7 +56,7 @@ class ConnectionApi {
     @GetMapping("/incoming", produces = [MediaType.APPLICATION_JSON])
     fun getIncomingConnections() = connectionManager.listIncomingConnections()
 
-        @ApiOperation(
+    @ApiOperation(
         value = "Returns a list of all outbound connections",
         response = IDSCPOutgoingConnection::class,
         responseContainer = "List"
@@ -64,7 +64,7 @@ class ConnectionApi {
     @GetMapping("/outgoing", produces = [MediaType.APPLICATION_JSON])
     fun getOutgoingConnections() = connectionManager.listOutgoingConnections()
 
-        @ApiOperation(
+    @ApiOperation(
         value = "Returns a list of all endpoints provided by this connector",
         response = ServerEndpoint::class,
         responseContainer = "List"

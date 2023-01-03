@@ -50,8 +50,6 @@
                     <log message="### Handle ContractAgreementMessage ###"/>
                     <!-- Only processing of incoming request must be performed, no reply -->
                     <process ref="ContractAgreementReceiverProcessor"/>
-                    <removeHeader name="idscp2-header" />
-                    <setBody><simple>${null}</simple></setBody>
                 </when>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>

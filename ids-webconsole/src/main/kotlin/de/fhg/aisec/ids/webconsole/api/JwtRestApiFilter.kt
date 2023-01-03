@@ -68,5 +68,4 @@ class JwtRestApiFilter : OncePerRequestFilter() {
     companion object {
         private val LOG = LoggerFactory.getLogger(JwtRestApiFilter::class.java)
     }
-
 }

@@ -43,7 +43,7 @@ class ResourceUpdateCreationProcessor : Processor {
         }
 
         val usedContract = ProviderDB.artifactUrisMapped2ContractAgreements[
-            Pair(artifactUri, UsageControlMaps.getExchangeConnection(exchange))
+            Pair(artifactUri, UsageControlMaps.getExchangePeerIdentity(exchange))
         ]
             ?: throw RuntimeException("No UC contract found for resource/artifact $artifactUri")
         if (LOG.isDebugEnabled) {

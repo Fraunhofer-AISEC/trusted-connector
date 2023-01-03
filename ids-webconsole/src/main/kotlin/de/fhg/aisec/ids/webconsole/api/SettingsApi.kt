@@ -93,6 +93,7 @@ class SettingsApi {
             LOG.error("Connector description build failed", e)
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Connector description build failed", e)
         }
+
         // TODO Document ApiOperation
         set(@RequestBody selfInformation) {
             try {

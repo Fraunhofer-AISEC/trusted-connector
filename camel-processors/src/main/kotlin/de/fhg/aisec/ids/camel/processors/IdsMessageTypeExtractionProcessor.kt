@@ -28,8 +28,11 @@ import de.fraunhofer.iais.eis.ContractOfferMessage
 import de.fraunhofer.iais.eis.ContractRejectionMessage
 import de.fraunhofer.iais.eis.ContractRequestMessage
 import de.fraunhofer.iais.eis.ContractResponseMessage
+import de.fraunhofer.iais.eis.DescriptionRequestMessage
+import de.fraunhofer.iais.eis.DescriptionResponseMessage
 import de.fraunhofer.iais.eis.LogMessage
 import de.fraunhofer.iais.eis.Message
+import de.fraunhofer.iais.eis.MessageProcessedNotificationMessage
 import de.fraunhofer.iais.eis.QueryMessage
 import de.fraunhofer.iais.eis.RejectionMessage
 import de.fraunhofer.iais.eis.RequestMessage
@@ -60,6 +63,9 @@ class IdsMessageTypeExtractionProcessor : Processor {
                     is ContractAgreementMessage -> ContractAgreementMessage::class.simpleName
                     is ContractRejectionMessage -> ContractRejectionMessage::class.simpleName
                     is ResourceUpdateMessage -> ResourceUpdateMessage::class.simpleName
+                    is MessageProcessedNotificationMessage -> MessageProcessedNotificationMessage::class.simpleName
+                    is DescriptionRequestMessage -> DescriptionRequestMessage::class.simpleName
+                    is DescriptionResponseMessage -> DescriptionResponseMessage::class.simpleName
                     is RejectionMessage -> RejectionMessage::class.simpleName
                     is LogMessage -> LogMessage::class.simpleName
                     is QueryMessage -> QueryMessage::class.simpleName

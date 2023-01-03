@@ -49,7 +49,7 @@ class ArtifactRequestProcessor : Processor {
 
         // TODO: If transferContract doesn't match expected contract from database, send rejection!
         val usedContract = ProviderDB.artifactUrisMapped2ContractAgreements[
-            Pair(requestedArtifact, UsageControlMaps.getExchangeConnection(exchange))
+            Pair(requestedArtifact, UsageControlMaps.getExchangePeerIdentity(exchange))
         ]
         if (LOG.isDebugEnabled) {
             LOG.debug("Contract for requested Artifact found {}", usedContract)
@@ -59,6 +59,7 @@ class ArtifactRequestProcessor : Processor {
         if (!ProviderDB.availableArtifactURIs.containsKey(requestedArtifact)) {
             createRejectionMessage(exchange, artifactRequestMessage, RejectionReason.NOT_FOUND)
         } else if (usedContract == null || !ProviderDB.contractAgreements.containsKey(usedContract)) {
+            LOG.debug("Provider DB: {}", ProviderDB.artifactUrisMapped2ContractAgreements)
             createRejectionMessage(exchange, artifactRequestMessage, RejectionReason.NOT_AUTHORIZED)
         } else {
             // Proceed normally and send ArtifactResponseMessage

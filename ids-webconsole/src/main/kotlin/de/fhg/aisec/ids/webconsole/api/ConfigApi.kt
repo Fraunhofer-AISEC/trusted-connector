@@ -74,7 +74,7 @@ class ConfigApi {
 
     @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig::class)
     @GetMapping("/connectorConfig", produces = [MediaType.APPLICATION_JSON])
-        fun get(): ConnectorConfig {
+    fun get(): ConnectorConfig {
         return settings.connectorConfig
     }
 
@@ -104,7 +104,7 @@ class ConfigApi {
             message = "_No valid connection settings received!_: If incorrect connection settings parameter is provided"
         )
     )
-        fun setConnectionConfigurations(@PathVariable("con") connection: String, conSettings: ConnectionSettings) {
+    fun setConnectionConfigurations(@PathVariable("con") connection: String, conSettings: ConnectionSettings) {
         conSettings.let {
             // connection has format "<route_id> - host:port"
             // store only "host:port" in database to make connection available in other parts of the application
@@ -131,7 +131,7 @@ class ConfigApi {
      */
     @GetMapping("/connectionConfigs/{con}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings::class)
-        fun getConnectionConfigurations(@PathVariable("con") connection: String): ConnectionSettings {
+    fun getConnectionConfigurations(@PathVariable("con") connection: String): ConnectionSettings {
         return settings.getConnectionSettings(connection)
     }
 
@@ -140,7 +140,7 @@ class ConfigApi {
      *
      * @return Map of connection names/configurations
      */
-        @ApiResponses(
+    @ApiResponses(
         ApiResponse(
             code = 200,
             message = "Map of connections and configurations",
@@ -212,7 +212,7 @@ class ConfigApi {
                     // add endpoint configurations
                     endpointIdentifiers.forEach { endpointIdentifier: String ->
                         if (retAllSettings.keys.stream()
-                                .noneMatch { anObject: String? -> endpointIdentifier == anObject }
+                            .noneMatch { anObject: String? -> endpointIdentifier == anObject }
                         ) {
                             retAllSettings[endpointIdentifier] = value
                         }

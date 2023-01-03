@@ -190,6 +190,7 @@ class RestApiTests : Assertions() {
 
     companion object {
         private const val ENDPOINT_ADDRESS = "local://testserver"
+
         // private lateinit var server: Server
         private val settings = Mockito.mock(
             Settings::class.java
