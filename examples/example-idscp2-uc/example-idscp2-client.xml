@@ -35,7 +35,7 @@
                     <log message="### Handle ContractResponseMessage ###"/>
                     <process ref="contractResponseProcessor"/>
                     <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
-                    <process ref="TypeExtractionProcessor"/>
+                    <process ref="idsMessageTypeExtractionProcessor"/>
                     <choice>
                         <when>
                             <simple>${exchangeProperty.ids-type} == 'MessageProcessedNotificationMessage'</simple>
