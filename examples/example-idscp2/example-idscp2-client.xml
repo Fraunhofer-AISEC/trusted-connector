@@ -17,7 +17,7 @@
     </camel:sslContextParameters>
 
     <bean name="dapsDriver" class="de.fhg.aisec.ids.idscp2.beans.AisecDapsDriverFactoryBean">
-        <property name="dapsUrl" value="https://daps.aisec.fraunhofer.de/v3"/>
+        <property name="dapsUrl" value="https://daps-dev.aisec.fraunhofer.de/v4"/>
         <property name="dapsSslParameters" ref="clientSslContext"/>
         <property name="transportCertificatesParameters" ref="clientSslContext"/>
     </bean>

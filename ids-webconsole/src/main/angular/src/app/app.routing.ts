@@ -19,6 +19,8 @@ import { UsersComponent } from './users/users.component';
 import { NewUserComponent } from './users/usernew.component';
 import { DetailUserComponent } from './users/userdetail.component';
 import { RoutesComponent } from './routes/routes.component';
+import { NewIdentityESTComponent } from './keycerts/identitynewest.component';
+import { ESTCertComponent } from './keycerts/est-cert.component';
 
 const appRoutes: Routes = [
   // Pages using the "home" layout (with sidebar and topnav)
@@ -40,7 +42,9 @@ const appRoutes: Routes = [
       { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
       { path: 'usernew', component: NewUserComponent, canActivate: [AuthGuard] },
       { path: 'userdetail', component: DetailUserComponent, canActivate: [AuthGuard] },
-      { path: 'certificates', component: KeycertsComponent, canActivate: [AuthGuard]  }
+      { path: 'certificates', component: KeycertsComponent, canActivate: [AuthGuard]  },
+      { path: 'identitynewest', component: NewIdentityESTComponent, canActivate: [AuthGuard] },
+      { path: 'est-cert', component: ESTCertComponent, canActivate: [AuthGuard] }
     ]
   },
   // Pages using the "login" layout (centered full page without sidebar)

@@ -9,27 +9,20 @@
 
       <form [formGroup]="myForm" novalidate (ngSubmit)="save()" class="mdl-cell--12-col mdl-grid">
         <div class="mdl-cell--12-col">
-        <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
-          <label class="mdl-textfield__label">User Name</label>
-          <input class="mdl-textfield__input" type="text" id="user" name="user" [value]="userId"/>
-          <span [hidden]="myForm.controls.username.valid || !myForm.controls.username.dirty" class="mdl-textfield__error">User name is required.</span>
-          </div>
-        </div>
-        <div class="mdl-cell--12-col">
           <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
             <label class="mdl-textfield__label" for="oldpassword">Old Password*</label>
             <input class="mdl-textfield__input" id="oldpassword" type="password" formControlName="oldpassword" required minlength="4" password>
-            <span [hidden]="myForm.controls.oldpassword.valid || (myForm.controls.oldpassword.pristine)" class="mdl-textfield__error">Password is required.</span>
+            <span [hidden]="myForm.controls.oldpassword.valid || myForm.controls.oldpassword.pristine" class="mdl-textfield__error">Password is required.</span>
           </div>
           <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
             <label class="mdl-textfield__label" for="newpassword">New Password*</label>
             <input class="mdl-textfield__input" id="newpassword" type="password" formControlName="newpassword" required minlength="4" password>
-            <span [hidden]="myForm.controls.newpassword.valid || (myForm.controls.newpassword.pristine)" class="mdl-textfield__error">Password is required.</span>
+            <span [hidden]="myForm.controls.newpassword.valid || myForm.controls.newpassword.pristine" class="mdl-textfield__error">Password is required.</span>
           </div>
           <div mdl-textfield class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
             <label class="mdl-textfield__label" for="repeatpassword">Repeat new Password*</label>
             <input class="mdl-textfield__input" id="repeatpassword" type="password" formControlName="repeatpassword" required minlength="4" password>
-            <span [hidden]="myForm.controls.repeatpassword.valid || (myForm.controls.repeatpassword.pristine)" class="mdl-textfield__error">Password is required.</span>
+            <span [hidden]="myForm.controls.repeatpassword.valid || myForm.controls.repeatpassword.pristine" class="mdl-textfield__error">Password is required.</span>
           </div>
         </div>
         <div class="mdl-cell--12-col" style="margin-top:20px">

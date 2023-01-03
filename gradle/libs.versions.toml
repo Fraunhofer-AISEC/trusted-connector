@@ -1,12 +1,12 @@
 [versions]
-idscp2 = "0.14.3"
+idscp2 = "0.15.0"
 ktlint = "0.46.1"
 
 # Kotlin library/compiler version
 kotlin = "1.7.10"
 kotlinxCoroutines = "1.6.4"
 # HTTP client
-ktor = "2.1.0"
+ktor = "2.2.2"
 
 # The used version of the infomodel from IESE
 infomodel = "4.1.0"
@@ -19,9 +19,6 @@ jaxActivation = "1.2.0"
 
 camel = "3.18.1"
 influxDB = "2.23"
-
-# Camel ships with cxf, however it is slightly older so we want a newer version
-cxf = "3.5.3"
 
 guava = "31.1-jre"
 slf4j = "1.7.36"
@@ -78,6 +75,7 @@ protobuf = { group = "com.google.protobuf", name = "protobuf-java", version.ref 
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-java = { group = "io.ktor", name = "ktor-client-java", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
@@ -137,13 +135,14 @@ javax-activation = { group = "com.sun.activation", name = "javax.activation", ve
 mapdb = { group = "org.mapdb", name = "mapdb", version.ref = "mapdb" }
 
 # ids-webconsole
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-reactive = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactive", version.ref = "kotlinxCoroutines" }
+kotlinx-reactor = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactor", version.ref = "kotlinxCoroutines" }
 bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk15on", version.ref = "bouncyCastle" }
-cxf-rtRsExtProviders = { group = "org.apache.cxf", name = "cxf-rt-rs-extension-providers", version.ref = "cxf" }
+bouncycastlePkix = { group = "org.bouncycastle", name = "bcpkix-jdk15to18", version.ref = "bouncyCastle" }
 jose4j = { group = "org.bitbucket.b_c", name = "jose4j", version.ref = "jose4j" }
 auth0Jwt = { group = "com.auth0", name = "java-jwt", version.ref = "auth0Jwt" }
 swagger-jaxrs = { group = "io.swagger", name = "swagger-jaxrs", version.ref = "swagger" }
-cxf-rtTransportsLocal = { group = "org.apache.cxf", name = "cxf-rt-transports-local", version.ref = "cxf" }
-cxf-rtRsClient = { group = "org.apache.cxf", name = "cxf-rt-rs-client", version.ref = "cxf" }
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
 jackson-jaxrsJsonProvider = { group = "com.fasterxml.jackson.jaxrs", name = "jackson-jaxrs-json-provider", version.ref = "jackson" }
 

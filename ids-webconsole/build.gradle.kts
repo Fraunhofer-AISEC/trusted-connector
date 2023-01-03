@@ -65,20 +65,22 @@ and is used by the default administration dashboard ("web console").
 
 dependencies {
     implementation(project(":ids-api"))
-    implementation("org.springframework.boot:spring-boot-starter-jersey")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.security", "spring-security-crypto")
-    implementation(libs.bouncycastle)
     implementation(libs.infomodel.model)
     implementation(libs.camel.core)
-    implementation(libs.cxf.rtRsExtProviders)
     implementation(libs.jose4j)
     implementation(libs.auth0Jwt)
+    implementation(libs.bundles.ktor.richClient)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.reactive)
+    implementation(libs.kotlinx.reactor)
+    // implementation(libs.bouncycastlePkix)
 
     compileOnly(libs.swagger.jaxrs)
 
     testImplementation(libs.bundles.test5)
-    testImplementation(libs.cxf.rtTransportsLocal)
-    testImplementation(libs.cxf.rtRsClient)
     testImplementation(libs.jackson.core)
     testImplementation(libs.jackson.jaxrsJsonProvider)
 }

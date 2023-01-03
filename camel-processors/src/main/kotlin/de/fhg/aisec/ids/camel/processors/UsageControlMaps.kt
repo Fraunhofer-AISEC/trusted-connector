@@ -31,17 +31,17 @@ object UsageControlMaps {
 
     private val contractMap: MutableMap<URI, ContractAgreement> =
         MapMaker().makeMap()
-    private val exchangeConnectionMap: MutableMap<Exchange, AppLayerConnection> =
+    private val exchangePeerIdentityMap: MutableMap<Exchange, String> =
         MapMaker().weakKeys().makeMap()
-    private val connectionContracts: MutableMap<AppLayerConnection, URI> =
+    private val peerContracts: MutableMap<String, URI> =
         MapMaker().weakKeys().makeMap()
 
-    fun getExchangeConnection(exchange: Exchange): AppLayerConnection? =
-        exchangeConnectionMap[exchange]
+    fun getExchangePeerIdentity(exchange: Exchange): String? =
+        exchangePeerIdentityMap[exchange]
 
     fun getExchangeContract(exchange: Exchange): ContractAgreement? {
-        return exchangeConnectionMap[exchange]?.let { connection ->
-            connectionContracts[connection]?.let { uri ->
+        return exchangePeerIdentityMap[exchange]?.let { connection ->
+            peerContracts[connection]?.let { uri ->
                 contractMap[uri] ?: throw RuntimeException("Contract $uri is not available!")
             }
         }
@@ -53,12 +53,12 @@ object UsageControlMaps {
 
     fun setConnectionContract(connection: AppLayerConnection, contractUri: URI?) {
         if (contractUri != null) {
-            connectionContracts[connection] = contractUri
+            peerContracts[connection.peerDat.identity] = contractUri
             if (LOG.isDebugEnabled) {
                 LOG.debug("UC: Assigned contract $contractUri to connection $connection")
             }
         } else {
-            connectionContracts -= connection
+            peerContracts -= connection.peerDat.identity
             if (LOG.isDebugEnabled) {
                 LOG.debug("UC: Assigned no contract to connection $connection")
             }
@@ -66,7 +66,7 @@ object UsageControlMaps {
     }
 
     fun setExchangeConnection(exchange: Exchange, connection: AppLayerConnection) {
-        exchangeConnectionMap[exchange] = connection
+        exchangePeerIdentityMap[exchange] = connection.peerDat.identity
         if (LOG.isDebugEnabled) {
             LOG.debug("UC: Assigned exchange $exchange to connection $connection")
         }

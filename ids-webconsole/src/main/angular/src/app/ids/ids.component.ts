@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { of, timer } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
@@ -13,7 +13,6 @@ import { Title } from '@angular/platform-browser';
     providers: [SettingsService]
 })
 export class IdsComponent implements OnInit {
-    @Output() public readonly changeTitle = new EventEmitter();
     public settingsForm?: FormGroup;
     public saved = true;
     public tosWebconsole?: TermsOfService;
@@ -28,7 +27,6 @@ export class IdsComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        this.changeTitle.emit('Settings');
         // Pull settings from server
         this.settingsService.getSettings()
             .subscribe(response => {
@@ -62,7 +60,6 @@ export class IdsComponent implements OnInit {
                     keystorePassword: response.keystorePassword,
                     keystoreAliasName: response.keystoreAliasName,
                     truststoreName: response.truststoreName
-
                 });
                 this.subscribeToFormChanges();
             });

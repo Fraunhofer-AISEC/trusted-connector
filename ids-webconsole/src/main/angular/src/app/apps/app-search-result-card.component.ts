@@ -24,7 +24,7 @@ export class AppSearchResultCardComponent implements AfterViewInit {
     public onInstall(app: App): void {
         this.appService
             .installApp(app)
-            .subscribe(success => success);
+            .subscribe();
     }
 
     public trackApps(index: number, item: App): string {

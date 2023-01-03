@@ -26,7 +26,6 @@ dependencies {
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-jersey")
     implementation("org.springframework.boot:spring-boot-starter-jetty")
     // Camel Spring Boot integration
     implementation("org.apache.camel.springboot:camel-spring-boot-starter")

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 
 import { UserService } from './user.service';
 import { Title } from '@angular/platform-browser';
@@ -9,9 +9,7 @@ declare let componentHandler: any;
 @Component({
     templateUrl: './users.component.html'
 })
-export class UsersComponent implements OnInit, AfterViewInit {
-    @Output() public readonly changeTitle = new EventEmitter();
-    public saved = true;
+export class UsersComponent implements AfterViewInit {
     private _users?: string[];
     private _isLoaded = false;
 
@@ -25,48 +23,21 @@ export class UsersComponent implements OnInit, AfterViewInit {
            });
     }
 
-    public ngOnInit(): void {
-        this.changeTitle.emit('Users');
-    }
-
     public ngAfterViewInit(): void {
       componentHandler.upgradeAllRegistered();
-    }
-
-    public canDeactivate(target: UsersComponent): boolean {
-        return target.saved;
     }
 
     get users(): string[] {
       return this._users;
     }
 
-    public onDeleteBtnClick(userId: string): void {
-          this.userService.deleteUser(userId).subscribe(() => undefined);
-          //window.location.reload();
-           this.router.navigate(['/users'])
-                 .then(() => {
-                     window.location.reload();
-                   });
+    public async onDeleteBtnClick(userId: string) {
+        await this.userService.deleteUser(userId);
+        window.location.reload();
     }
 
-    public onSettingsBtnClick(userId: string): void {
-          //window.location.reload();
-          console.log('settingsclick');
-           this.router.navigate(['/userdetail'],{ queryParams: {user: userId}});
-                 //.then(() => {
-                     //window.location.reload();
-                   //});
-    }
-
-    public deleteUser(username: string): void {
-        this.userService.deleteUser(username);
-            //.subscribe(_result => {
-                //             this.result = result;
-                //             if(result.toString() === "true") {
-                //                location.reload();
-                //              }
-            // });
+    public async onSettingsBtnClick(userId: string): Promise<boolean> {
+        return this.router.navigate(['/userdetail'], { queryParams: { user: userId } });
     }
 
     get isLoaded(): boolean {

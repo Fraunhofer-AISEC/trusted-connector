@@ -26,4 +26,6 @@ if [ ! -d ./deploy ]; then
 fi
 echo ""
 
-java --class-path "ids-connector/build/libs/libraryJars/*:ids-connector/build/libs/projectJars/*" "de.fhg.aisec.ids.TrustedConnector"
+java --add-exports=java.base/sun.security.x509=ALL-UNNAMED --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED \
+  --add-exports=java.base/sun.security.pkcs10=ALL-UNNAMED \
+  --class-path "ids-connector/build/libs/libraryJars/*:ids-connector/build/libs/projectJars/*" "de.fhg.aisec.ids.TrustedConnector"

@@ -1,40 +1,38 @@
-
 <div appNgxMdl class="mdl-grid">
-
-  <div class="card-dark mdl-card mdl-cell mdl-cell--12-col  mdl-shadow--2dp">
-    <div class="mdl-card__title">
-      <h2 class="mdl-card__title-text">User accounts</h2>
-    </div>
-
-
-
-    <div class="mdl-card__menu">
-      <button routerLink="/usernew" class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black">
-        <i class="material-icons">add</i>
-      </button>
-    </div>
-    <div class="mdl-card__supporting-text">
-      <span *ngIf="!isLoaded">No users found.</span>
-      <div *ngIf="isLoaded">
-        <ul class="mdl-list" *ngFor="let user of users; trackBy: trackUsers">
-          <li class="mdl-list__item mdl-list__item--two-line">
+    <div class="card-dark mdl-card mdl-cell mdl-cell--12-col  mdl-shadow--2dp">
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">User accounts</h2>
+        </div>
+        <div class="mdl-card__menu">
+            <button routerLink="/usernew"
+                    class="mdl-button mdl-js-button mdl-button--icon mdl-color--white mdl-color-text--black">
+                <i class="material-icons">add</i>
+            </button>
+        </div>
+        <div class="mdl-card__supporting-text">
+            <span *ngIf="!isLoaded">No users found.</span>
+            <div *ngIf="isLoaded">
+                <ul class="mdl-list" *ngFor="let user of users; trackBy: trackUsers">
+                    <li class="mdl-list__item mdl-list__item--two-line">
 						<span class="mdl-list__item-primary-content">
 							<span>{{ user }}</span>
 							<span class="mdl-list__item-sub-title">User</span>
 						</span>
-            <span class="mdl-list__item-secondary-content">
-              <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onDeleteBtnClick(user)">
-                    <em class="material-icons">delete</em>
-              </button>
+                        <span class="mdl-list__item-secondary-content">
+                            <button class="mdl-button mdl-js-button mdl-js-ripple-effect"
+                                    (click)="onDeleteBtnClick(user)">
+                                <em class="material-icons">delete</em>
+                            </button>
 						</span>
-            <span class="mdl-list__item-secondary-content">
-              <button class="mdl-button mdl-js-button mdl-js-ripple-effect" (click)="onSettingsBtnClick(user)">
-                    <em class="material-icons">settings</em>
-              </button>
+                        <span class="mdl-list__item-secondary-content">
+                            <button class="mdl-button mdl-js-button mdl-js-ripple-effect"
+                                    (click)="onSettingsBtnClick(user)">
+                                <em class="material-icons">settings</em>
+                            </button>
 						</span>
-          </li>
-        </ul>
-      </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
-  </div>
 </div>

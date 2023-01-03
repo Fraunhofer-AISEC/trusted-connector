@@ -21,9 +21,9 @@ package de.fhg.aisec.ids.webconsole.api
 
 import de.fhg.aisec.ids.api.Result
 import de.fhg.aisec.ids.api.policy.PAP
-import de.fhg.aisec.ids.api.router.RouteComponent
 import de.fhg.aisec.ids.api.router.RouteManager
 import de.fhg.aisec.ids.api.router.RouteObject
+import de.fhg.aisec.ids.webconsole.ApiController
 import de.fhg.aisec.ids.webconsole.api.data.ValidationInfo
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -31,13 +31,11 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.Authorization
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import javax.ws.rs.GET
-import javax.ws.rs.InternalServerErrorException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.server.ResponseStatusException
 import javax.ws.rs.core.MediaType
 
 /**
@@ -52,8 +50,8 @@ import javax.ws.rs.core.MediaType
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
 </method> */
-@Component
-@Path("/routes")
+@ApiController
+@RequestMapping("/routes")
 @Api(value = "Message Routing", authorizations = [Authorization(value = "oauth2")])
 class RouteApi {
 
@@ -75,67 +73,49 @@ class RouteApi {
      *
      * @return The resulting route objects
      */
-    @GET
-    @Path("list")
+    @GetMapping("/list", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Returns map from camel context to list of camel routes.",
         response = RouteObject::class,
         responseContainer = "List"
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun list(): List<RouteObject> {
         return rm.routes
     }
 
-    @GET
-    @Path("/get/{id}")
+    @GetMapping("/get/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Get a Camel route", response = RouteObject::class)
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
     operator fun get(
         @ApiParam(value = "Route ID")
-        @PathParam("id")
+        @PathVariable("id")
         id: String
     ): RouteObject {
-        return rm.getRoute(id) ?: throw NotFoundException("Route not found")
+        return rm.getRoute(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Route not found")
     }
 
     /** Stop a route based on an id.  */
-    @GET
-    @Path("/startroute/{id}")
+    @GetMapping("/startroute/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Starts a Camel route. The route will start to process messages.")
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun startRoute(@PathParam("id") id: String?): Result {
+    fun startRoute(@PathVariable("id") id: String): Result {
         return try {
-            rm.startRoute(id!!)
+            rm.startRoute(id)
             Result()
         } catch (e: Exception) {
             LOG.warn(e.message, e)
-            Result(false, e.message!!)
+            e.message?.let { Result(false, it) } ?: Result(false)
         }
     }
 
     /** Stop a route based on its id.  */
-    @GET
-    @Path("/stoproute/{id}")
+    @GetMapping("/stoproute/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Stops a Camel route. The route will remain installed but it will not process any messages.")
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
-    fun stopRoute(@PathParam("id") id: String?): Result {
+    fun stopRoute(@PathVariable("id") id: String): Result {
         return try {
-            rm.stopRoute(id!!)
+            rm.stopRoute(id)
             Result()
         } catch (e: Exception) {
             LOG.warn(e.message, e)
-            Result(false, e.message!!)
+            e.message?.let { Result(false, it) } ?: Result(false)
         }
     }
 
@@ -144,29 +124,20 @@ class RouteApi {
      *
      * @return List of supported protocols
      */
-    @get:AuthorizationRequired
-    @get:Produces(MediaType.APPLICATION_JSON)
-    @get:Path("/components")
-    @get:GET
-    val components: List<RouteComponent>
-        get() = rm.listComponents()
+    @GetMapping("/components", produces = [MediaType.APPLICATION_JSON])
+    fun getComponents() = rm.listComponents()
 
     /** Retrieve list of currently installed endpoints (aka URIs to/from which routes exist)  */
-    @GET
-    @Path("/list_endpoints")
-    @AuthorizationRequired
+    @GetMapping("/list_endpoints", produces = [MediaType.APPLICATION_JSON])
     fun listEndpoints(): Map<String, String> {
         return rm.listEndpoints()
     }
 
-    @GET
-    @Path("/validate/{routeId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @AuthorizationRequired
-    fun validate(@PathParam("routeId") routeId: String?): ValidationInfo {
+    @GetMapping("/validate/{routeId}", produces = [MediaType.APPLICATION_JSON])
+    fun validate(@PathVariable("routeId") routeId: String): ValidationInfo {
         val pap: PAP = policyAdministrationPoint
-            ?: throw InternalServerErrorException()
-        val rvp = pap.verifyRoute(routeId!!) ?: throw InternalServerErrorException()
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
+        val rvp = pap.verifyRoute(routeId) ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
         val vi = ValidationInfo()
         vi.valid = rvp.isValid
         if (!rvp.isValid) {
@@ -175,11 +146,8 @@ class RouteApi {
         return vi
     }
 
-    @GET
-    @Path("/prolog/{routeId}")
-    @Produces(MediaType.TEXT_PLAIN)
-    @AuthorizationRequired
-    fun getRouteProlog(@PathParam("routeId") routeId: String): String {
+    @GetMapping("/prolog/{routeId}", produces = [MediaType.TEXT_PLAIN])
+    fun getRouteProlog(@PathVariable("routeId") routeId: String): String {
         return rm.getRouteAsProlog(routeId)
     }
 

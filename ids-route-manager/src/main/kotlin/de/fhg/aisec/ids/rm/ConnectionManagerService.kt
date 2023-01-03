@@ -59,10 +59,11 @@ class ConnectionManagerService : ConnectionManager {
         }
     override fun listAvailableEndpoints(): List<ServerEndpoint> {
         return camelContexts.flatMapTo(mutableSetOf()) { cCtx ->
-            cCtx.endpointRegistry.values.mapNotNull {
-                if (it is Idscp2ServerEndpoint) {
-                    val baseUri = it.endpointBaseUri
-                    val matchGroups = "(.*?)://(.*?)(?::([0-9]+))?/.*".toRegex().matchEntire(baseUri)?.groupValues
+            cCtx.endpointRegistry.values.mapNotNull { ep ->
+                if (ep is Idscp2ServerEndpoint) {
+                    val baseUri = ep.endpointBaseUri
+                    val matchGroups = listOf(Regex("(.*?)://(.*?):([0-9]+).*"), Regex("(.*?)://(.*?).*"))
+                        .asSequence().mapNotNull { it.matchEntire(baseUri)?.groupValues }.firstOrNull()
                     ServerEndpoint(
                         baseUri,
                         matchGroups?.get(1) ?: "?",

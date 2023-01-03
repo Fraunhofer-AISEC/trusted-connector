@@ -12,5 +12,4 @@ export interface Settings {
   keystorePassword: string;
   keystoreAliasName: string;
   truststoreName: string;
-
 }

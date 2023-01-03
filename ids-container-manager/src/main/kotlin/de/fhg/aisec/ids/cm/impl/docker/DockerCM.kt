@@ -394,7 +394,7 @@ class DockerCM : ContainerManager {
                 Json.createObjectBuilder().add("Name", app.restartPolicy)
             )
             // Set privileged state
-            if (app.isPrivileged) {
+            if (app.privileged) {
                 hostConfig.add("Privileged", JsonValue.TRUE)
             }
             container.add("HostConfig", hostConfig)

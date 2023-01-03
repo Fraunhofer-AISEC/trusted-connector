@@ -66,8 +66,7 @@ class ApplicationContainer {
     var command = ""
     var network: String? = null
     var env: List<Map<String, Any>> = emptyList()
-    var isPrivileged = false
-    var isInteractive = false
+    var privileged = false
     var restartPolicy = "always"
     var labels: Map<String, Any> = emptyMap()
     var volumes: List<Any> = emptyList()

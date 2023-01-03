@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * ids-webconsole
  * %%
- * Copyright (C) 2019 Fraunhofer AISEC
+ * Copyright (C) 2023 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,16 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.webconsole.api.data
+package de.fhg.aisec.ids.webconsole
 
-class AppSearchRequest {
-    val searchTerm = ""
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.method.HandlerTypePredicate
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+
+@Configuration
+open class WebMvcConfig : WebMvcConfigurer {
+    override fun configurePathMatch(configurer: PathMatchConfigurer) {
+        configurer.addPathPrefix("api/v1", HandlerTypePredicate.forAnnotation(ApiController::class.java))
+    }
 }

@@ -1,19 +1,17 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
-import { Identity } from './identity.interface';
 import { CertificateService } from './keycert.service';
+import { Identity } from './identity.interface';
+
 
 @Component({
     templateUrl: './identitynew.component.html'
 })
 export class NewIdentityComponent implements OnInit {
-    @Output() public readonly changeTitle = new EventEmitter();
     public myForm: FormGroup;
-    public data: Identity;
-    public events: any[] = [];
 
     constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
                 private readonly router: Router) {
@@ -27,14 +25,14 @@ export class NewIdentityComponent implements OnInit {
             cn: ['', Validators.required as any],
             o: '',
             ou: '',
-            l: ''
+            l: '',
+            c: ''
         });
     }
 
     public async save(identity: Identity): Promise<boolean> {
-         // Call REST to create identity
-        this.certService.createIdentity(identity)
-            .subscribe(() => undefined);
+        // Call REST to create identity
+        await this.certService.createIdentity(identity).subscribe();
 
         return this.router.navigate(['/certificates']);
     }

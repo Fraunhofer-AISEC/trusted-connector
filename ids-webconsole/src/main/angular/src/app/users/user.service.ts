@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment';
 
 import { User } from './user.interface';
 
@@ -16,32 +16,33 @@ export class UserService {
   }
 
   // create new user
-  public createUser(user: User): Observable<string> {
+  public async createUser(user: User): Promise<string> {
       const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-      const body = JSON.stringify(user);
-      return this.http.post(environment.apiURL + '/user/saveUser', body, {
+      return this.http.post(environment.apiURL + '/user/saveUser', user, {
         headers,
         responseType: 'text'
-      });
+      }).toPromise();
     }
 
   // set password
-  public setPassword(user: string, oldPW: string, newPW: string): Observable<string> {
+  public async setPassword(user: string, oldPW: string, newPW: string): Promise<string> {
       const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-      const s = '{\"username\":\"'+user+'\",\"oldPassword\":\"'+oldPW+'\",\"newPassword\":\"'+newPW+'\"}';
-      return this.http.post(environment.apiURL + '/user/setPassword', s, {
+      return this.http.post(environment.apiURL + '/user/setPassword', {
+          username: user,
+          oldPassword: oldPW,
+          newPassword: newPW
+      }, {
         headers,
         responseType: 'text'
-      });
+      }).toPromise();
   }
 
   // delete user
-  public deleteUser(user: string): Observable<string> {
-    console.log('delete:'+ environment.apiURL + '/user/removeUser/' + user);
+  public async deleteUser(user: string): Promise<string> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.delete(environment.apiURL + '/user/removeUser/'+  user, {
+    return this.http.delete(environment.apiURL + '/user/removeUser/' + encodeURIComponent(user), {
       headers,
       responseType: 'text'
-    });
+    }).toPromise();
   }
 }

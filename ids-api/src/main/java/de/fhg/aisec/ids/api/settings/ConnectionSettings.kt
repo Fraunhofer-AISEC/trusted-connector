@@ -21,8 +21,9 @@ package de.fhg.aisec.ids.api.settings
 
 import java.io.Serializable
 
+@Suppress("unused")
 class ConnectionSettings : Serializable {
-    val requiredSecurityProfile = "idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE"
+    val securityProfile = "idsc:TRUSTED_CONNECTOR_SECURITY_PROFILE"
 
     companion object {
         private const val serialVersionUID = 1L

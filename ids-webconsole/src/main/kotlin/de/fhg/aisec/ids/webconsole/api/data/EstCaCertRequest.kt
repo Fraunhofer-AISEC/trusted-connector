@@ -19,21 +19,4 @@
  */
 package de.fhg.aisec.ids.webconsole.api.data
 
-class Identity {
-    @JvmField
-    var cn: String? = null
-    var ou: String? = null
-    var o: String? = null
-
-    @JvmField
-    var l: String? = null
-
-    @JvmField
-    var s: String? = null
-
-    @JvmField
-    var c: String? = null
-
-    @JvmField
-    var email: String? = null
-}
+data class EstCaCertRequest(val url: String, val hash: String)

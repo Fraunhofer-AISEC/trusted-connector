@@ -9,7 +9,7 @@
 
     <camel:sslContextParameters id="clientSslContext" certAlias="1">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/consumer-keystore.p12" password="password"/>
+            <camel:keyStore resource="etc/keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
             <camel:keyStore resource="etc/truststore.p12" password="password"/>
@@ -22,7 +22,11 @@
     <bean id="TypeExtractionProcessor" class="de.fhg.aisec.ids.camel.processors.IdsMessageTypeExtractionProcessor" />
 
     <camelContext xmlns="http://camel.apache.org/schema/spring">
-        <route>
+        <errorHandler id="infErrorHandler" type="DeadLetterChannel" deadLetterUri="log:dead?level=ERROR">
+            <redeliveryPolicy maximumRedeliveries="-1" redeliveryDelay="0"/>
+        </errorHandler>
+
+        <route errorHandlerRef="infErrorHandler">
             <from uri="timer://contractRequest?repeatCount=1" />
             <setProperty name="artifactUri">
                 <constant>https://example.com/some_artifact</constant>
@@ -35,7 +39,20 @@
                     <simple>${exchangeProperty.ids-type} == 'ContractResponseMessage'</simple>
                     <log message="### Handle ContractResponseMessage ###"/>
                     <process ref="ContractResponseProcessor"/>
-                    <to uri="idscp2client://provider-core:29292?connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+                    <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+                    <process ref="TypeExtractionProcessor"/>
+                    <choice>
+                        <when>
+                            <simple>${exchangeProperty.ids-type} == 'MessageProcessedNotificationMessage'</simple>
+                            <log message="### Received MessageProcessedNotificationMessage, starting artifactRequestRoute... ###"/>
+                            <to uri="controlbus:route?routeId=artifactRequestRoute&amp;action=start"/>
+                        </when>
+                        <otherwise>
+                            <log loggingLevel="ERROR" message="Expected MessageProcessedNotificationMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
+                            <removeHeader name="idscp2-header" />
+                            <setBody><simple>${null}</simple></setBody>
+                        </otherwise>
+                    </choice>
                 </when>
                 <otherwise>
                     <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
@@ -45,8 +62,8 @@
             </choice>
         </route>
 
-        <route>
-            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000&amp;delay=10000"/>
+        <route id="artifactRequestRoute" autoStartup="false">
+            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
             <setProperty name="artifactUri">
                 <constant>https://example.com/some_artifact</constant>
             </setProperty>

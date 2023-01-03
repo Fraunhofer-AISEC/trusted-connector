@@ -19,7 +19,4 @@
  */
 package de.fhg.aisec.ids.webconsole.api.data
 
-class Account {
-    var username: String? = null
-    var password: String? = null
-}
+data class EstIdRequest(val estUrl: String, val iet: String, val alias: String)

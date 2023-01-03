@@ -6,7 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Result } from '../result';
 
-import { App, AppSearchTerm } from './app';
+import { App } from './app';
 import { Cml } from './cml';
 
 @Injectable()
@@ -31,16 +31,15 @@ export class AppService {
         return this.http.get<Result>(url);
     }
 
-    public wipeApp(appId: string): Observable<Result> {
-        return this.http.get<Result>(environment.apiURL + '/app/wipe?containerId=' + encodeURIComponent(appId))
+    public wipeApp(appId: string): Observable<void> {
+        return this.http.get<void>(environment.apiURL + '/app/wipe?containerId=' + encodeURIComponent(appId))
             .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
     }
 
-    public installApp(app: App): Observable<string> {
+    public installApp(app: App): Observable<void> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-        return this.http.post<string>(environment.apiURL + '/app/install',
-            { app }, { headers })
+        return this.http.post<void>(environment.apiURL + '/app/install', app, { headers })
             .pipe(catchError((error: any) => throwError(new Error(error || 'Server error'))));
     }
 
@@ -49,13 +48,10 @@ export class AppService {
     }
 
     public searchApps(term: string): Observable<App[]> {
-        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-        const searchTerm = new AppSearchTerm();
-        searchTerm.searchTerm = term;
-        const result = this.http.post<App[]>(environment.apiURL + '/app/search',
-                searchTerm, {headers});
+        const headers = new HttpHeaders({ 'Content-Type': 'text/plain' });
 
-        return result;
+        return this.http.post<App[]>(environment.apiURL + '/app/search',
+            term, {headers});
     }
 
 }

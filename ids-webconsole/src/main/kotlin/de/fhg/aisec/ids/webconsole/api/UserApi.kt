@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.webconsole.api
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import de.fhg.aisec.ids.api.settings.Settings
+import de.fhg.aisec.ids.webconsole.ApiController
 import de.fhg.aisec.ids.webconsole.api.data.PasswordChangeRequest
 import de.fhg.aisec.ids.webconsole.api.data.User
 import io.swagger.annotations.Api
@@ -30,55 +31,50 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
-import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.server.ResponseStatusException
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.util.Calendar
 import javax.security.auth.login.LoginException
-import javax.ws.rs.Consumes
-import javax.ws.rs.DELETE
-import javax.ws.rs.GET
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 
-@Component
-@Path("/user")
+@ApiController
+@RequestMapping("/user")
 @Api(value = "User Authentication")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 class UserApi(@Autowired private val settings: Settings) {
     /**
      * Given a correct username/password, this method returns a JWT token that is valid for one day.
      *
      * @param user Username/password.
-     * @return A JSON object of the form `{ "token" : <jwt token> }</jwt>` if successful, 401 UNAUTHORIZED if not.
+     * @return A JWT token as plain text, if successful, 401 UNAUTHORIZED if not.
      */
-    @POST
-    @Path("/login")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun authenticateUser(user: User): Response {
-        if (user.username.isNullOrBlank() || user.password.isNullOrBlank()) {
-            LOG.error("Username or password blank, please provide valid login credentials!")
+    @PostMapping("/login", produces = [MediaType.TEXT_PLAIN], consumes = [MediaType.APPLICATION_JSON])
+    fun authenticateUser(@RequestBody user: User): String {
+        if (user.username.isBlank() || user.password.isBlank()) {
+            throw ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Username or password blank, please provide valid login credentials!"
+            )
         } else {
             try {
                 // Authenticate the user using the credentials provided
-                if (!authenticate(user.username!!, user.password!!)) {
-                    return Response.status(Response.Status.UNAUTHORIZED).build()
+                if (!authenticate(user.username, user.password)) {
+                    throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
                 }
                 // Issue a token for the user
-                val token = issueToken(user.username)
-                return Response.ok().entity(mapOf("token" to token)).build()
+                return issueToken(user.username)
             } catch (e: Throwable) {
-                e.printStackTrace()
+                throw ResponseStatusException(HttpStatus.UNAUTHORIZED, e.message, e)
             }
         }
-        return Response.status(Response.Status.UNAUTHORIZED).build()
     }
 
     private fun issueToken(username: String?): String {
@@ -90,11 +86,6 @@ class UserApi(@Autowired private val settings: Settings) {
             .sign(Algorithm.HMAC256(key))
     }
 
-    /**
-     * Login with JaaS. We use the default realm "karaf". When using default PropertiesLoginModule, users are
-     * configured in karaf-assembly/src/main/resources/etc/users.properties. Other modules such as OAuth, LDAP, JDBC
-     * can be configured as needed without changing this code here.
-     */
     @Throws(LoginException::class)
     private fun authenticate(username: String, password: String): Boolean {
         return if (settings.isUserStoreEmpty()) {
@@ -111,43 +102,38 @@ class UserApi(@Autowired private val settings: Settings) {
         }
     }
 
-    @POST
-    @Path("/saveUser")
-    @AuthorizationRequired
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun addUser(user: User) {
-        if (user.username.isNullOrBlank() || user.password.isNullOrBlank()) {
+    @PostMapping("/saveUser", consumes = [MediaType.APPLICATION_JSON])
+    fun addUser(@RequestBody user: User) {
+        if (user.username.isBlank() || user.password.isBlank()) {
             LOG.error("Username or password blank, please provide valid credentials!")
         } else {
-            settings.saveUser(user.username!!, argonEncoder.encode(user.password))
+            settings.saveUser(user.username, argonEncoder.encode(user.password))
         }
     }
 
-    @POST
-    @Path("/setPassword")
-    @AuthorizationRequired
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun setPassword(change: PasswordChangeRequest) {
-        if (change.username.isNullOrBlank() || change.oldPassword.isNullOrBlank() || change.newPassword.isNullOrBlank()) {
+    @PostMapping("/setPassword", consumes = [MediaType.APPLICATION_JSON])
+    fun setPassword(@RequestBody change: PasswordChangeRequest) {
+        if (change.username.isBlank() || change.oldPassword.isBlank() || change.newPassword.isBlank()) {
             LOG.error("Username or password blank, please provide valid credentials!")
-        } else if (argonEncoder.matches(change.oldPassword, (settings.getUserHash(change.username.toString()) ?: randomHash))) {
-            settings.setPassword(change.username!!, argonEncoder.encode(change.newPassword))
+        } else if (argonEncoder.matches(
+                change.oldPassword,
+                (settings.getUserHash(change.username) ?: randomHash)
+            )
+        ) {
+            settings.setPassword(change.username, argonEncoder.encode(change.newPassword))
         } else {
             LOG.error("Old password is wrong")
         }
     }
 
-    @DELETE
-    @Path("/removeUser/{user}")
-    @AuthorizationRequired
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun removeUser(@PathParam("user") username: String) = settings.removeUser(username)
+    @DeleteMapping(
+        "/removeUser/{user}",
+        consumes = [MediaType.APPLICATION_JSON],
+        produces = [MediaType.APPLICATION_JSON]
+    )
+    fun removeUser(@PathVariable("user") username: String) = settings.removeUser(username)
 
-    @GET
-    @Path("list_user_names")
+    @GetMapping("list_user_names", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Lists user names", responseContainer = "List")
     @ApiResponses(
         ApiResponse(
@@ -157,10 +143,6 @@ class UserApi(@Autowired private val settings: Settings) {
             responseContainer = "List"
         )
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun listUsersNames(): List<String> = settings.getUsers().keys.toList()
 
     companion object {

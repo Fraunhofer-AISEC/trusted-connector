@@ -38,12 +38,12 @@ class ConnectorProfile : Serializable {
     }
 
     constructor(
-        profile: SecurityProfile?,
+        securityProfile: SecurityProfile?,
         connectorUrl: URI?,
         maintainerUrl: URI?,
         connectorEntityNames: List<TypedLiteral>?
     ) : super() {
-        securityProfile = profile
+        this.securityProfile = securityProfile
         this.connectorUrl = connectorUrl
         this.maintainerUrl = maintainerUrl
         this.connectorEntityNames = connectorEntityNames

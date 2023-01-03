@@ -15,11 +15,11 @@ services:
       - ../etc/truststore.p12:/root/etc/truststore.p12
       - ../etc/tls.properties:/root/etc/tls.properties
       - ./example-idscp2-localloop.xml:/root/deploy/example-idscp2-localloop.xml
-#    ports:
-#      - "8080:8080"
+    ports:
+      - "8080:8080"
 #      - "8443:8443"
     environment:
-      TC_DAPS_URL: "https://daps-dev.aisec.fraunhofer.de/v3"
+      TC_DAPS_URL: "https://daps-dev.aisec.fraunhofer.de/v4"
     networks:
       example-internal:
         aliases:

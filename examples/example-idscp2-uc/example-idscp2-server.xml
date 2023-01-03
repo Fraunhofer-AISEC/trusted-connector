@@ -9,7 +9,7 @@
 
     <camel:sslContextParameters id="serverSslContext" certAlias="1">
         <camel:keyManagers keyPassword="password">
-            <camel:keyStore resource="etc/provider-keystore.p12" password="password"/>
+            <camel:keyStore resource="etc/keystore.p12" password="password"/>
         </camel:keyManagers>
         <camel:trustManagers>
             <camel:keyStore resource="etc/truststore.p12" password="password"/>
@@ -50,8 +50,6 @@
                     <log message="### Handle ContractAgreementMessage ###"/>
                     <!-- Only processing of incoming request must be performed, no reply -->
                     <process ref="ContractAgreementReceiverProcessor"/>
-                    <removeHeader name="idscp2-header" />
-                    <setBody><simple>${null}</simple></setBody>
                 </when>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>

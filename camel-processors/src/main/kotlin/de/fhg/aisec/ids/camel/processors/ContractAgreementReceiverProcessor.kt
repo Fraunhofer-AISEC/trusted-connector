@@ -23,6 +23,7 @@ import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
 import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
 import de.fraunhofer.iais.eis.ContractAgreement
 import de.fraunhofer.iais.eis.ContractAgreementMessage
+import de.fraunhofer.iais.eis.MessageProcessedNotificationMessageBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
@@ -55,7 +56,7 @@ class ContractAgreementReceiverProcessor : Processor {
             ProviderDB.artifactUrisMapped2ContractAgreements[
                 Pair(
                     permission.target,
-                    UsageControlMaps.getExchangeConnection(exchange)
+                    UsageControlMaps.getExchangePeerIdentity(exchange)
                         ?: throw RuntimeException(
                             "No connection for exchange $exchange, " +
                                 "this should never happen!"
@@ -70,8 +71,16 @@ class ContractAgreementReceiverProcessor : Processor {
             LOG.debug("Saved Agreement {}", contractAgreement.id)
         }
         if (LOG.isDebugEnabled) {
-            LOG.debug("Received ContractAgreementMessage {}", SERIALIZER.serialize(contractAgreementMessage))
+            LOG.debug("Processed ContractAgreementMessage {}", SERIALIZER.serialize(contractAgreementMessage))
         }
+
+        // Reply with MessageProcessedNotificationMessage
+        exchange.message.setHeader(
+            IDSCP2_HEADER,
+            MessageProcessedNotificationMessageBuilder()
+                ._correlationMessage_(contractAgreementMessage.id)
+        )
+        exchange.message.body = null
     }
 
     companion object {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup ,Validators} from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -10,10 +10,8 @@ import { UserService } from './user.service';
     templateUrl: './usernew.component.html'
 })
 export class NewUserComponent implements OnInit {
-    @Output() public readonly changeTitle = new EventEmitter();
     public userForm: FormGroup;
     public data: User;
-    public events: any[] = [];
 
     constructor(private readonly fb: FormBuilder, private readonly titleService: Title,
                 private readonly userService: UserService,
@@ -21,7 +19,6 @@ export class NewUserComponent implements OnInit {
         this.titleService.setTitle('New User');
     }
     public ngOnInit(): void {
-      this.changeTitle.emit('Users');
       this.userForm = this.fb.group({
           username: ['', Validators.required as any],
           password: ['', Validators.required as any]
@@ -29,13 +26,8 @@ export class NewUserComponent implements OnInit {
     }
 
     public async save(user: User): Promise<void> {
-         // Call REST to create user
-        this.userService.createUser(user)
-            .subscribe(() => undefined);
-       this.router.navigate(['/users'])
-       .then(() => {
-           window.location.reload();
-         });
+        await this.userService.createUser(user);
+        await this.router.navigate(['/users']);
     }
 
 

@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.webconsole.api
 
 import de.fhg.aisec.ids.api.policy.PAP
+import de.fhg.aisec.ids.webconsole.ApiController
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
@@ -27,14 +28,11 @@ import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import javax.ws.rs.Consumes
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import javax.ws.rs.DefaultValue
 import javax.ws.rs.FormParam
-import javax.ws.rs.GET
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 
 /**
@@ -45,16 +43,15 @@ import javax.ws.rs.core.MediaType
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
 </method> */
-@Component
-@Path("/policies")
+@ApiController
+@RequestMapping("/policies")
 @Api(value = "Usage Control Policies", authorizations = [Authorization(value = "oauth2")])
 class PolicyApi {
 
     @Autowired(required = false)
     private var policyAdministrationPoint: PAP? = null
 
-    @GET
-    @Path("list")
+    @GetMapping("/list", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Lists active usage control rules", responseContainer = "List")
     @ApiResponses(
         ApiResponse(
@@ -64,10 +61,6 @@ class PolicyApi {
             responseContainer = "List"
         )
     )
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @AuthorizationRequired
     fun list() = policyAdministrationPoint?.listRules() ?: emptyList()
 
     /**
@@ -75,21 +68,12 @@ class PolicyApi {
      *
      * @return Policy Prolog
      */
-    @get:AuthorizationRequired
-    @get:ApiOperation(value = "Returns the full usage control policy as a Prolog theory")
-    @get:Produces(MediaType.TEXT_PLAIN)
-    @get:Path("policyProlog")
-    @get:GET
-    val policyProlog: String
-        get() = policyAdministrationPoint?.policy ?: "No PAP available"
+    @ApiOperation(value = "Returns the full usage control policy as a Prolog theory")
+    @GetMapping("/policyProlog", produces = [MediaType.TEXT_PLAIN])
+    fun getPolicyProlog() = policyAdministrationPoint?.policy
 
-    @POST
-    @Path("install")
+    @PostMapping("/install", consumes = [MediaType.MULTIPART_FORM_DATA])
     @ApiOperation(value = "Installs a new usage control policy as a Prolog theory file")
-    @Consumes(
-        MediaType.MULTIPART_FORM_DATA
-    )
-    @AuthorizationRequired
     fun install(
         @FormParam(value = "policy_name")
         @DefaultValue(value = "default policy")
@@ -98,12 +82,9 @@ class PolicyApi {
         @DefaultValue(value = "")
         policyDescription: String?,
         @FormParam(value = "policy_file") policy: String
-    ): String {
+    ) {
         LOG.info("Received policy file. name: {}, desc: {}", policyName, policyDescription)
-        return policyAdministrationPoint?.let { pap ->
-            pap.loadPolicy(policy)
-            "OK"
-        } ?: "No PAP available"
+        policyAdministrationPoint?.loadPolicy(policy)
     }
 
     companion object {
