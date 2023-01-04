@@ -31,9 +31,12 @@ allprojects {
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
             // Reject release candidates and betas and pin Apache Camel to 3.18 LTS version
-            versionRegex.matches(candidate.version) || (candidate.group in setOf(
-                "org.apache.camel", "org.apache.camel.springboot"
-            ) && !candidate.version.startsWith("3.18"))
+            versionRegex.matches(candidate.version)
+                || (candidate.group in setOf("org.apache.camel", "org.apache.camel.springboot")
+                && !candidate.version.startsWith("3.18"))
+                || (candidate.group == "org.springframework.boot" && !candidate.version.startsWith("2."))
+                || (candidate.group == "org.springframework.security" && !candidate.version.startsWith("5."))
+                || (candidate.group.startsWith("de.fraunhofer.iais.eis.ids") && !candidate.version.startsWith("4.1."))
         }
     }
 }
