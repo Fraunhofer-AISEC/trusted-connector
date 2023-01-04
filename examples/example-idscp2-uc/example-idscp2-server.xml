@@ -39,6 +39,18 @@
                     <simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>
                     <log message="### Handle ArtifactRequestMessage ###"/>
                     <process ref="artifactRequestProcessor" />
+                    <choice>
+                        <when>
+                            <simple>${exchangeProperty.requested-artifact} == 'https://example.com/some_artifact'</simple>
+                            <log message="Artifact ${exchangeProperty.requested-artifact} is delivered..."/>
+                            <setBody>
+                                <constant>This is some UC-protected piece of data.</constant>
+                            </setBody>
+                        </when>
+                        <otherwise>
+                            <log message="Unhandled or forbidden artifact ${exchangeProperty.requested-artifact} requested" loggingLevel="ERROR" />
+                        </otherwise>
+                    </choice>
                 </when>
                 <otherwise>
                     <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>

@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.camel.multipart
 
 internal object MultiPartConstants {
+    const val IDS_HEADER_KEY = "ids-header"
     const val MULTIPART_HEADER = "header"
     const val MULTIPART_PAYLOAD = "payload"
 }

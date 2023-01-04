@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.camel.multipart
 
-import de.fhg.aisec.ids.api.infomodel.InfoModel
+import de.fhg.aisec.ids.camel.multipart.MultiPartConstants.IDS_HEADER_KEY
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.apache.http.entity.ContentType
@@ -27,7 +27,6 @@ import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.InputStreamBody
 import org.apache.http.entity.mime.content.StringBody
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -76,9 +75,6 @@ import java.util.UUID
 @Component("idsMultiPartOutputProcessor")
 class IdsMultiPartOutputProcessor : Processor {
 
-    @Autowired
-    lateinit var infoModelManager: InfoModel
-
     @Throws(Exception::class)
     override fun process(exchange: Exchange) {
         val boundary = UUID.randomUUID().toString()
@@ -86,14 +82,13 @@ class IdsMultiPartOutputProcessor : Processor {
         multipartEntityBuilder.setMode(HttpMultipartMode.STRICT)
         multipartEntityBuilder.setBoundary(boundary)
 
-        // Get the IDS InfoModelManager and retrieve a JSON-LD-serialized self-description that
-        // will be sent as a multipart "header"
-        val rdfHeader = infoModelManager.connectorAsJsonLd
+        val idsHeader = exchange.message.getHeader(IDS_HEADER_KEY)?.toString()
+            ?: throw RuntimeException("Required header \"ids-header\" not found, aborting.")
 
         // Use the self-description provided by the InfoModelManager as "header"
         multipartEntityBuilder.addPart(
             MultiPartConstants.MULTIPART_HEADER,
-            StringBody(rdfHeader, ContentType.APPLICATION_JSON)
+            StringBody(idsHeader, ContentType.APPLICATION_JSON)
         )
 
         exchange.message.let {

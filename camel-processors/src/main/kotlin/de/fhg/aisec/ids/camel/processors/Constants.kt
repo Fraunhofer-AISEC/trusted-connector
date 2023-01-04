@@ -23,4 +23,5 @@ object Constants {
     const val IDSCP2_HEADER = "idscp2-header"
     const val IDS_TYPE = "ids-type"
     const val CONTRACT_STORE_KEY = "contract-store-key"
+    const val REQUESTED_ARTIFACT_KEY = "requested-artifact"
 }
