@@ -54,6 +54,6 @@
     "vis": "^4.20.0"
   },
   "resolutions": {
-    "**/vis/moment": "^2.29.2"
+    "**/vis/moment": "^2.29.4"
   }
 }
