@@ -6,10 +6,6 @@
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <!-- Define a reference for our REST MIME-Multipart Processor -->
-    <bean id="mpOutProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartOutputProcessor" />
-    <bean id="mpInProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartInputProcessor" />
-
     <!-- Routes -->
     <camelContext xmlns="http://camel.apache.org/schema/spring">
         <restConfiguration component="jetty" host="0.0.0.0" port="1080" bindingMode="off" />
@@ -24,7 +20,7 @@
 
             <from uri="direct:echo"/>
 
-            <process ref="mpInProcessor" />
+            <process ref="idsMultiPartInputProcessor" />
 
             <log message="Test message header:\n${headers.idsMultipartHeader}" />
             <log message="Test message content type:\n${header[Content-Type]}" />
@@ -32,7 +28,7 @@
             <convertBodyTo type="java.lang.String"/>
             <log message="Test message payload:\n${body}" />
 
-            <process ref="mpOutProcessor" />
+            <process ref="idsMultiPartOutputProcessor" />
 
             <log message="Test message multipart body:\n${body}" />
 

@@ -6,10 +6,6 @@
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-	<!-- Define a reference for our REST MIME-Multipart Processor -->
-	<bean id="mpOutProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartOutputProcessor" />
-	<bean id="mpInProcessor" class="de.fhg.aisec.ids.camel.multipart.MultiPartInputProcessor" />
-
 	<!-- Routes -->
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
 		<route id="multipartDemo">
@@ -22,13 +18,13 @@
 				<simple>Test Message</simple>
 			</setBody>
 
-			<process ref="mpOutProcessor" />
+			<process ref="idsMultiPartOutputProcessor" />
 
 			<!-- Required for test logging, otherwise stream is "empty" after log component -->
 			<convertBodyTo type="java.lang.String"/>
 			<log message="Test message multipart body:\n${body}" />
 
-			<process ref="mpInProcessor" />
+			<process ref="idsMultiPartInputProcessor" />
 
 			<log message="Test message header:\n${headers.idsMultipartHeader}" />
 			<log message="Test message content type:\n${header[Content-Type]}" />

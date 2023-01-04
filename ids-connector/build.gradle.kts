@@ -101,3 +101,12 @@ configure<IdeaModel> {
         generatedSourceDirs.add(File("$buildDir/generated/source/buildConfig/main/main"))
     }
 }
+
+// Always write project version to version.txt after build/install
+tasks.build {
+    doLast {
+        file(rootProject.projectDir).resolve("version.txt").bufferedWriter().use {
+            it.write(rootProject.version.toString())
+        }
+    }
+}

@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-processors
+ * ids-api
  * %%
  * Copyright (C) 2021 Fraunhofer AISEC
  * %%
@@ -17,10 +17,11 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.processors
+package de.fhg.aisec.ids.api.contracts
 
-object Constants {
-    const val IDSCP2_HEADER = "idscp2-header"
-    const val IDS_TYPE = "ids-type"
-    const val CONTRACT_STORE_KEY = "contract-store-key"
+object ContractConstants {
+    const val UC_DOCKER_IMAGE_URIS = "uc-docker-image-uris"
+    const val UC_NOT_BEFORE_DATETIME = "uc-not-before-datetime"
+    const val UC_NOT_AFTER_DATETIME = "uc-not-after-datetime"
+    const val ARTIFACT_URI_PROPERTY = "artifactUri"
 }

@@ -19,31 +19,26 @@
  */
 package de.fhg.aisec.ids.camel.multipart
 
-import de.fhg.aisec.ids.api.infomodel.InfoModel
-import org.springframework.beans.factory.annotation.Autowired
+import org.apache.camel.Exchange
+import org.apache.camel.Processor
 import org.springframework.stereotype.Component
+import java.io.InputStream
 
-/**
- * The only purpose of this OSGi component is to connect to the InfoModelManager.
- *
- * This is required for the MultiPartComponent to use a proper IDS self description in the multipart
- * messages.
- *
- * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
- */
-@Component("idsMultipartComponent")
-class MultiPartComponent {
-    @Autowired
-    lateinit var infoModelManager: InfoModel
-
-    init {
-        instance = this
-    }
-
-    companion object {
-        private lateinit var instance: MultiPartComponent
-
-        val infoModelManager
-            get() = instance.infoModelManager
+@Component("idsMultiPartInputProcessor")
+class IdsMultiPartInputProcessor : Processor {
+    @Throws(Exception::class)
+    override fun process(exchange: Exchange) {
+        exchange.message.let {
+            // Parse Multipart message
+            val parser = MultiPartStringParser(it.getBody(InputStream::class.java))
+            // Parser JSON Header (should be an InfoModel object)
+            it.setHeader("idsMultipartHeader", parser.header)
+            // Remove current Content-Type header before setting the new one
+            it.removeHeader("Content-Type")
+            // Copy Content-Type from payload part
+            it.setHeader("Content-Type", parser.payloadContentType)
+            // Populate body with extracted payload
+            it.body = parser.payload
+        }
     }
 }

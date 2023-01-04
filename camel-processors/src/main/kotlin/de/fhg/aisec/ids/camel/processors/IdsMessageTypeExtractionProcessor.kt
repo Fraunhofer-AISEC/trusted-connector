@@ -40,7 +40,9 @@ import de.fraunhofer.iais.eis.ResourceUpdateMessage
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 
+@Component("idsMessageTypeExtractionProcessor")
 class IdsMessageTypeExtractionProcessor : Processor {
     override fun process(exchange: Exchange) {
         processHeader(exchange)

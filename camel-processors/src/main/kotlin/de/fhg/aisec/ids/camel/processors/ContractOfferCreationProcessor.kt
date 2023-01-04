@@ -19,19 +19,23 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
+import de.fhg.aisec.ids.api.contracts.ContractConstants
+import de.fhg.aisec.ids.api.contracts.ContractManager
+import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
 import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
-import de.fhg.aisec.ids.camel.processors.Utils.SERIALIZER
 import de.fraunhofer.iais.eis.ContractOfferMessageBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.net.URI
 
 /**
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
  */
-@Suppress("unused")
-class ContractOfferCreationProcessor : Processor {
+@Component("contractOfferCreationProcessor")
+class ContractOfferCreationProcessor(@Autowired private val contractManager: ContractManager) : Processor {
 
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
@@ -45,8 +49,7 @@ class ContractOfferCreationProcessor : Processor {
             exchange.message.setHeader(IDSCP2_HEADER, it)
         }
 
-        // create ContractOffer, allowing use of received data in the given container only
-        val artifactUri = exchange.getProperty(Constants.ARTIFACT_URI_PROPERTY)?.let {
+        val artifactUri = exchange.getProperty(ContractConstants.ARTIFACT_URI_PROPERTY)?.let {
             if (it is URI) {
                 it
             } else {
@@ -54,7 +57,8 @@ class ContractOfferCreationProcessor : Processor {
             }
         } ?: throw RuntimeException("No property \"artifactUri\" found in Exchange, cannot build contract!")
 
-        val contractOffer = ContractFactory.buildContractOffer(artifactUri, exchange)
+        val contractProperties = ContractHelper.collectContractProperties(artifactUri, exchange)
+        val contractOffer = contractManager.makeContract(contractProperties)
 
         SERIALIZER.serialize(contractOffer).let {
             if (LOG.isDebugEnabled) {

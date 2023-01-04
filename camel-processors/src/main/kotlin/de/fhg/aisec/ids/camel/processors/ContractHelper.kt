@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-processors
  * %%
- * Copyright (C) 2021 Fraunhofer AISEC
+ * Copyright (C) 2022 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
+import de.fhg.aisec.ids.api.contracts.ContractConstants
+import de.fhg.aisec.ids.api.contracts.ContractUtils
 import de.fraunhofer.iais.eis.ContractAgreementBuilder
 import de.fraunhofer.iais.eis.ContractAgreementMessageBuilder
 import de.fraunhofer.iais.eis.ContractOffer
@@ -27,10 +29,37 @@ import org.apache.camel.Exchange
 import org.slf4j.Logger
 import java.net.URI
 
-object ContractHandler {
+object ContractHelper {
+
+    fun collectContractProperties(requestedArtifact: URI, exchange: Exchange): Map<String, Any> {
+        val contractProperties = mutableMapOf<String, Any>(
+            ContractConstants.ARTIFACT_URI_PROPERTY to requestedArtifact
+        )
+        // Docker image whitelisting
+        contractProperties[ContractConstants.UC_DOCKER_IMAGE_URIS] = (
+            exchange.getProperty(ContractConstants.UC_DOCKER_IMAGE_URIS)
+                // Legacy property name without "uc-" prefix
+                ?: exchange.getProperty("containerUri")
+                ?: ""
+            ).toString()
+            .split(Regex("\\s+"))
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+            .map(URI::create)
+            .toList()
+        // Add not after (BEFORE) usage constraint
+        exchange.getProperty(ContractConstants.UC_NOT_AFTER_DATETIME)?.let {
+            contractProperties[ContractConstants.UC_NOT_AFTER_DATETIME] = it
+        }
+        // Add not before (AFTER) usage constraint
+        exchange.getProperty(ContractConstants.UC_NOT_BEFORE_DATETIME)?.let {
+            contractProperties[ContractConstants.UC_NOT_BEFORE_DATETIME] = it
+        }
+        return contractProperties
+    }
 
     fun handleContractOffer(exchange: Exchange, correlationId: URI, logger: Logger) {
-        val contractOfferReceived = Utils.SERIALIZER.deserialize(
+        val contractOfferReceived = ContractUtils.SERIALIZER.deserialize(
             exchange.message.getBody(String::class.java),
             ContractOffer::class.java
         )
@@ -44,7 +73,7 @@ object ContractHandler {
                 _correlationMessage_(correlationId)
                 let {
                     if (logger.isDebugEnabled) {
-                        logger.debug("Serialization Header: {}", Utils.SERIALIZER.serialize(it.build()))
+                        logger.debug("Serialization Header: {}", ContractUtils.SERIALIZER.serialize(it.build()))
                     }
                     exchange.message.setHeader(Constants.IDSCP2_HEADER, it)
                 }
@@ -68,7 +97,7 @@ object ContractHandler {
                 logger.debug("Consumer saved contract ${contractAgreement.id}")
             }
 
-            Utils.SERIALIZER.serialize(contractAgreement).let {
+            ContractUtils.SERIALIZER.serialize(contractAgreement).let {
                 if (logger.isDebugEnabled) {
                     logger.debug("ContractAgreement ID: {}", contractAgreement.id)
                     logger.debug("Serialization body: {}", it)
@@ -86,7 +115,7 @@ object ContractHandler {
             ._correlationMessage_(correlationId)
             .let {
                 if (logger.isDebugEnabled) {
-                    logger.debug("Serialization Header: {}", Utils.SERIALIZER.serialize(it.build()))
+                    logger.debug("Serialization Header: {}", ContractUtils.SERIALIZER.serialize(it.build()))
                 }
                 exchange.message.setHeader(Constants.IDSCP2_HEADER, it)
             }

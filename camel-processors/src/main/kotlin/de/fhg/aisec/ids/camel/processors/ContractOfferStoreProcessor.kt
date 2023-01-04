@@ -20,17 +20,20 @@
 package de.fhg.aisec.ids.camel.processors
 
 import de.fhg.aisec.ids.api.contracts.ContractConstants
-import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
-import de.fraunhofer.iais.eis.ResourceUpdateMessageBuilder
+import de.fhg.aisec.ids.api.contracts.ContractManager
+import de.fhg.aisec.ids.camel.processors.Constants.CONTRACT_STORE_KEY
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.net.URI
 
-@Component("resourceUpdateCreationProcessor")
-class ResourceUpdateCreationProcessor : Processor {
+/**
+ * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
+ */
+@Component("contractOfferStoreProcessor")
+class ContractOfferStoreProcessor(@Autowired private val contractManager: ContractManager) : Processor {
 
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
@@ -43,28 +46,16 @@ class ResourceUpdateCreationProcessor : Processor {
             } else {
                 URI.create(it.toString())
             }
-        }
+        } ?: throw RuntimeException("No property \"artifactUri\" found in Exchange, cannot build contract!")
 
-        val usedContract = ProviderDB.artifactUrisMapped2ContractAgreements[
-            Pair(artifactUri, UsageControlMaps.getExchangePeerIdentity(exchange))
-        ]
-            ?: throw RuntimeException("No UC contract found for resource/artifact $artifactUri")
-        if (LOG.isDebugEnabled) {
-            LOG.debug("Contract for requested Artifact found {}", usedContract)
-        }
-
-        ResourceUpdateMessageBuilder()
-            ._affectedResource_(artifactUri)
-            ._transferContract_(usedContract)
-            .let {
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))
-                }
-                exchange.message.setHeader(IDSCP2_HEADER, it)
-            }
+        exchange.getProperty(CONTRACT_STORE_KEY)?.toString()?.let {
+            val contractProperties = ContractHelper.collectContractProperties(artifactUri, exchange)
+            val contractOffer = contractManager.makeContract(contractProperties)
+            contractManager.storeContract(it, contractOffer)
+        } ?: throw RuntimeException("No store key for created contract provided!")
     }
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(ResourceUpdateCreationProcessor::class.java)
+        private val LOG = LoggerFactory.getLogger(ContractOfferStoreProcessor::class.java)
     }
 }

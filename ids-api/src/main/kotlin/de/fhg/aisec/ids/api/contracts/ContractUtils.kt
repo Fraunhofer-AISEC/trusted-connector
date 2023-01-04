@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-processors
+ * ids-api
  * %%
  * Copyright (C) 2021 Fraunhofer AISEC
  * %%
@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.processors
+package de.fhg.aisec.ids.api.contracts
 
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer
 import java.net.URI
@@ -25,7 +25,7 @@ import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 
-object Utils {
+object ContractUtils {
     val SERIALIZER: Serializer by lazy { Serializer() }
     val TYPE_DATETIMESTAMP: URI = URI.create("http://www.w3.org/2001/XMLSchema#dateTimeStamp")
     val DATATYPE_FACTORY: DatatypeFactory = DatatypeFactory.newInstance()
