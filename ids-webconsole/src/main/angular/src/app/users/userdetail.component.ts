@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
 import { ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 
 @Component({
     templateUrl: './userdetail.component.html'
@@ -18,6 +19,7 @@ export class DetailUserComponent implements OnInit {
 
     constructor(private readonly fb: UntypedFormBuilder,
                 private readonly titleService: Title,
+                private readonly log: NGXLogger,
                 private readonly userService: UserService,
                 private readonly router: Router,
                 private route: ActivatedRoute) {
@@ -40,10 +42,10 @@ export class DetailUserComponent implements OnInit {
         this.rePW = this.myForm.get('repeatpassword').value;
 
         if (this.newPW === this.rePW) {
-            console.log('changing password');
+            this.log.debug('Changing password...');
             await this.userService.setPassword(this.userId, this.oldPW, this.newPW);
         } else {
-            console.log('New passwords not equal, password not changed');
+            this.log.warn('New passwords not equal, password not changed!');
         }
         return this.router.navigate(['/users']);
     }
