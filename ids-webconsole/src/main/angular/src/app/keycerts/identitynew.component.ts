@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
@@ -11,9 +11,12 @@ import { Identity } from './identity.interface';
     templateUrl: './identitynew.component.html'
 })
 export class NewIdentityComponent implements OnInit {
-    public myForm: FormGroup;
 
-    constructor(private readonly fb: FormBuilder, private readonly titleService: Title, private readonly certService: CertificateService,
+    public myForm: UntypedFormGroup;
+
+    constructor(private readonly fb: UntypedFormBuilder,
+                private readonly titleService: Title,
+                private readonly certService: CertificateService,
                 private readonly router: Router) {
         this.titleService.setTitle('New Identity');
     }

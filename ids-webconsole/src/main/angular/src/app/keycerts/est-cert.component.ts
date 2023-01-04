@@ -1,19 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
 import { ESTService } from './est-service';
+import { NGXLogger } from 'ngx-logger';
 
 @Component({
     templateUrl: './est-cert.component.html'
 })
 export class ESTCertComponent implements OnInit {
-    public myForm: FormGroup;
+    public myForm: UntypedFormGroup;
     public cacert = '';
 
-    constructor(private readonly fb: FormBuilder,
+    constructor(private readonly fb: UntypedFormBuilder,
                 private readonly titleService: Title,
+                private readonly log: NGXLogger,
                 private readonly estService: ESTService,
                 private readonly router: Router) {
         this.titleService.setTitle('Set EST CA cert');
@@ -37,7 +39,7 @@ export class ESTCertComponent implements OnInit {
                 certificate: e
             });
             this.cacert = e;
-            console.log(e);
+            this.log.error('Error during EST root certificate fetch', e);
         });
     }
 

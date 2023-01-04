@@ -4,6 +4,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 plugins {
+    idea
     application
     alias(libs.plugins.springboot)
     alias(libs.plugins.buildconfig)
@@ -81,8 +82,6 @@ tasks.withType<Jar> {
 tasks.withType<BootJar> {
     enabled = false
 }
-
-apply(plugin = "idea")
 
 buildConfig {
     sourceSets.getByName("main") {

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 import { LoginService } from './login.service';
 
@@ -9,11 +9,10 @@ import { LoginService } from './login.service';
     providers: []
 })
 export class LoginComponent {
-    public form: FormGroup;
+    public form: UntypedFormGroup;
     public errorText: string = undefined;
 
-    constructor(
-        private fb: FormBuilder,
+    constructor(private fb: UntypedFormBuilder,
         private authService: LoginService,
         private router: Router,
         private route: ActivatedRoute

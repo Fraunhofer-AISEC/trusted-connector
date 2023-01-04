@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { of, timer } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 
 import { SettingsService } from './settings.service';
 import { TermsOfService } from './terms-of-service.interface';
 import { Title } from '@angular/platform-browser';
+
 @Component({
     selector: 'my-app',
     templateUrl: './ids.component.html',
@@ -13,13 +14,15 @@ import { Title } from '@angular/platform-browser';
     providers: [SettingsService]
 })
 export class IdsComponent implements OnInit {
-    public settingsForm?: FormGroup;
+    public settingsForm?: UntypedFormGroup;
     public saved = true;
     public tosWebconsole?: TermsOfService;
 
-    constructor(private readonly titleService: Title, private readonly settingsService: SettingsService,
-                private readonly formBuilder: FormBuilder) {
-      this.titleService.setTitle('Settings');
+    constructor(private readonly titleService: Title,
+                private readonly settingsService: SettingsService,
+                private readonly formBuilder: UntypedFormBuilder
+    ) {
+        this.titleService.setTitle('Settings');
     }
 
     public canDeactivate(target: IdsComponent): boolean {
@@ -47,7 +50,7 @@ export class IdsComponent implements OnInit {
                                 map(tos => {
                                     this.tosWebconsole = tos;
 
-                                    return tos && tos.error ? { asyncError: tos.error } : undefined;
+                                    return tos && tos.error ? {asyncError: tos.error} : undefined;
                                 }),
                                 take(1)
                             )

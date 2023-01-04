@@ -66,7 +66,7 @@ and is used by the default administration dashboard ("web console").
 dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.security", "spring-security-crypto")
+    implementation(libs.spring.security.crypto)
     implementation(libs.infomodel.model)
     implementation(libs.camel.core)
     implementation(libs.jose4j)
@@ -89,7 +89,7 @@ node {
     // This is important for a hassle-free build without pre-installed yarn!
     // To disable, pass -PnodeDownload=false to gradle!
     download.set(findProperty("nodeDownload")?.toString()?.toBoolean() ?: true)
-    version.set("16.13.2")
+    version.set("16.19.0")
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {

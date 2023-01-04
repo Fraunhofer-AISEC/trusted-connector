@@ -111,15 +111,16 @@ class ConnectionManagerService : ConnectionManager {
     private val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
 
     private val connectionListener = object : ConnectionListener {
-        override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
-            // When we are a client endpoint, we create an outgoing connection
-            val outgoing = IDSCPOutgoingConnection()
-
+        fun <C> handleConnection(
+            connection: C,
+            appLayerConnection: AppLayerConnection,
+            connectionsList: MutableList<C>
+        ) {
             // first register a idscp2connectionListener to keep track of connection cleanup
-            connection.addConnectionListener(object : Idscp2ConnectionListener {
+            appLayerConnection.addConnectionListener(object : Idscp2ConnectionListener {
                 private fun removeConnection() {
-                    connection.removeConnectionListener(this)
-                    outgoingConnections -= outgoing
+                    appLayerConnection.removeConnectionListener(this)
+                    connectionsList -= connection
                 }
 
                 override fun onError(t: Throwable) {}
@@ -128,6 +129,15 @@ class ConnectionManagerService : ConnectionManager {
                     removeConnection()
                 }
             })
+
+            connectionsList += connection
+        }
+
+        override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
+            // When we are a client endpoint, we create an outgoing connection
+            val outgoing = IDSCPOutgoingConnection()
+
+            handleConnection(outgoing, connection, outgoingConnections)
 
             // TODO handle information from connection and endpoint
 
@@ -136,26 +146,13 @@ class ConnectionManagerService : ConnectionManager {
                 attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
                 remoteIdentity = connection.remotePeer()
             }
-            outgoingConnections += outgoing
         }
 
         override fun onServerConnection(connection: AppLayerConnection, endpoint: Idscp2ServerEndpoint) {
             // Since we are a server and therefore listening, all connections should be incomming
             val incoming = IDSCPIncomingConnection()
 
-            // first register a idscp2connectionListener to keep track of connection cleanup
-            connection.addConnectionListener(object : Idscp2ConnectionListener {
-                private fun removeConnection() {
-                    connection.removeConnectionListener(this)
-                    incomingConnections -= incoming
-                }
-
-                override fun onError(t: Throwable) {}
-
-                override fun onClose() {
-                    removeConnection()
-                }
-            })
+            handleConnection(incoming, connection, incomingConnections)
 
             // TODO handle information from connection and endpoint
 
@@ -164,7 +161,6 @@ class ConnectionManagerService : ConnectionManager {
                 attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
                 remoteHostName = connection.remotePeer()
             }
-            incomingConnections += incoming
         }
     }
 

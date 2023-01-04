@@ -86,6 +86,11 @@
             "argsIgnorePattern": "ignored|^_",
             "varsIgnorePattern": "ignored|^_"
           }
+        ],
+        "no-console": [
+          "error", {
+            "allow": [""]
+          }
         ]
       }
     },

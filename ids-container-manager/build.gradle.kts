@@ -1,7 +1,6 @@
-import com.google.protobuf.gradle.protobuf
-import com.google.protobuf.gradle.protoc
-
-apply(plugin = "com.google.protobuf")
+plugins {
+    alias(libs.plugins.protobuf)
+}
 
 protobuf {
     if (findProperty("protocDownload")?.toString()?.toBoolean() != false) {

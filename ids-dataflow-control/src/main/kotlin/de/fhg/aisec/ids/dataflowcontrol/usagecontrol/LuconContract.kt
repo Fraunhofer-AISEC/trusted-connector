@@ -28,6 +28,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -68,7 +69,7 @@ class LuconContract private constructor(contract: ContractAgreement) {
             }
         }
         if (enforcementSuccessful) {
-            runBlocking {
+            runBlocking(Dispatchers.IO) {
                 val ucUrl = "http://${ectx.endpointUri.host}/usage-control"
                 val response = HTTP_CLIENT.post(ucUrl) {
                     contentType(ContentType.Application.Json)

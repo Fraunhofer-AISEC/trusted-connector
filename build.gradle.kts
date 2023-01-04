@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.springboot) apply false
     alias(libs.plugins.spring.dependencyManagement)
     alias(libs.plugins.swagger) apply false
-    alias(libs.plugins.protobuf) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.plugin.spring) apply false
     alias(libs.plugins.spotless)
@@ -27,9 +26,17 @@ allprojects {
     group = "de.fhg.aisec.ids"
     version = "7.0.0-rc2"
 
+    val versionRegex = ".*(rc-?[0-9]*|beta)$".toRegex(RegexOption.IGNORE_CASE)
+
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
-            ".*(rc-?[0-9]*|Beta)$".toRegex().matches(candidate.version)
+            // Reject release candidates and betas and pin Apache Camel to 3.18 LTS version
+            versionRegex.matches(candidate.version)
+                || (candidate.group in setOf("org.apache.camel", "org.apache.camel.springboot")
+                && !candidate.version.startsWith("3.18"))
+                || (candidate.group == "org.springframework.boot" && !candidate.version.startsWith("2."))
+                || (candidate.group == "org.springframework.security" && !candidate.version.startsWith("5."))
+                || (candidate.group.startsWith("de.fraunhofer.iais.eis.ids") && !candidate.version.startsWith("4.1."))
         }
     }
 }
@@ -60,9 +67,6 @@ subprojects {
     }
 
     dependencies {
-        // Logging API
-        implementation(rootProject.libs.slf4j.api)
-
         // Some versions are downgraded for unknown reasons, fix this here
         val groupPins = mapOf(
             "org.jetbrains.kotlin" to mapOf(

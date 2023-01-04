@@ -1,5 +1,6 @@
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import 'material-design-lite';
@@ -56,78 +57,84 @@ import { ESTCertComponent } from './keycerts/est-cert.component';
 import { ESTService } from './keycerts/est-service';
 
 @NgModule({
-  imports: [
-    BrowserModule,
-    routing,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-    FormsModule
+    imports: [
+        BrowserModule,
+        routing,
+        HttpClientModule,
+        FormsModule,
+        ReactiveFormsModule,
+        LoggerModule.forRoot({
+            level: NgxLoggerLevel.DEBUG
+        })
 //    ModalModule.forRoot(),
 //    BootstrapModalModule
-  ],
-  declarations: [
-    AppComponent,
-    AppsSearchComponent,
-    DashboardComponent,
-    MetricCardComponent,
-    AppsComponent,
-    AppCardComponent,
-    AppSearchResultCardComponent,
-    LoginComponent,
-    DataflowPoliciesComponent,
-    NewDataflowPolicyComponent,
-    RoutesComponent,
-    RouteeditorComponent,
-    RouteCardComponent,
-    IdsComponent,
-    KeycertsComponent,
-    CertificateCardComponent,
-    CertUploadComponent,
-    NewIdentityComponent,
-    ConfirmComponent,
-    ValuesPipe,
-    PrettifyPipe,
-    ConnectionConfigurationComponent,
-    ConnectionReportComponent,
-    ZoomVizComponent,
-    ConnectionReportComponent,
-    MDLUpgradeElementDirective,
-    HomeLayoutComponent,
-    LoginLayoutComponent,
-    NewUserComponent,
-    DetailUserComponent,
-    UserCardComponent,
-    UsersComponent,
-    NewIdentityESTComponent,
-    ESTCertComponent
-  ],
-  providers: [
-    HTTP_PROVIDER,
-    AppService,
-    RouteService,
-    PolicyService,
-    SettingsService,
-    CertificateService,
-    ESTService,
-    LoginService,
-    SensorService,
-    ConfirmService,
-    IdsComponent,
-    ConnectionReportService,
-    ConnectionConfigurationService,
-    MetricService,
-    Title,
-    AuthGuard,
-    {
+    ],
+    declarations: [
+        AppComponent,
+        AppsSearchComponent,
+        DashboardComponent,
+        MetricCardComponent,
+        AppsComponent,
+        AppCardComponent,
+        AppSearchResultCardComponent,
+        LoginComponent,
+        DataflowPoliciesComponent,
+        NewDataflowPolicyComponent,
+        RoutesComponent,
+        RouteeditorComponent,
+        RouteCardComponent,
+        IdsComponent,
+        KeycertsComponent,
+        CertificateCardComponent,
+        CertUploadComponent,
+        NewIdentityComponent,
+        ConfirmComponent,
+        ValuesPipe,
+        PrettifyPipe,
+        ConnectionConfigurationComponent,
+        ConnectionReportComponent,
+        ZoomVizComponent,
+        ConnectionReportComponent,
+        MDLUpgradeElementDirective,
+        HomeLayoutComponent,
+        LoginLayoutComponent,
+        NewUserComponent,
+        DetailUserComponent,
+        UserCardComponent,
+        UsersComponent,
+        NewIdentityESTComponent,
+        ESTCertComponent
+    ],
+    providers: [
+        HTTP_PROVIDER,
+        AppService,
+        RouteService,
+        PolicyService,
+        SettingsService,
+        CertificateService,
+        ESTService,
+        LoginService,
+        SensorService,
+        ConfirmService,
+        IdsComponent,
+        ConnectionReportService,
+        ConnectionConfigurationService,
+        MetricService,
+        Title,
+        AuthGuard,
+        {
             provide: HTTP_INTERCEPTORS,
             useClass: JwtInterceptor,
             multi: true
-    },
-    UserService
-  ],
-  bootstrap: [
-    AppComponent
-  ]
+        },
+        UserService
+    ],
+    bootstrap: [
+        AppComponent
+    ],
+    schemas: [
+        NO_ERRORS_SCHEMA
+    ]
 })
-export class AppModule { }
+export class AppModule {
+}
