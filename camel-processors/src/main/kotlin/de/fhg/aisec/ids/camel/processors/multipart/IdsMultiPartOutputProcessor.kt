@@ -19,7 +19,13 @@
  */
 package de.fhg.aisec.ids.camel.processors.multipart
 
+import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
+import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.camel.processors.multipart.MultiPartConstants.IDS_HEADER_KEY
+import de.fraunhofer.iais.eis.DynamicAttributeToken
+import de.fraunhofer.iais.eis.DynamicAttributeTokenBuilder
+import de.fraunhofer.iais.eis.Message
+import de.fraunhofer.iais.eis.TokenFormat
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.apache.http.entity.ContentType
@@ -27,10 +33,13 @@ import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.InputStreamBody
 import org.apache.http.entity.mime.content.StringBody
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.io.InputStream
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.UUID
+import javax.xml.datatype.XMLGregorianCalendar
 
 /**
  * The MultiPartOutputProcessor will read the Exchange's header "ids" (if present) and the
@@ -82,14 +91,62 @@ class IdsMultiPartOutputProcessor : Processor {
         multipartEntityBuilder.setMode(HttpMultipartMode.STRICT)
         multipartEntityBuilder.setBoundary(boundary)
 
-        val idsHeader = exchange.message.getHeader(IDS_HEADER_KEY)?.toString()
+        val idsHeader = exchange.message.getHeader(IDS_HEADER_KEY)
             ?: throw RuntimeException("Required header \"ids-header\" not found, aborting.")
 
-        // Use the self-description provided by the InfoModelManager as "header"
-        multipartEntityBuilder.addPart(
-            MultiPartConstants.MULTIPART_HEADER,
-            StringBody(idsHeader, ContentType.APPLICATION_JSON)
-        )
+        // Our detection heuristic for an incomplete InfoModel idsHeader
+        if (idsHeader::class.simpleName?.endsWith("Builder") == true) {
+            try {
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("Finalizing IDS idsHeader object...")
+                }
+                idsHeader.let {
+                    it::class.java.apply {
+                        getMethod("_securityToken_", DynamicAttributeToken::class.java)
+                            .invoke(
+                                it,
+                                DynamicAttributeTokenBuilder()
+                                    ._tokenFormat_(TokenFormat.JWT)
+                                    // TODO: This will soon not work anymore, we must obtain a real DAT here!
+                                    ._tokenValue_("DUMMY_DAT")
+                                    .build()
+                            )
+                        getMethod("_senderAgent_", URI::class.java).invoke(it, Utils.maintainerUrlProducer())
+                        getMethod("_issuerConnector_", URI::class.java).invoke(it, Utils.connectorUrlProducer())
+                        getMethod("_issued_", XMLGregorianCalendar::class.java)
+                            .invoke(it, Utils.createGregorianCalendarTimestamp(System.currentTimeMillis()))
+                        getMethod("_modelVersion_", String::class.java).invoke(it, Utils.infomodelVersion)
+                        val message = getMethod("build").invoke(it)
+                        if (message !is Message) {
+                            throw RuntimeException(
+                                "InfoModel message build failed! build() did not return a Message object!"
+                            )
+                        }
+                        multipartEntityBuilder.addPart(
+                            MultiPartConstants.MULTIPART_HEADER,
+                            StringBody(SERIALIZER.serialize(message), ContentType.APPLICATION_JSON)
+                        )
+                    }
+                }
+            } catch (upa: UninitializedPropertyAccessException) {
+                throw RuntimeException(
+                    "At least one property of de.fhg.aisec.ids.camel.idscp2.Utils has not been " +
+                        "properly initialized. This is a mandatory requirement for initialization " +
+                        "of IDS Messages within IdsMultiPartOutputProcessor!",
+                    upa
+                )
+            } catch (t: Throwable) {
+                throw RuntimeException(
+                    "Failed to finalize idsHeader, the object must be an IDS MessageBuilder!",
+                    t
+                )
+            }
+        } else {
+            multipartEntityBuilder.addPart(
+                MultiPartConstants.MULTIPART_HEADER,
+                StringBody(idsHeader.toString(), ContentType.APPLICATION_JSON)
+            )
+        }
 
         exchange.message.let {
             // Get the Exchange body and turn it into the second part named "payload"
@@ -128,5 +185,9 @@ class IdsMultiPartOutputProcessor : Processor {
             // Using InputStream as source for the message body
             it.body = multipartEntityBuilder.build().content
         }
+    }
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(IdsMultiPartOutputProcessor::class.java)
     }
 }
