@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fhg.aisec.ids.camel.processors.Constants.IDS_TYPE
 import de.fraunhofer.iais.eis.ArtifactRequestMessage
 import de.fraunhofer.iais.eis.ArtifactResponseMessage
@@ -55,7 +55,7 @@ class IdsMessageTypeExtractionProcessor : Processor {
             if (LOG.isDebugEnabled) {
                 LOG.debug("[IN] ${IdsMessageTypeExtractionProcessor::class.java.simpleName}")
             }
-            exchange.message.getHeader(IDSCP2_HEADER, Message::class.java)?.let { header ->
+            exchange.message.getHeader(IDS_HEADER, Message::class.java)?.let { header ->
                 val messageType = when (header) {
                     is ArtifactRequestMessage -> ArtifactRequestMessage::class.simpleName
                     is ArtifactResponseMessage -> ArtifactResponseMessage::class.simpleName

@@ -22,7 +22,6 @@ dependencies {
     api(project(":ids-infomodel-manager"))
     api(project(":ids-dataflow-control"))
     api(project(":camel-processors"))
-    api(project(":camel-multipart-processor"))
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter")

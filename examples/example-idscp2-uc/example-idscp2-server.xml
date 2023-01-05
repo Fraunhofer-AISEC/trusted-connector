@@ -53,8 +53,8 @@
                     </choice>
                 </when>
                 <otherwise>
-                    <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-                    <removeHeader name="idscp2-header" />
+                    <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[ids-header]}"/>
+                    <removeHeader name="ids-header" />
                     <setBody><simple>${null}</simple></setBody>
                 </otherwise>
             </choice>

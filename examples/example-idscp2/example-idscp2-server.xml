@@ -41,14 +41,14 @@
 
         <route id="idscp2Server">
             <from uri="idscp2server://0.0.0.0:29292?idscp2Configuration=#idscp2Config&amp;secureChannelConfigurationBuilder=#tlsConfig"/>
-            <log message="Server received: ${body} (Header: ${headers[idscp2-header]})"/>
+            <log message="Server received: ${body} (Header: ${headers[ids-header]})"/>
             <setBody>
                 <simple>PONG</simple>
             </setBody>
-            <setHeader name="idscp2-header">
+            <setHeader name="ids-header">
                 <simple>pong</simple>
             </setHeader>
-            <log message="Server response: ${body} (Header: ${headers[idscp2-header]})"/>
+            <log message="Server response: ${body} (Header: ${headers[ids-header]})"/>
         </route>
 
     </camelContext>

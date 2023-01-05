@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.multipart
+package de.fhg.aisec.ids.camel.processors.multipart
 
 internal object MultiPartConstants {
     const val IDS_HEADER_KEY = "ids-header"

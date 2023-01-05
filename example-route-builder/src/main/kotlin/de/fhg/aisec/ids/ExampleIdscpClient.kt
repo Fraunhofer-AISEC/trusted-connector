@@ -36,11 +36,11 @@ open class ExampleIdscpClient {
             override fun configure() {
                 from("timer://tenSecondsTimer?fixedRate=true&period=10000")
                     .setBody().simple("PING")
-                    .setHeader("idscp2-header").simple("ping")
-                    .log("Client sends: \${body} (Header: \${headers[idscp2-header]})")
+                    .setHeader("ids-header").simple("ping")
+                    .log("Client sends: \${body} (Header: \${headers[ids-header]})")
                     .to("idscp2client://consumer-core:29292?awaitResponse=true&sslContextParameters=#clientSslContext")
-                    .log("Client received: \${body} (Header: \${headers[idscp2-header]})")
-                    .removeHeader("idscp2-header") // Prevents client consumer from sending the message back to the server
+                    .log("Client received: \${body} (Header: \${headers[ids-header]})")
+                    .removeHeader("ids-header") // Prevents client consumer from sending the message back to the server
                     .setBody().simple("\${null}")
             }
         }

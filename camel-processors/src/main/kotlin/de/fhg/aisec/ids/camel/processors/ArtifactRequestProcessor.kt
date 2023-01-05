@@ -20,7 +20,7 @@
 package de.fhg.aisec.ids.camel.processors
 
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
-import de.fhg.aisec.ids.camel.idscp2.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fhg.aisec.ids.camel.processors.Constants.REQUESTED_ARTIFACT_KEY
 import de.fraunhofer.iais.eis.ArtifactRequestMessage
 import de.fraunhofer.iais.eis.ArtifactResponseMessageBuilder
@@ -40,7 +40,7 @@ class ArtifactRequestProcessor : Processor {
         }
 
         val artifactRequestMessage = exchange.message.getHeader(
-            IDSCP2_HEADER,
+            IDS_HEADER,
             ArtifactRequestMessage::class.java
         )
         val requestedArtifact = artifactRequestMessage.requestedArtifact
@@ -68,7 +68,7 @@ class ArtifactRequestProcessor : Processor {
                     if (LOG.isDebugEnabled) {
                         LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))
                     }
-                    exchange.message.setHeader(IDSCP2_HEADER, it)
+                    exchange.message.setHeader(IDS_HEADER, it)
                 }
             }
             exchange.setProperty(REQUESTED_ARTIFACT_KEY, requestedArtifact)
@@ -90,7 +90,7 @@ class ArtifactRequestProcessor : Processor {
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))
                 }
-                exchange.message.setHeader(IDSCP2_HEADER, it)
+                exchange.message.setHeader(IDS_HEADER, it)
             }
     }
 

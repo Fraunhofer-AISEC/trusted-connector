@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.multipart
+package de.fhg.aisec.ids.camel.processors.multipart
 
 import org.apache.commons.fileupload.FileUpload
 import org.apache.commons.fileupload.UploadContext
@@ -38,6 +38,10 @@ class MultiPartStringParser internal constructor(private val multipartInput: Inp
 
     override fun getCharacterEncoding(): String = StandardCharsets.UTF_8.name()
 
+    @Deprecated(
+        "Deprecated in favor of contentLength(), see parent class org.apache.commons.fileupload.UploadContext",
+        ReplaceWith("contentLength()")
+    )
     override fun getContentLength() = -1
 
     override fun getContentType() = "multipart/form-data, boundary=$boundary"

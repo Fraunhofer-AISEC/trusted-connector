@@ -5,13 +5,12 @@ dependencies {
 
     implementation(libs.idscp2.core)
     implementation(libs.camel.idscp2)
-
     implementation(libs.infomodel.model)
     implementation(libs.infomodel.serializer)
-
     implementation(libs.camel.core)
-
     implementation(libs.guava)
+    implementation(libs.apacheHttp.mime)
+    implementation(libs.commons.fileupload)
 
     testImplementation(libs.bundles.camelTest)
 }

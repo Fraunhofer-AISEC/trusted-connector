@@ -17,9 +17,9 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package de.fhg.aisec.ids.camel.multipart
+package de.fhg.aisec.ids.camel.processors.multipart
 
-import de.fhg.aisec.ids.camel.multipart.MultiPartConstants.IDS_HEADER_KEY
+import de.fhg.aisec.ids.camel.processors.multipart.MultiPartConstants.IDS_HEADER_KEY
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.apache.http.entity.ContentType

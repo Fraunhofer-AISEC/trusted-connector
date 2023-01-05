@@ -43,15 +43,15 @@
                             <to uri="controlbus:route?routeId=artifactRequestRoute&amp;action=start"/>
                         </when>
                         <otherwise>
-                            <log loggingLevel="ERROR" message="Expected MessageProcessedNotificationMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-                            <removeHeader name="idscp2-header" />
+                            <log loggingLevel="ERROR" message="Expected MessageProcessedNotificationMessage, but received:\n${body}\n### Header: ###\n${headers[ids-header]}"/>
+                            <removeHeader name="ids-header" />
                             <setBody><simple>${null}</simple></setBody>
                         </otherwise>
                     </choice>
                 </when>
                 <otherwise>
-                    <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
-                    <removeHeader name="idscp2-header" />
+                    <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received:\n${body}\n### Header: ###\n${headers[ids-header]}"/>
+                    <removeHeader name="ids-header" />
                     <setBody><simple>${null}</simple></setBody>
                 </otherwise>
             </choice>
@@ -72,7 +72,7 @@
                     <to uri="http://echo-server:80"/>
                 </when>
                 <otherwise>
-                    <log loggingLevel="ERROR" message="Expected ArtifactResponseMessage, but received:\n${body}\n### Header: ###\n${headers[idscp2-header]}"/>
+                    <log loggingLevel="ERROR" message="Expected ArtifactResponseMessage, but received:\n${body}\n### Header: ###\n${headers[ids-header]}"/>
                 </otherwise>
             </choice>
         </route>

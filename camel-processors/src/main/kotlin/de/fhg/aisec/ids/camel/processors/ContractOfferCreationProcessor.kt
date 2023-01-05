@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.camel.processors
 import de.fhg.aisec.ids.api.contracts.ContractConstants
 import de.fhg.aisec.ids.api.contracts.ContractManager
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fraunhofer.iais.eis.ContractOfferMessageBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
@@ -46,7 +46,7 @@ class ContractOfferCreationProcessor(@Autowired private val contractManager: Con
             if (LOG.isDebugEnabled) {
                 LOG.debug("Serialization header: {}", SERIALIZER.serialize(it.build()))
             }
-            exchange.message.setHeader(IDSCP2_HEADER, it)
+            exchange.message.setHeader(IDS_HEADER, it)
         }
 
         val artifactUri = exchange.getProperty(ContractConstants.ARTIFACT_URI_PROPERTY)?.let {

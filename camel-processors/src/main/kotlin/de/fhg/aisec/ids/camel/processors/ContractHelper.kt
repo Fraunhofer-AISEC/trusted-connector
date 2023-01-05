@@ -75,7 +75,7 @@ object ContractHelper {
                     if (logger.isDebugEnabled) {
                         logger.debug("Serialization Header: {}", ContractUtils.SERIALIZER.serialize(it.build()))
                     }
-                    exchange.message.setHeader(Constants.IDSCP2_HEADER, it)
+                    exchange.message.setHeader(Constants.IDS_HEADER, it)
                 }
             }
 
@@ -117,7 +117,7 @@ object ContractHelper {
                 if (logger.isDebugEnabled) {
                     logger.debug("Serialization Header: {}", ContractUtils.SERIALIZER.serialize(it.build()))
                 }
-                exchange.message.setHeader(Constants.IDSCP2_HEADER, it)
+                exchange.message.setHeader(Constants.IDS_HEADER, it)
             }
     }
 }
