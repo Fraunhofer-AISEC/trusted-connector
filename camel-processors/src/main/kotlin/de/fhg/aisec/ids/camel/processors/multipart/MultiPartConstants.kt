@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * camel-multipart-processor
+ * camel-processors
  * %%
  * Copyright (C) 2019 Fraunhofer AISEC
  * %%
