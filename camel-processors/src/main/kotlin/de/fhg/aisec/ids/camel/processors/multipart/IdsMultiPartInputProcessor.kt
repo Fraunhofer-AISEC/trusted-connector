@@ -19,7 +19,8 @@
  */
 package de.fhg.aisec.ids.camel.processors.multipart
 
-import de.fhg.aisec.ids.camel.processors.multipart.MultiPartConstants.IDS_HEADER_KEY
+import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
+import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.springframework.stereotype.Component
@@ -32,8 +33,10 @@ class IdsMultiPartInputProcessor : Processor {
         exchange.message.let {
             // Parse Multipart message
             val parser = MultiPartStringParser(it.getBody(InputStream::class.java))
-            // Parser JSON Header (should be an InfoModel object)
-            it.setHeader(IDS_HEADER_KEY, parser.header)
+            // Parse IDS header (should be an InfoModel Message object)
+            parser.header?.let { header ->
+                it.setHeader(MultiPartConstants.IDS_HEADER_KEY, SERIALIZER.deserialize(header, Message::class.java))
+            }
             // Remove current Content-Type header before setting the new one
             it.removeHeader("Content-Type")
             // Copy Content-Type from payload part
