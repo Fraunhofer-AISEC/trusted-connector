@@ -45,10 +45,7 @@ class JwtRestApiFilter : OncePerRequestFilter() {
                 return
             }
             // Verify token
-            val jwt = authorizationHeader.substring(7).trim()
-            val algorithm: Algorithm = Algorithm.HMAC256(UserApi.key)
-            val verifier = JWT.require(algorithm).withIssuer("ids-connector").build() // Reusable verifier instance
-            verifier.verify(jwt)
+            VERIFIER.verify(authorizationHeader.substring(7).trim())
         } catch (e: Exception) {
             LOG.warn("Invalid JWT token in request, sending 401 UNAUTHORIZED...")
             response.reset()
@@ -61,11 +58,13 @@ class JwtRestApiFilter : OncePerRequestFilter() {
     }
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        val uri = request.requestURI
-        return uri == "/cxf/api/v1/user/login" || !uri.startsWith("/cxf/api/v1")
+        return request.requestURI.let {
+            it == "/api/v1/user/login" || !it.startsWith("/api/v1")
+        }
     }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(JwtRestApiFilter::class.java)
+        private val VERIFIER = JWT.require(Algorithm.HMAC256(UserApi.key)).withIssuer("ids-connector").build()
     }
 }
