@@ -29,10 +29,17 @@ class NativeTlsConfigurationBuilderFactoryBean : FactoryBean<NativeTlsConfigurat
 
     private val builder = NativeTlsConfiguration.Builder()
 
-    fun setSslParameters(sslContextParameters: SSLContextParameters) =
-        Idscp2Endpoint.applySslContextParameters(builder, sslContextParameters)
+    var sslParameters: SSLContextParameters
+        set(value) {
+            Idscp2Endpoint.applySslContextParameters(builder, value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setServerSocketTimeout(timeout: Int) = builder.setServerSocketTimeout(timeout)
+    var serverSocketTimeout: Int
+        set(value) {
+            builder.setServerSocketTimeout(value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
     override fun getObject() = builder
 

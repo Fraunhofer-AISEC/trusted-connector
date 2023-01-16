@@ -19,8 +19,12 @@
  */
 package de.fhg.aisec.ids.camel.processors.multipart
 
+import org.apache.http.entity.ContentType
+import java.nio.charset.StandardCharsets
+
 internal object MultiPartConstants {
     const val IDS_HEADER_KEY = "ids-header"
     const val MULTIPART_HEADER = "header"
     const val MULTIPART_PAYLOAD = "payload"
+    val MEDIA_TYPE_JSON_LD: ContentType = ContentType.create("application/ld+json", StandardCharsets.UTF_8)
 }

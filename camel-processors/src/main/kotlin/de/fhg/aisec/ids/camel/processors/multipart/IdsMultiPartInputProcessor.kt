@@ -20,29 +20,91 @@
 package de.fhg.aisec.ids.camel.processors.multipart
 
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
+import de.fhg.aisec.ids.idscp2.api.drivers.DapsDriver
 import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
+import org.eclipse.jetty.server.Request
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.InputStream
+import java.security.cert.Certificate
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLPeerUnverifiedException
+import javax.net.ssl.SSLSession
 
 @Component("idsMultiPartInputProcessor")
 class IdsMultiPartInputProcessor : Processor {
+
+    @Autowired
+    lateinit var beanFactory: BeanFactory
+
+    @Value("\${ids-multipart.daps-bean-name:}")
+    var dapsBeanName: String? = null
+
     @Throws(Exception::class)
     override fun process(exchange: Exchange) {
-        exchange.message.let {
+        exchange.message.let { message ->
             // Parse Multipart message
-            val parser = MultiPartStringParser(it.getBody(InputStream::class.java))
+            val parser = MultiPartStringParser(message.getBody(InputStream::class.java))
             // Parse IDS header (should be an InfoModel Message object)
-            parser.header?.let { header ->
-                it.setHeader(MultiPartConstants.IDS_HEADER_KEY, SERIALIZER.deserialize(header, Message::class.java))
-            }
+            val idsHeader = parser.header?.let { header ->
+                SERIALIZER.deserialize(header, Message::class.java).also {
+                    message.setHeader(MultiPartConstants.IDS_HEADER_KEY, it)
+                }
+            } ?: throw RuntimeException("No IDS header found!")
+
+            val dat = idsHeader.securityToken?.tokenValue ?: throw RuntimeException("No DAT provided!")
+
+            dapsBeanName?.let { dapsBeanName ->
+                val peerCertificates: Array<Certificate> = if (message.headers.containsKey("CamelHttpServletRequest")) {
+                    // Assume server-side REST endpoint.
+                    // Try to extract certificates from CamelHttpServletRequest reference.
+                    val request = message.headers["CamelHttpServletRequest"] as Request
+                    val sslSession = request.getAttribute("org.eclipse.jetty.servlet.request.ssl_session") as SSLSession
+                    try {
+                        sslSession.peerCertificates
+                    } catch (e: SSLPeerUnverifiedException) {
+                        LOG.error("Client didn't provide a certificate!")
+                        throw e
+                    }
+                } else {
+                    // Assume client-side HTTPS request.
+                    // Try to obtain Certificates extracted by CertExposingHttpClientConfigurer.
+                    message.headers[CertExposingHttpClientConfigurer.SERVER_CERTIFICATE_HASH_HEADER]?.let { hash ->
+                        CertExposingHttpClientConfigurer.certificateMap[hash]
+                    } ?: throw RuntimeException(
+                        "Could not obtain server TLS certificate! Has CertExposingHttpClientConfigurer been invoked?"
+                    )
+                }
+                if (LOG.isTraceEnabled) {
+                    LOG.trace("Peer Certificates: {}", peerCertificates)
+                }
+                val daps = beanFactory.getBean(dapsBeanName, DapsDriver::class.java)
+                try {
+                    daps.verifyToken(dat.toByteArray(), peerCertificates[0] as X509Certificate)
+                } catch (e: Exception) {
+                    throw SecurityException("Access Token did not match presented certificate!", e)
+                }
+            } ?: LOG.warn("No DAPS instance has been specified, DAT is not checked!")
+
+            // Extract DAT from IDS header and assemble auth header
+            exchange.getIn().setHeader("dat", "Bearer $dat")
+
             // Remove current Content-Type header before setting the new one
-            it.removeHeader("Content-Type")
+            message.removeHeader("Content-Type")
             // Copy Content-Type from payload part
-            it.setHeader("Content-Type", parser.payloadContentType)
+            message.setHeader("Content-Type", parser.payloadContentType)
             // Populate body with extracted payload
-            it.body = parser.payload
+            message.body = parser.payload
         }
+    }
+
+    companion object {
+        val LOG: Logger = LoggerFactory.getLogger(IdsMultiPartInputProcessor::class.java)
     }
 }

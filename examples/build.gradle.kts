@@ -1,12 +1,17 @@
 import org.gradle.kotlin.dsl.support.zipTo
 
+dependencies {
+    implementation(project(":camel-processors"))
+    implementation("org.apache.camel.springboot:camel-jetty-starter")
+}
+
 // Copy example files to build directory
 val copyExample = tasks.create<Copy>("copyExample") {
     // Delete the build directory first to start with a clean state
     doFirst {
         delete(project.buildDir)
     }
-    from(project.projectDir) {
+    from("${project.projectDir}/src/main/resources") {
         include("example-*/**", "deploy/*", "etc/*")
     }
     into(project.buildDir)

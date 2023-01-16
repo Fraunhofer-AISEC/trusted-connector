@@ -22,11 +22,10 @@ Please refer to the [contribution guide](https://github.com/industrial-data-spac
 # Project structure
 
 ├── __camel-influxdb__ Influx DB adapter for Apache Camel. (optional. It is not included in the assembly by default)<br />
-├── __camel-multipart-processor__ _REST/MultiPart protocol as an Apache Camel component_<br />
-├── __camel-multipart-processor__ _Apache Camel Processors for contract negotiation and other IDS-specific message types_<br />
+├── __camel-processors__ _Apache Camel Processors for IDS Multipart, contract negotiation and other IDS-specific message types_<br />
 ├── __ids-acme__ _ACME 2 client for retrieving TLS certificates for the web console UI_<br />
 ├── __ids-api__ _Internal APIs of all IDS connector modules._<br />
-├── __camel-multipart-processor__ _Central subproject for TC Spring Boot build and configurations_<br />
+├── __ids-connector__ _Central subproject for TC Spring Boot build and configurations_<br />
 ├── __ids-container-manager__ _Management interface to the underlying container management layer (trustme or docker)_<br />
 ├── __ids-dataflow-control__ _LUCON data flow policy framework_<br />
 ├── __ids-infomodel-manager__ _Provides the IDS information model_<br />

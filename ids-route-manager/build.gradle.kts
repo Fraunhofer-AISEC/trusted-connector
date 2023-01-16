@@ -8,7 +8,6 @@ dependencies {
     implementation(libs.jaxb.api)
     implementation(libs.camel.core)
     implementation(libs.camel.management)
-    implementation(libs.guava)
     implementation(libs.kotlinx.coroutines)
 
     testImplementation(libs.bundles.jaxbImpl)

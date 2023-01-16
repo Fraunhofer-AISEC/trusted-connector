@@ -1,7 +1,6 @@
 version: '3'
 services:
 
-  # The core platform, mounts docker control socket into the image
   ids-core:
     image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
     tty: true
@@ -17,7 +16,6 @@ services:
       - ./example-idscp2-localloop.xml:/root/deploy/example-idscp2-localloop.xml
     ports:
       - "8080:8080"
-#      - "8443:8443"
     environment:
       TC_DAPS_URL: "https://daps-dev.aisec.fraunhofer.de/v4"
     networks:

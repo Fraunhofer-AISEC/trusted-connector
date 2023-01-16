@@ -22,6 +22,9 @@ package de.fhg.aisec.ids.camel.processors.multipart
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
 import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.camel.processors.multipart.MultiPartConstants.IDS_HEADER_KEY
+import de.fhg.aisec.ids.camel.processors.multipart.MultiPartConstants.MEDIA_TYPE_JSON_LD
+import de.fhg.aisec.ids.idscp2.api.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.api.error.DatException
 import de.fraunhofer.iais.eis.DynamicAttributeToken
 import de.fraunhofer.iais.eis.DynamicAttributeTokenBuilder
 import de.fraunhofer.iais.eis.Message
@@ -31,11 +34,12 @@ import org.apache.camel.Processor
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntityBuilder
-import org.apache.http.entity.mime.content.InputStreamBody
 import org.apache.http.entity.mime.content.StringBody
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.io.InputStream
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -84,6 +88,12 @@ import javax.xml.datatype.XMLGregorianCalendar
 @Component("idsMultiPartOutputProcessor")
 class IdsMultiPartOutputProcessor : Processor {
 
+    @Autowired
+    lateinit var beanFactory: BeanFactory
+
+    @Value("\${ids-multipart.daps-bean-name:}")
+    var dapsBeanName: String? = null
+
     @Throws(Exception::class)
     override fun process(exchange: Exchange) {
         val boundary = UUID.randomUUID().toString()
@@ -93,6 +103,12 @@ class IdsMultiPartOutputProcessor : Processor {
 
         val idsHeader = exchange.message.getHeader(IDS_HEADER_KEY)
             ?: throw RuntimeException("Required header \"ids-header\" not found, aborting.")
+
+        val daps = dapsBeanName?.let { beanFactory.getBean(it, DapsDriver::class.java) }
+            ?: run {
+                LOG.warn("No DAPS instance has been specified, dummy DAT will be used!")
+                null
+            }
 
         // Our detection heuristic for an incomplete InfoModel idsHeader
         if (idsHeader::class.simpleName?.endsWith("Builder") == true) {
@@ -107,8 +123,7 @@ class IdsMultiPartOutputProcessor : Processor {
                                 it,
                                 DynamicAttributeTokenBuilder()
                                     ._tokenFormat_(TokenFormat.JWT)
-                                    // TODO: This will soon not work anymore, we must obtain a real DAT here!
-                                    ._tokenValue_("DUMMY_DAT")
+                                    ._tokenValue_(daps?.token?.toString(StandardCharsets.UTF_8) ?: "INVALID_DAT")
                                     .build()
                             )
                         getMethod("_senderAgent_", URI::class.java).invoke(it, Utils.maintainerUrlProducer())
@@ -124,7 +139,7 @@ class IdsMultiPartOutputProcessor : Processor {
                         }
                         multipartEntityBuilder.addPart(
                             MultiPartConstants.MULTIPART_HEADER,
-                            StringBody(SERIALIZER.serialize(message), ContentType.APPLICATION_JSON)
+                            StringBody(SERIALIZER.serialize(message), MEDIA_TYPE_JSON_LD)
                         )
                     }
                 }
@@ -135,6 +150,11 @@ class IdsMultiPartOutputProcessor : Processor {
                         "of IDS Messages within IdsMultiPartOutputProcessor!",
                     upa
                 )
+            } catch (de: DatException) {
+                throw RuntimeException(
+                    "Error during retrieval of Dynamic Attribute Token (DAT)!",
+                    de
+                )
             } catch (t: Throwable) {
                 throw RuntimeException(
                     "Failed to finalize idsHeader, the object must be an IDS MessageBuilder!",
@@ -144,38 +164,29 @@ class IdsMultiPartOutputProcessor : Processor {
         } else {
             multipartEntityBuilder.addPart(
                 MultiPartConstants.MULTIPART_HEADER,
-                StringBody(idsHeader.toString(), ContentType.APPLICATION_JSON)
+                StringBody(idsHeader.toString(), MEDIA_TYPE_JSON_LD)
             )
         }
 
         exchange.message.let {
             // Get the Exchange body and turn it into the second part named "payload"
-            val contentTypeString = it.getHeader("Content-Type")
-            if (contentTypeString != null) {
-                val payload = it.getBody(InputStream::class.java)
-                if (payload != null) {
-                    multipartEntityBuilder.addPart(
-                        MultiPartConstants.MULTIPART_PAYLOAD,
-                        InputStreamBody(
-                            payload,
-                            ContentType.create(contentTypeString.toString().split(";").first())
-                        )
-                    )
-                }
-            } else {
-                val payload = it.getBody(String::class.java)
-                if (payload != null) {
-                    multipartEntityBuilder.addPart(
-                        MultiPartConstants.MULTIPART_PAYLOAD,
-                        StringBody(
-                            payload,
+            val contentTypeString = it.getHeader("Content-Type")?.toString()
+            val payload = it.getBody(String::class.java)
+            if (payload != null) {
+                multipartEntityBuilder.addPart(
+                    MultiPartConstants.MULTIPART_PAYLOAD,
+                    StringBody(
+                        payload,
+                        if (contentTypeString == null) {
                             ContentType.create(
                                 ContentType.TEXT_PLAIN.mimeType,
                                 StandardCharsets.UTF_8
                             )
-                        )
+                        } else {
+                            ContentType.parse(contentTypeString)
+                        }
                     )
-                }
+                )
             }
 
             // Remove current Content-Type header before setting the new one

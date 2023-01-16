@@ -27,13 +27,23 @@ class AttestationConfigFactoryBean : FactoryBean<AttestationConfig> {
 
     private val builder = AttestationConfig.Builder()
 
-    fun setExpectedRaSuite(expectedSuite: String) =
-        builder.setExpectedRaSuite(expectedSuite.split('|').toTypedArray())
+    var expectedRaSuite: String
+        set(value) {
+            builder.setExpectedRaSuite(value.split('|').toTypedArray())
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setSupportedRaSuite(supportedSuite: String) =
-        builder.setSupportedRaSuite(supportedSuite.split('|').toTypedArray())
+    var supportedRaSuite: String
+        set(value) {
+            builder.setSupportedRaSuite(value.split('|').toTypedArray())
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setRaTimeoutDelay(delay: Long) = builder.setRaTimeoutDelay(delay)
+    var raTimeoutDelay: Long
+        set(value) {
+            builder.setRaTimeoutDelay(value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
     override fun getObject() = builder.build()
 

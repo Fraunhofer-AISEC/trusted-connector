@@ -27,6 +27,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -38,7 +39,6 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchKey
 import java.security.MessageDigest
 import java.util.concurrent.CompletableFuture
 import kotlin.io.path.readBytes
@@ -47,50 +47,78 @@ import kotlin.io.path.readBytes
 class XmlDeployWatcher : ApplicationContextAware {
 
     private lateinit var applicationContext: ApplicationContext
+    private lateinit var rootBeanRegistry: DefaultListableBeanFactory
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
+        rootBeanRegistry = applicationContext.autowireCapableBeanFactory as DefaultListableBeanFactory
     }
 
-    private fun startXmlApplicationContext(xmlPath: Path) {
-        val xmlPathString = xmlPath.toString()
-        LOG.info("XML file {} detected, creating XmlApplicationContext...", xmlPathString)
+    @Synchronized
+    private fun startXmlBeans(xmlPathString: String) {
         xmlContexts += xmlPathString to CompletableFuture.supplyAsync {
-            FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext)
+            FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
+                (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
+                    registry.beanDefinitionNames
+                        .filter { it.startsWith("root") }
+                        // Memorize Beans for root ApplicationContext
+                        .also { rootBeans += xmlPathString to it }
+                        // Move root Beans to root ApplicationContext
+                        .forEach { beanName ->
+                            val beanDefinition = registry.getBeanDefinition(beanName)
+                            registry.removeBeanDefinition(beanName)
+                            rootBeanRegistry.registerBeanDefinition(beanName, beanDefinition)
+                            if (LOG.isDebugEnabled) {
+                                LOG.debug("Bean $beanName has been moved to root ApplicationContext")
+                            }
+                        }
+                }
+            }
         }
+    }
+
+    @Synchronized
+    private fun stopXmlBeans(xmlPathString: String) {
+        xmlContexts.remove(xmlPathString)?.let { ctxFuture ->
+            ctxFuture.thenAccept { ctx ->
+                ctx.stop()
+                // Remove moved Beans from root ApplicationContext
+                rootBeans.remove(xmlPathString)?.forEach {
+                    rootBeanRegistry.removeBeanDefinition(it)
+                }
+            }
+        } ?: LOG.warn("ApplicationContext for $xmlPathString not found, cannot stop it.")
+    }
+
+    private fun loadXml(xmlPath: Path) {
+        val xmlPathString = xmlPath.toString()
+        LOG.info("XML file {} detected, loading...", xmlPathString)
+        startXmlBeans(xmlPathString)
         xmlHashes += xmlPathString to getPathSha256(xmlPath)
     }
 
-    private fun stopXmlApplicationContext(xmlPath: Path) {
+    private fun unloadXml(xmlPath: Path) {
         val xmlPathString = xmlPath.toString()
         // If entry is in xmlContexts, remove it and stop XmlApplicationContext
-        xmlContexts.remove(xmlPathString)?.let { ctxFuture ->
-            LOG.info("XML file {} deleted, stopping XmlApplicationContext...", xmlPath)
-            xmlHashes -= xmlPathString
-            ctxFuture.thenAccept { it.stop() }
-        }
+        LOG.info("XML file {} deleted, stopping...", xmlPathString)
+        stopXmlBeans(xmlPathString)
+        xmlHashes -= xmlPathString
     }
 
-    private fun restartXmlApplicationContextIfChanged(xmlPath: Path) {
+    private fun reloadXml(xmlPath: Path) {
         val xmlPathString = xmlPath.toString()
         val xmlHash = getPathSha256(xmlPath)
         if (!xmlHash.contentEquals(xmlHashes[xmlPathString])) {
-            xmlContexts.remove(xmlPathString)?.let { ctxFuture ->
-                LOG.info("XML file {} modified, restarting XmlApplicationContext...", xmlPathString)
-                ctxFuture.thenAccept { ctx ->
-                    ctx.stop()
-                    xmlContexts += xmlPathString to CompletableFuture.supplyAsync {
-                        FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext)
-                    }
-                    xmlHashes += xmlPathString to xmlHash
-                }
-            }
+            LOG.info("XML file {} modified, restarting...", xmlPathString)
+            stopXmlBeans(xmlPathString)
+            startXmlBeans(xmlPathString)
+            xmlHashes += xmlPathString to xmlHash
         } else if (LOG.isDebugEnabled) {
             LOG.debug("XML file {} contents have not changed, skipping reload.", xmlPathString)
         }
     }
 
-    private fun getXmlPathStream(deployPath: Path) = Files.walk(deployPath).filter {
+    private fun getXmlPathStream() = Files.walk(DEPLOY_PATH).filter {
         Files.isRegularFile(it) && it.toString().endsWith(".xml")
     }
 
@@ -100,17 +128,15 @@ class XmlDeployWatcher : ApplicationContextAware {
     private val watcherDelayMs: Long = 10000
 
     @EventListener(ApplicationReadyEvent::class)
-    private fun startXmlDeployWatcher() {
-        val fs = FileSystems.getDefault()
-        val deployPath = fs.getPath("deploy")
-        if (Files.notExists(deployPath)) {
-            LOG.info("No deploy folder found, skipping start of XML deploy watcher.")
+    fun startXmlDeployWatcher() {
+        if (Files.notExists(DEPLOY_PATH)) {
+            LOG.info("No deploy folder found, skipping launch of XML deploy watcher.")
             return
         }
 
         // This coroutine performs periodic scanning of the deploy folder.
         // This is especially relevant for Docker containers etc. where inotify doesn't work.
-        CoroutineScope(Dispatchers.IO).launch {
+        IO_SCOPE.launch {
             val seenPaths = mutableListOf<String>()
             var lastRunMillis = 0L
             while (true) {
@@ -120,23 +146,25 @@ class XmlDeployWatcher : ApplicationContextAware {
                     LOG.trace("Performing periodic XML watcher scan...")
                 }
                 try {
-                    getXmlPathStream(deployPath).forEach { xmlPath ->
+                    getXmlPathStream().forEach { xmlPath ->
                         val xmlPathString = xmlPath.toString()
                         // Remember handled paths to examine deleted paths later
                         seenPaths += xmlPathString
                         if (xmlPathString !in xmlContexts.keys) {
-                            startXmlApplicationContext(xmlPath)
+                            loadXml(xmlPath)
                         } else {
                             // First check file modified time to avoid expensive hashing
                             if (Files.getLastModifiedTime(xmlPath).toMillis() >= lastRunMillis) {
-                                restartXmlApplicationContextIfChanged(xmlPath)
+                                reloadXml(xmlPath)
                             }
                         }
                     }
                     // Remove paths that vanished since last scan
-                    xmlContexts.keys.forEach {
-                        if (it !in seenPaths) {
-                            stopXmlApplicationContext(Path.of(it))
+                    synchronized(this@XmlDeployWatcher) {
+                        xmlContexts.keys.forEach {
+                            if (it !in seenPaths) {
+                                unloadXml(Path.of(it))
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -150,47 +178,41 @@ class XmlDeployWatcher : ApplicationContextAware {
 
         // WatcherService that may react faster to changes in the deploy folder.
         // Known not to work in some containerized environments.
-        Thread(
-            {
-                val watcher = fs.newWatchService()
-                deployPath.register(
-                    watcher,
-                    StandardWatchEventKinds.ENTRY_CREATE,
-                    StandardWatchEventKinds.ENTRY_DELETE,
-                    StandardWatchEventKinds.ENTRY_MODIFY
-                )
-                while (true) {
-                    // Get watch key (blocking) to query file events
-                    val key: WatchKey = try {
-                        watcher.take()
-                    } catch (x: InterruptedException) {
-                        LOG.warn("XML watcher stopped by interrupt")
-                        break
-                    }
+        @Suppress("BlockingMethodInNonBlockingContext")
+        IO_SCOPE.launch {
+            val watcher = FS.newWatchService()
+            DEPLOY_PATH.register(
+                watcher,
+                StandardWatchEventKinds.ENTRY_CREATE,
+                StandardWatchEventKinds.ENTRY_DELETE,
+                StandardWatchEventKinds.ENTRY_MODIFY
+            )
+            while (true) {
+                // Poll the events that happened since last iteration
+                watcher.poll()?.let { key ->
                     // Remember newly created XML files
                     val createdPaths = mutableSetOf<String>()
-                    // Poll the events that happened since last iteration
-                    for (watchEvent in key.pollEvents()) {
+                    key.pollEvents().forEach { watchEvent ->
                         try {
-                            val xmlPath = deployPath.resolve(watchEvent.context() as Path)
+                            val xmlPath = DEPLOY_PATH.resolve(watchEvent.context() as Path)
                             val xmlPathString = xmlPath.toString()
                             when (watchEvent.kind()) {
                                 StandardWatchEventKinds.ENTRY_CREATE -> {
                                     createdPaths += xmlPathString
                                     // Must check whether the path represents a valid XML file
                                     if (Files.isRegularFile(xmlPath) || xmlPathString.endsWith(".xml")) {
-                                        startXmlApplicationContext(xmlPath)
+                                        loadXml(xmlPath)
                                     }
                                 }
 
                                 StandardWatchEventKinds.ENTRY_DELETE -> {
-                                    stopXmlApplicationContext(xmlPath)
+                                    unloadXml(xmlPath)
                                 }
 
                                 StandardWatchEventKinds.ENTRY_MODIFY -> {
                                     // Ignore MODIFY events for newly created XML files
                                     if (xmlPathString !in createdPaths) {
-                                        restartXmlApplicationContextIfChanged(xmlPath)
+                                        reloadXml(xmlPath)
                                     }
                                 }
 
@@ -205,21 +227,25 @@ class XmlDeployWatcher : ApplicationContextAware {
                     // Key must be reset for next iteration, if reset() returns false, key is invalid -> exit
                     if (!key.reset()) {
                         LOG.warn("XML watcher stopped by failed reset()")
-                        break
+                        return@launch
                     }
                 }
-            },
-            "XML deploy folder watcher"
-        ).run {
-            isDaemon = true
-            start()
+                delay(FS_WATCHER_POLL_INTERVAL)
+            }
         }
     }
 
     companion object {
         private val LOG: Logger = LoggerFactory.getLogger(XmlDeployWatcher::class.java)
         private val xmlContexts = mutableMapOf<String, CompletableFuture<AbstractXmlApplicationContext>>()
+        private val rootBeans = mutableMapOf<String, List<String>>()
         private val xmlHashes = mutableMapOf<String, ByteArray>()
+        private val FS = FileSystems.getDefault()
+        private val DEPLOY_PATH = FS.getPath("deploy")
+        // CoroutineScope using IO Dispatcher
+        private val IO_SCOPE = CoroutineScope(Dispatchers.IO)
+        // Selector Key polling interval for native Watcher
+        private const val FS_WATCHER_POLL_INTERVAL = 1000L
 
         @Throws(BeansException::class)
         fun <T> getBeansOfType(type: Class<T>?): List<T> {
