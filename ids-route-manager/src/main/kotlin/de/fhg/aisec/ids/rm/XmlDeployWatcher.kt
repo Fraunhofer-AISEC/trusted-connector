@@ -242,8 +242,10 @@ class XmlDeployWatcher : ApplicationContextAware {
         private val xmlHashes = mutableMapOf<String, ByteArray>()
         private val FS = FileSystems.getDefault()
         private val DEPLOY_PATH = FS.getPath("deploy")
+
         // CoroutineScope using IO Dispatcher
         private val IO_SCOPE = CoroutineScope(Dispatchers.IO)
+
         // Selector Key polling interval for native Watcher
         private const val FS_WATCHER_POLL_INTERVAL = 1000L
 

@@ -1,3 +1,4 @@
+import com.diffplug.gradle.spotless.SpotlessApply
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -54,7 +55,6 @@ subprojects {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
-    apply(plugin = "com.diffplug.spotless")
 
     configure<DependencyManagementExtension> {
         imports {
@@ -119,8 +119,14 @@ subprojects {
     }
 }
 
+val spotlessApplyAll: Task by tasks.creating
+
 configure(subprojects.filter { it.name != "examples" }) {
     apply(plugin = "com.diffplug.spotless")
+
+    tasks.withType<SpotlessApply> {
+        spotlessApplyAll.dependsOn(this.path)
+    }
 
     spotless {
         kotlin {

@@ -1,7 +1,7 @@
 logging:
   level:
-    ROOT: INFO
-    de.fhg.aisec: DEBUG
+    root: info
+#    de.fhg.aisec: DEBUG
     # Use for IDSCP2 debugging
 #    de.fhg.aisec.ids.idscp2: TRACE
 #    de.fhg.aisec.ids.camel.idscp2: TRACE

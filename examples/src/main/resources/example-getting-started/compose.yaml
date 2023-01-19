@@ -5,8 +5,11 @@ services:
     image: fraunhoferaisec/trusted-connector-core:${EXAMPLE_TAG:-develop}
     tty: true
     stdin_open: true
+    command: [ "--class-path", "./jars/*", "de.fhg.aisec.ids.TrustedConnector",
+               "--spring.config.location=/root/etc/application.yml" ]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ../etc/application.yml:/root/etc/application.yml
       - ../deploy/allow-all-flows.pl:/root/deploy/allow-all-flows.pl
       - ../etc/settings.mapdb:/root/etc/settings.mapdb
       - ../etc/consumer-keystore.p12:/root/etc/consumer-keystore.p12

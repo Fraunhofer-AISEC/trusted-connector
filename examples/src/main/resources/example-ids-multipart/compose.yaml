@@ -17,7 +17,6 @@ services:
       - ./example-multipart-server.xml:/root/deploy/example-multipart-server.xml
     ports:
       - "8080:8080"
-      - "28282:28282"
     networks:
       - ids-wide
     profiles:
