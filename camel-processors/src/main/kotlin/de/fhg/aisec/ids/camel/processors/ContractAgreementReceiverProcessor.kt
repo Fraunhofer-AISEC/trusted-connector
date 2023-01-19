@@ -20,7 +20,7 @@
 package de.fhg.aisec.ids.camel.processors
 
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fraunhofer.iais.eis.ContractAgreement
 import de.fraunhofer.iais.eis.ContractAgreementMessage
 import de.fraunhofer.iais.eis.MessageProcessedNotificationMessageBuilder
@@ -38,7 +38,7 @@ class ContractAgreementReceiverProcessor : Processor {
         }
 
         val contractAgreementMessage = exchange.message.getHeader(
-            IDSCP2_HEADER,
+            IDS_HEADER,
             ContractAgreementMessage::class.java
         )
 
@@ -78,7 +78,7 @@ class ContractAgreementReceiverProcessor : Processor {
 
         // Reply with MessageProcessedNotificationMessage
         exchange.message.setHeader(
-            IDSCP2_HEADER,
+            IDS_HEADER,
             MessageProcessedNotificationMessageBuilder()
                 ._correlationMessage_(contractAgreementMessage.id)
         )

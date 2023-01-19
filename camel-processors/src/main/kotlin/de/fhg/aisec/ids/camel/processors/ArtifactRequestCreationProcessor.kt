@@ -21,7 +21,7 @@ package de.fhg.aisec.ids.camel.processors
 
 import de.fhg.aisec.ids.api.contracts.ContractConstants.ARTIFACT_URI_PROPERTY
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fraunhofer.iais.eis.ArtifactRequestMessageBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
@@ -50,7 +50,7 @@ class ArtifactRequestCreationProcessor : Processor {
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))
                 }
-                exchange.message.setHeader(IDSCP2_HEADER, it)
+                exchange.message.setHeader(IDS_HEADER, it)
             }
         }
     }

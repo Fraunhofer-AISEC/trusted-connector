@@ -19,10 +19,9 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.api.contracts.ContractUtils
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
-import de.fhg.aisec.ids.camel.idscp2.Constants.IDSCP2_HEADER
-import de.fraunhofer.iais.eis.ArtifactBuilder
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.REQUESTED_ARTIFACT_KEY
 import de.fraunhofer.iais.eis.ArtifactRequestMessage
 import de.fraunhofer.iais.eis.ArtifactResponseMessageBuilder
 import de.fraunhofer.iais.eis.RejectionMessageBuilder
@@ -31,8 +30,6 @@ import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
-import java.math.BigInteger
 
 @Component("artifactRequestProcessor")
 class ArtifactRequestProcessor : Processor {
@@ -43,7 +40,7 @@ class ArtifactRequestProcessor : Processor {
         }
 
         val artifactRequestMessage = exchange.message.getHeader(
-            IDSCP2_HEADER,
+            IDS_HEADER,
             ArtifactRequestMessage::class.java
         )
         val requestedArtifact = artifactRequestMessage.requestedArtifact
@@ -71,26 +68,10 @@ class ArtifactRequestProcessor : Processor {
                     if (LOG.isDebugEnabled) {
                         LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))
                     }
-                    exchange.message.setHeader(IDSCP2_HEADER, it)
+                    exchange.message.setHeader(IDS_HEADER, it)
                 }
             }
-
-            // create sample artifact
-            val artifactDate = ContractUtils.newGregorianCalendar()
-            val artifact = ArtifactBuilder()
-                ._byteSize_(BigInteger.valueOf(50000))
-                ._checkSum_("ABCDEFG-CHECKSUM")
-                ._creationDate_(artifactDate)
-                ._duration_(BigDecimal(5000))
-                ._fileName_("testArtifactFilename.dat")
-                .build()
-
-            SERIALIZER.serialize(artifact).let {
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("Serialisation body: {}", it)
-                }
-                exchange.message.body = it
-            }
+            exchange.setProperty(REQUESTED_ARTIFACT_KEY, requestedArtifact)
         }
     }
 
@@ -109,7 +90,7 @@ class ArtifactRequestProcessor : Processor {
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))
                 }
-                exchange.message.setHeader(IDSCP2_HEADER, it)
+                exchange.message.setHeader(IDS_HEADER, it)
             }
     }
 

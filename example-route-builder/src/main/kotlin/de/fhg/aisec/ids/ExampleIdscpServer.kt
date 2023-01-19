@@ -35,10 +35,10 @@ open class ExampleIdscpServer {
         return object : RouteBuilder() {
             override fun configure() {
                 from("idscp2server://0.0.0.0:29292?sslContextParameters=#serverSslContext")
-                    .log("Server received: \${body} (Header: \${headers[idscp2-header]})")
+                    .log("Server received: \${body} (Header: \${headers[ids-header]})")
                     .setBody().simple("PONG")
-                    .setHeader("idscp2-header").simple("pong")
-                    .log("Server response: \${body} (Header: \${headers[idscp2-header]})")
+                    .setHeader("ids-header").simple("pong")
+                    .log("Server response: \${body} (Header: \${headers[ids-header]})")
             }
         }
     }

@@ -22,7 +22,7 @@ package de.fhg.aisec.ids.camel.processors
 import de.fhg.aisec.ids.api.contracts.ContractManager
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
 import de.fhg.aisec.ids.camel.processors.Constants.CONTRACT_STORE_KEY
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fraunhofer.iais.eis.ContractOfferMessageBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
@@ -45,7 +45,7 @@ class ContractOfferLoaderProcessor(@Autowired private val contractManager: Contr
             if (LOG.isDebugEnabled) {
                 LOG.debug("Serialization header: {}", SERIALIZER.serialize(it.build()))
             }
-            exchange.message.setHeader(IDSCP2_HEADER, it)
+            exchange.message.setHeader(IDS_HEADER, it)
         }
 
         val storeKey = exchange.getProperty(CONTRACT_STORE_KEY)?.toString()

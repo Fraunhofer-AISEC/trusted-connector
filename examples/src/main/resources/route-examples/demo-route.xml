@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:camel="http://camel.apache.org/schema/spring"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring
+          http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<camel:sslContextParameters id="sslContext" certAlias="1">
+		<camel:keyManagers keyPassword="password">
+			<camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.p12" password="password"/>
+		</camel:keyManagers>
+		<camel:trustManagers>
+			<camel:keyStore resource="etc/idscp2/client-truststore_new.p12" password="password"/>
+		</camel:trustManagers>
+	</camel:sslContextParameters>
+
+	<!-- Routes -->
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+		<route id="server">
+			<from uri="idscp2server://0.0.0.0:29292?sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
+			<process ref="idsMessageTypeExtractionProcessor"/>
+			<log message="### SERVER RECEIVER: Detected Message type: ${exchangeProperty.ids-type}"/>
+			<choice>
+				<!-- Message Flow to cover according to
+				https://gitlab.cc-asp.fraunhofer.de/fraunhofer-aisec/industrial-data-space-connector/-/issues/20
+				Consumer -> Provider: Consumer requests contract agreement with ContractRequestMessage
+				Consumer <- Provider: Provider answers with ContractResponseMessage
+				Consumer -> Provider: Consumer sends ContractAgreementMessage
+				Consumer -> Provider: Consumer requests ressource with ArtifactRequestMessage
+				Consumer <- Provider: Provider responds with ArtifactResponseMessage -->
+
+				<!-- ContractRequestMessage -->
+				<when>
+					<simple>${exchangeProperty.ids-type} == 'ContractRequestMessage'</simple>
+					<log message="### Handle ContractRequestMessage ###"/>
+					<setProperty name="containerUri">
+						<constant>https://hub.docker.com/layers/jmalloc/echo-server/latest/images/sha256-c461e7e54d947a8777413aaf9c624b4ad1f1bac5d8272475da859ae82c1abd7d#8080</constant>
+					</setProperty>
+					<process ref="contractRequestProcessor"/>
+				</when>
+				<!-- ContractAgreementMessage -->
+				<when>
+					<simple>${exchangeProperty.ids-type} == 'ContractAgreementMessage'</simple>
+					<log message="### Handle ContractAgreementMessage ###"/>
+					<!-- Only processing of incoming request must be performed, no reply -->
+					<process ref="contractAgreementReceiverProcessor"/>
+					<removeHeader name="ids-header" />
+					<setBody><simple>${null}</simple></setBody>
+				</when>
+				<!-- ArtifactRequestMessage -->
+				<when>
+					<simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>
+					<log message="### Handle ArtifactRequestMessage ###"/>
+					<process ref="artifactRequestProcessor" />
+				</when>
+				<!-- all other messages -->
+				<otherwise>
+					<log message="### Server received (otherwise branch):\n${body}\n### Header: ###\n${headers[ids-header]}"/>
+					<removeHeader name="ids-header" />
+					<setBody><simple>${null}</simple></setBody>
+				</otherwise>
+			</choice>
+		</route>
+
+		<!-- Initialise route by switching true-false -->
+		<route>
+			<from uri="timer://foo?fixedRate=true&amp;period=30000" />
+			<when>
+				<simple>true</simple>
+				<setBody><simple>${null}</simple></setBody>
+				<log message="##### STARTING IDSCP2 CONTRACT-GIVEN MESSAGE FLOW #####"/>
+				<setProperty name="artifactUri">
+					<constant>https://example.com/some_artifact</constant>
+				</setProperty>
+				<process ref="contractRequestCreationProcessor" />
+				<to uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
+				<delay>
+					<constant>5000</constant>
+				</delay>
+			</when>
+
+			<when>
+				<simple>false</simple>
+				<setBody><simple>${null}</simple></setBody>
+				<log message="##### STARTING IDSCP2 CONTRACT-DENIED MESSAGE FLOW #####"/>
+				<setProperty name="artifactUri">
+					<constant>https://example.com/unavailable_artifact</constant>
+				</setProperty>
+				<process ref="contractRequestCreationProcessor" />
+				<to uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
+				<delay>
+					<constant>5000</constant>
+				</delay>
+			</when>
+
+			<when>
+				<simple>true</simple>
+				<setBody><simple>${null}</simple></setBody>
+				<log message="##### STARTING IDSCP2 ARTIFACT-GIVEN MESSAGE FLOW #####"/>
+				<setProperty name="artifactUri">
+					<constant>https://example.com/some_artifact</constant>
+				</setProperty>
+				<process ref="artifactRequestCreationProcessor" />
+				<to uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
+				<delay>
+					<constant>5000</constant>
+				</delay>
+			</when>
+
+			<when>
+				<simple>false</simple>
+				<setBody><simple>${null}</simple></setBody>
+				<log message="##### STARTING IDSCP2 ARTIFACT-DENIED MESSAGE FLOW #####"/>
+				<setProperty name="artifactUri">
+					<constant>https://example.com/unavailable_artifact</constant>
+				</setProperty>
+				<process ref="artifactRequestCreationProcessor" />
+				<to uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
+				<delay>
+					<constant>5000</constant>
+				</delay>
+			</when>
+		</route>
+
+		<route id="clientReceiver">
+			<from uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#sslContext&amp;useIdsMessages=true"/>
+			<process ref="idsMessageTypeExtractionProcessor"/>
+			<log message="### CLIENT RECEIVER: Detected Message type: ${exchangeProperty.ids-type}"/>
+			<choice>
+				<!-- Message Flow to cover according to
+				https://gitlab.cc-asp.fraunhofer.de/fraunhofer-aisec/industrial-data-space-connector/-/issues/20
+				Consumer <- Provider: Provider answers with ContractResponseMessage
+				Consumer <- Provider: Provider responds with ArtifactResponseMessage -->
+
+				<!-- ContractResponseMessage -->
+				<when>
+					<simple>${exchangeProperty.ids-type} == 'ContractResponseMessage'</simple>
+					<log message="### Handle ContractResponseMessage ###"/>
+					<process ref="contractResponseProcessor"/>
+				</when>
+				<!-- ArtifactResponseMessage -->
+				<when>
+					<simple>${exchangeProperty.ids-type} == 'ArtifactResponseMessage'</simple>
+					<log message="### Handle ArtifactResponseMessage ###"/>
+					<to uri="http://172.17.0.2:8080"/>
+					<log message="Response body\n\n${body}"/>
+					<!-- End of message exchange reached -->
+					<removeHeader name="ids-header" />
+					<setBody><simple>${null}</simple></setBody>
+				</when>
+				<!-- all other messages -->
+				<otherwise>
+					<log message="### Client received (otherwise branch):\n${body}\n### Header: ###\n${headers[ids-header]}"/>
+					<removeHeader name="ids-header" />
+					<setBody><simple>${null}</simple></setBody>
+				</otherwise>
+			</choice>
+		</route>
+	</camelContext>
+</beans>

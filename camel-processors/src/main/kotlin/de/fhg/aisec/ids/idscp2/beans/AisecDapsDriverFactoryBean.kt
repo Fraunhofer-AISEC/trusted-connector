@@ -34,27 +34,47 @@ class AisecDapsDriverFactoryBean : FactoryBean<AisecDapsDriver> {
 
     private val builder = AisecDapsDriverConfig.Builder()
 
-    fun setDapsUrl(dapsUrl: String) = builder.setDapsUrl(dapsUrl)
+    var dapsUrl: String
+        set(value) {
+            builder.setDapsUrl(value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setTrustManager(trustManager: TrustManager) = builder.setTrustManager(trustManager)
+    var trustManager: TrustManager
+        set(value) {
+            builder.setTrustManager(value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setSecurityRequirements(securityRequirements: SecurityRequirements) =
-        builder.setSecurityRequirements(securityRequirements)
+    var securityRequirements: SecurityRequirements
+        set(value) {
+            builder.setSecurityRequirements(value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setTokenRenewalThreshold(threshold: Float) = builder.setTokenRenewalThreshold(threshold)
+    var tokenRenewalThreshold: Float
+        set(value) {
+            builder.setTokenRenewalThreshold(value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setDapsSslParameters(sslContextParameters: SSLContextParameters) =
-        applySslContextParameters(builder, sslContextParameters)
+    var dapsSslParameters: SSLContextParameters
+        set(value) {
+            applySslContextParameters(builder, value)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
-    fun setTransportCertificatesParameters(sslContextParameters: SSLContextParameters): AisecDapsDriverConfig.Builder {
-        val ks = loadKeyStore(
-            sslContextParameters.keyManagers.keyStore.resource.let { Paths.get(it) }
-                ?: throw RuntimeException("Error loading transport certificates: No KeyStore file provided!"),
-            sslContextParameters.keyManagers.keyStore.password?.toCharArray()
-                ?: throw RuntimeException("Error loading transport certificates: No KeyStore file provided!")
-        )
-        return builder.loadTransportCertsFromKeystore(ks)
-    }
+    var transportCertificatesParameters: SSLContextParameters
+        set(value) {
+            val ks = loadKeyStore(
+                value.keyManagers.keyStore.resource.let { Paths.get(it) }
+                    ?: throw RuntimeException("Error loading transport certificates: No KeyStore file provided!"),
+                value.keyManagers.keyStore.password?.toCharArray()
+                    ?: throw RuntimeException("Error loading transport certificates: No KeyStore password provided!")
+            )
+            builder.loadTransportCertsFromKeystore(ks)
+        }
+        get() = throw UnsupportedOperationException("set-only Builder method")
 
     override fun getObject() = AisecDapsDriver(builder.build())
 

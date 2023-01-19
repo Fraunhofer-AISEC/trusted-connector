@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring
+          http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <camel:sslContextParameters id="clientSslContext" certAlias="1">
+        <camel:keyManagers keyPassword="password">
+            <camel:keyStore resource="etc/idscp2/aisecconnector1-keystore.p12" password="password"/>
+        </camel:keyManagers>
+        <camel:trustManagers>
+            <camel:keyStore resource="etc/idscp2/client-truststore_new.p12" password="password"/>
+        </camel:trustManagers>
+    </camel:sslContextParameters>
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+        <route id="idscp2SenderClient">
+            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
+            <setBody>
+                <simple>PING</simple>
+            </setBody>
+            <setHeader name="ids-header">
+                <simple>ping</simple>
+            </setHeader>
+            <log message="Client sends: ${body} (Header: ${headers[ids-header]})"/>
+            <to uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#clientSslContext"/>
+        </route>
+
+        <route id="idscp2ReceiverClient">
+            <from uri="idscp2client://localhost:29292?connectionShareId=pingPongConnection&amp;sslContextParameters=#clientSslContext"/>
+            <log message="Client received: ${body} (Header: ${headers[ids-header]})"/>
+            <!-- Prevents the client consumer from sending the message back to the server -->
+            <removeHeader name="ids-header"/>
+        </route>
+
+    </camelContext>
+
+</beans>

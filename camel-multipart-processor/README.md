@@ -1,1 +1,0 @@
-The _camel-multipart_processor_ module adds support for the 'IDS Multipart' messages to the integrated Camel deployment. It creates a Camel Processor that can be used to parse incoming message form other connector instances, namely 'Base Connector' instances.

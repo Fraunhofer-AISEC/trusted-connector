@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.camel.processors
 
-import de.fhg.aisec.ids.camel.processors.Constants.IDSCP2_HEADER
+import de.fhg.aisec.ids.camel.processors.Constants.IDS_HEADER
 import de.fraunhofer.iais.eis.ContractOfferMessage
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
@@ -38,7 +38,7 @@ class ContractOfferProcessor : Processor {
         }
 
         val contractOfferMessage = exchange.message.getHeader(
-            IDSCP2_HEADER,
+            IDS_HEADER,
             ContractOfferMessage::class.java
         )
 

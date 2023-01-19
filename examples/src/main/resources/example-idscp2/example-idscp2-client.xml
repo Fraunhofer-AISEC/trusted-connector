@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring
+          http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <camel:sslContextParameters id="clientSslContext" certAlias="1">
+        <camel:keyManagers keyPassword="password">
+            <camel:keyStore resource="etc/keystore.p12" password="password"/>
+        </camel:keyManagers>
+        <camel:trustManagers>
+            <camel:keyStore resource="etc/truststore.p12" password="password"/>
+        </camel:trustManagers>
+    </camel:sslContextParameters>
+
+    <bean name="dapsDriver" class="de.fhg.aisec.ids.idscp2.beans.AisecDapsDriverFactoryBean">
+        <property name="dapsUrl" value="https://daps-dev.aisec.fraunhofer.de/v4"/>
+        <property name="dapsSslParameters" ref="clientSslContext"/>
+        <property name="transportCertificatesParameters" ref="clientSslContext"/>
+    </bean>
+
+    <bean name="attestationConfig" class="de.fhg.aisec.ids.idscp2.beans.AttestationConfigFactoryBean">
+        <property name="expectedRaSuite" value="Dummy2|Dummy"/>
+        <property name="supportedRaSuite" value="Dummy2|Dummy"/>
+    </bean>
+
+    <bean name="idscp2Config" class="de.fhg.aisec.ids.idscp2.beans.Idscp2ConfigurationFactoryBean">
+        <property name="attestationConfig" ref="attestationConfig"/>
+        <property name="dapsDriver" ref="dapsDriver"/>
+        <property name="handshakeTimeoutDelay" value="10000"/>
+    </bean>
+
+    <bean name="tlsConfig" class="de.fhg.aisec.ids.idscp2.beans.NativeTlsConfigurationBuilderFactoryBean">
+        <property name="sslParameters" ref="clientSslContext"/>
+    </bean>
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="idscp2Client">
+            <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
+            <setBody>
+                <simple>PING</simple>
+            </setBody>
+            <setHeader name="ids-header">
+                <simple>ping</simple>
+            </setHeader>
+            <log message="Client sends: ${body} (Header: ${headers[ids-header]})"/>
+            <to uri="idscp2client://consumer-core:29292?awaitResponse=true&amp;idscp2Configuration=#idscp2Config&amp;secureChannelConfigurationBuilder=#tlsConfig"/>
+            <log message="Client received: ${body} (Header: ${headers[ids-header]})"/>
+            <!-- Prevents the client consumer from sending the message back to the server -->
+            <removeHeader name="ids-header"/>
+            <setBody>
+                <simple>${null}</simple>
+            </setBody>
+        </route>
+
+    </camelContext>
+
+</beans>
