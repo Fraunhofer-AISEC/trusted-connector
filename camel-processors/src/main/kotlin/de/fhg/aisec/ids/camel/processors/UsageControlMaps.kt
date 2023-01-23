@@ -20,7 +20,6 @@
 package de.fhg.aisec.ids.camel.processors
 
 import com.google.common.collect.MapMaker
-import de.fhg.aisec.ids.idscp2.applayer.AppLayerConnection
 import de.fraunhofer.iais.eis.ContractAgreement
 import org.apache.camel.Exchange
 import org.slf4j.LoggerFactory
@@ -40,8 +39,8 @@ object UsageControlMaps {
         exchangePeerIdentityMap[exchange]
 
     fun getExchangeContract(exchange: Exchange): ContractAgreement? {
-        return exchangePeerIdentityMap[exchange]?.let { connection ->
-            peerContracts[connection]?.let { uri ->
+        return exchangePeerIdentityMap[exchange]?.let { identity ->
+            peerContracts[identity]?.let { uri ->
                 contractMap[uri] ?: throw RuntimeException("Contract $uri is not available!")
             }
         }
@@ -51,24 +50,24 @@ object UsageControlMaps {
         contractMap[contractAgreement.id] = contractAgreement
     }
 
-    fun setConnectionContract(connection: AppLayerConnection, contractUri: URI?) {
+    fun setPeerContract(peerIdentity: String, contractUri: URI?) {
         if (contractUri != null) {
-            peerContracts[connection.peerDat.identity] = contractUri
+            peerContracts[peerIdentity] = contractUri
             if (LOG.isDebugEnabled) {
-                LOG.debug("UC: Assigned contract $contractUri to connection $connection")
+                LOG.debug("UC: Assigned contract $contractUri to connection $peerIdentity")
             }
         } else {
-            peerContracts -= connection.peerDat.identity
+            peerContracts -= peerIdentity
             if (LOG.isDebugEnabled) {
-                LOG.debug("UC: Assigned no contract to connection $connection")
+                LOG.debug("UC: Assigned no contract to connection $peerIdentity")
             }
         }
     }
 
-    fun setExchangeConnection(exchange: Exchange, connection: AppLayerConnection) {
-        exchangePeerIdentityMap[exchange] = connection.peerDat.identity
+    fun setExchangePeerIdentity(exchange: Exchange, peerIdentity: String) {
+        exchangePeerIdentityMap[exchange] = peerIdentity
         if (LOG.isDebugEnabled) {
-            LOG.debug("UC: Assigned exchange $exchange to connection $connection")
+            LOG.debug("UC: Assigned exchange $exchange to peer identity $peerIdentity")
         }
     }
 }

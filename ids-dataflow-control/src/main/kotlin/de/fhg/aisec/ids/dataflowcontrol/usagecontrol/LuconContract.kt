@@ -38,29 +38,29 @@ class LuconContract private constructor(contract: ContractAgreement) {
     val permissions = contract.permission.map(::LuconPermission)
     private val contractId: String = contract.id.toString()
 
-    fun enforce(ectx: EnforcementContext) {
+    fun enforce(eCtx: EnforcementContext) {
         val enforcementErrors = linkedSetOf<String>()
         val enforcementSuccessful = permissions.withIndex().any { (i, p) ->
             try {
-                if (ectx.log.isDebugEnabled) {
-                    ectx.log.debug("Checking permission # ${i + 1} of contract $contractId...")
+                if (eCtx.log.isDebugEnabled) {
+                    eCtx.log.debug("Checking permission # ${i + 1} of contract $contractId...")
                 }
-                p.checkEnforcible(ectx)
-                if (ectx.ucPolicies.isNotEmpty()) {
+                p.checkEnforcible(eCtx)
+                if (eCtx.ucPolicies.isNotEmpty()) {
                     LOG.warn(
                         "UC policies have been added to EnforcementContext in LuconPermission::checkEnforcible(), " +
                             "before actual enforcement in LuconPermission::enforce()." +
                             "This is STRICTLY DISCOURAGED, as it can result in incorrect UC policies!"
                     )
                 }
-                p.enforce(ectx)
+                p.enforce(eCtx)
                 true
             } catch (t: Throwable) {
                 if (t !is LuconException) {
                     LOG.error("Unexpected UC exception", t)
                 }
                 enforcementErrors += t.message.toString()
-                ectx.log.let { log ->
+                eCtx.log.let { log ->
                     if (log.isDebugEnabled) {
                         log.debug(t.message)
                     }
@@ -70,10 +70,10 @@ class LuconContract private constructor(contract: ContractAgreement) {
         }
         if (enforcementSuccessful) {
             runBlocking(Dispatchers.IO) {
-                val ucUrl = "http://${ectx.endpointUri.host}/usage-control"
+                val ucUrl = "http://${eCtx.endpointUri.host}/usage-control"
                 val response = HTTP_CLIENT.post(ucUrl) {
                     contentType(ContentType.Application.Json)
-                    setBody(ectx.ucPolicies)
+                    setBody(eCtx.ucPolicies)
                 }
                 if (response.status.value !in 200..299) {
                     throw LuconException(

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <camel:sslContextParameters id="rootServerSslContext" certAlias="1">
+        <camel:keyManagers keyPassword="password">
+            <camel:keyStore resource="etc/keystore.p12" password="password" />
+        </camel:keyManagers>
+        <camel:trustManagers>
+            <camel:keyStore resource="etc/truststore.p12" password="password" />
+        </camel:trustManagers>
+    </camel:sslContextParameters>
+
+    <bean name="rootDaps" class="de.fhg.aisec.ids.idscp2.beans.AisecDapsDriverFactoryBean">
+        <property name="dapsUrl" value="https://daps-dev.aisec.fraunhofer.de/v4" />
+        <property name="dapsSslParameters" ref="rootServerSslContext" />
+        <property name="transportCertificatesParameters" ref="rootServerSslContext" />
+    </bean>
+
+    <bean id="jetty" class="org.apache.camel.component.jetty9.JettyHttpComponent9">
+        <property name="sslSocketConnectorProperties">
+            <map>
+                <entry key="needClientAuth" value="true" />
+            </map>
+        </property>
+    </bean>
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+        <restConfiguration scheme="https" component="jetty" host="0.0.0.0" port="28282" bindingMode="off">
+            <endpointProperty key="sslContextParameters" value="#rootServerSslContext" />
+        </restConfiguration>
+
+        <rest>
+            <post path="/usageControl">
+                <to uri="direct:route-uc" />
+            </post>
+        </rest>
+
+        <route id="route-uc">
+            <from uri="direct:route-uc" />
+            <process ref="idsMultiPartInputProcessor" />
+            <process ref="idsMessageTypeExtractionProcessor" />
+            <choice>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ContractRequestMessage'</simple>
+                    <log message="### Handle ContractRequestMessage ###" />
+                    <setProperty name="contract-store-key">
+                        <constant>some_contract</constant>
+                    </setProperty>
+                    <process ref="contractRequestProcessor" />
+                    <process ref="idsMultiPartOutputProcessor" />
+                </when>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ContractAgreementMessage'</simple>
+                    <log message="### Handle ContractAgreementMessage ###" />
+                    <!-- Only processing of incoming request must be performed, no reply -->
+                    <process ref="contractAgreementReceiverProcessor" />
+                    <process ref="idsMultiPartOutputProcessor" />
+                </when>
+                <when>
+                    <simple>${exchangeProperty.ids-type} == 'ArtifactRequestMessage'</simple>
+                    <log message="### Handle ArtifactRequestMessage ###" />
+                    <process ref="artifactRequestProcessor" />
+                    <choice>
+                        <when>
+                            <simple>${exchangeProperty.requested-artifact} == 'https://example.com/some_artifact'</simple>
+                            <log message="Artifact ${exchangeProperty.requested-artifact} is delivered..." />
+                            <setBody>
+                                <constant>This is some UC-protected piece of data.</constant>
+                            </setBody>
+                        </when>
+                        <otherwise>
+                            <log message="Unhandled or forbidden artifact ${exchangeProperty.requested-artifact} requested" loggingLevel="ERROR" />
+                        </otherwise>
+                    </choice>
+                    <process ref="idsMultiPartOutputProcessor" />
+                </when>
+                <otherwise>
+                    <log loggingLevel="ERROR" message="### Server received unexpected message (otherwise branch):\n${body}\n### Header: ###\n${headers[ids-header]}" />
+                    <removeHeader name="ids-header" />
+                    <setBody>
+                        <simple>${null}</simple>
+                    </setBody>
+                </otherwise>
+            </choice>
+        </route>
+
+    </camelContext>
+
+</beans>

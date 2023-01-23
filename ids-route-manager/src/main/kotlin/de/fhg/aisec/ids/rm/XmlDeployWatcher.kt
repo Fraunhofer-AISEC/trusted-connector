@@ -58,6 +58,7 @@ class XmlDeployWatcher : ApplicationContextAware {
     private fun startXmlBeans(xmlPathString: String) {
         xmlContexts += xmlPathString to CompletableFuture.supplyAsync {
             FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
+                // Move special beans prefixed with "root" to the root ApplicationContext
                 (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
                     registry.beanDefinitionNames
                         .filter { it.startsWith("root") }

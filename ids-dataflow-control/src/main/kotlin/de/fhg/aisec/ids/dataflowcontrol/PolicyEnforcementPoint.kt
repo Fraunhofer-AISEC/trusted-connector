@@ -32,7 +32,6 @@ import org.apache.camel.Exchange
 import org.apache.camel.NamedNode
 import org.apache.camel.Processor
 import org.apache.camel.model.EndpointRequiredDefinition
-import org.apache.camel.model.FromDefinition
 import org.apache.camel.model.RouteDefinition
 import org.apache.camel.model.ToDefinition
 import org.apache.camel.support.processor.DelegateAsyncProcessor
@@ -91,57 +90,26 @@ internal constructor(private val destinationNode: NamedNode, target: Processor) 
             LOG.trace("{} -> {}", source, destination)
         }
 
-        val isIdscp2Endpoint = { ep: EndpointRequiredDefinition ->
-            ep.endpointUri.startsWith("idscp2")
-        }
-        // Only take action for nodes of type <from> (= input) and <to> (= output)
-        if ((sourceNode is EndpointRequiredDefinition && isIdscp2Endpoint(sourceNode)) ||
-            destinationNode is ToDefinition
-        ) {
-            val ucContract =
-                try {
-                    ucInterface.getExchangeContract(exchange)
-                } catch (x: RuntimeException) {
-                    // Thrown if data provider references an unknown ContractAgreement via
-                    // transferContract
-                    throw Exception("Required contract is not available!", x)
-                }
+        // Only take action if previous node was a <from> node (input)
+        // or if current node or previous node is or has been a <to> node (output and probably also input)
+        if (sourceNode is EndpointRequiredDefinition || destinationNode is ToDefinition) {
             // If there is no known ContractAgreement for this Exchange, nothing to do here.
-            ucContract?.let { contract ->
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("Applying Contract ${contract.id}")
-                }
+            ucInterface.getExchangeContract(exchange)?.let { contract ->
                 val luconContract = LuconContract.getContract(contract)
-                // Check whether we deal with an entry node ("from:...") or a response of a
-                // To node ("to...")...
-                if (sourceNode is FromDefinition ||
-                    (
-                        sourceNode is ToDefinition &&
-                            !ucInterface.isProtected(exchange) &&
-                            isIdscp2Endpoint(sourceNode)
-                        )
-                ) {
-                    // If we found an entry node, then protect exchange's body
-                    ucInterface.protectBody(exchange, ucContract.id)
-                    if (LOG.isDebugEnabled) {
-                        LOG.debug(
-                            "UC: Protect Exchange body with UC contract ${ucContract.id}"
-                        )
-                    }
-                    // ... or output ("to:...") node as destination of this transition.
-                    // Additionally check whether exchange's body was protected.
-                } else if (destinationNode is ToDefinition &&
-                    ucInterface.isProtected(exchange)
-                ) {
+                // Check whether body protection has not yet been performed.
+                if (!ucInterface.isProtected(exchange)) {
+                    ucInterface.protectBody(exchange, contract.id)
+                    LOG.debug("UC: Protect Exchange body with UC contract {}", contract.id)
+                }
+                // Check whether we are about to send data via a <to> node
+                if (destinationNode is ToDefinition) {
                     val endpointUri = URI.create(destinationNode.endpointUri)
                     val enforcementContext = EnforcementContext(endpointUri, LOG)
                     try {
                         luconContract.enforce(enforcementContext)
                         // Restore exchange body
                         ucInterface.unprotectBody(exchange)
-                        if (LOG.isDebugEnabled) {
-                            LOG.debug("UC: Contract permits data flow, Exchange body has been restored.")
-                        }
+                        LOG.debug("UC: Contract permits data flow, Exchange body has been restored.")
                     } catch (le: LuconException) {
                         LOG.warn(le.message)
                     }
