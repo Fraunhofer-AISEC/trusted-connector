@@ -66,10 +66,10 @@ class ConnectorConfiguration {
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
 
             ListenerManager.addExchangeListener { connection, exchange ->
-                UsageControlMaps.setExchangeConnection(exchange, connection)
+                UsageControlMaps.setExchangePeerIdentity(exchange, connection.peerDat.identity)
             }
             ListenerManager.addTransferContractListener { connection, transferContract ->
-                UsageControlMaps.setConnectionContract(connection, transferContract)
+                UsageControlMaps.setPeerContract(connection.peerDat.identity, transferContract)
             }
         }
     }

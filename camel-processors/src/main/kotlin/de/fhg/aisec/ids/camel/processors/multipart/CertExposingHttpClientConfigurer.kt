@@ -41,7 +41,7 @@ class CertExposingHttpClientConfigurer : HttpClientConfigurer {
                 val certs = sslSession.peerCertificates
                 val certHash = MessageDigest.getInstance("SHA-256").digest(certs[0].encoded).toHexString().lowercase()
                 certificateMap += certHash to certs
-                response.addHeader(SERVER_CERTIFICATE_HASH_HEADER, certHash)
+                response.setHeader(SERVER_CERTIFICATE_HASH_HEADER, certHash)
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Captured server certificate with SHA256 fingerprint $certHash.")
                 }

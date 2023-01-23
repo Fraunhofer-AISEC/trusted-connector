@@ -1,10 +1,10 @@
 logging:
   level:
     root: info
-#    de.fhg.aisec: DEBUG
+#    de.fhg.aisec: debug
     # Use for IDSCP2 debugging
-#    de.fhg.aisec.ids.idscp2: TRACE
-#    de.fhg.aisec.ids.camel.idscp2: TRACE
+#    de.fhg.aisec.ids.idscp2: trace
+#    de.fhg.aisec.ids.camel.idscp2: trace
 
 spring:
   web:

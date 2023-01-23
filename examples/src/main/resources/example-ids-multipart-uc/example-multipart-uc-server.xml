@@ -40,7 +40,7 @@
         </rest>
 
         <route id="route-uc">
-            <from uri="direct:route-self" />
+            <from uri="direct:route-uc" />
             <process ref="idsMultiPartInputProcessor" />
             <process ref="idsMessageTypeExtractionProcessor" />
             <choice>

@@ -20,6 +20,7 @@
 package de.fhg.aisec.ids.camel.processors.multipart
 
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
+import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import de.fhg.aisec.ids.idscp2.api.drivers.DapsDriver
 import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Exchange
@@ -86,7 +87,11 @@ class IdsMultiPartInputProcessor : Processor {
                 }
                 val daps = beanFactory.getBean(dapsBeanName, DapsDriver::class.java)
                 try {
-                    daps.verifyToken(dat.toByteArray(), peerCertificates[0] as X509Certificate)
+                    val verifiedDat = daps.verifyToken(dat.toByteArray(), peerCertificates[0] as X509Certificate)
+                    // Save exchange peer identity for contract association
+                    UsageControlMaps.setExchangePeerIdentity(exchange, verifiedDat.identity)
+                    // Save effective transfer contract for peer
+                    UsageControlMaps.setPeerContract(verifiedDat.identity, idsHeader.transferContract)
                 } catch (e: Exception) {
                     throw SecurityException("Access Token did not match presented certificate!", e)
                 }

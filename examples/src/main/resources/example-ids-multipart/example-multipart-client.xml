@@ -28,7 +28,7 @@
             <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
             <process ref="descriptionRequestCreationProcessor"/>
             <process ref="idsMultiPartOutputProcessor"/>
-            <to uri="https://consumer-core:28282/selfInformation?sslContextParameters=#rootClientSslContext&amp;httpClientConfigurer=certExposingHttpClientConfigurer"/>
+            <to uri="https://consumer-core:28282/selfInformation?sslContextParameters=#rootClientSslContext"/>
             <process ref="idsMultiPartInputProcessor"/>
             <log message="Server self-description:\n${body}"/>
         </route>
