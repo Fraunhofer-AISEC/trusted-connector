@@ -27,14 +27,14 @@
                 <constant>https://example.com/some_artifact</constant>
             </setProperty>
             <process ref="contractRequestCreationProcessor" />
-            <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+            <to uri="idscp2client://tc-core-server:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
             <process ref="idsMessageTypeExtractionProcessor"/>
             <choice>
                 <when>
                     <simple>${exchangeProperty.ids-type} == 'ContractResponseMessage'</simple>
                     <log message="### Handle ContractResponseMessage ###"/>
                     <process ref="contractResponseProcessor"/>
-                    <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+                    <to uri="idscp2client://tc-core-server:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
                     <process ref="idsMessageTypeExtractionProcessor"/>
                     <choice>
                         <when>
@@ -63,7 +63,7 @@
                 <constant>https://example.com/some_artifact</constant>
             </setProperty>
             <process ref="artifactRequestCreationProcessor" />
-            <to uri="idscp2client://provider-core:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
+            <to uri="idscp2client://tc-core-server:29292?awaitResponse=true&amp;connectionShareId=ucConnection&amp;sslContextParameters=#clientSslContext&amp;useIdsMessages=true"/>
             <process ref="idsMessageTypeExtractionProcessor"/>
             <choice>
                 <when>

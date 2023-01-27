@@ -48,7 +48,7 @@
                 <simple>ping</simple>
             </setHeader>
             <log message="Client sends: ${body} (Header: ${headers[ids-header]})"/>
-            <to uri="idscp2client://consumer-core:29292?awaitResponse=true&amp;idscp2Configuration=#idscp2Config&amp;secureChannelConfigurationBuilder=#tlsConfig"/>
+            <to uri="idscp2client://tc-core-server:29292?awaitResponse=true&amp;idscp2Configuration=#idscp2Config&amp;secureChannelConfigurationBuilder=#tlsConfig"/>
             <log message="Client received: ${body} (Header: ${headers[ids-header]})"/>
             <!-- Prevents the client consumer from sending the message back to the server -->
             <removeHeader name="ids-header"/>

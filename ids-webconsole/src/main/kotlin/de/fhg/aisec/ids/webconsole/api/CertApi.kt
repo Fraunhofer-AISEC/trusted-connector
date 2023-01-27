@@ -279,8 +279,10 @@ class CertApi(@Autowired private val settings: Settings) {
                         // if it was signed with an already accepted root certificate.
                         acceptedCerts += cert
                     } else {
-                        LOG.warn("Rejected EST CA cert:\n$cert\nExpected hash $permittedHash instead of $certHash " +
-                            "or valid signature by an earlier CA certificate from the list with the right hash.")
+                        LOG.warn(
+                            "Rejected EST CA cert:\n$cert\nExpected hash $permittedHash instead of $certHash " +
+                                "or valid signature by an earlier CA certificate from the list with the right hash."
+                        )
                     }
                 }
             } else {
@@ -375,7 +377,7 @@ class CertApi(@Autowired private val settings: Settings) {
                         val certificateChain = mutableListOf(it)
                         var lastCertificate = it
                         // The last certificate (root) is self-signed
-                        while(!lastCertificate.verify(lastCertificate)) {
+                        while (!lastCertificate.verify(lastCertificate)) {
                             // Find CA certificate signing last element of chain
                             caCerts.firstOrNull { ca -> lastCertificate.verify(ca) }?.let { nextCa ->
                                 certificateChain += nextCa
