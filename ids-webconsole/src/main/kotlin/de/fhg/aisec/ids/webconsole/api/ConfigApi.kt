@@ -42,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.server.ResponseStatusException
 import java.util.TreeMap
 import java.util.regex.Pattern
-import java.util.stream.Collectors
 import javax.ws.rs.core.MediaType
 
 /**
@@ -193,27 +192,21 @@ class ConfigApi {
 
             // add route id before host identifier for web console view
             val retAllSettings = mutableMapOf<String, ConnectionSettings>()
-            for ((key, value) in allSettings) {
+            allSettings.forEach { (key, value) ->
                 if (key == Constants.GENERAL_CONFIG) {
                     retAllSettings[key] = value
                 } else {
-                    var endpointIdentifiers = routeInputs
+                    val endpointIdentifiers = routeInputs
                         .entries
-                        .stream()
                         .filter { (_, value1) ->
-                            value1.stream().anyMatch { u: String -> u.startsWith("idsserver://$key") }
+                            value1.any { u: String -> u.startsWith("idsserver://$key") }
                         }
-                        .map { (key1) -> "$key1 - $key" }
-                        .collect(Collectors.toList())
-                    if (endpointIdentifiers.isEmpty()) {
-                        endpointIdentifiers = listOf("<no route found> - $key")
-                    }
+                        .map { "$it - $key" }
+                        .ifEmpty { listOf("<no route found> - $key") }
 
                     // add endpoint configurations
                     endpointIdentifiers.forEach { endpointIdentifier: String ->
-                        if (retAllSettings.keys.stream()
-                            .noneMatch { anObject: String? -> endpointIdentifier == anObject }
-                        ) {
+                        if (retAllSettings.keys.none { endpointIdentifier == it }) {
                             retAllSettings[endpointIdentifier] = value
                         }
                     }
