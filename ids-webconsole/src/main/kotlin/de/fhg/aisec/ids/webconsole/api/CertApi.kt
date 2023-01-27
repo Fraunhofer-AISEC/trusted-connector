@@ -26,7 +26,6 @@ import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.webconsole.ApiController
 import de.fhg.aisec.ids.webconsole.api.data.Cert
-import de.fhg.aisec.ids.webconsole.api.data.EstCaCertRequest
 import de.fhg.aisec.ids.webconsole.api.data.EstIdRequest
 import de.fhg.aisec.ids.webconsole.api.data.Identity
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor
@@ -64,12 +63,10 @@ import sun.security.pkcs10.PKCS10
 import sun.security.x509.X500Name
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.io.PrintStream
 import java.net.URI
 import java.net.URISyntaxException
@@ -242,40 +239,55 @@ class CertApi(@Autowired private val settings: Settings) {
     //     return "Error: certificate has NOT been uploaded to $trustStoreName"
     // }
 
-    @PostMapping("/est_ca_certs", consumes = [MediaType.APPLICATION_JSON], produces = [MediaType.TEXT_PLAIN])
-    @ApiOperation(
-        value = "Get CA certificate from EST",
-        notes = ""
-    )
-    @ApiResponses(
-        ApiResponse(code = 200, message = "EST CA certificate"),
-        ApiResponse(code = 500, message = "Error fetching CA certificate via EST")
-    )
-    suspend fun requestEstCaCerts(@RequestBody request: EstCaCertRequest): String {
-        val ucUrl = "${request.url}/.well-known/est/cacerts"
+    private inline fun notThrowing(block: () -> Unit): Boolean {
+        return try {
+            block()
+            true
+        } catch (t: Throwable) {
+            false
+        }
+    }
+
+    private fun X509Certificate.isValid() = notThrowing { this.checkValidity() }
+
+    private fun X509Certificate.verify(maybeIssuer: X509Certificate) =
+        notThrowing { this.verify(maybeIssuer.publicKey) }
+
+    private suspend fun fetchEstCaCerts(estUrl: String, permittedHash: String): List<X509Certificate> {
+        val ucUrl = "$estUrl/.well-known/est/cacerts"
         val response = insecureHttpClient.get(ucUrl)
         if (response.status.value !in 200..299) {
             throw ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Failed to fetch root certificate, error code ${response.status.value}"
+                "Failed to fetch CA certificates, error code ${response.status.value}"
             )
         }
         val res = response.bodyAsText()
         val encoded = Base64.getDecoder().decode(res.replace(WHITESPACE_REGEX, ""))
-        val certs = PKCS7(encoded).certificates
-        val certHash = sha256Hash(certs[0])
-
-        return if (certHash == request.hash) {
-            certs.joinToString("\n") {
-                val s = Base64.getMimeEncoder(64, "\n".toByteArray()).encode(it.encoded).decodeToString()
-                "-----BEGIN CERTIFICATE-----\n$s\n-----END CERTIFICATE-----"
+        // List of accepted certificates (during iteration below)
+        val acceptedCerts = mutableListOf<X509Certificate>()
+        // Iteration over received certificates, collecting the accepted ones
+        PKCS7(encoded).certificates.forEach { cert ->
+            if (cert.isValid()) {
+                val certHash = cert.sha256Hash()
+                if (certHash == permittedHash) {
+                    // Root certificate with right hash will be accepted immediately
+                    acceptedCerts += cert
+                } else {
+                    if (acceptedCerts.any { cert.verify(it) }) {
+                        // A certificate without the right hash will be accepted
+                        // if it was signed with an already accepted root certificate.
+                        acceptedCerts += cert
+                    } else {
+                        LOG.warn("Rejected EST CA cert:\n$cert\nExpected hash $permittedHash instead of $certHash " +
+                            "or valid signature by an earlier CA certificate from the list with the right hash.")
+                    }
+                }
+            } else {
+                LOG.warn("Rejected EST CA cert:\n$cert\nThe certificate is not valid!")
             }
-        } else {
-            throw ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Hash check for EST root failed, expected was ${request.hash}, actual hash is $certHash."
-            )
         }
+        return acceptedCerts
     }
 
     /**
@@ -301,9 +313,9 @@ class CertApi(@Autowired private val settings: Settings) {
         return byteArray.joinToString("") { hexLookup.computeIfAbsent(it) { num: Byte -> byteToHex(num.toInt()) } }
     }
 
-    private fun sha256Hash(certificate: Certificate): String {
+    private fun Certificate.sha256Hash(): String {
         val sha256 = MessageDigest.getInstance("SHA-256")
-        sha256.update(certificate.encoded)
+        sha256.update(this.encoded)
         val digest = sha256.digest()
         return encodeHexString(digest).lowercase()
     }
@@ -317,13 +329,20 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "EST CA certificate"),
         ApiResponse(code = 500, message = "No certificate found")
     )
-    fun storeEstCACerts(@RequestBody certificates: String): Boolean {
-        return certificates.split("-----END CERTIFICATE-----").map {
+    fun storeEstCACerts(@RequestBody certificates: String) {
+        certificates.split("-----END CERTIFICATE-----").map {
             it.replace(CLEAR_PEM_REGEX, "")
         }.filter { it.isNotEmpty() }.map { c ->
             val trustStoreName = settings.connectorConfig.truststoreName
-            storeCertFromString(getKeystoreFile(trustStoreName), c)
-        }.all { it }
+            val encoded = Base64.getDecoder().decode(c.replace(WHITESPACE_REGEX, ""))
+            val cf = CertificateFactory.getInstance("X.509")
+            val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
+            try {
+                storeCertificate(trustStoreName, listOf(cert))
+            } catch (t: Throwable) {
+                LOG.error("Error saving a CA certificate", t)
+            }
+        }
     }
 
     @PostMapping("/request_est_identity", consumes = [MediaType.APPLICATION_JSON])
@@ -332,21 +351,43 @@ class CertApi(@Autowired private val settings: Settings) {
         notes = ""
     )
     @ApiResponses(
-        ApiResponse(code = 200, message = "EST CA certificate"),
+        ApiResponse(code = 200, message = "EST CA certificate fetched"),
         ApiResponse(code = 500, message = "No certificate found")
     )
     suspend fun requestEstIdentity(@RequestBody r: EstIdRequest) {
-        LOG.debug("Requesting certificate over EST...")
-        LOG.debug("Step 1 - generate Keys")
+        LOG.debug("Started EST process.")
+
+        LOG.debug("Fetching CA certificates...")
+        val caCerts = fetchEstCaCerts(r.estUrl, r.rootCertHash)
+        caCerts.firstOrNull { it.verify(it) }?.let {
+            LOG.debug("Storing root CA certificate in TrustStore...")
+            storeCertificate(settings.connectorConfig.truststoreName, listOf(it))
+        } ?: LOG.warn("No (valid) root CA certificate has been found. EST process may fail!")
+
+        LOG.debug("Generating keys...")
         KeyPairGenerator.getInstance("RSA").apply { initialize(4096) }.generateKeyPair().let { keys ->
-            LOG.debug("Step 2 - generate CSR")
+            LOG.debug("Creating CSR...")
             generatePKCS10(keys).let { csr ->
-                LOG.debug("Step 3 - send requests")
+                LOG.debug("Sending EST request...")
                 sendEstIdReq(r, csr).let { pkcs7 ->
-                    LOG.debug("Step 4 - extract certificate")
                     pkcs7.certificates.firstOrNull { it.publicKey == keys.public }?.let {
-                        LOG.debug("Step 5 - save certificate")
-                        storeEstId(keys.private, it, r.alias)
+                        LOG.debug("Found EST certificate, assembling certificate chain...")
+                        val certificateChain = mutableListOf(it)
+                        var lastCertificate = it
+                        // The last certificate (root) is self-signed
+                        while(!lastCertificate.verify(lastCertificate)) {
+                            // Find CA certificate signing last element of chain
+                            caCerts.firstOrNull { ca -> lastCertificate.verify(ca) }?.let { nextCa ->
+                                certificateChain += nextCa
+                                lastCertificate = nextCa
+                            } ?: throw RuntimeException(
+                                "Could not create certificate chain, " +
+                                    "did not find signer for this certificate:\n$lastCertificate"
+                            )
+                        }
+                        LOG.debug("Storing EST certificate (full chain) using alias \"{}\"...", r.alias)
+                        storeCertificate(settings.connectorConfig.keystoreName, certificateChain, keys.private, r.alias)
+                        LOG.debug("EST enrollment completed successfully!")
                     }
                 }
             }
@@ -370,8 +411,7 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     private suspend fun sendEstIdReq(r: EstIdRequest, csr: ByteArray): PKCS7 {
-        val trustStoreName = settings.connectorConfig.truststoreName
-        val trustStoreFile = getKeystoreFile(trustStoreName)
+        val trustStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
         val trustManagers = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
             KeyStore.getInstance("pkcs12").also {
                 FileInputStream(trustStoreFile).use { fis ->
@@ -424,72 +464,30 @@ class CertApi(@Autowired private val settings: Settings) {
         return PKCS7(encoded)
     }
 
-    private fun storeEstId(key: PrivateKey, cert: Certificate, alias: String): Boolean {
-        val keyStoreName = settings.connectorConfig.keystoreName
-        return storeCertFromString(
-            getKeystoreFile(keyStoreName),
-            Base64.getEncoder().encode(cert.encoded).decodeToString(),
-            key,
-            alias
-        )
-    }
-
-    /** Stores a certificate in a JKS truststore.  */
-    private fun storeCert(trustStoreFile: File, certFile: File): Boolean {
-        val alias = certFile.name.replace(".", "_")
-        return try {
-            val cf = CertificateFactory.getInstance("X.509")
-            val certStream = fullStream(certFile.absolutePath)
-            val certs = cf.generateCertificate(certStream)
-            val keystore = KeyStore.getInstance("pkcs12")
-            val password = KEYSTORE_PWD
-            FileInputStream(trustStoreFile).use { fis ->
-                keystore.load(fis, password.toCharArray())
-            }
-            // Add the certificate
-            keystore.setCertificateEntry(alias, certs)
-            FileOutputStream(trustStoreFile).use { fos ->
-                keystore.store(fos, password.toCharArray())
-            }
-            true
-        } catch (e: Exception) {
-            LOG.error(e.message, e)
-            false
-        }
-    }
-
-    private fun storeCertFromString(
-        trustStoreFile: File,
-        cert: String,
+    private fun storeCertificate(
+        storeFilename: String,
+        certificateChain: List<X509Certificate>,
         key: PrivateKey? = null,
         alias: String? = null
-    ): Boolean {
-        val encoded = Base64.getDecoder().decode(cert.replace(WHITESPACE_REGEX, ""))
-        val cf = CertificateFactory.getInstance("X.509")
-        val c = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
-        return try {
-            val keystore = KeyStore.getInstance("pkcs12")
-            val password = KEYSTORE_PWD.toCharArray()
-            FileInputStream(trustStoreFile).use { fis ->
-                keystore.load(fis, password)
-            }
-            val entryAlias = alias ?: c.subjectX500Principal.name.let { name ->
-                name.split(",").map { it.split("=") }.firstOrNull { it[0] == "CN" }?.get(1) ?: name
-            }
-            if (key == null) {
-                // Add a CA certificate
-                keystore.setCertificateEntry(entryAlias, c)
-            } else {
-                // Add an identity certificate with private key
-                keystore.setKeyEntry(entryAlias, key, password, arrayOf(c))
-            }
-            FileOutputStream(trustStoreFile).use { fos ->
-                keystore.store(fos, password)
-            }
-            true
-        } catch (e: Exception) {
-            LOG.error(e.message, e)
-            false
+    ) {
+        val storeFile = getKeystoreFile(storeFilename)
+        val keystore = KeyStore.getInstance("pkcs12")
+        val password = KEYSTORE_PWD.toCharArray()
+        FileInputStream(storeFile).use { fis ->
+            keystore.load(fis, password)
+        }
+        val entryAlias = alias ?: certificateChain[0].subjectX500Principal.name.let { name ->
+            name.split(",").map { it.split("=") }.firstOrNull { it[0] == "CN" }?.get(1) ?: name
+        }
+        if (key == null) {
+            // Add a CA certificate
+            keystore.setCertificateEntry(entryAlias, certificateChain[0])
+        } else {
+            // Add an identity certificate with private key
+            keystore.setKeyEntry(entryAlias, key, password, certificateChain.toTypedArray())
+        }
+        FileOutputStream(storeFile).use { fos ->
+            keystore.store(fos, password)
         }
     }
 
@@ -675,14 +673,6 @@ class CertApi(@Autowired private val settings: Settings) {
             }
             install(ContentNegotiation) {
                 jackson()
-            }
-        }
-
-        @Throws(IOException::class)
-        private fun fullStream(fileName: String): InputStream {
-            DataInputStream(FileInputStream(fileName)).use { dis ->
-                val bytes = dis.readAllBytes()
-                return ByteArrayInputStream(bytes)
             }
         }
     }
