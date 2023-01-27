@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
@@ -22,9 +22,10 @@ export class NewIdentityESTComponent implements OnInit {
     public ngOnInit(): void {
         // the short way to create a FormGroup
         this.myForm = this.fb.group({
-            estUrl: '',
-            iet: '',
-            alias: '1'
+            estUrl: ['https://daps-dev.aisec.fraunhofer.de', Validators.required],
+            rootCertHash: ['7d3f260abb4b0bfa339c159398c0ab480a251faa385639218198adcad9a3c17d', Validators.required],
+            iet: ['', Validators.required],
+            alias: ['1', Validators.required]
         });
     }
 

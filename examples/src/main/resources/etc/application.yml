@@ -1,15 +1,6 @@
-logging:
-  level:
-    root: info
+#logging:
+#  level:
 #    de.fhg.aisec: debug
-    # Use for IDSCP2 debugging
-#    de.fhg.aisec.ids.idscp2: trace
-#    de.fhg.aisec.ids.camel.idscp2: trace
-
-spring:
-  web:
-    resources:
-      static-locations: classpath:/www/
 
 ids-multipart:
   daps-bean-name: rootDaps

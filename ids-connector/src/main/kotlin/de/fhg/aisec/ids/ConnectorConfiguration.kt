@@ -32,7 +32,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.net.URI
-import java.util.Arrays
 
 @Configuration
 class ConnectorConfiguration {
@@ -77,12 +76,10 @@ class ConnectorConfiguration {
     @Bean
     fun listBeans(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
-            val beans: Array<String> = ctx.beanDefinitionNames
-
-            Arrays.sort(beans)
-
-            for (bean in beans) {
-                TrustedConnector.LOG.info("Loaded bean: {}", bean)
+            if (TrustedConnector.LOG.isDebugEnabled) {
+                ctx.beanDefinitionNames.sorted().forEach {
+                    TrustedConnector.LOG.debug("Loaded bean: {}", it)
+                }
             }
         }
     }
@@ -90,10 +87,10 @@ class ConnectorConfiguration {
     @Bean
     fun listContainers(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
-            val containers = cml?.list(false)
-
-            for (container in containers ?: emptyList()) {
-                TrustedConnector.LOG.debug("Container: {}", container.names)
+            if (TrustedConnector.LOG.isDebugEnabled) {
+                cml?.list(false)?.forEach {
+                    TrustedConnector.LOG.debug("Container: {}", it.names)
+                }
             }
         }
     }
@@ -101,12 +98,10 @@ class ConnectorConfiguration {
     @Bean
     fun showConnectorProfile(ctx: ApplicationContext): CommandLineRunner {
         return CommandLineRunner {
-            val connector = im.connector
-
-            if (connector == null) {
-                TrustedConnector.LOG.info("No connector profile stored yet.")
-            } else {
-                TrustedConnector.LOG.info("Connector profile: {}", connector)
+            if (TrustedConnector.LOG.isDebugEnabled) {
+                im.connector?.let {
+                    TrustedConnector.LOG.debug("Connector profile:\n{}", im.connectorAsJsonLd)
+                } ?: TrustedConnector.LOG.debug("No connector profile stored yet.")
             }
         }
     }

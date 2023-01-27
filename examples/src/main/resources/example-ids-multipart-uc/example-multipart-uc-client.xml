@@ -32,7 +32,7 @@
             </setProperty>
             <process ref="contractRequestCreationProcessor" />
             <process ref="idsMultiPartOutputProcessor" />
-            <to uri="https://consumer-core:28282/usageControl?sslContextParameters=#rootClientSslContext" />
+            <to uri="https://tc-core-server:28282/usageControl?sslContextParameters=#rootClientSslContext" />
             <process ref="idsMultiPartInputProcessor" />
             <process ref="idsMessageTypeExtractionProcessor" />
             <choice>
@@ -41,7 +41,7 @@
                     <log message="### Handle ContractResponseMessage ###" />
                     <process ref="contractResponseProcessor" />
                     <process ref="idsMultiPartOutputProcessor" />
-                    <to uri="https://consumer-core:28282/usageControl?sslContextParameters=#rootClientSslContext" />
+                    <to uri="https://tc-core-server:28282/usageControl?sslContextParameters=#rootClientSslContext" />
                     <process ref="idsMultiPartInputProcessor" />
                     <process ref="idsMessageTypeExtractionProcessor" />
                     <choice>
@@ -76,7 +76,7 @@
             </setProperty>
             <process ref="artifactRequestCreationProcessor" />
             <process ref="idsMultiPartOutputProcessor" />
-            <to uri="https://consumer-core:28282/usageControl?sslContextParameters=#rootClientSslContext" />
+            <to uri="https://tc-core-server:28282/usageControl?sslContextParameters=#rootClientSslContext" />
             <process ref="idsMultiPartInputProcessor" />
             <process ref="idsMessageTypeExtractionProcessor" />
             <choice>

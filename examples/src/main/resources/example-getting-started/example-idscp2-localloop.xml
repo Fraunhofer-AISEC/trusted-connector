@@ -52,7 +52,7 @@
                 <simple>Message at $simple{date:now:yyyy-MM-dd HH:mm:ss}</simple>
             </setBody>
             <log message="Sending message body &quot;${body}&quot;..."/>
-            <to uri="idscp2client://consumer-core:9292/?sslContextParameters=#clientSslContext" />
+            <to uri="idscp2client://tc-core-server:9292/?sslContextParameters=#clientSslContext" />
         </route>
 
         <route id="receiveTime">

@@ -20,6 +20,14 @@
                 <div class="mdl-cell--12-col">
                     <div mdl-textfield
                          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="rootCertHash">Root CA Certificate Hash*</label>
+                        <input class="mdl-textfield__input" id="rootCertHash" type="text" formControlName="rootCertHash"
+                               required minlength="1">
+                    </div>
+                </div>
+                <div class="mdl-cell--12-col">
+                    <div mdl-textfield
+                         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
                         <label class="mdl-textfield__label" for="iet">Initial Enrollment Token*</label>
                         <input class="mdl-textfield__input" id="iet" type="password" formControlName="iet"
                                required minlength="4">
