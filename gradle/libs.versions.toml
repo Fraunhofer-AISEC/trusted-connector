@@ -12,7 +12,9 @@ ktor = "2.2.2"
 infomodel = "4.1.3"
 
 # Required for RouteManager metrics tests
-jaxbImpl = "4.0.1"
+jaxbApi = "2.3.1"
+jaxbCore = "2.3.0.1"
+jaxbImpl = "2.3.7"
 jaxActivation = "1.2.0"
 
 camel = "3.18.5"
@@ -118,7 +120,8 @@ javax-validation = { group = "javax.validation", name = "validation-api", versio
 
 # ids-route-manager
 camel-management = { group = "org.apache.camel", name = "camel-management", version.ref = "camel" }
-jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxbImpl" }
+jaxb-api = { group = "javax.xml.bind", name = "jaxb-api", version.ref = "jaxbApi" }
+jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxbCore" }
 jaxb-impl = { group = "com.sun.xml.bind", name = "jaxb-impl", version.ref = "jaxbImpl" }
 javax-activation = { group = "com.sun.activation", name = "javax.activation", version.ref = "jaxActivation" }
 

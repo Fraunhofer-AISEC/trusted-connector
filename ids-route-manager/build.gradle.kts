@@ -8,8 +8,9 @@ dependencies {
     implementation(libs.camel.core)
     implementation(libs.camel.management)
     implementation(libs.kotlinx.coroutines)
-    implementation(libs.bundles.jaxbImpl)
+    implementation(libs.jaxb.api)
 
+    testImplementation(libs.bundles.jaxbImpl)
     testImplementation(libs.javax.activation)
     testImplementation(libs.bundles.camelTest)
 }

@@ -72,6 +72,10 @@ subprojects {
             ),
             "com.google.guava" to mapOf(
                 "guava" to rootProject.libs.versions.guava.get()
+            ),
+            "com.sun.xml.bind" to mapOf(
+                "jaxb-core" to rootProject.libs.versions.jaxbCore.get(),
+                "jaxb-impl" to rootProject.libs.versions.jaxbImpl.get()
             )
         )
         // We need to explicitly specify the kotlin version for all kotlin dependencies,
