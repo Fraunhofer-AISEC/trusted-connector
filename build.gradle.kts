@@ -76,6 +76,9 @@ subprojects {
             "com.sun.xml.bind" to mapOf(
                 "jaxb-core" to rootProject.libs.versions.jaxbCore.get(),
                 "jaxb-impl" to rootProject.libs.versions.jaxbImpl.get()
+            ),
+            "org.eclipse.jetty" to mapOf(
+                "*" to rootProject.libs.versions.jetty.get()
             )
         )
         // We need to explicitly specify the kotlin version for all kotlin dependencies,
