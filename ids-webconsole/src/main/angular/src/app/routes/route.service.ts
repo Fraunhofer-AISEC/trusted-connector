@@ -21,7 +21,7 @@ export class RouteService {
   }
 
   public getRoutes(): Observable<Route[]> {
-    return this.httpClient.get(environment.apiURL + '/routes/list/') as Observable<Route[]>;
+    return this.httpClient.get(environment.apiURL + '/routes/list') as Observable<Route[]>;
   }
 
   public stopRoute(routeId: string): Observable<Result> {

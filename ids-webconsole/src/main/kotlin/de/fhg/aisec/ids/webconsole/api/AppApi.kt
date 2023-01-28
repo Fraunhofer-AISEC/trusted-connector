@@ -85,18 +85,21 @@ class AppApi {
     )
     @ApiResponses(ApiResponse(code = 200, message = "List of apps"))
     fun list(): List<ApplicationContainer> {
-        return cml.list(false).sortedWith(
-            java.util.Comparator { app1: ApplicationContainer, app2: ApplicationContainer ->
-                try {
-                    val date1 = ZonedDateTime.parse(app1.created)
-                    val date2 = ZonedDateTime.parse(app2.created)
-                    return@Comparator date1.compareTo(date2)
-                } catch (t: Exception) {
-                    LOG.warn("Unexpected app creation date/time. Cannot sort. {}", t.message)
-                }
+        return cml.list(false).sortedWith { app1, app2 ->
+            try {
+                val date1 = ZonedDateTime.parse(app1.created)
+                val date2 = ZonedDateTime.parse(app2.created)
+                date1.compareTo(date2)
+            } catch (t: Exception) {
+                LOG.warn(
+                    "Unexpected app creation date/time. Cannot sort pair [{}, {}]. {}",
+                    app1.created,
+                    app2.created,
+                    t.message
+                )
                 0
             }
-        )
+        }
     }
 
     @GetMapping("start/{containerId}", produces = [MediaType.APPLICATION_JSON])

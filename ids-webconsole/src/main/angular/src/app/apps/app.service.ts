@@ -16,7 +16,7 @@ export class AppService {
     }
 
     public getApps(): Observable<App[]> {
-        return this.http.get<App[]>(environment.apiURL + '/app/list/');
+        return this.http.get<App[]>(environment.apiURL + '/app/list');
     }
 
     public stopApp(appId: string): Observable<Result> {
