@@ -5,12 +5,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation(libs.idscp2.core)
     implementation(libs.camel.idscp2)
-    implementation(libs.jaxb.api)
     implementation(libs.camel.core)
     implementation(libs.camel.management)
     implementation(libs.kotlinx.coroutines)
+    implementation(libs.bundles.jaxbImpl)
 
-    testImplementation(libs.bundles.jaxbImpl)
     testImplementation(libs.javax.activation)
     testImplementation(libs.bundles.camelTest)
 }
