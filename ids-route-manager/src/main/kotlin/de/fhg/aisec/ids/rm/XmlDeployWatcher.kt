@@ -57,23 +57,29 @@ class XmlDeployWatcher : ApplicationContextAware {
     @Synchronized
     private fun startXmlBeans(xmlPathString: String) {
         xmlContexts += xmlPathString to CompletableFuture.supplyAsync {
-            FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
-                // Move special beans prefixed with "root" to the root ApplicationContext
-                (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
-                    registry.beanDefinitionNames
-                        .filter { it.startsWith("root") }
-                        // Memorize Beans for root ApplicationContext
-                        .also { rootBeans += xmlPathString to it }
-                        // Move root Beans to root ApplicationContext
-                        .forEach { beanName ->
-                            val beanDefinition = registry.getBeanDefinition(beanName)
-                            registry.removeBeanDefinition(beanName)
-                            rootBeanRegistry.registerBeanDefinition(beanName, beanDefinition)
-                            if (LOG.isDebugEnabled) {
-                                LOG.debug("Bean $beanName has been moved to root ApplicationContext")
+            try {
+                FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
+                    // Move special beans prefixed with "root" to the root ApplicationContext
+                    (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
+                        registry.beanDefinitionNames.forEach { LOG.debug("Laoded bean: $it") }
+                        registry.beanDefinitionNames
+                            .filter { it.startsWith("root") }
+                            // Memorize Beans for root ApplicationContext
+                            .also { rootBeans += xmlPathString to it }
+                            // Move root Beans to root ApplicationContext
+                            .forEach { beanName ->
+                                val beanDefinition = registry.getBeanDefinition(beanName)
+                                registry.removeBeanDefinition(beanName)
+                                rootBeanRegistry.registerBeanDefinition(beanName, beanDefinition)
+                                if (LOG.isDebugEnabled) {
+                                    LOG.debug("Bean $beanName has been moved to root ApplicationContext")
+                                }
                             }
-                        }
+                    }
                 }
+            } catch (t: Throwable) {
+                LOG.error("Error loading $xmlPathString", t)
+                throw t
             }
         }
     }

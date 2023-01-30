@@ -35,8 +35,6 @@ allprojects {
             versionRegex.matches(candidate.version)
                 || (candidate.group in setOf("org.apache.camel", "org.apache.camel.springboot")
                 && !candidate.version.startsWith("3.18"))
-                || (candidate.group == "org.springframework.boot" && !candidate.version.startsWith("2."))
-                || (candidate.group == "org.springframework.security" && !candidate.version.startsWith("5."))
                 || (candidate.group.startsWith("de.fraunhofer.iais.eis.ids") && !candidate.version.startsWith("4.1."))
         }
     }
@@ -57,12 +55,12 @@ subprojects {
     apply(plugin = "io.spring.dependency-management")
 
     configure<DependencyManagementExtension> {
-        imports {
-            mavenBom("org.springframework.boot:spring-boot-dependencies:${rootProject.libs.versions.springBoot.get()}")
-        }
-
+        // This order is important! If camel versions are imported after spring, breaking downgrades will occur!
         imports {
             mavenBom("org.apache.camel.springboot:camel-spring-boot-dependencies:${rootProject.libs.versions.camel.get()}")
+        }
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:${rootProject.libs.versions.springBoot.get()}")
         }
     }
 
@@ -74,6 +72,13 @@ subprojects {
             ),
             "com.google.guava" to mapOf(
                 "guava" to rootProject.libs.versions.guava.get()
+            ),
+            "com.sun.xml.bind" to mapOf(
+                "jaxb-core" to rootProject.libs.versions.jaxbCore.get(),
+                "jaxb-impl" to rootProject.libs.versions.jaxbImpl.get()
+            ),
+            "org.eclipse.jetty" to mapOf(
+                "*" to rootProject.libs.versions.jetty.get()
             )
         )
         // We need to explicitly specify the kotlin version for all kotlin dependencies,
@@ -96,14 +101,18 @@ subprojects {
 
     tasks.withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "11"
+            freeCompilerArgs = listOf("-Xjsr305=strict")
+            jvmTarget = "17"
         }
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
     }
 
     // Disable time-wasting tasks

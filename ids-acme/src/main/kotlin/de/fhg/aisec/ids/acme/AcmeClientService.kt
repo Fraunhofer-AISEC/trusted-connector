@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadable
 import de.fhg.aisec.ids.api.acme.SslContextFactoryReloadableRegistry
 import de.fhg.aisec.ids.api.settings.Settings
+import jakarta.annotation.PostConstruct
 import org.shredzone.acme4j.Account
 import org.shredzone.acme4j.AccountBuilder
 import org.shredzone.acme4j.Order
@@ -52,7 +53,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Collections
 import java.util.Date
-import javax.annotation.PostConstruct
 
 @Component(
     "idsAcmeClient"

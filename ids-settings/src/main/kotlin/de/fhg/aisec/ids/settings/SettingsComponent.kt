@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
+import jakarta.annotation.PreDestroy
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
@@ -32,7 +33,6 @@ import org.springframework.stereotype.Component
 import java.nio.file.FileSystems
 import java.util.Collections
 import java.util.concurrent.ConcurrentMap
-import javax.annotation.PreDestroy
 
 @Component
 class SettingsComponent : Settings {

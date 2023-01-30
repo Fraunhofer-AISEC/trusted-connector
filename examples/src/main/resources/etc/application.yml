@@ -1,6 +1,6 @@
 #logging:
 #  level:
-#    de.fhg.aisec: debug
+#    root: debug
 
 ids-multipart:
   daps-bean-name: rootDaps
