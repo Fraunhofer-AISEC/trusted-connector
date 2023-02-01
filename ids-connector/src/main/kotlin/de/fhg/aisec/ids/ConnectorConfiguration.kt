@@ -34,6 +34,7 @@ import de.fhg.aisec.ids.idscp2.api.raregistry.RaProverDriverRegistry
 import de.fhg.aisec.ids.idscp2.api.raregistry.RaVerifierDriverRegistry
 import de.fhg.aisec.ids.rm.RouteManagerService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
@@ -51,6 +52,9 @@ class ConnectorConfiguration {
     @Autowired private lateinit var im: InfoModel
 
     @Autowired private lateinit var rm: RouteManagerService
+
+    @Value("\${idscp2.cmc-endpoint:127.0.0.1}")
+    private lateinit var cmcEndpoint: String
 
     @Bean
     fun configureIdscp2(): CommandLineRunner {
@@ -85,9 +89,9 @@ class ConnectorConfiguration {
     /**
      * Method for configuration of IDSCP2 CMC attestation driver.
      */
-    fun idscp2CmcRatConfig() {
+    private fun idscp2CmcRatConfig() {
         // RAT prover configuration
-        val cmcHostAndPort: Array<String> = "172.21.0.1".split(":").toTypedArray()
+        val cmcHostAndPort = cmcEndpoint.split(":").toTypedArray()
         var cmcPort: Int = CmcConfig.DEFAULT_CMC_PORT
         if (cmcHostAndPort.size > 1) {
             cmcPort = cmcHostAndPort[1].toInt()
