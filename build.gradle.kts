@@ -25,9 +25,9 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "7.0.0"
+    version = "7.1.0"
 
-    val versionRegex = ".*(rc-?[0-9]*|beta)$".toRegex(RegexOption.IGNORE_CASE)
+    val versionRegex = ".*(rc-?[0-9]*|beta|-b.+)$".toRegex(RegexOption.IGNORE_CASE)
 
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {

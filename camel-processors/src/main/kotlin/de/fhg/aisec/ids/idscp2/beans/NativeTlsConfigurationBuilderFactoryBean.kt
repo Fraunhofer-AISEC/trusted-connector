@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.idscp2.beans
 
-import de.fhg.aisec.ids.camel.idscp2.Idscp2Endpoint
+import de.fhg.aisec.ids.camel.idscp2.applySslContextParameters
 import de.fhg.aisec.ids.idscp2.defaultdrivers.securechannel.tls13.NativeTlsConfiguration
 import org.apache.camel.support.jsse.SSLContextParameters
 import org.springframework.beans.factory.FactoryBean
@@ -31,7 +31,7 @@ class NativeTlsConfigurationBuilderFactoryBean : FactoryBean<NativeTlsConfigurat
 
     var sslParameters: SSLContextParameters
         set(value) {
-            Idscp2Endpoint.applySslContextParameters(builder, value)
+            builder.applySslContextParameters(value)
         }
         get() = throw UnsupportedOperationException("set-only Builder method")
 
