@@ -22,6 +22,7 @@ package de.fhg.aisec.ids.camel.processors.multipart
 import de.fhg.aisec.ids.api.contracts.ContractUtils.SERIALIZER
 import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import de.fhg.aisec.ids.idscp2.api.drivers.DapsDriver
+import de.fhg.aisec.ids.idscp2.api.sha256Fingerprint
 import de.fraunhofer.iais.eis.Message
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
@@ -33,8 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.InputStream
-import java.security.cert.Certificate
-import java.security.cert.X509Certificate
 import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSession
 
@@ -62,32 +61,31 @@ class IdsMultiPartInputProcessor : Processor {
             val dat = idsHeader.securityToken?.tokenValue ?: throw RuntimeException("No DAT provided!")
 
             dapsBeanName?.let { dapsBeanName ->
-                val peerCertificates: Array<Certificate> = if (message.headers.containsKey("CamelHttpServletRequest")) {
+                val peerCertificateHash: String = if (message.headers.containsKey("CamelHttpServletRequest")) {
                     // Assume server-side REST endpoint.
                     // Try to extract certificates from CamelHttpServletRequest reference.
                     val request = message.headers["CamelHttpServletRequest"] as Request
                     val sslSession = request.getAttribute("org.eclipse.jetty.servlet.request.ssl_session") as SSLSession
                     try {
-                        sslSession.peerCertificates
+                        sslSession.peerCertificates[0].sha256Fingerprint
                     } catch (e: SSLPeerUnverifiedException) {
                         LOG.error("Client didn't provide a certificate!")
                         throw e
                     }
                 } else {
                     // Assume client-side HTTPS request.
-                    // Try to obtain Certificates extracted by CertExposingHttpClientConfigurer.
-                    message.headers[CertExposingHttpClientConfigurer.SERVER_CERTIFICATE_HASH_HEADER]?.let { hash ->
-                        CertExposingHttpClientConfigurer.certificateMap[hash]
-                    } ?: throw RuntimeException(
-                        "Could not obtain server TLS certificate! Has CertExposingHttpClientConfigurer been invoked?"
-                    )
+                    // Try to obtain Certificate hash extracted by CertExposingHttpClientConfigurer.
+                    message.headers[CertExposingHttpClientConfigurer.SERVER_CERTIFICATE_HASH_HEADER]?.toString()
+                        ?: throw RuntimeException(
+                            "Could not obtain server TLS certificate! Has CertExposingHttpClientConfigurer been invoked?"
+                        )
                 }
                 if (LOG.isTraceEnabled) {
-                    LOG.trace("Peer Certificates: {}", peerCertificates)
+                    LOG.trace("Peer Certificate hash: {}", peerCertificateHash)
                 }
                 val daps = beanFactory.getBean(dapsBeanName, DapsDriver::class.java)
                 try {
-                    val verifiedDat = daps.verifyToken(dat.toByteArray(), peerCertificates[0] as X509Certificate)
+                    val verifiedDat = daps.verifyToken(dat.toByteArray(), peerCertificateHash)
                     // Save exchange peer identity for contract association
                     UsageControlMaps.setExchangePeerIdentity(exchange, verifiedDat.identity)
                     // Save effective transfer contract for peer

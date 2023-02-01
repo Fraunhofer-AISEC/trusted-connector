@@ -19,7 +19,7 @@
  */
 package de.fhg.aisec.ids.idscp2.beans
 
-import de.fhg.aisec.ids.camel.idscp2.Idscp2Endpoint.Companion.applySslContextParameters
+import de.fhg.aisec.ids.camel.idscp2.applySslContextParameters
 import de.fhg.aisec.ids.idscp2.daps.aisecdaps.AisecDapsDriver
 import de.fhg.aisec.ids.idscp2.daps.aisecdaps.AisecDapsDriverConfig
 import de.fhg.aisec.ids.idscp2.daps.aisecdaps.SecurityRequirements
@@ -60,7 +60,7 @@ class AisecDapsDriverFactoryBean : FactoryBean<AisecDapsDriver> {
 
     var dapsSslParameters: SSLContextParameters
         set(value) {
-            applySslContextParameters(builder, value)
+            builder.applySslContextParameters(value)
         }
         get() = throw UnsupportedOperationException("set-only Builder method")
 
