@@ -115,12 +115,13 @@ class UserApi(@Autowired private val settings: Settings) {
     fun setPassword(@RequestBody change: PasswordChangeRequest) {
         if (change.username.isBlank() || change.oldPassword.isBlank() || change.newPassword.isBlank()) {
             LOG.error("Username or password blank, please provide valid credentials!")
-        } else if (argonEncoder.matches(
+        } else if (
+            argonEncoder.matches(
                 change.oldPassword,
                 (settings.getUserHash(change.username) ?: randomHash)
             )
         ) {
-            settings.setPassword(change.username, argonEncoder.encode(change.newPassword))
+            settings.saveUser(change.username, argonEncoder.encode(change.newPassword))
         } else {
             LOG.error("Old password is wrong")
         }

@@ -10,3 +10,11 @@ spring:
   web:
     resources:
       static-locations: classpath:/www/
+
+connector:
+  # Used as default for IDSCP2 DAPS instances which have not been explicitly configured.
+  daps-url: ${TC_DAPS_URL:}
+  # Used for IDS Messages issuerConnector field.
+  connector-url: ${TC_CH_ISSUER_CONNECTOR:}
+  # Used for IDS Messages senderAgent field.
+  sender-agent: ${TC_CH_AGENT:}

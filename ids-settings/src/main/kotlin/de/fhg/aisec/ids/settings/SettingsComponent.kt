@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component
 import java.nio.file.FileSystems
 import java.util.Collections
 import java.util.concurrent.ConcurrentMap
+import kotlin.reflect.KProperty
 
 @Component
 class SettingsComponent : Settings {
@@ -110,30 +111,37 @@ class SettingsComponent : Settings {
         mapDB.close()
     }
 
-    override var connectorConfig: ConnectorConfig
-        get() = settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
-        set(value) {
-            settingsStore[CONNECTOR_SETTINGS_KEY] = value
+    internal class NonNullSetting<T>(private val key: String, private val defaultProducer: () -> T) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+            @Suppress("UNCHECKED_CAST")
+            return settingsStore.getOrElse(key, defaultProducer) as T
+        }
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+            settingsStore[key] = value
             mapDB.commit()
         }
+    }
 
-    override var connectorProfile: ConnectorProfile
-        get() = settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
-        set(value) {
-            settingsStore[CONNECTOR_PROFILE_KEY] = value
-            mapDB.commit()
+    internal class NullableSetting<T>(private val key: String) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+            @Suppress("UNCHECKED_CAST")
+            return settingsStore[key] as T?
         }
-
-    override var connectorJsonLd: String?
-        get() = settingsStore[CONNECTOR_JSON_LD_KEY] as String?
-        set(value) {
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
             if (value == null) {
-                settingsStore -= CONNECTOR_JSON_LD_KEY
+                settingsStore -= key
             } else {
-                settingsStore[CONNECTOR_JSON_LD_KEY] = value
+                settingsStore[key] = value
             }
             mapDB.commit()
         }
+    }
+
+    override var connectorConfig by NonNullSetting(CONNECTOR_SETTINGS_KEY, ::ConnectorConfig)
+
+    override var connectorProfile by NonNullSetting(CONNECTOR_PROFILE_KEY, ::ConnectorProfile)
+
+    override var connectorJsonLd by NullableSetting<String>(CONNECTOR_JSON_LD_KEY)
 
     override fun getConnectionSettings(connection: String): ConnectionSettings =
         if (connection == Constants.GENERAL_CONFIG) {
@@ -157,12 +165,6 @@ class SettingsComponent : Settings {
     override fun getUserHash(username: String) = userStore[username]
 
     override fun saveUser(username: String, hash: String) {
-        userStore += username to hash
-        mapDB.commit()
-    }
-
-    override fun setPassword(username: String, hash: String) {
-        userStore.remove(username)
         userStore += username to hash
         mapDB.commit()
     }
