@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
+import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.mapdb.DB
 import org.mapdb.DBMaker
@@ -38,10 +39,7 @@ import kotlin.reflect.KProperty
 @Component
 class SettingsComponent : Settings {
 
-    init {
-        activate()
-    }
-
+    @PostConstruct
     private fun activate() {
         LOG.debug("Open Settings Database {}...", DB_PATH.toFile().absolutePath)
 
@@ -105,7 +103,6 @@ class SettingsComponent : Settings {
     }
 
     @PreDestroy
-    @Suppress("unused")
     fun deactivate() {
         LOG.debug("Close Settings Database...")
         mapDB.close()
