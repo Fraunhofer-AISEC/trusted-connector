@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component
 import java.nio.file.FileSystems
 import java.util.Collections
 import java.util.concurrent.ConcurrentMap
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 @Component
@@ -78,10 +79,12 @@ class SettingsComponent : Settings {
                     }
                     dbVersion = 2
                 }
+
                 2 -> {
                     settingsStore -= DAT_KEY
                     dbVersion = 3
                 }
+
                 3 -> {
                     if (connectorConfig.dapsUrl == "https://daps.aisec.fraunhofer.de") {
                         connectorConfig.let {
@@ -108,23 +111,28 @@ class SettingsComponent : Settings {
         mapDB.close()
     }
 
-    internal class NonNullSetting<T>(private val key: String, private val defaultProducer: () -> T) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+    internal class NonNullSetting<T>(
+        private val key: String,
+        private val defaultProducer: () -> T
+    ) : ReadWriteProperty<Settings, T> {
+        override operator fun getValue(thisRef: Settings, property: KProperty<*>): T {
             @Suppress("UNCHECKED_CAST")
             return settingsStore.getOrElse(key, defaultProducer) as T
         }
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+
+        override operator fun setValue(thisRef: Settings, property: KProperty<*>, value: T) {
             settingsStore[key] = value
             mapDB.commit()
         }
     }
 
-    internal class NullableSetting<T>(private val key: String) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+    internal class NullableSetting<T>(private val key: String) : ReadWriteProperty<Settings, T?> {
+        override operator fun getValue(thisRef: Settings, property: KProperty<*>): T? {
             @Suppress("UNCHECKED_CAST")
             return settingsStore[key] as T?
         }
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
+
+        override operator fun setValue(thisRef: Settings, property: KProperty<*>, value: T?) {
             if (value == null) {
                 settingsStore -= key
             } else {

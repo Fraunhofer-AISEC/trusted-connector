@@ -19,13 +19,15 @@
  */
 package de.fhg.aisec.ids.idscp2.beans
 
+import org.springframework.beans.factory.FactoryBean
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class BeanSetter<T>(val setConsumer: (T) -> Unit) {
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+class BeanSetter<T, FC>(val setConsumer: (T) -> Unit) : ReadWriteProperty<FactoryBean<FC>, T> {
+    override operator fun getValue(thisRef: FactoryBean<FC>, property: KProperty<*>): T {
         throw UnsupportedOperationException("FactoryBean set-only Builder method")
     }
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+    override operator fun setValue(thisRef: FactoryBean<FC>, property: KProperty<*>, value: T) {
         setConsumer(value)
     }
 }
