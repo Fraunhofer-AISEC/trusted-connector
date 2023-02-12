@@ -24,6 +24,7 @@ import de.fhg.aisec.ids.api.infomodel.ConnectorProfile
 import de.fhg.aisec.ids.api.settings.ConnectionSettings
 import de.fhg.aisec.ids.api.settings.ConnectorConfig
 import de.fhg.aisec.ids.api.settings.Settings
+import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.mapdb.DB
 import org.mapdb.DBMaker
@@ -33,14 +34,13 @@ import org.springframework.stereotype.Component
 import java.nio.file.FileSystems
 import java.util.Collections
 import java.util.concurrent.ConcurrentMap
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 @Component
 class SettingsComponent : Settings {
 
-    init {
-        activate()
-    }
-
+    @PostConstruct
     private fun activate() {
         LOG.debug("Open Settings Database {}...", DB_PATH.toFile().absolutePath)
 
@@ -79,10 +79,12 @@ class SettingsComponent : Settings {
                     }
                     dbVersion = 2
                 }
+
                 2 -> {
                     settingsStore -= DAT_KEY
                     dbVersion = 3
                 }
+
                 3 -> {
                     if (connectorConfig.dapsUrl == "https://daps.aisec.fraunhofer.de") {
                         connectorConfig.let {
@@ -104,36 +106,47 @@ class SettingsComponent : Settings {
     }
 
     @PreDestroy
-    @Suppress("unused")
     fun deactivate() {
         LOG.debug("Close Settings Database...")
         mapDB.close()
     }
 
-    override var connectorConfig: ConnectorConfig
-        get() = settingsStore.getOrElse(CONNECTOR_SETTINGS_KEY) { ConnectorConfig() } as ConnectorConfig
-        set(value) {
-            settingsStore[CONNECTOR_SETTINGS_KEY] = value
-            mapDB.commit()
+    internal class NonNullSetting<T>(
+        private val key: String,
+        private val defaultProducer: () -> T
+    ) : ReadWriteProperty<Settings, T> {
+        override operator fun getValue(thisRef: Settings, property: KProperty<*>): T {
+            @Suppress("UNCHECKED_CAST")
+            return settingsStore.getOrElse(key, defaultProducer) as T
         }
 
-    override var connectorProfile: ConnectorProfile
-        get() = settingsStore.getOrElse(CONNECTOR_PROFILE_KEY) { ConnectorProfile() } as ConnectorProfile
-        set(value) {
-            settingsStore[CONNECTOR_PROFILE_KEY] = value
+        override operator fun setValue(thisRef: Settings, property: KProperty<*>, value: T) {
+            settingsStore[key] = value
             mapDB.commit()
         }
+    }
 
-    override var connectorJsonLd: String?
-        get() = settingsStore[CONNECTOR_JSON_LD_KEY] as String?
-        set(value) {
+    internal class NullableSetting<T>(private val key: String) : ReadWriteProperty<Settings, T?> {
+        override operator fun getValue(thisRef: Settings, property: KProperty<*>): T? {
+            @Suppress("UNCHECKED_CAST")
+            return settingsStore[key] as T?
+        }
+
+        override operator fun setValue(thisRef: Settings, property: KProperty<*>, value: T?) {
             if (value == null) {
-                settingsStore -= CONNECTOR_JSON_LD_KEY
+                settingsStore -= key
             } else {
-                settingsStore[CONNECTOR_JSON_LD_KEY] = value
+                settingsStore[key] = value
             }
             mapDB.commit()
         }
+    }
+
+    override var connectorConfig by NonNullSetting(CONNECTOR_SETTINGS_KEY, ::ConnectorConfig)
+
+    override var connectorProfile by NonNullSetting(CONNECTOR_PROFILE_KEY, ::ConnectorProfile)
+
+    override var connectorJsonLd by NullableSetting<String>(CONNECTOR_JSON_LD_KEY)
 
     override fun getConnectionSettings(connection: String): ConnectionSettings =
         if (connection == Constants.GENERAL_CONFIG) {
@@ -157,12 +170,6 @@ class SettingsComponent : Settings {
     override fun getUserHash(username: String) = userStore[username]
 
     override fun saveUser(username: String, hash: String) {
-        userStore += username to hash
-        mapDB.commit()
-    }
-
-    override fun setPassword(username: String, hash: String) {
-        userStore.remove(username)
         userStore += username to hash
         mapDB.commit()
     }

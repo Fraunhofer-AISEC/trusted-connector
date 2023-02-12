@@ -1,5 +1,5 @@
 [versions]
-idscp2 = "0.17.0"
+idscp2 = "0.18.0"
 ktlint = "0.48.2"
 
 # Kotlin library/compiler version

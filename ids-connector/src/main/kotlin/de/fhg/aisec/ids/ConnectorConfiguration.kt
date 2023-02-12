@@ -19,6 +19,7 @@
  */
 package de.fhg.aisec.ids
 
+import de.fhg.aisec.ids.api.LazyProducer
 import de.fhg.aisec.ids.api.cm.ContainerManager
 import de.fhg.aisec.ids.api.infomodel.InfoModel
 import de.fhg.aisec.ids.api.settings.Settings
@@ -27,6 +28,7 @@ import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.camel.processors.UsageControlMaps
 import de.fhg.aisec.ids.rm.RouteManagerService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
@@ -39,27 +41,49 @@ class ConnectorConfiguration {
     @Autowired(required = false)
     private var cml: ContainerManager? = null
 
-    @Autowired private lateinit var settings: Settings
+    @Autowired
+    private lateinit var settings: Settings
 
-    @Autowired private lateinit var im: InfoModel
+    @Autowired
+    private lateinit var im: InfoModel
 
-    @Autowired private lateinit var rm: RouteManagerService
+    @Autowired
+    private lateinit var rm: RouteManagerService
+
+    @Value("\${connector.daps-url}")
+    private lateinit var dapsUrl: String
+
+    @Value("\${connector.connector-url}")
+    private lateinit var connectorUrl: String
+
+    @Value("\${connector.sender-agent}")
+    private lateinit var senderAgent: String
 
     @Bean
     fun configureIdscp2(): CommandLineRunner {
         return CommandLineRunner {
-            Utils.connectorUrlProducer = {
-                settings.connectorProfile.connectorUrl
-                    ?: URI.create("http://connector.ids")
+            Utils.issuerProducer = LazyProducer {
+                if (connectorUrl.isNotBlank()) {
+                    URI.create(connectorUrl)
+                } else {
+                    // Kept for backwards compatibility
+                    settings.connectorProfile.connectorUrl
+                        ?: URI.create("https://connector.ids")
+                }
             }
-            Utils.maintainerUrlProducer = {
-                settings.connectorProfile.maintainerUrl
-                    ?: URI.create("http://connector-maintainer.ids")
+            Utils.senderAgentProducer = LazyProducer {
+                if (senderAgent.isNotBlank()) {
+                    URI.create(senderAgent)
+                } else {
+                    // Kept for backwards compatibility
+                    settings.connectorProfile.maintainerUrl
+                        ?: URI.create("https://sender-agent.ids")
+                }
             }
-            Utils.dapsUrlProducer = {
-                System.getenv("TC_DAPS_URL")?.also {
-                    TrustedConnector.LOG.info("Found DAPS_URL env var, DAPS URL is overridden with $it")
-                } ?: settings.connectorConfig.dapsUrl
+            Utils.dapsUrlProducer = LazyProducer {
+                dapsUrl.ifBlank {
+                    settings.connectorConfig.dapsUrl
+                }
             }
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION

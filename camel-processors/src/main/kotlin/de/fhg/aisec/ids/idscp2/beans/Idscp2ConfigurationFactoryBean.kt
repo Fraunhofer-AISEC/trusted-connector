@@ -29,29 +29,13 @@ class Idscp2ConfigurationFactoryBean : FactoryBean<Idscp2Configuration> {
 
     private val builder = Idscp2Configuration.Builder()
 
-    var attestationConfig: AttestationConfig
-        set(value) {
-            builder.setAttestationConfig(value)
-        }
-        get() = throw UnsupportedOperationException("set-only Builder method")
+    var attestationConfig: AttestationConfig by BeanSetter(builder::setAttestationConfig)
 
-    var dapsDriver: DapsDriver
-        set(value) {
-            builder.setDapsDriver(value)
-        }
-        get() = throw UnsupportedOperationException("set-only Builder method")
+    var dapsDriver: DapsDriver by BeanSetter(builder::setDapsDriver)
 
-    var handshakeTimeoutDelay: Long
-        set(value) {
-            builder.setHandshakeTimeoutDelay(value)
-        }
-        get() = throw UnsupportedOperationException("set-only Builder method")
+    var handshakeTimeoutDelay: Long by BeanSetter(builder::setHandshakeTimeoutDelay)
 
-    var ackTimeoutDelay: Long
-        set(value) {
-            builder.setAckTimeoutDelay(value)
-        }
-        get() = throw UnsupportedOperationException("set-only Builder method")
+    var ackTimeoutDelay: Long by BeanSetter(builder::setAckTimeoutDelay)
 
     override fun getObject() = builder.build()
 

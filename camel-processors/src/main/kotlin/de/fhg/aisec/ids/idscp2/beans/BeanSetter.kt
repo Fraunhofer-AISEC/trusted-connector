@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * camel-processors
  * %%
- * Copyright (C) 2022 Fraunhofer AISEC
+ * Copyright (C) 2023 Fraunhofer AISEC
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,15 @@
  */
 package de.fhg.aisec.ids.idscp2.beans
 
-import de.fhg.aisec.ids.camel.idscp2.applySslContextParameters
-import de.fhg.aisec.ids.idscp2.defaultdrivers.securechannel.tls13.NativeTlsConfiguration
-import org.apache.camel.support.jsse.SSLContextParameters
 import org.springframework.beans.factory.FactoryBean
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
-@Suppress("unused")
-class NativeTlsConfigurationBuilderFactoryBean : FactoryBean<NativeTlsConfiguration.Builder> {
-
-    private val builder = NativeTlsConfiguration.Builder()
-
-    var sslParameters: SSLContextParameters by BeanSetter(builder::applySslContextParameters)
-
-    var serverSocketTimeout: Int by BeanSetter(builder::setServerSocketTimeout)
-
-    override fun getObject() = builder
-
-    override fun getObjectType() = NativeTlsConfiguration.Builder::class.java
+class BeanSetter<T, FC>(val setConsumer: (T) -> Unit) : ReadWriteProperty<FactoryBean<FC>, T> {
+    override operator fun getValue(thisRef: FactoryBean<FC>, property: KProperty<*>): T {
+        throw UnsupportedOperationException("FactoryBean set-only Builder method")
+    }
+    override operator fun setValue(thisRef: FactoryBean<FC>, property: KProperty<*>, value: T) {
+        setConsumer(value)
+    }
 }
