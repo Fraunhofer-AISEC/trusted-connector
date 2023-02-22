@@ -13,6 +13,3 @@ include(":ids-settings")
 include(":ids-webconsole")
 
 include(":ids-connector")
-
-// will be extracted to a separate repository later
-include(":example-route-builder")
