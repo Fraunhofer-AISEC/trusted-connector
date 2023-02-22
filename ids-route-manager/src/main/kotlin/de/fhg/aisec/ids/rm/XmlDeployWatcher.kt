@@ -61,7 +61,7 @@ class XmlDeployWatcher : ApplicationContextAware {
                 FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
                     // Move special beans prefixed with "root" to the root ApplicationContext
                     (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
-                        registry.beanDefinitionNames.forEach { LOG.debug("Laoded bean: $it") }
+                        registry.beanDefinitionNames.forEach { LOG.debug("Loaded bean: $it") }
                         registry.beanDefinitionNames
                             .filter { it.startsWith("root") }
                             // Memorize Beans for root ApplicationContext
