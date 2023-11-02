@@ -25,8 +25,7 @@ configure<IdeaModel> {
 
 dependencies {
     implementation(project(":ids-api")) { isTransitive = false }
-    implementation(libs.infomodel.model)
-    implementation(libs.infomodel.serializer)
+    implementation(libs.infomodel)
     implementation(libs.commons.cli)
     implementation(libs.javax.validation)
     implementation(libs.jackson.annotations)

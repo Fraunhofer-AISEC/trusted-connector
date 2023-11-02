@@ -1,5 +1,5 @@
 [versions]
-idscp2 = "0.18.0"
+idscp2 = "0.18.1"
 ktlint = "0.48.2"
 
 # Kotlin library/compiler version
@@ -93,8 +93,7 @@ camel-influxdb = { group = "org.apache.camel", name = "camel-influxdb", version.
 # camel-processors
 camel-idscp2 = { group = "de.fhg.aisec.ids", name = "camel-idscp2", version.ref = "idscp2" }
 camel-bean = { group = "org.apache.camel", name = "camel-bean", version.ref = "camel" }
-infomodel-model = { group = "de.fraunhofer.iais.eis.ids.infomodel", name = "java", version.ref = "infomodel" }
-infomodel-serializer = { group = "de.fraunhofer.iais.eis.ids", name = "infomodel-serializer", version.ref = "infomodel" }
+infomodel = { group = "de.fhg.aisec.ids", name = "infomodel", version.ref = "infomodel" }
 apacheHttp-mime = { group = "org.apache.httpcomponents", name = "httpmime", version.ref = "httpclient" }
 commons-fileupload = { group = "commons-fileupload", name = "commons-fileupload", version.ref = "commonsFileUpload" }
 

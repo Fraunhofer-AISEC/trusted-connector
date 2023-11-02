@@ -67,7 +67,7 @@ dependencies {
     implementation(project(":ids-api"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation(libs.spring.security.crypto)
-    implementation(libs.infomodel.model)
+    implementation(libs.infomodel)
     implementation(libs.camel.core)
     implementation(libs.jose4j)
     implementation(libs.auth0Jwt)

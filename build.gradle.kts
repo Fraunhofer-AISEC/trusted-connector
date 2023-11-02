@@ -44,9 +44,6 @@ subprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-
-        // References IAIS repository that contains the infomodel artifacts
-        maven("https://maven.iais.fraunhofer.de/artifactory/eis-ids-public/")
     }
 
     apply(plugin = "java")
