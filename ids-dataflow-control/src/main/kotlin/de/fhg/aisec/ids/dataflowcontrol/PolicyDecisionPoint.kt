@@ -39,6 +39,7 @@ import de.fhg.aisec.ids.api.router.RouteVerificationProof
 import de.fhg.aisec.ids.dataflowcontrol.lucon.LuconEngine
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.escape
 import de.fhg.aisec.ids.dataflowcontrol.lucon.TuPrologHelper.listStream
+import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -47,7 +48,6 @@ import java.nio.file.Files
 import java.util.LinkedList
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
-import javax.annotation.PostConstruct
 
 /**
  * This is a singleton, i.e. there will only be one instance of PolicyDecisionPoint within the whole
