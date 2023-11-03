@@ -21,8 +21,8 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
   exit 1
 fi
 
-OPTIONS=t:b:f:s
-LONGOPTS=base-image:,docker-build-tag:,file:,targets:,skip-build,build-container,fast
+OPTIONS=t:b:s
+LONGOPTS=base-image:,docker-build-tag:,targets:,platforms:,skip-build,build-container,fast
 
 ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
 if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
@@ -32,22 +32,26 @@ fi
 
 eval set -- "$PARSED"
 
-DOCKER_BUILD_TAG_ARG="develop"
+DOCKER_BUILD_TAGS="develop"
 BASE_IMAGE_ARG="gcr.io/distroless/java17-debian11"
 TARGETS="core"
-FILES=""
+OUTPUT_TYPE="docker"
+BAKE_ARGS=""
 BUILD_CONTAINER=0
 SKIP_BUILD=0
 FAST_BUILD=0
 
 while true; do
   case "$1" in
-  -f | --file)
-    FILES="${FILES}-f $2 "
-    shift 2
-    ;;
   --targets)
     TARGETS="$2"
+    shift 2
+    ;;
+  --platforms)
+    OUTPUT_TYPE="registry"
+    for p in $2; do
+      BAKE_ARGS="$BAKE_ARGS --set='*.platform=$p'"
+    done
     shift 2
     ;;
   -b | --base-image)
@@ -55,7 +59,8 @@ while true; do
     shift 2
     ;;
   -t | --docker-build-tag)
-    DOCKER_BUILD_TAG_ARG="$2"
+    DOCKER_BUILD_TAGS="$DOCKER_BUILD_TAGS $2"
+    BAKE_ARGS="$BAKE_ARGS --set='*.tags=$2'"
     shift 2
     ;;
   --build-container)
@@ -81,19 +86,22 @@ while true; do
   esac
 done
 
+# Complete BAKE_ARGS
+BAKE_ARGS="$BAKE_ARGS --set '*.output=type=$OUTPUT_TYPE'"
+
 # Enable experimental Docker features (buildx)
 export DOCKER_CLI_EXPERIMENTAL="enabled"
 
-# Export vars for buildx bake yaml resolution
-export DOCKER_BUILD_TAG="$DOCKER_BUILD_TAG_ARG"
+# Export vars for Dockerfile
 export BASE_IMAGE="$BASE_IMAGE_ARG"
+
 printf "######################################################################\n"
-printf "Using build tag \"%s\" and base image \"%s\"\n" "$DOCKER_BUILD_TAG" "$BASE_IMAGE"
+printf "Using build tags \"%s\" and base image \"%s\"\n" "$DOCKER_BUILD_TAGS" "$BASE_IMAGE"
 printf "######################################################################\n\n"
 
 if [ $BUILD_CONTAINER = 1 ]; then
-  echo "Building build-container via \"docker buildx bake build-container ${FILES}$*\"..."
-  eval "docker buildx bake build-container ${FILES}$*"
+  echo "Building build-container via \"docker buildx bake build-container${BAKE_ARGS}$*\"..."
+  eval "docker buildx bake build-container${BAKE_ARGS}$*"
   exit
 fi
 if [ $SKIP_BUILD = 0 ]; then
@@ -123,5 +131,5 @@ printf "######################################################################\n
 printf "Detected project version: %s\n" "$PROJECT_VERSION"
 printf "######################################################################\n\n"
 
-echo "Building images via \"docker buildx bake $TARGETS ${FILES}$*\"..."
-eval "docker buildx bake $TARGETS ${FILES}$*"
+echo "Building images via \"docker buildx bake ${TARGETS}${BAKE_ARGS}$*\"..."
+eval "docker buildx bake ${TARGETS}${BAKE_ARGS}$*"
