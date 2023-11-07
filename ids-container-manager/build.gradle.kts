@@ -13,7 +13,7 @@ protobuf {
 tasks.clean {
     // Sometimes required to fix an error caused by non-existence of this folder.
     doLast {
-        mkdir("${project.buildDir}/classes/kotlin/main")
+        mkdir(layout.buildDirectory.dir("classes/kotlin/main"))
     }
 }
 

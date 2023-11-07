@@ -35,7 +35,6 @@ allprojects {
             versionRegex.matches(candidate.version)
                 || (candidate.group in setOf("org.apache.camel", "org.apache.camel.springboot")
                 && !candidate.version.startsWith("3.18"))
-                || (candidate.group.startsWith("de.fraunhofer.iais.eis.ids") && !candidate.version.startsWith("4.1."))
         }
     }
 }
@@ -43,6 +42,8 @@ allprojects {
 subprojects {
     repositories {
         mavenCentral()
+        // Legacy IAIS Infomodel artifact repo
+        maven("https://gitlab.cc-asp.fraunhofer.de/api/v4/projects/55371/packages/maven")
         mavenLocal()
     }
 
@@ -62,20 +63,21 @@ subprojects {
     }
 
     dependencies {
+        val versions = rootProject.libs.versions
         // Some versions are downgraded for unknown reasons, fix this here
         val groupPins = mapOf(
             "org.jetbrains.kotlin" to mapOf(
-                "*" to rootProject.libs.versions.kotlin.get()
+                "*" to versions.kotlin.get()
             ),
             "com.google.guava" to mapOf(
-                "guava" to rootProject.libs.versions.guava.get()
+                "guava" to versions.guava.get()
             ),
             "com.sun.xml.bind" to mapOf(
-                "jaxb-core" to rootProject.libs.versions.jaxbCore.get(),
-                "jaxb-impl" to rootProject.libs.versions.jaxbImpl.get()
+                "jaxb-core" to versions.jaxbCore.get(),
+                "jaxb-impl" to versions.jaxbImpl.get()
             ),
             "org.eclipse.jetty" to mapOf(
-                "*" to rootProject.libs.versions.jetty.get()
+                "*" to versions.jetty.get()
             )
         )
         // We need to explicitly specify the kotlin version for all kotlin dependencies,

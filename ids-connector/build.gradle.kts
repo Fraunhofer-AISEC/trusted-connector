@@ -40,7 +40,7 @@ dependencies {
 
 // Clears library JARs before copying
 val cleanLibs = tasks.create<Delete>("deleteLibs") {
-    delete("$buildDir/libs/libraryJars", "$buildDir/libs/projectJars")
+    delete(layout.buildDirectory.dir("libs/libraryJars"), layout.buildDirectory.dir("libs/projectJars"))
 }
 // Copies all runtime library JARs to build/libs/lib
 val rootProjectDir: String = rootProject.projectDir.absolutePath
@@ -50,7 +50,7 @@ val copyLibraryJars = tasks.create<Copy>("copyLibraryJars") {
             it.absolutePath.startsWith(rootProjectDir)
         }
     )
-    destinationDir = file("$buildDir/libs/libraryJars")
+    destinationDir = file(layout.buildDirectory.dir("libs/libraryJars"))
     dependsOn(cleanLibs)
 }
 val copyProjectJars = tasks.create<Copy>("copyProjectJars") {
@@ -59,7 +59,7 @@ val copyProjectJars = tasks.create<Copy>("copyProjectJars") {
             it.absolutePath.startsWith(rootProjectDir)
         }
     )
-    destinationDir = file("$buildDir/libs/projectJars")
+    destinationDir = file(layout.buildDirectory.dir("libs/projectJars"))
     dependsOn(cleanLibs)
 }
 
@@ -73,7 +73,7 @@ tasks.withType<Jar> {
     doLast {
         Files.copy(
             Paths.get(archiveFile.get().toString()),
-            Paths.get("$buildDir/libs/projectJars/${archiveFileName.get()}")
+            Paths.get(layout.buildDirectory.file("libs/projectJars/${archiveFileName.get()}").get().toString())
         )
     }
 }
@@ -97,7 +97,7 @@ buildConfig {
 configure<IdeaModel> {
     module {
         // mark as generated sources for IDEA
-        generatedSourceDirs.add(File("$buildDir/generated/source/buildConfig/main/main"))
+        generatedSourceDirs.add(layout.buildDirectory.dir("generated/source/buildConfig/main/main").get().asFile)
     }
 }
 

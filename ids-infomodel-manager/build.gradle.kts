@@ -19,7 +19,7 @@ buildConfig {
 configure<IdeaModel> {
     module {
         // mark as generated sources for IDEA
-        generatedSourceDirs.add(File("$buildDir/generated/source/buildConfig/main/main"))
+        generatedSourceDirs.add(layout.buildDirectory.dir("generated/source/buildConfig/main/main").get().asFile)
     }
 }
 
