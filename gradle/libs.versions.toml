@@ -4,7 +4,7 @@ ktlint = "0.50.0"
 
 # Kotlin library/compiler version
 kotlin = "1.9.20"
-kotlinxCoroutines = "1.7.3"
+kotlinx-coroutines = "1.7.3"
 # HTTP client
 ktor = "2.3.5"
 
@@ -129,9 +129,9 @@ javax-activation = { group = "com.sun.activation", name = "javax.activation", ve
 mapdb = { group = "org.mapdb", name = "mapdb", version.ref = "mapdb" }
 
 # ids-webconsole
-kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-kotlinx-reactive = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactive", version.ref = "kotlinxCoroutines" }
-kotlinx-reactor = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactor", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-reactive = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactive", version.ref = "kotlinx-coroutines" }
+kotlinx-reactor = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
 bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk15on", version.ref = "bouncyCastle" }
 bouncycastlePkix = { group = "org.bouncycastle", name = "bcpkix-jdk15to18", version.ref = "bouncyCastle" }
 jose4j = { group = "org.bitbucket.b_c", name = "jose4j", version.ref = "jose4j" }

@@ -262,8 +262,7 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
                                                     "ids",
                                                     domainKeyPair.private,
                                                     "password".toCharArray(),
-                                                    certificate.certificateChain.toTypedArray<
-                                                        X509Certificate>()
+                                                    certificate.certificateChain.toTypedArray<X509Certificate>()
                                                 )
                                                 store.store(
                                                     ksOutputStream,

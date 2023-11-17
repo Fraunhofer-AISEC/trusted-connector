@@ -69,6 +69,9 @@ subprojects {
             "org.jetbrains.kotlin" to mapOf(
                 "*" to versions.kotlin.get()
             ),
+            "org.jetbrains.kotlinx" to mapOf(
+                Regex("kotlinx-coroutines-.*") to versions.kotlinx.coroutines.get()
+            ),
             "com.google.guava" to mapOf(
                 "guava" to versions.guava.get()
             ),
@@ -92,7 +95,11 @@ subprojects {
                     } ?: pins[requested.name]?.let { pin ->
                         // Pin only for specific names given in map
                         useVersion(pin)
-                    }
+                    } ?: pins.entries.firstOrNull { e ->
+                        e.key.let {
+                            it is Regex && it.matches(requested.name)
+                        }
+                    }?.let { useVersion(it.value) }
                 }
             }
         }
