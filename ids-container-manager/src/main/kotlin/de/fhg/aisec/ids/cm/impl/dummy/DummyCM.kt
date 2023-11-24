@@ -36,9 +36,16 @@ class DummyCM : ContainerManager {
     }
 
     override fun wipe(containerID: String) {}
-    override fun startContainer(containerID: String, key: String?) {}
+
+    override fun startContainer(
+        containerID: String,
+        key: String?
+    ) {}
+
     override fun stopContainer(containerID: String) {}
+
     override fun restartContainer(containerID: String) {}
+
     override fun pullImage(app: ApplicationContainer): String? {
         return null
     }

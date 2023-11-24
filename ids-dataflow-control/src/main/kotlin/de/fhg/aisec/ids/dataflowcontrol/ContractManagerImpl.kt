@@ -40,13 +40,13 @@ import java.net.URI
 
 @Component("contractManager")
 class ContractManagerImpl : ContractManager {
-
     @Autowired
     private lateinit var settings: Settings
 
     override fun makeContract(contractProperties: Map<String, Any>): ContractOffer {
-        val requestedArtifact = contractProperties[ContractConstants.ARTIFACT_URI_PROPERTY] as URI?
-            ?: throw RuntimeException("No artifact URI provided in contractProperties")
+        val requestedArtifact =
+            contractProperties[ContractConstants.ARTIFACT_URI_PROPERTY] as URI?
+                ?: throw RuntimeException("No artifact URI provided in contractProperties")
         val notAfterDateTime = contractProperties[ContractConstants.UC_NOT_AFTER_DATETIME] as String?
         val notBeforeDateTime = contractProperties[ContractConstants.UC_NOT_BEFORE_DATETIME] as String?
 
@@ -59,29 +59,31 @@ class ContractManagerImpl : ContractManager {
 
         // Add not after (BEFORE) usage constraint
         notAfterDateTime.let { dateTime ->
-            timeConstraints += ConstraintBuilder()
-                ._leftOperand_(LeftOperand.POLICY_EVALUATION_TIME)
-                ._operator_(BinaryOperator.BEFORE)
-                ._rightOperand_(
-                    TypedLiteral(
-                        ContractUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime.toString()).toString(),
-                        ContractUtils.TYPE_DATETIMESTAMP
+            timeConstraints +=
+                ConstraintBuilder()
+                    ._leftOperand_(LeftOperand.POLICY_EVALUATION_TIME)
+                    ._operator_(BinaryOperator.BEFORE)
+                    ._rightOperand_(
+                        TypedLiteral(
+                            ContractUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime.toString()).toString(),
+                            ContractUtils.TYPE_DATETIMESTAMP
+                        )
                     )
-                )
-                .build()
+                    .build()
         }
         // Add not before (AFTER) usage constraint
         notBeforeDateTime?.let { dateTime ->
-            timeConstraints += ConstraintBuilder()
-                ._leftOperand_(LeftOperand.POLICY_EVALUATION_TIME)
-                ._operator_(BinaryOperator.AFTER)
-                ._rightOperand_(
-                    TypedLiteral(
-                        ContractUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime).toString(),
-                        ContractUtils.TYPE_DATETIMESTAMP
+            timeConstraints +=
+                ConstraintBuilder()
+                    ._leftOperand_(LeftOperand.POLICY_EVALUATION_TIME)
+                    ._operator_(BinaryOperator.AFTER)
+                    ._rightOperand_(
+                        TypedLiteral(
+                            ContractUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime).toString(),
+                            ContractUtils.TYPE_DATETIMESTAMP
+                        )
                     )
-                )
-                .build()
+                    .build()
         }
         return ContractOfferBuilder()
             ._contractDate_(contractDate)
@@ -122,9 +124,10 @@ class ContractManagerImpl : ContractManager {
             .build()
     }
 
-    override fun storeContract(key: String, contract: ContractOffer) =
-        settings.storeContract(key, SERIALIZER.serialize(contract))
+    override fun storeContract(
+        key: String,
+        contract: ContractOffer
+    ) = settings.storeContract(key, SERIALIZER.serialize(contract))
 
-    override fun loadContract(key: String) =
-        settings.loadContract(key)?.let { SERIALIZER.deserialize(it, ContractOffer::class.java) }
+    override fun loadContract(key: String) = settings.loadContract(key)?.let { SERIALIZER.deserialize(it, ContractOffer::class.java) }
 }

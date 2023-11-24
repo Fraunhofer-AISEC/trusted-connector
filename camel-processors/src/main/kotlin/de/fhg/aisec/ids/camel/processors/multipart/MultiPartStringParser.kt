@@ -31,59 +31,59 @@ import java.nio.charset.StandardCharsets
 
 class MultiPartStringParser internal constructor(private val multipartInput: InputStream) :
     UploadContext {
-    private var boundary: String? = null
-    var header: String? = null
-    var payload: InputStream? = null
-    var payloadContentType: String? = null
+        private var boundary: String? = null
+        var header: String? = null
+        var payload: InputStream? = null
+        var payloadContentType: String? = null
 
-    override fun getCharacterEncoding(): String = StandardCharsets.UTF_8.name()
+        override fun getCharacterEncoding(): String = StandardCharsets.UTF_8.name()
 
-    @Deprecated(
-        "Deprecated in favor of contentLength(), see parent class org.apache.commons.fileupload.UploadContext",
-        ReplaceWith("contentLength()")
-    )
-    override fun getContentLength() = -1
+        @Deprecated(
+            "Deprecated in favor of contentLength(), see parent class org.apache.commons.fileupload.UploadContext",
+            ReplaceWith("contentLength()")
+        )
+        override fun getContentLength() = -1
 
-    override fun getContentType() = "multipart/form-data, boundary=$boundary"
+        override fun getContentType() = "multipart/form-data, boundary=$boundary"
 
-    override fun getInputStream() = multipartInput
+        override fun getInputStream() = multipartInput
 
-    override fun contentLength() = -1L
+        override fun contentLength() = -1L
 
-    companion object {
-        private val LOG = LoggerFactory.getLogger(MultiPartStringParser::class.java)
-    }
+        companion object {
+            private val LOG = LoggerFactory.getLogger(MultiPartStringParser::class.java)
+        }
 
-    init {
-        multipartInput.mark(10240)
-        BufferedReader(InputStreamReader(multipartInput, StandardCharsets.UTF_8)).use { reader ->
-            val boundaryLine =
-                reader.readLine()
-                    ?: throw IOException(
-                        "Message body appears to be empty, expected multipart boundary."
-                    )
-            boundary = boundaryLine.substring(2).trim { it <= ' ' }
-            multipartInput.reset()
-            for (i in FileUpload(DiskFileItemFactory()).parseRequest(this)) {
-                val fieldName = i.fieldName
-                if (LOG.isTraceEnabled) {
-                    LOG.trace("Found multipart field with name \"{}\"", fieldName)
-                }
-                if (MultiPartConstants.MULTIPART_HEADER == fieldName) {
-                    header = i.string
-                    if (LOG.isDebugEnabled) {
-                        LOG.debug("Found header:\n{}", header)
+        init {
+            multipartInput.mark(10240)
+            BufferedReader(InputStreamReader(multipartInput, StandardCharsets.UTF_8)).use { reader ->
+                val boundaryLine =
+                    reader.readLine()
+                        ?: throw IOException(
+                            "Message body appears to be empty, expected multipart boundary."
+                        )
+                boundary = boundaryLine.substring(2).trim { it <= ' ' }
+                multipartInput.reset()
+                for (i in FileUpload(DiskFileItemFactory()).parseRequest(this)) {
+                    val fieldName = i.fieldName
+                    if (LOG.isTraceEnabled) {
+                        LOG.trace("Found multipart field with name \"{}\"", fieldName)
                     }
-                } else if (MultiPartConstants.MULTIPART_PAYLOAD == fieldName) {
-                    payload = i.inputStream
-                    payloadContentType = i.contentType
-                    if (LOG.isDebugEnabled) {
-                        LOG.debug("Found body with Content-Type \"{}\"", payloadContentType)
+                    if (MultiPartConstants.MULTIPART_HEADER == fieldName) {
+                        header = i.string
+                        if (LOG.isDebugEnabled) {
+                            LOG.debug("Found header:\n{}", header)
+                        }
+                    } else if (MultiPartConstants.MULTIPART_PAYLOAD == fieldName) {
+                        payload = i.inputStream
+                        payloadContentType = i.contentType
+                        if (LOG.isDebugEnabled) {
+                            LOG.debug("Found body with Content-Type \"{}\"", payloadContentType)
+                        }
+                    } else {
+                        throw IOException("Unknown multipart field name detected: $fieldName")
                     }
-                } else {
-                    throw IOException("Unknown multipart field name detected: $fieldName")
                 }
             }
         }
     }
-}

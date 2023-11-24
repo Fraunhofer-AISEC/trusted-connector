@@ -58,7 +58,6 @@ import javax.ws.rs.core.MediaType
 @RequestMapping("/config")
 @Api(value = "Connector Configuration", authorizations = [Authorization(value = "oauth2")])
 class ConfigApi {
-
     @Autowired
     private lateinit var settings: Settings
 
@@ -85,7 +84,9 @@ class ConfigApi {
             message = "_No valid preferences received_: If incorrect configuration parameter is provided"
         )
     )
-    fun setConnectorConfig(@RequestBody config: ConnectorConfig) {
+    fun setConnectorConfig(
+        @RequestBody config: ConnectorConfig
+    ) {
         settings.connectorConfig = config
     }
 
@@ -103,7 +104,10 @@ class ConfigApi {
             message = "_No valid connection settings received!_: If incorrect connection settings parameter is provided"
         )
     )
-    fun setConnectionConfigurations(@PathVariable("con") connection: String, conSettings: ConnectionSettings) {
+    fun setConnectionConfigurations(
+        @PathVariable("con") connection: String,
+        conSettings: ConnectionSettings
+    ) {
         conSettings.let {
             // connection has format "<route_id> - host:port"
             // store only "host:port" in database to make connection available in other parts of the application
@@ -130,7 +134,9 @@ class ConfigApi {
      */
     @GetMapping("/connectionConfigs/{con}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings::class)
-    fun getConnectionConfigurations(@PathVariable("con") connection: String): ConnectionSettings {
+    fun getConnectionConfigurations(
+        @PathVariable("con") connection: String
+    ): ConnectionSettings {
         return settings.getConnectionSettings(connection)
     }
 
@@ -154,29 +160,31 @@ class ConfigApi {
             val connectionManager = connectionManager ?: return emptyMap()
 
             // Set of all connection configurations, properly ordered
-            val allSettings: MutableMap<String, ConnectionSettings> = TreeMap(
-                Comparator { o1: String, o2: String ->
-                    when (Constants.GENERAL_CONFIG) {
-                        o1 -> {
-                            return@Comparator -1
-                        }
-                        o2 -> {
-                            return@Comparator 1
-                        }
-                        else -> {
-                            return@Comparator o1.compareTo(o2)
+            val allSettings: MutableMap<String, ConnectionSettings> =
+                TreeMap(
+                    Comparator { o1: String, o2: String ->
+                        when (Constants.GENERAL_CONFIG) {
+                            o1 -> {
+                                return@Comparator -1
+                            }
+                            o2 -> {
+                                return@Comparator 1
+                            }
+                            else -> {
+                                return@Comparator o1.compareTo(o2)
+                            }
                         }
                     }
-                }
-            )
+                )
             // Load all existing entries
             allSettings.putAll(settings.allConnectionSettings)
             // Assert global configuration entry
             allSettings.putIfAbsent(Constants.GENERAL_CONFIG, ConnectionSettings())
-            val routeInputs = routeManager
-                .routes
-                .mapNotNull { it.id }
-                .associateWith { routeManager.getRouteInputUris(it) }
+            val routeInputs =
+                routeManager
+                    .routes
+                    .mapNotNull { it.id }
+                    .associateWith { routeManager.getRouteInputUris(it) }
 
             // add all available endpoints
             for (endpoint in connectionManager.listAvailableEndpoints()) {
@@ -196,13 +204,14 @@ class ConfigApi {
                 if (key == Constants.GENERAL_CONFIG) {
                     retAllSettings[key] = value
                 } else {
-                    val endpointIdentifiers = routeInputs
-                        .entries
-                        .filter { (_, value1) ->
-                            value1.any { u: String -> u.startsWith("idsserver://$key") }
-                        }
-                        .map { "$it - $key" }
-                        .ifEmpty { listOf("<no route found> - $key") }
+                    val endpointIdentifiers =
+                        routeInputs
+                            .entries
+                            .filter { (_, value1) ->
+                                value1.any { u: String -> u.startsWith("idsserver://$key") }
+                            }
+                            .map { "$it - $key" }
+                            .ifEmpty { listOf("<no route found> - $key") }
 
                     // add endpoint configurations
                     endpointIdentifiers.forEach { endpointIdentifier: String ->

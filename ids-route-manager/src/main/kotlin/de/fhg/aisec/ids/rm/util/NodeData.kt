@@ -196,7 +196,7 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
                     "http://camel.apache.org/" +
                         nodeType!!.lowercase(Locale.ENGLISH).replace(' ', '-') +
                         ".html"
-                    )
+                )
         }
         if (node is ProcessorDefinition<*> && outputs == null) {
             outputs = node.outputs

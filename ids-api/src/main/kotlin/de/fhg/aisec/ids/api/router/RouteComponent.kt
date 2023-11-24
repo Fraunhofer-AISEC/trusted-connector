@@ -32,7 +32,7 @@ class RouteComponent {
         private set
 
     constructor() {
-        /* Bean std c'tor */
+        // Bean std c'tor
     }
 
     constructor(bundleName: String?, description: String?) {

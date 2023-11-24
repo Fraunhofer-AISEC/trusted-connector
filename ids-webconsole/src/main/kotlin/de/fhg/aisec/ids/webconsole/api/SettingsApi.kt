@@ -47,13 +47,14 @@ import javax.ws.rs.core.MediaType
 @RequestMapping("/settings")
 @Api(value = "Self-Description and Connector Profiles", authorizations = [Authorization(value = "oauth2")])
 class SettingsApi {
-
     @Autowired
     private lateinit var im: InfoModel
 
     @PostMapping("/connectorProfile", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Configure the connector's self-description (\"Connector Profile\").")
-    fun postConnectorProfile(@RequestBody profile: ConnectorProfile) {
+    fun postConnectorProfile(
+        @RequestBody profile: ConnectorProfile
+    ) {
         if (!im.setConnector(profile)) {
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while storing ConnectorProfile")
         }
@@ -86,16 +87,16 @@ class SettingsApi {
     @get:GetMapping("/selfInformation", produces = ["application/ld+json"])
     @set:PostMapping("/selfInformation", consumes = ["application/ld+json"])
     var selfInformation: String
-        // TODO Document ApiOperation
-        get() = try {
-            im.connectorAsJsonLd
-        } catch (e: Throwable) {
-            LOG.error("Connector description build failed", e)
-            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Connector description build failed", e)
-        }
-
-        // TODO Document ApiOperation
-        set(@RequestBody selfInformation) {
+        get() =
+            try {
+                im.connectorAsJsonLd
+            } catch (e: Throwable) {
+                LOG.error("Connector description build failed", e)
+                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Connector description build failed", e)
+            }
+        set(
+        @RequestBody selfInformation
+        ) {
             try {
                 im.setConnectorByJsonLd(selfInformation)
             } catch (e: NullPointerException) {
@@ -104,7 +105,6 @@ class SettingsApi {
         }
 
     /** Remove static connector profile based on JSON-LD data  */
-    // TODO Document ApiOperation
     @DeleteMapping("/selfInformation")
     fun removeSelfInformation() {
         try {

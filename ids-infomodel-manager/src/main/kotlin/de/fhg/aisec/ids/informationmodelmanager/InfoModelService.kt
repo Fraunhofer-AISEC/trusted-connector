@@ -37,14 +37,13 @@ import de.fraunhofer.iais.eis.util.ConstraintViolationException
 import de.fraunhofer.iais.eis.util.TypedLiteral
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.net.URI
 import java.net.URISyntaxException
 
 /** IDS Info Model Manager. */
-// @Component(name = "ids-infomodel-manager", immediate = true)
-@org.springframework.stereotype.Component
+@Component("ids-infomodel-manager")
 class InfoModelService : InfoModel {
-
     @Autowired
     private lateinit var settings: Settings
 

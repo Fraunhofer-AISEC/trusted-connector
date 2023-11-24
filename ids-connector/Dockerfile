@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=gcr.io/distroless/java17-debian11
+ARG BASE_IMAGE=gcr.io/distroless/java21-debian12
 FROM $BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"

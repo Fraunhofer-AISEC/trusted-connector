@@ -26,7 +26,8 @@ package de.fhg.aisec.ids.api.policy
  */
 class PolicyDecision {
     enum class Decision {
-        ALLOW, DENY
+        ALLOW,
+        DENY
     }
 
     var reason = "Default deny"

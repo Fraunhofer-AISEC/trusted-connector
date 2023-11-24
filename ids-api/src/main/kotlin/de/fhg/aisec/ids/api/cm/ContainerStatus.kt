@@ -20,5 +20,11 @@
 package de.fhg.aisec.ids.api.cm
 
 enum class ContainerStatus {
-    CREATED, RESTARTING, RUNNING, REMOVING, PAUSED, EXITED, DEAD
+    CREATED,
+    RESTARTING,
+    RUNNING,
+    REMOVING,
+    PAUSED,
+    EXITED,
+    DEAD
 }

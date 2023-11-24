@@ -25,7 +25,11 @@ import java.io.OutputStream
 
 class ProcessExecutor {
     @Throws(InterruptedException::class, IOException::class)
-    fun execute(cmd: Array<String>?, stdout: OutputStream?, stderr: OutputStream?): Int {
+    fun execute(
+        cmd: Array<String>?,
+        stdout: OutputStream?,
+        stderr: OutputStream?
+    ): Int {
         val rt = Runtime.getRuntime()
         val proc = rt.exec(cmd)
         val errorGobbler = StreamGobbler(proc.errorStream, stderr)

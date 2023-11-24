@@ -170,11 +170,11 @@ class RestApiTests : Assertions() {
     //     assertFalse(metrics.isEmpty())
     // }
 
-    /**
-     * Retrieves a fresh JWT from server.
-     *
-     * @return The generated authentication token
-     */
+    // /**
+    //  * Retrieves a fresh JWT from server.
+    //  *
+    //  * @return The generated authentication token
+    //  */
     // private fun login(): String? {
     //     val c = newClient(null)
     //     c.path("/user/login")
@@ -192,9 +192,10 @@ class RestApiTests : Assertions() {
         private const val ENDPOINT_ADDRESS = "local://testserver"
 
         // private lateinit var server: Server
-        private val settings = Mockito.mock(
-            Settings::class.java
-        )
+        private val settings =
+            Mockito.mock(
+                Settings::class.java
+            )
 
         // @BeforeAll
         // @JvmStatic
@@ -205,7 +206,7 @@ class RestApiTests : Assertions() {
         //     startServer()
         // }
 
-        /** Starts a test server. Note that REST endpoints must be registered manually here.  */
+        // /** Starts a test server. Note that REST endpoints must be registered manually here. */
         // private fun startServer() {
         //     val sf = JAXRSServerFactoryBean()
         //     sf.setResourceClasses(CertApi::class.java)

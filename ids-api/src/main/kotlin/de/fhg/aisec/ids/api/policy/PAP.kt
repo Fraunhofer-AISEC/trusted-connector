@@ -44,6 +44,8 @@ interface PAP {
      * @return Active policy as prolog
      */
     val policy: String
+
     fun listRules(): List<String>
+
     fun verifyRoute(routeId: String): RouteVerificationProof?
 }

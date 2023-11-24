@@ -59,7 +59,7 @@ import kotlin.math.abs
 class DockerCM : ContainerManager {
     companion object {
         private val LOG = LoggerFactory.getLogger(DockerCM::class.java)
-        private lateinit var DOCKER_CLIENT: Docker
+        private lateinit var dockerClient: Docker
         private val PERIOD_UNITS =
             listOf<TemporalUnit>(ChronoUnit.YEARS, ChronoUnit.MONTHS, ChronoUnit.DAYS)
         private val DURATION_UNITS =
@@ -73,7 +73,7 @@ class DockerCM : ContainerManager {
         val isSupported: Boolean
             get() {
                 return try {
-                    DOCKER_CLIENT.ping()
+                    dockerClient.ping()
                 } catch (e: Throwable) {
                     when (e) {
                         is UninitializedPropertyAccessException ->
@@ -90,7 +90,7 @@ class DockerCM : ContainerManager {
                 // We have to modify the thread class loader for docker-java-api to find its config
                 val threadContextClassLoader = Thread.currentThread().contextClassLoader
                 Thread.currentThread().contextClassLoader = UnixDocker::class.java.classLoader
-                DOCKER_CLIENT = UnixDocker(File("/var/run/docker.sock"))
+                dockerClient = UnixDocker(File("/var/run/docker.sock"))
                 Thread.currentThread().contextClassLoader = threadContextClassLoader
             } catch (x: Exception) {
                 LOG.error("Error initializing docker client", x)
@@ -128,7 +128,10 @@ class DockerCM : ContainerManager {
             }
         }
 
-        private fun formatDuration(a: ZonedDateTime, b: ZonedDateTime): String {
+        private fun formatDuration(
+            a: ZonedDateTime,
+            b: ZonedDateTime
+        ): String {
             val period = Period.between(a.toLocalDate(), b.toLocalDate())
             var duration = ChronoUnit.SECONDS.between(a.toLocalTime(), b.toLocalTime())
             val units: MutableList<String> = LinkedList()
@@ -156,7 +159,7 @@ class DockerCM : ContainerManager {
         withSize: Boolean = false
     ): Sequence<Container> {
         val filteredContainers =
-            DOCKER_CLIENT.containers().filter(filters ?: emptyMap()).withSize(withSize)
+            dockerClient.containers().filter(filters ?: emptyMap()).withSize(withSize)
         return if (all) {
             filteredContainers.all().asSequence()
         } else {
@@ -165,7 +168,7 @@ class DockerCM : ContainerManager {
     }
 
     private fun getImages(filters: Map<String, Iterable<String>>?): Images {
-        return DOCKER_CLIENT.images().filter(filters ?: emptyMap())
+        return dockerClient.images().filter(filters ?: emptyMap())
     }
 
     override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
@@ -278,8 +281,7 @@ class DockerCM : ContainerManager {
             )
     }
 
-    private fun getImage(container: Container) =
-        getImages(mapOf("reference" to listOf(container.getString("Image")))).firstOrNull()
+    private fun getImage(container: Container) = getImages(mapOf("reference" to listOf(container.getString("Image")))).firstOrNull()
 
     override fun wipe(containerID: String) {
         val container = getContainer(containerID)
@@ -301,7 +303,10 @@ class DockerCM : ContainerManager {
         }
     }
 
-    override fun startContainer(containerID: String, key: String?) {
+    override fun startContainer(
+        containerID: String,
+        key: String?
+    ) {
         val container = getContainer(containerID)
         try {
             container.start()
@@ -334,7 +339,7 @@ class DockerCM : ContainerManager {
             val tag = if (imageInfo.size == 2) imageInfo[1] else "latest"
             LOG.info("Pulling container image {} with tag {}", imageInfo[0], tag)
             // Pull image from std docker registry
-            DOCKER_CLIENT.images().pull(imageInfo[0], tag)
+            dockerClient.images().pull(imageInfo[0], tag)
 
             // Instantly create a container from that image, but do not start it yet.
             LOG.info("Creating container instance from image {}", app.image)
@@ -352,7 +357,7 @@ class DockerCM : ContainerManager {
                     "(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
                         "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])):)?" +
                         "([0-9]+):([0-9]+)(?:/(tcp|udp))?"
-                    )
+                )
                     .toRegex()
             for (port in app.ports) {
                 val match = portRegex.matchEntire(port)
@@ -398,7 +403,7 @@ class DockerCM : ContainerManager {
                 hostConfig.add("Privileged", JsonValue.TRUE)
             }
             container.add("HostConfig", hostConfig)
-            val c = DOCKER_CLIENT.containers().create(containerName, container.build())
+            val c = dockerClient.containers().create(containerName, container.build())
 
             return c.containerId()
         } catch (e: InterruptedException) {
@@ -460,7 +465,7 @@ class DockerCM : ContainerManager {
     /** Returns the version of docker on the system */
     override val version: String
         get() {
-            val version = DOCKER_CLIENT.version()
+            val version = dockerClient.version()
             return "${version.platformName()} (${version.version()})"
         }
 }

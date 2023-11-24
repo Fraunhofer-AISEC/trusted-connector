@@ -36,23 +36,26 @@ import org.springframework.stereotype.Component
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
  */
 @Component("contractRequestProcessor")
-class ContractRequestProcessor(@Autowired private val contractManager: ContractManager) : Processor {
-
+class ContractRequestProcessor(
+    @Autowired private val contractManager: ContractManager
+) : Processor {
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val contractRequest = SERIALIZER.deserialize(
-            exchange.message.getBody(String::class.java),
-            ContractRequest::class.java
-        )
+        val contractRequest =
+            SERIALIZER.deserialize(
+                exchange.message.getBody(String::class.java),
+                ContractRequest::class.java
+            )
         val requestedArtifact = contractRequest.permission[0].target
 
-        val contractRequestMessage = exchange.message.getHeader(
-            IDS_HEADER,
-            ContractRequestMessage::class.java
-        )
+        val contractRequestMessage =
+            exchange.message.getHeader(
+                IDS_HEADER,
+                ContractRequestMessage::class.java
+            )
 
         ContractResponseMessageBuilder()
             ._correlationMessage_(contractRequestMessage.id)
@@ -64,20 +67,21 @@ class ContractRequestProcessor(@Autowired private val contractManager: ContractM
             }
 
         val storeKey = exchange.getProperty(CONTRACT_STORE_KEY)?.toString()
-        val contractOffer = storeKey?.let {
-            contractManager.loadContract(it)?.let { offer ->
-                if (offer.permission.none { p -> p.target == requestedArtifact }) {
-                    throw RuntimeException(
-                        "Offer with store key \"$it\"" +
-                            " does not contain any permissions for artifact \"$requestedArtifact\""
-                    )
-                }
-                offer
-            } ?: throw RuntimeException("Error loading ContractOffer using store key \"$storeKey\"")
-        } ?: run {
-            val contractProperties = ContractHelper.collectContractProperties(requestedArtifact, exchange)
-            contractManager.makeContract(contractProperties)
-        }
+        val contractOffer =
+            storeKey?.let {
+                contractManager.loadContract(it)?.let { offer ->
+                    if (offer.permission.none { p -> p.target == requestedArtifact }) {
+                        throw RuntimeException(
+                            "Offer with store key \"$it\"" +
+                                " does not contain any permissions for artifact \"$requestedArtifact\""
+                        )
+                    }
+                    offer
+                } ?: throw RuntimeException("Error loading ContractOffer using store key \"$storeKey\"")
+            } ?: run {
+                val contractProperties = ContractHelper.collectContractProperties(requestedArtifact, exchange)
+                contractManager.makeContract(contractProperties)
+            }
 
         SERIALIZER.serialize(contractOffer).let {
             if (LOG.isDebugEnabled) {

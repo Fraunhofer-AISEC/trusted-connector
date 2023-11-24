@@ -31,6 +31,7 @@ class IDSCPOutgoingConnection {
     var endpointKey: String? = null
     var attestationResult: RatResult? = null
     var metaData: String? = null
+
     override fun toString(): String {
         return "IDSCPOutgoingConnection [endpoint_identifier=$endpointIdentifier]"
     }

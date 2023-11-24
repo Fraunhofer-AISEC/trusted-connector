@@ -26,7 +26,8 @@ package de.fhg.aisec.ids.api.conm
  */
 class RatResult(val status: Status, reason: String?) {
     enum class Status {
-        FAILED, SUCCESS
+        FAILED,
+        SUCCESS
     }
 
     var reason: String? = null

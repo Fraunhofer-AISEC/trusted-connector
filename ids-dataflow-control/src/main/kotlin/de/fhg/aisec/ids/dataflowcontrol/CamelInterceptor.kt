@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component
 
 @Component("idsCamelInterceptor")
 class CamelInterceptor : InterceptStrategy {
-
     @Autowired(required = false)
     private var pdp: PDP? = null
 

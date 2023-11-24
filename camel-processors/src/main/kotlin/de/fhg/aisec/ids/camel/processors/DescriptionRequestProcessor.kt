@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component
 
 @Component("descriptionRequestProcessor")
 class DescriptionRequestProcessor : Processor {
-
     @Autowired
     private lateinit var infoModel: InfoModel
 

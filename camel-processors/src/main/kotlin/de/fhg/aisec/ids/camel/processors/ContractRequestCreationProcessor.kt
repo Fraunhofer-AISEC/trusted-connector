@@ -35,7 +35,6 @@ import java.net.URI
 
 @Component("contractRequestCreationProcessor")
 class ContractRequestCreationProcessor : Processor {
-
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
@@ -48,30 +47,32 @@ class ContractRequestCreationProcessor : Processor {
             exchange.message.setHeader(IDS_HEADER, it)
         }
 
-        val artifactUri = exchange.getProperty(ARTIFACT_URI_PROPERTY)?.let {
-            if (it is URI) {
-                it
-            } else {
-                URI.create(it.toString())
+        val artifactUri =
+            exchange.getProperty(ARTIFACT_URI_PROPERTY)?.let {
+                if (it is URI) {
+                    it
+                } else {
+                    URI.create(it.toString())
+                }
             }
-        }
         // setting creation/start date of contract to now
         val contractDate = ContractUtils.newGregorianCalendar()
-        val contractRequest = ContractRequestBuilder()
-            ._contractDate_(contractDate)
-            ._contractStart_(contractDate)
-            // Contract end one year in the future
-            ._contractEnd_(contractDate.apply { year += 1 })
-            // Request permission for (unrestricted?) usage of an artifact, identified by URI
-            ._permission_(
-                listOf(
-                    PermissionBuilder()
-                        ._target_(artifactUri)
-                        ._action_(listOf(Action.USE))
-                        .build()
+        val contractRequest =
+            ContractRequestBuilder()
+                ._contractDate_(contractDate)
+                ._contractStart_(contractDate)
+                // Contract end one year in the future
+                ._contractEnd_(contractDate.apply { year += 1 })
+                // Request permission for (unrestricted?) usage of an artifact, identified by URI
+                ._permission_(
+                    listOf(
+                        PermissionBuilder()
+                            ._target_(artifactUri)
+                            ._action_(listOf(Action.USE))
+                            .build()
+                    )
                 )
-            )
-            .build()
+                .build()
         SERIALIZER.serialize(contractRequest).let {
             if (LOG.isDebugEnabled) LOG.debug("Serialization body: {}", it)
             exchange.message.body = it

@@ -72,7 +72,10 @@ class ContainerManagerService : ContainerManager {
         }
     }
 
-    override fun startContainer(containerID: String, key: String?) {
+    override fun startContainer(
+        containerID: String,
+        key: String?
+    ) {
         try {
             containerManager.startContainer(containerID, key)
         } catch (e: NoContainerExistsException) {

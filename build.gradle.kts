@@ -27,7 +27,7 @@ allprojects {
     group = "de.fhg.aisec.ids"
     version = "7.2.0"
 
-    val versionRegex = ".*(rc-?[0-9]*|beta|-b.+)$".toRegex(RegexOption.IGNORE_CASE)
+    val versionRegex = ".*((rc|beta)-?[0-9]*|-b[0-9.]+)$".toRegex(RegexOption.IGNORE_CASE)
 
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
@@ -81,6 +81,9 @@ subprojects {
             ),
             "org.eclipse.jetty" to mapOf(
                 "*" to versions.jetty.get()
+            ),
+            "org.bouncycastle" to mapOf(
+                "*" to versions.bouncyCastle.get()
             )
         )
         // We need to explicitly specify the kotlin version for all kotlin dependencies,
@@ -146,7 +149,9 @@ configure(subprojects.filter { it.name != "examples" }) {
     spotless {
         kotlin {
             target("src/*/kotlin/**/*.kt")
-            ktlint(libs.versions.ktlint.get())
+            ktlint(libs.versions.ktlint.get()).editorConfigOverride(mapOf(
+                "ktlint_code_style" to "ktlint_official"
+            ))
             licenseHeader(
                 """/*-
  * ========================LICENSE_START=================================

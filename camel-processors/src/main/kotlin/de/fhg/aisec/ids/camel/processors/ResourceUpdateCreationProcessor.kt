@@ -31,24 +31,25 @@ import java.net.URI
 
 @Component("resourceUpdateCreationProcessor")
 class ResourceUpdateCreationProcessor : Processor {
-
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val artifactUri = exchange.getProperty(ContractConstants.ARTIFACT_URI_PROPERTY)?.let {
-            if (it is URI) {
-                it
-            } else {
-                URI.create(it.toString())
+        val artifactUri =
+            exchange.getProperty(ContractConstants.ARTIFACT_URI_PROPERTY)?.let {
+                if (it is URI) {
+                    it
+                } else {
+                    URI.create(it.toString())
+                }
             }
-        }
 
-        val usedContract = ProviderDB.artifactUrisMapped2ContractAgreements[
-            Pair(artifactUri, UsageControlMaps.getExchangePeerIdentity(exchange))
-        ]
-            ?: throw RuntimeException("No UC contract found for resource/artifact $artifactUri")
+        val usedContract =
+            ProviderDB.artifactUrisMapped2ContractAgreements[
+                Pair(artifactUri, UsageControlMaps.getExchangePeerIdentity(exchange))
+            ]
+                ?: throw RuntimeException("No UC contract found for resource/artifact $artifactUri")
         if (LOG.isDebugEnabled) {
             LOG.debug("Contract for requested Artifact found {}", usedContract)
         }

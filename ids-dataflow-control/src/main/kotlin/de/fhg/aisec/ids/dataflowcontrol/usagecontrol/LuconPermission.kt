@@ -35,28 +35,29 @@ class LuconPermission(permission: Permission) {
         if (permission.preDuty?.isNotEmpty() == true || permission.postDuty?.isNotEmpty() == true) {
             throw LuconException("PreDuties and PostDuties are not supported yet!")
         }
-        constraints = permission.constraint.map { constraint ->
-            if (constraint !is Constraint) {
-                throw LuconException("Encountered constraint of invalid type ${constraint.javaClass.name}")
+        constraints =
+            permission.constraint.map { constraint ->
+                if (constraint !is Constraint) {
+                    throw LuconException("Encountered constraint of invalid type ${constraint.javaClass.name}")
+                }
+                when (constraint.leftOperand) {
+                    LeftOperand.SYSTEM ->
+                        when (constraint.operator) {
+                            BinaryOperator.SAME_AS -> DockerImageConstraint(constraint.rightOperandReference)
+                            else -> throw LuconException(
+                                "Unexpected Operator ${constraint.operator} for LeftOperand ${constraint.leftOperand}"
+                            )
+                        }
+                    LeftOperand.POLICY_EVALUATION_TIME ->
+                        when (constraint.operator) {
+                            BinaryOperator.BEFORE, BinaryOperator.AFTER -> UsageTimeConstraint(constraint)
+                            else -> throw LuconException(
+                                "Unexpected Operator ${constraint.operator} for LeftOperand ${constraint.leftOperand}"
+                            )
+                        }
+                    else -> throw LuconException("Unexpected LeftOperand ${constraint.leftOperand}")
+                }
             }
-            when (constraint.leftOperand) {
-                LeftOperand.SYSTEM ->
-                    when (constraint.operator) {
-                        BinaryOperator.SAME_AS -> DockerImageConstraint(constraint.rightOperandReference)
-                        else -> throw LuconException(
-                            "Unexpected Operator ${constraint.operator} for LeftOperand ${constraint.leftOperand}"
-                        )
-                    }
-                LeftOperand.POLICY_EVALUATION_TIME ->
-                    when (constraint.operator) {
-                        BinaryOperator.BEFORE, BinaryOperator.AFTER -> UsageTimeConstraint(constraint)
-                        else -> throw LuconException(
-                            "Unexpected Operator ${constraint.operator} for LeftOperand ${constraint.leftOperand}"
-                        )
-                    }
-                else -> throw LuconException("Unexpected LeftOperand ${constraint.leftOperand}")
-            }
-        }
     }
 
     fun checkEnforcible(ectx: EnforcementContext) {

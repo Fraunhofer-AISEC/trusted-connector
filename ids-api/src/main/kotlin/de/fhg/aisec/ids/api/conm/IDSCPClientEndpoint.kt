@@ -29,6 +29,7 @@ class IDSCPClientEndpoint {
     var endpointIdentifier: String? = null
     var attestationResult: RatResult? = null
     var endpointKey: String? = null
+
     override fun toString(): String {
         return "IDSCPEndpoint [endpoint_identifier=$endpointIdentifier]"
     }

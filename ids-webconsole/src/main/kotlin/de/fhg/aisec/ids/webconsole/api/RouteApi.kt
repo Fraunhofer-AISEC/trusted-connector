@@ -54,7 +54,6 @@ import javax.ws.rs.core.MediaType
 @RequestMapping("/routes")
 @Api(value = "Message Routing", authorizations = [Authorization(value = "oauth2")])
 class RouteApi {
-
     @Autowired
     private lateinit var rm: RouteManager
 
@@ -96,7 +95,9 @@ class RouteApi {
     /** Stop a route based on an id.  */
     @GetMapping("/startroute/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Starts a Camel route. The route will start to process messages.")
-    fun startRoute(@PathVariable("id") id: String): Result {
+    fun startRoute(
+        @PathVariable("id") id: String
+    ): Result {
         return try {
             rm.startRoute(id)
             Result()
@@ -109,7 +110,9 @@ class RouteApi {
     /** Stop a route based on its id.  */
     @GetMapping("/stoproute/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Stops a Camel route. The route will remain installed but it will not process any messages.")
-    fun stopRoute(@PathVariable("id") id: String): Result {
+    fun stopRoute(
+        @PathVariable("id") id: String
+    ): Result {
         return try {
             rm.stopRoute(id)
             Result()
@@ -134,9 +137,12 @@ class RouteApi {
     }
 
     @GetMapping("/validate/{routeId}", produces = [MediaType.APPLICATION_JSON])
-    fun validate(@PathVariable("routeId") routeId: String): ValidationInfo {
-        val pap: PAP = policyAdministrationPoint
-            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun validate(
+        @PathVariable("routeId") routeId: String
+    ): ValidationInfo {
+        val pap: PAP =
+            policyAdministrationPoint
+                ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
         val rvp = pap.verifyRoute(routeId) ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
         val vi = ValidationInfo()
         vi.valid = rvp.isValid
@@ -147,7 +153,9 @@ class RouteApi {
     }
 
     @GetMapping("/prolog/{routeId}", produces = [MediaType.TEXT_PLAIN])
-    fun getRouteProlog(@PathVariable("routeId") routeId: String): String {
+    fun getRouteProlog(
+        @PathVariable("routeId") routeId: String
+    ): String {
         return rm.getRouteAsProlog(routeId)
     }
 

@@ -24,7 +24,6 @@ import org.springframework.beans.factory.FactoryBean
 
 @Suppress("unused")
 class AttestationConfigFactoryBean : FactoryBean<AttestationConfig> {
-
     private val builder = AttestationConfig.Builder()
 
     var expectedRaSuite: String by BeanSetter { builder.setExpectedRaSuite(it.split('|').toTypedArray()) }

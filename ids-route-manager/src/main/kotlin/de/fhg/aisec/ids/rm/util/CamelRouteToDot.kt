@@ -42,7 +42,10 @@ class CamelRouteToDot {
     private var clusterCounter = 0
 
     @Throws(IOException::class)
-    private fun printRoutes(writer: Writer, map: Map<String, List<RouteDefinition>>) {
+    private fun printRoutes(
+        writer: Writer,
+        map: Map<String, List<RouteDefinition>>
+    ) {
         val entries = map.entries
         for ((group, value) in entries) {
             printRoutes(writer, group, value)
@@ -50,7 +53,11 @@ class CamelRouteToDot {
     }
 
     @Throws(IOException::class)
-    private fun printRoutes(writer: Writer, group: String?, routes: List<RouteDefinition>) {
+    private fun printRoutes(
+        writer: Writer,
+        group: String?,
+        routes: List<RouteDefinition>
+    ) {
         if (group != null) {
             writer.write(
                 """subgraph cluster_${clusterCounter++} {
@@ -77,7 +84,10 @@ class CamelRouteToDot {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun printSingleRoute(writer: Writer?, route: RouteDefinition?) {
+    fun printSingleRoute(
+        writer: Writer?,
+        route: RouteDefinition?
+    ) {
         if (writer == null || route == null) {
             return
         }
@@ -91,7 +101,11 @@ class CamelRouteToDot {
     }
 
     @Throws(IOException::class)
-    private fun printRoute(writer: Writer, route: RouteDefinition, input: FromDefinition) {
+    private fun printRoute(
+        writer: Writer,
+        route: RouteDefinition,
+        input: FromDefinition
+    ) {
         val nodeData = getNodeData(input)
         printNode(writer, nodeData)
         var from: NodeData? = nodeData
@@ -149,27 +163,30 @@ class CamelRouteToDot {
     }
 
     @Throws(IOException::class)
-    private fun printNode(writer: Writer, data: NodeData?) {
+    private fun printNode(
+        writer: Writer,
+        data: NodeData?
+    ) {
         if (!data!!.nodeWritten) {
             data.nodeWritten = true
             writer.write("\n")
             writer.write(
                 """
-    ${data.id}
-    
+                ${data.id}
+                
                 """.trimIndent()
             )
             writer.write(" [\n")
             writer.write(
                 """
-    label = "${data.label}"
-    
+                label = "${data.label}"
+                
                 """.trimIndent()
             )
             writer.write(
                 """
-    tooltip = "${data.tooltip}"
-    
+                tooltip = "${data.tooltip}"
+                
                 """.trimIndent()
             )
             val image = data.image
@@ -189,7 +206,10 @@ class CamelRouteToDot {
     }
 
     @Throws(IOException::class)
-    fun generateFile(writer: PrintWriter?, map: Map<String, List<RouteDefinition>>?) {
+    fun generateFile(
+        writer: PrintWriter?,
+        map: Map<String, List<RouteDefinition>>?
+    ) {
         if (writer == null || map == null) {
             return
         }

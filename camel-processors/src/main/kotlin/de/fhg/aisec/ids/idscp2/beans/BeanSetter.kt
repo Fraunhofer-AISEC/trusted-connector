@@ -24,10 +24,18 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class BeanSetter<T, FC>(val setConsumer: (T) -> Unit) : ReadWriteProperty<FactoryBean<FC>, T> {
-    override operator fun getValue(thisRef: FactoryBean<FC>, property: KProperty<*>): T {
+    override operator fun getValue(
+        thisRef: FactoryBean<FC>,
+        property: KProperty<*>
+    ): T {
         throw UnsupportedOperationException("FactoryBean set-only Builder method")
     }
-    override operator fun setValue(thisRef: FactoryBean<FC>, property: KProperty<*>, value: T) {
+
+    override operator fun setValue(
+        thisRef: FactoryBean<FC>,
+        property: KProperty<*>,
+        value: T
+    ) {
         setConsumer(value)
     }
 }

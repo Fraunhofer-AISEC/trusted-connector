@@ -27,8 +27,8 @@ abstract class CounterExample {
 
     override fun toString(): String {
         return """
-               Explanation: $explanation
-               ${java.lang.String.join("\n|-- ", steps)}
-        """.trimIndent()
+            Explanation: $explanation
+            ${java.lang.String.join("\n|-- ", steps)}
+            """.trimIndent()
     }
 }

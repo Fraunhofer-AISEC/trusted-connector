@@ -94,7 +94,10 @@ object GraphProcessor {
     }
 
     /** Prints a single FromDefinition (= a route entry point) in Prolog representation. */
-    private fun processInput(graphData: GraphData, route: RouteDefinition) {
+    private fun processInput(
+        graphData: GraphData,
+        route: RouteDefinition
+    ) {
         val counter = AtomicInteger(0)
         val i = route.input
         // Make sure every input node has a unique id

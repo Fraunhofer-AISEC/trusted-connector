@@ -20,5 +20,6 @@
 package de.fhg.aisec.ids.api.cm
 
 enum class Direction {
-    OUTBOUND, INBOUND
+    OUTBOUND,
+    INBOUND
 }

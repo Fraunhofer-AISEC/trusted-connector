@@ -28,10 +28,12 @@ import java.net.URI
 
 @Component
 class Idscp2UsageControlComponent : Idscp2UsageControlInterface {
-    override fun getExchangeContract(exchange: Exchange) =
-        UsageControlMaps.getExchangeContract(exchange)
+    override fun getExchangeContract(exchange: Exchange) = UsageControlMaps.getExchangeContract(exchange)
 
-    override fun protectBody(exchange: Exchange, contractUri: URI) {
+    override fun protectBody(
+        exchange: Exchange,
+        contractUri: URI
+    ) {
         protectedBodies[exchange] = exchange.message.body
         exchange.message.body = "### Usage control protected body, contract $contractUri ###"
     }

@@ -9,7 +9,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:

@@ -26,8 +26,6 @@ import kotlin.concurrent.withLock
 class TrustmeUnixSocketResponseHandler {
     private val lock = ReentrantLock()
     private val condition = lock.newCondition()
-
-    private val LOG = LoggerFactory.getLogger(TrustmeUnixSocketResponseHandler::class.java)
     private var rsp: ByteArray? = null
 
     fun handleResponse(rsp: ByteArray): Boolean {
@@ -52,5 +50,9 @@ class TrustmeUnixSocketResponseHandler {
             rsp = null
             return result
         }
+    }
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(TrustmeUnixSocketResponseHandler::class.java)
     }
 }

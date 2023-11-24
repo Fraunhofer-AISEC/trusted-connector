@@ -37,7 +37,10 @@ interface Idscp2UsageControlInterface {
 
     fun isProtected(exchange: Exchange): Boolean
 
-    fun protectBody(exchange: Exchange, contractUri: URI)
+    fun protectBody(
+        exchange: Exchange,
+        contractUri: URI
+    )
 
     fun unprotectBody(exchange: Exchange)
 }

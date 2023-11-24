@@ -48,7 +48,10 @@ class TrustXMock(private var socket: String, private var handler: TrustXMockHand
     private val pendingData: MutableMap<UnixSocketChannel?, MutableList<ByteBuffer>> = HashMap()
 
     // send a protobuf message to the unix socket
-    fun send(socket: UnixSocketChannel?, data: ByteArray?) {
+    fun send(
+        socket: UnixSocketChannel?,
+        data: ByteArray?
+    ) {
         synchronized(pendingChanges) {
             pendingChanges.add(
                 ChangeRequest(socket!!, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE)
@@ -128,14 +131,15 @@ class TrustXMock(private var socket: String, private var handler: TrustXMockHand
         readBuffer.clear()
 
         // Attempt to read off the channel
-        val numRead: Int = try {
-            channel.read(readBuffer)
-        } catch (e: IOException) {
-            // The remote forcibly closed the connection, cancel the selection key and close the channel.
-            key.cancel()
-            channel.close()
-            return
-        }
+        val numRead: Int =
+            try {
+                channel.read(readBuffer)
+            } catch (e: IOException) {
+                // The remote forcibly closed the connection, cancel the selection key and close the channel.
+                key.cancel()
+                channel.close()
+                return
+            }
         LOG.debug("bytes read: $numRead")
         if (numRead == -1) {
             // Remote entity shut the socket down cleanly. Do the same from our end and cancel the
@@ -179,11 +183,12 @@ class TrustXMock(private var socket: String, private var handler: TrustXMockHand
         socketFile.delete()
         socketFile.deleteOnExit()
         val address = UnixSocketAddress(socketFile.absoluteFile)
-        channel = UnixServerSocketChannel.open().apply {
-            configureBlocking(false)
-            socket().bind(address)
-            register(socketSelector, SelectionKey.OP_ACCEPT)
-        }
+        channel =
+            UnixServerSocketChannel.open().apply {
+                configureBlocking(false)
+                socket().bind(address)
+                register(socketSelector, SelectionKey.OP_ACCEPT)
+            }
         return socketSelector
     }
 

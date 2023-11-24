@@ -27,7 +27,6 @@ import java.util.stream.Stream
 import java.util.stream.StreamSupport
 
 object TuPrologHelper {
-
     fun escape(s: String?): String {
         if (s == null) {
             return ""

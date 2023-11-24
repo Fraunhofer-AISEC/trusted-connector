@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=eclipse-temurin:17-jdk-focal
+ARG BASE_IMAGE=eclipse-temurin:21-jdk
 FROM $BASE_IMAGE
 
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"

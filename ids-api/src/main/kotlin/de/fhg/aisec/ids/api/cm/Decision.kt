@@ -20,5 +20,7 @@
 package de.fhg.aisec.ids.api.cm
 
 enum class Decision {
-    ALLOW, DENY, DROP
+    ALLOW,
+    DENY,
+    DROP
 }

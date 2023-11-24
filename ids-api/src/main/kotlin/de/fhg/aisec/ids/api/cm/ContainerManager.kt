@@ -72,7 +72,10 @@ interface ContainerManager {
      * @throws NoContainerExistsException If the given container was not found.
      */
     @Throws(NoContainerExistsException::class)
-    fun startContainer(containerID: String, key: String?)
+    fun startContainer(
+        containerID: String,
+        key: String?
+    )
 
     /**
      * Stops a container.

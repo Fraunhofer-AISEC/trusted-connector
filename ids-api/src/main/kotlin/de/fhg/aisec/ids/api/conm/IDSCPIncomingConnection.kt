@@ -31,6 +31,7 @@ class IDSCPIncomingConnection {
     var remoteHostName: String? = null
     var metaData: String? = null
     private var dynamicAttributeToken: String? = null
+
     override fun toString(): String {
         return (
             "IDSCPConnection [endpoint_identifier=" +
@@ -38,7 +39,7 @@ class IDSCPIncomingConnection {
                 ", attestationResult=" +
                 attestationResult +
                 "]"
-            )
+        )
     }
 
     fun setDynamicAttributeToken(dynamicAttributeToken: String?) {

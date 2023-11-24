@@ -57,13 +57,15 @@ class ConnectionManagerService : ConnectionManager {
                 emptyList()
             }
         }
+
     override fun listAvailableEndpoints(): List<ServerEndpoint> {
         return camelContexts.flatMapTo(mutableSetOf()) { cCtx ->
             cCtx.endpointRegistry.values.mapNotNull { ep ->
                 if (ep is Idscp2ServerEndpoint) {
                     val baseUri = ep.endpointBaseUri
-                    val matchGroups = listOf(Regex("(.*?)://(.*?):([0-9]+).*"), Regex("(.*?)://(.*?).*"))
-                        .asSequence().mapNotNull { it.matchEntire(baseUri)?.groupValues }.firstOrNull()
+                    val matchGroups =
+                        listOf(Regex("(.*?)://(.*?):([0-9]+).*"), Regex("(.*?)://(.*?).*"))
+                            .asSequence().mapNotNull { it.matchEntire(baseUri)?.groupValues }.firstOrNull()
                     ServerEndpoint(
                         baseUri,
                         matchGroups?.get(1) ?: "?",
@@ -85,14 +87,18 @@ class ConnectionManagerService : ConnectionManager {
 
     // Return the attestation status of an endpoint based on it's supported and expected RA suites.
     // An attestation is considered successfull if it does not accpet any known insecure driver.
-    private fun getAttestationStatus(supportedRaSuites: String, expectedRaSuites: String): RatResult {
+    private fun getAttestationStatus(
+        supportedRaSuites: String,
+        expectedRaSuites: String
+    ): RatResult {
         // This array contains all insecure default verifiers.
         // If one of these is detected, the attestation will be considered insecure.
-        val insecureVerifier = setOf(
-            RaVerifierDummy2.RA_VERIFIER_DUMMY2_ID,
-            RaVerifierDummy.RA_VERIFIER_DUMMY_ID,
-            DemoRaVerifier.DEMO_RA_VERIFIER_ID
-        )
+        val insecureVerifier =
+            setOf(
+                RaVerifierDummy2.RA_VERIFIER_DUMMY2_ID,
+                RaVerifierDummy.RA_VERIFIER_DUMMY_ID,
+                DemoRaVerifier.DEMO_RA_VERIFIER_ID
+            )
 
         val supportedRaSuitesList = supportedRaSuites.split('|')
         val expectedRaSuitesList = expectedRaSuites.split('|')
@@ -110,59 +116,63 @@ class ConnectionManagerService : ConnectionManager {
     private val outgoingConnections: MutableList<IDSCPOutgoingConnection> = mutableListOf()
     private val incomingConnections: MutableList<IDSCPIncomingConnection> = mutableListOf()
 
-    private val connectionListener = object : ConnectionListener {
-        fun <C> handleConnection(
-            connection: C,
-            appLayerConnection: AppLayerConnection,
-            connectionsList: MutableList<C>
-        ) {
-            // first register a idscp2connectionListener to keep track of connection cleanup
-            appLayerConnection.addConnectionListener(object : Idscp2ConnectionListener {
-                private fun removeConnection() {
-                    appLayerConnection.removeConnectionListener(this)
-                    connectionsList -= connection
+    private val connectionListener =
+        object : ConnectionListener {
+            fun <C> handleConnection(
+                connection: C,
+                appLayerConnection: AppLayerConnection,
+                connectionsList: MutableList<C>
+            ) {
+                // first register a idscp2connectionListener to keep track of connection cleanup
+                appLayerConnection.addConnectionListener(
+                    object : Idscp2ConnectionListener {
+                        override fun onError(t: Throwable) {}
+
+                        override fun onClose() {
+                            connectionsList -= connection
+                        }
+                    }
+                )
+
+                connectionsList += connection
+            }
+
+            override fun onClientConnection(
+                connection: AppLayerConnection,
+                endpoint: Idscp2ClientEndpoint
+            ) {
+                // When we are a client endpoint, we create an outgoing connection
+                val outgoing = IDSCPOutgoingConnection()
+
+                handleConnection(outgoing, connection, outgoingConnections)
+
+                // TODO handle information from connection and endpoint
+
+                outgoing.apply {
+                    endpointIdentifier = endpoint.endpointBaseUri
+                    attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
+                    remoteIdentity = connection.remotePeer()
                 }
+            }
 
-                override fun onError(t: Throwable) {}
+            override fun onServerConnection(
+                connection: AppLayerConnection,
+                endpoint: Idscp2ServerEndpoint
+            ) {
+                // Since we are a server and therefore listening, all connections should be incomming
+                val incoming = IDSCPIncomingConnection()
 
-                override fun onClose() {
-                    removeConnection()
+                handleConnection(incoming, connection, incomingConnections)
+
+                // TODO handle information from connection and endpoint
+
+                incoming.apply {
+                    endpointIdentifier = endpoint.endpointBaseUri
+                    attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
+                    remoteHostName = connection.remotePeer()
                 }
-            })
-
-            connectionsList += connection
-        }
-
-        override fun onClientConnection(connection: AppLayerConnection, endpoint: Idscp2ClientEndpoint) {
-            // When we are a client endpoint, we create an outgoing connection
-            val outgoing = IDSCPOutgoingConnection()
-
-            handleConnection(outgoing, connection, outgoingConnections)
-
-            // TODO handle information from connection and endpoint
-
-            outgoing.apply {
-                endpointIdentifier = endpoint.endpointBaseUri
-                attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
-                remoteIdentity = connection.remotePeer()
             }
         }
-
-        override fun onServerConnection(connection: AppLayerConnection, endpoint: Idscp2ServerEndpoint) {
-            // Since we are a server and therefore listening, all connections should be incomming
-            val incoming = IDSCPIncomingConnection()
-
-            handleConnection(incoming, connection, incomingConnections)
-
-            // TODO handle information from connection and endpoint
-
-            incoming.apply {
-                endpointIdentifier = endpoint.endpointBaseUri
-                attestationResult = getAttestationStatus(endpoint.supportedRaSuites, endpoint.expectedRaSuites)
-                remoteHostName = connection.remotePeer()
-            }
-        }
-    }
 
     @PostConstruct
     private fun registerConnectionListener() {

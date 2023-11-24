@@ -50,13 +50,20 @@ class TrustmeUnixSocketThread(private val socket: String) : Runnable {
 
     // send a protobuf message to the unix socket
     @Throws(IOException::class, InterruptedException::class)
-    fun sendWithHeader(data: ByteArray, handler: TrustmeUnixSocketResponseHandler?) {
+    fun sendWithHeader(
+        data: ByteArray,
+        handler: TrustmeUnixSocketResponseHandler?
+    ) {
         send(data, handler, true)
     }
 
     // send some data to the unix socket
     @Throws(IOException::class, InterruptedException::class)
-    fun send(data: ByteArray, handler: TrustmeUnixSocketResponseHandler?, withLengthHeader: Boolean) {
+    fun send(
+        data: ByteArray,
+        handler: TrustmeUnixSocketResponseHandler?,
+        withLengthHeader: Boolean
+    ) {
         LOG.debug("writing protobuf to socket")
         var result = data
         // if message has to be sent with length header
@@ -175,32 +182,39 @@ class TrustmeUnixSocketThread(private val socket: String) : Runnable {
     }
 
     @Throws(IOException::class)
-    private fun readMessageLength(key: SelectionKey, channel: UnixSocketChannel): Int {
+    private fun readMessageLength(
+        key: SelectionKey,
+        channel: UnixSocketChannel
+    ): Int {
         // Clear out our read buffer so it's ready for new data
         lengthBuffer.clear()
 
         // Attempt to read off the channel
-        val length: Int = try {
-            val numRead = channel.read(lengthBuffer)
-            if (numRead == 4) {
-                BigInteger(lengthBuffer.array()).toInt()
-            } else {
-                -1
+        val length: Int =
+            try {
+                val numRead = channel.read(lengthBuffer)
+                if (numRead == 4) {
+                    BigInteger(lengthBuffer.array()).toInt()
+                } else {
+                    -1
+                }
+            } catch (e: IOException) {
+                // The remote forcibly closed the connection, cancel the selection key and close
+                // the channel.
+                LOG.debug("error while reading message length from socket", e)
+                key.cancel()
+                channel.close()
+                return -1
             }
-        } catch (e: IOException) {
-            // The remote forcibly closed the connection, cancel the selection key and close
-            // the channel.
-            LOG.debug("error while reading message length from socket", e)
-            key.cancel()
-            channel.close()
-            return -1
-        }
         LOG.debug("read message from UNIX socket with length $length")
         return length
     }
 
     @Throws(IOException::class)
-    private fun handleResponse(socketChannel: UnixSocketChannel, data: ByteArray) {
+    private fun handleResponse(
+        socketChannel: UnixSocketChannel,
+        data: ByteArray
+    ) {
         // Make a correctly sized copy of the data before handing it
         // to the client
         val rspData = ByteArray(data.size)

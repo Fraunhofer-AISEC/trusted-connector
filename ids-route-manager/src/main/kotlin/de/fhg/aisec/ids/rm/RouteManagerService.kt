@@ -186,7 +186,10 @@ class RouteManagerService : RouteManager {
      * @param rd The RouteDefinition to be transformed
      * @return The resulting RouteObject
      */
-    private fun routeDefinitionToObject(cCtx: CamelContext, rd: RouteDefinition): RouteObject {
+    private fun routeDefinitionToObject(
+        cCtx: CamelContext,
+        rd: RouteDefinition
+    ): RouteObject {
         return RouteObject(
             rd.id,
             rd.descriptionText,

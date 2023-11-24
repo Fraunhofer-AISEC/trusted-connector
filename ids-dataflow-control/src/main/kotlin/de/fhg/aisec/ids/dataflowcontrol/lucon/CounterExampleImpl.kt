@@ -25,7 +25,6 @@ import de.fhg.aisec.ids.api.router.CounterExample
 import java.util.LinkedList
 
 class CounterExampleImpl(term: Term) : CounterExample() {
-
     init {
         val traceIterator = (term as Struct).listIterator()
         val steps = LinkedList<String>()
@@ -73,7 +72,10 @@ class CounterExampleImpl(term: Term) : CounterExample() {
             }
         }
 
-        private fun appendCSList(sb: StringBuilder?, l: Term?) {
+        private fun appendCSList(
+            sb: StringBuilder?,
+            l: Term?
+        ) {
             if (sb == null || l == null) {
                 return
             }

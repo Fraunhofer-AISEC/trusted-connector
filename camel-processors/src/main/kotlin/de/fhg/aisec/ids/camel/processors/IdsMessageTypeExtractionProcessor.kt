@@ -56,24 +56,25 @@ class IdsMessageTypeExtractionProcessor : Processor {
                 LOG.debug("[IN] ${IdsMessageTypeExtractionProcessor::class.java.simpleName}")
             }
             exchange.message.getHeader(IDS_HEADER, Message::class.java)?.let { header ->
-                val messageType = when (header) {
-                    is ArtifactRequestMessage -> ArtifactRequestMessage::class.simpleName
-                    is ArtifactResponseMessage -> ArtifactResponseMessage::class.simpleName
-                    is ContractRequestMessage -> ContractRequestMessage::class.simpleName
-                    is ContractResponseMessage -> ContractResponseMessage::class.simpleName
-                    is ContractOfferMessage -> ContractOfferMessage::class.simpleName
-                    is ContractAgreementMessage -> ContractAgreementMessage::class.simpleName
-                    is ContractRejectionMessage -> ContractRejectionMessage::class.simpleName
-                    is ResourceUpdateMessage -> ResourceUpdateMessage::class.simpleName
-                    is MessageProcessedNotificationMessage -> MessageProcessedNotificationMessage::class.simpleName
-                    is DescriptionRequestMessage -> DescriptionRequestMessage::class.simpleName
-                    is DescriptionResponseMessage -> DescriptionResponseMessage::class.simpleName
-                    is RejectionMessage -> RejectionMessage::class.simpleName
-                    is LogMessage -> LogMessage::class.simpleName
-                    is QueryMessage -> QueryMessage::class.simpleName
-                    is RequestMessage -> RequestMessage::class.simpleName
-                    else -> header::class.simpleName
-                }
+                val messageType =
+                    when (header) {
+                        is ArtifactRequestMessage -> ArtifactRequestMessage::class.simpleName
+                        is ArtifactResponseMessage -> ArtifactResponseMessage::class.simpleName
+                        is ContractRequestMessage -> ContractRequestMessage::class.simpleName
+                        is ContractResponseMessage -> ContractResponseMessage::class.simpleName
+                        is ContractOfferMessage -> ContractOfferMessage::class.simpleName
+                        is ContractAgreementMessage -> ContractAgreementMessage::class.simpleName
+                        is ContractRejectionMessage -> ContractRejectionMessage::class.simpleName
+                        is ResourceUpdateMessage -> ResourceUpdateMessage::class.simpleName
+                        is MessageProcessedNotificationMessage -> MessageProcessedNotificationMessage::class.simpleName
+                        is DescriptionRequestMessage -> DescriptionRequestMessage::class.simpleName
+                        is DescriptionResponseMessage -> DescriptionResponseMessage::class.simpleName
+                        is RejectionMessage -> RejectionMessage::class.simpleName
+                        is LogMessage -> LogMessage::class.simpleName
+                        is QueryMessage -> QueryMessage::class.simpleName
+                        is RequestMessage -> RequestMessage::class.simpleName
+                        else -> header::class.simpleName
+                    }
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Detected ids-type: {}", messageType)
                 }

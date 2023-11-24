@@ -27,9 +27,7 @@ import org.springframework.boot.runApplication
 /** Main startup class for the Trusted Connector using Spring Boot. */
 @SpringBootApplication
 class TrustedConnector {
-
     companion object {
-
         val LOG: Logger = LoggerFactory.getLogger(TrustedConnector::class.java)
 
         @JvmStatic

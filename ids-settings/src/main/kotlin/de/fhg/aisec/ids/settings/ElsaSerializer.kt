@@ -28,11 +28,17 @@ import org.mapdb.elsa.ElsaSerializerPojo
 class ElsaSerializer<T : Any> : Serializer<T> {
     private val serializer: ElsaSerializerPojo = ElsaMaker().make()
 
-    override fun serialize(output: DataOutput2, obj: T) {
+    override fun serialize(
+        output: DataOutput2,
+        obj: T
+    ) {
         serializer.serialize(output, obj)
     }
 
-    override fun deserialize(input: DataInput2, available: Int): T {
+    override fun deserialize(
+        input: DataInput2,
+        available: Int
+    ): T {
         return serializer.deserialize(input)
     }
 }

@@ -87,7 +87,6 @@ import javax.xml.datatype.XMLGregorianCalendar
  */
 @Component("idsMultiPartOutputProcessor")
 class IdsMultiPartOutputProcessor : Processor {
-
     @Autowired
     lateinit var beanFactory: BeanFactory
 
@@ -101,14 +100,16 @@ class IdsMultiPartOutputProcessor : Processor {
         multipartEntityBuilder.setMode(HttpMultipartMode.STRICT)
         multipartEntityBuilder.setBoundary(boundary)
 
-        val idsHeader = exchange.message.getHeader(IDS_HEADER_KEY)
-            ?: throw RuntimeException("Required header \"ids-header\" not found, aborting.")
+        val idsHeader =
+            exchange.message.getHeader(IDS_HEADER_KEY)
+                ?: throw RuntimeException("Required header \"ids-header\" not found, aborting.")
 
-        val daps = dapsBeanName?.let { beanFactory.getBean(it, DapsDriver::class.java) }
-            ?: run {
-                LOG.warn("No DAPS instance has been specified, dummy DAT will be used!")
-                null
-            }
+        val daps =
+            dapsBeanName?.let { beanFactory.getBean(it, DapsDriver::class.java) }
+                ?: run {
+                    LOG.warn("No DAPS instance has been specified, dummy DAT will be used!")
+                    null
+                }
 
         // Our detection heuristic for an incomplete InfoModel idsHeader
         if (idsHeader::class.simpleName?.endsWith("Builder") == true) {

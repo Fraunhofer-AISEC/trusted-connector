@@ -96,6 +96,6 @@ class ApplicationContainer {
                 ", description=" +
                 description +
                 "]"
-            )
+        )
     }
 }

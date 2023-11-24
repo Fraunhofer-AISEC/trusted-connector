@@ -36,7 +36,10 @@ class PrologPrinter {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun printSingleRoute(writer: Writer?, route: RouteDefinition?) {
+    fun printSingleRoute(
+        writer: Writer?,
+        route: RouteDefinition?
+    ) {
         if (writer == null || route == null) {
             return
         }
@@ -63,21 +66,21 @@ class PrologPrinter {
         for (p in preds) {
             writer.write(
                 """
-    succ(${p.id}, ${current.id}).
-    
+                succ(${p.id}, ${current.id}).
+                
                 """.trimIndent()
             )
         }
         writer.write(
             """
-    stmt(${current.id}).
-    
+            stmt(${current.id}).
+            
             """.trimIndent()
         )
         writer.write(
             """
-    has_action(${current.id}, "${current.label}").
-    
+            has_action(${current.id}, "${current.label}").
+            
             """.trimIndent()
         )
 
@@ -115,7 +118,10 @@ class PrologPrinter {
      * @throws IOException
      */
     @Throws(IOException::class)
-    private fun printInput(writer: Writer, route: RouteDefinition) {
+    private fun printInput(
+        writer: Writer,
+        route: RouteDefinition
+    ) {
         val counter = AtomicInteger(0)
         val i = route.input
         // Make sure every input node has a unique id
@@ -125,20 +131,20 @@ class PrologPrinter {
         }
         writer.write(
             """
-    stmt(${i.id}).
-    
+            stmt(${i.id}).
+            
             """.trimIndent()
         )
         writer.write(
             """
-    entrynode(${i.id}).
-    
+            entrynode(${i.id}).
+            
             """.trimIndent()
         )
         writer.write(
             """
-    has_action(${i.id}, "${i.label}").
-    
+            has_action(${i.id}, "${i.label}").
+            
             """.trimIndent()
         )
         var prev: OptionalIdentifiedDefinition<*>? = i

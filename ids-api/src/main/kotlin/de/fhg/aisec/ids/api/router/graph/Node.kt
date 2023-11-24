@@ -21,6 +21,8 @@ package de.fhg.aisec.ids.api.router.graph
 
 data class Node(val name: String, val action: String, val type: NodeType) {
     enum class NodeType {
-        EntryNode, Node, ChoiceNode
+        EntryNode,
+        Node,
+        ChoiceNode
     }
 }

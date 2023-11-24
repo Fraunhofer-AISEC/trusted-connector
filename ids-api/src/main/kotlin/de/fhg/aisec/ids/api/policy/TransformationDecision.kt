@@ -35,7 +35,6 @@ class TransformationDecision(
      * @return Labels to add to the data in this processing step
      */
     val labelsToAdd: MutableSet<String> = mutableSetOf(),
-
     /**
      * Returns a (possibly empty, but never null) set of labels that must be removed from a message.
      *

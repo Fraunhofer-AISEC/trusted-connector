@@ -25,14 +25,33 @@ interface Settings {
     var connectorConfig: ConnectorConfig
     var connectorProfile: ConnectorProfile
     var connectorJsonLd: String?
+
     fun getConnectionSettings(connection: String): ConnectionSettings
-    fun setConnectionSettings(connection: String, cSettings: ConnectionSettings)
+
+    fun setConnectionSettings(
+        connection: String,
+        cSettings: ConnectionSettings
+    )
+
     val allConnectionSettings: Map<String, ConnectionSettings>
+
     fun isUserStoreEmpty(): Boolean
+
     fun getUserHash(username: String): String?
-    fun saveUser(username: String, hash: String)
+
+    fun saveUser(
+        username: String,
+        hash: String
+    )
+
     fun removeUser(username: String)
+
     fun getUsers(): Map<String, String>
+
     fun loadContract(key: String): String?
-    fun storeContract(key: String, contract: String)
+
+    fun storeContract(
+        key: String,
+        contract: String
+    )
 }

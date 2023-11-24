@@ -78,7 +78,10 @@ class DockerImageConstraint(dockerUri: URI) : LuconConstraint {
         }
     }
 
-    override fun checkEnforcible(context: EnforcementContext, permission: LuconPermission) {
+    override fun checkEnforcible(
+        context: EnforcementContext,
+        permission: LuconPermission
+    ) {
         // Check local Docker containers' image hashes and port against Camel route's endpoint
         CamelInterceptor.containerManager?.let { cm ->
             val endpointIPs = InetAddress.getAllByName(context.endpointUri.host).toHashSet()
@@ -86,9 +89,10 @@ class DockerImageConstraint(dockerUri: URI) : LuconConstraint {
             // Gather meta of all currently running Docker containers and cache it for other DockerImageConstraint
             // instances using the same EnforcementContext
             @Suppress("UNCHECKED_CAST")
-            val runningContainers = context.enforcementCache.computeIfAbsent("runningDockerContainers") {
-                cm.list(true)
-            } as List<ApplicationContainer>
+            val runningContainers =
+                context.enforcementCache.computeIfAbsent("runningDockerContainers") {
+                    cm.list(true)
+                } as List<ApplicationContainer>
             val targetContainers =
                 runningContainers.filter { container ->
                     // From running docker containers, get all with the given hash.
@@ -97,7 +101,7 @@ class DockerImageConstraint(dockerUri: URI) : LuconConstraint {
                     (
                         container.imageId?.split(":")?.last() == hash ||
                             container.repoDigest?.any { it.split(":").last() == hash } ?: false
-                        ) &&
+                    ) &&
                         // Additionally, filter relevant containers by their IP address(es)
                         container.ipAddresses.any(endpointIPs::contains)
                 }

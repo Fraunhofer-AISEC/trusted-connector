@@ -35,8 +35,7 @@ object UsageControlMaps {
     private val peerContracts: MutableMap<String, URI> =
         MapMaker().weakKeys().makeMap()
 
-    fun getExchangePeerIdentity(exchange: Exchange): String? =
-        exchangePeerIdentityMap[exchange]
+    fun getExchangePeerIdentity(exchange: Exchange): String? = exchangePeerIdentityMap[exchange]
 
     fun getExchangeContract(exchange: Exchange): ContractAgreement? {
         return exchangePeerIdentityMap[exchange]?.let { identity ->
@@ -50,21 +49,27 @@ object UsageControlMaps {
         contractMap[contractAgreement.id] = contractAgreement
     }
 
-    fun setPeerContract(peerIdentity: String, contractUri: URI?) {
+    fun setPeerContract(
+        peerIdentity: String,
+        contractUri: URI?
+    ) {
         if (contractUri != null) {
             peerContracts[peerIdentity] = contractUri
             if (LOG.isDebugEnabled) {
-                LOG.debug("UC: Assigned contract $contractUri to connection $peerIdentity")
+                LOG.debug("UC: Assigned contract $contractUri to peer identity $peerIdentity")
             }
         } else {
             peerContracts -= peerIdentity
             if (LOG.isDebugEnabled) {
-                LOG.debug("UC: Assigned no contract to connection $peerIdentity")
+                LOG.debug("UC: Assigned no contract to peer identity $peerIdentity")
             }
         }
     }
 
-    fun setExchangePeerIdentity(exchange: Exchange, peerIdentity: String) {
+    fun setExchangePeerIdentity(
+        exchange: Exchange,
+        peerIdentity: String
+    ) {
         exchangePeerIdentityMap[exchange] = peerIdentity
         if (LOG.isDebugEnabled) {
             LOG.debug("UC: Assigned exchange $exchange to peer identity $peerIdentity")

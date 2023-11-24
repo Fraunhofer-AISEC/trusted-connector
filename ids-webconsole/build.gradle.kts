@@ -76,7 +76,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.reactive)
     implementation(libs.kotlinx.reactor)
-    // implementation(libs.bouncycastlePkix)
 
     compileOnly(libs.swagger.jaxrs)
 

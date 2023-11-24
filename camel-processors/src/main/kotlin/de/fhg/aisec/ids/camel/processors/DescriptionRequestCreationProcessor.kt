@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component
 
 @Component("descriptionRequestCreationProcessor")
 class DescriptionRequestCreationProcessor : Processor {
-
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")

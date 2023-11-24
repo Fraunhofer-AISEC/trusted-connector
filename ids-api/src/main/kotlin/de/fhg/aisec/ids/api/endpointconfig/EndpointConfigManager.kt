@@ -29,7 +29,12 @@ package de.fhg.aisec.ids.api.endpointconfig
  * @author Leon Beckmann (leon.beckmann@aisec.fraunhofer.de)
  */
 interface EndpointConfigManager {
-    fun addEndpointConfigListener(identifier: String, listener: EndpointConfigListener)
+    fun addEndpointConfigListener(
+        identifier: String,
+        listener: EndpointConfigListener
+    )
+
     fun removeEndpointConfigListener(identifier: String)
+
     fun notify(endpointConfig: String)
 }

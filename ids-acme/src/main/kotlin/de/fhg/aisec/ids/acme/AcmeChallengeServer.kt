@@ -34,7 +34,10 @@ object AcmeChallengeServer {
     private val LOG = LoggerFactory.getLogger(AcmeChallengeServer::class.java)!!
 
     @Throws(IOException::class)
-    fun startServer(acmeClient: AcmeClient, challengePort: Int) {
+    fun startServer(
+        acmeClient: AcmeClient,
+        challengePort: Int
+    ) {
         server =
             object : NanoHTTPD(challengePort) {
                 override fun serve(session: IHTTPSession): Response {

@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:experimental
 
-ARG BUILDER_IMAGE=amd64/eclipse-temurin:17-jdk-focal
-ARG BASE_IMAGE=gcr.io/distroless/java17-debian11
+ARG BUILDER_IMAGE=amd64/eclipse-temurin:21-jdk
+ARG BASE_IMAGE=gcr.io/distroless/java21-debian12
 
 FROM $BUILDER_IMAGE AS builder
 LABEL AUTHOR="Michael Lux (michael.lux@aisec.fraunhofer.de)"

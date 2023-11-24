@@ -40,41 +40,43 @@ class LuconContract private constructor(contract: ContractAgreement) {
 
     fun enforce(eCtx: EnforcementContext) {
         val enforcementErrors = linkedSetOf<String>()
-        val enforcementSuccessful = permissions.withIndex().any { (i, p) ->
-            try {
-                if (eCtx.log.isDebugEnabled) {
-                    eCtx.log.debug("Checking permission # ${i + 1} of contract $contractId...")
-                }
-                p.checkEnforcible(eCtx)
-                if (eCtx.ucPolicies.isNotEmpty()) {
-                    LOG.warn(
-                        "UC policies have been added to EnforcementContext in LuconPermission::checkEnforcible(), " +
-                            "before actual enforcement in LuconPermission::enforce()." +
-                            "This is STRICTLY DISCOURAGED, as it can result in incorrect UC policies!"
-                    )
-                }
-                p.enforce(eCtx)
-                true
-            } catch (t: Throwable) {
-                if (t !is LuconException) {
-                    LOG.error("Unexpected UC exception", t)
-                }
-                enforcementErrors += t.message.toString()
-                eCtx.log.let { log ->
-                    if (log.isDebugEnabled) {
-                        log.debug(t.message)
+        val enforcementSuccessful =
+            permissions.withIndex().any { (i, p) ->
+                try {
+                    if (eCtx.log.isDebugEnabled) {
+                        eCtx.log.debug("Checking permission # ${i + 1} of contract $contractId...")
                     }
+                    p.checkEnforcible(eCtx)
+                    if (eCtx.ucPolicies.isNotEmpty()) {
+                        LOG.warn(
+                            "UC policies have been added to EnforcementContext in LuconPermission::checkEnforcible(), " +
+                                "before actual enforcement in LuconPermission::enforce()." +
+                                "This is STRICTLY DISCOURAGED, as it can result in incorrect UC policies!"
+                        )
+                    }
+                    p.enforce(eCtx)
+                    true
+                } catch (t: Throwable) {
+                    if (t !is LuconException) {
+                        LOG.error("Unexpected UC exception", t)
+                    }
+                    enforcementErrors += t.message.toString()
+                    eCtx.log.let { log ->
+                        if (log.isDebugEnabled) {
+                            log.debug(t.message)
+                        }
+                    }
+                    false
                 }
-                false
             }
-        }
         if (enforcementSuccessful) {
             runBlocking(Dispatchers.IO) {
                 val ucUrl = "http://${eCtx.endpointUri.host}/usage-control"
-                val response = HTTP_CLIENT.post(ucUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(eCtx.ucPolicies)
-                }
+                val response =
+                    HTTP_CLIENT.post(ucUrl) {
+                        contentType(ContentType.Application.Json)
+                        setBody(eCtx.ucPolicies)
+                    }
                 if (response.status.value !in 200..299) {
                     throw LuconException(
                         "Enforcement checks were successful, but POSTing UC policies to $ucUrl failed."
@@ -91,12 +93,14 @@ class LuconContract private constructor(contract: ContractAgreement) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(LuconContract::class.java)
-        private val HTTP_CLIENT = HttpClient(Java) {
-            install(ContentNegotiation) {
-                jackson()
+        private val HTTP_CLIENT =
+            HttpClient(Java) {
+                install(ContentNegotiation) {
+                    jackson()
+                }
             }
-        }
         private val contracts: MutableMap<URI, LuconContract> = Collections.synchronizedMap(hashMapOf<URI, LuconContract>())
+
         fun getContract(contract: ContractAgreement) =
             contracts.computeIfAbsent(contract.id) {
                 LuconContract(contract)

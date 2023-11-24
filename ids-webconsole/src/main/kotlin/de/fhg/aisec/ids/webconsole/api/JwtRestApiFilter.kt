@@ -35,15 +35,20 @@ import org.springframework.web.filter.OncePerRequestFilter
  */
 @Component
 class JwtRestApiFilter : OncePerRequestFilter() {
-    override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain
+    ) {
         try {
             // Get JWT Bearer token from HTTP Authorization header
-            val authorizationHeader = request.getHeader("Authorization") ?: run {
-                response.reset()
-                response.status = HttpServletResponse.SC_UNAUTHORIZED
-                response.writer.write("Authorization token missing.")
-                return
-            }
+            val authorizationHeader =
+                request.getHeader("Authorization") ?: run {
+                    response.reset()
+                    response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    response.writer.write("Authorization token missing.")
+                    return
+                }
             // Verify token
             VERIFIER.verify(authorizationHeader.substring(7).trim())
         } catch (e: Exception) {

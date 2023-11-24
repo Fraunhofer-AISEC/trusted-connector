@@ -49,7 +49,9 @@ import javax.ws.rs.core.MediaType
 @ApiController
 @RequestMapping("/user")
 @Api(value = "User Authentication")
-class UserApi(@Autowired private val settings: Settings) {
+class UserApi(
+    @Autowired private val settings: Settings
+) {
     /**
      * Given a correct username/password, this method returns a JWT token that is valid for one day.
      *
@@ -57,7 +59,9 @@ class UserApi(@Autowired private val settings: Settings) {
      * @return A JWT token as plain text, if successful, 401 UNAUTHORIZED if not.
      */
     @PostMapping("/login", produces = [MediaType.TEXT_PLAIN], consumes = [MediaType.APPLICATION_JSON])
-    fun authenticateUser(@RequestBody user: User): String {
+    fun authenticateUser(
+        @RequestBody user: User
+    ): String {
         if (user.username.isBlank() || user.password.isBlank()) {
             throw ResponseStatusException(
                 HttpStatus.UNAUTHORIZED,
@@ -87,7 +91,10 @@ class UserApi(@Autowired private val settings: Settings) {
     }
 
     @Throws(LoginException::class)
-    private fun authenticate(username: String, password: String): Boolean {
+    private fun authenticate(
+        username: String,
+        password: String
+    ): Boolean {
         return if (settings.isUserStoreEmpty()) {
             LOG.warn("WARNING: User store is empty! This is insecure! Please create an admin user via the REST API!")
             username == "ids" && password == "ids"
@@ -103,7 +110,9 @@ class UserApi(@Autowired private val settings: Settings) {
     }
 
     @PostMapping("/saveUser", consumes = [MediaType.APPLICATION_JSON])
-    fun addUser(@RequestBody user: User) {
+    fun addUser(
+        @RequestBody user: User
+    ) {
         if (user.username.isBlank() || user.password.isBlank()) {
             LOG.error("Username or password blank, please provide valid credentials!")
         } else {
@@ -112,7 +121,9 @@ class UserApi(@Autowired private val settings: Settings) {
     }
 
     @PostMapping("/setPassword", consumes = [MediaType.APPLICATION_JSON])
-    fun setPassword(@RequestBody change: PasswordChangeRequest) {
+    fun setPassword(
+        @RequestBody change: PasswordChangeRequest
+    ) {
         if (change.username.isBlank() || change.oldPassword.isBlank() || change.newPassword.isBlank()) {
             LOG.error("Username or password blank, please provide valid credentials!")
         } else if (
@@ -132,7 +143,9 @@ class UserApi(@Autowired private val settings: Settings) {
         consumes = [MediaType.APPLICATION_JSON],
         produces = [MediaType.APPLICATION_JSON]
     )
-    fun removeUser(@PathVariable("user") username: String) = settings.removeUser(username)
+    fun removeUser(
+        @PathVariable("user") username: String
+    ) = settings.removeUser(username)
 
     @GetMapping("list_user_names", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Lists user names", responseContainer = "List")

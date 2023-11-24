@@ -33,22 +33,23 @@ import org.springframework.stereotype.Component
 
 @Component("artifactRequestProcessor")
 class ArtifactRequestProcessor : Processor {
-
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val artifactRequestMessage = exchange.message.getHeader(
-            IDS_HEADER,
-            ArtifactRequestMessage::class.java
-        )
+        val artifactRequestMessage =
+            exchange.message.getHeader(
+                IDS_HEADER,
+                ArtifactRequestMessage::class.java
+            )
         val requestedArtifact = artifactRequestMessage.requestedArtifact
 
         // TODO: If transferContract doesn't match expected contract from database, send rejection!
-        val usedContract = ProviderDB.artifactUrisMapped2ContractAgreements[
-            Pair(requestedArtifact, UsageControlMaps.getExchangePeerIdentity(exchange))
-        ]
+        val usedContract =
+            ProviderDB.artifactUrisMapped2ContractAgreements[
+                Pair(requestedArtifact, UsageControlMaps.getExchangePeerIdentity(exchange))
+            ]
         if (LOG.isDebugEnabled) {
             LOG.debug("Contract for requested Artifact found {}", usedContract)
         }

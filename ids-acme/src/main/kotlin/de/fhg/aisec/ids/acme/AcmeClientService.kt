@@ -61,7 +61,6 @@ import java.util.Date
     // property = [Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"]
 )
 class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegistry {
-
     @Autowired
     private lateinit var settings: Settings
 
@@ -349,14 +348,15 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
                     // parallel.
                     // This is especially important if the ACME protocol implementations are missing
                     // upon boot.
-                    val t = Thread {
-                        renewCertificate(
-                            targetDirectory,
-                            URI.create(acmeServerUrl),
-                            domains,
-                            challengePort
-                        )
-                    }
+                    val t =
+                        Thread {
+                            renewCertificate(
+                                targetDirectory,
+                                URI.create(acmeServerUrl),
+                                domains,
+                                challengePort
+                            )
+                        }
                     t.name = "ACME Renewal Thread"
                     t.isDaemon = true
                     t.start()
@@ -404,7 +404,6 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
     }
 
     companion object {
-
         const val RENEWAL_THRESHOLD = 100.0 / 3.0
         const val KEYSTORE_LATEST = "keystore_latest.p12"
         private val LOG = LoggerFactory.getLogger(AcmeClientService::class.java)

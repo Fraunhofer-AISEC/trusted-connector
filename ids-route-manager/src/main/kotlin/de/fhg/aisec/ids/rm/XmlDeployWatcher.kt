@@ -45,7 +45,6 @@ import kotlin.io.path.readBytes
 
 @Component("xmlDeployWatcher")
 class XmlDeployWatcher : ApplicationContextAware {
-
     private lateinit var applicationContext: ApplicationContext
     private lateinit var rootBeanRegistry: DefaultListableBeanFactory
 
@@ -56,32 +55,33 @@ class XmlDeployWatcher : ApplicationContextAware {
 
     @Synchronized
     private fun startXmlBeans(xmlPathString: String) {
-        xmlContexts += xmlPathString to CompletableFuture.supplyAsync {
-            try {
-                FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
-                    // Move special beans prefixed with "root" to the root ApplicationContext
-                    (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
-                        registry.beanDefinitionNames.forEach { LOG.debug("Loaded bean: $it") }
-                        registry.beanDefinitionNames
-                            .filter { it.startsWith("root") }
-                            // Memorize Beans for root ApplicationContext
-                            .also { rootBeans += xmlPathString to it }
-                            // Move root Beans to root ApplicationContext
-                            .forEach { beanName ->
-                                val beanDefinition = registry.getBeanDefinition(beanName)
-                                registry.removeBeanDefinition(beanName)
-                                rootBeanRegistry.registerBeanDefinition(beanName, beanDefinition)
-                                if (LOG.isDebugEnabled) {
-                                    LOG.debug("Bean $beanName has been moved to root ApplicationContext")
+        xmlContexts += xmlPathString to
+            CompletableFuture.supplyAsync {
+                try {
+                    FileSystemXmlApplicationContext(arrayOf(xmlPathString), applicationContext).also { ctx ->
+                        // Move special beans prefixed with "root" to the root ApplicationContext
+                        (ctx.autowireCapableBeanFactory as DefaultListableBeanFactory).let { registry ->
+                            registry.beanDefinitionNames.forEach { LOG.debug("Loaded bean: $it") }
+                            registry.beanDefinitionNames
+                                .filter { it.startsWith("root") }
+                                // Memorize Beans for root ApplicationContext
+                                .also { rootBeans += xmlPathString to it }
+                                // Move root Beans to root ApplicationContext
+                                .forEach { beanName ->
+                                    val beanDefinition = registry.getBeanDefinition(beanName)
+                                    registry.removeBeanDefinition(beanName)
+                                    rootBeanRegistry.registerBeanDefinition(beanName, beanDefinition)
+                                    if (LOG.isDebugEnabled) {
+                                        LOG.debug("Bean $beanName has been moved to root ApplicationContext")
+                                    }
                                 }
-                            }
+                        }
                     }
+                } catch (t: Throwable) {
+                    LOG.error("Error loading $xmlPathString", t)
+                    throw t
                 }
-            } catch (t: Throwable) {
-                LOG.error("Error loading $xmlPathString", t)
-                throw t
             }
-        }
     }
 
     @Synchronized
@@ -125,9 +125,10 @@ class XmlDeployWatcher : ApplicationContextAware {
         }
     }
 
-    private fun getXmlPathStream() = Files.walk(DEPLOY_PATH).filter {
-        Files.isRegularFile(it) && it.toString().endsWith(".xml")
-    }
+    private fun getXmlPathStream() =
+        Files.walk(DEPLOY_PATH).filter {
+            Files.isRegularFile(it) && it.toString().endsWith(".xml")
+        }
 
     private fun getPathSha256(path: Path) = MessageDigest.getInstance("SHA-256").digest(path.readBytes())
 
@@ -185,7 +186,6 @@ class XmlDeployWatcher : ApplicationContextAware {
 
         // WatcherService that may react faster to changes in the deploy folder.
         // Known not to work in some containerized environments.
-        @Suppress("BlockingMethodInNonBlockingContext")
         IO_SCOPE.launch {
             val watcher = FS.newWatchService()
             DEPLOY_PATH.register(

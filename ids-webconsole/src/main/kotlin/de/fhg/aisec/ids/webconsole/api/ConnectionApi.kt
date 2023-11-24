@@ -44,7 +44,6 @@ import javax.ws.rs.core.MediaType
 @RequestMapping("/connections")
 @Api(value = "IDSCP Connections", authorizations = [Authorization(value = "oauth2")])
 class ConnectionApi {
-
     @Autowired
     private lateinit var connectionManager: ConnectionManager
 

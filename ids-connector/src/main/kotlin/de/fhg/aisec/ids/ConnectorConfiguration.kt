@@ -37,7 +37,6 @@ import java.net.URI
 
 @Configuration
 class ConnectorConfiguration {
-
     @Autowired(required = false)
     private var cml: ContainerManager? = null
 
@@ -62,29 +61,32 @@ class ConnectorConfiguration {
     @Bean
     fun configureIdscp2(): CommandLineRunner {
         return CommandLineRunner {
-            Utils.issuerProducer = LazyProducer {
-                if (connectorUrl.isNotBlank()) {
-                    URI.create(connectorUrl)
-                } else {
-                    // Kept for backwards compatibility
-                    settings.connectorProfile.connectorUrl
-                        ?: URI.create("https://connector.ids")
+            Utils.issuerProducer =
+                LazyProducer {
+                    if (connectorUrl.isNotBlank()) {
+                        URI.create(connectorUrl)
+                    } else {
+                        // Kept for backwards compatibility
+                        settings.connectorProfile.connectorUrl
+                            ?: URI.create("https://connector.ids")
+                    }
                 }
-            }
-            Utils.senderAgentProducer = LazyProducer {
-                if (senderAgent.isNotBlank()) {
-                    URI.create(senderAgent)
-                } else {
-                    // Kept for backwards compatibility
-                    settings.connectorProfile.maintainerUrl
-                        ?: URI.create("https://sender-agent.ids")
+            Utils.senderAgentProducer =
+                LazyProducer {
+                    if (senderAgent.isNotBlank()) {
+                        URI.create(senderAgent)
+                    } else {
+                        // Kept for backwards compatibility
+                        settings.connectorProfile.maintainerUrl
+                            ?: URI.create("https://sender-agent.ids")
+                    }
                 }
-            }
-            Utils.dapsUrlProducer = LazyProducer {
-                dapsUrl.ifBlank {
-                    settings.connectorConfig.dapsUrl
+            Utils.dapsUrlProducer =
+                LazyProducer {
+                    dapsUrl.ifBlank {
+                        settings.connectorConfig.dapsUrl
+                    }
                 }
-            }
             TrustedConnector.LOG.info("Information model {} loaded", BuildConfig.INFOMODEL_VERSION)
             Utils.infomodelVersion = BuildConfig.INFOMODEL_VERSION
 

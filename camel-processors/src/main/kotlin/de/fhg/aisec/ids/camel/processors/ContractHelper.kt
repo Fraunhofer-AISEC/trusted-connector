@@ -30,23 +30,27 @@ import org.slf4j.Logger
 import java.net.URI
 
 object ContractHelper {
-
-    fun collectContractProperties(requestedArtifact: URI, exchange: Exchange): Map<String, Any> {
-        val contractProperties = mutableMapOf<String, Any>(
-            ContractConstants.ARTIFACT_URI_PROPERTY to requestedArtifact
-        )
+    fun collectContractProperties(
+        requestedArtifact: URI,
+        exchange: Exchange
+    ): Map<String, Any> {
+        val contractProperties =
+            mutableMapOf<String, Any>(
+                ContractConstants.ARTIFACT_URI_PROPERTY to requestedArtifact
+            )
         // Docker image whitelisting
-        contractProperties[ContractConstants.UC_DOCKER_IMAGE_URIS] = (
-            exchange.getProperty(ContractConstants.UC_DOCKER_IMAGE_URIS)
-                // Legacy property name without "uc-" prefix
-                ?: exchange.getProperty("containerUri")
-                ?: ""
+        contractProperties[ContractConstants.UC_DOCKER_IMAGE_URIS] =
+            (
+                exchange.getProperty(ContractConstants.UC_DOCKER_IMAGE_URIS)
+                    // Legacy property name without "uc-" prefix
+                    ?: exchange.getProperty("containerUri")
+                    ?: ""
             ).toString()
-            .split(Regex("\\s+"))
-            .map(String::trim)
-            .filter(String::isNotEmpty)
-            .map(URI::create)
-            .toList()
+                .split(Regex("\\s+"))
+                .map(String::trim)
+                .filter(String::isNotEmpty)
+                .map(URI::create)
+                .toList()
         // Add not after (BEFORE) usage constraint
         exchange.getProperty(ContractConstants.UC_NOT_AFTER_DATETIME)?.let {
             contractProperties[ContractConstants.UC_NOT_AFTER_DATETIME] = it
@@ -58,11 +62,16 @@ object ContractHelper {
         return contractProperties
     }
 
-    fun handleContractOffer(exchange: Exchange, correlationId: URI, logger: Logger) {
-        val contractOfferReceived = ContractUtils.SERIALIZER.deserialize(
-            exchange.message.getBody(String::class.java),
-            ContractOffer::class.java
-        )
+    fun handleContractOffer(
+        exchange: Exchange,
+        correlationId: URI,
+        logger: Logger
+    ) {
+        val contractOfferReceived =
+            ContractUtils.SERIALIZER.deserialize(
+                exchange.message.getBody(String::class.java),
+                ContractOffer::class.java
+            )
 
         // if contract is denied send ContractRejectionMsg else send ContractAgreementMsg
         val contractOfferIsAccepted = true
@@ -79,18 +88,19 @@ object ContractHelper {
                 }
             }
 
-            val contractAgreement = ContractAgreementBuilder()
-                ._consumer_(contractOfferReceived.consumer)
-                ._provider_(contractOfferReceived.provider)
-                ._contractAnnex_(contractOfferReceived.contractAnnex)
-                ._contractDate_(contractOfferReceived.contractDate)
-                ._contractDocument_(contractOfferReceived.contractDocument)
-                ._contractEnd_(contractOfferReceived.contractEnd)
-                ._contractStart_(contractOfferReceived.contractStart)
-                ._obligation_(contractOfferReceived.obligation)
-                ._prohibition_(contractOfferReceived.prohibition)
-                ._permission_(contractOfferReceived.permission)
-                .build()
+            val contractAgreement =
+                ContractAgreementBuilder()
+                    ._consumer_(contractOfferReceived.consumer)
+                    ._provider_(contractOfferReceived.provider)
+                    ._contractAnnex_(contractOfferReceived.contractAnnex)
+                    ._contractDate_(contractOfferReceived.contractDate)
+                    ._contractDocument_(contractOfferReceived.contractDocument)
+                    ._contractEnd_(contractOfferReceived.contractEnd)
+                    ._contractStart_(contractOfferReceived.contractStart)
+                    ._obligation_(contractOfferReceived.obligation)
+                    ._prohibition_(contractOfferReceived.prohibition)
+                    ._permission_(contractOfferReceived.permission)
+                    .build()
 
             UsageControlMaps.addContractAgreement(contractAgreement)
             if (logger.isDebugEnabled) {
@@ -107,7 +117,11 @@ object ContractHelper {
         }
     }
 
-    private fun createContractRejectionMessage(exchange: Exchange, correlationId: URI, logger: Logger) {
+    private fun createContractRejectionMessage(
+        exchange: Exchange,
+        correlationId: URI,
+        logger: Logger
+    ) {
         if (logger.isDebugEnabled) {
             logger.debug("Constructing ContractRejectionMessage")
         }

@@ -134,7 +134,10 @@ class LuconEngine
     }
 
     @Throws(MalformedGoalException::class)
-    fun query(query: String?, findAll: Boolean): List<SolveInfo> {
+    fun query(
+        query: String?,
+        findAll: Boolean
+    ): List<SolveInfo> {
         if (LOG.isTraceEnabled) {
             LOG.trace("Running Prolog query: " + query!!)
         }
@@ -151,7 +154,11 @@ class LuconEngine
         return result
     }
 
-    private fun query(engine: Prolog, query: String?, findAll: Boolean): List<SolveInfo> {
+    private fun query(
+        engine: Prolog,
+        query: String?,
+        findAll: Boolean
+    ): List<SolveInfo> {
         val result = ArrayList<SolveInfo>()
         if (query == null) {
             return result
@@ -178,7 +185,10 @@ class LuconEngine
      * @return A list of counterexamples which violate the rule or empty, if no route violates the
      * policy.
      */
-    fun proofInvalidRoute(id: String, routePl: String): RouteVerificationProof {
+    fun proofInvalidRoute(
+        id: String,
+        routePl: String
+    ): RouteVerificationProof {
         // The proof object we will return
         val proof = RouteVerificationProof(id)
 

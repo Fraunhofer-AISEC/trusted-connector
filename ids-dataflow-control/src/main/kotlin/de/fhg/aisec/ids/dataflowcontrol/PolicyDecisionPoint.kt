@@ -57,7 +57,6 @@ import java.util.concurrent.TimeUnit
  */
 @Component("idsDataflowControl")
 class PolicyDecisionPoint : PDP, PAP {
-
     // Convenience val for this thread's LuconEngine instance
     private val engine: LuconEngine
         get() = threadEngine.get()
@@ -77,7 +76,10 @@ class PolicyDecisionPoint : PDP, PAP {
      * @param target The target node of the transformation
      * @param labels The exchange properties
      */
-    private fun createDecisionQuery(target: ServiceNode, labels: Set<String>): String {
+    private fun createDecisionQuery(
+        target: ServiceNode,
+        labels: Set<String>
+    ): String {
         val sb = StringBuilder()
         sb.append("rule(X), has_target(X, T), ")
         sb.append("has_endpoint(T, EP), ")
@@ -195,7 +197,8 @@ class PolicyDecisionPoint : PDP, PAP {
                                 } else {
                                     throw RuntimeException("\"Removes\" is not a prolog list!")
                                 }
-                            } catch (ignored: NoSolutionException) {}
+                            } catch (ignored: NoSolutionException) {
+                            }
                         }
                     }
                     LOG.debug("Transformation: {}", result)

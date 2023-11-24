@@ -39,7 +39,6 @@ import javax.net.ssl.SSLSession
 
 @Component("idsMultiPartInputProcessor")
 class IdsMultiPartInputProcessor : Processor {
-
     @Autowired
     lateinit var beanFactory: BeanFactory
 
@@ -52,34 +51,36 @@ class IdsMultiPartInputProcessor : Processor {
             // Parse Multipart message
             val parser = MultiPartStringParser(message.getBody(InputStream::class.java))
             // Parse IDS header (should be an InfoModel Message object)
-            val idsHeader = parser.header?.let { header ->
-                SERIALIZER.deserialize(header, Message::class.java).also {
-                    message.setHeader(MultiPartConstants.IDS_HEADER_KEY, it)
-                }
-            } ?: throw RuntimeException("No IDS header found!")
+            val idsHeader =
+                parser.header?.let { header ->
+                    SERIALIZER.deserialize(header, Message::class.java).also {
+                        message.setHeader(MultiPartConstants.IDS_HEADER_KEY, it)
+                    }
+                } ?: throw RuntimeException("No IDS header found!")
 
             val dat = idsHeader.securityToken?.tokenValue ?: throw RuntimeException("No DAT provided!")
 
             dapsBeanName?.let { dapsBeanName ->
-                val peerCertificateHash: String = if (message.headers.containsKey("CamelHttpServletRequest")) {
-                    // Assume server-side REST endpoint.
-                    // Try to extract certificates from CamelHttpServletRequest reference.
-                    val request = message.headers["CamelHttpServletRequest"] as Request
-                    val sslSession = request.getAttribute("org.eclipse.jetty.servlet.request.ssl_session") as SSLSession
-                    try {
-                        sslSession.peerCertificates[0].sha256Fingerprint
-                    } catch (e: SSLPeerUnverifiedException) {
-                        LOG.error("Client didn't provide a certificate!")
-                        throw e
+                val peerCertificateHash: String =
+                    if (message.headers.containsKey("CamelHttpServletRequest")) {
+                        // Assume server-side REST endpoint.
+                        // Try to extract certificates from CamelHttpServletRequest reference.
+                        val request = message.headers["CamelHttpServletRequest"] as Request
+                        val sslSession = request.getAttribute("org.eclipse.jetty.servlet.request.ssl_session") as SSLSession
+                        try {
+                            sslSession.peerCertificates[0].sha256Fingerprint
+                        } catch (e: SSLPeerUnverifiedException) {
+                            LOG.error("Client didn't provide a certificate!")
+                            throw e
+                        }
+                    } else {
+                        // Assume client-side HTTPS request.
+                        // Try to obtain Certificate hash extracted by CertExposingHttpClientConfigurer.
+                        message.headers[CertExposingHttpClientConfigurer.SERVER_CERTIFICATE_HASH_HEADER]?.toString()
+                            ?: throw RuntimeException(
+                                "Could not obtain server TLS certificate! Has CertExposingHttpClientConfigurer been invoked?"
+                            )
                     }
-                } else {
-                    // Assume client-side HTTPS request.
-                    // Try to obtain Certificate hash extracted by CertExposingHttpClientConfigurer.
-                    message.headers[CertExposingHttpClientConfigurer.SERVER_CERTIFICATE_HASH_HEADER]?.toString()
-                        ?: throw RuntimeException(
-                            "Could not obtain server TLS certificate! Has CertExposingHttpClientConfigurer been invoked?"
-                        )
-                }
                 if (LOG.isTraceEnabled) {
                     LOG.trace("Peer Certificate hash: {}", peerCertificateHash)
                 }

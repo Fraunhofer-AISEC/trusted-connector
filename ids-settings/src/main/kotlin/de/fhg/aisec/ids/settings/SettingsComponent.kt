@@ -39,7 +39,6 @@ import kotlin.reflect.KProperty
 
 @Component
 class SettingsComponent : Settings {
-
     @PostConstruct
     private fun activate() {
         LOG.debug("Open Settings Database {}...", DB_PATH.toFile().absolutePath)
@@ -88,12 +87,13 @@ class SettingsComponent : Settings {
                 3 -> {
                     if (connectorConfig.dapsUrl == "https://daps.aisec.fraunhofer.de") {
                         connectorConfig.let {
-                            connectorConfig = ConnectorConfig(
-                                it.appstoreUrl, it.brokerUrl, it.ttpHost, it.ttpPort, it.acmeServerWebcon,
-                                it.acmeDnsWebcon, it.acmePortWebcon, it.tosAcceptWebcon,
-                                "https://daps.aisec.fraunhofer.de/v2",
-                                it.keystoreName, it.keystorePassword, it.keystoreAliasName, it.truststoreName
-                            )
+                            connectorConfig =
+                                ConnectorConfig(
+                                    it.appstoreUrl, it.brokerUrl, it.ttpHost, it.ttpPort, it.acmeServerWebcon,
+                                    it.acmeDnsWebcon, it.acmePortWebcon, it.tosAcceptWebcon,
+                                    "https://daps.aisec.fraunhofer.de/v2",
+                                    it.keystoreName, it.keystorePassword, it.keystoreAliasName, it.truststoreName
+                                )
                         }
                     }
                     dbVersion = 4
@@ -115,24 +115,38 @@ class SettingsComponent : Settings {
         private val key: String,
         private val defaultProducer: () -> T
     ) : ReadWriteProperty<Settings, T> {
-        override operator fun getValue(thisRef: Settings, property: KProperty<*>): T {
+        override operator fun getValue(
+            thisRef: Settings,
+            property: KProperty<*>
+        ): T {
             @Suppress("UNCHECKED_CAST")
             return settingsStore.getOrElse(key, defaultProducer) as T
         }
 
-        override operator fun setValue(thisRef: Settings, property: KProperty<*>, value: T) {
+        override operator fun setValue(
+            thisRef: Settings,
+            property: KProperty<*>,
+            value: T
+        ) {
             settingsStore[key] = value
             mapDB.commit()
         }
     }
 
     internal class NullableSetting<T>(private val key: String) : ReadWriteProperty<Settings, T?> {
-        override operator fun getValue(thisRef: Settings, property: KProperty<*>): T? {
+        override operator fun getValue(
+            thisRef: Settings,
+            property: KProperty<*>
+        ): T? {
             @Suppress("UNCHECKED_CAST")
             return settingsStore[key] as T?
         }
 
-        override operator fun setValue(thisRef: Settings, property: KProperty<*>, value: T?) {
+        override operator fun setValue(
+            thisRef: Settings,
+            property: KProperty<*>,
+            value: T?
+        ) {
             if (value == null) {
                 settingsStore -= key
             } else {
@@ -157,7 +171,10 @@ class SettingsComponent : Settings {
             }
         }
 
-    override fun setConnectionSettings(connection: String, cSettings: ConnectionSettings) {
+    override fun setConnectionSettings(
+        connection: String,
+        cSettings: ConnectionSettings
+    ) {
         connectionSettings[connection] = cSettings
         mapDB.commit()
     }
@@ -169,7 +186,10 @@ class SettingsComponent : Settings {
 
     override fun getUserHash(username: String) = userStore[username]
 
-    override fun saveUser(username: String, hash: String) {
+    override fun saveUser(
+        username: String,
+        hash: String
+    ) {
         userStore += username to hash
         mapDB.commit()
     }
@@ -183,7 +203,10 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
-    override fun storeContract(key: String, contract: String) {
+    override fun storeContract(
+        key: String,
+        contract: String
+    ) {
         contractStore[key] = contract
         mapDB.commit()
     }

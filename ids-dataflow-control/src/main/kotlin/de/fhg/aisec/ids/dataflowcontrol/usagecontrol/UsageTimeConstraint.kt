@@ -40,14 +40,18 @@ class UsageTimeConstraint(private val constraint: Constraint) : LuconConstraint 
         }
     }
 
-    override fun checkEnforcible(context: EnforcementContext, permission: LuconPermission) {
+    override fun checkEnforcible(
+        context: EnforcementContext,
+        permission: LuconPermission
+    ) {
         val rightOperand = constraint.rightOperand
         if (rightOperand.type != TYPE_DATETIMESTAMP) {
             throw LuconException("Unexpected RDF resource type ${rightOperand.type}, $TYPE_DATETIMESTAMP expected")
         }
         val currentTimestamp = System.currentTimeMillis()
-        val policyTimestamp = DATATYPE_FACTORY.newXMLGregorianCalendar(rightOperand.value).toGregorianCalendar()
-            .timeInMillis
+        val policyTimestamp =
+            DATATYPE_FACTORY.newXMLGregorianCalendar(rightOperand.value).toGregorianCalendar()
+                .timeInMillis
         if (constraint.operator == BinaryOperator.BEFORE) {
             if (currentTimestamp < policyTimestamp) {
                 checkSystemConstraint(context, permission) { "No usage after ${rightOperand.value}" }

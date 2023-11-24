@@ -31,21 +31,22 @@ import org.springframework.stereotype.Component
 
 @Component("contractAgreementReceiverProcessor")
 class ContractAgreementReceiverProcessor : Processor {
-
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val contractAgreementMessage = exchange.message.getHeader(
-            IDS_HEADER,
-            ContractAgreementMessage::class.java
-        )
+        val contractAgreementMessage =
+            exchange.message.getHeader(
+                IDS_HEADER,
+                ContractAgreementMessage::class.java
+            )
 
-        val contractAgreement = SERIALIZER.deserialize(
-            exchange.message.getBody(String::class.java),
-            ContractAgreement::class.java
-        )
+        val contractAgreement =
+            SERIALIZER.deserialize(
+                exchange.message.getBody(String::class.java),
+                ContractAgreement::class.java
+            )
 
         UsageControlMaps.addContractAgreement(contractAgreement)
         if (LOG.isDebugEnabled) {

@@ -99,8 +99,9 @@ import javax.ws.rs.core.MediaType
 @ApiController
 @RequestMapping("/certs")
 @Api(value = "Identities and Certificates", authorizations = [Authorization(value = "oauth2")])
-class CertApi(@Autowired private val settings: Settings) {
-
+class CertApi(
+    @Autowired private val settings: Settings
+) {
     @Autowired(required = false)
     private var acmeClient: AcmeClient? = null
 
@@ -189,7 +190,9 @@ class CertApi(@Autowired private val settings: Settings) {
     /** Delete a private/public key pair.  */
     @PostMapping("delete_identity", consumes = [MediaType.TEXT_PLAIN], produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Deletes a public/private key pair")
-    fun deleteIdentity(@RequestBody alias: String): String {
+    fun deleteIdentity(
+        @RequestBody alias: String
+    ): String {
         val keyStoreFile = getKeystoreFile(settings.connectorConfig.keystoreName)
         return if (delete(alias, keyStoreFile)) {
             alias
@@ -201,7 +204,9 @@ class CertApi(@Autowired private val settings: Settings) {
     /** Deletes a trusted certificate.  */
     @PostMapping("delete_cert", consumes = [MediaType.TEXT_PLAIN], produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Deletes a trusted certificate")
-    fun deleteCert(@RequestBody alias: String): String {
+    fun deleteCert(
+        @RequestBody alias: String
+    ): String {
         val keyStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
         return if (delete(alias, keyStoreFile)) {
             alias
@@ -250,10 +255,12 @@ class CertApi(@Autowired private val settings: Settings) {
 
     private fun X509Certificate.isValid() = notThrowing { this.checkValidity() }
 
-    private fun X509Certificate.verify(maybeIssuer: X509Certificate) =
-        notThrowing { this.verify(maybeIssuer.publicKey) }
+    private fun X509Certificate.verify(maybeIssuer: X509Certificate) = notThrowing { this.verify(maybeIssuer.publicKey) }
 
-    private suspend fun fetchEstCaCerts(estUrl: String, permittedHash: String): List<X509Certificate> {
+    private suspend fun fetchEstCaCerts(
+        estUrl: String,
+        permittedHash: String
+    ): List<X509Certificate> {
         val ucUrl = "$estUrl/.well-known/est/cacerts"
         val response = insecureHttpClient.get(ucUrl)
         if (response.status.value !in 200..299) {
@@ -331,7 +338,9 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "EST CA certificate"),
         ApiResponse(code = 500, message = "No certificate found")
     )
-    fun storeEstCACerts(@RequestBody certificates: String) {
+    fun storeEstCACerts(
+        @RequestBody certificates: String
+    ) {
         certificates.split("-----END CERTIFICATE-----").map {
             it.replace(CLEAR_PEM_REGEX, "")
         }.filter { it.isNotEmpty() }.map { c ->
@@ -356,7 +365,9 @@ class CertApi(@Autowired private val settings: Settings) {
         ApiResponse(code = 200, message = "EST CA certificate fetched"),
         ApiResponse(code = 500, message = "No certificate found")
     )
-    suspend fun requestEstIdentity(@RequestBody r: EstIdRequest) {
+    suspend fun requestEstIdentity(
+        @RequestBody r: EstIdRequest
+    ) {
         LOG.debug("Started EST process.")
 
         LOG.debug("Fetching CA certificates...")
@@ -397,9 +408,7 @@ class CertApi(@Autowired private val settings: Settings) {
     }
 
     @Throws(java.lang.Exception::class)
-    private fun generatePKCS10(
-        keys: KeyPair
-    ): ByteArray {
+    private fun generatePKCS10(keys: KeyPair): ByteArray {
         val sigAlg = "SHA256WithRSA"
         val pkcs = PKCS10(keys.public)
         // val signature: Signature = Signature.getInstance(sigAlg).apply { initSign(keys.private) }
@@ -412,51 +421,57 @@ class CertApi(@Autowired private val settings: Settings) {
         }
     }
 
-    private suspend fun sendEstIdReq(r: EstIdRequest, csr: ByteArray): PKCS7 {
+    private suspend fun sendEstIdReq(
+        r: EstIdRequest,
+        csr: ByteArray
+    ): PKCS7 {
         val trustStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
-        val trustManagers = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
-            KeyStore.getInstance("pkcs12").also {
-                FileInputStream(trustStoreFile).use { fis ->
-                    it.load(fis, KEYSTORE_PWD.toCharArray())
-                    tmf.init(it)
+        val trustManagers =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
+                KeyStore.getInstance("pkcs12").also {
+                    FileInputStream(trustStoreFile).use { fis ->
+                        it.load(fis, KEYSTORE_PWD.toCharArray())
+                        tmf.init(it)
+                    }
                 }
-            }
-        }.trustManagers
-        val secureHttpClient = HttpClient(Java) {
-            engine {
-                config {
-                    sslContext(
-                        SSLContext.getInstance("TLS").apply {
-                            init(null, trustManagers, null)
-                        }
-                    )
-                }
-            }
-            install(ContentNegotiation) {
-                jackson()
-            }
-            install(Auth) {
-                basic {
-                    sendWithoutRequest { true }
-                    credentials {
-                        BasicAuthCredentials(
-                            // We need a username here, but effectively only password is checked
-                            username = "username",
-                            password = r.iet
+            }.trustManagers
+        val secureHttpClient =
+            HttpClient(Java) {
+                engine {
+                    config {
+                        sslContext(
+                            SSLContext.getInstance("TLS").apply {
+                                init(null, trustManagers, null)
+                            }
                         )
                     }
                 }
+                install(ContentNegotiation) {
+                    jackson()
+                }
+                install(Auth) {
+                    basic {
+                        sendWithoutRequest { true }
+                        credentials {
+                            BasicAuthCredentials(
+                                // We need a username here, but effectively only password is checked
+                                username = "username",
+                                password = r.iet
+                            )
+                        }
+                    }
+                }
             }
-        }
         val ucUrl = "${r.estUrl}/.well-known/est/simpleenroll"
         val pkcs10String = String(csr, StandardCharsets.UTF_8).replace(CLEAR_PEM_REGEX, "")
-        val response: HttpResponse = secureHttpClient.post(ucUrl) {
-            setBody(pkcs10String)
-            headers {
-                append("Content-Type", "application/pkcs10")
-                append("Content-Transfer-Encoding", "base64")
+        val response: HttpResponse =
+            secureHttpClient.post(ucUrl) {
+                setBody(pkcs10String)
+                headers {
+                    append("Content-Type", "application/pkcs10")
+                    append("Content-Transfer-Encoding", "base64")
+                }
             }
-        }
 
         if (response.status.value !in 200..299) {
             throw RuntimeException("Failed to fetch certificate: ${response.status}\n${response.bodyAsText()}")
@@ -478,9 +493,10 @@ class CertApi(@Autowired private val settings: Settings) {
         FileInputStream(storeFile).use { fis ->
             keystore.load(fis, password)
         }
-        val entryAlias = alias ?: certificateChain[0].subjectX500Principal.name.let { name ->
-            name.split(",").map { it.split("=") }.firstOrNull { it[0] == "CN" }?.get(1) ?: name
-        }
+        val entryAlias =
+            alias ?: certificateChain[0].subjectX500Principal.name.let { name ->
+                name.split(",").map { it.split("=") }.firstOrNull { it[0] == "CN" }?.get(1) ?: name
+            }
         if (key == null) {
             // Add a CA certificate
             keystore.setCertificateEntry(entryAlias, certificateChain[0])
@@ -600,35 +616,39 @@ class CertApi(@Autowired private val settings: Settings) {
         sigAlgName: String,
         keyStoreFile: File
     ) {
-        val keytoolCmd = arrayOf(
-            "/bin/sh",
-            "-c",
-            "keytool",
-            "-genkey",
-            "-alias",
-            alias,
-            "-keyalg",
-            keyAlgName,
-            "-keysize",
-            keySize.toString(),
-            "-sigalg",
-            sigAlgName,
-            "-keystore",
-            keyStoreFile.absolutePath,
-            "-dname",
-            "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s +
-                ", C=" + spec.c,
-            "-storepass",
-            KEYSTORE_PWD,
-            "-keypass",
-            KEYSTORE_PWD
-        )
+        val keytoolCmd =
+            arrayOf(
+                "/bin/sh",
+                "-c",
+                "keytool",
+                "-genkey",
+                "-alias",
+                alias,
+                "-keyalg",
+                keyAlgName,
+                "-keysize",
+                keySize.toString(),
+                "-sigalg",
+                sigAlgName,
+                "-keystore",
+                keyStoreFile.absolutePath,
+                "-dname",
+                "CN=" + spec.cn + ", OU=" + spec.ou + ", O=" + spec.o + ", L=" + spec.l + ", S=" + spec.s +
+                    ", C=" + spec.c,
+                "-storepass",
+                KEYSTORE_PWD,
+                "-keypass",
+                KEYSTORE_PWD
+            )
         val bos = ByteArrayOutputStream()
         ProcessExecutor().execute(keytoolCmd, bos, bos)
         LOG.debug("Keytool:\n\n{}", bos.toString(StandardCharsets.UTF_8))
     }
 
-    private fun delete(alias: String, file: File): Boolean {
+    private fun delete(
+        alias: String,
+        file: File
+    ): Boolean {
         try {
             FileInputStream(file).use { fis ->
                 val keystore = KeyStore.getInstance("pkcs12")
@@ -653,29 +673,38 @@ class CertApi(@Autowired private val settings: Settings) {
         private val WHITESPACE_REGEX = Regex("\\s+")
         private val CLEAR_PEM_REGEX = Regex("\\s+|-----(?:BEGIN|END) [A-Z ]+-----")
 
-        private val insecureHttpClient = HttpClient(Java) {
-            engine {
-                config {
-                    sslContext(
-                        SSLContext.getInstance("TLS").apply {
-                            init(
-                                null,
-                                arrayOf(object : X509TrustManager {
-                                    override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+        private val insecureHttpClient =
+            HttpClient(Java) {
+                engine {
+                    config {
+                        sslContext(
+                            SSLContext.getInstance("TLS").apply {
+                                init(
+                                    null,
+                                    arrayOf(
+                                        object : X509TrustManager {
+                                            override fun checkClientTrusted(
+                                                p0: Array<out X509Certificate>?,
+                                                p1: String?
+                                            ) {}
 
-                                    override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {}
+                                            override fun checkServerTrusted(
+                                                p0: Array<out X509Certificate>?,
+                                                p1: String?
+                                            ) {}
 
-                                    override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-                                }),
-                                null
-                            )
-                        }
-                    )
+                                            override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                                        }
+                                    ),
+                                    null
+                                )
+                            }
+                        )
+                    }
+                }
+                install(ContentNegotiation) {
+                    jackson()
                 }
             }
-            install(ContentNegotiation) {
-                jackson()
-            }
-        }
     }
 }

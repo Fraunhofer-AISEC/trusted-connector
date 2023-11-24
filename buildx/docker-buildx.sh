@@ -33,7 +33,7 @@ fi
 eval set -- "$PARSED"
 
 DOCKER_BUILD_TAGS="develop"
-BASE_IMAGE_ARG="gcr.io/distroless/java17-debian11"
+BASE_IMAGE_ARG="gcr.io/distroless/java21-debian12"
 TARGETS="core"
 OUTPUT_TYPE="docker"
 BAKE_ARGS=""

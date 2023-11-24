@@ -32,7 +32,10 @@ class CertExposingEndpointStrategy : EndpointStrategy {
     @Autowired
     private lateinit var certExposingHttpClientConfigurer: CertExposingHttpClientConfigurer
 
-    override fun registerEndpoint(uri: String, endpoint: Endpoint): Endpoint {
+    override fun registerEndpoint(
+        uri: String,
+        endpoint: Endpoint
+    ): Endpoint {
         if (endpoint is HttpEndpoint && uri.startsWith("https")) {
             LOG.info("Configured endpoint with uri $uri")
             endpoint.httpClientConfigurer = certExposingHttpClientConfigurer

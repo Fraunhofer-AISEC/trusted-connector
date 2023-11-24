@@ -47,7 +47,6 @@ import javax.ws.rs.core.MediaType
 @RequestMapping("/policies")
 @Api(value = "Usage Control Policies", authorizations = [Authorization(value = "oauth2")])
 class PolicyApi {
-
     @Autowired(required = false)
     private var policyAdministrationPoint: PAP? = null
 

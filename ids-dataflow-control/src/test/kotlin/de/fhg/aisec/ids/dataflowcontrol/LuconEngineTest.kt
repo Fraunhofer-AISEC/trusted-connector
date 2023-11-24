@@ -524,7 +524,7 @@ class LuconEngineTest {
                 "move(1,X,Y,_) :- " +
                     "write('Move top disk from '), write(X), write(' to '), write(Y), nl. \n" +
                     "move(N,X,Y,Z) :- N>1, M is N-1, move(M,X,Z,Y), move(1,X,Y,_), move(M,Z,Y,X). "
-                )
+            )
 
         // A random but syntactically correct policy.
         private const val EXAMPLE_POLICY =
@@ -591,7 +591,7 @@ class LuconEngineTest {
                     "\n" +
                     "service(testQueueService).\n" +
                     "has_endpoint(testQueueService, \"^amqp:.*?:test\")."
-                )
+            )
 
         // Policy with extended labels, i.e. "purpose(green)"
         private const val EXTENDED_LABELS_POLICY =
@@ -623,7 +623,7 @@ class LuconEngineTest {
                     "has_endpoint(sanitizedata, \"^bean://SanitizerBean.*\").\n" +
                     "creates_label(sanitizedata, public).\n" +
                     "removes_label(sanitizedata, private).\n"
-                )
+            )
 
         // Route from LUCON paper with path searching logic
         private const val VERIFIABLE_ROUTE =
@@ -660,6 +660,6 @@ class LuconEngineTest {
                     "succ(anonymizer, hadoopClusters).\n" +
                     "succ(hadoopClusters, testQueue).\n" +
                     "\n"
-                )
+            )
     }
 }

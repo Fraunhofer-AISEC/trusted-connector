@@ -69,7 +69,6 @@ import javax.ws.rs.core.MediaType
 @RequestMapping("/app")
 @Api(value = "Applications", authorizations = [Authorization(value = "oauth2")])
 class AppApi {
-
     @Autowired
     private lateinit var cml: ContainerManager
 
@@ -105,16 +104,18 @@ class AppApi {
     @GetMapping("start/{containerId}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Start an application",
-        notes = "Starting an application may take some time. " +
-            "This method will start the app asynchronously and return immediately. " +
-            "This method starts the latest version of the app.",
+        notes =
+            "Starting an application may take some time. " +
+                "This method will start the app asynchronously and return immediately. " +
+                "This method starts the latest version of the app.",
         response = Boolean::class
     )
     @ApiResponses(
         ApiResponse(
             code = 200,
-            message = "true if the app has been requested to be started. " +
-                "false if no container management layer is available"
+            message =
+                "true if the app has been requested to be started. " +
+                    "false if no container management layer is available"
         )
     )
     fun start(
@@ -128,14 +129,17 @@ class AppApi {
     @GetMapping("start/{containerId}/{key}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Start an application",
-        notes = "Starting an application may take some time. This method will start the app asynchronously and return immediately. This methods starts a specific version of the app.",
+        notes =
+            "Starting an application may take some time. This method will start the app asynchronously " +
+                "and return immediately. This methods starts a specific version of the app.",
         response = Boolean::class
     )
     @ApiResponses(
         ApiResponse(
             code = 200,
-            message = "true if the app has been requested to be started. " +
-                "false if no container management layer is available"
+            message =
+                "true if the app has been requested to be started. " +
+                    "false if no container management layer is available"
         )
     )
     fun start(
@@ -158,14 +162,17 @@ class AppApi {
     @GetMapping("stop/{containerId}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
         value = "Stop an app",
-        notes = "Stops an application. The application will remain installed and can be re-started later. All temporary data will be lost, however.",
+        notes =
+            "Stops an application. The application will remain installed and can be re-started later. " +
+                "All temporary data will be lost, however.",
         response = Boolean::class
     )
     @ApiResponses(
         ApiResponse(
             code = 200,
-            message = "true if the app has been requested to be stopped. " +
-                "false if no container management layer is available"
+            message =
+                "true if the app has been requested to be stopped. " +
+                    "false if no container management layer is available"
         )
     )
     fun stop(
@@ -187,9 +194,10 @@ class AppApi {
     @ApiResponses(
         ApiResponse(
             code = 200,
-            message = "If the app has been requested to be installed. " +
-                "The actual installation takes place asynchronously in the background " +
-                "and will terminate after a timeout of 20 minutes",
+            message =
+                "If the app has been requested to be installed. " +
+                    "The actual installation takes place asynchronously in the background " +
+                    "and will terminate after a timeout of 20 minutes",
             response = Boolean::class
         ),
         ApiResponse(
@@ -259,7 +267,9 @@ class AppApi {
         consumes = [MediaType.TEXT_PLAIN],
         produces = [MediaType.APPLICATION_JSON]
     )
-    suspend fun search(@RequestBody term: String?): List<ApplicationContainer> {
+    suspend fun search(
+        @RequestBody term: String?
+    ): List<ApplicationContainer> {
         return httpClient.get(settings.connectorConfig.appstoreUrl).body<List<ApplicationContainer>>().let { res ->
             if (term?.isNotBlank() == true) {
                 res.filter { app: ApplicationContainer ->
@@ -278,10 +288,11 @@ class AppApi {
     companion object {
         private val LOG = LoggerFactory.getLogger(AppApi::class.java)
 
-        private val httpClient = HttpClient(Java) {
-            install(ContentNegotiation) {
-                jackson(ContentType.Any)
+        private val httpClient =
+            HttpClient(Java) {
+                install(ContentNegotiation) {
+                    jackson(ContentType.Any)
+                }
             }
-        }
     }
 }

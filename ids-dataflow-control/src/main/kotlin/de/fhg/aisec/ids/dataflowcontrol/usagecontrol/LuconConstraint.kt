@@ -20,6 +20,10 @@
 package de.fhg.aisec.ids.dataflowcontrol.usagecontrol
 
 interface LuconConstraint {
-    fun checkEnforcible(context: EnforcementContext, permission: LuconPermission)
+    fun checkEnforcible(
+        context: EnforcementContext,
+        permission: LuconPermission
+    )
+
     fun enforce(context: EnforcementContext)
 }

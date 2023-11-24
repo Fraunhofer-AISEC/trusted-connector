@@ -21,4 +21,8 @@ package de.fhg.aisec.ids.api.acme
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-class AcmeTermsOfService(val tos: String?, @get:JsonProperty(value = "isUri") val isUri: Boolean?, val error: String?)
+class AcmeTermsOfService(
+    val tos: String?,
+    @get:JsonProperty(value = "isUri") val isUri: Boolean?,
+    val error: String?
+)

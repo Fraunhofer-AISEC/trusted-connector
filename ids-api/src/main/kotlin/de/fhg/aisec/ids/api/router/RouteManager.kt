@@ -76,6 +76,7 @@ interface RouteManager {
      * @return Map of Camel context names to contained endpoint URIs
      */
     val endpoints: Map<String, Collection<String>>
+
     fun listEndpoints(): Map<String, String>
 
     /**

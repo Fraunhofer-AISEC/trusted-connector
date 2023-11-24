@@ -29,6 +29,7 @@ object ContractUtils {
     val SERIALIZER: Serializer by lazy { Serializer() }
     val TYPE_DATETIMESTAMP: URI = URI.create("http://www.w3.org/2001/XMLSchema#dateTimeStamp")
     val DATATYPE_FACTORY: DatatypeFactory = DatatypeFactory.newInstance()
+
     fun newGregorianCalendar(millis: Long = System.currentTimeMillis()): XMLGregorianCalendar =
         DATATYPE_FACTORY.newXMLGregorianCalendar(
             GregorianCalendar().apply { timeInMillis = millis }

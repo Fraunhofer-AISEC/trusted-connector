@@ -24,7 +24,10 @@ import de.fraunhofer.iais.eis.ContractOffer
 interface ContractManager {
     fun makeContract(contractProperties: Map<String, Any>): ContractOffer
 
-    fun storeContract(key: String, contract: ContractOffer)
+    fun storeContract(
+        key: String,
+        contract: ContractOffer
+    )
 
     fun loadContract(key: String): ContractOffer?
 }

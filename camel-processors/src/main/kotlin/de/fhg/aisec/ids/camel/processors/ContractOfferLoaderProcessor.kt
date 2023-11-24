@@ -34,8 +34,9 @@ import org.springframework.stereotype.Component
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
  */
 @Component("contractOfferLoaderProcessor")
-class ContractOfferLoaderProcessor(@Autowired private val contractManager: ContractManager) : Processor {
-
+class ContractOfferLoaderProcessor(
+    @Autowired private val contractManager: ContractManager
+) : Processor {
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
@@ -49,9 +50,10 @@ class ContractOfferLoaderProcessor(@Autowired private val contractManager: Contr
         }
 
         val storeKey = exchange.getProperty(CONTRACT_STORE_KEY)?.toString()
-        val contractOffer = storeKey?.let {
-            contractManager.loadContract(it)
-        } ?: throw RuntimeException("Error loading ContractOffer with store key \"$storeKey\"")
+        val contractOffer =
+            storeKey?.let {
+                contractManager.loadContract(it)
+            } ?: throw RuntimeException("Error loading ContractOffer with store key \"$storeKey\"")
 
         SERIALIZER.serialize(contractOffer).let {
             if (LOG.isDebugEnabled) {

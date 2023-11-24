@@ -34,7 +34,7 @@ class RouteObject {
     var id: String? = null
 
     constructor() {
-        /* Bean std c'tor */
+        // Bean std c'tor
     }
 
     constructor(

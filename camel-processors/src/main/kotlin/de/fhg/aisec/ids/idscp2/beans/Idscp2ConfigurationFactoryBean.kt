@@ -26,7 +26,6 @@ import org.springframework.beans.factory.FactoryBean
 
 @Suppress("unused")
 class Idscp2ConfigurationFactoryBean : FactoryBean<Idscp2Configuration> {
-
     private val builder = Idscp2Configuration.Builder()
 
     var attestationConfig: AttestationConfig by BeanSetter(builder::setAttestationConfig)

@@ -58,8 +58,8 @@ class PortainerCompatibilityIT {
                 while (br.readLine().also { line = it } != null) {
                     sb.append(
                         """
-    $line
-    
+                        $line
+                        
                         """.trimIndent()
                     )
                 }

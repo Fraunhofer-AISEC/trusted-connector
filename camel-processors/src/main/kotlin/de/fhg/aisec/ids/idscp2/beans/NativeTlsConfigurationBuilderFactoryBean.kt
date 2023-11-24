@@ -26,7 +26,6 @@ import org.springframework.beans.factory.FactoryBean
 
 @Suppress("unused")
 class NativeTlsConfigurationBuilderFactoryBean : FactoryBean<NativeTlsConfiguration.Builder> {
-
     private val builder = NativeTlsConfiguration.Builder()
 
     var sslParameters: SSLContextParameters by BeanSetter(builder::applySslContextParameters)

@@ -49,7 +49,12 @@ class TrustXMockHandler : Runnable {
         }
     }
 
-    fun handleResponse(server: TrustXMock, socket: UnixSocketChannel, data: ByteArray, count: Int) {
+    fun handleResponse(
+        server: TrustXMock,
+        socket: UnixSocketChannel,
+        data: ByteArray,
+        count: Int
+    ) {
         val dataCopy = ByteArray(count)
         System.arraycopy(data, 0, dataCopy, 0, count)
         lock.withLock {

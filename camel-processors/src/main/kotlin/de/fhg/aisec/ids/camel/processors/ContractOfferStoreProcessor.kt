@@ -33,20 +33,22 @@ import java.net.URI
  * This Processor handles a ContractRequestMessage and creates a ContractResponseMessage.
  */
 @Component("contractOfferStoreProcessor")
-class ContractOfferStoreProcessor(@Autowired private val contractManager: ContractManager) : Processor {
-
+class ContractOfferStoreProcessor(
+    @Autowired private val contractManager: ContractManager
+) : Processor {
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val artifactUri = exchange.getProperty(ContractConstants.ARTIFACT_URI_PROPERTY)?.let {
-            if (it is URI) {
-                it
-            } else {
-                URI.create(it.toString())
-            }
-        } ?: throw RuntimeException("No property \"artifactUri\" found in Exchange, cannot build contract!")
+        val artifactUri =
+            exchange.getProperty(ContractConstants.ARTIFACT_URI_PROPERTY)?.let {
+                if (it is URI) {
+                    it
+                } else {
+                    URI.create(it.toString())
+                }
+            } ?: throw RuntimeException("No property \"artifactUri\" found in Exchange, cannot build contract!")
 
         exchange.getProperty(CONTRACT_STORE_KEY)?.toString()?.let {
             val contractProperties = ContractHelper.collectContractProperties(artifactUri, exchange)

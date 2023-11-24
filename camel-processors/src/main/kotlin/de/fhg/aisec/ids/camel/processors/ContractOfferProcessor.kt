@@ -31,16 +31,16 @@ import org.springframework.stereotype.Component
  */
 @Component("contractOfferProcessor")
 class ContractOfferProcessor : Processor {
-
     override fun process(exchange: Exchange) {
         if (LOG.isDebugEnabled) {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
 
-        val contractOfferMessage = exchange.message.getHeader(
-            IDS_HEADER,
-            ContractOfferMessage::class.java
-        )
+        val contractOfferMessage =
+            exchange.message.getHeader(
+                IDS_HEADER,
+                ContractOfferMessage::class.java
+            )
 
         ContractHelper.handleContractOffer(exchange, contractOfferMessage.id, LOG)
     }

@@ -20,5 +20,6 @@
 package de.fhg.aisec.ids.api.cm
 
 enum class Protocol {
-    TCP, UDP
+    TCP,
+    UDP
 }
