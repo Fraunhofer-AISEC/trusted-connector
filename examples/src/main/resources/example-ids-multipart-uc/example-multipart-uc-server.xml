@@ -5,6 +5,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"/>
+
     <camel:sslContextParameters id="rootServerSslContext" certAlias="1">
         <camel:keyManagers keyPassword="password">
             <camel:keyStore resource="etc/keystore.p12" password="password"/>
@@ -16,7 +18,7 @@
     </camel:sslContextParameters>
 
     <bean name="rootDaps" class="de.fhg.aisec.ids.idscp2.beans.AisecDapsDriverFactoryBean">
-        <property name="dapsUrl" value="https://daps-dev.aisec.fraunhofer.de/v4"/>
+        <property name="dapsUrl" value="${connector.daps-url}"/>
         <property name="dapsSslParameters" ref="rootServerSslContext"/>
         <property name="transportCertificatesParameters" ref="rootServerSslContext"/>
     </bean>

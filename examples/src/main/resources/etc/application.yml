@@ -1,6 +1,18 @@
-#logging:
-#  level:
+logging:
+  level:
 #    root: debug
+    de.fhg.aisec.ids.idscp2: trace
+    de.fhg.aisec.ids.camel: trace
 
 ids-multipart:
   daps-bean-name: rootDaps
+
+connector:
+  daps-url: https://daps-dev.aisec.fraunhofer.de/v4
+
+# For example-getting-started
+key-stores:
+  server-resource: etc/server-keystore.p12
+  client-resource: etc/client-keystore.p12
+  truststore-resource: etc/truststore.p12
+  password: password

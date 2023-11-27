@@ -7,19 +7,22 @@
           http://camel.apache.org/schema/spring
           http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer" id="springProperties">
-        <property name="location" value="etc/tls.properties"/>
-    </bean>
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"/>
 
+    <bean class="org.apache.camel.support.jsse.TrustManagersParameters" id="routeTrustManagers">
+        <property name="keyStore">
+            <camel:keyStoreParameters password="${key-stores.password}" resource="${key-stores.truststore-resource}"/>
+        </property>
+    </bean>
     <!-- Define TLS configuration for data consumer -->
     <bean class="org.apache.camel.support.jsse.SSLContextParameters" id="serverSslContext">
         <property name="keyManagers">
             <bean class="org.apache.camel.support.jsse.KeyManagersParameters">
                 <property name="keyStore">
-                    <camel:keyStoreParameters password="${server.keyStorePassword}"
-                                              resource="${server.keyStoreResource}"/>
+                    <camel:keyStoreParameters password="${key-stores.password}"
+                                              resource="${key-stores.server-resource}"/>
                 </property>
-                <property name="keyPassword" value="${server.keyStorePassword}"/>
+                <property name="keyPassword" value="${key-stores.password}"/>
             </bean>
         </property>
         <property name="trustManagers" ref="routeTrustManagers"/>
@@ -29,18 +32,13 @@
         <property name="keyManagers">
             <bean class="org.apache.camel.support.jsse.KeyManagersParameters">
                 <property name="keyStore">
-                    <camel:keyStoreParameters password="${client.keyStorePassword}"
-                                              resource="${client.keyStoreResource}"/>
+                    <camel:keyStoreParameters password="${key-stores.password}"
+                                              resource="${key-stores.client-resource}"/>
                 </property>
-                <property name="keyPassword" value="${client.keyStorePassword}"/>
+                <property name="keyPassword" value="${key-stores.password}"/>
             </bean>
         </property>
         <property name="trustManagers" ref="routeTrustManagers"/>
-    </bean>
-    <bean class="org.apache.camel.support.jsse.TrustManagersParameters" id="routeTrustManagers">
-        <property name="keyStore">
-            <camel:keyStoreParameters password="${trustStorePassword}" resource="${trustStoreResource}"/>
-        </property>
     </bean>
 
     <!-- Routes -->
@@ -52,7 +50,7 @@
                 <simple>Message at $simple{date:now:yyyy-MM-dd HH:mm:ss}</simple>
             </setBody>
             <log message="Sending message body &quot;${body}&quot;..."/>
-            <to uri="idscp2client://tc-core-server:9292/?sslContextParameters=#clientSslContext" />
+            <to uri="idscp2client://provider-core:9292/?sslContextParameters=#clientSslContext" />
         </route>
 
         <route id="receiveTime">
