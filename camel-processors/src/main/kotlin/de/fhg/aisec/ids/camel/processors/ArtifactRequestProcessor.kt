@@ -85,7 +85,7 @@ class ArtifactRequestProcessor : Processor {
             LOG.debug("Constructing RejectionMessage for requested artifact: {}", rejectionReason)
         }
         RejectionMessageBuilder()
-            ._correlationMessage_(artifactRequestMessage.correlationMessage)
+            ._correlationMessage_(artifactRequestMessage.id)
             ._rejectionReason_(rejectionReason)
             .let {
                 if (LOG.isDebugEnabled) {

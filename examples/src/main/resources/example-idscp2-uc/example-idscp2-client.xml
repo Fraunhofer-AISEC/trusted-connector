@@ -17,11 +17,22 @@
     </camel:sslContextParameters>
 
     <camelContext xmlns="http://camel.apache.org/schema/spring">
-        <errorHandler id="infErrorHandler" type="DeadLetterChannel" deadLetterUri="log:dead?level=ERROR">
-            <redeliveryPolicy maximumRedeliveries="-1" redeliveryDelay="0"/>
+        <errorHandler id="restartErrorHandler" type="DeadLetterChannel" deadLetterUri="direct:errorHandling">
+            <redeliveryPolicy maximumRedeliveries="0" redeliveryDelay="0" />
         </errorHandler>
 
-        <route errorHandlerRef="infErrorHandler">
+        <route id="errorHandlerRoute">
+            <from uri="direct:errorHandling"/>
+            <log loggingLevel="ERROR" message="Error occured, try to stop route artifactUpdate and restart route contractNegotiation..."/>
+            <setProperty name="timeout-seconds">
+                <constant>10</constant>
+            </setProperty>
+            <process ref="shutdownConfigurationProcessor"/>
+            <to uri="controlbus:route?routeId=artifactRequestRoute&amp;action=stop"/>
+            <to uri="controlbus:route?routeId=contractNegotiationRoute&amp;action=restart"/>
+        </route>
+
+        <route id="contractNegotiationRoute" errorHandlerRef="restartErrorHandler">
             <from uri="timer://contractRequest?repeatCount=1" />
             <setProperty name="artifactUri">
                 <constant>https://example.com/some_artifact</constant>
@@ -43,21 +54,19 @@
                             <to uri="controlbus:route?routeId=artifactRequestRoute&amp;action=start"/>
                         </when>
                         <otherwise>
-                            <log loggingLevel="ERROR" message="Expected MessageProcessedNotificationMessage, but received:\n${body}\n### Header: ###\n${headers[ids-header]}"/>
-                            <removeHeader name="ids-header" />
-                            <setBody><simple>${null}</simple></setBody>
+                            <log loggingLevel="ERROR" message="Expected MessageProcessedNotificationMessage, but received ${exchangeProperty.ids-type}."/>
+                            <throwException exceptionType="java.lang.RuntimeException"/>
                         </otherwise>
                     </choice>
                 </when>
                 <otherwise>
-                    <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received:\n${body}\n### Header: ###\n${headers[ids-header]}"/>
-                    <removeHeader name="ids-header" />
-                    <setBody><simple>${null}</simple></setBody>
+                    <log loggingLevel="ERROR" message="Expected ContractResponseMessage, but received ${exchangeProperty.ids-type}."/>
+                    <throwException exceptionType="java.lang.RuntimeException"/>
                 </otherwise>
             </choice>
         </route>
 
-        <route id="artifactRequestRoute" autoStartup="false">
+        <route id="artifactRequestRoute" autoStartup="false" errorHandlerRef="restartErrorHandler">
             <from uri="timer://tenSecondsTimer?fixedRate=true&amp;period=10000"/>
             <setProperty name="artifactUri">
                 <constant>https://example.com/some_artifact</constant>
@@ -72,7 +81,8 @@
                     <to uri="http://echo-server:80"/>
                 </when>
                 <otherwise>
-                    <log loggingLevel="ERROR" message="Expected ArtifactResponseMessage, but received:\n${body}\n### Header: ###\n${headers[ids-header]}"/>
+                    <log loggingLevel="ERROR" message="Expected ArtifactResponseMessage, but received ${exchangeProperty.ids-type}."/>
+                    <throwException exceptionType="java.lang.RuntimeException"/>
                 </otherwise>
             </choice>
         </route>

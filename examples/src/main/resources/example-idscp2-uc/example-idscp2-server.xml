@@ -48,7 +48,7 @@
                             </setBody>
                         </when>
                         <otherwise>
-                            <log message="Unhandled or forbidden artifact ${exchangeProperty.requested-artifact} requested" loggingLevel="ERROR" />
+                            <log message="Unhandled or forbidden artifact &quot;${exchangeProperty.requested-artifact}&quot; requested" loggingLevel="ERROR" />
                         </otherwise>
                     </choice>
                 </when>
