@@ -15,7 +15,6 @@ export class JwtInterceptor implements HttpInterceptor {
         if (currentUser) {
             request = request.clone({
                 setHeaders: {
-                    /* eslint-disable @typescript-eslint/naming-convention */
                     Authorization: `Bearer ${currentUser}`
                 }
             });

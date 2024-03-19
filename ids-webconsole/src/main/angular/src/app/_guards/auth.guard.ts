@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 /**
  * Ensures that only logged-in users will be navigated to pages.
@@ -7,11 +7,12 @@ import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from
  * See app.routing.ts for usage of this guard.
  */
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AuthGuard  {
 
     constructor(private router: Router) {
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         if (sessionStorage.getItem('currentUser')) {
             // logged in so return true

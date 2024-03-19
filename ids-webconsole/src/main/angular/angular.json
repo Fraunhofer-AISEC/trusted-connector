@@ -21,19 +21,17 @@
               "src/favicon.ico"
             ],
             "styles": [
+              "src/css/bootstrap-reboot.css",
               "src/fonts/fonts.css",
               "node_modules/material-design-lite/material.css",
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/css/material.teal-pink.min.css",
               "src/css/styles.css",
-              "src/css/fontawesome/all.css",
-              "node_modules/vis/dist/vis.css"
+              "src/css/fontawesome/all.css"
             ],
             "scripts": [
               "node_modules/viz.js/viz.js",
               "node_modules/viz.js/full.render.js",
-              "node_modules/svg-pan-zoom/dist/svg-pan-zoom.js",
-              "node_modules/vis/dist/vis.js"
+              "node_modules/svg-pan-zoom/dist/svg-pan-zoom.js"
             ],
             "vendorChunk": true,
             "extractLicenses": false,
@@ -70,19 +68,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "trusted-connector-ui:build",
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "trusted-connector-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "trusted-connector-ui:build:production"
+              "buildTarget": "trusted-connector-ui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "trusted-connector-ui:build"
+            "buildTarget": "trusted-connector-ui:build"
           }
         },
         "lint": {

@@ -65,8 +65,6 @@ import { ESTService } from './keycerts/est-service';
         LoggerModule.forRoot({
             level: NgxLoggerLevel.DEBUG
         })
-//    ModalModule.forRoot(),
-//    BootstrapModalModule
     ],
     declarations: [
         AppComponent,

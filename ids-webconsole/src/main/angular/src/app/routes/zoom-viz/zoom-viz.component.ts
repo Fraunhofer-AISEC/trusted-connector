@@ -3,7 +3,6 @@ import { from, Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import 'svg-pan-zoom';
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare const Viz: any;
 
 @Component({
