@@ -89,10 +89,19 @@ class SettingsComponent : Settings {
                         connectorConfig.let {
                             connectorConfig =
                                 ConnectorConfig(
-                                    it.appstoreUrl, it.brokerUrl, it.ttpHost, it.ttpPort, it.acmeServerWebcon,
-                                    it.acmeDnsWebcon, it.acmePortWebcon, it.tosAcceptWebcon,
+                                    it.appstoreUrl,
+                                    it.brokerUrl,
+                                    it.ttpHost,
+                                    it.ttpPort,
+                                    it.acmeServerWebcon,
+                                    it.acmeDnsWebcon,
+                                    it.acmePortWebcon,
+                                    it.tosAcceptWebcon,
                                     "https://daps.aisec.fraunhofer.de/v2",
-                                    it.keystoreName, it.keystorePassword, it.keystoreAliasName, it.truststoreName
+                                    it.keystoreName,
+                                    it.keystorePassword,
+                                    it.keystoreAliasName,
+                                    it.truststoreName
                                 )
                         }
                     }

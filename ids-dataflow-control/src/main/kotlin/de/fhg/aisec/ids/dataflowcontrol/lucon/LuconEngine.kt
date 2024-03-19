@@ -42,13 +42,7 @@ import java.util.regex.Pattern
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-class LuconEngine
-/**
- * Create a new LuconEngine which writes to a given output stream.
- *
- * @param out OutputStream to write Prolog engine outputs to, or null if output should not printed.
- */
-(out: OutputStream?) {
+class LuconEngine(out: OutputStream?) {
     private val p: Prolog = Prolog()
 
     val theory: String
