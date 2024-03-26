@@ -26,6 +26,7 @@ import de.fhg.aisec.ids.api.acme.AcmeTermsOfService
 import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.webconsole.ApiController
 import de.fhg.aisec.ids.webconsole.api.data.Cert
+import de.fhg.aisec.ids.webconsole.api.data.EstIdRenewRequest
 import de.fhg.aisec.ids.webconsole.api.data.EstIdRequest
 import de.fhg.aisec.ids.webconsole.api.data.Identity
 import de.fhg.aisec.ids.webconsole.api.helper.ProcessExecutor
@@ -41,6 +42,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -82,7 +84,9 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Base64
 import java.util.UUID
+import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLParameters
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
@@ -407,6 +411,63 @@ class CertApi(
         }
     }
 
+    @PostMapping("/renew_est_identity", consumes = [MediaType.APPLICATION_JSON])
+    @ApiOperation("Renew a certificate from an EST")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Successfully renewed the certificate"),
+        ApiResponse(code = 500, message = "Error renewing certificate")
+    )
+    suspend fun renewEstIdentities(
+        @RequestBody req: EstIdRenewRequest
+    ) {
+        LOG.debug("Start renewing EST certificate.")
+
+        val keyStoreFile = getKeystoreFile(settings.connectorConfig.keystoreName)
+        val keyStore =
+            KeyStore.getInstance("pkcs12")
+                .also { it.load(keyStoreFile.inputStream(), KEYSTORE_PWD.toCharArray()) }
+
+        val oldKey = keyStore.getKey(req.alias, KEYSTORE_PWD.toCharArray()) as PrivateKey
+        val oldCert = keyStore.getCertificate(req.alias) as X509Certificate
+
+        LOG.debug("Fetching root certificates from EST...")
+        val caCerts = fetchEstCaCerts(req.estUrl, req.rootCertHash)
+
+        caCerts.firstOrNull { it.verify(it) }?.let {
+            LOG.debug("Storing root CA certificate in TrustStore...")
+            storeCertificate(settings.connectorConfig.truststoreName, listOf(it))
+        } ?: LOG.warn("No (valid) root CA certificate has been found. EST process may fail!")
+
+        LOG.debug("Generating new keys...")
+        val keys = KeyPairGenerator.getInstance("RSA").apply { initialize(4096) }.generateKeyPair()
+
+        LOG.debug("Generating CSR...")
+        val csr = generatePKCS10(keys)
+
+        LOG.debug("Sending EST renew request...")
+        val pkcs7 = sendEstIdRenewReq(req, csr, oldKey, oldCert)
+
+        pkcs7.certificates.firstOrNull { it.publicKey == keys.public }?.let {
+            LOG.debug("Found EST certificate, assembling certificate chain...")
+            val certificateChain = mutableListOf(it)
+            var lastCertificate = it
+            // The last certificate (root) is self-signed
+            while (!lastCertificate.verify(lastCertificate)) {
+                // Find CA certificate signing last element of chain
+                caCerts.firstOrNull { ca -> lastCertificate.verify(ca) }?.let { nextCa ->
+                    certificateChain += nextCa
+                    lastCertificate = nextCa
+                } ?: throw RuntimeException(
+                    "Could not create certificate chain, " +
+                        "did not find signer for this certificate:\n$lastCertificate"
+                )
+            }
+            LOG.debug("Storing EST certificate (full chain) using alias \"{}\"...", req.alias)
+            storeCertificate(settings.connectorConfig.keystoreName, certificateChain, keys.private, req.alias)
+            LOG.debug("EST re-enrollment completed successfully!")
+        }
+    }
+
     @Throws(java.lang.Exception::class)
     private fun generatePKCS10(keys: KeyPair): ByteArray {
         val sigAlg = "SHA256WithRSA"
@@ -477,6 +538,72 @@ class CertApi(
             throw RuntimeException("Failed to fetch certificate: ${response.status}\n${response.bodyAsText()}")
         }
         val res = response.bodyAsText()
+        val encoded = Base64.getDecoder().decode(res.replace(WHITESPACE_REGEX, ""))
+        return PKCS7(encoded)
+    }
+
+    private suspend fun sendEstIdRenewReq(
+        req: EstIdRenewRequest,
+        csr: ByteArray,
+        clientKey: PrivateKey,
+        clientCert: X509Certificate
+    ): PKCS7 {
+        val trustStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
+        val trustManagers =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
+                KeyStore.getInstance("pkcs12").also {
+                    FileInputStream(trustStoreFile).use { fis ->
+                        it.load(fis, KEYSTORE_PWD.toCharArray())
+                        tmf.init(it)
+                    }
+                }
+            }.trustManagers
+        val keyStore = KeyStore.getInstance("pkcs12")
+        // This does not perform IO since this load creates a new keystore instance
+        @Suppress("BlockingMethodInNonBlockingContext")
+        keyStore.load(null)
+        keyStore.setKeyEntry("1", clientKey, "".toCharArray(), arrayOf(clientCert))
+        val keyManagers =
+            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).also {
+                it.init(keyStore, null)
+            }.keyManagers
+        val secureHttpClient =
+            HttpClient(Java) {
+                engine {
+                    config {
+                        sslContext(
+                            SSLContext.getInstance("TLS").apply {
+                                init(keyManagers, trustManagers, null)
+                            }
+                        )
+                        sslParameters(
+                            SSLParameters().apply {
+                                needClientAuth = true
+                            }
+                        )
+                    }
+                }
+                install(ContentNegotiation) {
+                    jackson()
+                }
+            }
+
+        val url = "${req.estUrl}/.well-known/est/simplereenroll"
+        val csrString = String(csr, StandardCharsets.UTF_8).replace(CLEAR_PEM_REGEX, "")
+        val resp =
+            secureHttpClient.post(url) {
+                setBody(csrString)
+                headers {
+                    append("Content-Type", "application/pkcs10")
+                    append("Content-Transfer-Encoding", "base64")
+                }
+            }
+
+        if (!resp.status.isSuccess()) {
+            throw RuntimeException("Failed to fetch renewed certificate: ${resp.status}\n${resp.bodyAsText()}")
+        }
+
+        val res = resp.bodyAsText()
         val encoded = Base64.getDecoder().decode(res.replace(WHITESPACE_REGEX, ""))
         return PKCS7(encoded)
     }
