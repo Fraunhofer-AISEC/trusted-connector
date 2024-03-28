@@ -1,0 +1,29 @@
+<div class="mdl-grid">
+    <div class="mdl-card card-dark mdl-cell mdl-cell--12-col">
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">Renew Identity</h2>
+        </div>
+        <div class="mdl-card__supporting-text">
+            <form (ngSubmit)="onSubmit()" class="mdl-cell--12-col mdl-grid">
+                <div>
+                    <h5>EST Re-Enrollment</h5>
+                </div>
+                <div class="mdl-cell--12-col">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="estUrl">EST Url*</label>
+                        <input class="mdl-textfield__input" name="estUrl" type="url" [(ngModel)]="estUrl" required>
+                    </div>
+                </div>
+                <div class="mdl-cell--12-col">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label has-placeholder mdl-cell--12-col form-group">
+                        <label class="mdl-textfield__label" for="rootCertHash">Root CA Certificate Hash*</label>
+                        <input class="mdl-textfield__input" name="rootCertHash" type="text" [(ngModel)]="rootCertHash" required>
+                    </div>
+                </div>
+                <div class="mdl-cell--12-col" style="margin-top:20px">
+                    <button type="submit" class="mdl-button mdl-color--accent mdl-button--raised">Renew certificate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
