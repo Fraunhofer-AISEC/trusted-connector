@@ -88,6 +88,7 @@ node {
     // This is important for a hassle-free build without pre-installed yarn!
     // To disable, pass -PnodeDownload=false to gradle!
     download.set(findProperty("nodeDownload")?.toString()?.toBoolean() ?: true)
+    version.set("20.14.0")
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {
