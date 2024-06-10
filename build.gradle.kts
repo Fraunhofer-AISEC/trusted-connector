@@ -26,7 +26,7 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "7.2.0"
+    version = "7.2.1"
 
     val versionRegex = ".*((rc|beta)-?[0-9]*|-b[0-9.]+)$".toRegex(RegexOption.IGNORE_CASE)
 
