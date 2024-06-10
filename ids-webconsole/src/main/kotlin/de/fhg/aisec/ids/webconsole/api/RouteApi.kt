@@ -78,9 +78,7 @@ class RouteApi {
         response = RouteObject::class,
         responseContainer = "List"
     )
-    fun list(): List<RouteObject> {
-        return rm.routes
-    }
+    fun list(): List<RouteObject> = rm.routes
 
     @GetMapping("/get/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Get a Camel route", response = RouteObject::class)
@@ -88,39 +86,35 @@ class RouteApi {
         @ApiParam(value = "Route ID")
         @PathVariable("id")
         id: String
-    ): RouteObject {
-        return rm.getRoute(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Route not found")
-    }
+    ): RouteObject = rm.getRoute(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Route not found")
 
     /** Stop a route based on an id.  */
     @GetMapping("/startroute/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Starts a Camel route. The route will start to process messages.")
     fun startRoute(
         @PathVariable("id") id: String
-    ): Result {
-        return try {
+    ): Result =
+        try {
             rm.startRoute(id)
             Result()
         } catch (e: Exception) {
             LOG.warn(e.message, e)
             e.message?.let { Result(false, it) } ?: Result(false)
         }
-    }
 
     /** Stop a route based on its id.  */
     @GetMapping("/stoproute/{id}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Stops a Camel route. The route will remain installed but it will not process any messages.")
     fun stopRoute(
         @PathVariable("id") id: String
-    ): Result {
-        return try {
+    ): Result =
+        try {
             rm.stopRoute(id)
             Result()
         } catch (e: Exception) {
             LOG.warn(e.message, e)
             e.message?.let { Result(false, it) } ?: Result(false)
         }
-    }
 
     /**
      * Retrieve list of supported components (aka protocols which can be addressed by Camel)
@@ -132,9 +126,7 @@ class RouteApi {
 
     /** Retrieve list of currently installed endpoints (aka URIs to/from which routes exist)  */
     @GetMapping("/list_endpoints", produces = [MediaType.APPLICATION_JSON])
-    fun listEndpoints(): Map<String, String> {
-        return rm.listEndpoints()
-    }
+    fun listEndpoints(): Map<String, String> = rm.listEndpoints()
 
     @GetMapping("/validate/{routeId}", produces = [MediaType.APPLICATION_JSON])
     fun validate(
@@ -155,9 +147,7 @@ class RouteApi {
     @GetMapping("/prolog/{routeId}", produces = [MediaType.TEXT_PLAIN])
     fun getRouteProlog(
         @PathVariable("routeId") routeId: String
-    ): String {
-        return rm.getRouteAsProlog(routeId)
-    }
+    ): String = rm.getRouteAsProlog(routeId)
 
     companion object {
         private val LOG = LoggerFactory.getLogger(RouteApi::class.java)

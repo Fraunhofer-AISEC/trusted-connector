@@ -59,8 +59,8 @@ class ConnectorConfiguration {
     private lateinit var senderAgent: String
 
     @Bean
-    fun configureIdscp2(): CommandLineRunner {
-        return CommandLineRunner {
+    fun configureIdscp2(): CommandLineRunner =
+        CommandLineRunner {
             Utils.issuerProducer =
                 LazyProducer {
                     if (connectorUrl.isNotBlank()) {
@@ -97,44 +97,40 @@ class ConnectorConfiguration {
                 UsageControlMaps.setPeerContract(connection.peerDat.identity, transferContract)
             }
         }
-    }
 
     @Bean
-    fun listBeans(ctx: ApplicationContext): CommandLineRunner {
-        return CommandLineRunner {
+    fun listBeans(ctx: ApplicationContext): CommandLineRunner =
+        CommandLineRunner {
             if (TrustedConnector.LOG.isDebugEnabled) {
                 ctx.beanDefinitionNames.sorted().forEach {
                     TrustedConnector.LOG.debug("Loaded bean: {}", it)
                 }
             }
         }
-    }
 
     @Bean
-    fun listContainers(ctx: ApplicationContext): CommandLineRunner {
-        return CommandLineRunner {
+    fun listContainers(ctx: ApplicationContext): CommandLineRunner =
+        CommandLineRunner {
             if (TrustedConnector.LOG.isDebugEnabled) {
                 cml?.list(false)?.forEach {
                     TrustedConnector.LOG.debug("Container: {}", it.names)
                 }
             }
         }
-    }
 
     @Bean
-    fun showConnectorProfile(ctx: ApplicationContext): CommandLineRunner {
-        return CommandLineRunner {
+    fun showConnectorProfile(ctx: ApplicationContext): CommandLineRunner =
+        CommandLineRunner {
             if (TrustedConnector.LOG.isDebugEnabled) {
                 im.connector?.let {
                     TrustedConnector.LOG.debug("Connector profile:\n{}", im.connectorAsJsonLd)
                 } ?: TrustedConnector.LOG.debug("No connector profile stored yet.")
             }
         }
-    }
 
     @Bean
-    fun showCamelInfo(ctx: ApplicationContext): CommandLineRunner {
-        return CommandLineRunner {
+    fun showCamelInfo(ctx: ApplicationContext): CommandLineRunner =
+        CommandLineRunner {
             val routes = rm.routes
 
             for (route in routes) {
@@ -147,5 +143,4 @@ class ConnectorConfiguration {
                 TrustedConnector.LOG.debug("Component: {}", component.bundle)
             }
         }
-    }
 }

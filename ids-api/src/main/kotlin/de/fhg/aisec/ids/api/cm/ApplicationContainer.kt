@@ -71,8 +71,8 @@ class ApplicationContainer {
     var labels: Map<String, Any> = emptyMap()
     var volumes: List<Any> = emptyList()
 
-    override fun toString(): String {
-        return (
+    override fun toString(): String =
+        (
             "ApplicationContainer [id=" +
                 id +
                 ", image=" +
@@ -97,5 +97,4 @@ class ApplicationContainer {
                 description +
                 "]"
         )
-    }
 }

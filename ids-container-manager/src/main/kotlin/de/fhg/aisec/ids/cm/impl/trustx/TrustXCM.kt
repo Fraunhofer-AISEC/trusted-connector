@@ -54,20 +54,22 @@ import kotlin.math.abs
  */
 class TrustXCM
     @JvmOverloads
-    constructor(socket: String = SOCKET) : ContainerManager {
+    constructor(
+        socket: String = SOCKET
+    ) : ContainerManager {
         private var socketThread: TrustmeUnixSocketThread = TrustmeUnixSocketThread(socket)
         private var responseHandler: TrustmeUnixSocketResponseHandler = TrustmeUnixSocketResponseHandler()
         private val formatter =
-            DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+            DateTimeFormatter
+                .ofLocalizedDateTime(FormatStyle.SHORT)
                 .withLocale(Locale.GERMANY)
                 .withZone(ZoneId.systemDefault())
 
-        private fun stateToStatusString(state: ContainerState): ContainerStatus {
-            return when (state) {
+        private fun stateToStatusString(state: ContainerState): ContainerStatus =
+            when (state) {
                 ContainerState.RUNNING, ContainerState.SETUP -> ContainerStatus.RUNNING
                 else -> ContainerStatus.EXITED
             }
-        }
 
         override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
             LOG.debug("Starting list containers")
@@ -152,9 +154,7 @@ class TrustXCM
             sendCommand(ControllerToDaemon.Command.CONTAINER_START)
         }
 
-        override fun pullImage(app: ApplicationContainer): String? {
-            return null
-        }
+        override fun pullImage(app: ApplicationContainer): String? = null
 
         override fun inspectContainer(containerID: String): String? {
             // TODO Auto-generated method stub
@@ -235,9 +235,7 @@ class TrustXCM
         }
 
         @Throws(InvalidProtocolBufferException::class)
-        private fun parseResponse(response: ByteArray?): DaemonToController {
-            return DaemonToController.parseFrom(response)
-        }
+        private fun parseResponse(response: ByteArray?): DaemonToController = DaemonToController.parseFrom(response)
 
         companion object {
             private val LOG = LoggerFactory.getLogger(TrustXCM::class.java)

@@ -32,7 +32,10 @@ import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.util.LinkedList
 
-class TrustXMock(private var socket: String, private var handler: TrustXMockHandler) : Runnable {
+class TrustXMock(
+    private var socket: String,
+    private var handler: TrustXMockHandler
+) : Runnable {
     private var channel: UnixServerSocketChannel? = null
 
     // The selector we'll be monitoring
@@ -193,9 +196,7 @@ class TrustXMock(private var socket: String, private var handler: TrustXMockHand
     }
 
     // get the channel
-    private fun getChannel(k: SelectionKey): UnixSocketChannel {
-        return k.channel() as UnixSocketChannel
-    }
+    private fun getChannel(k: SelectionKey): UnixSocketChannel = k.channel() as UnixSocketChannel
 
     companion object {
         private val LOG = LoggerFactory.getLogger(TrustXMock::class.java)

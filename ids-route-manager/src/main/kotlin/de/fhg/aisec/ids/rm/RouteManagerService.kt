@@ -189,8 +189,8 @@ class RouteManagerService : RouteManager {
     private fun routeDefinitionToObject(
         cCtx: CamelContext,
         rd: RouteDefinition
-    ): RouteObject {
-        return RouteObject(
+    ): RouteObject =
+        RouteObject(
             rd.id,
             rd.descriptionText,
             routeToDot(rd),
@@ -199,7 +199,6 @@ class RouteManagerService : RouteManager {
             cCtx.uptimeMillis,
             cCtx.routeController.getRouteStatus(rd.id).toString()
         )
-    }
 
     /**
      * Creates a visualization of a Camel route in DOT (graphviz) format.
@@ -245,8 +244,7 @@ class RouteManagerService : RouteManager {
                 .parallelStream()
                 .filter { cCtx: CamelContext ->
                     cCtx.adapt(ModelCamelContext::class.java).getRouteDefinition(routeId) != null
-                }
-                .findAny()
+                }.findAny()
         if (c.isPresent) {
             try {
                 val rd = c.get().adapt(ModelCamelContext::class.java).getRouteDefinition(routeId)

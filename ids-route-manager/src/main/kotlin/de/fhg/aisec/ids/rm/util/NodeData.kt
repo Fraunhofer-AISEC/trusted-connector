@@ -37,7 +37,11 @@ import org.apache.camel.util.ObjectHelper
 import java.util.Locale
 
 /** Represents a node in Graphviz representation of a route. */
-class NodeData(var id: String, node: Any?, imagePrefix: String) {
+class NodeData(
+    var id: String,
+    node: Any?,
+    imagePrefix: String
+) {
     var image: String? = null
     var label: String? = null
     var shape: String? = null
@@ -48,15 +52,14 @@ class NodeData(var id: String, node: Any?, imagePrefix: String) {
     var url: String? = null
     var outputs: List<ProcessorDefinition<*>>? = null
 
-    private fun removeQueryString(text: String?): String? {
-        return text?.indexOf('?')?.let { idx ->
+    private fun removeQueryString(text: String?): String? =
+        text?.indexOf('?')?.let { idx ->
             if (idx <= 0) {
                 text
             } else {
                 text.substring(0, idx)
             }
         }
-    }
 
     companion object {
         /** Inserts a space before each upper case letter after a lowercase */

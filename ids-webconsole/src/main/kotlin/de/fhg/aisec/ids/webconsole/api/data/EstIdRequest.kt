@@ -19,4 +19,9 @@
  */
 package de.fhg.aisec.ids.webconsole.api.data
 
-data class EstIdRequest(val estUrl: String, val rootCertHash: String, val iet: String, val alias: String)
+data class EstIdRequest(
+    val estUrl: String,
+    val rootCertHash: String,
+    val iet: String,
+    val alias: String
+)

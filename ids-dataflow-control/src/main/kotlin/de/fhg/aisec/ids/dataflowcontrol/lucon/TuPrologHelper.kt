@@ -58,13 +58,12 @@ object TuPrologHelper {
         )
     }
 
-    fun unquote(s: String): String {
-        return if (s.length > 2 && s[0] == '\'' && s[s.length - 1] == '\'') {
+    fun unquote(s: String): String =
+        if (s.length > 2 && s[0] == '\'' && s[s.length - 1] == '\'') {
             s.substring(1, s.length - 1)
         } else if (s.length == 2 && "''" == s) {
             ""
         } else {
             s
         }
-    }
 }

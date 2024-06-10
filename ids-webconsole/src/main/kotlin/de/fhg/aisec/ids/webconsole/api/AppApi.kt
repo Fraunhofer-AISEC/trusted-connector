@@ -83,8 +83,8 @@ class AppApi {
         responseContainer = "List"
     )
     @ApiResponses(ApiResponse(code = 200, message = "List of apps"))
-    fun list(): List<ApplicationContainer> {
-        return cml.list(false).sortedWith { app1, app2 ->
+    fun list(): List<ApplicationContainer> =
+        cml.list(false).sortedWith { app1, app2 ->
             try {
                 val date1 = ZonedDateTime.parse(app1.created)
                 val date2 = ZonedDateTime.parse(app2.created)
@@ -99,7 +99,6 @@ class AppApi {
                 0
             }
         }
-    }
 
     @GetMapping("start/{containerId}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
@@ -122,9 +121,7 @@ class AppApi {
         @ApiParam(value = "ID of the app to start")
         @PathVariable("containerId")
         containerId: String
-    ): Boolean {
-        return start(containerId, null)
-    }
+    ): Boolean = start(containerId, null)
 
     @GetMapping("start/{containerId}/{key}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
@@ -149,15 +146,14 @@ class AppApi {
         @ApiParam(value = "Key for user token (required for trustX containers)")
         @PathVariable("key")
         key: String?
-    ): Boolean {
-        return try {
+    ): Boolean =
+        try {
             cml.startContainer(containerId, key)
             true
         } catch (e: NoContainerExistsException) {
             LOG.error("Error starting container", e)
             false
         }
-    }
 
     @GetMapping("stop/{containerId}", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
@@ -179,15 +175,14 @@ class AppApi {
         @ApiParam(value = "ID of the app to stop")
         @PathVariable("containerId")
         containerId: String
-    ): Boolean {
-        return try {
+    ): Boolean =
+        try {
             cml.stopContainer(containerId)
             true
         } catch (e: NoContainerExistsException) {
             LOG.error(e.message, e)
             false
         }
-    }
 
     @PostMapping("install", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Install an app", notes = "Requests to install an app.", response = Boolean::class)
@@ -252,15 +247,14 @@ class AppApi {
         value = "Returns the version of the currently active container management layer",
         response = MutableMap::class
     )
-    fun getCml(): Map<String, String> {
-        return try {
+    fun getCml(): Map<String, String> =
+        try {
             val result: MutableMap<String, String> = HashMap()
             result["cml_version"] = cml.version
             result
         } catch (sue: Exception) {
             emptyMap()
         }
-    }
 
     @PostMapping(
         "search",
@@ -269,8 +263,8 @@ class AppApi {
     )
     suspend fun search(
         @RequestBody term: String?
-    ): List<ApplicationContainer> {
-        return httpClient.get(settings.connectorConfig.appstoreUrl).body<List<ApplicationContainer>>().let { res ->
+    ): List<ApplicationContainer> =
+        httpClient.get(settings.connectorConfig.appstoreUrl).body<List<ApplicationContainer>>().let { res ->
             if (term?.isNotBlank() == true) {
                 res.filter { app: ApplicationContainer ->
                     app.name?.contains(term, true) ?: false ||
@@ -283,7 +277,6 @@ class AppApi {
                 res
             }
         }
-    }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(AppApi::class.java)
