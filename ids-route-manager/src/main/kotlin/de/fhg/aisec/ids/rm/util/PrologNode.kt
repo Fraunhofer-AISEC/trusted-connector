@@ -36,7 +36,9 @@ import org.apache.camel.model.WhenDefinition
 import org.apache.camel.util.ObjectHelper
 
 /** Represents a node in the EIP diagram tree */
-class PrologNode(node: Any) {
+class PrologNode(
+    node: Any
+) {
     // 	public String id;
     private var nodeType: String? = null
     private var value: String? = null

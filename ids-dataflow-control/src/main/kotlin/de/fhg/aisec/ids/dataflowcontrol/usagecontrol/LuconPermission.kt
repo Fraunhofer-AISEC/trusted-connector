@@ -25,7 +25,9 @@ import de.fraunhofer.iais.eis.Constraint
 import de.fraunhofer.iais.eis.LeftOperand
 import de.fraunhofer.iais.eis.Permission
 
-class LuconPermission(permission: Permission) {
+class LuconPermission(
+    permission: Permission
+) {
     val constraints: List<LuconConstraint>
 
     init {

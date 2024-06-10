@@ -31,11 +31,7 @@ class GraphData {
         links.add(edge)
     }
 
-    fun getNodes(): Set<Node> {
-        return nodes
-    }
+    fun getNodes(): Set<Node> = nodes
 
-    fun getLinks(): Set<Edge> {
-        return links
-    }
+    fun getLinks(): Set<Edge> = links
 }

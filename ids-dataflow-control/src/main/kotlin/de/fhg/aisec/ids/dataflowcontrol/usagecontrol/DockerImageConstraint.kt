@@ -24,7 +24,9 @@ import de.fhg.aisec.ids.dataflowcontrol.CamelInterceptor
 import java.net.InetAddress
 import java.net.URI
 
-class DockerImageConstraint(dockerUri: URI) : LuconConstraint {
+class DockerImageConstraint(
+    dockerUri: URI
+) : LuconConstraint {
     private val hash: String
     private val port: Int
 

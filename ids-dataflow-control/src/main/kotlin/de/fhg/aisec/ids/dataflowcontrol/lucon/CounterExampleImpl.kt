@@ -24,7 +24,9 @@ import alice.tuprolog.Term
 import de.fhg.aisec.ids.api.router.CounterExample
 import java.util.LinkedList
 
-class CounterExampleImpl(term: Term) : CounterExample() {
+class CounterExampleImpl(
+    term: Term
+) : CounterExample() {
     init {
         val traceIterator = (term as Struct).listIterator()
         val steps = LinkedList<String>()
@@ -42,7 +44,8 @@ class CounterExampleImpl(term: Term) : CounterExample() {
         //            appendCSList(sb, explanation)
         //            sb.append("]")
         //        }
-        sb.append(", which is forbidden by rule \"")
+        sb
+            .append(", which is forbidden by rule \"")
             .append(reasonIterator.next().toString())
             .append("\".")
         this.explanation = sb.toString()

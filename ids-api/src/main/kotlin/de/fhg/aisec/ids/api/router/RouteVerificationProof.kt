@@ -36,7 +36,9 @@ import java.util.ArrayList
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-class RouteVerificationProof(routeId: String?) {
+class RouteVerificationProof(
+    routeId: String?
+) {
     val routeId: String
     var proofTimeNanos: Long = 0
     var isValid = true
@@ -45,7 +47,12 @@ class RouteVerificationProof(routeId: String?) {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append("Proof for ").append(query).append(" is ").append(if (isValid) "VALID" else "INVALID").append("\n")
+        sb
+            .append("Proof for ")
+            .append(query)
+            .append(" is ")
+            .append(if (isValid) "VALID" else "INVALID")
+            .append("\n")
             .append("Example flows violating policy:\n")
         for (ce in counterExamples) {
             sb.append("|-- ").append(ce.toString()).append("\n\n")

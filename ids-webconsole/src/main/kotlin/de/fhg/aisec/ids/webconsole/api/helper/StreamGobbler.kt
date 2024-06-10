@@ -29,7 +29,10 @@ import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 
-internal class StreamGobbler(var `is`: InputStream, var out: OutputStream?) : Thread() {
+internal class StreamGobbler(
+    var `is`: InputStream,
+    var out: OutputStream?
+) : Thread() {
     override fun run() {
         try {
             InputStreamReader(`is`, StandardCharsets.UTF_8).use { isr ->

@@ -32,7 +32,5 @@ class IDSCPOutgoingConnection {
     var attestationResult: RatResult? = null
     var metaData: String? = null
 
-    override fun toString(): String {
-        return "IDSCPOutgoingConnection [endpoint_identifier=$endpointIdentifier]"
-    }
+    override fun toString(): String = "IDSCPOutgoingConnection [endpoint_identifier=$endpointIdentifier]"
 }

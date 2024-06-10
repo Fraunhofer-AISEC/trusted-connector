@@ -257,10 +257,9 @@ class XmlDeployWatcher : ApplicationContextAware {
         private const val FS_WATCHER_POLL_INTERVAL = 1000L
 
         @Throws(BeansException::class)
-        fun <T> getBeansOfType(type: Class<T>?): List<T> {
-            return xmlContexts.values
+        fun <T> getBeansOfType(type: Class<T>?): List<T> =
+            xmlContexts.values
                 .filter { it.isDone }
                 .flatMap { it.get().getBeansOfType(type).values }
-        }
     }
 }

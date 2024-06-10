@@ -25,10 +25,9 @@ abstract class CounterExample {
     var steps: List<String>? = null
         protected set
 
-    override fun toString(): String {
-        return """
-            Explanation: $explanation
-            ${java.lang.String.join("\n|-- ", steps)}
-            """.trimIndent()
-    }
+    override fun toString(): String =
+        """
+        Explanation: $explanation
+        ${java.lang.String.join("\n|-- ", steps)}
+        """.trimIndent()
 }

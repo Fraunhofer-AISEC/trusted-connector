@@ -33,7 +33,9 @@ import java.util.Collections
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 
-class TrustmeUnixSocketThread(private val socket: String) : Runnable {
+class TrustmeUnixSocketThread(
+    private val socket: String
+) : Runnable {
     // The selector we'll be monitoring
     private val selector: Selector
     private val lengthBuffer = ByteBuffer.allocate(4)
@@ -315,14 +317,10 @@ class TrustmeUnixSocketThread(private val socket: String) : Runnable {
 
     // initialize the selector
     @Throws(IOException::class)
-    private fun initSelector(): Selector {
-        return NativeSelectorProvider.getInstance().openSelector()
-    }
+    private fun initSelector(): Selector = NativeSelectorProvider.getInstance().openSelector()
 
     // get the channel
-    private fun getChannel(k: SelectionKey): UnixSocketChannel {
-        return k.channel() as UnixSocketChannel
-    }
+    private fun getChannel(k: SelectionKey): UnixSocketChannel = k.channel() as UnixSocketChannel
 
     companion object {
         private val LOG = LoggerFactory.getLogger(TrustmeUnixSocketThread::class.java)

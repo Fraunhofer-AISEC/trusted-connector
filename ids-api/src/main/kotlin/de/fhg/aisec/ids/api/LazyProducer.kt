@@ -19,7 +19,9 @@
  */
 package de.fhg.aisec.ids.api
 
-class LazyProducer<T>(generator: () -> T) : () -> T {
+class LazyProducer<T>(
+    generator: () -> T
+) : () -> T {
     private val value: T by lazy(generator)
 
     override operator fun invoke() = value

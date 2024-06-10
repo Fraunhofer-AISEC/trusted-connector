@@ -23,7 +23,9 @@ import de.fraunhofer.iais.eis.BinaryOperator
 import de.fraunhofer.iais.eis.Constraint
 import javax.xml.datatype.DatatypeFactory
 
-class UsageTimeConstraint(private val constraint: Constraint) : LuconConstraint {
+class UsageTimeConstraint(
+    private val constraint: Constraint
+) : LuconConstraint {
     private var notAfterDateTime: String? = null
     private var notBeforeDateTime: String? = null
 
@@ -50,7 +52,9 @@ class UsageTimeConstraint(private val constraint: Constraint) : LuconConstraint 
         }
         val currentTimestamp = System.currentTimeMillis()
         val policyTimestamp =
-            DATATYPE_FACTORY.newXMLGregorianCalendar(rightOperand.value).toGregorianCalendar()
+            DATATYPE_FACTORY
+                .newXMLGregorianCalendar(rightOperand.value)
+                .toGregorianCalendar()
                 .timeInMillis
         if (constraint.operator == BinaryOperator.BEFORE) {
             if (currentTimestamp < policyTimestamp) {

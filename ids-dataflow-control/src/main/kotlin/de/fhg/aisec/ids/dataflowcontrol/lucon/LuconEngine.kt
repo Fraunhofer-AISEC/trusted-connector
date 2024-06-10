@@ -42,7 +42,9 @@ import java.util.regex.Pattern
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-class LuconEngine(out: OutputStream?) {
+class LuconEngine(
+    out: OutputStream?
+) {
     private val p: Prolog = Prolog()
 
     val theory: String

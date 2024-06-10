@@ -32,15 +32,14 @@ class IDSCPIncomingConnection {
     var metaData: String? = null
     private var dynamicAttributeToken: String? = null
 
-    override fun toString(): String {
-        return (
+    override fun toString(): String =
+        (
             "IDSCPConnection [endpoint_identifier=" +
                 endpointIdentifier +
                 ", attestationResult=" +
                 attestationResult +
                 "]"
         )
-    }
 
     fun setDynamicAttributeToken(dynamicAttributeToken: String?) {
         this.dynamicAttributeToken = dynamicAttributeToken

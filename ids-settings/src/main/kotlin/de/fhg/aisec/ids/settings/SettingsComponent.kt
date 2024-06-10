@@ -142,7 +142,9 @@ class SettingsComponent : Settings {
         }
     }
 
-    internal class NullableSetting<T>(private val key: String) : ReadWriteProperty<Settings, T?> {
+    internal class NullableSetting<T>(
+        private val key: String
+    ) : ReadWriteProperty<Settings, T?> {
         override operator fun getValue(
             thisRef: Settings,
             property: KProperty<*>
@@ -203,9 +205,7 @@ class SettingsComponent : Settings {
         mapDB.commit()
     }
 
-    override fun getUsers(): Map<String, String> {
-        return userStore.toMap()
-    }
+    override fun getUsers(): Map<String, String> = userStore.toMap()
 
     override fun removeUser(username: String) {
         userStore.remove(username)

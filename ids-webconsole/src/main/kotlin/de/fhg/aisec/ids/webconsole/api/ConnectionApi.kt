@@ -69,7 +69,5 @@ class ConnectionApi {
         responseContainer = "List"
     )
     @GetMapping("/endpoints", produces = [MediaType.APPLICATION_JSON])
-    fun availableEndpoints(): List<ServerEndpoint> {
-        return connectionManager.listAvailableEndpoints()
-    }
+    fun availableEndpoints(): List<ServerEndpoint> = connectionManager.listAvailableEndpoints()
 }

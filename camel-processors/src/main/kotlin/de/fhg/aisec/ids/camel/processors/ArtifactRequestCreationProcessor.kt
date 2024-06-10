@@ -36,15 +36,17 @@ class ArtifactRequestCreationProcessor : Processor {
             LOG.debug("[IN] ${this::class.java.simpleName}")
         }
         ArtifactRequestMessageBuilder().run {
-            exchange.getProperty(ARTIFACT_URI_PROPERTY)?.let {
-                if (it is URI) {
-                    it
-                } else {
-                    URI.create(it.toString())
+            exchange
+                .getProperty(ARTIFACT_URI_PROPERTY)
+                ?.let {
+                    if (it is URI) {
+                        it
+                    } else {
+                        URI.create(it.toString())
+                    }
+                }?.let {
+                    _requestedArtifact_(it)
                 }
-            }?.let {
-                _requestedArtifact_(it)
-            }
             let {
                 if (LOG.isDebugEnabled) {
                     LOG.debug("Serialisation header: {}", SERIALIZER.serialize(it.build()))

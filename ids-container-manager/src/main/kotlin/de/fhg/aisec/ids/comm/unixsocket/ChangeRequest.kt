@@ -21,7 +21,11 @@ package de.fhg.aisec.ids.comm.unixsocket
 
 import jnr.unixsocket.UnixSocketChannel
 
-class ChangeRequest(var channel: UnixSocketChannel, var type: Int, var ops: Int) {
+class ChangeRequest(
+    var channel: UnixSocketChannel,
+    var type: Int,
+    var ops: Int
+) {
     companion object {
         const val REGISTER = 1
         const val CHANGEOPS = 2

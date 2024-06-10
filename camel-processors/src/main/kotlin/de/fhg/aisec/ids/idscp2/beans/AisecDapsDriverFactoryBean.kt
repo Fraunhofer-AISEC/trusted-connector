@@ -46,9 +46,11 @@ class AisecDapsDriverFactoryBean : FactoryBean<AisecDapsDriver> {
     var transportCertificatesParameters: SSLContextParameters by BeanSetter {
         val ks =
             loadKeyStore(
-                it.keyManagers.keyStore.resource.let(Paths::get)
+                it.keyManagers.keyStore.resource
+                    .let(Paths::get)
                     ?: throw RuntimeException("Error loading transport certificates: No KeyStore file provided!"),
-                it.keyManagers.keyStore.password?.toCharArray()
+                it.keyManagers.keyStore.password
+                    ?.toCharArray()
                     ?: throw RuntimeException("Error loading transport certificates: No KeyStore password provided!")
             )
         builder.loadTransportCertsFromKeystore(ks)

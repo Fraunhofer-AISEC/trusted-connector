@@ -56,7 +56,9 @@ import java.util.concurrent.TimeUnit
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
 @Component("idsDataflowControl")
-class PolicyDecisionPoint : PDP, PAP {
+class PolicyDecisionPoint :
+    PDP,
+    PAP {
     // Convenience val for this thread's LuconEngine instance
     private val engine: LuconEngine
         get() = threadEngine.get()
@@ -65,7 +67,8 @@ class PolicyDecisionPoint : PDP, PAP {
     private var routeManager: RouteManager? = null
 
     private val transformationCache =
-        CacheBuilder.newBuilder()
+        CacheBuilder
+            .newBuilder()
             .maximumSize(10000)
             .expireAfterAccess(1, TimeUnit.DAYS)
             .build<ServiceNode, TransformationDecision>()
@@ -134,7 +137,8 @@ class PolicyDecisionPoint : PDP, PAP {
         //            }
         //            sb.append('(').append(capProp.joinToString(", ")).append("),\n")
         //        }
-        sb.append("once(setof(S, action_service(")
+        sb
+            .append("once(setof(S, action_service(")
             .append(plEndpoint)
             .append(", S), SC); SC = []),\n")
             .append("collect_creates_labels(SC, ACraw), set_of(ACraw, Adds),\n")
@@ -152,7 +156,8 @@ class PolicyDecisionPoint : PDP, PAP {
             return
         }
         var loaded = false
-        Files.walk(deployPath)
+        Files
+            .walk(deployPath)
             .filter { Files.isRegularFile(it) && it.toString().endsWith(LUCON_FILE_EXTENSION) }
             .forEach {
                 if (!loaded) {
@@ -366,15 +371,14 @@ class PolicyDecisionPoint : PDP, PAP {
         LuconEngine.setDefaultPolicy(theory)
     }
 
-    override fun listRules(): List<String> {
-        return try {
+    override fun listRules(): List<String> =
+        try {
             val rules = this.engine.query("rule(X).", true)
             rules.map { it.getVarValue("X").toString() }.toList()
         } catch (e: PrologException) {
             LOG.error("Prolog error while retrieving rules " + e.message, e)
             emptyList()
         }
-    }
 
     override val policy: String
         get() = this.engine.theory

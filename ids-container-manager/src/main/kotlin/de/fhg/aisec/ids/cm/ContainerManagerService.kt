@@ -60,9 +60,7 @@ class ContainerManagerService : ContainerManager {
             }
         }
 
-    override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
-        return containerManager.list(onlyRunning)
-    }
+    override fun list(onlyRunning: Boolean): List<ApplicationContainer> = containerManager.list(onlyRunning)
 
     override fun wipe(containerID: String) {
         try {

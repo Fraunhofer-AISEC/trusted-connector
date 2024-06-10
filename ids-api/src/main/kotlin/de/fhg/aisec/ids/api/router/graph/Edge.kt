@@ -19,4 +19,7 @@
  */
 package de.fhg.aisec.ids.api.router.graph
 
-data class Edge(val source: String, val target: String)
+data class Edge(
+    val source: String,
+    val target: String
+)

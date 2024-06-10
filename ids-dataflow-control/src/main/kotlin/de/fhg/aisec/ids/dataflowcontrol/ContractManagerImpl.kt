@@ -68,8 +68,7 @@ class ContractManagerImpl : ContractManager {
                             ContractUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime.toString()).toString(),
                             ContractUtils.TYPE_DATETIMESTAMP
                         )
-                    )
-                    .build()
+                    ).build()
         }
         // Add not before (AFTER) usage constraint
         notBeforeDateTime?.let { dateTime ->
@@ -82,8 +81,7 @@ class ContractManagerImpl : ContractManager {
                             ContractUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime).toString(),
                             ContractUtils.TYPE_DATETIMESTAMP
                         )
-                    )
-                    .build()
+                    ).build()
         }
         return ContractOfferBuilder()
             ._contractDate_(contractDate)
@@ -99,8 +97,7 @@ class ContractManagerImpl : ContractManager {
                             ._action_(listOf(Action.USE))
                             ._constraint_(
                                 timeConstraints
-                            )
-                            .build()
+                            ).build()
                     )
                 } else {
                     // If Docker images have been specified, combine each with the specified time constraints
@@ -116,12 +113,10 @@ class ContractManagerImpl : ContractManager {
                                         ._rightOperandReference_(it)
                                         .build()
                                 ) + timeConstraints
-                            )
-                            .build()
+                            ).build()
                     }
                 }
-            )
-            .build()
+            ).build()
     }
 
     override fun storeContract(

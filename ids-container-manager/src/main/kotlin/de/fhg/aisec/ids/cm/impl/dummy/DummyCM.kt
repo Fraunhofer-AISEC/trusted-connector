@@ -31,9 +31,7 @@ import de.fhg.aisec.ids.api.cm.Protocol
  * @author Julian Schütte (julian.schuette@aisec.fraunhofer.de)
  */
 class DummyCM : ContainerManager {
-    override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
-        return ArrayList()
-    }
+    override fun list(onlyRunning: Boolean): List<ApplicationContainer> = ArrayList()
 
     override fun wipe(containerID: String) {}
 
@@ -46,13 +44,9 @@ class DummyCM : ContainerManager {
 
     override fun restartContainer(containerID: String) {}
 
-    override fun pullImage(app: ApplicationContainer): String? {
-        return null
-    }
+    override fun pullImage(app: ApplicationContainer): String? = null
 
-    override fun getMetadata(containerID: String): Map<String, String> {
-        return HashMap()
-    }
+    override fun getMetadata(containerID: String): Map<String, String> = HashMap()
 
     override fun setIpRule(
         containerID: String,
@@ -65,9 +59,7 @@ class DummyCM : ContainerManager {
     ) {
     }
 
-    override fun inspectContainer(containerID: String): String {
-        return ""
-    }
+    override fun inspectContainer(containerID: String): String = ""
 
     override val version: String
         get() = "no cmld installed"

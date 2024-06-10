@@ -71,8 +71,7 @@ class ContractRequestCreationProcessor : Processor {
                             ._action_(listOf(Action.USE))
                             .build()
                     )
-                )
-                .build()
+                ).build()
         SERIALIZER.serialize(contractRequest).let {
             if (LOG.isDebugEnabled) LOG.debug("Serialization body: {}", it)
             exchange.message.body = it

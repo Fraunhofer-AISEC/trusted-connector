@@ -24,7 +24,10 @@ package de.fhg.aisec.ids.api.conm
  *
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  */
-class RatResult(val status: Status, reason: String?) {
+class RatResult(
+    val status: Status,
+    reason: String?
+) {
     enum class Status {
         FAILED,
         SUCCESS

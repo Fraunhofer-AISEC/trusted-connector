@@ -19,4 +19,8 @@
  */
 package de.fhg.aisec.ids.webconsole.api.data
 
-data class PasswordChangeRequest(val username: String, val oldPassword: String, val newPassword: String)
+data class PasswordChangeRequest(
+    val username: String,
+    val oldPassword: String,
+    val newPassword: String
+)
