@@ -3455,9 +3455,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^48.2.8":
-  version: 48.2.8
-  resolution: "eslint-plugin-jsdoc@npm:48.2.8"
+"eslint-plugin-jsdoc@npm:^48.2.9":
+  version: 48.2.9
+  resolution: "eslint-plugin-jsdoc@npm:48.2.9"
   dependencies:
     "@es-joy/jsdoccomment": "npm:~0.43.1"
     are-docs-informative: "npm:^0.0.2"
@@ -3469,7 +3469,7 @@ __metadata:
     spdx-expression-parse: "npm:^4.0.0"
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
-  checksum: 10c0/bf9d060aee4ba28148aff104dcc7d0fc7002a8e4f9dafb27d9ac5f928868687606219c2bfcc5216aa37003cf0353ae8e8ac4fd47dd28a22da22fd1967117e56a
+  checksum: 10c0/93f2f9cc8baa8b525d900cf033ca9a7acbcbf18625d8cc0a48362b1755136ba9832868f6cc3c845888e98d105310ef4dfd6fba6bdfee6b5731c56e8d5e28d511
   languageName: node
   linkType: hard
 
@@ -6734,7 +6734,7 @@ __metadata:
     deep-equal: "npm:^2.2.3"
     eslint: "npm:^8"
     eslint-plugin-import: "npm:^2.29.1"
-    eslint-plugin-jsdoc: "npm:^48.2.8"
+    eslint-plugin-jsdoc: "npm:^48.2.9"
     eslint-plugin-prefer-arrow: "npm:^1.2.3"
     jquery: "npm:^3.7.1"
     material-design-lite: "npm:^1.3.0"
@@ -6744,7 +6744,7 @@ __metadata:
     tslib: "npm:^2.6.3"
     typescript: "npm:^5.4.5"
     viz.js: "npm:^2.1.2"
-    zone.js: "npm:~0.14.6"
+    zone.js: "npm:~0.14.7"
   languageName: unknown
   linkType: soft
 
@@ -7237,9 +7237,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zone.js@npm:~0.14.6":
-  version: 0.14.6
-  resolution: "zone.js@npm:0.14.6"
-  checksum: 10c0/dc138197428b7d5c5bc6119dc94748f700426a340c41fc6ebf5fe3fa7ff302fa970350c44719f644020a82caabf9fc761003af285c7707192c77bcc312bfd264
+"zone.js@npm:~0.14.7":
+  version: 0.14.7
+  resolution: "zone.js@npm:0.14.7"
+  checksum: 10c0/5a5fccb78ea4653ccf3ad5c11448ffa4e005b50a0fd43da713fcc19584746000ea889ca45163d2e6e18e3a4ed7be42cdbc0dbb4dcb28449f02d23408696668cc
   languageName: node
   linkType: hard

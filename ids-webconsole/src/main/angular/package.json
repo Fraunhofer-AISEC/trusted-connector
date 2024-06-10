@@ -25,7 +25,7 @@
     "svg-pan-zoom": "^3.6.1",
     "tslib": "^2.6.3",
     "viz.js": "^2.1.2",
-    "zone.js": "~0.14.6"
+    "zone.js": "~0.14.7"
   },
   "devDependencies": {
     "@angular-devkit/core": "^18.0.3",
@@ -46,7 +46,7 @@
     "@typescript-eslint/utils": "^7.12.0",
     "eslint": "^8",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsdoc": "^48.2.8",
+    "eslint-plugin-jsdoc": "^48.2.9",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "typescript": "^5.4.5"
   },
