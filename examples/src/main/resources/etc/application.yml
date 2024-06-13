@@ -4,6 +4,10 @@ logging:
     de.fhg.aisec.ids.idscp2: trace
     de.fhg.aisec.ids.camel: trace
 
+server:
+  error:
+    include-message: always
+
 ids-multipart:
   daps-bean-name: rootDaps
 

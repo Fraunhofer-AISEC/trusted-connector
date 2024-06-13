@@ -415,6 +415,7 @@ class CertApi(
     @ApiOperation("Renew a certificate from an EST")
     @ApiResponses(
         ApiResponse(code = 200, message = "Successfully renewed the certificate"),
+        ApiResponse(code = 400, message = "Error response from the EST"),
         ApiResponse(code = 500, message = "Error renewing certificate")
     )
     suspend fun renewEstIdentities(
@@ -600,7 +601,10 @@ class CertApi(
             }
 
         if (!resp.status.isSuccess()) {
-            throw RuntimeException("Failed to fetch renewed certificate: ${resp.status}\n${resp.bodyAsText()}")
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Failed to fetch renewed certificate from EST: ${resp.bodyAsText()}"
+            )
         }
 
         val res = resp.bodyAsText()
