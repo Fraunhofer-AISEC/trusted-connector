@@ -120,10 +120,12 @@ class ConnectorConfiguration {
         if (cmcHostAndPort.size > 1) {
             cmcPort = cmcHostAndPort[1].toInt()
         }
-        val proverConfig: CmcProverConfig = CmcProverConfig.Builder()
-            .setCmcHost(cmcHostAndPort[0])
-            .setCmcPort(cmcPort)
-            .build()
+        val proverConfig: CmcProverConfig =
+            CmcProverConfig
+                .Builder()
+                .setCmcHost(cmcHostAndPort[0])
+                .setCmcPort(cmcPort)
+                .build()
         RaProverDriverRegistry.registerDriver(
             CmcProver.ID,
             { fsmListener -> CmcProver(fsmListener) },
@@ -131,10 +133,12 @@ class ConnectorConfiguration {
         )
 
         // RAT verifier configuration
-        val verifierConfig: CmcVerifierConfig = CmcVerifierConfig.Builder()
-            .setCmcHost(cmcHostAndPort[0])
-            .setCmcPort(cmcPort)
-            .build()
+        val verifierConfig: CmcVerifierConfig =
+            CmcVerifierConfig
+                .Builder()
+                .setCmcHost(cmcHostAndPort[0])
+                .setCmcPort(cmcPort)
+                .build()
         RaVerifierDriverRegistry.registerDriver(
             CmcVerifier.ID,
             { fsmListener -> CmcVerifier(fsmListener) },
