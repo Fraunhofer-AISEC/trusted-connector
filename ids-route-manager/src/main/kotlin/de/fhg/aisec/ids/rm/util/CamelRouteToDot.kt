@@ -240,9 +240,7 @@ class CamelRouteToDot {
         return answer
     }
 
-    private fun isMulticastNode(node: ProcessorDefinition<*>?): Boolean {
-        return node is MulticastDefinition || node is ChoiceDefinition
-    }
+    private fun isMulticastNode(node: ProcessorDefinition<*>?): Boolean = node is MulticastDefinition || node is ChoiceDefinition
 
     /** Is the given node a pipeline */
     private fun isPipeline(node: ProcessorDefinition<*>): Boolean {

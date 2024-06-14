@@ -58,26 +58,28 @@ class ConnectionManagerService : ConnectionManager {
             }
         }
 
-    override fun listAvailableEndpoints(): List<ServerEndpoint> {
-        return camelContexts.flatMapTo(mutableSetOf()) { cCtx ->
-            cCtx.endpointRegistry.values.mapNotNull { ep ->
-                if (ep is Idscp2ServerEndpoint) {
-                    val baseUri = ep.endpointBaseUri
-                    val matchGroups =
-                        listOf(Regex("(.*?)://(.*?):([0-9]+).*"), Regex("(.*?)://(.*?).*"))
-                            .asSequence().mapNotNull { it.matchEntire(baseUri)?.groupValues }.firstOrNull()
-                    ServerEndpoint(
-                        baseUri,
-                        matchGroups?.get(1) ?: "?",
-                        matchGroups?.get(2) ?: "?",
-                        matchGroups?.get(3) ?: "?"
-                    )
-                } else {
-                    null
+    override fun listAvailableEndpoints(): List<ServerEndpoint> =
+        camelContexts
+            .flatMapTo(mutableSetOf()) { cCtx ->
+                cCtx.endpointRegistry.values.mapNotNull { ep ->
+                    if (ep is Idscp2ServerEndpoint) {
+                        val baseUri = ep.endpointBaseUri
+                        val matchGroups =
+                            listOf(Regex("(.*?)://(.*?):([0-9]+).*"), Regex("(.*?)://(.*?).*"))
+                                .asSequence()
+                                .mapNotNull { it.matchEntire(baseUri)?.groupValues }
+                                .firstOrNull()
+                        ServerEndpoint(
+                            baseUri,
+                            matchGroups?.get(1) ?: "?",
+                            matchGroups?.get(2) ?: "?",
+                            matchGroups?.get(3) ?: "?"
+                        )
+                    } else {
+                        null
+                    }
                 }
-            }
-        }.toList()
-    }
+            }.toList()
 
     // TODO: Register Listener, get connection information and return results in listOutgoing/IncomingConnections()
 
@@ -185,11 +187,7 @@ class ConnectionManagerService : ConnectionManager {
         ListenerManager.removeConnectionListener(connectionListener)
     }
 
-    override fun listIncomingConnections(): List<IDSCPIncomingConnection> {
-        return incomingConnections
-    }
+    override fun listIncomingConnections(): List<IDSCPIncomingConnection> = incomingConnections
 
-    override fun listOutgoingConnections(): List<IDSCPOutgoingConnection> {
-        return outgoingConnections
-    }
+    override fun listOutgoingConnections(): List<IDSCPOutgoingConnection> = outgoingConnections
 }

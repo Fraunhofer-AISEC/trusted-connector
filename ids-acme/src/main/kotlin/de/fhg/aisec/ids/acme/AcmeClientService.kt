@@ -60,7 +60,10 @@ import java.util.Date
     // Every day at 3:00 (3 am)
     // property = [Scheduler.PROPERTY_SCHEDULER_EXPRESSION + "=0 0 3 * * ?"]
 )
-class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegistry {
+class AcmeClientService :
+    AcmeClient,
+    Runnable,
+    SslContextFactoryReloadableRegistry {
     @Autowired
     private lateinit var settings: Settings
 
@@ -82,9 +85,7 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
         }
     }
 
-    override fun getChallengeAuthorization(challenge: String): String? {
-        return challengeMap[challenge]
-    }
+    override fun getChallengeAuthorization(challenge: String): String? = challengeMap[challenge]
 
     private fun ensureKeys(targetDirectory: Path) {
         listOf("acme.key", "domain.key").forEach { keyFile ->
@@ -109,7 +110,8 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
 
     private fun getACMEKeyPair(targetDirectory: Path): KeyPair {
         try {
-            Files.newBufferedReader(targetDirectory.resolve("acme.key"), StandardCharsets.UTF_8)
+            Files
+                .newBufferedReader(targetDirectory.resolve("acme.key"), StandardCharsets.UTF_8)
                 .use { fileReader ->
                     return KeyPairUtils.readKeyPair(fileReader)
                 }
@@ -190,8 +192,7 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
                     .parallelStream()
                     .map<Http01Challenge> { authorization ->
                         authorization.findChallenge(Http01Challenge.TYPE)
-                    }
-                    .forEach { challenge ->
+                    }.forEach { challenge ->
                         challengeMap[challenge.token] = challenge.authorization
                         try {
                             // solve the challenge
@@ -222,21 +223,21 @@ class AcmeClientService : AcmeClient, Runnable, SslContextFactoryReloadableRegis
             val timestamp =
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss.SSS"))
             try {
-                Files.newBufferedReader(
-                    targetDirectory.resolve("domain.key"),
-                    StandardCharsets.UTF_8
-                )
-                    .use { keyReader ->
-                        Files.newBufferedWriter(
-                            targetDirectory.resolve("csr_ $timestamp.csr"),
-                            StandardCharsets.UTF_8
-                        )
-                            .use { csrWriter ->
-                                Files.newBufferedWriter(
-                                    targetDirectory.resolve("cert-chain_$timestamp.crt"),
-                                    StandardCharsets.UTF_8
-                                )
-                                    .use { chainWriter ->
+                Files
+                    .newBufferedReader(
+                        targetDirectory.resolve("domain.key"),
+                        StandardCharsets.UTF_8
+                    ).use { keyReader ->
+                        Files
+                            .newBufferedWriter(
+                                targetDirectory.resolve("csr_ $timestamp.csr"),
+                                StandardCharsets.UTF_8
+                            ).use { csrWriter ->
+                                Files
+                                    .newBufferedWriter(
+                                        targetDirectory.resolve("cert-chain_$timestamp.crt"),
+                                        StandardCharsets.UTF_8
+                                    ).use { chainWriter ->
                                         val domainKeyPair = KeyPairUtils.readKeyPair(keyReader)
 
                                         val csrb = CSRBuilder()

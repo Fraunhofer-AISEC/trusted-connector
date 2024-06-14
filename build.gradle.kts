@@ -1,6 +1,7 @@
 import com.diffplug.gradle.spotless.SpotlessApply
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 repositories {
@@ -25,9 +26,9 @@ licenseReport {
 
 allprojects {
     group = "de.fhg.aisec.ids"
-    version = "7.2.0"
+    version = "7.2.2"
 
-    val versionRegex = ".*((rc|beta)-?[0-9]*|-b[0-9.]+)$".toRegex(RegexOption.IGNORE_CASE)
+    val versionRegex = ".*((rc|beta|alpha)-?[0-9]*|-b[0-9.]+)$".toRegex(RegexOption.IGNORE_CASE)
 
     tasks.withType<DependencyUpdatesTask> {
         rejectVersionIf {
@@ -35,6 +36,7 @@ allprojects {
             versionRegex.matches(candidate.version)
                 || (candidate.group in setOf("org.apache.camel", "org.apache.camel.springboot")
                 && !candidate.version.startsWith("3.18"))
+                || candidate.group == "com.google.protobuf" && !candidate.version.startsWith("3.")
         }
     }
 }
@@ -109,9 +111,9 @@ subprojects {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions {
+        compilerOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = "17"
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 

@@ -39,8 +39,10 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 
 class PolicyEnforcementPoint
-    internal constructor(private val destinationNode: NamedNode, target: Processor) :
-    DelegateAsyncProcessor(target) {
+    internal constructor(
+        private val destinationNode: NamedNode,
+        target: Processor
+    ) : DelegateAsyncProcessor(target) {
         /**
          * The method performs flow control and calls Exchange.setException() when necessary It iterates
          * through nodes in CamelRoute (<from>, <log>, <choice>, <process>, <to>, ...) and launches node

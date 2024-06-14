@@ -88,7 +88,7 @@ node {
     // This is important for a hassle-free build without pre-installed yarn!
     // To disable, pass -PnodeDownload=false to gradle!
     download.set(findProperty("nodeDownload")?.toString()?.toBoolean() ?: true)
-    version.set("16.19.0")
+    version.set("20.14.0")
 }
 
 val yarnInstall by tasks.registering(YarnTask::class) {
@@ -98,7 +98,7 @@ val yarnInstall by tasks.registering(YarnTask::class) {
     outputs.cacheIf { true }
 
     workingDir.set(file("src/main/angular"))
-    yarnCommand.set(listOf("install", "--ignore-optional"))
+    yarnCommand.set(listOf("install"))
     onlyIf { !rootProject.hasProperty("skipAngular") }
 }
 

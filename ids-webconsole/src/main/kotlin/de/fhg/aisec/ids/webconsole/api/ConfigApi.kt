@@ -72,9 +72,7 @@ class ConfigApi {
 
     @ApiOperation(value = "Retrieves the current configuration", response = ConnectorConfig::class)
     @GetMapping("/connectorConfig", produces = [MediaType.APPLICATION_JSON])
-    fun get(): ConnectorConfig {
-        return settings.connectorConfig
-    }
+    fun get(): ConnectorConfig = settings.connectorConfig
 
     @PostMapping("/connectorConfig", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(value = "Sets the overall configuration of the connector")
@@ -136,9 +134,7 @@ class ConfigApi {
     @ApiOperation(value = "Sends configuration of a connection", response = ConnectionSettings::class)
     fun getConnectionConfigurations(
         @PathVariable("con") connection: String
-    ): ConnectionSettings {
-        return settings.getConnectionSettings(connection)
-    }
+    ): ConnectionSettings = settings.getConnectionSettings(connection)
 
     /**
      * Sends configurations of all connections
@@ -209,8 +205,7 @@ class ConfigApi {
                             .entries
                             .filter { (_, value1) ->
                                 value1.any { u: String -> u.startsWith("idsserver://$key") }
-                            }
-                            .map { "$it - $key" }
+                            }.map { "$it - $key" }
                             .ifEmpty { listOf("<no route found> - $key") }
 
                     // add endpoint configurations

@@ -22,8 +22,8 @@ package de.fhg.aisec.ids.api
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-fun String.runCommand(): String? {
-    return try {
+fun String.runCommand(): String? =
+    try {
         val parts = this.split("\\s".toRegex())
         val proc =
             ProcessBuilder(*parts.toTypedArray())
@@ -36,4 +36,3 @@ fun String.runCommand(): String? {
         e.printStackTrace()
         null
     }
-}

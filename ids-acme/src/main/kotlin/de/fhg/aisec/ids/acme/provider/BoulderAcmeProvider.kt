@@ -32,9 +32,7 @@ import java.util.regex.Pattern
  * @see [Boulder](https://github.com/letsencrypt/boulder)
  */
 class BoulderAcmeProvider : AbstractAcmeProvider() {
-    override fun accepts(serverUri: URI): Boolean {
-        return "acme" == serverUri.scheme && "boulder" == serverUri.host
-    }
+    override fun accepts(serverUri: URI): Boolean = "acme" == serverUri.scheme && "boulder" == serverUri.host
 
     override fun resolve(serverUri: URI): URL {
         try {

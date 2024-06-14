@@ -13,60 +13,12 @@
         "createDefaultProgram": true
       },
       "extends": [
-        "plugin:@angular-eslint/ng-cli-compat",
-        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
+        "plugin:@angular-eslint/recommended",
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
         "@angular-eslint/component-selector": "off",
-        "@typescript-eslint/array-type": [
-          "error",
-          {
-            "default": "array"
-          }
-        ],
         "@typescript-eslint/member-ordering": "off",
-        "@typescript-eslint/naming-convention": [
-          "error",
-          {
-            "selector": "default",
-            "format": ["camelCase"]
-          },
-          {
-            "selector": "variable",
-            "format": ["camelCase"]
-          },
-          {
-            "selector": "variable",
-            "modifiers": ["const"],
-            "format": ["camelCase", "UPPER_CASE"]
-          },
-          {
-            "selector": "parameter",
-            "format": ["camelCase"],
-            "leadingUnderscore": "allow"
-          },
-          {
-            "selector": "memberLike",
-            "modifiers": ["private"],
-            "format": ["camelCase"],
-            "leadingUnderscore": "allow"
-          },
-          {
-            "selector": "typeLike",
-            "format": ["PascalCase"]
-          },
-          {
-            "selector": "enumMember",
-            "format": ["UPPER_CASE"]
-          },
-          {
-            "selector": "objectLiteralProperty",
-            "format": null
-          }
-        ],
-        "@typescript-eslint/no-empty-function": "error",
-        "@typescript-eslint/no-var-requires": "error",
         "comma-dangle": "error",
         "import/no-unassigned-import": "off",
         "max-classes-per-file": [
@@ -77,16 +29,6 @@
         "no-fallthrough": "off",
         "prefer-template": "off",
         "no-underscore-dangle": "off",
-        "no-unused-vars": [
-          "error",
-          {
-            "vars": "all",
-            "args": "after-used",
-            "ignoreRestSiblings": false,
-            "argsIgnorePattern": "ignored|^_",
-            "varsIgnorePattern": "ignored|^_"
-          }
-        ],
         "no-console": [
           "error", {
             "allow": [""]

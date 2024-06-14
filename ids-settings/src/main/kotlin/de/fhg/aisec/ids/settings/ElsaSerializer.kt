@@ -38,7 +38,5 @@ class ElsaSerializer<T : Any> : Serializer<T> {
     override fun deserialize(
         input: DataInput2,
         available: Int
-    ): T {
-        return serializer.deserialize(input)
-    }
+    ): T = serializer.deserialize(input)
 }

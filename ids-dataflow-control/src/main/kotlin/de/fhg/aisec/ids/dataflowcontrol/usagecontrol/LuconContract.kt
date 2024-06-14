@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.Collections
 
-class LuconContract private constructor(contract: ContractAgreement) {
+class LuconContract private constructor(
+    contract: ContractAgreement
+) {
     val permissions = contract.permission.map(::LuconPermission)
     private val contractId: String = contract.id.toString()
 

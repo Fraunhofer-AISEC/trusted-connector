@@ -121,7 +121,10 @@ class CertApi(
             acmeClient?.renewCertificate(
                 FileSystems.getDefault().getPath("etc", "tls-webconsole"),
                 URI.create(config.acmeServerWebcon),
-                config.acmeDnsWebcon.trim { it <= ' ' }.split("\\s*,\\s*".toRegex()).toTypedArray(),
+                config.acmeDnsWebcon
+                    .trim { it <= ' ' }
+                    .split("\\s*,\\s*".toRegex())
+                    .toTypedArray(),
                 config.acmePortWebcon
             )
         } else {
@@ -141,9 +144,7 @@ class CertApi(
         @ApiParam(value = "URI to retrieve the TOS from")
         @RequestParam
         uri: String
-    ): AcmeTermsOfService? {
-        return acmeClient?.getTermsOfService(URI.create(uri.trim()))
-    }
+    ): AcmeTermsOfService? = acmeClient?.getTermsOfService(URI.create(uri.trim()))
 
     @GetMapping("list_certs", produces = [MediaType.APPLICATION_JSON])
     @ApiOperation(
@@ -248,14 +249,13 @@ class CertApi(
     //     return "Error: certificate has NOT been uploaded to $trustStoreName"
     // }
 
-    private inline fun notThrowing(block: () -> Unit): Boolean {
-        return try {
+    private inline fun notThrowing(block: () -> Unit): Boolean =
+        try {
             block()
             true
         } catch (t: Throwable) {
             false
         }
-    }
 
     private fun X509Certificate.isValid() = notThrowing { this.checkValidity() }
 
@@ -322,9 +322,8 @@ class CertApi(
      * @param byteArray Byte array to get hexadecimal representation for
      * @return Hexadecimal representation of the given bytes
      */
-    private fun encodeHexString(byteArray: ByteArray): String {
-        return byteArray.joinToString("") { hexLookup.computeIfAbsent(it) { num: Byte -> byteToHex(num.toInt()) } }
-    }
+    private fun encodeHexString(byteArray: ByteArray): String =
+        byteArray.joinToString("") { hexLookup.computeIfAbsent(it) { num: Byte -> byteToHex(num.toInt()) } }
 
     private fun Certificate.sha256Hash(): String {
         val sha256 = MessageDigest.getInstance("SHA-256")
@@ -345,19 +344,22 @@ class CertApi(
     fun storeEstCACerts(
         @RequestBody certificates: String
     ) {
-        certificates.split("-----END CERTIFICATE-----").map {
-            it.replace(CLEAR_PEM_REGEX, "")
-        }.filter { it.isNotEmpty() }.map { c ->
-            val trustStoreName = settings.connectorConfig.truststoreName
-            val encoded = Base64.getDecoder().decode(c.replace(WHITESPACE_REGEX, ""))
-            val cf = CertificateFactory.getInstance("X.509")
-            val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
-            try {
-                storeCertificate(trustStoreName, listOf(cert))
-            } catch (t: Throwable) {
-                LOG.error("Error saving a CA certificate", t)
+        certificates
+            .split("-----END CERTIFICATE-----")
+            .map {
+                it.replace(CLEAR_PEM_REGEX, "")
+            }.filter { it.isNotEmpty() }
+            .map { c ->
+                val trustStoreName = settings.connectorConfig.truststoreName
+                val encoded = Base64.getDecoder().decode(c.replace(WHITESPACE_REGEX, ""))
+                val cf = CertificateFactory.getInstance("X.509")
+                val cert = cf.generateCertificate(ByteArrayInputStream(encoded)) as X509Certificate
+                try {
+                    storeCertificate(trustStoreName, listOf(cert))
+                } catch (t: Throwable) {
+                    LOG.error("Error saving a CA certificate", t)
+                }
             }
-        }
     }
 
     @PostMapping("/request_est_identity", consumes = [MediaType.APPLICATION_JSON])
@@ -489,14 +491,16 @@ class CertApi(
     ): PKCS7 {
         val trustStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
         val trustManagers =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
-                KeyStore.getInstance("pkcs12").also {
-                    FileInputStream(trustStoreFile).use { fis ->
-                        it.load(fis, KEYSTORE_PWD.toCharArray())
-                        tmf.init(it)
+            TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                .also { tmf ->
+                    KeyStore.getInstance("pkcs12").also {
+                        FileInputStream(trustStoreFile).use { fis ->
+                            it.load(fis, KEYSTORE_PWD.toCharArray())
+                            tmf.init(it)
+                        }
                     }
-                }
-            }.trustManagers
+                }.trustManagers
         val secureHttpClient =
             HttpClient(Java) {
                 engine {
@@ -626,7 +630,11 @@ class CertApi(
         }
         val entryAlias =
             alias ?: certificateChain[0].subjectX500Principal.name.let { name ->
-                name.split(",").map { it.split("=") }.firstOrNull { it[0] == "CN" }?.get(1) ?: name
+                name
+                    .split(",")
+                    .map { it.split("=") }
+                    .firstOrNull { it[0] == "CN" }
+                    ?.get(1) ?: name
             }
         if (key == null) {
             // Add a CA certificate
@@ -697,8 +705,7 @@ class CertApi(
                         } else {
                             null
                         }
-                    }
-                    .map { (alias, certificate) ->
+                    }.map { (alias, certificate) ->
                         Cert().also { cert ->
                             cert.alias = alias
                             cert.file = keystoreFile.name.replaceFirst("[.][^.]+$".toRegex(), "")

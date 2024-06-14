@@ -20,4 +20,7 @@
 package de.fhg.aisec.ids.api
 
 /** Generic result of an API call.  */
-open class Result(var isSuccessful: Boolean = true, var message: String = "ok")
+open class Result(
+    var isSuccessful: Boolean = true,
+    var message: String = "ok"
+)

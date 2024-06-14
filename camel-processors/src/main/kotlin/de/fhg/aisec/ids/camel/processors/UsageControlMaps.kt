@@ -37,13 +37,12 @@ object UsageControlMaps {
 
     fun getExchangePeerIdentity(exchange: Exchange): String? = exchangePeerIdentityMap[exchange]
 
-    fun getExchangeContract(exchange: Exchange): ContractAgreement? {
-        return exchangePeerIdentityMap[exchange]?.let { identity ->
+    fun getExchangeContract(exchange: Exchange): ContractAgreement? =
+        exchangePeerIdentityMap[exchange]?.let { identity ->
             peerContracts[identity]?.let { uri ->
                 contractMap[uri] ?: throw RuntimeException("Contract $uri is not available!")
             }
         }
-    }
 
     fun addContractAgreement(contractAgreement: ContractAgreement) {
         contractMap[contractAgreement.id] = contractAgreement

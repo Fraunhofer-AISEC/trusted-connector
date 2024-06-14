@@ -49,9 +49,7 @@ class CamelInterceptor : InterceptStrategy {
         node: NamedNode,
         target: Processor,
         nextTarget: Processor?
-    ): Processor {
-        return PolicyEnforcementPoint(node, target)
-    }
+    ): Processor = PolicyEnforcementPoint(node, target)
 
     companion object {
         private lateinit var instance: CamelInterceptor

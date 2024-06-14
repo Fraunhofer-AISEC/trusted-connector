@@ -1,4 +1,4 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -56,20 +56,7 @@ import { NewIdentityESTComponent } from './keycerts/identitynewest.component';
 import { ESTService } from './keycerts/est-service';
 import { RenewIdentityESTComponent } from './keycerts/identityrenewest.component';
 
-@NgModule({
-    imports: [
-        BrowserModule,
-        routing,
-        HttpClientModule,
-        FormsModule,
-        ReactiveFormsModule,
-        LoggerModule.forRoot({
-            level: NgxLoggerLevel.DEBUG
-        })
-//    ModalModule.forRoot(),
-//    BootstrapModalModule
-    ],
-    declarations: [
+@NgModule({ declarations: [
         AppComponent,
         AppsSearchComponent,
         DashboardComponent,
@@ -105,7 +92,18 @@ import { RenewIdentityESTComponent } from './keycerts/identityrenewest.component
         NewIdentityESTComponent,
         RenewIdentityESTComponent
     ],
-    providers: [
+    bootstrap: [
+        AppComponent
+    ],
+    schemas: [
+        NO_ERRORS_SCHEMA
+    ], imports: [BrowserModule,
+        routing,
+        FormsModule,
+        ReactiveFormsModule,
+        LoggerModule.forRoot({
+            level: NgxLoggerLevel.DEBUG
+        })], providers: [
         HTTP_PROVIDER,
         AppService,
         RouteService,
@@ -127,14 +125,8 @@ import { RenewIdentityESTComponent } from './keycerts/identityrenewest.component
             useClass: JwtInterceptor,
             multi: true
         },
-        UserService
-    ],
-    bootstrap: [
-        AppComponent
-    ],
-    schemas: [
-        NO_ERRORS_SCHEMA
-    ]
-})
+        UserService,
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule {
 }

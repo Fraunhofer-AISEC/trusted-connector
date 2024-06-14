@@ -167,9 +167,7 @@ class DockerCM : ContainerManager {
         }
     }
 
-    private fun getImages(filters: Map<String, Iterable<String>>?): Images {
-        return dockerClient.images().filter(filters ?: emptyMap())
-    }
+    private fun getImages(filters: Map<String, Iterable<String>>?): Images = dockerClient.images().filter(filters ?: emptyMap())
 
     override fun list(onlyRunning: Boolean): List<ApplicationContainer> {
         val jsonArrayToList = { jsonValue: JsonValue? ->
@@ -217,8 +215,7 @@ class DockerCM : ContainerManager {
                                     LOG.warn("Error while resolving ip address \"$ip\"", x)
                                     null
                                 }
-                            }
-                            .toList()
+                            }.toList()
                     app.size =
                         "${humanReadableByteCount((c["SizeRw"] ?: 0).toString().toLong())} RW (data), " +
                         "${humanReadableByteCount((c["SizeRootFs"] ?: 0).toString().toLong())} RO (layers)"
@@ -239,8 +236,7 @@ class DockerCM : ContainerManager {
                                 } else {
                                     e.key
                                 }
-                            }
-                            .toList()
+                            }.toList()
                     app.names = name
                     if (running) {
                         app.uptime =
@@ -269,17 +265,15 @@ class DockerCM : ContainerManager {
                     )
                     return@map null
                 }
-            }
-            .filterNotNull()
+            }.filterNotNull()
             .toList()
     }
 
-    private fun getContainer(containerID: String): Container {
-        return getContainerSequence(true, mapOf("id" to listOf(containerID))).firstOrNull()
+    private fun getContainer(containerID: String): Container =
+        getContainerSequence(true, mapOf("id" to listOf(containerID))).firstOrNull()
             ?: throw NoContainerExistsException(
                 "The container with ID $containerID has not been found!"
             )
-    }
 
     private fun getImage(container: Container) = getImages(mapOf("reference" to listOf(container.getString("Image")))).firstOrNull()
 
@@ -357,8 +351,7 @@ class DockerCM : ContainerManager {
                     "(?:((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}" +
                         "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])):)?" +
                         "([0-9]+):([0-9]+)(?:/(tcp|udp))?"
-                )
-                    .toRegex()
+                ).toRegex()
             for (port in app.ports) {
                 val match = portRegex.matchEntire(port)
                 if (match == null) {
@@ -437,9 +430,8 @@ class DockerCM : ContainerManager {
      *
      * @param containerID The ID of the container to query labels from
      */
-    override fun getMetadata(containerID: String): Map<String, Any> {
-        return getContainer(containerID).inspect().getJsonObject("Config").getJsonObject("Labels")
-    }
+    override fun getMetadata(containerID: String): Map<String, Any> =
+        getContainer(containerID).inspect().getJsonObject("Config").getJsonObject("Labels")
 
     override fun setIpRule(
         containerID: String,
@@ -458,9 +450,7 @@ class DockerCM : ContainerManager {
      * @param containerID container id
      * @return container information
      */
-    override fun inspectContainer(containerID: String): String {
-        return getContainer(containerID).inspect().toString()
-    }
+    override fun inspectContainer(containerID: String): String = getContainer(containerID).inspect().toString()
 
     /** Returns the version of docker on the system */
     override val version: String

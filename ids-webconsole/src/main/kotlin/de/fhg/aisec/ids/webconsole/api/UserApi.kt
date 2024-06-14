@@ -83,7 +83,8 @@ class UserApi(
 
     private fun issueToken(username: String?): String {
         val tomorrow = Calendar.getInstance().apply { timeInMillis += 86400000 }.time
-        return JWT.create()
+        return JWT
+            .create()
             .withClaim("user", username)
             .withExpiresAt(tomorrow)
             .withIssuer("ids-connector")
@@ -94,8 +95,8 @@ class UserApi(
     private fun authenticate(
         username: String,
         password: String
-    ): Boolean {
-        return if (settings.isUserStoreEmpty()) {
+    ): Boolean =
+        if (settings.isUserStoreEmpty()) {
             LOG.warn("WARNING: User store is empty! This is insecure! Please create an admin user via the REST API!")
             username == "ids" && password == "ids"
         } else {
@@ -107,7 +108,6 @@ class UserApi(
             }
             loginOk
         }
-    }
 
     @PostMapping("/saveUser", consumes = [MediaType.APPLICATION_JSON])
     fun addUser(

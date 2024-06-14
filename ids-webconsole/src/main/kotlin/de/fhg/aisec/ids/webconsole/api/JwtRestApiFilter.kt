@@ -62,11 +62,10 @@ class JwtRestApiFilter : OncePerRequestFilter() {
         chain.doFilter(request, response)
     }
 
-    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        return request.requestURI.let {
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean =
+        request.requestURI.let {
             it == "/api/v1/user/login" || !it.startsWith("/api/v1")
         }
-    }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(JwtRestApiFilter::class.java)

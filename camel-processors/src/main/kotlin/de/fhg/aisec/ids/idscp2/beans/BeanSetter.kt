@@ -23,13 +23,13 @@ import org.springframework.beans.factory.FactoryBean
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class BeanSetter<T, FC>(val setConsumer: (T) -> Unit) : ReadWriteProperty<FactoryBean<FC>, T> {
+class BeanSetter<T, FC>(
+    val setConsumer: (T) -> Unit
+) : ReadWriteProperty<FactoryBean<FC>, T> {
     override operator fun getValue(
         thisRef: FactoryBean<FC>,
         property: KProperty<*>
-    ): T {
-        throw UnsupportedOperationException("FactoryBean set-only Builder method")
-    }
+    ): T = throw UnsupportedOperationException("FactoryBean set-only Builder method")
 
     override operator fun setValue(
         thisRef: FactoryBean<FC>,

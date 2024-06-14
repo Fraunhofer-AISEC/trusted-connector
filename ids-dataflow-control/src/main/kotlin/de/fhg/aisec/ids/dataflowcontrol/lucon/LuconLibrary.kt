@@ -38,7 +38,8 @@ import java.util.concurrent.TimeUnit
 class LuconLibrary : Library() {
     @Transient
     private val regexCache =
-        CacheBuilder.newBuilder()
+        CacheBuilder
+            .newBuilder()
             .expireAfterAccess(1, TimeUnit.DAYS)
             .maximumWeight(1e6.toLong())
             .weigher<String, Regex> { k, _ -> k.length }

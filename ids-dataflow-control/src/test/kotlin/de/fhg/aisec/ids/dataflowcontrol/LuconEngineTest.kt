@@ -229,7 +229,8 @@ class LuconEngineTest {
         val rm = Mockito.mock(RouteManager::class.java)
         println("------ ROUTE ----------")
         println(VERIFIABLE_ROUTE)
-        Mockito.`when`(rm.getRouteAsProlog(ArgumentMatchers.anyString()))
+        Mockito
+            .`when`(rm.getRouteAsProlog(ArgumentMatchers.anyString()))
             .thenReturn(VERIFIABLE_ROUTE)
 
         // Create policy decision point and attach to route manager
@@ -485,20 +486,28 @@ class LuconEngineTest {
             sb.append("has_decision(").append(ruleName).append(", allow).\n")
             sb.append("has_alternativedecision(").append(ruleName).append(", allow).\n")
             sb.append("receives_label(").append(ruleName).append(").\n")
-            sb.append("has_target(").append(ruleName).append(", ").append(targetName).append(").\n")
-            sb.append("has_obligation(")
+            sb
+                .append("has_target(")
+                .append(ruleName)
+                .append(", ")
+                .append(targetName)
+                .append(").\n")
+            sb
+                .append("has_obligation(")
                 .append(ruleName)
                 .append(", testObligation")
                 .append(i)
                 .append(").\n")
             sb.append("service(").append(targetName).append(").\n")
             sb.append("has_endpoint(").append(targetName).append(", \".*\").\n")
-            sb.append("creates_label(")
+            sb
+                .append("creates_label(")
                 .append(targetName)
                 .append(", ")
                 .append(labelName)
                 .append(").\n")
-            sb.append("removes_label(")
+            sb
+                .append("removes_label(")
                 .append(targetName)
                 .append(", ")
                 .append(labelName)

@@ -9,11 +9,12 @@
       "projectType": "application",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist",
+            "outputPath": {
+              "base": "dist"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
             "tsConfig": "src/tsconfig.json",
             "assets": [
               "src/images",
@@ -21,26 +22,23 @@
               "src/favicon.ico"
             ],
             "styles": [
+              "src/css/bootstrap-reboot.css",
               "src/fonts/fonts.css",
               "node_modules/material-design-lite/material.css",
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/css/material.teal-pink.min.css",
               "src/css/styles.css",
-              "src/css/fontawesome/all.css",
-              "node_modules/vis/dist/vis.css"
+              "src/css/fontawesome/all.css"
             ],
             "scripts": [
               "node_modules/viz.js/viz.js",
               "node_modules/viz.js/full.render.js",
-              "node_modules/svg-pan-zoom/dist/svg-pan-zoom.js",
-              "node_modules/vis/dist/vis.js"
+              "node_modules/svg-pan-zoom/dist/svg-pan-zoom.js"
             ],
-            "vendorChunk": true,
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -55,34 +53,36 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
                 }
-              ]
+              ],
+              "outputPath": {
+                "base": "../../../build/resources/main",
+                "browser": "www"
+              }
             }
           },
           "defaultConfiguration": ""
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
-            "browserTarget": "trusted-connector-ui:build",
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "trusted-connector-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "trusted-connector-ui:build:production"
+              "buildTarget": "trusted-connector-ui:build:production"
             }
           }
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
-            "browserTarget": "trusted-connector-ui:build"
+            "buildTarget": "trusted-connector-ui:build"
           }
         },
         "lint": {

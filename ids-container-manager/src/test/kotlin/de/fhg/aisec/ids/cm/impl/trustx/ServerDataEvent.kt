@@ -21,4 +21,8 @@ package de.fhg.aisec.ids.cm.impl.trustx
 
 import jnr.unixsocket.UnixSocketChannel
 
-internal class ServerDataEvent(var server: TrustXMock, var socket: UnixSocketChannel, var data: ByteArray)
+internal class ServerDataEvent(
+    var server: TrustXMock,
+    var socket: UnixSocketChannel,
+    var data: ByteArray
+)
