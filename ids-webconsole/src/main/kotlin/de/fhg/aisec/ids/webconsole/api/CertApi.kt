@@ -427,7 +427,8 @@ class CertApi(
 
         val keyStoreFile = getKeystoreFile(settings.connectorConfig.keystoreName)
         val keyStore =
-            KeyStore.getInstance("pkcs12")
+            KeyStore
+                .getInstance("pkcs12")
                 .also { it.load(keyStoreFile.inputStream(), KEYSTORE_PWD.toCharArray()) }
 
         val oldKey = keyStore.getKey(req.alias, KEYSTORE_PWD.toCharArray()) as PrivateKey
@@ -555,23 +556,27 @@ class CertApi(
     ): PKCS7 {
         val trustStoreFile = getKeystoreFile(settings.connectorConfig.truststoreName)
         val trustManagers =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).also { tmf ->
-                KeyStore.getInstance("pkcs12").also {
-                    FileInputStream(trustStoreFile).use { fis ->
-                        it.load(fis, KEYSTORE_PWD.toCharArray())
-                        tmf.init(it)
+            TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                .also { tmf ->
+                    KeyStore.getInstance("pkcs12").also {
+                        FileInputStream(trustStoreFile).use { fis ->
+                            it.load(fis, KEYSTORE_PWD.toCharArray())
+                            tmf.init(it)
+                        }
                     }
-                }
-            }.trustManagers
+                }.trustManagers
         val keyStore = KeyStore.getInstance("pkcs12")
         // This does not perform IO since this load creates a new keystore instance
         @Suppress("BlockingMethodInNonBlockingContext")
         keyStore.load(null)
         keyStore.setKeyEntry("1", clientKey, "".toCharArray(), arrayOf(clientCert))
         val keyManagers =
-            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).also {
-                it.init(keyStore, null)
-            }.keyManagers
+            KeyManagerFactory
+                .getInstance(KeyManagerFactory.getDefaultAlgorithm())
+                .also {
+                    it.init(keyStore, null)
+                }.keyManagers
         val secureHttpClient =
             HttpClient(Java) {
                 engine {
