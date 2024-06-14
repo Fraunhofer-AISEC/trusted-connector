@@ -364,7 +364,7 @@ class CertApi(
 
     @PostMapping("/request_est_identity", consumes = [MediaType.APPLICATION_JSON])
     @ApiOperation(
-        value = "Get CA certificate from EST",
+        value = "Get CA certificate from EST server",
         notes = ""
     )
     @ApiResponses(
@@ -434,7 +434,7 @@ class CertApi(
         val oldKey = keyStore.getKey(req.alias, KEYSTORE_PWD.toCharArray()) as PrivateKey
         val oldCert = keyStore.getCertificate(req.alias) as X509Certificate
 
-        LOG.debug("Fetching root certificates from EST...")
+        LOG.debug("Fetching root certificates from EST server...")
         val caCerts = fetchEstCaCerts(req.estUrl, req.rootCertHash)
 
         caCerts.firstOrNull { it.verify(it) }?.let {
@@ -612,7 +612,7 @@ class CertApi(
         if (!resp.status.isSuccess()) {
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                "Failed to fetch renewed certificate from EST: ${resp.bodyAsText()}"
+                "Failed to fetch renewed certificate from EST server: ${resp.bodyAsText()}"
             )
         }
 
