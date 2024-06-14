@@ -27,12 +27,4 @@
         </div>
     </div>
 </div>
-<div id="est-error-snackbar" [ngClass]="{'mdl-snackbar': true, 'mdl-snackbar--active': error}">
-    <div class="mdl-snackbar__text" style="display: flex; flex-direction: column;">
-        <span>{{ error }}</span>
-        <span class="mdl-color-text--grey-300" style="font-size: smaller;">
-            Check the trusted connector log for more details
-        </span>
-    </div>
-    <button class="mdl-snackbar__action" type="button" (click)="error = null">Dismiss</button>
-</div>
+<snackbar #errorSnackbar subtitle="Check the trusted connector log for more details"/>
