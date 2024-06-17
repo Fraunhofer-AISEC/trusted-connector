@@ -1,0 +1,9 @@
+<div id="est-error-snackbar" class="mdl-snackbar" [ngClass]="{'snackbar': !visible, 'mdl-snackbar--active': visible}">
+    <div class="mdl-snackbar__text snackbar-content">
+        <span>{{ title }}</span>
+        <span *ngIf="subtitle !== null" class="mdl-color-text--grey-300 snackbar-subtitle">
+            {{ subtitle }}
+        </span>
+    </div>
+    <button class="mdl-snackbar__action" type="button" (click)="invokeOnDismiss()">Dismiss</button>
+</div>

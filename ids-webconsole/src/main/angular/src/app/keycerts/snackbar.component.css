@@ -1,0 +1,13 @@
+.snackbar {
+    -webkit-transform: translate(-50%, 100px);
+    transform: translate(-50%, 100px);
+}
+
+.snackbar-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.snackbar-subtitle {
+    font-size: smaller;
+}

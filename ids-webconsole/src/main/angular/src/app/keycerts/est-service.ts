@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { EstEnrollment } from './est-enrollment.interface';
+import { EstReEnrollment } from './est-re-enrollment.interface';
 
 @Injectable()
 export class ESTService {
@@ -37,6 +38,14 @@ export class ESTService {
 
         return this.http.post(environment.apiURL + '/certs/request_est_identity', data, {
             headers,
+            responseType: 'text'
+        });
+    }
+
+    // Renew an existing identity identified by its alias via the EST
+    public renewIdentity(data: EstReEnrollment) {
+        return this.http.post(environment.apiURL + '/certs/renew_est_identity', data, {
+            headers: new HttpHeaders({'Content-Type': 'application/json'}),
             responseType: 'text'
         });
     }

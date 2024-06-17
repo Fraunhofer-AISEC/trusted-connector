@@ -7,10 +7,13 @@
         {{ certificate.subjectDistinguishedName }}
       </span>
     </span>
-    <span class="mdl-list__item-secondary-content" style="text-align:right">
+    <div class="mdl-list__item-secondary-content" style="text-align:right;align-items:flex-start;flex-direction:row;">
+      <a *ngIf="onRenewCallback !== null" class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onRenew(certificate.alias)">
+        <icon class="material-icons">refresh</icon>
+      </a>
       <a class="mdl-list__item-secondary-action mdl-color-text--grey-600" (click)="onDelete(certificate.alias)">
         <icon class="material-icons">delete</icon>
       </a>
-    </span>
+    </div>
   </li>
 </ul>

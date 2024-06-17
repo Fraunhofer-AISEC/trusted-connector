@@ -18,6 +18,7 @@ import { RouteeditorComponent } from './routes/routeeditor/routeeditor.component
 import { UsersComponent } from './users/users.component';
 import { NewUserComponent } from './users/usernew.component';
 import { DetailUserComponent } from './users/userdetail.component';
+import { RenewIdentityESTComponent } from './keycerts/identityrenewest.component';
 import { RoutesComponent } from './routes/routes.component';
 import { NewIdentityESTComponent } from './keycerts/identitynewest.component';
 
@@ -43,7 +44,8 @@ const appRoutes: Routes = [
       { path: 'usernew', component: NewUserComponent, canActivate: guards },
       { path: 'userdetail', component: DetailUserComponent, canActivate: guards },
       { path: 'certificates', component: KeycertsComponent, canActivate: guards  },
-      { path: 'identitynewest', component: NewIdentityESTComponent, canActivate: guards }
+      { path: 'identitynewest', component: NewIdentityESTComponent, canActivate: guards },
+      { path: 'identityrenewest/:alias', component: RenewIdentityESTComponent, canActivate: guards }
     ]
   },
   // Pages using the "login" layout (centered full page without sidebar)

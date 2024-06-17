@@ -54,6 +54,8 @@ import { UserService } from './users/user.service';
 import { UserCardComponent } from './users/user-card.component';
 import { NewIdentityESTComponent } from './keycerts/identitynewest.component';
 import { ESTService } from './keycerts/est-service';
+import { RenewIdentityESTComponent } from './keycerts/identityrenewest.component';
+import { SnackbarComponent } from './keycerts/snackbar.component';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -88,7 +90,9 @@ import { ESTService } from './keycerts/est-service';
         DetailUserComponent,
         UserCardComponent,
         UsersComponent,
-        NewIdentityESTComponent
+        NewIdentityESTComponent,
+        RenewIdentityESTComponent,
+        SnackbarComponent
     ],
     bootstrap: [
         AppComponent

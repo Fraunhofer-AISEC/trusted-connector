@@ -16,6 +16,7 @@ export class CertificateCardComponent implements OnInit {
     @Input() public certificates: Certificate[];
     @Input() public trusts: Certificate[];
     @Input() private readonly onDeleteCallback: (alias: string) => void;
+    @Input() private readonly onRenewCallback: (alias: string) => void = null;
     public result: string;
 
     constructor(private readonly confirmService: ConfirmService) {
@@ -27,6 +28,13 @@ export class CertificateCardComponent implements OnInit {
 
     public trackCerts(index: number, item: Certificate): string {
         return item.subjectS + item.subjectCN + item.subjectOU + item.subjectO + item.subjectL + item.subjectC;
+    }
+
+    public onRenew(alias: string): void {
+        // Sanity check
+        if (this.onRenewCallback) {
+            this.onRenewCallback(alias);
+        }
     }
 
     public async onDelete(alias: string): Promise<void> {
