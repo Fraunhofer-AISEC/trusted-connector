@@ -26,6 +26,13 @@ import de.fhg.aisec.ids.api.settings.Settings
 import de.fhg.aisec.ids.camel.idscp2.ListenerManager
 import de.fhg.aisec.ids.camel.idscp2.Utils
 import de.fhg.aisec.ids.camel.processors.UsageControlMaps
+import de.fhg.aisec.ids.cmc.CmcConfig
+import de.fhg.aisec.ids.cmc.prover.CmcProver
+import de.fhg.aisec.ids.cmc.prover.CmcProverConfig
+import de.fhg.aisec.ids.cmc.verifier.CmcVerifier
+import de.fhg.aisec.ids.cmc.verifier.CmcVerifierConfig
+import de.fhg.aisec.ids.idscp2.api.raregistry.RaProverDriverRegistry
+import de.fhg.aisec.ids.idscp2.api.raregistry.RaVerifierDriverRegistry
 import de.fhg.aisec.ids.rm.RouteManagerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -57,6 +64,9 @@ class ConnectorConfiguration {
 
     @Value("\${connector.sender-agent}")
     private lateinit var senderAgent: String
+
+    @Value("\${idscp2.cmc-endpoint:127.0.0.1}")
+    private lateinit var cmcEndpoint: String
 
     @Bean
     fun configureIdscp2(): CommandLineRunner =
@@ -96,7 +106,45 @@ class ConnectorConfiguration {
             ListenerManager.addTransferContractListener { connection, transferContract ->
                 UsageControlMaps.setPeerContract(connection.peerDat.identity, transferContract)
             }
+
+            idscp2CmcRatConfig()
         }
+
+    /**
+     * Method for configuration of IDSCP2 CMC attestation driver.
+     */
+    private fun idscp2CmcRatConfig() {
+        // RAT prover configuration
+        val cmcHostAndPort = cmcEndpoint.split(":").toTypedArray()
+        var cmcPort: Int = CmcConfig.DEFAULT_CMC_PORT
+        if (cmcHostAndPort.size > 1) {
+            cmcPort = cmcHostAndPort[1].toInt()
+        }
+        val proverConfig: CmcProverConfig =
+            CmcProverConfig
+                .Builder()
+                .setCmcHost(cmcHostAndPort[0])
+                .setCmcPort(cmcPort)
+                .build()
+        RaProverDriverRegistry.registerDriver(
+            CmcProver.ID,
+            { fsmListener -> CmcProver(fsmListener) },
+            proverConfig
+        )
+
+        // RAT verifier configuration
+        val verifierConfig: CmcVerifierConfig =
+            CmcVerifierConfig
+                .Builder()
+                .setCmcHost(cmcHostAndPort[0])
+                .setCmcPort(cmcPort)
+                .build()
+        RaVerifierDriverRegistry.registerDriver(
+            CmcVerifier.ID,
+            { fsmListener -> CmcVerifier(fsmListener) },
+            verifierConfig
+        )
+    }
 
     @Bean
     fun listBeans(ctx: ApplicationContext): CommandLineRunner =
